@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__supabase-server__execute_sql",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_fill",
+      "mcp__puppeteer__puppeteer_click"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase-server",
+    "context7-server",
+    "sequential-thinking",
+    "github-server",
+    "puppeteer"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "supabase-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "sbp_b2db974cdc6946ba7e909232e464063be9b2bee6",
+        "--project-ref",
+        "fnrlzhrchuoiwwsugidz"
+      ],
+      "transportType": "stdio",
+      "timeout": 60,
+      "autoApprove": ["list_tables", "list_projects"],
+      "disabled": true
+    },
+    "context7-server": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "transportType": "stdio",
+      "timeout": 60,
+      "autoApprove": ["get-library-docs", "resolve-library-id"],
+      "disabled": false
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "transportType": "stdio",
+      "timeout": 60,
+      "autoApprove": ["sequentialthinking"],
+      "disabled": false
+    },
+    "github-server": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "transportType": "stdio",
+      "timeout": 60,
+      "autoApprove": [],
+      "disabled": true
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "transportType": "stdio",
+      "timeout": 60,
+      "autoApprove": [],
+      "disabled": false
+    }
+  }
+}
