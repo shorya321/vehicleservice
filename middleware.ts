@@ -57,7 +57,9 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.role !== 'customer') {
+    // Allow both customers and vendors to access customer routes
+    // Vendors were once customers and may need to view their customer history
+    if (!profile || (profile.role !== 'customer' && profile.role !== 'vendor')) {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
   }
@@ -79,22 +81,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protected driver routes
-  if (request.nextUrl.pathname.startsWith('/driver')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.role !== 'driver') {
-      return NextResponse.redirect(new URL('/unauthorized', request.url))
-    }
-  }
 
   // Redirect to admin dashboard if already logged in as admin
   if (request.nextUrl.pathname === '/admin/login' && user) {
@@ -123,8 +109,6 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/customer/dashboard', request.url))
         case 'vendor':
           return NextResponse.redirect(new URL('/vendor/dashboard', request.url))
-        case 'driver':
-          return NextResponse.redirect(new URL('/driver/dashboard', request.url))
         case 'admin':
           return NextResponse.redirect(new URL('/admin/dashboard', request.url))
       }

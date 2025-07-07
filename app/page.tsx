@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Car, Shield, Users, Truck } from "lucide-react"
+import { Shield, Users, Building2 } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -10,18 +10,18 @@ export default function HomePage() {
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <div className="h-16 w-16 rounded-lg bg-primary flex items-center justify-center">
-              <Car className="h-10 w-10 text-primary-foreground" />
+              <Shield className="h-10 w-10 text-primary-foreground" />
             </div>
           </div>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Vehicle Service Platform
+            User Management Platform
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive vehicle service management system for administrators, customers, vendors, and drivers
+            Comprehensive user and location management system for administrators, customers, and vendors
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
+        <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -29,7 +29,7 @@ export default function HomePage() {
               </div>
               <CardTitle>Admin Portal</CardTitle>
               <CardDescription>
-                Manage users, services, and monitor business operations
+                Manage users, locations, and monitor system operations
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -46,7 +46,7 @@ export default function HomePage() {
               </div>
               <CardTitle>Customer</CardTitle>
               <CardDescription>
-                Book services, track orders, and manage your account
+                Manage your profile, security settings, and notifications
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -59,33 +59,16 @@ export default function HomePage() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-4">
-                <Truck className="h-6 w-6 text-green-500" />
+                <Building2 className="h-6 w-6 text-green-500" />
               </div>
               <CardTitle>Vendor</CardTitle>
               <CardDescription>
-                Manage your services, bookings, and business profile
+                Manage your team, business profile, and security settings
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild variant="secondary" className="w-full">
                 <Link href="/vendor/login">Vendor Login</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4">
-                <Car className="h-6 w-6 text-orange-500" />
-              </div>
-              <CardTitle>Driver</CardTitle>
-              <CardDescription>
-                View assignments, update status, and manage deliveries
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant="secondary" className="w-full">
-                <Link href="/driver/login">Driver Login</Link>
               </Button>
             </CardContent>
           </Card>
@@ -97,19 +80,19 @@ export default function HomePage() {
             <div className="p-4">
               <h3 className="font-medium mb-2">Role-Based Access</h3>
               <p className="text-muted-foreground">
-                Separate portals for admins, customers, vendors, and drivers
+                Separate portals for admins, customers, and vendors with specific permissions
               </p>
             </div>
             <div className="p-4">
-              <h3 className="font-medium mb-2">Real-time Tracking</h3>
+              <h3 className="font-medium mb-2">User Management</h3>
               <p className="text-muted-foreground">
-                Track bookings, services, and deliveries in real-time
+                Comprehensive user profiles, activity tracking, and notification preferences
               </p>
             </div>
             <div className="p-4">
               <h3 className="font-medium mb-2">Secure Platform</h3>
               <p className="text-muted-foreground">
-                Built with Supabase for secure authentication and data storage
+                Built with Supabase for secure authentication, 2FA support, and data protection
               </p>
             </div>
           </div>

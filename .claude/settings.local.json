@@ -6,7 +6,14 @@
       "mcp__puppeteer__puppeteer_screenshot",
       "mcp__puppeteer__puppeteer_navigate",
       "mcp__puppeteer__puppeteer_fill",
-      "mcp__puppeteer__puppeteer_click"
+      "mcp__puppeteer__puppeteer_click",
+      "Bash(lsof:*)",
+      "mcp__supabase-server__generate_typescript_types",
+      "Bash(rm:*)",
+      "mcp__supabase-server__list_migrations",
+      "mcp__supabase-server__apply_migration",
+      "Bash(node:*)",
+      "Bash(mkdir:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

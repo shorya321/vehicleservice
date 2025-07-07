@@ -7,46 +7,53 @@ import { Badge } from "@/components/ui/badge"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { StatCard } from "@/components/ui/stat-card"
 import {
-  Calendar,
-  DollarSign,
-  Package,
-  Star,
-  TrendingUp,
   Users,
   Clock,
   ArrowRight,
   BarChart3,
+  Activity,
+  Shield,
+  Car,
+  Star,
+  TrendingUp,
 } from "lucide-react"
 import Link from "next/link"
 
 // Mock data for demonstration
-const todaysBookings = [
+const recentActivities = [
   {
     id: "1",
-    customer: "John Doe",
-    service: "Desert Safari Premium",
-    time: "2:00 PM",
-    status: "confirmed",
-    price: "$250",
+    action: "Profile updated",
+    details: "Business information updated",
+    time: "2 hours ago",
+    type: "update",
   },
   {
     id: "2",
-    customer: "Jane Smith",
-    service: "City Tour",
-    time: "4:00 PM",
-    status: "pending",
-    price: "$120",
+    action: "New team member added",
+    details: "John Smith joined as operator",
+    time: "5 hours ago",
+    type: "team",
   },
-]
-
-const topServices = [
-  { name: "Desert Safari Premium", bookings: 45, revenue: "$11,250", rating: 4.8 },
-  { name: "City Tour", bookings: 32, revenue: "$3,840", rating: 4.6 },
-  { name: "Airport Transfer", bookings: 28, revenue: "$2,380", rating: 4.9 },
+  {
+    id: "3",
+    action: "Security settings updated",
+    details: "2FA enabled for all team members",
+    time: "1 day ago",
+    type: "security",
+  },
 ]
 
 export default async function VendorDashboard() {
   const user = await requireVendor()
+  const supabase = await createClient()
+  
+  // Get vendor application data (which serves as business profile)
+  const { data: vendorApplication } = await supabase
+    .from('vendor_applications')
+    .select('business_name, status')
+    .eq('user_id', user.id)
+    .single()
   
   return (
     <VendorLayout>
@@ -56,52 +63,75 @@ export default async function VendorDashboard() {
             Vendor Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Welcome back, {user.profile?.full_name || 'Vendor'}! Here's your business overview.
+            Welcome back, {vendorApplication?.business_name || user.profile?.full_name || 'Vendor'}! Here's your business overview.
           </p>
         </div>
+
+        {/* Business Profile Status */}
+        {vendorApplication && vendorApplication.status === 'approved' && (
+          <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Business Profile Active
+              </CardTitle>
+              <CardDescription>
+                Your business profile is set up and ready for vehicle listings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline">
+                <Link href="/vendor/profile">
+                  Edit Profile
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Monthly Revenue"
-            value="$15,231"
-            description="Total earnings this month"
-            icon={DollarSign}
+            title="Team Members"
+            value="8"
+            description="Active team members"
+            icon={Users}
             trend={{ value: 12.5, isPositive: true }}
           />
           <StatCard
-            title="Total Bookings"
-            value="142"
-            description="Bookings this month"
-            icon={Calendar}
+            title="Active Sessions"
+            value="23"
+            description="Currently online"
+            icon={Activity}
             trend={{ value: 8.2, isPositive: true }}
           />
           <StatCard
-            title="Active Services"
-            value="12"
-            description="Services offered"
-            icon={Package}
-            trend={{ value: 0, isPositive: true }}
+            title="Security Score"
+            value="95%"
+            description="Account security level"
+            icon={Shield}
+            trend={{ value: 5, isPositive: true }}
           />
           <StatCard
-            title="Average Rating"
-            value="4.8"
-            description="Customer satisfaction"
-            icon={Star}
-            trend={{ value: 2.1, isPositive: true }}
+            title="Response Time"
+            value="< 2h"
+            description="Average response"
+            icon={Clock}
+            trend={{ value: 15, isPositive: true }}
           />
         </div>
 
-        {/* Today's Schedule */}
+        {/* Recent Activities */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Today's Bookings</CardTitle>
-                <CardDescription>Your schedule for today</CardDescription>
+                <CardTitle>Recent Activities</CardTitle>
+                <CardDescription>Latest updates and actions</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/vendor/bookings">
+                <Link href="/vendor/activities">
                   View all
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -110,33 +140,33 @@ export default async function VendorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {todaysBookings.map((booking) => (
+              {recentActivities.map((activity) => (
                 <div
-                  key={booking.id}
+                  key={activity.id}
                   className="flex items-center justify-between rounded-lg border p-4"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{booking.customer}</p>
+                      <p className="font-medium">{activity.action}</p>
                       <Badge
                         variant={
-                          booking.status === "confirmed" ? "default" : "secondary"
+                          activity.type === "security" ? "default" : 
+                          activity.type === "team" ? "secondary" : "outline"
                         }
                       >
-                        {booking.status}
+                        {activity.type}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{booking.service}</span>
+                      <span>{activity.details}</span>
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {booking.time}
+                        {activity.time}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">{booking.price}</p>
-                    <Button variant="outline" size="sm" className="mt-2">
+                    <Button variant="outline" size="sm">
                       View Details
                     </Button>
                   </div>
@@ -150,40 +180,38 @@ export default async function VendorDashboard() {
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Top Performing Services</CardTitle>
-              <CardDescription>Your best services this month</CardDescription>
+              <CardTitle>Team Performance</CardTitle>
+              <CardDescription>Team activity overview</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {topServices.map((service, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">{service.name}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                          <span className="text-sm">{service.rating}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {service.bookings} bookings
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 flex-1 rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{
-                            width: `${(service.bookings / 45) * 100}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium min-w-[80px] text-right">
-                        {service.revenue}
-                      </span>
-                    </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">Active Team Members</p>
+                    <span className="text-sm text-muted-foreground">8 of 10 online</span>
                   </div>
-                ))}
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div className="h-full rounded-full bg-primary" style={{ width: "80%" }} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">Tasks Completed</p>
+                    <span className="text-sm text-muted-foreground">45 today</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div className="h-full rounded-full bg-green-500" style={{ width: "65%" }} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">Response Rate</p>
+                    <span className="text-sm text-muted-foreground">95%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div className="h-full rounded-full bg-blue-500" style={{ width: "95%" }} />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -195,15 +223,15 @@ export default async function VendorDashboard() {
             </CardHeader>
             <CardContent className="grid gap-4">
               <Button asChild className="w-full justify-start">
-                <Link href="/vendor/services/new">
-                  <Package className="mr-2 h-4 w-4" />
-                  Add New Service
+                <Link href="/vendor/vehicles">
+                  <Car className="mr-2 h-4 w-4" />
+                  Manage Vehicles
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
-                <Link href="/vendor/bookings">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Manage Bookings
+                <Link href="/vendor/profile">
+                  <Activity className="mr-2 h-4 w-4" />
+                  Business Profile
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
@@ -213,9 +241,9 @@ export default async function VendorDashboard() {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
-                <Link href="/vendor/earnings">
-                  <DollarSign className="mr-2 h-4 w-4" />
-                  Check Earnings
+                <Link href="/vendor/settings">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Security Settings
                 </Link>
               </Button>
             </CardContent>

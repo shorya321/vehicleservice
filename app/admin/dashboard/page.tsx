@@ -17,73 +17,55 @@ import {
 } from "@/components/ui/table"
 import { 
   Users, 
-  Car, 
-  Calendar, 
-  DollarSign,
-  TrendingUp,
   Activity,
-  CreditCard,
-  Package,
-  MoreHorizontal,
   Download,
   Filter,
   Mail,
   Shield,
+  MapPin,
 } from "lucide-react"
 
-const recentBookings = [
+const recentActivities = [
   {
     id: "1",
-    customer: "Ahmed Ali",
+    user: "Ahmed Ali",
     avatar: "/avatars/01.png",
-    service: "Desert Safari",
+    action: "User registered",
     date: "2024-06-20",
-    status: "confirmed",
-    amount: "$250",
+    type: "registration",
   },
   {
     id: "2",
-    customer: "Sarah Johnson",
+    user: "Sarah Johnson",
     avatar: "/avatars/02.png",
-    service: "Airport Transfer",
+    action: "Profile updated",
     date: "2024-06-21",
-    status: "pending",
-    amount: "$85",
+    type: "update",
   },
   {
     id: "3",
-    customer: "Mohammed Khan",
+    user: "Mohammed Khan",
     avatar: "/avatars/03.png",
-    service: "City Tour",
+    action: "Email verified",
     date: "2024-06-21",
-    status: "completed",
-    amount: "$120",
+    type: "verification",
   },
   {
     id: "4",
-    customer: "Emily Chen",
+    user: "Emily Chen",
     avatar: "/avatars/04.png",
-    service: "Desert Safari",
+    action: "2FA enabled",
     date: "2024-06-22",
-    status: "confirmed",
-    amount: "$450",
+    type: "security",
   },
   {
     id: "5",
-    customer: "John Smith",
+    user: "John Smith",
     avatar: "/avatars/05.png",
-    service: "Private Transfer",
+    action: "Password changed",
     date: "2024-06-22",
-    status: "cancelled",
-    amount: "$95",
+    type: "security",
   },
-]
-
-const topServices = [
-  { name: "Desert Safari Premium", bookings: 145, revenue: "$36,250", growth: 12 },
-  { name: "Airport Transfer", bookings: 98, revenue: "$8,330", growth: 8 },
-  { name: "City Tour", bookings: 76, revenue: "$9,120", growth: -3 },
-  { name: "Private Transfer", bookings: 65, revenue: "$6,175", growth: 15 },
 ]
 
 export default async function AdminDashboard() {
@@ -110,11 +92,18 @@ export default async function AdminDashboard() {
   // Get real statistics
   const { data: userStats } = await supabase
     .from('profiles')
-    .select('email_verified, two_factor_enabled')
+    .select('email_verified, two_factor_enabled, status')
+  
+  const { data: locationStats } = await supabase
+    .from('locations')
+    .select('is_active')
   
   const totalUsers = userStats?.length || 0
   const verifiedUsers = userStats?.filter(u => u.email_verified).length || 0
   const twoFactorUsers = userStats?.filter(u => u.two_factor_enabled).length || 0
+  const activeUsers = userStats?.filter(u => u.status === 'active').length || 0
+  const totalLocations = locationStats?.length || 0
+  const activeLocations = locationStats?.filter(l => l.is_active).length || 0
   
   const verificationRate = totalUsers > 0 ? Math.round((verifiedUsers / totalUsers) * 100) : 0
   const twoFactorRate = totalUsers > 0 ? Math.round((twoFactorUsers / totalUsers) * 100) : 0
@@ -152,66 +141,60 @@ export default async function AdminDashboard() {
             trend={{ value: twoFactorRate > 30 ? 8 : -3, isPositive: twoFactorRate > 30 }}
           />
           <StatCard
-            title="Available Vehicles"
-            value="48"
-            description="Ready for service"
-            icon={Car}
-            trend={{ value: 5, isPositive: false }}
+            title="Active Locations"
+            value={activeLocations.toString()}
+            description={`${totalLocations} total locations`}
+            icon={MapPin}
+            trend={{ value: 8, isPositive: true }}
           />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <Card className="col-span-4">
             <CardHeader>
-              <CardTitle>Recent Bookings</CardTitle>
+              <CardTitle>Recent Activities</CardTitle>
               <CardDescription>
-                Latest customer bookings and their status
+                Latest user activities and system events
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Service</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Action</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Type</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentBookings.map((booking) => (
-                    <TableRow key={booking.id}>
+                  {recentActivities.map((activity) => (
+                    <TableRow key={activity.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={booking.avatar} />
+                            <AvatarImage src={activity.avatar} />
                             <AvatarFallback>
-                              {booking.customer.split(' ').map(n => n[0]).join('')}
+                              {activity.user.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium">{booking.customer}</span>
+                          <span className="font-medium">{activity.user}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{booking.service}</TableCell>
-                      <TableCell>{booking.date}</TableCell>
+                      <TableCell>{activity.action}</TableCell>
+                      <TableCell>{activity.date}</TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            booking.status === "completed"
+                            activity.type === "security"
                               ? "default"
-                              : booking.status === "confirmed"
+                              : activity.type === "verification"
                               ? "secondary"
-                              : booking.status === "cancelled"
-                              ? "destructive"
                               : "outline"
                           }
                         >
-                          {booking.status}
+                          {activity.type}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {booking.amount}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -222,44 +205,76 @@ export default async function AdminDashboard() {
 
           <Card className="col-span-3">
             <CardHeader>
-              <CardTitle>Top Services</CardTitle>
+              <CardTitle>User Statistics</CardTitle>
               <CardDescription>
-                Best performing services this month
+                Overview of user account status
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {topServices.map((service, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{service.name}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {service.bookings} bookings
-                        </span>
-                        <Badge
-                          variant={service.growth > 0 ? "default" : "destructive"}
-                          className="text-xs"
-                        >
-                          {service.growth > 0 ? "+" : ""}{service.growth}%
-                        </Badge>
-                      </div>
-                    </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Active Users</p>
                     <div className="flex items-center gap-2">
-                      <div className="h-2 flex-1 rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{
-                            width: `${(service.bookings / 145) * 100}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium min-w-[80px] text-right">
-                        {service.revenue}
+                      <span className="text-sm text-muted-foreground">
+                        {activeUsers} of {totalUsers}
                       </span>
+                      <Badge variant="default" className="text-xs">
+                        {totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0}%
+                      </Badge>
                     </div>
                   </div>
-                ))}
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{
+                        width: `${totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Email Verified</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {verifiedUsers} users
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {verificationRate}%
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-green-500"
+                      style={{
+                        width: `${verificationRate}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">2FA Enabled</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {twoFactorUsers} users
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {twoFactorRate}%
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-blue-500"
+                      style={{
+                        width: `${twoFactorRate}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -302,28 +317,28 @@ export default async function AdminDashboard() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Payment Success Rate
+                    System Health
                   </CardTitle>
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">98.5%</div>
+                  <div className="text-2xl font-bold">99.9%</div>
                   <p className="text-xs text-muted-foreground">
-                    +2.1% from last month
+                    Uptime last 30 days
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Inventory Status
+                    Security Score
                   </CardTitle>
-                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <Shield className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">86%</div>
+                  <div className="text-2xl font-bold">A+</div>
                   <p className="text-xs text-muted-foreground">
-                    Vehicles available
+                    All security checks passed
                   </p>
                 </CardContent>
               </Card>

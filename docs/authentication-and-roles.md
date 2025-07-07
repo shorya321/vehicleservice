@@ -88,7 +88,7 @@ Customer
 
 1. **User submits registration form**
    ```typescript
-   // /app/register/page.tsx
+   // /app/(auth)/register/page.tsx
    const { error } = await supabase.auth.signUp({
      email: email,
      password: password,
@@ -138,13 +138,34 @@ Customer
 - **Admin User Creation**: `/admin/users/new`
 - **Bulk User Import**: `/admin/users/import`
 
+### Authentication Routes Structure
+
+All user authentication routes are organized using Next.js Route Groups:
+
+```
+app/
+└── (auth)/                  # Route group - doesn't affect URLs
+    ├── login/              # URL: /login
+    ├── register/           # URL: /register
+    ├── forgot-password/    # URL: /forgot-password
+    ├── reset-password/     # URL: /reset-password
+    ├── verify-email/       # URL: /verify-email
+    ├── logout/             # URL: /logout
+    └── unauthorized/       # URL: /unauthorized
+```
+
+This structure provides:
+- Clean URLs without `/auth/` prefix
+- Organized file structure for maintenance
+- Easy to add shared layouts or middleware for auth pages
+
 ## Login Process
 
 ### Standard Login Flow
 
 ```typescript
-// /app/login/page.tsx
-export async function login(email: string, password: string) {
+// /app/(auth)/login/actions.ts
+export async function userLogin(email: string, password: string) {
   const supabase = createClient()
   
   // 1. Authenticate with Supabase
@@ -219,7 +240,7 @@ export async function middleware(request: NextRequest) {
 
 1. **User requests password reset**
    ```typescript
-   // /app/forgot-password/page.tsx
+   // /app/(auth)/forgot-password/page.tsx
    const { error } = await supabase.auth.resetPasswordForEmail(email, {
      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
    })
@@ -229,7 +250,7 @@ export async function middleware(request: NextRequest) {
 
 3. **User submits new password**
    ```typescript
-   // /app/reset-password/page.tsx
+   // /app/(auth)/reset-password/page.tsx
    const { error } = await supabase.auth.updateUser({
      password: newPassword
    })
@@ -310,7 +331,7 @@ CREATE TABLE email_verification_tokens (
 
 2. **User clicks verification link**
    ```typescript
-   // /app/verify-email/page.tsx
+   // /app/(auth)/verify-email/page.tsx
    const { data: result } = await supabase
      .rpc('verify_email_with_token', { p_token: token })
    ```
@@ -388,16 +409,10 @@ const supabase = createClient({
 ### Logout Process
 
 ```typescript
-export async function logout() {
-  const supabase = createClient()
-  
-  // Log activity before logout
-  await logUserActivity(user.id, 'logout')
-  
-  // Clear session
+// /app/(auth)/logout/route.ts
+export async function GET() {
+  const supabase = await createClient()
   await supabase.auth.signOut()
-  
-  // Redirect to login
   redirect('/login')
 }
 ```

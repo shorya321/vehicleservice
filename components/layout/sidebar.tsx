@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
+  Building2,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -32,46 +33,22 @@ const navigation = [
     icon: LayoutDashboard,
     badge: null,
   },
-    {
+  {
     name: "Users",
     href: "/admin/users",
     icon: Users,
     badge: null,
   },
-    {
-    name: "Vehicles",
-    href: "/admin/vehicles",
-    icon: Package,
-    badge: null,
-  },
   {
-    name: "Bookings",
-    href: "/admin/bookings",
-    icon: Calendar,
-    badge: "3",
+    name: "Vendor Applications",
+    href: "/admin/vendor-applications",
+    icon: Building2,
+    badge: null,
   },
   {
     name: "Locations",
     href: "/admin/locations",
     icon: MapPin,
-    badge: null,
-  },
-  {
-    name: "Reports",
-    href: "/admin/reports",
-    icon: BarChart3,
-    badge: null,
-  },
-  {
-    name: "Payments",
-    href: "/admin/payments",
-    icon: CreditCard,
-    badge: null,
-  },
-  {
-    name: "Documents",
-    href: "/admin/documents",
-    icon: FileText,
     badge: null,
   },
 ]
