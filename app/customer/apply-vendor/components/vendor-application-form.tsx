@@ -38,11 +38,23 @@ const vendorApplicationSchema = z.object({
   businessCountryCode: z.string().default("AE"),
   businessDescription: z.string().optional(),
   registrationNumber: z.string().min(1, "Business registration number is required"),
-  // Documents (optional for initial application)
-  tradeLicenseNumber: z.string().optional(),
-  tradeLicenseExpiry: z.string().optional(),
-  insurancePolicyNumber: z.string().optional(),
-  insuranceExpiry: z.string().optional(),
+  // Documents (required for verification)
+  tradeLicenseNumber: z.string().min(1, "Trade license number is required"),
+  tradeLicenseExpiry: z.string().min(1, "Trade license expiry date is required").refine((date) => {
+    if (!date) return false
+    const expiryDate = new Date(date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return expiryDate > today
+  }, "Trade license expiry date must be in the future"),
+  insurancePolicyNumber: z.string().min(1, "Insurance policy number is required"),
+  insuranceExpiry: z.string().min(1, "Insurance expiry date is required").refine((date) => {
+    if (!date) return false
+    const expiryDate = new Date(date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return expiryDate > today
+  }, "Insurance expiry date must be in the future"),
   // Banking details (optional for initial application)
   bankName: z.string().optional(),
   accountHolderName: z.string().optional(),
@@ -300,12 +312,12 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
           )}
         />
 
-        {/* Optional Documents Section */}
+        {/* Required Documents Section */}
         <div className="space-y-4">
           <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4">Documents (Optional)</h3>
+            <h3 className="text-lg font-semibold mb-4">Documents (Required)</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              You can provide these details now or complete them later in your vendor profile
+              These documents are required for verification and approval of your vendor application
             </p>
             
             <div className="grid gap-6 md:grid-cols-2">
@@ -314,7 +326,7 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                 name="tradeLicenseNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Trade License Number</FormLabel>
+                    <FormLabel>Trade License Number *</FormLabel>
                     <FormControl>
                       <Input placeholder="TL-123456789" {...field} />
                     </FormControl>
@@ -328,7 +340,7 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                 name="tradeLicenseExpiry"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Trade License Expiry</FormLabel>
+                    <FormLabel>Trade License Expiry *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -342,7 +354,7 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                 name="insurancePolicyNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Insurance Policy Number</FormLabel>
+                    <FormLabel>Insurance Policy Number *</FormLabel>
                     <FormControl>
                       <Input placeholder="INS-123456789" {...field} />
                     </FormControl>
@@ -356,7 +368,7 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                 name="insuranceExpiry"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Insurance Expiry</FormLabel>
+                    <FormLabel>Insurance Expiry *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>

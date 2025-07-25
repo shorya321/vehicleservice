@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BusinessFormData } from "@/lib/types/business"
+import { VendorProfileFormData } from "@/lib/types/vendor-application"
 import { countries } from "@/lib/constants/countries"
 import { saveBusinessProfile } from "../actions"
 import { Loader2, Save, Upload, FileText, CreditCard } from "lucide-react"
@@ -48,7 +48,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<BusinessFormData>({
+  const form = useForm<VendorProfileFormData>({
     resolver: zodResolver(businessSchema),
     defaultValues: {
       business_name: initialData?.business_name || "",
@@ -73,7 +73,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
     },
   })
 
-  async function onSubmit(values: BusinessFormData) {
+  async function onSubmit(values: VendorProfileFormData) {
     setIsLoading(true)
     
     try {

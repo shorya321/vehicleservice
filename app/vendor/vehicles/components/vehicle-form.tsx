@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -12,9 +12,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Vehicle, VehicleFormData } from "@/lib/types/business"
-import { createVehicle, updateVehicle } from "../actions"
-import { Loader2, Save } from "lucide-react"
+import { Vehicle, VehicleFormData, VehicleType } from "@/lib/types/vehicle"
+import { VehicleCategory } from "@/lib/types/vehicle-category"
+import { VehicleFeature } from "@/lib/types/vehicle-feature"
+import { createVehicle, updateVehicle, getVehicleCategories, getVehicleTypesByCategory } from "../actions"
+import { getActiveVehicleFeatures } from "@/app/vendor/vehicle-features/actions"
+import { Loader2, Save, Check } from "lucide-react"
+import { ImageUpload } from "./image-upload"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const currentYear = new Date().getFullYear()
 
@@ -25,11 +30,14 @@ const vehicleSchema = z.object({
     .min(1900, "Year must be 1900 or later")
     .max(currentYear + 1, `Year cannot be more than ${currentYear + 1}`),
   registration_number: z.string().min(3, "Registration number is required"),
-  daily_rate: z.number().min(1, "Daily rate must be at least 1"),
+  category_id: z.string().min(1, "Category is required"),
+  vehicle_type_id: z.string().min(1, "Vehicle type is required"),
   fuel_type: z.enum(['petrol', 'diesel', 'electric', 'hybrid']).optional(),
   transmission: z.enum(['manual', 'automatic']).optional(),
   seats: z.number().min(1).max(20).optional(),
+  luggage_capacity: z.number().min(0).max(20).optional(),
   is_available: z.boolean().default(true),
+  feature_ids: z.array(z.string()).optional(),
 })
 
 interface VehicleFormProps {
@@ -40,6 +48,18 @@ interface VehicleFormProps {
 export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [uploadingImages, setUploadingImages] = useState(false)
+  const [primaryImageFile, setPrimaryImageFile] = useState<File | null>(null)
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+  const [primaryImage, setPrimaryImage] = useState<string>(initialData?.primary_image_url || "")
+  const [galleryImages, setGalleryImages] = useState<string[]>(initialData?.gallery_images || [])
+  const [categories, setCategories] = useState<VehicleCategory[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(true)
+  const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
+  const [loadingVehicleTypes, setLoadingVehicleTypes] = useState(true)
+  const [features, setFeatures] = useState<VehicleFeature[]>([])
+  const [loadingFeatures, setLoadingFeatures] = useState(true)
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleSchema),
@@ -48,21 +68,138 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
       model: initialData?.model || "",
       year: initialData?.year || currentYear,
       registration_number: initialData?.registration_number || "",
-      daily_rate: initialData?.daily_rate || 100,
+      category_id: initialData?.category_id || "",
+      vehicle_type_id: initialData?.vehicle_type_id || "",
       fuel_type: initialData?.fuel_type as any || 'petrol',
       transmission: initialData?.transmission as any || 'manual',
       seats: initialData?.seats || 5,
+      luggage_capacity: initialData?.luggage_capacity || 2,
       is_available: initialData?.is_available ?? true,
+      feature_ids: (initialData as any)?.feature_ids || [],
     },
   })
+
+  const watchedCategoryId = form.watch('category_id')
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Load categories
+        const categoriesResult = await getVehicleCategories()
+        if (categoriesResult.data) {
+          setCategories(categoriesResult.data)
+        }
+        
+        // Load active features
+        const featuresData = await getActiveVehicleFeatures()
+        setFeatures(featuresData)
+
+        // If editing and has a category, load vehicle types for that category
+        if (initialData?.category_id) {
+          setLoadingVehicleTypes(true)
+          try {
+            const types = await getVehicleTypesByCategory(initialData.category_id)
+            setVehicleTypes(types)
+          } catch (error) {
+            console.error("Failed to load initial vehicle types:", error)
+          } finally {
+            setLoadingVehicleTypes(false)
+          }
+        }
+      } catch (error) {
+        toast.error("Failed to load data")
+      } finally {
+        setLoadingCategories(false)
+        setLoadingFeatures(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  // Load vehicle types when category changes
+  useEffect(() => {
+    async function loadVehicleTypes() {
+      const categoryId = watchedCategoryId
+      if (!categoryId) {
+        setVehicleTypes([])
+        setLoadingVehicleTypes(false)
+        return
+      }
+
+      setLoadingVehicleTypes(true)
+      try {
+        const types = await getVehicleTypesByCategory(categoryId)
+        setVehicleTypes(types)
+        
+        // Clear vehicle type selection if it's not in the new category
+        const currentTypeId = form.getValues('vehicle_type_id')
+        if (currentTypeId && !types.find(t => t.id === currentTypeId)) {
+          form.setValue('vehicle_type_id', '')
+        }
+      } catch (error) {
+        toast.error("Failed to load vehicle types")
+      } finally {
+        setLoadingVehicleTypes(false)
+      }
+    }
+    
+    loadVehicleTypes()
+  }, [watchedCategoryId, form])
+
+  const handlePrimaryImageChange = (files: File[]) => {
+    if (files.length > 0) {
+      setPrimaryImageFile(files[0])
+      // Create preview URL
+      const url = URL.createObjectURL(files[0])
+      setPrimaryImage(url)
+    }
+  }
+
+  const handlePrimaryImageRemove = () => {
+    setPrimaryImageFile(null)
+    if (primaryImage.startsWith('blob:')) {
+      URL.revokeObjectURL(primaryImage)
+    }
+    setPrimaryImage("")
+  }
+
+  const handleGalleryImagesChange = (files: File[]) => {
+    setGalleryFiles(prev => [...prev, ...files])
+    // Create preview URLs
+    const urls = files.map(file => URL.createObjectURL(file))
+    setGalleryImages(prev => [...prev, ...urls])
+  }
+
+  const handleGalleryImageRemove = (index: number) => {
+    // Remove from files array
+    const removedFile = galleryFiles[index]
+    if (removedFile) {
+      setGalleryFiles(prev => prev.filter((_, i) => i !== index))
+    }
+    
+    // Remove from preview URLs
+    const removedUrl = galleryImages[index]
+    if (removedUrl && removedUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(removedUrl)
+    }
+    setGalleryImages(prev => prev.filter((_, i) => i !== index))
+  }
 
   async function onSubmit(values: VehicleFormData) {
     setIsLoading(true)
     
     try {
+      const formData = {
+        ...values,
+        primaryImageFile,
+        galleryFiles,
+        existingPrimaryImage: initialData?.primary_image_url || null,
+        existingGalleryImages: initialData?.gallery_images || []
+      }
+
       const result = initialData
-        ? await updateVehicle(initialData.id, businessId, values)
-        : await createVehicle(businessId, values)
+        ? await updateVehicle(initialData.id, businessId, formData)
+        : await createVehicle(businessId, formData)
       
       if (result.error) {
         toast.error(result.error)
@@ -163,6 +300,73 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={loadingCategories}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select vehicle category"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="vehicle_type_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vehicle Type</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={!form.watch('category_id') || loadingVehicleTypes}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          !form.watch('category_id') 
+                            ? "Select a category first" 
+                            : loadingVehicleTypes 
+                            ? "Loading vehicle types..." 
+                            : "Select vehicle type"
+                        } />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {vehicleTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name} ({type.passenger_capacity} passengers, {type.luggage_capacity} bags)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Vehicle type determines passenger and luggage capacity
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -233,18 +437,21 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
 
               <FormField
                 control={form.control}
-                name="daily_rate"
+                name="luggage_capacity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Daily Rate (AED)</FormLabel>
+                    <FormLabel>Luggage Capacity</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
-                        placeholder="100"
+                        placeholder="2"
                         {...field} 
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Number of luggage pieces
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -282,6 +489,105 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
                   </FormControl>
                 </FormItem>
               )}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Vehicle Features</CardTitle>
+            <CardDescription>
+              Select features available in this vehicle
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FormField
+              control={form.control}
+              name="feature_ids"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Available Features</FormLabel>
+                  {loadingFeatures ? (
+                    <div className="text-sm text-muted-foreground">Loading features...</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Group features by category */}
+                      {Object.entries(
+                        features.reduce((acc, feature) => {
+                          const category = feature.category || 'other'
+                          if (!acc[category]) acc[category] = []
+                          acc[category].push(feature)
+                          return acc
+                        }, {} as Record<string, VehicleFeature[]>)
+                      ).map(([category, categoryFeatures]) => (
+                        <div key={category}>
+                          <h4 className="text-sm font-medium mb-3 capitalize">{category}</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {categoryFeatures.map((feature) => (
+                              <div key={feature.id} className="flex items-start space-x-2">
+                                <Checkbox
+                                  id={feature.id}
+                                  checked={field.value?.includes(feature.id) || false}
+                                  onCheckedChange={(checked) => {
+                                    const current = field.value || []
+                                    if (checked) {
+                                      field.onChange([...current, feature.id])
+                                    } else {
+                                      field.onChange(current.filter(id => id !== feature.id))
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={feature.id}
+                                  className="text-sm font-normal cursor-pointer"
+                                >
+                                  {feature.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <FormDescription>
+                    Select all features that are available in this vehicle
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Vehicle Images</CardTitle>
+            <CardDescription>
+              Add photos to showcase your vehicle
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ImageUpload
+              label="Primary Image"
+              description="Main photo that will be displayed in search results"
+              value={primaryImage}
+              onChange={handlePrimaryImageChange}
+              onRemove={handlePrimaryImageRemove}
+              disabled={isLoading || uploadingImages}
+              uploading={uploadingImages}
+            />
+
+            <ImageUpload
+              label="Gallery Images"
+              description="Additional photos to showcase different angles and features"
+              value={galleryImages}
+              onChange={handleGalleryImagesChange}
+              onRemove={handleGalleryImageRemove}
+              multiple
+              maxFiles={10}
+              disabled={isLoading || uploadingImages}
+              uploading={uploadingImages}
             />
           </CardContent>
         </Card>

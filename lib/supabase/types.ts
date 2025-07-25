@@ -56,12 +56,14 @@ export type Database = {
           allow_pickup: boolean | null
           city: string | null
           country_code: string
+          country_slug: string
           created_at: string | null
           id: string
           is_active: boolean | null
           latitude: number | null
           longitude: number | null
           name: string
+          slug: string
           timezone: string | null
           type: Database["public"]["Enums"]["location_type"]
         }
@@ -71,12 +73,14 @@ export type Database = {
           allow_pickup?: boolean | null
           city?: string | null
           country_code: string
+          country_slug: string
           created_at?: string | null
           id?: string
           is_active?: boolean | null
           latitude?: number | null
           longitude?: number | null
           name: string
+          slug: string
           timezone?: string | null
           type: Database["public"]["Enums"]["location_type"]
         }
@@ -86,12 +90,14 @@ export type Database = {
           allow_pickup?: boolean | null
           city?: string | null
           country_code?: string
+          country_slug?: string
           created_at?: string | null
           id?: string
           is_active?: boolean | null
           latitude?: number | null
           longitude?: number | null
           name?: string
+          slug?: string
           timezone?: string | null
           type?: Database["public"]["Enums"]["location_type"]
         }
@@ -216,6 +222,195 @@ export type Database = {
         }
         Relationships: []
       }
+      route_searches: {
+        Row: {
+          destination_location_id: string | null
+          id: string
+          origin_location_id: string | null
+          passenger_count: number
+          route_id: string | null
+          search_date: string | null
+          searched_at: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          destination_location_id?: string | null
+          id?: string
+          origin_location_id?: string | null
+          passenger_count?: number
+          route_id?: string | null
+          search_date?: string | null
+          searched_at?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          destination_location_id?: string | null
+          id?: string
+          origin_location_id?: string | null
+          passenger_count?: number
+          route_id?: string | null
+          search_date?: string | null
+          searched_at?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_searches_destination_location_id_fkey"
+            columns: ["destination_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_searches_origin_location_id_fkey"
+            columns: ["origin_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_searches_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_searches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_vehicle_type_pricing: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          id: string
+          is_active: boolean | null
+          price: number
+          route_id: string | null
+          updated_at: string | null
+          vehicle_type_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          price: number
+          route_id?: string | null
+          updated_at?: string | null
+          vehicle_type_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          price?: number
+          route_id?: string | null
+          updated_at?: string | null
+          vehicle_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_vehicle_type_pricing_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_vehicle_type_pricing_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routes: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          created_by: string | null
+          created_by_type: string | null
+          destination_location_id: string
+          distance_km: number | null
+          estimated_duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          is_shared: boolean | null
+          origin_location_id: string
+          route_name: string
+          route_slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string | null
+          created_by?: string | null
+          created_by_type?: string | null
+          destination_location_id: string
+          distance_km?: number | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          is_shared?: boolean | null
+          origin_location_id: string
+          route_name: string
+          route_slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          created_by?: string | null
+          created_by_type?: string | null
+          destination_location_id?: string
+          distance_km?: number | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          is_shared?: boolean | null
+          origin_location_id?: string
+          route_name?: string
+          route_slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routes_destination_location_id_fkey"
+            columns: ["destination_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routes_origin_location_id_fkey"
+            columns: ["origin_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_activity_logs: {
         Row: {
           action: string
@@ -264,16 +459,174 @@ export type Database = {
           },
         ]
       }
+      vehicle_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          slug: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          slug: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vehicle_feature_mappings: {
+        Row: {
+          created_at: string | null
+          feature_id: string
+          id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          feature_id: string
+          id?: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string | null
+          feature_id?: string
+          id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_feature_mappings_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_feature_mappings_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_features: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      vehicle_types: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          luggage_capacity: number | null
+          name: string
+          passenger_capacity: number
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          luggage_capacity?: number | null
+          name: string
+          passenger_capacity: number
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          luggage_capacity?: number | null
+          name?: string
+          passenger_capacity?: number
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_types_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vehicles: {
         Row: {
           business_id: string
+          category_id: string | null
           created_at: string
-          daily_rate: number
-          features: Json | null
           fuel_type: string | null
           gallery_images: Json | null
           id: string
           is_available: boolean | null
+          luggage_capacity: number | null
           make: string
           model: string
           primary_image_url: string | null
@@ -281,17 +634,18 @@ export type Database = {
           seats: number | null
           transmission: string | null
           updated_at: string
+          vehicle_type_id: string | null
           year: number
         }
         Insert: {
           business_id: string
+          category_id?: string | null
           created_at?: string
-          daily_rate: number
-          features?: Json | null
           fuel_type?: string | null
           gallery_images?: Json | null
           id?: string
           is_available?: boolean | null
+          luggage_capacity?: number | null
           make: string
           model: string
           primary_image_url?: string | null
@@ -299,17 +653,18 @@ export type Database = {
           seats?: number | null
           transmission?: string | null
           updated_at?: string
+          vehicle_type_id?: string | null
           year: number
         }
         Update: {
           business_id?: string
+          category_id?: string | null
           created_at?: string
-          daily_rate?: number
-          features?: Json | null
           fuel_type?: string | null
           gallery_images?: Json | null
           id?: string
           is_available?: boolean | null
+          luggage_capacity?: number | null
           make?: string
           model?: string
           primary_image_url?: string | null
@@ -317,9 +672,32 @@ export type Database = {
           seats?: number | null
           transmission?: string | null
           updated_at?: string
+          vehicle_type_id?: string | null
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_vehicle_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicles_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendor_applications: {
         Row: {
@@ -402,6 +780,54 @@ export type Database = {
           },
         ]
       }
+      vendor_route_services: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          route_id: string
+          service_features: Json | null
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          route_id: string
+          service_features?: Json | null
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          route_id?: string
+          service_features?: Json | null
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_route_services_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_route_services_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -440,6 +866,18 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      get_popular_routes: {
+        Args: { limit_count?: number; days_back?: number }
+        Returns: {
+          route_id: string
+          route_name: string
+          route_slug: string
+          origin_name: string
+          destination_name: string
+          search_count: number
+          base_price: number
+        }[]
       }
       get_user_role: {
         Args: { user_id: string }

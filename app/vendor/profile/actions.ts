@@ -1,12 +1,12 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { BusinessFormData } from "@/lib/types/business"
+import { VendorProfileFormData } from "@/lib/types/vendor-application"
 import { revalidatePath } from "next/cache"
 
 export async function saveBusinessProfile(
   vendorId: string, 
-  data: BusinessFormData,
+  data: VendorProfileFormData,
   isUpdate: boolean
 ) {
   const supabase = await createClient()

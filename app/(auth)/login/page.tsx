@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { userLogin } from "./actions"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Car, Loader2, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [email, setEmail] = useState("")
@@ -135,12 +135,20 @@ export default function LoginPage() {
                 Forgot your password?
               </Link>
               <div>
-                Don't have an account? <Link href="/register" className="hover:underline text-primary font-medium">Register here</Link>
+                Don&apos;t have an account? <Link href="/register" className="hover:underline text-primary font-medium">Register here</Link>
               </div>
             </div>
           </CardFooter>
         </form>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

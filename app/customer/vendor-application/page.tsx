@@ -235,7 +235,34 @@ export default async function VendorApplicationPage() {
           </CardContent>
         </Card>
 
-        {/* Actions for rejected applications */}
+        {/* Actions based on status */}
+        {status === 'pending' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Application Actions</CardTitle>
+              <CardDescription>
+                You can update your application while it&apos;s under review
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Need to update your documents or business information? You can edit your application 
+                until it&apos;s reviewed by our team.
+              </p>
+              <div className="flex gap-4">
+                <Button asChild>
+                  <Link href="/customer/vendor-application/edit">
+                    Edit Application
+                  </Link>
+                </Button>
+                <Button variant="outline">
+                  Contact Support
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
         {status === 'rejected' && (
           <Card>
             <CardHeader>

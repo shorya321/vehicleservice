@@ -1,103 +1,138 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, Users, Building2 } from "lucide-react"
-import Link from "next/link"
+import { WorkingSearchWidget } from '@/components/search/working-search-widget'
+import { PopularRoutes } from '@/components/search/popular-routes'
+import { getPopularRoutes } from './actions'
+import { ArrowRight, Shield, Clock, CreditCard } from 'lucide-react'
+import Link from 'next/link'
+import { PublicLayout } from '@/components/layout/public-layout'
 
-export default function HomePage() {
+export const metadata = {
+  title: 'Book Reliable Transfers | Airport, Port & City Transfers',
+  description: 'Book comfortable and reliable transfers to airports, ports, and cities. Professional drivers, fixed prices, and 24/7 support.',
+}
+
+export default async function HomePage() {
+  let popularRoutes = []
+  try {
+    popularRoutes = await getPopularRoutes()
+  } catch (error) {
+    console.error('Error fetching popular routes:', error)
+    // Continue with empty array
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <div className="h-16 w-16 rounded-lg bg-primary flex items-center justify-center">
-              <Shield className="h-10 w-10 text-primary-foreground" />
+    <PublicLayout>
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+        <div className="container mx-auto px-4 py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+              Book Reliable Transfers<br />
+              <span className="text-primary">Anywhere, Anytime</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Professional drivers, comfortable vehicles, and fixed prices for airport, port, and city transfers.
+            </p>
+          </div>
+
+          {/* Search Widget */}
+          <div className="mt-12 max-w-5xl mx-auto">
+            <WorkingSearchWidget />
+          </div>
+
+          {/* Trust Badges */}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-3">
+              <Shield className="h-8 w-8 text-primary" />
+              <div className="text-left">
+                <div className="font-semibold">Safe & Reliable</div>
+                <div className="text-sm text-muted-foreground">Verified drivers & vehicles</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-3">
+              <Clock className="h-8 w-8 text-primary" />
+              <div className="text-left">
+                <div className="font-semibold">24/7 Service</div>
+                <div className="text-sm text-muted-foreground">Available round the clock</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-3">
+              <CreditCard className="h-8 w-8 text-primary" />
+              <div className="text-left">
+                <div className="font-semibold">Fixed Prices</div>
+                <div className="text-sm text-muted-foreground">No hidden charges</div>
+              </div>
             </div>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            User Management Platform
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive user and location management system for administrators, customers, and vendors
+        </div>
+      </section>
+
+      {/* Popular Routes Section */}
+      <section className="container mx-auto px-4 py-16">
+        <PopularRoutes routes={popularRoutes} />
+      </section>
+
+      {/* How It Works */}
+      <section className="bg-muted/50 py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto text-2xl font-bold">
+                1
+              </div>
+              <h3 className="text-xl font-semibold">Search & Select</h3>
+              <p className="text-muted-foreground">
+                Enter your pickup and drop-off locations to find available routes and vehicles
+              </p>
+            </div>
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto text-2xl font-bold">
+                2
+              </div>
+              <h3 className="text-xl font-semibold">Choose Vehicle</h3>
+              <p className="text-muted-foreground">
+                Select from a range of vehicles that suit your needs and budget
+              </p>
+            </div>
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto text-2xl font-bold">
+                3
+              </div>
+              <h3 className="text-xl font-semibold">Book & Travel</h3>
+              <p className="text-muted-foreground">
+                Complete your booking and receive instant confirmation with all details
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="bg-primary rounded-2xl p-8 md:p-12 text-center text-primary-foreground">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Book Your Transfer?
+          </h2>
+          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+            Join thousands of satisfied customers who trust us for their transfer needs
           </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Admin Portal</CardTitle>
-              <CardDescription>
-                Manage users, locations, and monitor system operations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild className="w-full">
-                <Link href="/admin/login">Admin Login</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-blue-500" />
-              </div>
-              <CardTitle>Customer</CardTitle>
-              <CardDescription>
-                Manage your profile, security settings, and notifications
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant="secondary" className="w-full">
-                <Link href="/customer/login">Customer Login</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-4">
-                <Building2 className="h-6 w-6 text-green-500" />
-              </div>
-              <CardTitle>Vendor</CardTitle>
-              <CardDescription>
-                Manage your team, business profile, and security settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant="secondary" className="w-full">
-                <Link href="/vendor/login">Vendor Login</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl font-semibold mb-4">Key Features</h2>
-          <div className="grid gap-4 md:grid-cols-3 max-w-4xl mx-auto text-sm">
-            <div className="p-4">
-              <h3 className="font-medium mb-2">Role-Based Access</h3>
-              <p className="text-muted-foreground">
-                Separate portals for admins, customers, and vendors with specific permissions
-              </p>
-            </div>
-            <div className="p-4">
-              <h3 className="font-medium mb-2">User Management</h3>
-              <p className="text-muted-foreground">
-                Comprehensive user profiles, activity tracking, and notification preferences
-              </p>
-            </div>
-            <div className="p-4">
-              <h3 className="font-medium mb-2">Secure Platform</h3>
-              <p className="text-muted-foreground">
-                Built with Supabase for secure authentication, 2FA support, and data protection
-              </p>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/search"
+              className="inline-flex items-center justify-center rounded-md bg-background text-primary px-6 py-3 font-semibold hover:bg-background/90 transition"
+            >
+              Start Booking
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              href="/how-it-works"
+              className="inline-flex items-center justify-center rounded-md border-2 border-primary-foreground text-primary-foreground px-6 py-3 font-semibold hover:bg-primary-foreground/10 transition"
+            >
+              Learn More
+            </Link>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </PublicLayout>
   )
 }

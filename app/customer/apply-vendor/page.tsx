@@ -54,7 +54,7 @@ export default async function ApplyVendorPage() {
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>Make sure you have all required business information ready</li>
               <li>Your application will be reviewed by our team within 48 hours</li>
-              <li>Once approved, you'll be able to list your vehicles immediately</li>
+              <li>Once approved, you&apos;ll be able to list your vehicles immediately</li>
               <li>There are no fees to join - we only charge a small commission on bookings</li>
             </ul>
           </AlertDescription>

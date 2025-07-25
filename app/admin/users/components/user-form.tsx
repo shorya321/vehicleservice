@@ -15,17 +15,20 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createUser, updateUser } from "../actions"
-import { User, UserFormData, CreateUserData, PasswordOption } from "@/lib/types/user"
-import { Loader2, Copy, Eye, EyeOff, RefreshCw } from "lucide-react"
+import { User, UserFormData, CreateUserData, PasswordOption, BusinessProfileData } from "@/lib/types/user"
+import { Loader2, Copy, Eye, EyeOff, RefreshCw, Building2, MapPin } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { generateSecurePassword, validatePasswordStrength } from "@/lib/utils/password"
+import { Textarea } from "@/components/ui/textarea"
+import { countries } from "@/lib/constants/countries"
 
 interface UserFormProps {
   user?: User | null
   mode: "create" | "edit"
+  businessProfile?: any // Business profile data if user is a vendor
 }
 
-export function UserForm({ user, mode }: UserFormProps) {
+export function UserForm({ user, mode, businessProfile }: UserFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +46,51 @@ export function UserForm({ user, mode }: UserFormProps) {
     role: user?.role || "customer",
     status: user?.status || "active",
     avatar_url: user?.avatar_url || "",
+    business_profile: user?.role === 'vendor' && businessProfile ? {
+      business_name: businessProfile.business_name || "",
+      business_email: businessProfile.business_email || "",
+      business_phone: businessProfile.business_phone || "",
+      business_address: businessProfile.address || "",
+      business_city: businessProfile.city || "",
+      business_country_code: businessProfile.country_code || "AE",
+      business_description: businessProfile.description || "",
+    } : user?.role === 'vendor' ? {
+      business_name: "",
+      business_email: "",
+      business_phone: "",
+      business_address: "",
+      business_city: "",
+      business_country_code: "AE",
+      business_description: "",
+    } : undefined,
   })
+
+  // Handle role change to add/remove business profile fields
+  const handleRoleChange = (newRole: string) => {
+    if (newRole === 'vendor' && !formData.business_profile) {
+      setFormData({
+        ...formData,
+        role: newRole as any,
+        business_profile: {
+          business_name: "",
+          business_email: formData.email,
+          business_phone: formData.phone || "",
+          business_address: "",
+          business_city: "",
+          business_country_code: "AE",
+          business_description: "",
+        }
+      })
+    } else if (newRole !== 'vendor' && formData.business_profile) {
+      const { business_profile, ...restData } = formData
+      setFormData({
+        ...restData,
+        role: newRole as any,
+      })
+    } else {
+      setFormData({ ...formData, role: newRole as any })
+    }
+  }
 
   const handleGeneratePassword = () => {
     const newPassword = generateSecurePassword(12)
@@ -79,6 +126,15 @@ export function UserForm({ user, mode }: UserFormProps) {
     setLoading(true)
 
     try {
+      // Validate vendor business fields
+      if (formData.role === 'vendor') {
+        if (!formData.business_profile?.business_name) {
+          setError('Business name is required for vendors')
+          setLoading(false)
+          return
+        }
+      }
+
       if (mode === "create") {
         // Validate password for custom option
         if (passwordOption === 'custom' && !customPassword) {
@@ -254,9 +310,7 @@ export function UserForm({ user, mode }: UserFormProps) {
               <Label htmlFor="role">Role</Label>
               <Select
                 value={formData.role}
-                onValueChange={(value: any) =>
-                  setFormData({ ...formData, role: value })
-                }
+                onValueChange={handleRoleChange}
                 disabled={loading}
               >
                 <SelectTrigger id="role">
@@ -294,6 +348,174 @@ export function UserForm({ user, mode }: UserFormProps) {
 
         </CardContent>
       </Card>
+
+      {formData.role === 'vendor' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Business Profile</CardTitle>
+            <CardDescription>
+              Business information for vendor account
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="business_name">Business Name *</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="business_name"
+                    placeholder="ABC Car Rentals"
+                    className="pl-10"
+                    value={formData.business_profile?.business_name || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        business_profile: {
+                          ...formData.business_profile!,
+                          business_name: e.target.value,
+                        },
+                      })
+                    }
+                    required={formData.role === 'vendor'}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="business_email">Business Email</Label>
+                <Input
+                  id="business_email"
+                  type="email"
+                  placeholder="contact@business.com"
+                  value={formData.business_profile?.business_email || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      business_profile: {
+                        ...formData.business_profile!,
+                        business_email: e.target.value,
+                      },
+                    })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="business_phone">Business Phone</Label>
+                <Input
+                  id="business_phone"
+                  type="tel"
+                  placeholder="+971 4 123 4567"
+                  value={formData.business_profile?.business_phone || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      business_profile: {
+                        ...formData.business_profile!,
+                        business_phone: e.target.value,
+                      },
+                    })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="business_country">Country</Label>
+                <Select
+                  value={formData.business_profile?.business_country_code || "AE"}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      business_profile: {
+                        ...formData.business_profile!,
+                        business_country_code: value,
+                      },
+                    })
+                  }
+                  disabled={loading}
+                >
+                  <SelectTrigger id="business_country">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="business_address">Business Address</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="business_address"
+                  placeholder="123 Main Street, Building A"
+                  className="pl-10"
+                  value={formData.business_profile?.business_address || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      business_profile: {
+                        ...formData.business_profile!,
+                        business_address: e.target.value,
+                      },
+                    })
+                  }
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="business_city">City</Label>
+              <Input
+                id="business_city"
+                placeholder="Dubai"
+                value={formData.business_profile?.business_city || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    business_profile: {
+                      ...formData.business_profile!,
+                      business_city: e.target.value,
+                    },
+                  })
+                }
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="business_description">Business Description</Label>
+              <Textarea
+                id="business_description"
+                placeholder="Describe your business, services offered, specialties..."
+                className="min-h-[100px]"
+                value={formData.business_profile?.business_description || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    business_profile: {
+                      ...formData.business_profile!,
+                      business_description: e.target.value,
+                    },
+                  })
+                }
+                disabled={loading}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {mode === "create" && (
         <Card>

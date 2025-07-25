@@ -18,15 +18,32 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Compass,
   Building2,
+  Tag,
+  ListChecks,
+  Route,
+  Layers,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { createClient } from "@/lib/supabase/client"
 
-const navigation = [
+interface NavItem {
+  name: string
+  href: string
+  icon: any
+  badge?: string | null
+  submenu?: {
+    name: string
+    href: string
+    icon: any
+  }[]
+}
+
+const navigation: NavItem[] = [
   {
     name: "Dashboard",
     href: "/admin/dashboard",
@@ -46,9 +63,43 @@ const navigation = [
     badge: null,
   },
   {
+    name: "Vehicles",
+    href: "/admin/vehicles",
+    icon: Car,
+    badge: null,
+    submenu: [
+      {
+        name: "All Vehicles",
+        href: "/admin/vehicles",
+        icon: Car,
+      },
+      {
+        name: "Categories",
+        href: "/admin/vehicle-categories",
+        icon: Tag,
+      },
+      {
+        name: "Vehicle Types",
+        href: "/admin/vehicle-types",
+        icon: Layers,
+      },
+      {
+        name: "Features",
+        href: "/admin/vehicle-features",
+        icon: ListChecks,
+      },
+    ]
+  },
+  {
     name: "Locations",
     href: "/admin/locations",
     icon: MapPin,
+    badge: null,
+  },
+  {
+    name: "Routes",
+    href: "/admin/routes",
+    icon: Route,
     badge: null,
   },
 ]
@@ -77,12 +128,21 @@ const bottomNavigation = [
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [userProfile, setUserProfile] = useState<{
     full_name: string | null
     email: string
     avatar_url: string | null
   } | null>(null)
   const supabase = createClient()
+
+  useEffect(() => {
+    // Auto-expand menu items that contain the current path
+    const itemsToExpand = navigation
+      .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
+      .map(item => item.name)
+    setExpandedItems(itemsToExpand)
+  }, [pathname])
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -147,7 +207,64 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-1 px-2 py-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || item.submenu?.some(sub => pathname.startsWith(sub.href))
+          const isExpanded = expandedItems.includes(item.name)
+          
+          if (item.submenu && !collapsed) {
+            return (
+              <div key={item.name}>
+                <button
+                  onClick={() => {
+                    setExpandedItems(prev =>
+                      prev.includes(item.name)
+                        ? prev.filter(name => name !== item.name)
+                        : [...prev, item.name]
+                    )
+                  }}
+                  className={cn(
+                    "group flex w-full items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-secondary text-secondary-foreground"
+                      : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+                  )}
+                >
+                  <div className="flex items-center">
+                    <item.icon className="h-5 w-5 flex-shrink-0 mr-3" />
+                    <span>{item.name}</span>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      isExpanded ? "rotate-180" : ""
+                    )}
+                  />
+                </button>
+                {isExpanded && (
+                  <div className="mt-1 ml-4 space-y-1 border-l-2 border-muted">
+                    {item.submenu.map((subItem) => {
+                      const isSubActive = pathname.startsWith(subItem.href)
+                      return (
+                        <Link
+                          key={subItem.name}
+                          href={subItem.href}
+                          className={cn(
+                            "group flex items-center rounded-md py-2 pl-6 pr-2 text-sm font-medium transition-all duration-200",
+                            isSubActive
+                              ? "bg-primary/10 text-primary border-l-2 border-primary -ml-[2px]"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-1"
+                          )}
+                        >
+                          <subItem.icon className="h-4 w-4 mr-3" />
+                          {subItem.name}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          }
+          
           return (
             <Link
               key={item.name}

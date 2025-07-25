@@ -42,7 +42,7 @@ const navigation = [
   { name: "Favorites", href: "/customer/favorites", icon: Heart },
   { name: "Payment Methods", href: "/customer/payments", icon: CreditCard },
   { name: "Booking History", href: "/customer/history", icon: History },
-  { name: "Profile", href: "/customer/profile", icon: User },
+  { name: "Account", href: "/customer/account", icon: User },
   { name: "Help & Support", href: "/customer/support", icon: HelpCircle },
   { name: "Settings", href: "/customer/settings", icon: Settings },
 ]
@@ -167,9 +167,9 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/customer/profile">
+                <Link href="/customer/account">
                   <User className="mr-2 h-4 w-4" />
-                  Profile
+                  My Account
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

@@ -19,6 +19,16 @@ export interface UserFilters {
   limit?: number
 }
 
+export interface BusinessProfileData {
+  business_name: string
+  business_email?: string
+  business_phone?: string
+  business_address?: string
+  business_city?: string
+  business_country_code?: string
+  business_description?: string
+}
+
 export interface UserFormData {
   email: string
   full_name: string
@@ -26,6 +36,8 @@ export interface UserFormData {
   role: UserRole
   status: UserStatus
   avatar_url?: string
+  // Business profile fields (only for vendors)
+  business_profile?: BusinessProfileData
 }
 
 export type PasswordOption = 'generate' | 'custom' | 'reset_link'

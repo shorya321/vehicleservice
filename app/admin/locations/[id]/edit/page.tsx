@@ -15,15 +15,16 @@ export const metadata: Metadata = {
 export default async function EditLocationPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createClient()
 
   // Fetch location by ID
   const { data: location, error } = await supabase
     .from('locations')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !location) {

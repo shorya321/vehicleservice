@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { StatCard } from "@/components/ui/stat-card"
+import { getVendorRouteMetrics } from "../routes/actions"
 import {
   Users,
   Clock,
@@ -16,6 +17,8 @@ import {
   Car,
   Star,
   TrendingUp,
+  Route,
+  Navigation,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -54,6 +57,16 @@ export default async function VendorDashboard() {
     .select('business_name, status')
     .eq('user_id', user.id)
     .single()
+
+  // Get route metrics
+  let routeMetrics = { activeRoutes: 0, totalRoutes: 0, totalSearches: 0 }
+  try {
+    if (vendorApplication?.status === 'approved') {
+      routeMetrics = await getVendorRouteMetrics()
+    }
+  } catch (error) {
+    console.error('Error fetching route metrics:', error)
+  }
   
   return (
     <VendorLayout>
@@ -63,7 +76,7 @@ export default async function VendorDashboard() {
             Vendor Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Welcome back, {vendorApplication?.business_name || user.profile?.full_name || 'Vendor'}! Here's your business overview.
+            Welcome back, {vendorApplication?.business_name || user.profile?.full_name || 'Vendor'}! Here&apos;s your business overview.
           </p>
         </div>
 
@@ -93,32 +106,32 @@ export default async function VendorDashboard() {
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Team Members"
-            value="8"
-            description="Active team members"
-            icon={Users}
+            title="Active Routes"
+            value={routeMetrics.activeRoutes.toString()}
+            description="Routes you currently serve"
+            icon={Route}
             trend={{ value: 12.5, isPositive: true }}
           />
           <StatCard
-            title="Active Sessions"
-            value="23"
-            description="Currently online"
-            icon={Activity}
+            title="Total Routes"
+            value={routeMetrics.totalRoutes.toString()}
+            description="Routes you've joined"
+            icon={Navigation}
             trend={{ value: 8.2, isPositive: true }}
           />
           <StatCard
-            title="Security Score"
-            value="95%"
-            description="Account security level"
-            icon={Shield}
-            trend={{ value: 5, isPositive: true }}
+            title="Route Searches"
+            value={routeMetrics.totalSearches.toString()}
+            description="Searches on your routes"
+            icon={TrendingUp}
+            trend={{ value: 15, isPositive: true }}
           />
           <StatCard
-            title="Response Time"
-            value="< 2h"
-            description="Average response"
-            icon={Clock}
-            trend={{ value: 15, isPositive: true }}
+            title="Coverage"
+            value={routeMetrics.totalRoutes > 0 ? `${Math.round((routeMetrics.activeRoutes / routeMetrics.totalRoutes) * 100)}%` : "0%"}
+            description="Route coverage percentage"
+            icon={BarChart3}
+            trend={{ value: 5, isPositive: true }}
           />
         </div>
 
@@ -223,6 +236,12 @@ export default async function VendorDashboard() {
             </CardHeader>
             <CardContent className="grid gap-4">
               <Button asChild className="w-full justify-start">
+                <Link href="/vendor/routes">
+                  <Route className="mr-2 h-4 w-4" />
+                  Manage Routes
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/vendor/vehicles">
                   <Car className="mr-2 h-4 w-4" />
                   Manage Vehicles
@@ -238,12 +257,6 @@ export default async function VendorDashboard() {
                 <Link href="/vendor/analytics">
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Analytics
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full justify-start">
-                <Link href="/vendor/settings">
-                  <Shield className="mr-2 h-4 w-4" />
-                  Security Settings
                 </Link>
               </Button>
             </CardContent>

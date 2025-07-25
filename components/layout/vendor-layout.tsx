@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -29,14 +29,49 @@ import {
   MessageSquare,
   Star,
   FileText,
+  Car,
+  UserCircle,
+  ListChecks,
+  ChevronDown,
+  ChevronRight,
+  Navigation,
 } from "lucide-react"
 
 interface VendorLayoutProps {
   children: React.ReactNode
 }
 
-const navigation = [
+interface NavItem {
+  name: string
+  href: string
+  icon: any
+  submenu?: {
+    name: string
+    href: string
+    icon: any
+  }[]
+}
+
+const navigation: NavItem[] = [
   { name: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
+  { 
+    name: "Vehicles", 
+    href: "/vendor/vehicles", 
+    icon: Car,
+    submenu: [
+      {
+        name: "My Vehicles",
+        href: "/vendor/vehicles",
+        icon: Car,
+      },
+      {
+        name: "Vehicle Features",
+        href: "/vendor/vehicle-features",
+        icon: ListChecks,
+      },
+    ]
+  },
+  { name: "Routes", href: "/vendor/routes", icon: Navigation },
   { name: "My Services", href: "/vendor/services", icon: Package },
   { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
   { name: "Earnings", href: "/vendor/earnings", icon: DollarSign },
@@ -44,17 +79,27 @@ const navigation = [
   { name: "Reviews", href: "/vendor/reviews", icon: Star },
   { name: "Messages", href: "/vendor/messages", icon: MessageSquare },
   { name: "Reports", href: "/vendor/reports", icon: FileText },
-  { name: "Profile", href: "/vendor/profile", icon: User },
+  { name: "Business Profile", href: "/vendor/profile", icon: User },
+  { name: "Account", href: "/vendor/account", icon: UserCircle },
   { name: "Settings", href: "/vendor/settings", icon: Settings },
 ]
 
 export function VendorLayout({ children }: VendorLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   const handleLogout = async () => {
     await userLogout()
   }
+
+  // Auto-expand menu items that contain the current path
+  useEffect(() => {
+    const itemsToExpand = navigation
+      .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
+      .map(item => item.name)
+    setExpandedItems(itemsToExpand)
+  }, [pathname])
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,21 +140,76 @@ export function VendorLayout({ children }: VendorLayoutProps) {
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-4">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || item.submenu?.some(sub => pathname.startsWith(sub.href))
+              const isExpanded = expandedItems.includes(item.name)
+              
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                <div key={item.name}>
+                  {item.submenu ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setExpandedItems(prev =>
+                            prev.includes(item.name)
+                              ? prev.filter(i => i !== item.name)
+                              : [...prev, item.name]
+                          )
+                        }}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="h-5 w-5" />
+                          {item.name}
+                        </div>
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      {isExpanded && (
+                        <div className="ml-4 mt-1 space-y-1 border-l-2 border-muted">
+                          {item.submenu.map(subItem => {
+                            const isSubActive = pathname.startsWith(subItem.href)
+                            return (
+                              <Link
+                                key={subItem.name}
+                                href={subItem.href}
+                                className={cn(
+                                  "flex items-center gap-3 rounded-lg px-3 py-2 ml-2 text-sm transition-all duration-200",
+                                  isSubActive
+                                    ? "bg-primary/10 text-primary border-l-2 border-primary -ml-[2px]"
+                                    : "text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-1"
+                                )}
+                              >
+                                <subItem.icon className="h-4 w-4" />
+                                {subItem.name}
+                              </Link>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.name}
+                    </Link>
                   )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.name}
-                </Link>
+                </div>
               )
             })}
           </nav>
@@ -167,6 +267,12 @@ export function VendorLayout({ children }: VendorLayoutProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/vendor/account">
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  My Account
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/vendor/profile">
                   <User className="mr-2 h-4 w-4" />

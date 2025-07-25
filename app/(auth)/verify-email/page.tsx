@@ -12,13 +12,14 @@ export const metadata: Metadata = {
 }
 
 interface VerifyEmailPageProps {
-  searchParams: {
+  searchParams: Promise<{
     token?: string
-  }
+  }>
 }
 
 export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
-  const { token } = searchParams
+  const params = await searchParams
+  const { token } = params
   
   if (!token) {
     return (

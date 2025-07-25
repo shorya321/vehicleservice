@@ -169,6 +169,35 @@ export async function createUser(data: CreateUserData) {
       return { error: 'Failed to create user profile' }
     }
 
+    // Create vendor application if user is a vendor
+    if (data.role === 'vendor' && data.business_profile) {
+      // Create vendor application with approved status
+      const { data: vendorApp, error: appError } = await adminClient
+        .from('vendor_applications')
+        .insert({
+          user_id: authData.user.id,
+          business_name: data.business_profile.business_name,
+          business_email: data.business_profile.business_email || data.email,
+          business_phone: data.business_profile.business_phone || data.phone,
+          business_address: data.business_profile.business_address || null,
+          business_city: data.business_profile.business_city || null,
+          business_country_code: data.business_profile.business_country_code || 'AE',
+          business_description: data.business_profile.business_description || null,
+          status: 'approved',
+          reviewed_at: new Date().toISOString(),
+          admin_notes: 'Created directly by admin',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (appError) {
+        console.error('Vendor application creation error:', appError)
+        // Don't fail the user creation, but log the error
+      }
+    }
+
     // Send password reset email if requested
     if (data.password_option === 'reset_link') {
       const supabase = await createClient()
@@ -198,8 +227,20 @@ export async function createUser(data: CreateUserData) {
 
 export async function updateUser(id: string, data: UserFormData) {
   const supabase = await createClient()
+  const adminClient = createAdminClient()
   
   try {
+    // Get current user data
+    const { data: currentUser } = await supabase
+      .from('profiles')
+      .select('email, role')
+      .eq('id', id)
+      .single()
+
+    if (!currentUser) {
+      return { error: 'User not found' }
+    }
+
     // Update profile
     const { error } = await supabase
       .from('profiles')
@@ -216,15 +257,68 @@ export async function updateUser(id: string, data: UserFormData) {
       return { error: 'Failed to update user' }
     }
 
-    // Update email if changed
-    const { data: currentUser } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('id', id)
-      .single()
+    // Handle vendor application and business profile updates
+    if (data.role === 'vendor' && data.business_profile) {
+      // Check if vendor application exists
+      const { data: existingApp } = await supabase
+        .from('vendor_applications')
+        .select('id')
+        .eq('user_id', id)
+        .single()
 
-    if (currentUser?.email !== data.email) {
-      const adminClient = createAdminClient()
+      if (existingApp) {
+        // Update existing vendor application
+        const { error: appUpdateError } = await supabase
+          .from('vendor_applications')
+          .update({
+            business_name: data.business_profile.business_name,
+            business_email: data.business_profile.business_email || data.email,
+            business_phone: data.business_profile.business_phone || data.phone,
+            business_address: data.business_profile.business_address || null,
+            business_city: data.business_profile.business_city || null,
+            business_country_code: data.business_profile.business_country_code || 'AE',
+            business_description: data.business_profile.business_description || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', id)
+
+        if (appUpdateError) {
+          console.error('Vendor application update error:', appUpdateError)
+          return { error: 'Failed to update vendor application' }
+        }
+      } else {
+        // Create new vendor application for existing user becoming vendor
+        const { error: appCreateError } = await supabase
+          .from('vendor_applications')
+          .insert({
+            user_id: id,
+            business_name: data.business_profile.business_name,
+            business_email: data.business_profile.business_email || data.email,
+            business_phone: data.business_profile.business_phone || data.phone,
+            business_address: data.business_profile.business_address || null,
+            business_city: data.business_profile.business_city || null,
+            business_country_code: data.business_profile.business_country_code || 'AE',
+            business_description: data.business_profile.business_description || null,
+            status: 'approved',
+            reviewed_at: new Date().toISOString(),
+            admin_notes: 'Converted to vendor by admin',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+
+        if (appCreateError) {
+          console.error('Vendor application creation error:', appCreateError)
+          return { error: 'Failed to create vendor application' }
+        }
+      }
+
+    } else if (currentUser.role === 'vendor' && data.role !== 'vendor') {
+      // User was a vendor but is changing to another role
+      // Note: We don't delete vendor_applications as it serves as historical record
+    }
+
+    // Update email if changed
+    if (currentUser.email !== data.email) {
       const { error: authError } = await adminClient.auth.admin.updateUserById(
         id,
         { email: data.email }

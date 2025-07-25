@@ -64,7 +64,7 @@ export default async function CustomerDashboard() {
             Welcome back, {user.profile?.full_name || 'Customer'}!
           </h1>
           <p className="text-muted-foreground">
-            Here's an overview of your account and activities
+            Here&apos;s an overview of your account and activities
           </p>
         </div>
 

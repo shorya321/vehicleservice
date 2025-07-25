@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Widget Test Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .code-block {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .finding {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            background: #f9f9f9;
+        }
+        .issue {
+            border-left-color: #ff9800;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vehicle Service Search Widget Analysis</h1>
+    
+    <div class="test-section">
+        <h2>Component Structure Analysis</h2>
+        <div class="finding">
+            <strong>Search Widget Location:</strong> The main search widget is implemented in <code>/components/search/search-widget.tsx</code>
+        </div>
+        <div class="finding">
+            <strong>Autocomplete Component:</strong> Location autocomplete is handled by <code>/components/search/location-autocomplete.tsx</code>
+        </div>
+        <div class="finding">
+            <strong>Input Fields:</strong> The search widget contains two LocationAutocomplete components - one for "From" and one for "To"
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Autocomplete Functionality Details</h2>
+        <div class="finding">
+            <strong>Trigger:</strong> Autocomplete activates when user types at least 2 characters
+        </div>
+        <div class="finding">
+            <strong>Debounce:</strong> 300ms debounce on typing to reduce API calls
+        </div>
+        <div class="finding">
+            <strong>Data Source:</strong> Queries Supabase 'locations' table with filtering on name and city
+        </div>
+        <div class="finding">
+            <strong>Results Limit:</strong> Maximum 10 results shown
+        </div>
+        <div class="finding">
+            <strong>Sorting:</strong> Results are sorted by type (descending) then by name
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Behavior</h2>
+        <div class="finding">
+            <strong>From Field:</strong>
+            <ul>
+                <li>Placeholder text: "From (airport, port, address)"</li>
+                <li>When clicking, input should be focused</li>
+                <li>Typing "Delhi" should trigger autocomplete after 2 characters</li>
+                <li>Loading spinner appears while searching</li>
+                <li>Dropdown shows matching locations with icons</li>
+            </ul>
+        </div>
+        <div class="finding">
+            <strong>To Field:</strong>
+            <ul>
+                <li>Placeholder text: "To (airport, port, address)"</li>
+                <li>Same behavior as From field</li>
+                <li>Typing "Mumbai" should show Mumbai-related locations</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Potential Issues to Check</h2>
+        <div class="finding issue">
+            <strong>Database Connection:</strong> Ensure Supabase is properly configured and locations table has data
+        </div>
+        <div class="finding issue">
+            <strong>CORS Issues:</strong> Check browser console for any CORS-related errors when making Supabase requests
+        </div>
+        <div class="finding issue">
+            <strong>Empty Results:</strong> If no locations appear, verify the locations table has entries for Delhi and Mumbai
+        </div>
+        <div class="finding issue">
+            <strong>Component Rendering:</strong> Check if Popover/Command components are properly imported and styled
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Error Checks</h2>
+        <div class="code-block">
+// Common errors to look for:
+1. "Error searching locations:" - Database query failed
+2. Network errors - Supabase connection issues
+3. React hydration errors - Server/client mismatch
+4. Missing environment variables - NEXT_PUBLIC_SUPABASE_URL/ANON_KEY
+5. TypeScript errors - Type mismatches in Location interface
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Manual Testing Steps</h2>
+        <ol>
+            <li>Open browser developer tools (F12)</li>
+            <li>Go to Console tab</li>
+            <li>Navigate to http://localhost:3001</li>
+            <li>Click on the "From" input field</li>
+            <li>Type "De" (should not trigger autocomplete yet)</li>
+            <li>Type "l" to make it "Del" (should trigger autocomplete after 300ms)</li>
+            <li>Check console for any errors</li>
+            <li>Check Network tab for Supabase API calls</li>
+            <li>Repeat for "To" field with "Mumbai"</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Database Query Check</h2>
+        <div class="code-block">
+-- The component executes this query:
+SELECT * FROM locations 
+WHERE is_active = true 
+AND (name ILIKE '%Delhi%' OR city ILIKE '%Delhi%')
+ORDER BY type DESC, name ASC
+LIMIT 10;
+        </div>
+    </div>
+</body>
+</html>

@@ -7,8 +7,8 @@ import { Toaster } from 'sonner'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Vehicle Service Admin',
-  description: 'Modern admin dashboard for vehicle service management',
+  title: 'Vehicle Service',
+  description: 'Modern platform for vehicle service management',
 }
 
 export default function RootLayout({

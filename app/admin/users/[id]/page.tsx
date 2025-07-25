@@ -5,6 +5,7 @@ import { getUser } from "../actions"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/server"
 
 interface EditUserPageProps {
   params: {
@@ -17,6 +18,30 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
 
   if (!user) {
     notFound()
+  }
+
+  // Fetch vendor application if user is a vendor
+  let businessProfile = null
+  if (user.role === 'vendor') {
+    const supabase = await createClient()
+    const { data: vendorApp } = await supabase
+      .from('vendor_applications')
+      .select('*')
+      .eq('user_id', params.id)
+      .single()
+    
+    // Convert vendor_applications fields to match business profile format
+    if (vendorApp) {
+      businessProfile = {
+        business_name: vendorApp.business_name,
+        business_email: vendorApp.business_email,
+        business_phone: vendorApp.business_phone,
+        address: vendorApp.business_address,
+        city: vendorApp.business_city,
+        country_code: vendorApp.business_country_code,
+        description: vendorApp.business_description,
+      }
+    }
   }
 
   return (
@@ -36,7 +61,7 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
           </div>
         </div>
 
-        <UserForm mode="edit" user={user} />
+        <UserForm mode="edit" user={user} businessProfile={businessProfile} />
       </div>
     </AdminLayout>
   )

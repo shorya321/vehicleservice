@@ -4,7 +4,7 @@ export type Location = Database['public']['Tables']['locations']['Row']
 export type LocationInsert = Database['public']['Tables']['locations']['Insert']
 export type LocationUpdate = Database['public']['Tables']['locations']['Update']
 
-export type LocationType = 'airport' | 'city' | 'hotel' | 'station'
+export type LocationType = Database['public']['Enums']['location_type']
 export type LocationStatus = 'active' | 'inactive'
 
 export interface LocationFilters {

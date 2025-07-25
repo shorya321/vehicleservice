@@ -1,14 +1,96 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { VehicleFormData } from "@/lib/types/business"
+import { Vehicle, VehicleFormData, VehicleFilters } from "@/lib/types/vehicle"
+import { VehicleCategory } from "@/lib/types/vehicle-category"
 import { revalidatePath } from "next/cache"
+
+export async function getVehicles(businessId: string, filters: VehicleFilters): Promise<{
+  vehicles: (Vehicle & { category?: VehicleCategory | null })[]
+  total: number
+  page: number
+  totalPages: number
+}> {
+  const supabase = await createClient()
+  
+  const page = filters.page || 1
+  const limit = filters.limit || 10
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  let query = supabase
+    .from('vehicles')
+    .select(`
+      *,
+      category:vehicle_categories(*)
+    `, { count: 'exact' })
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  // Search filter
+  if (filters.search) {
+    query = query.or(`make.ilike.%${filters.search}%,model.ilike.%${filters.search}%,registration_number.ilike.%${filters.search}%`)
+  }
+
+  // Status filter
+  if (filters.status === 'available') {
+    query = query.eq('is_available', true)
+  } else if (filters.status === 'unavailable') {
+    query = query.eq('is_available', false)
+  }
+
+  // Category filter
+  if (filters.categoryId && filters.categoryId !== 'all') {
+    query = query.eq('category_id', filters.categoryId)
+  }
+
+  // Fuel type filter
+  if (filters.fuelType && filters.fuelType !== 'all') {
+    query = query.eq('fuel_type', filters.fuelType)
+  }
+
+  // Transmission filter
+  if (filters.transmission && filters.transmission !== 'all') {
+    query = query.eq('transmission', filters.transmission)
+  }
+
+  // Price range filter
+  if (filters.minPrice !== undefined) {
+    query = query.gte('daily_rate', filters.minPrice)
+  }
+  if (filters.maxPrice !== undefined) {
+    query = query.lte('daily_rate', filters.maxPrice)
+  }
+
+  // Seats filter
+  if (filters.seats) {
+    query = query.eq('seats', filters.seats)
+  }
+
+  const { data: vehicles, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching vehicles:', error)
+    return { vehicles: [], total: 0, page, totalPages: 0 }
+  }
+
+  const total = count || 0
+  const totalPages = Math.ceil(total / limit)
+
+  return {
+    vehicles: vehicles || [],
+    total,
+    page,
+    totalPages
+  }
+}
 
 export async function toggleVehicleAvailability(
   vehicleId: string,
   businessId: string,
   isAvailable: boolean
-) {
+): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient()
 
   try {
@@ -31,7 +113,7 @@ export async function toggleVehicleAvailability(
   }
 }
 
-export async function deleteVehicle(vehicleId: string, businessId: string) {
+export async function deleteVehicle(vehicleId: string, businessId: string): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient()
 
   try {
@@ -54,11 +136,65 @@ export async function deleteVehicle(vehicleId: string, businessId: string) {
   }
 }
 
-export async function createVehicle(businessId: string, data: VehicleFormData) {
+export async function bulkDeleteVehicles(vehicleIds: string[], businessId: string): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient()
 
   try {
     const { error } = await supabase
+      .from('vehicles')
+      .delete()
+      .in('id', vehicleIds)
+      .eq('business_id', businessId)
+
+    if (error) {
+      console.error('Error deleting vehicles:', error)
+      return { error: error.message }
+    }
+
+    revalidatePath('/vendor/vehicles')
+    return { success: true }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function bulkToggleAvailability(
+  vehicleIds: string[], 
+  businessId: string, 
+  isAvailable: boolean
+): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient()
+
+  try {
+    const { error } = await supabase
+      .from('vehicles')
+      .update({ is_available: isAvailable })
+      .in('id', vehicleIds)
+      .eq('business_id', businessId)
+
+    if (error) {
+      console.error('Error updating vehicles availability:', error)
+      return { error: error.message }
+    }
+
+    revalidatePath('/vendor/vehicles')
+    return { success: true }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function createVehicle(businessId: string, data: VehicleFormData & {
+  primaryImageFile?: File
+  galleryFiles?: File[]
+}): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient()
+
+  try {
+    // First create the vehicle record
+    const { data: vehicle, error: vehicleError } = await supabase
       .from('vehicles')
       .insert({
         business_id: businessId,
@@ -66,17 +202,100 @@ export async function createVehicle(businessId: string, data: VehicleFormData) {
         model: data.model,
         year: data.year,
         registration_number: data.registration_number,
-        daily_rate: data.daily_rate,
+        category_id: data.category_id,
+        vehicle_type_id: data.vehicle_type_id,
         fuel_type: data.fuel_type || null,
         transmission: data.transmission || null,
         seats: data.seats || null,
-        features: data.features || [],
+        luggage_capacity: data.luggage_capacity || 2,
         is_available: data.is_available,
       })
+      .select()
+      .single()
 
-    if (error) {
-      console.error('Error creating vehicle:', error)
-      return { error: error.message }
+    if (vehicleError) {
+      console.error('Error creating vehicle:', vehicleError)
+      return { error: vehicleError.message }
+    }
+
+    // Upload images if provided
+    let primaryImageUrl = null
+    let galleryImageUrls = []
+
+    if (data.primaryImageFile || data.galleryFiles?.length > 0) {
+      const vehicleId = vehicle.id
+      const folderPath = `vehicles/${businessId}/${vehicleId}`
+
+      // Upload primary image
+      if (data.primaryImageFile) {
+        const primaryImagePath = `${folderPath}/primary-${Date.now()}.${data.primaryImageFile.name.split('.').pop()}`
+        const { error: uploadError } = await supabase.storage
+          .from('vehicle-images')
+          .upload(primaryImagePath, data.primaryImageFile, {
+            cacheControl: '3600',
+            upsert: false
+          })
+
+        if (uploadError) {
+          console.error('Error uploading primary image:', uploadError)
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('vehicle-images')
+            .getPublicUrl(primaryImagePath)
+          primaryImageUrl = publicUrl
+        }
+      }
+
+      // Upload gallery images
+      if (data.galleryFiles?.length > 0) {
+        for (let i = 0; i < data.galleryFiles.length; i++) {
+          const file = data.galleryFiles[i]
+          const galleryImagePath = `${folderPath}/gallery-${i}-${Date.now()}.${file.name.split('.').pop()}`
+          
+          const { error: uploadError } = await supabase.storage
+            .from('vehicle-images')
+            .upload(galleryImagePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            })
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('vehicle-images')
+              .getPublicUrl(galleryImagePath)
+            galleryImageUrls.push(publicUrl)
+          }
+        }
+      }
+
+      // Update vehicle with image URLs
+      const { error: updateError } = await supabase
+        .from('vehicles')
+        .update({
+          primary_image_url: primaryImageUrl,
+          gallery_images: galleryImageUrls
+        })
+        .eq('id', vehicleId)
+
+      if (updateError) {
+        console.error('Error updating vehicle with images:', updateError)
+      }
+    }
+
+    // Handle feature mappings
+    if (data.feature_ids && data.feature_ids.length > 0) {
+      const featureMappings = data.feature_ids.map(featureId => ({
+        vehicle_id: vehicle.id,
+        feature_id: featureId
+      }))
+
+      const { error: featureError } = await supabase
+        .from('vehicle_feature_mappings')
+        .insert(featureMappings)
+
+      if (featureError) {
+        console.error('Error adding vehicle features:', featureError)
+      }
     }
 
     revalidatePath('/vendor/vehicles')
@@ -90,11 +309,17 @@ export async function createVehicle(businessId: string, data: VehicleFormData) {
 export async function updateVehicle(
   vehicleId: string,
   businessId: string,
-  data: VehicleFormData
-) {
+  data: VehicleFormData & {
+    primaryImageFile?: File
+    galleryFiles?: File[]
+    existingPrimaryImage?: string
+    existingGalleryImages?: string[]
+  }
+): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient()
 
   try {
+    // Update basic vehicle data
     const { error } = await supabase
       .from('vehicles')
       .update({
@@ -102,11 +327,12 @@ export async function updateVehicle(
         model: data.model,
         year: data.year,
         registration_number: data.registration_number,
-        daily_rate: data.daily_rate,
+        category_id: data.category_id,
+        vehicle_type_id: data.vehicle_type_id,
         fuel_type: data.fuel_type || null,
         transmission: data.transmission || null,
         seats: data.seats || null,
-        features: data.features || [],
+        luggage_capacity: data.luggage_capacity || 2,
         is_available: data.is_available,
       })
       .eq('id', vehicleId)
@@ -117,6 +343,106 @@ export async function updateVehicle(
       return { error: error.message }
     }
 
+    // Handle image updates
+    let primaryImageUrl = data.existingPrimaryImage
+    let galleryImageUrls = [...(data.existingGalleryImages || [])]
+
+    const folderPath = `vehicles/${businessId}/${vehicleId}`
+
+    // Upload new primary image if provided
+    if (data.primaryImageFile) {
+      // Delete old primary image if it exists
+      if (primaryImageUrl) {
+        const oldPath = primaryImageUrl.split('/').slice(-4).join('/')
+        await supabase.storage
+          .from('vehicle-images')
+          .remove([oldPath])
+      }
+
+      const primaryImagePath = `${folderPath}/primary-${Date.now()}.${data.primaryImageFile.name.split('.').pop()}`
+      const { error: uploadError } = await supabase.storage
+        .from('vehicle-images')
+        .upload(primaryImagePath, data.primaryImageFile, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) {
+        console.error('Error uploading primary image:', uploadError)
+      } else {
+        const { data: { publicUrl } } = supabase.storage
+          .from('vehicle-images')
+          .getPublicUrl(primaryImagePath)
+        primaryImageUrl = publicUrl
+      }
+    }
+
+    // Upload new gallery images if provided
+    if (data.galleryFiles?.length > 0) {
+      const newGalleryUrls = []
+      
+      for (let i = 0; i < data.galleryFiles.length; i++) {
+        const file = data.galleryFiles[i]
+        const galleryImagePath = `${folderPath}/gallery-${galleryImageUrls.length + i}-${Date.now()}.${file.name.split('.').pop()}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('vehicle-images')
+          .upload(galleryImagePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          })
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('vehicle-images')
+            .getPublicUrl(galleryImagePath)
+          newGalleryUrls.push(publicUrl)
+        }
+      }
+      
+      galleryImageUrls = [...galleryImageUrls, ...newGalleryUrls]
+    }
+
+    // Update vehicle with new image URLs
+    const { error: updateError } = await supabase
+      .from('vehicles')
+      .update({
+        primary_image_url: primaryImageUrl,
+        gallery_images: galleryImageUrls
+      })
+      .eq('id', vehicleId)
+
+    if (updateError) {
+      console.error('Error updating vehicle images:', updateError)
+    }
+
+    // Handle feature mappings
+    // First delete existing mappings
+    const { error: deleteError } = await supabase
+      .from('vehicle_feature_mappings')
+      .delete()
+      .eq('vehicle_id', vehicleId)
+
+    if (deleteError) {
+      console.error('Error deleting existing features:', deleteError)
+    }
+
+    // Then add new mappings if any
+    if (data.feature_ids && data.feature_ids.length > 0) {
+      const featureMappings = data.feature_ids.map(featureId => ({
+        vehicle_id: vehicleId,
+        feature_id: featureId
+      }))
+
+      const { error: featureError } = await supabase
+        .from('vehicle_feature_mappings')
+        .insert(featureMappings)
+
+      if (featureError) {
+        console.error('Error adding vehicle features:', featureError)
+      }
+    }
+
     revalidatePath('/vendor/vehicles')
     revalidatePath(`/vendor/vehicles/${vehicleId}/edit`)
     return { success: true }
@@ -124,4 +450,54 @@ export async function updateVehicle(
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }
   }
+}
+
+export async function getVehicleCategories(): Promise<{ data?: VehicleCategory[]; error?: string }> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('vehicle_categories')
+    .select('*')
+    .order('sort_order')
+
+  if (error) {
+    console.error('Error fetching vehicle categories:', error)
+    return { error: error.message }
+  }
+
+  return { data }
+}
+
+export async function getVehicleFeatures(vehicleId: string): Promise<string[]> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('vehicle_feature_mappings')
+    .select('feature_id')
+    .eq('vehicle_id', vehicleId)
+
+  if (error) {
+    console.error('Error fetching vehicle features:', error)
+    return []
+  }
+
+  return data.map(mapping => mapping.feature_id)
+}
+
+export async function getVehicleTypesByCategory(categoryId: string) {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('vehicle_types')
+    .select('*')
+    .eq('category_id', categoryId)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching vehicle types:', error)
+    return []
+  }
+
+  return data || []
 }

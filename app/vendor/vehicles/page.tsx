@@ -1,16 +1,47 @@
+import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { VendorLayout } from "@/components/layout/vendor-layout"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Car } from "lucide-react"
 import Link from "next/link"
 import { requireVendor } from "@/lib/auth/user-actions"
-import { VehiclesList } from "./components/vehicles-list"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { VehicleTableWithBulk } from "./components/vehicle-table-with-bulk"
+import { ClientFilters } from "./components/client-filters"
+import { getVehicles, VehicleFilters } from "./actions"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
-export default async function VendorVehiclesPage() {
+export const metadata: Metadata = {
+  title: 'Vehicles - Vendor Portal',
+  description: 'Manage your vehicle fleet',
+}
+
+export const dynamic = 'force-dynamic'
+
+interface VendorVehiclesPageProps {
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    fuelType?: string
+    transmission?: string
+    minPrice?: string
+    maxPrice?: string
+    seats?: string
+    page?: string
+  }>
+}
+
+export default async function VendorVehiclesPage({ searchParams }: VendorVehiclesPageProps) {
   const user = await requireVendor()
   const supabase = await createClient()
+  
+  const params = await searchParams
 
   // Check if vendor application is approved
   const { data: vendorApplication } = await supabase
@@ -23,16 +54,23 @@ export default async function VendorVehiclesPage() {
     redirect('/vendor/profile')
   }
 
-  // Get vehicles for this business
-  const { data: vehicles } = await supabase
-    .from('vehicles')
-    .select('*')
-    .eq('business_id', vendorApplication.id)
-    .order('created_at', { ascending: false })
+  const filters: VehicleFilters = {
+    search: params.search,
+    status: (params.status as any) || 'all',
+    fuelType: (params.fuelType as any) || 'all',
+    transmission: (params.transmission as any) || 'all',
+    page: params.page ? parseInt(params.page) : 1,
+    limit: 10,
+    ...(params.minPrice && { minPrice: parseFloat(params.minPrice) }),
+    ...(params.maxPrice && { maxPrice: parseFloat(params.maxPrice) }),
+    ...(params.seats && { seats: parseInt(params.seats) })
+  }
+
+  const { vehicles, total, page, totalPages } = await getVehicles(vendorApplication.id, filters)
 
   return (
     <VendorLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Fleet</h1>
@@ -48,26 +86,107 @@ export default async function VendorVehiclesPage() {
           </Button>
         </div>
 
-        {vehicles && vehicles.length > 0 ? (
-          <VehiclesList vehicles={vehicles} businessId={vendorApplication.id} />
-        ) : (
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
-            <CardHeader>
-              <CardTitle>No vehicles yet</CardTitle>
-              <CardDescription>
-                Add your first vehicle to start accepting bookings
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Vehicles
+              </CardTitle>
+              <Car className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <Button asChild>
-                <Link href="/vendor/vehicles/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Vehicle
-                </Link>
-              </Button>
+              <div className="text-2xl font-bold">{total}</div>
             </CardContent>
           </Card>
-        )}
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>All Vehicles</CardTitle>
+            <CardDescription>
+              View and manage your vehicle fleet
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ClientFilters initialFilters={filters} />
+            
+            {vehicles.length > 0 ? (
+              <>
+                <VehicleTableWithBulk 
+                  vehicles={vehicles} 
+                  businessId={vendorApplication.id}
+                />
+
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {((page - 1) * filters.limit!) + 1} to{" "}
+                      {Math.min(page * filters.limit!, total)} of {total} vehicles
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === 1}
+                        asChild
+                      >
+                        <Link
+                          href={{
+                            pathname: "/vendor/vehicles",
+                            query: {
+                              ...params,
+                              page: page - 1,
+                            },
+                          }}
+                        >
+                          Previous
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === totalPages}
+                        asChild
+                      >
+                        <Link
+                          href={{
+                            pathname: "/vendor/vehicles",
+                            query: {
+                              ...params,
+                              page: page + 1,
+                            },
+                          }}
+                        >
+                          Next
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <Car className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium">No vehicles found</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {filters.search || filters.status !== 'all' || filters.fuelType !== 'all' 
+                    ? "Try adjusting your filters" 
+                    : "Get started by adding your first vehicle"}
+                </p>
+                {!filters.search && filters.status === 'all' && filters.fuelType === 'all' && (
+                  <div className="mt-6">
+                    <Button asChild>
+                      <Link href="/vendor/vehicles/new">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Vehicle
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </VendorLayout>
   )

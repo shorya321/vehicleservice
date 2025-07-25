@@ -17,6 +17,11 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  Shield,
+  CreditCard,
+  FileCheck,
+  AlertCircle,
+  BanknoteIcon,
 } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -177,8 +182,152 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   </div>
                 </div>
               )}
+
+              {application.registration_number && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-start gap-3">
+                    <FileCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Business Registration Number</p>
+                      <p className="text-sm text-muted-foreground">{application.registration_number}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Documents & Licenses */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Documents & Licenses</CardTitle>
+              <CardDescription>
+                Required documentation for vendor verification
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {application.documents ? (
+                <>
+                  {/* Trade License */}
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Shield className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Trade License</p>
+                        <div className="mt-1 space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            Number: {application.documents.trade_license_number || 'Not provided'}
+                          </p>
+                          {application.documents.trade_license_expiry && (
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              Expires: {format(new Date(application.documents.trade_license_expiry), 'PPP')}
+                              {new Date(application.documents.trade_license_expiry) < new Date() && (
+                                <Badge variant="destructive" className="text-xs">
+                                  <AlertCircle className="mr-1 h-3 w-3" />
+                                  Expired
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Insurance */}
+                  <div className="pt-3 border-t">
+                    <div className="flex items-start gap-3">
+                      <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Insurance Policy</p>
+                        <div className="mt-1 space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            Policy Number: {application.documents.insurance_policy_number || 'Not provided'}
+                          </p>
+                          {application.documents.insurance_expiry && (
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              Expires: {format(new Date(application.documents.insurance_expiry), 'PPP')}
+                              {new Date(application.documents.insurance_expiry) < new Date() && (
+                                <Badge variant="destructive" className="text-xs">
+                                  <AlertCircle className="mr-1 h-3 w-3" />
+                                  Expired
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">No documents provided</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Banking Details */}
+          {application.banking_details && Object.values(application.banking_details).some(v => v) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Banking Details</CardTitle>
+                <CardDescription>
+                  Payment account information
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {application.banking_details.bank_name && (
+                  <div className="flex items-start gap-3">
+                    <BanknoteIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Bank Name</p>
+                      <p className="text-sm text-muted-foreground">{application.banking_details.bank_name}</p>
+                    </div>
+                  </div>
+                )}
+
+                {application.banking_details.account_holder_name && (
+                  <div className="flex items-start gap-3">
+                    <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Account Holder</p>
+                      <p className="text-sm text-muted-foreground">{application.banking_details.account_holder_name}</p>
+                    </div>
+                  </div>
+                )}
+
+                {application.banking_details.account_number && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Account Number</p>
+                      <p className="text-sm text-muted-foreground font-mono">{application.banking_details.account_number}</p>
+                    </div>
+                  </div>
+                )}
+
+                {application.banking_details.iban && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">IBAN</p>
+                      <p className="text-sm text-muted-foreground font-mono">{application.banking_details.iban}</p>
+                    </div>
+                  </div>
+                )}
+
+                {application.banking_details.swift_code && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">SWIFT Code</p>
+                      <p className="text-sm text-muted-foreground font-mono">{application.banking_details.swift_code}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Review History */}
           {(application.reviewed_at || application.rejection_reason || application.admin_notes) && (
