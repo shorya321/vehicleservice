@@ -20,7 +20,16 @@ export function PopularRoutesList({ routes, searchParams }: PopularRoutesListPro
   if (routes.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No routes available from this location</p>
+        <h3 className="text-xl font-semibold mb-2">No routes found</h3>
+        <p className="text-muted-foreground mb-6">
+          We don&apos;t have any routes available between these locations yet.
+        </p>
+        <Link 
+          href="/" 
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+        >
+          Search Another Route
+        </Link>
       </div>
     )
   }

@@ -2,24 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-
-interface Location {
-  id: string
-  name: string
-  city: string
-  country_code: string
-}
-
-// Mock data for locations
-const mockLocations: Location[] = [
-  { id: '8271bb55-fdad-4d32-88e4-62bbc23357e4', name: 'Jassur', city: 'Himachal Pradesh', country_code: 'IN' },
-  { id: 'cf41e164-d2b0-41cc-aafb-b1a3c804976e', name: 'Mamoon', city: 'Punjab', country_code: 'IN' },
-  { id: '480b52ee-4fa3-4974-8cbe-57e7daec4946', name: 'Manwal', city: 'Punjab', country_code: 'IN' },
-  { id: '108e6129-3483-4546-bb54-3aacec36097b', name: 'Sheela chownk', city: 'Himachal Pradesh', country_code: 'IN' },
-  { id: 'mock-id-1', name: 'Delhi Airport', city: 'Delhi', country_code: 'IN' },
-  { id: 'mock-id-2', name: 'Mumbai Airport', city: 'Mumbai', country_code: 'IN' },
-  { id: 'mock-id-3', name: 'Chandigarh Airport', city: 'Chandigarh', country_code: 'IN' },
-]
+import { createClient } from '@/lib/supabase/client'
+import { Location } from '@/lib/types/location'
 
 export function WorkingSearchWidget() {
   const router = useRouter()
@@ -34,55 +18,154 @@ export function WorkingSearchWidget() {
   const [fromInput, setFromInput] = useState('')
   const [fromSuggestions, setFromSuggestions] = useState<Location[]>([])
   const [showFromSuggestions, setShowFromSuggestions] = useState(false)
+  const [fromLoading, setFromLoading] = useState(false)
   
   // To autocomplete
   const [toInput, setToInput] = useState('')
   const [toSuggestions, setToSuggestions] = useState<Location[]>([])
   const [showToSuggestions, setShowToSuggestions] = useState(false)
+  const [toLoading, setToLoading] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const filterLocations = (query: string): Location[] => {
-    if (query.length < 2) return []
-    
-    return mockLocations.filter(location =>
-      location.name.toLowerCase().includes(query.toLowerCase()) ||
-      location.city.toLowerCase().includes(query.toLowerCase())
-    )
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      // Check if click is outside both dropdowns
+      if (!target.closest('.location-dropdown-from') && !target.closest('.location-dropdown-to')) {
+        setShowFromSuggestions(false)
+        setShowToSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  // Fetch locations from database
+  const searchLocations = async (query: string, isFromField: boolean) => {
+    if (query.length < 2) {
+      if (isFromField) {
+        setFromSuggestions([])
+        setShowFromSuggestions(false)
+      } else {
+        setToSuggestions([])
+        setShowToSuggestions(false)
+      }
+      return
+    }
+
+    if (isFromField) {
+      setFromLoading(true)
+    } else {
+      setToLoading(true)
+    }
+
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('locations')
+        .select('*')
+        .eq('is_active', true)
+        .or(`name.ilike.%${query}%,city.ilike.%${query}%`)
+        .order('type', { ascending: false })
+        .order('name')
+        .limit(10)
+
+      if (error) throw error
+
+      if (isFromField) {
+        setFromSuggestions(data || [])
+        setShowFromSuggestions((data || []).length > 0)
+      } else {
+        setToSuggestions(data || [])
+        setShowToSuggestions((data || []).length > 0)
+      }
+    } catch (error) {
+      console.error('Error searching locations:', error)
+      if (isFromField) {
+        setFromSuggestions([])
+        setShowFromSuggestions(false)
+      } else {
+        setToSuggestions([])
+        setShowToSuggestions(false)
+      }
+    } finally {
+      if (isFromField) {
+        setFromLoading(false)
+      } else {
+        setToLoading(false)
+      }
+    }
   }
+
+  // Debounced search for from field
+  useEffect(() => {
+    // Don't search if we have a selected location with matching name
+    if (fromLocation && fromLocation.name === fromInput) {
+      setShowFromSuggestions(false)
+      return
+    }
+
+    const debounceTimer = setTimeout(() => {
+      searchLocations(fromInput, true)
+    }, 300)
+
+    return () => clearTimeout(debounceTimer)
+  }, [fromInput, fromLocation])
+
+  // Debounced search for to field
+  useEffect(() => {
+    // Don't search if we have a selected location with matching name
+    if (toLocation && toLocation.name === toInput) {
+      setShowToSuggestions(false)
+      return
+    }
+
+    const debounceTimer = setTimeout(() => {
+      searchLocations(toInput, false)
+    }, 300)
+
+    return () => clearTimeout(debounceTimer)
+  }, [toInput, toLocation])
 
   const handleFromInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setFromInput(value)
     setFromLocation(null)
-    
-    const suggestions = filterLocations(value)
-    setFromSuggestions(suggestions)
-    setShowFromSuggestions(value.length >= 2)
+    // Show suggestions only when actually typing
+    if (value.length >= 2) {
+      setShowFromSuggestions(true)
+    }
   }
 
   const handleToInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setToInput(value)
     setToLocation(null)
-    
-    const suggestions = filterLocations(value)
-    setToSuggestions(suggestions)
-    setShowToSuggestions(value.length >= 2)
+    // Show suggestions only when actually typing
+    if (value.length >= 2) {
+      setShowToSuggestions(true)
+    }
   }
 
   const selectFromLocation = (location: Location) => {
     setFromLocation(location)
     setFromInput(location.name)
     setShowFromSuggestions(false)
+    setFromSuggestions([]) // Clear suggestions immediately
   }
 
   const selectToLocation = (location: Location) => {
     setToLocation(location)
     setToInput(location.name)
     setShowToSuggestions(false)
+    setToSuggestions([]) // Clear suggestions immediately
   }
 
   const handleSearch = () => {
@@ -110,16 +193,20 @@ export function WorkingSearchWidget() {
       {/* Location inputs */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* From location */}
-        <div className="relative">
+        <div className="relative location-dropdown-from">
           <label className="block text-sm font-medium mb-2">From</label>
           <input
             type="text"
             value={fromInput}
             onChange={handleFromInput}
-            onFocus={() => setShowFromSuggestions(fromInput.length >= 2)}
             placeholder="Airport, port, address"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
+          {fromLoading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
+            </div>
+          )}
           
           {showFromSuggestions && fromSuggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -131,7 +218,7 @@ export function WorkingSearchWidget() {
                 >
                   <div className="font-medium">{location.name}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {location.city}, {location.country_code}
+                    {location.city ? `${location.city}, ` : ''}{location.country_code}
                   </div>
                 </button>
               ))}
@@ -140,16 +227,20 @@ export function WorkingSearchWidget() {
         </div>
 
         {/* To location */}
-        <div className="relative">
+        <div className="relative location-dropdown-to">
           <label className="block text-sm font-medium mb-2">To (Optional)</label>
           <input
             type="text"
             value={toInput}
             onChange={handleToInput}
-            onFocus={() => setShowToSuggestions(toInput.length >= 2)}
             placeholder="Destination"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
+          {toLoading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
+            </div>
+          )}
           
           {showToSuggestions && toSuggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -161,7 +252,7 @@ export function WorkingSearchWidget() {
                 >
                   <div className="font-medium">{location.name}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {location.city}, {location.country_code}
+                    {location.city ? `${location.city}, ` : ''}{location.country_code}
                   </div>
                 </button>
               ))}

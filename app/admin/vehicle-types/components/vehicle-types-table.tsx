@@ -170,7 +170,7 @@ export function VehicleTypesTable({ vehicleTypes }: VehicleTypesTableProps) {
             <AlertDialogTitle>Delete Vehicle Type</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete this vehicle type? This action cannot be undone.
-              The type cannot be deleted if it's being used by any vehicles or route pricing.
+              The type cannot be deleted if it&apos;s being used by any vehicles or route pricing.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -4,9 +4,10 @@ import { VendorApplicationsTable } from "./components/vendor-applications-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getVendorApplicationsStats } from "./actions"
-import { Building2, Clock, CheckCircle2, XCircle, Eye } from "lucide-react"
+import { Building2, Clock, CheckCircle2, XCircle, Eye, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export const metadata = {
   title: "Vendor Applications | Admin",
@@ -26,8 +27,16 @@ interface PageProps {
 export default async function VendorApplicationsPage({ searchParams }: PageProps) {
   const params = await searchParams
   
-  // Get statistics
-  const stats = await getVendorApplicationsStats()
+  // Get statistics with error handling
+  let stats = { total: 0, pending: 0, approved: 0, rejected: 0 }
+  let statsError = null
+  
+  try {
+    stats = await getVendorApplicationsStats()
+  } catch (error) {
+    console.error('Failed to load vendor application stats:', error)
+    statsError = 'Failed to load statistics'
+  }
   
   return (
     <AdminLayout>
@@ -49,6 +58,17 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
             </Link>
           </Button>
         </div>
+
+        {/* Error Alert */}
+        {statsError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {statsError}. Please refresh the page to try again.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-4">

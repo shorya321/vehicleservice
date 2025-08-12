@@ -1,10 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getRouteBySlug, getRoutesVehicles } from './actions'
-import { RouteVehiclesList } from './components/route-vehicles-list'
-import { SearchWidget } from '@/components/search/search-widget'
-import { MapPin, Navigation, Clock, Car } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { VehicleTypeCategoryTabs } from '@/app/search/results/components/vehicle-type-category-tabs'
+import { MapPin, Clock } from 'lucide-react'
 import { PublicLayout } from '@/components/layout/public-layout'
 
 interface RoutePageProps {
@@ -38,70 +36,110 @@ export default async function RoutePage({ params }: RoutePageProps) {
     notFound()
   }
 
-  const vehicleTypes = await getRoutesVehicles(route.id)
+  const vehicleTypesData = await getRoutesVehicles(route.id)
   const duration = route.estimated_duration_minutes
   const hours = Math.floor(duration / 60)
   const minutes = duration % 60
   const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
 
+  // Transform vehicle types to match the expected format
+  const vehicleTypes: any[] = vehicleTypesData.map(vt => ({
+    id: vt.id,
+    name: vt.name,
+    slug: vt.slug,
+    category: vt.category?.name || 'Standard',
+    categoryId: vt.category?.id || 'standard',
+    categorySlug: vt.category?.slug || 'standard',
+    capacity: vt.passenger_capacity,
+    luggageCapacity: vt.luggage_capacity,
+    description: vt.description || '',
+    price: vt.price,
+    currency: 'USD',
+    availableVehicles: vt.available_count,
+    vendorCount: 1,
+    features: [],
+    image: vt.image_url || undefined
+  }))
+
+  // Group by category
+  const categoryMap = new Map()
+  vehicleTypes.forEach(vt => {
+    if (!categoryMap.has(vt.categoryId)) {
+      categoryMap.set(vt.categoryId, {
+        categoryId: vt.categoryId,
+        categoryName: vt.category,
+        categorySlug: vt.categorySlug,
+        vehicleTypes: [],
+        minPrice: Number.MAX_VALUE
+      })
+    }
+    const category = categoryMap.get(vt.categoryId)
+    category.vehicleTypes.push(vt)
+    category.minPrice = Math.min(category.minPrice, vt.price)
+  })
+
+  const vehicleTypesByCategory = Array.from(categoryMap.values())
+    .filter(cat => cat.vehicleTypes.length > 0)
+    .sort((a, b) => a.minPrice - b.minPrice)
+
+  // Create search params for the vehicle type cards
+  const searchParams = {
+    from: route.origin_location_id,
+    to: route.destination_location_id,
+    date: new Date().toISOString().split('T')[0],
+    passengers: '2'
+  }
+
   return (
     <PublicLayout>
       <div className="bg-background">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold">
-              {route.origin.name} to {route.destination.name}
-            </h1>
-            
-            <div className="flex items-center justify-center gap-6 text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Navigation className="h-4 w-4" />
-                <span>{route.distance_km} km</span>
+        {/* Search Summary Style Header */}
+        <div className="bg-primary text-primary-foreground">
+          <div className="container mx-auto px-4 py-6">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 flex-shrink-0" />
+                <div>
+                  <div className="text-sm opacity-80">Route</div>
+                  <div className="font-semibold">
+                    {route.origin.name} → {route.destination.name}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{durationText}</span>
+
+              <div className="flex items-center gap-3">
+                <Clock className="h-5 w-5 flex-shrink-0" />
+                <div>
+                  <div className="text-sm opacity-80">Distance & Duration</div>
+                  <div className="font-semibold">
+                    {route.distance_km} km • {durationText}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Car className="h-4 w-4" />
-                <span>{vehicleTypes.length} vehicle types</span>
+
+              <div className="flex items-center gap-3">
+                <div className="h-5 w-5 flex-shrink-0 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs font-semibold">
+                  {vehicleTypes.length}
+                </div>
+                <div>
+                  <div className="text-sm opacity-80">Available</div>
+                  <div className="font-semibold">
+                    Vehicle Types
+                  </div>
+                </div>
               </div>
             </div>
-
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Choose from {vehicleTypes.length} vehicle types for your comfortable journey
-            </p>
-          </div>
-
-          {/* Search Widget */}
-          <div className="mt-8 max-w-5xl mx-auto">
-            <SearchWidget 
-              defaultOrigin={route.origin} 
-              defaultDestination={route.destination}
-            />
           </div>
         </div>
-      </section>
-
-      {/* Vehicle Types Section */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center gap-2 mb-8">
-              <Car className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Available Vehicle Types</h2>
-            </div>
-            
-            <RouteVehiclesList 
-              vehicleTypes={vehicleTypes} 
-              route={route}
-              countrySlug={country}
-            />
-          </div>
+        
+        <div className="container mx-auto px-4 py-8">
+          <VehicleTypeCategoryTabs
+            vehicleTypesByCategory={vehicleTypesByCategory}
+            allVehicleTypes={vehicleTypes}
+            routeId={route.id}
+            searchParams={searchParams}
+          />
         </div>
-      </section>
       </div>
     </PublicLayout>
   )

@@ -30,10 +30,12 @@ export async function getLocationBySlug(countrySlug: string, citySlug: string): 
     .eq('country_slug', countrySlug)
     .eq('slug', citySlug)
     .eq('is_active', true)
-    .single()
+    .maybeSingle()
 
   if (error || !data) {
-    console.error('Error fetching location:', error)
+    if (error) {
+      console.error('Error fetching location:', error)
+    }
     return null
   }
 
@@ -78,7 +80,6 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
     .from('vendor_route_services')
     .select(`
       route_id,
-      price_multiplier,
       vendor_id
     `)
     .in('route_id', routeIds)
@@ -104,8 +105,8 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
   // Map routes with calculated min prices and vehicle counts
   return routes.map(route => {
     const routeVendors = vendorRoutes?.filter(vr => vr.route_id === route.id) || []
-    const minMultiplier = Math.min(...routeVendors.map(rv => rv.price_multiplier || 1), 1)
-    const minPrice = route.base_price * minMultiplier
+    // Use base price for now, pricing will be determined by vehicle type
+    const minPrice = route.base_price
     
     // Count available vehicles for this route
     const routeVendorIds = routeVendors.map(rv => rv.vendor_id)

@@ -34,11 +34,11 @@ export interface VehicleTypeWithPricing {
   description: string | null
   passenger_capacity: number
   luggage_capacity: number
+  image_url: string | null
   category: {
     id: string
     name: string
     slug: string
-    image_url: string | null
   } | null
   price: number
   available_count: number
@@ -48,10 +48,12 @@ export interface VehicleTypeWithPricing {
 export async function getRouteBySlug(routeSlug: string): Promise<RouteDetails | null> {
   const supabase = await createClient()
   
+  console.log(`Fetching route with slug: ${routeSlug}`)
+  
   // Parse the route slug to get origin and destination
   const parsed = parseRouteSlug(routeSlug)
   if (!parsed) {
-    console.error('Invalid route slug:', routeSlug)
+    console.error('Invalid route slug format:', routeSlug)
     return null
   }
 
@@ -83,15 +85,27 @@ export async function getRouteBySlug(routeSlug: string): Promise<RouteDetails | 
     .eq('is_active', true)
     .single()
 
-  if (error || !data) {
-    console.error('Error fetching route:', error)
+  if (error) {
+    if (error.code === 'PGRST116') {
+      console.log(`Route not found: ${routeSlug}. This route may need to be created.`)
+    } else {
+      console.error('Error fetching route:', error)
+    }
     return null
   }
 
+  if (!data) {
+    console.log(`No route found with slug: ${routeSlug}`)
+    return null
+  }
+
+  console.log(`Found route: ${data.route_name} (ID: ${data.id})`)
   return data as RouteDetails
 }
 
 export async function getRoutesVehicles(routeId: string): Promise<VehicleTypeWithPricing[]> {
+  console.log(`Fetching vehicle types for route: ${routeId}`)
+  
   // Use admin client to bypass RLS for public route data
   const supabase = createAdminClient()
 
@@ -109,11 +123,11 @@ export async function getRoutesVehicles(routeId: string): Promise<VehicleTypeWit
         passenger_capacity,
         luggage_capacity,
         sort_order,
+        image_url,
         category:category_id(
           id,
           name,
-          slug,
-          image_url
+          slug
         )
       )
     `)
@@ -121,10 +135,57 @@ export async function getRoutesVehicles(routeId: string): Promise<VehicleTypeWit
     .eq('is_active', true)
     .order('price')
 
-  if (pricingError || !routePricing) {
+  if (pricingError) {
     console.error('Error fetching route pricing:', pricingError)
     return []
   }
+
+  if (!routePricing || routePricing.length === 0) {
+    console.warn(`No pricing configured for route ${routeId}. Vehicle types need to be configured.`)
+    
+    // Fetch all active vehicle types to show as "Request Quote"
+    const { data: vehicleTypes, error: vtError } = await supabase
+      .from('vehicle_types')
+      .select(`
+        id,
+        name,
+        slug,
+        description,
+        passenger_capacity,
+        luggage_capacity,
+        sort_order,
+        image_url,
+        category:category_id(
+          id,
+          name,
+          slug
+        )
+      `)
+      .eq('is_active', true)
+      .order('sort_order')
+
+    if (vtError || !vehicleTypes) {
+      console.error('Error fetching vehicle types:', vtError)
+      return []
+    }
+
+    // Return vehicle types without pricing (for "Request Quote" display)
+    return vehicleTypes.map(vt => ({
+      id: vt.id,
+      name: vt.name,
+      slug: vt.slug,
+      description: vt.description,
+      passenger_capacity: vt.passenger_capacity,
+      luggage_capacity: vt.luggage_capacity || 2,
+      image_url: vt.image_url,
+      category: vt.category,
+      price: 0, // No price configured
+      available_count: 0,
+      vehicle_examples: []
+    }))
+  }
+
+  console.log(`Found ${routePricing.length} vehicle types with pricing for route ${routeId}`)
 
   // Get vendors serving this route
   const { data: vendorRoutes, error: vendorError } = await supabase
@@ -133,29 +194,42 @@ export async function getRoutesVehicles(routeId: string): Promise<VehicleTypeWit
     .eq('route_id', routeId)
     .eq('is_active', true)
 
-  if (vendorError || !vendorRoutes || vendorRoutes.length === 0) {
+  if (vendorError) {
     console.error('Error fetching vendor routes:', vendorError)
-    return []
+    // Continue without vendor-specific data rather than returning empty
   }
 
-  const vendorIds = vendorRoutes.map(vr => vr.vendor_id)
+  // If no vendors are assigned, log a warning but continue
+  if (!vendorRoutes || vendorRoutes.length === 0) {
+    console.warn(`No vendors currently serving route ${routeId}. Showing vehicle types without availability.`)
+  }
+
+  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
 
   // Process each vehicle type to get availability and example vehicles
   const vehicleTypesWithAvailability = await Promise.all(
     routePricing.map(async (pricing) => {
       if (!pricing.vehicle_type) return null
 
-      // Get available vehicles of this type from active vendors
-      const { data: vehicles, error: vehiclesError } = await supabase
-        .from('vehicles')
-        .select('id, make, model')
-        .eq('vehicle_type_id', pricing.vehicle_type.id)
-        .in('business_id', vendorIds)
-        .eq('is_available', true)
-        .limit(5) // Get a few examples
-
-      if (vehiclesError) {
-        console.error('Error fetching vehicles:', vehiclesError)
+      // Get available vehicles of this type from active vendors (if any vendors exist)
+      let vehicles = null
+      let vehiclesError = null
+      
+      if (vendorIds.length > 0) {
+        const result = await supabase
+          .from('vehicles')
+          .select('id, make, model')
+          .eq('vehicle_type_id', pricing.vehicle_type.id)
+          .in('business_id', vendorIds)
+          .eq('is_available', true)
+          .limit(5) // Get a few examples
+        
+        vehicles = result.data
+        vehiclesError = result.error
+        
+        if (vehiclesError) {
+          console.error('Error fetching vehicles:', vehiclesError)
+        }
       }
 
       const availableCount = vehicles?.length || 0
@@ -170,6 +244,7 @@ export async function getRoutesVehicles(routeId: string): Promise<VehicleTypeWit
         description: pricing.vehicle_type.description,
         passenger_capacity: pricing.vehicle_type.passenger_capacity,
         luggage_capacity: pricing.vehicle_type.luggage_capacity || 2,
+        image_url: pricing.vehicle_type.image_url,
         category: pricing.vehicle_type.category,
         price: pricing.price,
         available_count: availableCount,

@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { SearchResult, SearchResultVehicle } from '../actions'
+import { SearchResult, SearchResultVehicle, VehicleTypeResult } from '../actions'
 import { VehicleCard } from './vehicle-card'
 import { VehicleCategoryTabs } from './vehicle-category-tabs'
+import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
+import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { SearchFilters } from './search-filters'
 import { EmptyState } from './empty-state'
 import { PopularRoutesList } from './popular-routes-list'
@@ -96,63 +98,52 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return <VehicleCategoriesList categories={results.categories} searchParams={searchParams as any} />
   }
 
-  // Handle route with vehicles
-  if (results.type === 'route' && results.vehicles) {
-    if (results.vehicles.length === 0) {
+  // Handle redirect type (this shouldn't normally be reached as page.tsx handles it)
+  if (results.type === 'redirect') {
+    return <EmptyState searchParams={searchParams} />
+  }
+
+  // Handle route with vehicle types
+  if (results.type === 'route' && results.vehicleTypes) {
+    if (results.vehicleTypes.length === 0) {
       return <EmptyState searchParams={searchParams} />
     }
 
     return (
-    <div className="grid lg:grid-cols-[300px,1fr] gap-8">
-      {/* Filters Sidebar */}
-      <aside className="space-y-6">
-        <div className="bg-card rounded-lg p-4 space-y-3">
-          <h3 className="font-semibold">Route Information</h3>
-          <div className="space-y-2 text-sm">
+    <div className="space-y-8">
+      {/* Route Information Banner */}
+      <div className="bg-muted/30 rounded-lg p-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-2xl font-bold mb-2">{results.routeName}</h1>
+          <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span>{results.routeName}</span>
+              <MapPin className="h-4 w-4" />
+              <span>{results.originName} to {results.destinationName}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="h-4 w-4" />
               <span>{results.distance} km journey</span>
             </div>
           </div>
         </div>
+      </div>
 
-        <SearchFilters
-          vehicles={results.vehicles}
-          onFiltersChange={handleFiltersChange}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-        />
-      </aside>
-
-      {/* Results */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold">
-              {results.vehicles.length} Vehicles Available
-            </h2>
-          </div>
-        </div>
-
-        {/* Category Tabs */}
-        {results.vehiclesByCategory && results.vehiclesByCategory.length > 0 ? (
-          <VehicleCategoryTabs
-            vehiclesByCategory={results.vehiclesByCategory}
-            allVehicles={filteredVehicles}
+      {/* Vehicle Type Category Tabs */}
+      <div className="max-w-7xl mx-auto">
+        {results.vehicleTypesByCategory && results.vehicleTypesByCategory.length > 0 ? (
+          <VehicleTypeCategoryTabs
+            vehicleTypesByCategory={results.vehicleTypesByCategory}
+            allVehicleTypes={results.vehicleTypes}
             routeId={results.routeId || ''}
             searchParams={searchParams}
           />
         ) : (
-          /* Fallback to regular list if no categories */
-          <div className="grid gap-4">
-            {filteredVehicles.map(vehicle => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
+          /* Fallback to grid if no categories */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {results.vehicleTypes.map(vehicleType => (
+              <VehicleTypeGridCard
+                key={vehicleType.id}
+                vehicleType={vehicleType}
                 routeId={results.routeId || ''}
                 searchParams={searchParams}
               />

@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
 import { format } from "date-fns"
 import {
@@ -11,17 +10,11 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Eye, Search } from "lucide-react"
+import { Eye, AlertCircle } from "lucide-react"
 import { VendorApplicationsFilters } from "./vendor-applications-filters"
 import { VendorApplicationsPagination } from "./vendor-applications-pagination"
+import { getVendorApplications } from "../actions"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface VendorApplicationsTableProps {
   search?: string
@@ -34,36 +27,26 @@ export async function VendorApplicationsTable({
   status,
   page = 1,
 }: VendorApplicationsTableProps) {
-  const supabase = await createClient()
   const limit = 10
-  const offset = (page - 1) * limit
-
-  // Build query
-  let query = supabase
-    .from('vendor_applications')
-    .select(`
-      *,
-      user:user_id(id, email, full_name, phone),
-      reviewer:reviewed_by(full_name, email)
-    `, { count: 'exact' })
-
-  // Apply filters
-  if (search) {
-    query = query.or(`business_name.ilike.%${search}%,user.email.ilike.%${search}%,user.full_name.ilike.%${search}%`)
-  }
-
-  if (status && status !== 'all') {
-    query = query.eq('status', status)
-  }
-
-  // Order and pagination
-  const { data: applications, count, error } = await query
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+  
+  // Fetch vendor applications using the server action
+  const { data: applications, count, error } = await getVendorApplications({
+    search,
+    status,
+    page,
+    limit
+  })
 
   if (error) {
-    console.error('Error fetching applications:', error)
-    return <div>Error loading applications</div>
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          {error}. Please try refreshing the page.
+        </AlertDescription>
+      </Alert>
+    )
   }
 
   const totalPages = Math.ceil((count || 0) / limit)
@@ -157,7 +140,7 @@ export async function VendorApplicationsTable({
                       <div className="text-sm">
                         <p>{format(new Date(application.reviewed_at), 'MMM d, yyyy')}</p>
                         <p className="text-muted-foreground">
-                          by {application.reviewer?.full_name || application.reviewer?.email || 'Admin'}
+                          {application.reviewer?.full_name || 'System'}
                         </p>
                       </div>
                     ) : (
@@ -165,10 +148,10 @@ export async function VendorApplicationsTable({
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" asChild>
+                    <Button variant="ghost" size="sm" asChild>
                       <Link href={`/admin/vendor-applications/${application.id}`}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Review
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
                       </Link>
                     </Button>
                   </TableCell>
@@ -182,7 +165,8 @@ export async function VendorApplicationsTable({
       <VendorApplicationsPagination
         currentPage={page}
         totalPages={totalPages}
-        totalCount={count || 0}
+        baseUrl="/admin/vendor-applications"
+        searchParams={{ search, status }}
       />
     </div>
   )

@@ -43,6 +43,32 @@ export interface CategoryResult {
   minPrice: number
 }
 
+export interface VehicleTypeResult {
+  id: string
+  name: string
+  slug: string
+  category: string
+  categoryId: string
+  categorySlug: string
+  capacity: number
+  luggageCapacity: number
+  description: string
+  price: number
+  currency: string
+  availableVehicles: number
+  vendorCount: number
+  features: string[]
+  image?: string
+}
+
+export interface VehicleTypesByCategory {
+  categoryId: string
+  categoryName: string
+  categorySlug: string
+  vehicleTypes: VehicleTypeResult[]
+  minPrice: number
+}
+
 export interface VehiclesByCategory {
   categoryId: string
   categoryName: string
@@ -52,7 +78,7 @@ export interface VehiclesByCategory {
 }
 
 export interface SearchResult {
-  type: 'route' | 'routes' | 'categories'
+  type: 'route' | 'routes' | 'categories' | 'redirect'
   originName: string
   destinationName?: string
   routeId?: string
@@ -60,8 +86,11 @@ export interface SearchResult {
   distance?: number
   vehicles?: SearchResultVehicle[]
   vehiclesByCategory?: VehiclesByCategory[]
+  vehicleTypes?: VehicleTypeResult[]
+  vehicleTypesByCategory?: VehicleTypesByCategory[]
   routes?: RouteResult[]
   categories?: CategoryResult[]
+  redirectTo?: string
 }
 
 export async function getSearchResults(params: {
@@ -71,11 +100,20 @@ export async function getSearchResults(params: {
   date: Date
   passengers: number
 }): Promise<SearchResult | null> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
   // Get origin location details
   const originDetails = await getLocationDetails(params.originId)
-  if (!originDetails) return null
+  if (!originDetails) {
+    // Origin location doesn't exist, return empty routes
+    return {
+      type: 'routes',
+      originName: 'Unknown Location',
+      destinationName: 'Unknown Location',
+      routes: []
+    }
+  }
 
   // If no destination, return popular routes or categories
   if (!params.destinationId) {
@@ -84,14 +122,55 @@ export async function getSearchResults(params: {
 
   // Get destination details
   const destinationDetails = await getLocationDetails(params.destinationId)
-  if (!destinationDetails) return null
+  if (!destinationDetails) {
+    // Destination doesn't exist, return empty routes
+    return {
+      type: 'routes',
+      originName: originDetails.name,
+      destinationName: 'Unknown Location',
+      routes: []
+    }
+  }
 
   // Check if we have a specific route ID in params (when user selects a route)
   const routeId = params.routeId
 
   if (!routeId) {
-    // No route selected, show available routes between origin and destination
-    return getRoutesForDestination(params.originId, params.destinationId, originDetails.name, destinationDetails.name, params.passengers)
+    // No route selected, check available routes between origin and destination
+    const routesResult = await getRoutesForDestination(params.originId, params.destinationId, originDetails.name, destinationDetails.name, params.passengers)
+    
+    // If only one route exists, return redirect to the route page
+    if (routesResult && routesResult.type === 'routes' && routesResult.routes && routesResult.routes.length === 1) {
+      const singleRoute = routesResult.routes[0]
+      
+      // Get the route details to construct the redirect URL
+      const { data: routeData } = await supabase
+        .from('routes')
+        .select(`
+          route_slug,
+          origin:origin_location_id(country_slug)
+        `)
+        .eq('id', singleRoute.id)
+        .single()
+      
+      if (routeData && routeData.route_slug && routeData.origin?.country_slug) {
+        return {
+          type: 'redirect',
+          originName: originDetails.name,
+          destinationName: destinationDetails.name,
+          redirectTo: `/search/route/${routeData.origin.country_slug}/${routeData.route_slug}`
+        }
+      }
+      
+      // Fallback to showing vehicle types if we can't get route details
+      return getSearchResults({
+        ...params,
+        routeId: singleRoute.id
+      })
+    }
+    
+    // Otherwise return the routes list
+    return routesResult
   }
 
   // Get the authenticated user
@@ -132,7 +211,6 @@ export async function getSearchResults(params: {
       id,
       vendor_id,
       is_active,
-      price_multiplier,
       vendor_applications!inner(
         id,
         business_name
@@ -165,6 +243,7 @@ export async function getSearchResults(params: {
       is_available,
       business_id,
       category_id,
+      vehicle_type_id,
       vehicle_categories!category_id(
         id,
         name,
@@ -186,15 +265,28 @@ export async function getSearchResults(params: {
     }
   }
 
+  // Get pricing data for vehicle types on this route
+  const vehicleTypeIds = [...new Set(vehicles.map(v => v.vehicle_type_id).filter(Boolean))]
+  const { data: pricingData, error: pricingError } = await supabase
+    .from('route_vehicle_type_pricing')
+    .select('*')
+    .eq('route_id', route.id)
+    .in('vehicle_type_id', vehicleTypeIds)
+    .eq('is_active', true)
+
+  if (pricingError) {
+    console.error('Error fetching pricing data:', pricingError)
+  }
+
   // Map vehicles to search results
   const searchVehicles: SearchResultVehicle[] = vehicles.map(vehicle => {
     // Find the vendor route service for this vehicle's business (vendor application)
     const vendorRoute = vendorRoutes.find(vr => vr.vendor_id === vehicle.business_id)
     const vendor = vendorRoute?.vendor_applications
     
-    const categoryMultiplier = 1 // Default multiplier since column doesn't exist
-    const priceMultiplier = vendorRoute?.price_multiplier || 1
-    const calculatedPrice = route.base_price * categoryMultiplier * priceMultiplier
+    // Get pricing for this vehicle type
+    const vehiclePricing = pricingData?.find(p => p.vehicle_type_id === vehicle.vehicle_type_id)
+    const calculatedPrice = vehiclePricing?.price || route.base_price
     
     // Calculate duration
     const hours = Math.floor(route.estimated_duration_minutes / 60)
@@ -281,6 +373,9 @@ export async function getSearchResults(params: {
       return a.categoryName.localeCompare(b.categoryName)
     }))
 
+  // Get vehicle types for this route
+  const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForRoute(route.id, params.passengers)
+
   return {
     type: 'route',
     originName: originDetails.name,
@@ -289,25 +384,173 @@ export async function getSearchResults(params: {
     routeName: route.route_name,
     distance: route.distance_km,
     vehicles: searchVehicles,
-    vehiclesByCategory
+    vehiclesByCategory,
+    vehicleTypes,
+    vehicleTypesByCategory
+  }
+  } catch (error) {
+    console.error('Error in getSearchResults:', error)
+    return null
   }
 }
 
-export async function getLocationDetails(locationId: string) {
+async function getVehicleTypesForRoute(routeId: string, passengers: number): Promise<{
+  vehicleTypes: VehicleTypeResult[]
+  vehicleTypesByCategory: VehicleTypesByCategory[]
+}> {
   const supabase = await createClient()
   
-  const { data, error } = await supabase
-    .from('locations')
-    .select('id, name, city, country_code')
-    .eq('id', locationId)
-    .single()
+  // Get vehicle types with pricing for this route
+  const { data: vehicleTypesData, error: typesError } = await supabase
+    .from('vehicle_types')
+    .select(`
+      id,
+      name,
+      slug,
+      passenger_capacity,
+      luggage_capacity,
+      description,
+      category_id,
+      image_url,
+      vehicle_categories!category_id(
+        id,
+        name,
+        slug,
+        sort_order
+      )
+    `)
+    .gte('passenger_capacity', passengers)
+    .eq('is_active', true)
+    .order('passenger_capacity', { ascending: true })
 
-  if (error) {
-    console.error('Error fetching location:', error)
-    return null
+  if (typesError || !vehicleTypesData) {
+    console.error('Error fetching vehicle types:', typesError)
+    return { vehicleTypes: [], vehicleTypesByCategory: [] }
   }
 
-  return data
+  // Get pricing for these vehicle types on this route
+  const vehicleTypeIds = vehicleTypesData.map(vt => vt.id)
+  const { data: pricingData, error: pricingError } = await supabase
+    .from('route_vehicle_type_pricing')
+    .select('*')
+    .eq('route_id', routeId)
+    .in('vehicle_type_id', vehicleTypeIds)
+    .eq('is_active', true)
+
+  if (pricingError) {
+    console.error('Error fetching pricing data:', pricingError)
+  }
+
+  // Get vendor route services to count available vehicles
+  const { data: vendorRoutes, error: vendorError } = await supabase
+    .from('vendor_route_services')
+    .select(`
+      vendor_id,
+      vendor_applications!inner(
+        id,
+        business_name
+      )
+    `)
+    .eq('route_id', routeId)
+    .eq('is_active', true)
+
+  if (vendorError) {
+    console.error('Error fetching vendor routes:', vendorError)
+  }
+
+  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
+
+  // Get vehicle counts per type
+  const { data: vehicleCounts, error: vehicleCountError } = await supabase
+    .from('vehicles')
+    .select('vehicle_type_id, id, business_id')
+    .in('business_id', vendorIds)
+    .in('vehicle_type_id', vehicleTypeIds)
+    .eq('is_available', true)
+
+  if (vehicleCountError) {
+    console.error('Error fetching vehicle counts:', vehicleCountError)
+  }
+
+  // Process data into VehicleTypeResult format
+  const vehicleTypes: VehicleTypeResult[] = vehicleTypesData.map(vt => {
+    const pricing = pricingData?.find(p => p.vehicle_type_id === vt.id)
+    const vehiclesOfType = vehicleCounts?.filter(v => v.vehicle_type_id === vt.id) || []
+    const vendorsWithType = new Set(
+      vehicleCounts
+        ?.filter(v => v.vehicle_type_id === vt.id)
+        .map(v => vendorRoutes?.find(vr => vr.vendor_id === v.business_id)?.vendor_id)
+        .filter(Boolean)
+    ).size
+
+    return {
+      id: vt.id,
+      name: vt.name,
+      slug: vt.slug,
+      category: vt.vehicle_categories?.name || 'Standard',
+      categoryId: vt.category_id || '',
+      categorySlug: vt.vehicle_categories?.slug || 'standard',
+      capacity: vt.passenger_capacity,
+      luggageCapacity: vt.luggage_capacity,
+      description: vt.description || '',
+      price: pricing?.price || 0,
+      currency: pricing?.currency || 'USD',
+      availableVehicles: vehiclesOfType.length,
+      vendorCount: vendorsWithType,
+      features: [], // TODO: Add features if needed
+      image: vt.image_url || undefined
+    }
+  }).filter(vt => vt.price > 0) // Only show types with pricing
+
+  // Group by category
+  const categories = new Map<string, VehicleTypesByCategory>()
+  
+  vehicleTypes.forEach(vt => {
+    if (!categories.has(vt.categoryId)) {
+      categories.set(vt.categoryId, {
+        categoryId: vt.categoryId,
+        categoryName: vt.category,
+        categorySlug: vt.categorySlug,
+        vehicleTypes: [],
+        minPrice: Number.MAX_VALUE
+      })
+    }
+    
+    const category = categories.get(vt.categoryId)!
+    category.vehicleTypes.push(vt)
+    category.minPrice = Math.min(category.minPrice, vt.price)
+  })
+
+  const vehicleTypesByCategory = Array.from(categories.values())
+    .sort((a, b) => a.minPrice - b.minPrice)
+
+  return { vehicleTypes, vehicleTypesByCategory }
+}
+
+export async function getLocationDetails(locationId: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .from('locations')
+      .select('id, name, city, country_code, slug')
+      .eq('id', locationId)
+      .maybeSingle()
+
+    if (error || !data) {
+      if (error) {
+        console.error('Error fetching location:', error)
+      }
+      // Return null to indicate location doesn't exist
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Failed to fetch location details:', error)
+    // Return null to indicate location doesn't exist
+    return null
+  }
 }
 
 async function getLocationSearchResults(
@@ -346,7 +589,6 @@ async function getLocationSearchResults(
       .from('vendor_route_services')
       .select(`
         route_id,
-        price_multiplier,
         vendor_id
       `)
       .in('route_id', routeIds)
@@ -365,8 +607,8 @@ async function getLocationSearchResults(
     // Map routes with pricing and availability
     const routeResults: RouteResult[] = routes.map(route => {
       const routeVendors = vendorRoutes?.filter(vr => vr.route_id === route.id) || []
-      const minMultiplier = Math.min(...routeVendors.map(rv => rv.price_multiplier || 1), 1)
-      const minPrice = route.base_price * minMultiplier
+      // Use base price for now, pricing will be determined by vehicle type
+      const minPrice = route.base_price
       
       const routeVendorIds = routeVendors.map(rv => rv.vendor_id)
       const availableVehicles = vehicles?.filter(v => 
@@ -488,28 +730,33 @@ async function getRoutesForDestination(
     .order('route_name')
 
   if (routesError || !routes || routes.length === 0) {
-    // No direct routes, return categories as fallback
-    const { data: categories } = await supabase
-      .from('vehicle_categories')
-      .select('*')
-      .order('sort_order')
-      .order('name')
+    // No direct routes found
+    // Try to get the origin location details to see if we can redirect
+    const { data: originLocation, error: locationError } = await supabase
+      .from('locations')
+      .select('slug, country_slug')
+      .eq('id', originId)
+      .maybeSingle()
 
-    const categoryResults: CategoryResult[] = (categories || []).map(category => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
-      imageUrl: category.image_url,
-      vehicleCount: 0, // Would need to fetch actual counts
-      minPrice: 0
-    }))
+    // Only redirect if origin location exists AND has valid slug/country_slug
+    if (!locationError && originLocation && originLocation.slug && originLocation.country_slug) {
+      const countrySlug = originLocation.country_slug
+      const locationSlug = originLocation.slug
+      
+      return {
+        type: 'redirect',
+        originName,
+        destinationName,
+        redirectTo: `/search/location/${countrySlug}/${locationSlug}`
+      }
+    }
 
+    // Otherwise show empty routes (no redirect to avoid 404)
     return {
-      type: 'categories',
+      type: 'routes',
       originName,
       destinationName,
-      categories: categoryResults
+      routes: []
     }
   }
 
@@ -520,7 +767,6 @@ async function getRoutesForDestination(
     .from('vendor_route_services')
     .select(`
       route_id,
-      price_multiplier,
       vendor_id
     `)
     .in('route_id', routeIds)
@@ -539,8 +785,8 @@ async function getRoutesForDestination(
   // Map routes with pricing and availability
   const routeResults: RouteResult[] = routes.map(route => {
     const routeVendors = vendorRoutes?.filter(vr => vr.route_id === route.id) || []
-    const minMultiplier = Math.min(...routeVendors.map(rv => rv.price_multiplier || 1), 1)
-    const minPrice = route.base_price * minMultiplier
+    // Use base price for now, pricing will be determined by vehicle type
+    const minPrice = route.base_price
     
     const routeVendorIds = routeVendors.map(rv => rv.vendor_id)
     const availableVehicles = vehicles?.filter(v => 

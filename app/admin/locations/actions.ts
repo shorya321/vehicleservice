@@ -8,6 +8,7 @@ import {
   LocationFormData
 } from "@/lib/types/location"
 import { revalidatePath } from "next/cache"
+import { generateSlug, getCountrySlug } from "@/lib/utils/slug"
 
 export async function getLocations(filters: LocationFilters = {}): Promise<PaginatedLocations> {
   const supabase = await createClient()
@@ -102,9 +103,17 @@ export async function createLocation(data: LocationFormData) {
     throw new Error('Forbidden: Admin access required')
   }
 
+  // Generate slug and country_slug
+  const slug = generateSlug(data.name)
+  const country_slug = getCountrySlug(data.country_code)
+
   const { data: location, error } = await supabase
     .from('locations')
-    .insert(data)
+    .insert({
+      ...data,
+      slug,
+      country_slug
+    })
     .select()
     .single()
 
@@ -136,9 +145,22 @@ export async function updateLocation(id: string, data: Partial<LocationFormData>
     throw new Error('Forbidden: Admin access required')
   }
 
+  // Prepare update data
+  const updateData: any = { ...data }
+  
+  // If name is being updated, regenerate slug
+  if (data.name) {
+    updateData.slug = generateSlug(data.name)
+  }
+  
+  // If country_code is being updated, regenerate country_slug
+  if (data.country_code) {
+    updateData.country_slug = getCountrySlug(data.country_code)
+  }
+
   const { data: location, error } = await supabase
     .from('locations')
-    .update(data)
+    .update(updateData)
     .eq('id', id)
     .select()
     .single()

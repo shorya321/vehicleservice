@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
 import { revalidatePath } from 'next/cache'
 import { VehicleType, VehicleTypeWithCategory } from '@/lib/types/vehicle'
+import { uploadVehicleTypeImage } from './actions/upload'
 
 export interface VehicleTypeFilters {
   search?: string
@@ -104,11 +105,23 @@ export interface VehicleTypeFormData {
   luggage_capacity: number
   sort_order?: number
   is_active: boolean
+  imageBase64?: string | null
+  existingImage?: string | null
 }
 
 export async function createVehicleType(data: VehicleTypeFormData) {
   await requireAdmin()
   const supabase = await createClient()
+
+  // Handle image upload if provided
+  let imageUrl = null
+  if (data.imageBase64) {
+    const uploadResult = await uploadVehicleTypeImage(data.slug, data.imageBase64)
+    if (uploadResult.error) {
+      throw new Error(uploadResult.error)
+    }
+    imageUrl = uploadResult.imageUrl
+  }
 
   const { error } = await supabase
     .from('vehicle_types')
@@ -120,7 +133,8 @@ export async function createVehicleType(data: VehicleTypeFormData) {
       passenger_capacity: data.passenger_capacity,
       luggage_capacity: data.luggage_capacity,
       sort_order: data.sort_order || null,
-      is_active: data.is_active
+      is_active: data.is_active,
+      image_url: imageUrl
     })
 
   if (error) {
@@ -134,6 +148,16 @@ export async function updateVehicleType(id: string, data: VehicleTypeFormData) {
   await requireAdmin()
   const supabase = await createClient()
 
+  // Handle image upload if provided
+  let imageUrl = data.existingImage || null
+  if (data.imageBase64) {
+    const uploadResult = await uploadVehicleTypeImage(data.slug, data.imageBase64)
+    if (uploadResult.error) {
+      throw new Error(uploadResult.error)
+    }
+    imageUrl = uploadResult.imageUrl
+  }
+
   const { error } = await supabase
     .from('vehicle_types')
     .update({
@@ -145,6 +169,7 @@ export async function updateVehicleType(id: string, data: VehicleTypeFormData) {
       luggage_capacity: data.luggage_capacity,
       sort_order: data.sort_order || null,
       is_active: data.is_active,
+      image_url: imageUrl,
       updated_at: new Date().toISOString()
     })
     .eq('id', id)

@@ -29,6 +29,7 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { VehicleTypeWithCategory } from "@/lib/types/vehicle"
 import { createVehicleType, updateVehicleType, VehicleTypeFormData } from "../actions"
+import { ImageUpload } from "./image-upload"
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -49,6 +50,8 @@ interface VehicleTypeFormProps {
 export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(vehicleType?.image_url || null)
 
   const form = useForm<VehicleTypeFormData>({
     resolver: zodResolver(formSchema),
@@ -64,15 +67,48 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
     },
   })
 
+  const handleImageChange = (files: File[]) => {
+    if (files.length > 0) {
+      const file = files[0]
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleImageRemove = () => {
+    setImageFile(null)
+    setImagePreview(null)
+  }
+
   const onSubmit = async (data: VehicleTypeFormData) => {
     setIsSubmitting(true)
     
     try {
+      let imageBase64: string | null = null
+      
+      if (imageFile) {
+        const reader = new FileReader()
+        imageBase64 = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(imageFile)
+        })
+      }
+
+      const formData: VehicleTypeFormData & { imageBase64?: string | null; existingImage?: string | null } = {
+        ...data,
+        imageBase64: imageBase64,
+        existingImage: !imageBase64 && imagePreview ? imagePreview : null,
+      }
+
       if (vehicleType) {
-        await updateVehicleType(vehicleType.id, data)
+        await updateVehicleType(vehicleType.id, formData)
         toast.success("Vehicle type updated successfully")
       } else {
-        await createVehicleType(data)
+        await createVehicleType(formData)
         toast.success("Vehicle type created successfully")
       }
       router.push("/admin/vehicle-types")
@@ -251,6 +287,20 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
             </FormItem>
           )}
         />
+
+        {/* Image Upload */}
+        <div className="space-y-2">
+          <ImageUpload
+            label="Vehicle Type Image"
+            description="Upload an image that represents this vehicle type. Recommended size: 600x400px"
+            value={imagePreview}
+            onChange={handleImageChange}
+            onRemove={handleImageRemove}
+            multiple={false}
+            maxSize={5}
+            disabled={isSubmitting}
+          />
+        </div>
 
         <FormField
           control={form.control}

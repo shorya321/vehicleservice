@@ -2,8 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getLocationBySlug, getRoutesFromLocation } from './actions'
 import { LocationRoutesList } from './components/location-routes-list'
-import { SearchWidget } from '@/components/search/search-widget'
-import { MapPin, Navigation } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import { PublicLayout } from '@/components/layout/public-layout'
 
 interface LocationPageProps {
@@ -42,46 +41,25 @@ export default async function LocationPage({ params }: LocationPageProps) {
   return (
     <PublicLayout>
       <div className="bg-background">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-4">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+        {/* Search Summary Section - Similar to SearchSummary component */}
+        <div className="bg-muted/30 border-b">
+          <div className="container mx-auto px-4 py-6">
+            <h1 className="text-2xl font-semibold mb-2">Popular Routes from {location.name}</h1>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              <span className="text-sm">{location.city}, {location.country_code}</span>
+              <span>{location.city}, {location.country_code}</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Transfers from {location.name}
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Choose from {routes.length} popular routes with professional drivers and comfortable vehicles
-            </p>
-          </div>
-
-          {/* Search Widget */}
-          <div className="mt-8 max-w-5xl mx-auto">
-            <SearchWidget defaultOrigin={location} />
           </div>
         </div>
-      </section>
-
-      {/* Routes Section */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center gap-2 mb-8">
-              <Navigation className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Popular Routes from {location.name}</h2>
-            </div>
-            
-            <LocationRoutesList 
-              routes={routes} 
-              originLocation={location}
-              countrySlug={country}
-            />
-          </div>
+        
+        {/* Routes List Section */}
+        <div className="container mx-auto px-4 py-8">
+          <LocationRoutesList 
+            routes={routes} 
+            originLocation={location}
+            countrySlug={country}
+          />
         </div>
-      </section>
       </div>
     </PublicLayout>
   )
