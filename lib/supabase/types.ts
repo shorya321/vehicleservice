@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -66,6 +66,7 @@ export type Database = {
           slug: string
           timezone: string | null
           type: Database["public"]["Enums"]["location_type"]
+          zone_id: string | null
         }
         Insert: {
           address?: string | null
@@ -83,6 +84,7 @@ export type Database = {
           slug: string
           timezone?: string | null
           type: Database["public"]["Enums"]["location_type"]
+          zone_id?: string | null
         }
         Update: {
           address?: string | null
@@ -100,8 +102,17 @@ export type Database = {
           slug?: string
           timezone?: string | null
           type?: Database["public"]["Enums"]["location_type"]
+          zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "locations_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_preferences: {
         Row: {
@@ -578,6 +589,7 @@ export type Database = {
           luggage_capacity: number | null
           name: string
           passenger_capacity: number
+          price_multiplier: number | null
           slug: string
           sort_order: number | null
           updated_at: string | null
@@ -592,6 +604,7 @@ export type Database = {
           luggage_capacity?: number | null
           name: string
           passenger_capacity: number
+          price_multiplier?: number | null
           slug: string
           sort_order?: number | null
           updated_at?: string | null
@@ -606,6 +619,7 @@ export type Database = {
           luggage_capacity?: number | null
           name?: string
           passenger_capacity?: number
+          price_multiplier?: number | null
           slug?: string
           sort_order?: number | null
           updated_at?: string | null
@@ -831,13 +845,94 @@ export type Database = {
           },
         ]
       }
+      zone_pricing: {
+        Row: {
+          base_price: number
+          created_at: string | null
+          currency: string | null
+          from_zone_id: string
+          id: string
+          is_active: boolean | null
+          to_zone_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          base_price: number
+          created_at?: string | null
+          currency?: string | null
+          from_zone_id: string
+          id?: string
+          is_active?: boolean | null
+          to_zone_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string | null
+          currency?: string | null
+          from_zone_id?: string
+          id?: string
+          is_active?: boolean | null
+          to_zone_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_pricing_from_zone_id_fkey"
+            columns: ["from_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_pricing_to_zone_id_fkey"
+            columns: ["to_zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zones: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       approve_vendor_application: {
-        Args: { p_application_id: string; p_admin_notes?: string }
+        Args: { p_admin_notes?: string; p_application_id: string }
         Returns: Json
       }
       cleanup_expired_verification_tokens: {
@@ -871,15 +966,15 @@ export type Database = {
         }
       }
       get_popular_routes: {
-        Args: { limit_count?: number; days_back?: number }
+        Args: { days_back?: number; limit_count?: number }
         Returns: {
+          base_price: number
+          destination_name: string
+          origin_name: string
           route_id: string
           route_name: string
           route_slug: string
-          origin_name: string
-          destination_name: string
           search_count: number
-          base_price: number
         }[]
       }
       get_user_role: {
@@ -892,19 +987,19 @@ export type Database = {
       }
       log_user_activity: {
         Args: {
-          p_user_id: string
           p_action: string
           p_details?: Json
           p_ip_address?: unknown
           p_user_agent?: string
+          p_user_id: string
         }
         Returns: string
       }
       reject_vendor_application: {
         Args: {
+          p_admin_notes?: string
           p_application_id: string
           p_rejection_reason: string
-          p_admin_notes?: string
         }
         Returns: Json
       }

@@ -10,6 +10,8 @@ import { SearchFilters } from './search-filters'
 import { EmptyState } from './empty-state'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
+import { ZoneResultCard } from '@/components/search/zone-result-card'
+import { ZonesList } from '@/components/search/zones-list'
 import { Badge } from '@/components/ui/badge'
 import { Clock, MapPin } from 'lucide-react'
 
@@ -31,6 +33,8 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     features: [] as string[]
   })
   const [sortBy, setSortBy] = useState<'price' | 'rating' | 'capacity'>('price')
+  // Show vehicles immediately for zone transfers since user already selected the route
+  const [showVehicles, setShowVehicles] = useState(results?.type === 'zone')
 
   // Memoize filtered and sorted vehicles to prevent unnecessary recalculations
   const filteredVehicles = useMemo(() => {
@@ -90,6 +94,25 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
   }
 
   // Handle different result types
+  if (results.type === 'zone' && results.zone) {
+    // If showing zone and user hasn't proceeded to vehicles yet
+    if (!showVehicles) {
+      return (
+        <div className="max-w-4xl mx-auto">
+          <ZoneResultCard 
+            zone={results.zone} 
+            onProceed={() => setShowVehicles(true)}
+          />
+        </div>
+      )
+    }
+    // Otherwise fall through to show vehicle types
+  }
+
+  if (results.type === 'zones' && results.zones) {
+    return <ZonesList zones={results.zones} searchParams={searchParams} />
+  }
+
   if (results.type === 'routes' && results.routes) {
     return <PopularRoutesList routes={results.routes} searchParams={searchParams as any} />
   }
@@ -103,28 +126,50 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return <EmptyState searchParams={searchParams} />
   }
 
-  // Handle route with vehicle types
-  if (results.type === 'route' && results.vehicleTypes) {
+  // Handle route or zone with vehicle types
+  if ((results.type === 'route' && results.vehicleTypes) || 
+      (results.type === 'zone' && showVehicles && results.vehicleTypes)) {
     if (results.vehicleTypes.length === 0) {
       return <EmptyState searchParams={searchParams} />
     }
 
     return (
     <div className="space-y-8">
-      {/* Route Information Banner */}
+      {/* Route/Zone Information Banner */}
       <div className="bg-muted/30 rounded-lg p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold mb-2">{results.routeName}</h1>
-          <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>{results.originName} to {results.destinationName}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              <span>{results.distance} km journey</span>
-            </div>
-          </div>
+          {results.type === 'zone' && results.zone ? (
+            <>
+              <h1 className="text-2xl font-bold mb-2">
+                Zone Transfer: {results.zone.fromZone.name} → {results.zone.toZone.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{results.originName} to {results.destinationName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">
+                    Base Price: ${results.zone.basePrice.toFixed(2)}
+                  </Badge>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mb-2">{results.routeName}</h1>
+              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{results.originName} to {results.destinationName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{results.distance} km journey</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

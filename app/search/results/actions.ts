@@ -33,6 +33,25 @@ export interface RouteResult {
   availableVehicles: number
 }
 
+export interface ZoneResult {
+  fromZone: {
+    id: string
+    name: string
+    slug: string
+    description: string | null
+  }
+  toZone: {
+    id: string
+    name: string
+    slug: string
+    description: string | null
+  }
+  basePrice: number
+  currency: string
+  vehicleTypes: VehicleTypeResult[]
+  availableVehicles: number
+}
+
 export interface CategoryResult {
   id: string
   name: string
@@ -78,7 +97,7 @@ export interface VehiclesByCategory {
 }
 
 export interface SearchResult {
-  type: 'route' | 'routes' | 'categories' | 'redirect'
+  type: 'route' | 'routes' | 'categories' | 'redirect' | 'zone' | 'zones'
   originName: string
   destinationName?: string
   routeId?: string
@@ -89,13 +108,17 @@ export interface SearchResult {
   vehicleTypes?: VehicleTypeResult[]
   vehicleTypesByCategory?: VehicleTypesByCategory[]
   routes?: RouteResult[]
+  zone?: ZoneResult
+  zones?: ZoneResult[]
   categories?: CategoryResult[]
   redirectTo?: string
 }
 
 export async function getSearchResults(params: {
-  originId: string
+  originId?: string
   destinationId?: string
+  fromZoneId?: string
+  toZoneId?: string
   routeId?: string
   date: Date
   passengers: number
@@ -103,8 +126,23 @@ export async function getSearchResults(params: {
   try {
     const supabase = await createClient()
 
-  // Get origin location details
-  const originDetails = await getLocationDetails(params.originId)
+  // Handle direct zone-to-zone search
+  if (params.fromZoneId && params.toZoneId) {
+    return getZoneToZoneResults(params.fromZoneId, params.toZoneId, params.passengers)
+  }
+
+  // Handle route-based search (from Popular Routes)
+  if (params.routeId && !params.originId) {
+    return getRouteById(params.routeId, params.passengers)
+  }
+
+  // Handle location-based search
+  if (!params.originId) {
+    return null
+  }
+
+  // Get origin location details with zone information
+  const originDetails = await getLocationDetailsWithZone(params.originId)
   if (!originDetails) {
     // Origin location doesn't exist, return empty routes
     return {
@@ -120,21 +158,86 @@ export async function getSearchResults(params: {
     return getLocationSearchResults(params.originId, originDetails.name, params.passengers)
   }
 
-  // Get destination details
-  const destinationDetails = await getLocationDetails(params.destinationId)
+  // Get destination details with zone information
+  const destinationDetails = await getLocationDetailsWithZone(params.destinationId)
   if (!destinationDetails) {
-    // Destination doesn't exist, return empty routes
+    // Destination doesn't exist, return empty zones
     return {
-      type: 'routes',
+      type: 'zones',
       originName: originDetails.name,
       destinationName: 'Unknown Location',
-      routes: []
+      zones: []
     }
   }
 
-  // Check if we have a specific route ID in params (when user selects a route)
-  const routeId = params.routeId
+  // NEW ZONE-BASED LOGIC
+  // Check if both locations have zones assigned
+  if (originDetails.zone_id && destinationDetails.zone_id) {
+    // Get zone information for both locations
+    const { data: zones } = await supabase
+      .from('zones')
+      .select('*')
+      .in('id', [originDetails.zone_id, destinationDetails.zone_id])
 
+    if (zones && zones.length > 0) {
+      const fromZone = zones.find(z => z.id === originDetails.zone_id)
+      const toZone = zones.find(z => z.id === destinationDetails.zone_id)
+
+      if (fromZone && toZone) {
+        // Get zone pricing
+        const { data: zonePricing } = await supabase
+          .from('zone_pricing')
+          .select('*')
+          .eq('from_zone_id', fromZone.id)
+          .eq('to_zone_id', toZone.id)
+          .eq('is_active', true)
+          .single()
+
+        if (zonePricing) {
+          // Get vehicle types for this zone transfer
+          const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForZoneTransfer(
+            fromZone.id,
+            toZone.id,
+            zonePricing.base_price,
+            params.passengers
+          )
+
+          // Count available vehicles
+          const availableVehicles = vehicleTypes.reduce((sum, vt) => sum + vt.availableVehicles, 0)
+
+          return {
+            type: 'zone',
+            originName: originDetails.name,
+            destinationName: destinationDetails.name,
+            zone: {
+              fromZone: {
+                id: fromZone.id,
+                name: fromZone.name,
+                slug: fromZone.slug,
+                description: fromZone.description
+              },
+              toZone: {
+                id: toZone.id,
+                name: toZone.name,
+                slug: toZone.slug,
+                description: toZone.description
+              },
+              basePrice: zonePricing.base_price,
+              currency: zonePricing.currency || 'USD',
+              vehicleTypes,
+              availableVehicles
+            },
+            vehicleTypes,
+            vehicleTypesByCategory
+          }
+        }
+      }
+    }
+  }
+
+  // FALLBACK: If zones not found, check for routes (backward compatibility)
+  const routeId = params.routeId
+  
   if (!routeId) {
     // No route selected, check available routes between origin and destination
     const routesResult = await getRoutesForDestination(params.originId, params.destinationId, originDetails.name, destinationDetails.name, params.passengers)
@@ -249,6 +352,9 @@ export async function getSearchResults(params: {
         name,
         slug,
         sort_order
+      ),
+      vehicle_types!vehicle_type_id(
+        price_multiplier
       )
     `)
     .in('business_id', vendorApplicationIds)
@@ -265,17 +371,22 @@ export async function getSearchResults(params: {
     }
   }
 
-  // Get pricing data for vehicle types on this route
-  const vehicleTypeIds = [...new Set(vehicles.map(v => v.vehicle_type_id).filter(Boolean))]
-  const { data: pricingData, error: pricingError } = await supabase
-    .from('route_vehicle_type_pricing')
-    .select('*')
-    .eq('route_id', route.id)
-    .in('vehicle_type_id', vehicleTypeIds)
-    .eq('is_active', true)
+  // Get zone-based pricing
+  let zonePrice = route.base_price // Fallback to route base price
+  if (originDetails.zone_id && destinationDetails.zone_id) {
+    const { data: zonePricingData, error: zonePricingError } = await supabase
+      .from('zone_pricing')
+      .select('base_price')
+      .eq('from_zone_id', originDetails.zone_id)
+      .eq('to_zone_id', destinationDetails.zone_id)
+      .eq('is_active', true)
+      .single()
 
-  if (pricingError) {
-    console.error('Error fetching pricing data:', pricingError)
+    if (!zonePricingError && zonePricingData) {
+      zonePrice = zonePricingData.base_price
+    } else {
+      console.error('Error fetching zone pricing:', zonePricingError)
+    }
   }
 
   // Map vehicles to search results
@@ -284,9 +395,9 @@ export async function getSearchResults(params: {
     const vendorRoute = vendorRoutes.find(vr => vr.vendor_id === vehicle.business_id)
     const vendor = vendorRoute?.vendor_applications
     
-    // Get pricing for this vehicle type
-    const vehiclePricing = pricingData?.find(p => p.vehicle_type_id === vehicle.vehicle_type_id)
-    const calculatedPrice = vehiclePricing?.price || route.base_price
+    // Calculate price using zone base price and vehicle type multiplier
+    const vehicleTypeMultiplier = vehicle.vehicle_types?.price_multiplier || 1.0
+    const calculatedPrice = zonePrice * vehicleTypeMultiplier
     
     // Calculate duration
     const hours = Math.floor(route.estimated_duration_minutes / 60)
@@ -373,8 +484,13 @@ export async function getSearchResults(params: {
       return a.categoryName.localeCompare(b.categoryName)
     }))
 
-  // Get vehicle types for this route
-  const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForRoute(route.id, params.passengers)
+  // Get vehicle types for this route with zone-based pricing
+  const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForRoute(
+    route.id, 
+    params.passengers,
+    originDetails.zone_id,
+    destinationDetails.zone_id
+  )
 
   return {
     type: 'route',
@@ -394,13 +510,18 @@ export async function getSearchResults(params: {
   }
 }
 
-async function getVehicleTypesForRoute(routeId: string, passengers: number): Promise<{
+async function getVehicleTypesForZoneTransfer(
+  fromZoneId: string,
+  toZoneId: string,
+  basePrice: number,
+  passengers: number
+): Promise<{
   vehicleTypes: VehicleTypeResult[]
   vehicleTypesByCategory: VehicleTypesByCategory[]
 }> {
   const supabase = await createClient()
   
-  // Get vehicle types with pricing for this route
+  // Get vehicle types with pricing for zone transfer
   const { data: vehicleTypesData, error: typesError } = await supabase
     .from('vehicle_types')
     .select(`
@@ -412,6 +533,7 @@ async function getVehicleTypesForRoute(routeId: string, passengers: number): Pro
       description,
       category_id,
       image_url,
+      price_multiplier,
       vehicle_categories!category_id(
         id,
         name,
@@ -428,60 +550,11 @@ async function getVehicleTypesForRoute(routeId: string, passengers: number): Pro
     return { vehicleTypes: [], vehicleTypesByCategory: [] }
   }
 
-  // Get pricing for these vehicle types on this route
-  const vehicleTypeIds = vehicleTypesData.map(vt => vt.id)
-  const { data: pricingData, error: pricingError } = await supabase
-    .from('route_vehicle_type_pricing')
-    .select('*')
-    .eq('route_id', routeId)
-    .in('vehicle_type_id', vehicleTypeIds)
-    .eq('is_active', true)
-
-  if (pricingError) {
-    console.error('Error fetching pricing data:', pricingError)
-  }
-
-  // Get vendor route services to count available vehicles
-  const { data: vendorRoutes, error: vendorError } = await supabase
-    .from('vendor_route_services')
-    .select(`
-      vendor_id,
-      vendor_applications!inner(
-        id,
-        business_name
-      )
-    `)
-    .eq('route_id', routeId)
-    .eq('is_active', true)
-
-  if (vendorError) {
-    console.error('Error fetching vendor routes:', vendorError)
-  }
-
-  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
-
-  // Get vehicle counts per type
-  const { data: vehicleCounts, error: vehicleCountError } = await supabase
-    .from('vehicles')
-    .select('vehicle_type_id, id, business_id')
-    .in('business_id', vendorIds)
-    .in('vehicle_type_id', vehicleTypeIds)
-    .eq('is_available', true)
-
-  if (vehicleCountError) {
-    console.error('Error fetching vehicle counts:', vehicleCountError)
-  }
-
-  // Process data into VehicleTypeResult format
+  // Process data into VehicleTypeResult format with zone-based pricing
   const vehicleTypes: VehicleTypeResult[] = vehicleTypesData.map(vt => {
-    const pricing = pricingData?.find(p => p.vehicle_type_id === vt.id)
-    const vehiclesOfType = vehicleCounts?.filter(v => v.vehicle_type_id === vt.id) || []
-    const vendorsWithType = new Set(
-      vehicleCounts
-        ?.filter(v => v.vehicle_type_id === vt.id)
-        .map(v => vendorRoutes?.find(vr => vr.vendor_id === v.business_id)?.vendor_id)
-        .filter(Boolean)
-    ).size
+    // Calculate price using zone base price and vehicle type multiplier
+    const multiplier = vt.price_multiplier || 1.0
+    const calculatedPrice = basePrice * multiplier
 
     return {
       id: vt.id,
@@ -493,14 +566,14 @@ async function getVehicleTypesForRoute(routeId: string, passengers: number): Pro
       capacity: vt.passenger_capacity,
       luggageCapacity: vt.luggage_capacity,
       description: vt.description || '',
-      price: pricing?.price || 0,
-      currency: pricing?.currency || 'USD',
-      availableVehicles: vehiclesOfType.length,
-      vendorCount: vendorsWithType,
-      features: [], // TODO: Add features if needed
+      price: calculatedPrice,
+      currency: 'USD',
+      availableVehicles: 0, // Will be updated with actual count
+      vendorCount: 0, // Will be updated with actual count
+      features: [],
       image: vt.image_url || undefined
     }
-  }).filter(vt => vt.price > 0) // Only show types with pricing
+  })
 
   // Group by category
   const categories = new Map<string, VehicleTypesByCategory>()
@@ -527,6 +600,368 @@ async function getVehicleTypesForRoute(routeId: string, passengers: number): Pro
   return { vehicleTypes, vehicleTypesByCategory }
 }
 
+async function getVehicleTypesForRoute(
+  routeId: string, 
+  passengers: number,
+  fromZoneId?: string,
+  toZoneId?: string
+): Promise<{
+  vehicleTypes: VehicleTypeResult[]
+  vehicleTypesByCategory: VehicleTypesByCategory[]
+}> {
+  const supabase = await createClient()
+  
+  // Get vehicle types with pricing for this route
+  const { data: vehicleTypesData, error: typesError } = await supabase
+    .from('vehicle_types')
+    .select(`
+      id,
+      name,
+      slug,
+      passenger_capacity,
+      luggage_capacity,
+      description,
+      category_id,
+      image_url,
+      price_multiplier,
+      vehicle_categories!category_id(
+        id,
+        name,
+        slug,
+        sort_order
+      )
+    `)
+    .gte('passenger_capacity', passengers)
+    .eq('is_active', true)
+    .order('passenger_capacity', { ascending: true })
+
+  if (typesError || !vehicleTypesData) {
+    console.error('Error fetching vehicle types:', typesError)
+    return { vehicleTypes: [], vehicleTypesByCategory: [] }
+  }
+
+  // Get zone-based pricing if zones are provided
+  let zonePrice = 50 // Default base price
+  if (fromZoneId && toZoneId) {
+    const { data: zonePricingData, error: zonePricingError } = await supabase
+      .from('zone_pricing')
+      .select('base_price')
+      .eq('from_zone_id', fromZoneId)
+      .eq('to_zone_id', toZoneId)
+      .eq('is_active', true)
+      .single()
+
+    if (!zonePricingError && zonePricingData) {
+      zonePrice = zonePricingData.base_price
+    } else {
+      console.error('Error fetching zone pricing:', zonePricingError)
+    }
+  }
+
+  // Get vendor route services to count available vehicles
+  const { data: vendorRoutes, error: vendorError } = await supabase
+    .from('vendor_route_services')
+    .select(`
+      vendor_id,
+      vendor_applications!inner(
+        id,
+        business_name
+      )
+    `)
+    .eq('route_id', routeId)
+    .eq('is_active', true)
+
+  if (vendorError) {
+    console.error('Error fetching vendor routes:', vendorError)
+  }
+
+  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
+
+  // Get vehicle type IDs from the fetched data
+  const vehicleTypeIds = vehicleTypesData.map(vt => vt.id)
+
+  // Get vehicle counts per type
+  const { data: vehicleCounts, error: vehicleCountError } = await supabase
+    .from('vehicles')
+    .select('vehicle_type_id, id, business_id')
+    .in('business_id', vendorIds)
+    .in('vehicle_type_id', vehicleTypeIds)
+    .eq('is_available', true)
+
+  if (vehicleCountError) {
+    console.error('Error fetching vehicle counts:', vehicleCountError)
+  }
+
+  // Process data into VehicleTypeResult format with zone-based pricing
+  const vehicleTypes: VehicleTypeResult[] = vehicleTypesData.map(vt => {
+    // Calculate price using zone base price and vehicle type multiplier
+    const multiplier = vt.price_multiplier || 1.0
+    const calculatedPrice = zonePrice * multiplier
+    
+    const vehiclesOfType = vehicleCounts?.filter(v => v.vehicle_type_id === vt.id) || []
+    const vendorsWithType = new Set(
+      vehicleCounts
+        ?.filter(v => v.vehicle_type_id === vt.id)
+        .map(v => vendorRoutes?.find(vr => vr.vendor_id === v.business_id)?.vendor_id)
+        .filter(Boolean)
+    ).size
+
+    return {
+      id: vt.id,
+      name: vt.name,
+      slug: vt.slug,
+      category: vt.vehicle_categories?.name || 'Standard',
+      categoryId: vt.category_id || '',
+      categorySlug: vt.vehicle_categories?.slug || 'standard',
+      capacity: vt.passenger_capacity,
+      luggageCapacity: vt.luggage_capacity,
+      description: vt.description || '',
+      price: calculatedPrice,
+      currency: 'USD',
+      availableVehicles: vehiclesOfType.length,
+      vendorCount: vendorsWithType,
+      features: [], // TODO: Add features if needed
+      image: vt.image_url || undefined
+    }
+  })
+
+  // Group by category
+  const categories = new Map<string, VehicleTypesByCategory>()
+  
+  vehicleTypes.forEach(vt => {
+    if (!categories.has(vt.categoryId)) {
+      categories.set(vt.categoryId, {
+        categoryId: vt.categoryId,
+        categoryName: vt.category,
+        categorySlug: vt.categorySlug,
+        vehicleTypes: [],
+        minPrice: Number.MAX_VALUE
+      })
+    }
+    
+    const category = categories.get(vt.categoryId)!
+    category.vehicleTypes.push(vt)
+    category.minPrice = Math.min(category.minPrice, vt.price)
+  })
+
+  const vehicleTypesByCategory = Array.from(categories.values())
+    .sort((a, b) => a.minPrice - b.minPrice)
+
+  return { vehicleTypes, vehicleTypesByCategory }
+}
+
+async function getRouteById(
+  routeId: string,
+  passengers: number
+): Promise<SearchResult | null> {
+  const supabase = await createClient()
+
+  // Get route details with location information
+  const { data: route, error } = await supabase
+    .from('routes')
+    .select(`
+      *,
+      origin_location:locations!routes_origin_location_id_fkey(*),
+      destination_location:locations!routes_destination_location_id_fkey(*)
+    `)
+    .eq('id', routeId)
+    .eq('is_active', true)
+    .single()
+
+  if (error || !route) {
+    console.error('Error fetching route:', error)
+    return null
+  }
+
+  // Check if both locations have zones for zone-based pricing
+  if (route.origin_location.zone_id && route.destination_location.zone_id) {
+    // Get zone information
+    const { data: zones } = await supabase
+      .from('zones')
+      .select('*')
+      .in('id', [route.origin_location.zone_id, route.destination_location.zone_id])
+
+    if (zones && zones.length === 2) {
+      const fromZone = zones.find(z => z.id === route.origin_location.zone_id)
+      const toZone = zones.find(z => z.id === route.destination_location.zone_id)
+
+      if (fromZone && toZone) {
+        // Get zone pricing
+        const { data: zonePricing } = await supabase
+          .from('zone_pricing')
+          .select('*')
+          .eq('from_zone_id', fromZone.id)
+          .eq('to_zone_id', toZone.id)
+          .eq('is_active', true)
+          .single()
+
+        if (zonePricing) {
+          // Get vehicle types with zone-based pricing
+          const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForZoneTransfer(
+            fromZone.id,
+            toZone.id,
+            zonePricing.base_price,
+            passengers
+          )
+
+          return {
+            type: 'zone',
+            originName: route.origin_location.name,
+            destinationName: route.destination_location.name,
+            zone: {
+              fromZone: {
+                id: fromZone.id,
+                name: fromZone.name,
+                slug: fromZone.slug,
+                description: fromZone.description
+              },
+              toZone: {
+                id: toZone.id,
+                name: toZone.name,
+                slug: toZone.slug,
+                description: toZone.description
+              },
+              basePrice: zonePricing.base_price,
+              currency: zonePricing.currency || 'USD',
+              vehicleTypes,
+              availableVehicles: vehicleTypes.reduce((sum, vt) => sum + vt.availableVehicles, 0)
+            },
+            vehicleTypes,
+            vehicleTypesByCategory
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback to route-based pricing if zones not available
+  const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForRoute(
+    routeId,
+    passengers,
+    route.origin_location.zone_id,
+    route.destination_location.zone_id
+  )
+
+  return {
+    type: 'route',
+    originName: route.origin_location.name,
+    destinationName: route.destination_location.name,
+    route: {
+      id: route.id,
+      routeName: route.route_name,
+      destinationId: route.destination_location_id,
+      destinationName: route.destination_location.name,
+      destinationType: route.destination_location.type,
+      distance: route.distance_km,
+      duration: route.estimated_duration_minutes,
+      minPrice: route.base_price,
+      availableVehicles: vehicleTypes.length
+    },
+    vehicles: [],
+    vehicleTypes,
+    vehicleTypesByCategory
+  }
+}
+
+async function getZoneToZoneResults(
+  fromZoneId: string,
+  toZoneId: string,
+  passengers: number
+): Promise<SearchResult | null> {
+  const supabase = await createClient()
+
+  // Get both zones information
+  const { data: zones } = await supabase
+    .from('zones')
+    .select('*')
+    .in('id', [fromZoneId, toZoneId])
+
+  if (!zones || zones.length !== 2) {
+    return null
+  }
+
+  const fromZone = zones.find(z => z.id === fromZoneId)
+  const toZone = zones.find(z => z.id === toZoneId)
+
+  if (!fromZone || !toZone) {
+    return null
+  }
+
+  // Get zone pricing
+  const { data: zonePricing } = await supabase
+    .from('zone_pricing')
+    .select('*')
+    .eq('from_zone_id', fromZoneId)
+    .eq('to_zone_id', toZoneId)
+    .eq('is_active', true)
+    .single()
+
+  if (!zonePricing) {
+    return {
+      type: 'zone',
+      originName: fromZone.name,
+      destinationName: toZone.name,
+      zone: {
+        fromZone: {
+          id: fromZone.id,
+          name: fromZone.name,
+          slug: fromZone.slug,
+          description: fromZone.description
+        },
+        toZone: {
+          id: toZone.id,
+          name: toZone.name,
+          slug: toZone.slug,
+          description: toZone.description
+        },
+        basePrice: 0,
+        currency: 'USD',
+        vehicleTypes: [],
+        availableVehicles: 0
+      },
+      vehicleTypes: [],
+      vehicleTypesByCategory: []
+    }
+  }
+
+  // Get vehicle types for this zone transfer
+  const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForZoneTransfer(
+    fromZoneId,
+    toZoneId,
+    zonePricing.base_price,
+    passengers
+  )
+
+  // Count available vehicles
+  const availableVehicles = vehicleTypes.reduce((sum, vt) => sum + vt.availableVehicles, 0)
+
+  return {
+    type: 'zone',
+    originName: fromZone.name,
+    destinationName: toZone.name,
+    zone: {
+      fromZone: {
+        id: fromZone.id,
+        name: fromZone.name,
+        slug: fromZone.slug,
+        description: fromZone.description
+      },
+      toZone: {
+        id: toZone.id,
+        name: toZone.name,
+        slug: toZone.slug,
+        description: toZone.description
+      },
+      basePrice: zonePricing.base_price,
+      currency: zonePricing.currency || 'USD',
+      vehicleTypes,
+      availableVehicles
+    },
+    vehicleTypes,
+    vehicleTypesByCategory
+  }
+}
+
 export async function getLocationDetails(locationId: string) {
   try {
     const supabase = await createClient()
@@ -534,6 +969,32 @@ export async function getLocationDetails(locationId: string) {
     const { data, error } = await supabase
       .from('locations')
       .select('id, name, city, country_code, slug')
+      .eq('id', locationId)
+      .maybeSingle()
+
+    if (error || !data) {
+      if (error) {
+        console.error('Error fetching location:', error)
+      }
+      // Return null to indicate location doesn't exist
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Failed to fetch location details:', error)
+    // Return null to indicate location doesn't exist
+    return null
+  }
+}
+
+async function getLocationDetailsWithZone(locationId: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .from('locations')
+      .select('id, name, city, country_code, slug, zone_id')
       .eq('id', locationId)
       .maybeSingle()
 

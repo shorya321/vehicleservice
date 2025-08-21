@@ -14,6 +14,8 @@ interface SearchResultsPageProps {
   searchParams: Promise<{
     from?: string
     to?: string
+    fromZone?: string
+    toZone?: string
     routeId?: string
     date?: string
     passengers?: string
@@ -22,15 +24,18 @@ interface SearchResultsPageProps {
 
 export default async function SearchResultsPage({ searchParams }: SearchResultsPageProps) {
   const params = await searchParams
-  const { from, to, routeId, date, passengers } = params
+  const { from, to, fromZone, toZone, routeId, date, passengers } = params
 
-  if (!from || !date || !passengers) {
+  // Support location-based, zone-based, and route-based searches
+  if ((!from && !fromZone && !routeId) || !date || !passengers) {
     redirect('/')
   }
 
   const results = await getSearchResults({
     originId: from,
     destinationId: to,
+    fromZoneId: fromZone,
+    toZoneId: toZone,
     routeId: routeId,
     date: new Date(date),
     passengers: parseInt(passengers)

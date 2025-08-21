@@ -102,6 +102,12 @@ const navigation: NavItem[] = [
     icon: Route,
     badge: null,
   },
+  {
+    name: "Zones",
+    href: "/admin/zones",
+    icon: MapPin,
+    badge: null,
+  },
 ]
 
 const bottomNavigation = [

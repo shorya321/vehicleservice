@@ -57,7 +57,7 @@ export function PopularRoutes({
         {routes.map((route) => (
           <Link
             key={route.id}
-            href={`/routes/${route.slug}`}
+            href={`/search/results?routeId=${route.id}&date=${new Date().toISOString().split('T')[0]}&passengers=2`}
             className="block transition-transform hover:scale-[1.02]"
           >
             <Card className="h-full hover:shadow-lg transition-shadow">
