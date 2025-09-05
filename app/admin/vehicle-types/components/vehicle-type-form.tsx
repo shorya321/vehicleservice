@@ -38,6 +38,7 @@ const formSchema = z.object({
   category_id: z.string().optional(),
   passenger_capacity: z.coerce.number().min(1, "Passenger capacity must be at least 1"),
   luggage_capacity: z.coerce.number().min(0, "Luggage capacity cannot be negative"),
+  price_multiplier: z.coerce.number().min(0.1, "Price multiplier must be at least 0.1").max(10, "Price multiplier cannot exceed 10").optional(),
   sort_order: z.coerce.number().optional(),
   is_active: z.boolean().default(true),
 })
@@ -62,6 +63,7 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
       category_id: vehicleType?.category_id || "",
       passenger_capacity: vehicleType?.passenger_capacity || 4,
       luggage_capacity: vehicleType?.luggage_capacity || 2,
+      price_multiplier: vehicleType?.price_multiplier || 1.0,
       sort_order: vehicleType?.sort_order || undefined,
       is_active: vehicleType?.is_active ?? true,
     },
@@ -263,6 +265,31 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
                 </FormControl>
                 <FormDescription>
                   Number of luggage pieces
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price_multiplier"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price Multiplier</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0.1"
+                    max="10"
+                    step="0.1"
+                    placeholder="e.g., 1.0, 1.5, 2.0"
+                    {...field}
+                    value={field.value || ''}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Multiplier applied to zone base prices (e.g., 1.5 = 50% more expensive)
                 </FormDescription>
                 <FormMessage />
               </FormItem>

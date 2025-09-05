@@ -282,21 +282,6 @@ export async function createVehicle(businessId: string, data: VehicleFormData & 
       }
     }
 
-    // Handle feature mappings
-    if (data.feature_ids && data.feature_ids.length > 0) {
-      const featureMappings = data.feature_ids.map(featureId => ({
-        vehicle_id: vehicle.id,
-        feature_id: featureId
-      }))
-
-      const { error: featureError } = await supabase
-        .from('vehicle_feature_mappings')
-        .insert(featureMappings)
-
-      if (featureError) {
-        console.error('Error adding vehicle features:', featureError)
-      }
-    }
 
     revalidatePath('/vendor/vehicles')
     return { success: true }
@@ -417,32 +402,6 @@ export async function updateVehicle(
     }
 
     // Handle feature mappings
-    // First delete existing mappings
-    const { error: deleteError } = await supabase
-      .from('vehicle_feature_mappings')
-      .delete()
-      .eq('vehicle_id', vehicleId)
-
-    if (deleteError) {
-      console.error('Error deleting existing features:', deleteError)
-    }
-
-    // Then add new mappings if any
-    if (data.feature_ids && data.feature_ids.length > 0) {
-      const featureMappings = data.feature_ids.map(featureId => ({
-        vehicle_id: vehicleId,
-        feature_id: featureId
-      }))
-
-      const { error: featureError } = await supabase
-        .from('vehicle_feature_mappings')
-        .insert(featureMappings)
-
-      if (featureError) {
-        console.error('Error adding vehicle features:', featureError)
-      }
-    }
-
     revalidatePath('/vendor/vehicles')
     revalidatePath(`/vendor/vehicles/${vehicleId}/edit`)
     return { success: true }
@@ -468,21 +427,6 @@ export async function getVehicleCategories(): Promise<{ data?: VehicleCategory[]
   return { data }
 }
 
-export async function getVehicleFeatures(vehicleId: string): Promise<string[]> {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('vehicle_feature_mappings')
-    .select('feature_id')
-    .eq('vehicle_id', vehicleId)
-
-  if (error) {
-    console.error('Error fetching vehicle features:', error)
-    return []
-  }
-
-  return data.map(mapping => mapping.feature_id)
-}
 
 export async function getVehicleTypesByCategory(categoryId: string) {
   const supabase = await createClient()

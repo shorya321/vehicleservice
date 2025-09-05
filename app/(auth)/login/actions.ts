@@ -1,10 +1,10 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createServerActionClient } from "@/lib/supabase/server-actions"
 import { redirect } from "next/navigation"
 
 export async function userLogin(email: string, password: string) {
-  const supabase = await createClient()
+  const supabase = await createServerActionClient()
 
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email,

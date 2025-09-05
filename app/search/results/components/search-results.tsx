@@ -179,7 +179,6 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
           <VehicleTypeCategoryTabs
             vehicleTypesByCategory={results.vehicleTypesByCategory}
             allVehicleTypes={results.vehicleTypes}
-            routeId={results.routeId || ''}
             searchParams={searchParams}
           />
         ) : (
@@ -189,7 +188,6 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
               <VehicleTypeGridCard
                 key={vehicleType.id}
                 vehicleType={vehicleType}
-                routeId={results.routeId || ''}
                 searchParams={searchParams}
               />
             ))}

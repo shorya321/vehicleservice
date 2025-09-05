@@ -4,15 +4,36 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Location } from '@/lib/types/location'
+import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react'
 
 export function WorkingSearchWidget() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  
+  // Function to get icon based on location type
+  const getLocationIcon = (type: string) => {
+    switch(type) {
+      case 'airport':
+        return <Plane className="h-4 w-4 text-gray-500" />
+      case 'city':
+        return <Building2 className="h-4 w-4 text-gray-500" />
+      case 'hotel':
+        return <Hotel className="h-4 w-4 text-gray-500" />
+      case 'station':
+        return <Train className="h-4 w-4 text-gray-500" />
+      default:
+        return <MapPin className="h-4 w-4 text-gray-500" />
+    }
+  }
   const [fromLocation, setFromLocation] = useState<Location | null>(null)
   const [toLocation, setToLocation] = useState<Location | null>(null)
   const [passengers, setPassengers] = useState(2)
-  const [showCalendar, setShowCalendar] = useState(false)
-  const [selectedDate, setSelectedDate] = useState('2025-07-17')
+  const [luggage, setLuggage] = useState(2)
+  
+  // Initialize with today's date
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  const [selectedDate, setSelectedDate] = useState(todayStr)
   
   // From autocomplete
   const [fromInput, setFromInput] = useState('')
@@ -169,16 +190,14 @@ export function WorkingSearchWidget() {
   }
 
   const handleSearch = () => {
-    if (fromLocation) {
+    if (fromLocation && toLocation) {
       const params = new URLSearchParams({
         from: fromLocation.id,
+        to: toLocation.id,
         date: selectedDate,
-        passengers: passengers.toString()
+        passengers: passengers.toString(),
+        luggage: luggage.toString()
       })
-      
-      if (toLocation) {
-        params.append('to', toLocation.id)
-      }
       
       router.push(`/search/results?${params.toString()}`)
     }
@@ -216,9 +235,16 @@ export function WorkingSearchWidget() {
                   onClick={() => selectFromLocation(location)}
                   className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
                 >
-                  <div className="font-medium">{location.name}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {location.city ? `${location.city}, ` : ''}{location.country_code}
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5">
+                      {getLocationIcon(location.type || 'default')}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{location.name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {location.city ? `${location.city}, ` : ''}{location.country_code}
+                      </div>
+                    </div>
                   </div>
                 </button>
               ))}
@@ -228,7 +254,7 @@ export function WorkingSearchWidget() {
 
         {/* To location */}
         <div className="relative location-dropdown-to">
-          <label className="block text-sm font-medium mb-2">To (Optional)</label>
+          <label className="block text-sm font-medium mb-2">To</label>
           <input
             type="text"
             value={toInput}
@@ -250,9 +276,16 @@ export function WorkingSearchWidget() {
                   onClick={() => selectToLocation(location)}
                   className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
                 >
-                  <div className="font-medium">{location.name}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {location.city ? `${location.city}, ` : ''}{location.country_code}
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5">
+                      {getLocationIcon(location.type || 'default')}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{location.name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {location.city ? `${location.city}, ` : ''}{location.country_code}
+                      </div>
+                    </div>
                   </div>
                 </button>
               ))}
@@ -261,44 +294,18 @@ export function WorkingSearchWidget() {
         </div>
       </div>
 
-      {/* Date and passengers */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Date, passengers and luggage */}
+      <div className="grid gap-4 md:grid-cols-4">
         {/* Date picker */}
         <div className="relative">
           <label className="block text-sm font-medium mb-2">Date</label>
-          <button
-            onClick={() => setShowCalendar(!showCalendar)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-left focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          >
-            📅 {selectedDate}
-          </button>
-          
-          {showCalendar && (
-            <div className="absolute top-full left-0 z-50 mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg p-4">
-              <div className="grid grid-cols-7 gap-1 text-sm">
-                <div className="text-center font-medium">S</div>
-                <div className="text-center font-medium">M</div>
-                <div className="text-center font-medium">T</div>
-                <div className="text-center font-medium">W</div>
-                <div className="text-center font-medium">T</div>
-                <div className="text-center font-medium">F</div>
-                <div className="text-center font-medium">S</div>
-                
-                {Array.from({ length: 31 }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => {
-                      setSelectedDate(`2025-07-${String(i + 1).padStart(2, '0')}`)
-                      setShowCalendar(false)
-                    }}
-                    className="w-8 h-8 text-center hover:bg-blue-100 dark:hover:bg-gray-700 rounded"
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <input
+            type="date"
+            value={selectedDate}
+            min={todayStr}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          />
         </div>
 
         {/* Passenger selector */}
@@ -314,8 +321,30 @@ export function WorkingSearchWidget() {
             </button>
             <span className="w-8 text-center">{passengers}</span>
             <button
-              onClick={() => setPassengers(Math.min(8, passengers + 1))}
-              disabled={passengers >= 8}
+              onClick={() => setPassengers(Math.min(20, passengers + 1))}
+              disabled={passengers >= 20}
+              className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Luggage selector */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Luggage</label>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setLuggage(Math.max(0, luggage - 1))}
+              disabled={luggage <= 0}
+              className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              -
+            </button>
+            <span className="w-8 text-center">{luggage}</span>
+            <button
+              onClick={() => setLuggage(Math.min(20, luggage + 1))}
+              disabled={luggage >= 20}
               className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               +
@@ -328,7 +357,7 @@ export function WorkingSearchWidget() {
           <label className="block text-sm font-medium mb-2">&nbsp;</label>
           <button
             onClick={handleSearch}
-            disabled={!fromLocation}
+            disabled={!fromLocation || !toLocation}
             className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Search

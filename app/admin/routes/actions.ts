@@ -64,12 +64,11 @@ export async function getRoutes(filters: RouteFilters = {}): Promise<PaginatedRo
   // Fetch search counts for each route
   const routeIds = data?.map(route => route.id) || []
   const searchCounts = await getSearchCounts(routeIds)
-  const vendorCounts = await getVendorCounts(routeIds)
 
   const routesWithDetails: RouteWithDetails[] = (data || []).map(route => ({
     ...route,
     search_count: searchCounts[route.id] || 0,
-    vendor_count: vendorCounts[route.id] || 0
+    vendor_count: 0 // All vendors can service all routes (aggregator model)
   }))
 
   return {
@@ -100,29 +99,6 @@ async function getSearchCounts(routeIds: string[]): Promise<Record<string, numbe
     if (search.route_id) {
       counts[search.route_id] = (counts[search.route_id] || 0) + 1
     }
-  })
-
-  return counts
-}
-
-async function getVendorCounts(routeIds: string[]): Promise<Record<string, number>> {
-  if (routeIds.length === 0) return {}
-
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('vendor_route_services')
-    .select('route_id')
-    .in('route_id', routeIds)
-    .eq('is_active', true)
-
-  if (error) {
-    console.error('Error fetching vendor counts:', error)
-    return {}
-  }
-
-  const counts: Record<string, number> = {}
-  data?.forEach(service => {
-    counts[service.route_id] = (counts[service.route_id] || 0) + 1
   })
 
   return counts

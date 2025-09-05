@@ -8,6 +8,8 @@ import { formatCurrency } from '@/lib/utils'
 export interface PopularRoute {
   id: string
   slug: string
+  originLocationId: string
+  destinationLocationId: string
   originName: string
   destinationName: string
   originCity: string
@@ -57,7 +59,7 @@ export function PopularRoutes({
         {routes.map((route) => (
           <Link
             key={route.id}
-            href={`/search/results?routeId=${route.id}&date=${new Date().toISOString().split('T')[0]}&passengers=2`}
+            href={`/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${new Date().toISOString().split('T')[0]}&passengers=2`}
             className="block transition-transform hover:scale-[1.02]"
           >
             <Card className="h-full hover:shadow-lg transition-shadow">

@@ -36,7 +36,6 @@ export interface PopularRoute {
   routeName: string
   destinationName: string
   destinationCity: string
-  basePrice: number
   distance: number
   duration: number
 }
@@ -148,7 +147,6 @@ export async function getPopularRoutesFromZone(zoneId: string): Promise<PopularR
     .select(`
       id,
       route_name,
-      base_price,
       distance_km,
       estimated_duration_minutes,
       destination_location:locations!routes_destination_location_id_fkey(
@@ -171,7 +169,6 @@ export async function getPopularRoutesFromZone(zoneId: string): Promise<PopularR
     routeName: route.route_name,
     destinationName: route.destination_location.name,
     destinationCity: route.destination_location.city,
-    basePrice: route.base_price,
     distance: route.distance_km,
     duration: route.estimated_duration_minutes
   }))

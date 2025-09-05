@@ -31,10 +31,8 @@ import {
   FileText,
   Car,
   UserCircle,
-  ListChecks,
   ChevronDown,
   ChevronRight,
-  Navigation,
 } from "lucide-react"
 
 interface VendorLayoutProps {
@@ -64,14 +62,8 @@ const navigation: NavItem[] = [
         href: "/vendor/vehicles",
         icon: Car,
       },
-      {
-        name: "Vehicle Features",
-        href: "/vendor/vehicle-features",
-        icon: ListChecks,
-      },
     ]
   },
-  { name: "Routes", href: "/vendor/routes", icon: Navigation },
   { name: "My Services", href: "/vendor/services", icon: Package },
   { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
   { name: "Earnings", href: "/vendor/earnings", icon: DollarSign },

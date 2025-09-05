@@ -38,7 +38,6 @@ const routeSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase with hyphens only"),
   distance_km: z.coerce.number().positive("Distance must be positive"),
   estimated_duration_minutes: z.coerce.number().int().positive("Duration must be positive"),
-  base_price: z.coerce.number().min(0, "Base price must be non-negative"),
   is_active: z.boolean(),
   is_popular: z.boolean(),
 }).refine((data) => data.origin_location_id !== data.destination_location_id, {
@@ -66,7 +65,6 @@ export function RouteForm({ route, locations }: RouteFormProps) {
       route_slug: route?.route_slug || "",
       distance_km: route?.distance_km || 0,
       estimated_duration_minutes: route?.estimated_duration_minutes || 0,
-      base_price: route?.base_price || 0,
       is_active: route?.is_active ?? true,
       is_popular: route?.is_popular ?? false,
     },
@@ -238,7 +236,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="distance_km"
@@ -261,20 +259,6 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                 <FormLabel>Duration (minutes)</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="base_price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Base Price ($)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

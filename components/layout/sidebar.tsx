@@ -22,7 +22,6 @@ import {
   Compass,
   Building2,
   Tag,
-  ListChecks,
   Route,
   Layers,
 } from "lucide-react"
@@ -48,6 +47,12 @@ const navigation: NavItem[] = [
     name: "Dashboard",
     href: "/admin/dashboard",
     icon: LayoutDashboard,
+    badge: null,
+  },
+  {
+    name: "Bookings",
+    href: "/admin/bookings",
+    icon: Calendar,
     badge: null,
   },
   {
@@ -82,11 +87,6 @@ const navigation: NavItem[] = [
         name: "Vehicle Types",
         href: "/admin/vehicle-types",
         icon: Layers,
-      },
-      {
-        name: "Features",
-        href: "/admin/vehicle-features",
-        icon: ListChecks,
       },
     ]
   },

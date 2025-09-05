@@ -11,7 +11,6 @@ import { formatCurrency } from '@/lib/utils'
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
   allVehicleTypes: VehicleTypeResult[]
-  routeId: string
   searchParams: {
     from?: string
     to?: string
@@ -23,7 +22,6 @@ interface VehicleTypeCategoryTabsProps {
 export function VehicleTypeCategoryTabs({ 
   vehicleTypesByCategory, 
   allVehicleTypes,
-  routeId,
   searchParams 
 }: VehicleTypeCategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState('all')
@@ -63,7 +61,6 @@ export function VehicleTypeCategoryTabs({
             <VehicleTypeGridCard
               key={vehicleType.id}
               vehicleType={vehicleType}
-              routeId={routeId}
               searchParams={searchParams}
             />
           ))}
@@ -82,7 +79,6 @@ export function VehicleTypeCategoryTabs({
               <VehicleTypeGridCard
                 key={vehicleType.id}
                 vehicleType={vehicleType}
-                routeId={routeId}
                 searchParams={searchParams}
               />
             ))}

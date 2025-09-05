@@ -16,7 +16,6 @@ import { formatCurrency } from '@/lib/utils'
 
 interface VehicleTypeGridCardProps {
   vehicleType: VehicleTypeResult
-  routeId: string
   searchParams: {
     from?: string
     to?: string
@@ -38,12 +37,11 @@ const vehicleModels: Record<string, string> = {
   'bus': '35-Seater Bus, 45-Seater Bus'
 }
 
-export function VehicleTypeGridCard({ vehicleType, routeId, searchParams }: VehicleTypeGridCardProps) {
+export function VehicleTypeGridCard({ vehicleType, searchParams }: VehicleTypeGridCardProps) {
   const vehicleTypeImage = vehicleType.image || `/images/vehicle-types/${vehicleType.slug}.jpg`
   const models = vehicleModels[vehicleType.slug] || vehicleType.name
   
   const selectionUrl = `/checkout?${new URLSearchParams({
-    route: routeId,
     vehicleType: vehicleType.id,
     ...searchParams
   }).toString()}`

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,8 @@ import {
   Tag,
   Shield,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Briefcase
 } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { formatCurrency } from '@/lib/utils'
@@ -24,16 +25,22 @@ interface OrderSummaryProps {
   route: RouteDetails
   vehicleType: VehicleTypeDetails
   passengers: number
+  luggage: number
+  infantSeats?: number
+  boosterSeats?: number
 }
 
-export function OrderSummary({ route, vehicleType, passengers }: OrderSummaryProps) {
+export function OrderSummary({ route, vehicleType, passengers, luggage, infantSeats = 0, boosterSeats = 0 }: OrderSummaryProps) {
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
 
-  // Calculate prices (simplified - should match backend calculation)
+  // Calculate prices including all extras
   const basePrice = vehicleType.price || 50
-  const subtotal = basePrice
+  const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
+  const extraLuggageCost = extraLuggageCount * 15 // $15 per extra bag
+  const childSeatsCost = (infantSeats + boosterSeats) * 10 // $10 per seat
+  const subtotal = basePrice + extraLuggageCost + childSeatsCost
   const discount = promoDiscount
   const total = subtotal - discount
 
@@ -116,6 +123,10 @@ export function OrderSummary({ route, vehicleType, passengers }: OrderSummaryPro
                 <Users className="h-3.5 w-3.5" />
                 {passengers} passenger{passengers > 1 ? 's' : ''}
               </span>
+              <span className="flex items-center gap-1">
+                <Briefcase className="h-3.5 w-3.5" />
+                {luggage} bag{luggage !== 1 ? 's' : ''}
+              </span>
             </div>
           </div>
 
@@ -152,6 +163,18 @@ export function OrderSummary({ route, vehicleType, passengers }: OrderSummaryPro
               <span>Base Fare</span>
               <span>{formatCurrency(basePrice)}</span>
             </div>
+            {childSeatsCost > 0 && (
+              <div className="flex justify-between text-sm">
+                <span>Child Seats ({infantSeats + boosterSeats} total)</span>
+                <span>{formatCurrency(childSeatsCost)}</span>
+              </div>
+            )}
+            {extraLuggageCost > 0 && (
+              <div className="flex justify-between text-sm">
+                <span>Extra Luggage ({extraLuggageCount} bag{extraLuggageCount > 1 ? 's' : ''})</span>
+                <span>{formatCurrency(extraLuggageCost)}</span>
+              </div>
+            )}
             {promoDiscount > 0 && (
               <div className="flex justify-between text-sm text-green-600">
                 <span>Promo Discount</span>

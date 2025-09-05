@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server"
 import { VendorLayout } from "@/components/layout/vendor-layout"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { VehicleForm } from "../../components/vehicle-form"
-import { getVehicleFeatures } from "../../actions"
 
 interface EditVehiclePageProps {
   params: Promise<{
@@ -39,13 +38,6 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
     notFound()
   }
 
-  // Get existing feature selections
-  const featureIds = await getVehicleFeatures(id)
-  const vehicleWithFeatures = {
-    ...vehicle,
-    feature_ids: featureIds
-  }
-
   return (
     <VendorLayout>
       <div className="max-w-4xl">
@@ -56,7 +48,7 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
           </p>
         </div>
 
-        <VehicleForm businessId={vendorApplication.id} initialData={vehicleWithFeatures} />
+        <VehicleForm businessId={vendorApplication.id} initialData={vehicle} />
       </div>
     </VendorLayout>
   )

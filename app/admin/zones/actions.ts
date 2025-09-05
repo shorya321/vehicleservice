@@ -204,7 +204,11 @@ export async function updateZonePricing(
       return { error: `Failed to verify zones: ${zonesError.message}` }
     }
 
-    if (!zones || zones.length !== 2) {
+    // Handle same-zone pricing (e.g., Zone F → Zone F)
+    const isSameZone = fromZoneId === toZoneId
+    const expectedZoneCount = isSameZone ? 1 : 2
+
+    if (!zones || zones.length !== expectedZoneCount) {
       return { error: 'One or both zones do not exist' }
     }
 

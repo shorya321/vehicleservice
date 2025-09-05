@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { StatCard } from "@/components/ui/stat-card"
-import { getVendorRouteMetrics } from "../routes/actions"
 import {
   Users,
   Clock,
@@ -17,7 +16,6 @@ import {
   Car,
   Star,
   TrendingUp,
-  Route,
   Navigation,
 } from "lucide-react"
 import Link from "next/link"
@@ -58,16 +56,6 @@ export default async function VendorDashboard() {
     .eq('user_id', user.id)
     .single()
 
-  // Get route metrics
-  let routeMetrics = { activeRoutes: 0, totalRoutes: 0, totalSearches: 0 }
-  try {
-    if (vendorApplication?.status === 'approved') {
-      routeMetrics = await getVendorRouteMetrics()
-    }
-  } catch (error) {
-    console.error('Error fetching route metrics:', error)
-  }
-  
   return (
     <VendorLayout>
       <div className="space-y-8">
@@ -106,30 +94,30 @@ export default async function VendorDashboard() {
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Active Routes"
-            value={routeMetrics.activeRoutes.toString()}
-            description="Routes you currently serve"
-            icon={Route}
+            title="Active Vehicles"
+            value="0"
+            description="Vehicles available for booking"
+            icon={Car}
             trend={{ value: 12.5, isPositive: true }}
           />
           <StatCard
-            title="Total Routes"
-            value={routeMetrics.totalRoutes.toString()}
-            description="Routes you've joined"
+            title="Total Bookings"
+            value="0"
+            description="Bookings this month"
             icon={Navigation}
             trend={{ value: 8.2, isPositive: true }}
           />
           <StatCard
-            title="Route Searches"
-            value={routeMetrics.totalSearches.toString()}
-            description="Searches on your routes"
-            icon={TrendingUp}
+            title="Average Rating"
+            value="0.0"
+            description="Customer satisfaction"
+            icon={Star}
             trend={{ value: 15, isPositive: true }}
           />
           <StatCard
-            title="Coverage"
-            value={routeMetrics.totalRoutes > 0 ? `${Math.round((routeMetrics.activeRoutes / routeMetrics.totalRoutes) * 100)}%` : "0%"}
-            description="Route coverage percentage"
+            title="Revenue"
+            value="$0"
+            description="This month's earnings"
             icon={BarChart3}
             trend={{ value: 5, isPositive: true }}
           />
@@ -236,12 +224,6 @@ export default async function VendorDashboard() {
             </CardHeader>
             <CardContent className="grid gap-4">
               <Button asChild className="w-full justify-start">
-                <Link href="/vendor/routes">
-                  <Route className="mr-2 h-4 w-4" />
-                  Manage Routes
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/vendor/vehicles">
                   <Car className="mr-2 h-4 w-4" />
                   Manage Vehicles

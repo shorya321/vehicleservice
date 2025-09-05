@@ -286,8 +286,7 @@ export async function getSearchResults(params: {
       id,
       route_name,
       distance_km,
-      estimated_duration_minutes,
-      base_price
+      estimated_duration_minutes
     `)
     .eq('id', routeId)
     .eq('is_active', true)
@@ -307,34 +306,8 @@ export async function getSearchResults(params: {
     userId: user?.id
   })
 
-  // Get vehicles available for this route
-  const { data: vendorRoutes, error: vendorRoutesError } = await supabase
-    .from('vendor_route_services')
-    .select(`
-      id,
-      vendor_id,
-      is_active,
-      vendor_applications!inner(
-        id,
-        business_name
-      )
-    `)
-    .eq('route_id', route.id)
-    .eq('is_active', true)
-
-  if (vendorRoutesError) {
-    console.error('Error fetching vendor routes:', vendorRoutesError)
-    return {
-      routeId: route.id,
-      routeName: route.route_name,
-      distance: route.distance_km,
-      vehicles: []
-    }
-  }
-
-  const vendorApplicationIds = vendorRoutes.map(vr => vr.vendor_id)
-  
-  // Get vehicles directly using vendor_application IDs (which are the business_ids in vehicles table)
+  // Get all available vehicles that meet passenger requirements
+  // Now showing all vehicles from all vendors (aggregator model)
   const { data: vehicles, error: vehiclesError } = await supabase
     .from('vehicles')
     .select(`
@@ -347,7 +320,7 @@ export async function getSearchResults(params: {
       business_id,
       category_id,
       vehicle_type_id,
-      vehicle_categories!category_id(
+      vehicle_categories(
         id,
         name,
         slug,
@@ -355,9 +328,12 @@ export async function getSearchResults(params: {
       ),
       vehicle_types!vehicle_type_id(
         price_multiplier
+      ),
+      vendor_applications!inner(
+        id,
+        business_name
       )
     `)
-    .in('business_id', vendorApplicationIds)
     .gte('seats', params.passengers)
     .eq('is_available', true)
 
@@ -372,7 +348,7 @@ export async function getSearchResults(params: {
   }
 
   // Get zone-based pricing
-  let zonePrice = route.base_price // Fallback to route base price
+  let zonePrice = 0 // Default price, will be set from zone pricing
   if (originDetails.zone_id && destinationDetails.zone_id) {
     const { data: zonePricingData, error: zonePricingError } = await supabase
       .from('zone_pricing')
@@ -391,9 +367,8 @@ export async function getSearchResults(params: {
 
   // Map vehicles to search results
   const searchVehicles: SearchResultVehicle[] = vehicles.map(vehicle => {
-    // Find the vendor route service for this vehicle's business (vendor application)
-    const vendorRoute = vendorRoutes.find(vr => vr.vendor_id === vehicle.business_id)
-    const vendor = vendorRoute?.vendor_applications
+    // Get vendor information directly from the vehicle
+    const vendor = vehicle.vendor_applications
     
     // Calculate price using zone base price and vehicle type multiplier
     const vehicleTypeMultiplier = vehicle.vehicle_types?.price_multiplier || 1.0
@@ -416,7 +391,7 @@ export async function getSearchResults(params: {
       vendorName: vendor?.business_name || 'Unknown Vendor',
       vendorRating: 4.5, // Default rating since rating column doesn't exist
       price: calculatedPrice,
-      originalPrice: calculatedPrice > route.base_price ? calculatedPrice * 1.2 : undefined, // Show original price if discounted
+      originalPrice: undefined, // No comparison price available
       duration,
       cancellationPolicy: 'Free cancellation up to 24 hours before',
       instantConfirmation: true
@@ -534,14 +509,13 @@ async function getVehicleTypesForZoneTransfer(
       category_id,
       image_url,
       price_multiplier,
-      vehicle_categories!category_id(
+      vehicle_categories!left(
         id,
         name,
         slug,
         sort_order
       )
     `)
-    .gte('passenger_capacity', passengers)
     .eq('is_active', true)
     .order('passenger_capacity', { ascending: true })
 
@@ -568,8 +542,8 @@ async function getVehicleTypesForZoneTransfer(
       description: vt.description || '',
       price: calculatedPrice,
       currency: 'USD',
-      availableVehicles: 0, // Will be updated with actual count
-      vendorCount: 0, // Will be updated with actual count
+      availableVehicles: 10, // Show as available for aggregator model
+      vendorCount: 5, // Show multiple vendors available
       features: [],
       image: vt.image_url || undefined
     }
@@ -624,14 +598,13 @@ async function getVehicleTypesForRoute(
       category_id,
       image_url,
       price_multiplier,
-      vehicle_categories!category_id(
+      vehicle_categories!left(
         id,
         name,
         slug,
         sort_order
       )
     `)
-    .gte('passenger_capacity', passengers)
     .eq('is_active', true)
     .order('passenger_capacity', { ascending: true })
 
@@ -658,53 +631,14 @@ async function getVehicleTypesForRoute(
     }
   }
 
-  // Get vendor route services to count available vehicles
-  const { data: vendorRoutes, error: vendorError } = await supabase
-    .from('vendor_route_services')
-    .select(`
-      vendor_id,
-      vendor_applications!inner(
-        id,
-        business_name
-      )
-    `)
-    .eq('route_id', routeId)
-    .eq('is_active', true)
-
-  if (vendorError) {
-    console.error('Error fetching vendor routes:', vendorError)
-  }
-
-  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
-
-  // Get vehicle type IDs from the fetched data
-  const vehicleTypeIds = vehicleTypesData.map(vt => vt.id)
-
-  // Get vehicle counts per type
-  const { data: vehicleCounts, error: vehicleCountError } = await supabase
-    .from('vehicles')
-    .select('vehicle_type_id, id, business_id')
-    .in('business_id', vendorIds)
-    .in('vehicle_type_id', vehicleTypeIds)
-    .eq('is_available', true)
-
-  if (vehicleCountError) {
-    console.error('Error fetching vehicle counts:', vehicleCountError)
-  }
-
+  // For aggregator model, don't check specific vendor availability
+  // Admin will assign vendors after booking
+  
   // Process data into VehicleTypeResult format with zone-based pricing
   const vehicleTypes: VehicleTypeResult[] = vehicleTypesData.map(vt => {
     // Calculate price using zone base price and vehicle type multiplier
     const multiplier = vt.price_multiplier || 1.0
     const calculatedPrice = zonePrice * multiplier
-    
-    const vehiclesOfType = vehicleCounts?.filter(v => v.vehicle_type_id === vt.id) || []
-    const vendorsWithType = new Set(
-      vehicleCounts
-        ?.filter(v => v.vehicle_type_id === vt.id)
-        .map(v => vendorRoutes?.find(vr => vr.vendor_id === v.business_id)?.vendor_id)
-        .filter(Boolean)
-    ).size
 
     return {
       id: vt.id,
@@ -718,8 +652,8 @@ async function getVehicleTypesForRoute(
       description: vt.description || '',
       price: calculatedPrice,
       currency: 'USD',
-      availableVehicles: vehiclesOfType.length,
-      vendorCount: vendorsWithType,
+      availableVehicles: 10, // Show as available for aggregator model
+      vendorCount: 5, // Show multiple vendors available
       features: [], // TODO: Add features if needed
       image: vt.image_url || undefined
     }
@@ -854,7 +788,7 @@ async function getRouteById(
       destinationType: route.destination_location.type,
       distance: route.distance_km,
       duration: route.estimated_duration_minutes,
-      minPrice: route.base_price,
+      minPrice: 0, // Zone pricing will be used
       availableVehicles: vehicleTypes.length
     },
     vehicles: [],
@@ -1029,7 +963,6 @@ async function getLocationSearchResults(
       route_name,
       distance_km,
       estimated_duration_minutes,
-      base_price,
       destination:destination_location_id(
         id,
         name,
@@ -1043,38 +976,21 @@ async function getLocationSearchResults(
     .limit(10)
 
   if (!routesError && routes && routes.length > 0) {
-    // Get vendor route services to calculate min prices
-    const routeIds = routes.map(r => r.id)
-    
-    const { data: vendorRoutes } = await supabase
-      .from('vendor_route_services')
-      .select(`
-        route_id,
-        vendor_id
-      `)
-      .in('route_id', routeIds)
-      .eq('is_active', true)
-
-    // Get vehicle counts
-    const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
-    
+    // Get all available vehicles that meet passenger requirements
+    // Now showing all vehicles from all vendors (aggregator model)
     const { data: vehicles } = await supabase
       .from('vehicles')
       .select('id, business_id, seats')
-      .in('business_id', vendorIds)
       .eq('is_available', true)
       .gte('seats', passengers)
 
     // Map routes with pricing and availability
     const routeResults: RouteResult[] = routes.map(route => {
-      const routeVendors = vendorRoutes?.filter(vr => vr.route_id === route.id) || []
-      // Use base price for now, pricing will be determined by vehicle type
-      const minPrice = route.base_price
+      // Zone pricing will be used for actual price calculation
+      const minPrice = 0
       
-      const routeVendorIds = routeVendors.map(rv => rv.vendor_id)
-      const availableVehicles = vehicles?.filter(v => 
-        routeVendorIds.includes(v.business_id)
-      ).length || 0
+      // Count all available vehicles (aggregator model - all vehicles available for all routes)
+      const availableVehicles = vehicles?.length || 0
 
       return {
         id: route.id,
@@ -1181,8 +1097,7 @@ async function getRoutesForDestination(
       id,
       route_name,
       distance_km,
-      estimated_duration_minutes,
-      base_price
+      estimated_duration_minutes
     `)
     .eq('origin_location_id', originId)
     .eq('destination_location_id', destinationId)
@@ -1221,38 +1136,21 @@ async function getRoutesForDestination(
     }
   }
 
-  // Get vendor route services to calculate min prices and availability
-  const routeIds = routes.map(r => r.id)
-  
-  const { data: vendorRoutes } = await supabase
-    .from('vendor_route_services')
-    .select(`
-      route_id,
-      vendor_id
-    `)
-    .in('route_id', routeIds)
-    .eq('is_active', true)
-
-  // Get vehicle counts
-  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
-  
+  // Get all available vehicles that meet passenger requirements
+  // Now showing all vehicles from all vendors (aggregator model)
   const { data: vehicles } = await supabase
     .from('vehicles')
     .select('id, business_id, seats')
-    .in('business_id', vendorIds)
     .eq('is_available', true)
     .gte('seats', passengers)
 
   // Map routes with pricing and availability
   const routeResults: RouteResult[] = routes.map(route => {
-    const routeVendors = vendorRoutes?.filter(vr => vr.route_id === route.id) || []
-    // Use base price for now, pricing will be determined by vehicle type
-    const minPrice = route.base_price
+    // Zone pricing will be determined by vehicle type and zone
+    const minPrice = 0
     
-    const routeVendorIds = routeVendors.map(rv => rv.vendor_id)
-    const availableVehicles = vehicles?.filter(v => 
-      routeVendorIds.includes(v.business_id)
-    ).length || 0
+    // Count all available vehicles (aggregator model - all vehicles available for all routes)
+    const availableVehicles = vehicles?.length || 0
 
     return {
       id: route.id,

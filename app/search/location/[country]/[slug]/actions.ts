@@ -9,7 +9,6 @@ export interface RouteWithDetails {
   route_slug: string
   distance_km: number
   estimated_duration_minutes: number
-  base_price: number
   destination: {
     id: string
     name: string
@@ -54,7 +53,6 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
       route_slug,
       distance_km,
       estimated_duration_minutes,
-      base_price,
       destination:destination_location_id(
         id,
         name,
@@ -73,29 +71,10 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
     return []
   }
 
-  // Get vendor route services to calculate min prices
-  const routeIds = routes.map(r => r.id)
-  
-  const { data: vendorRoutes, error: vendorError } = await supabase
-    .from('vendor_route_services')
-    .select(`
-      route_id,
-      vendor_id
-    `)
-    .in('route_id', routeIds)
-    .eq('is_active', true)
-
-  if (vendorError) {
-    console.error('Error fetching vendor routes:', vendorError)
-  }
-
-  // Get vehicle counts for vendors
-  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
-  
+  // Get all available vehicles (aggregator model)
   const { data: vehicleCounts, error: vehicleError } = await supabase
     .from('vehicles')
     .select('business_id')
-    .in('business_id', vendorIds)
     .eq('is_available', true)
 
   if (vehicleError) {
@@ -104,15 +83,11 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
 
   // Map routes with calculated min prices and vehicle counts
   return routes.map(route => {
-    const routeVendors = vendorRoutes?.filter(vr => vr.route_id === route.id) || []
-    // Use base price for now, pricing will be determined by vehicle type
-    const minPrice = route.base_price
+    // Zone pricing will be used for actual price calculation
+    const minPrice = 0
     
-    // Count available vehicles for this route
-    const routeVendorIds = routeVendors.map(rv => rv.vendor_id)
-    const availableVehicles = vehicleCounts?.filter(vc => 
-      routeVendorIds.includes(vc.business_id)
-    ).length || 0
+    // Count all available vehicles (aggregator model - all vehicles available for all routes)
+    const availableVehicles = vehicleCounts?.length || 0
 
     return {
       ...route,

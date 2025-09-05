@@ -187,49 +187,22 @@ export async function getRoutesVehicles(routeId: string): Promise<VehicleTypeWit
 
   console.log(`Found ${routePricing.length} vehicle types with pricing for route ${routeId}`)
 
-  // Get vendors serving this route
-  const { data: vendorRoutes, error: vendorError } = await supabase
-    .from('vendor_route_services')
-    .select('vendor_id')
-    .eq('route_id', routeId)
-    .eq('is_active', true)
-
-  if (vendorError) {
-    console.error('Error fetching vendor routes:', vendorError)
-    // Continue without vendor-specific data rather than returning empty
-  }
-
-  // If no vendors are assigned, log a warning but continue
-  if (!vendorRoutes || vendorRoutes.length === 0) {
-    console.warn(`No vendors currently serving route ${routeId}. Showing vehicle types without availability.`)
-  }
-
-  const vendorIds = vendorRoutes?.map(vr => vr.vendor_id) || []
-
   // Process each vehicle type to get availability and example vehicles
+  // Now showing all vehicles from all vendors (aggregator model)
   const vehicleTypesWithAvailability = await Promise.all(
     routePricing.map(async (pricing) => {
       if (!pricing.vehicle_type) return null
 
-      // Get available vehicles of this type from active vendors (if any vendors exist)
-      let vehicles = null
-      let vehiclesError = null
+      // Get all available vehicles of this type (aggregator model)
+      const { data: vehicles, error: vehiclesError } = await supabase
+        .from('vehicles')
+        .select('id, make, model')
+        .eq('vehicle_type_id', pricing.vehicle_type.id)
+        .eq('is_available', true)
+        .limit(5) // Get a few examples
       
-      if (vendorIds.length > 0) {
-        const result = await supabase
-          .from('vehicles')
-          .select('id, make, model')
-          .eq('vehicle_type_id', pricing.vehicle_type.id)
-          .in('business_id', vendorIds)
-          .eq('is_available', true)
-          .limit(5) // Get a few examples
-        
-        vehicles = result.data
-        vehiclesError = result.error
-        
-        if (vehiclesError) {
-          console.error('Error fetching vehicles:', vehiclesError)
-        }
+      if (vehiclesError) {
+        console.error('Error fetching vehicles:', vehiclesError)
       }
 
       const availableCount = vehicles?.length || 0

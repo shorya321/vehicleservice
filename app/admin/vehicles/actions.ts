@@ -167,15 +167,7 @@ export async function getAdminVehicle(id: string) {
     return { error: error.message }
   }
 
-  // Get existing feature selections
-  const { data: featureMappings } = await supabase
-    .from('vehicle_feature_mappings')
-    .select('feature_id')
-    .eq('vehicle_id', id)
-
-  const feature_ids = featureMappings ? featureMappings.map(mapping => mapping.feature_id) : []
-
-  return { vehicle: { ...data, feature_ids } }
+  return { vehicle: data }
 }
 
 export async function createAdminVehicle(formData: AdminVehicleFormData) {
@@ -248,22 +240,6 @@ export async function createAdminVehicle(formData: AdminVehicleFormData) {
   if (error) {
     console.error('Error creating vehicle:', error)
     return { error: error.message }
-  }
-
-  // Handle feature mappings
-  if (formData.feature_ids && formData.feature_ids.length > 0 && data) {
-    const featureMappings = formData.feature_ids.map(featureId => ({
-      vehicle_id: data.id,
-      feature_id: featureId
-    }))
-
-    const { error: featureError } = await supabase
-      .from('vehicle_feature_mappings')
-      .insert(featureMappings)
-
-    if (featureError) {
-      console.error('Error adding vehicle features:', featureError)
-    }
   }
 
   revalidatePath('/admin/vehicles')
@@ -339,33 +315,6 @@ export async function updateAdminVehicle(id: string, formData: AdminVehicleFormD
   if (error) {
     console.error('Error updating vehicle:', error)
     return { error: error.message }
-  }
-
-  // Handle feature mappings
-  // First delete existing mappings
-  const { error: deleteError } = await supabase
-    .from('vehicle_feature_mappings')
-    .delete()
-    .eq('vehicle_id', id)
-
-  if (deleteError) {
-    console.error('Error deleting existing features:', deleteError)
-  }
-
-  // Then add new mappings if any
-  if (formData.feature_ids && formData.feature_ids.length > 0) {
-    const featureMappings = formData.feature_ids.map(featureId => ({
-      vehicle_id: id,
-      feature_id: featureId
-    }))
-
-    const { error: featureError } = await supabase
-      .from('vehicle_feature_mappings')
-      .insert(featureMappings)
-
-    if (featureError) {
-      console.error('Error adding vehicle features:', featureError)
-    }
   }
 
   revalidatePath('/admin/vehicles')

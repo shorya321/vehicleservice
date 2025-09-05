@@ -39,21 +39,26 @@ function LoginForm() {
         setLoading(false)
       } else if (result?.success && result?.role) {
         // Successful login, redirect based on role
+        console.log('Login successful for role:', result.role)
+        
         switch (result.role) {
           case 'customer':
             router.push('/customer/dashboard')
+            router.refresh()
             break
           case 'vendor':
             router.push('/vendor/dashboard')
+            router.refresh()
             break
           case 'driver':
-            router.push('/driver/dashboard')
+            // Redirect to customer dashboard for now since driver dashboard doesn't exist
+            router.push('/customer/dashboard')
+            router.refresh()
             break
           default:
             setError("Invalid user role")
             setLoading(false)
         }
-        router.refresh()
       }
     } catch (err) {
       console.error("Login error:", err)

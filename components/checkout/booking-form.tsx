@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Separator } from '@/components/ui/separator'
 import { 
   Calendar,
   Clock,
@@ -20,7 +21,6 @@ import {
   Baby,
   Luggage,
   CreditCard,
-  Banknote,
   Info
 } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails, createBooking } from '@/app/checkout/actions'
@@ -38,8 +38,9 @@ const bookingSchema = z.object({
   specialRequests: z.string().optional(),
   infantSeats: z.number().min(0).max(4),
   boosterSeats: z.number().min(0).max(4),
-  extraLuggage: z.boolean(),
-  paymentMethod: z.enum(['card', 'cash']),
+  luggageCount: z.number().min(0).max(50),
+  extraLuggageCount: z.number().min(0),
+  paymentMethod: z.enum(['card']),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
   })
@@ -53,8 +54,10 @@ interface BookingFormProps {
   initialDate: string
   initialTime: string
   initialPassengers: number
+  initialLuggage: number
   user: any
   profile: any
+  onExtrasChange?: (infantSeats: number, boosterSeats: number, luggage: number) => void
 }
 
 export function BookingForm({ 
@@ -63,12 +66,19 @@ export function BookingForm({
   initialDate, 
   initialTime, 
   initialPassengers,
+  initialLuggage,
   user,
-  profile
+  profile,
+  onExtrasChange
 }: BookingFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [passengers, setPassengers] = useState(initialPassengers)
+  const [luggage, setLuggage] = useState(initialLuggage)
+  
+  // Calculate extra luggage based on vehicle capacity
+  const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
+  const extraLuggageCost = extraLuggageCount * 15 // $15 per extra bag
 
   const {
     register,
@@ -87,7 +97,8 @@ export function BookingForm({
       pickupTime: initialTime,
       infantSeats: 0,
       boosterSeats: 0,
-      extraLuggage: false,
+      luggageCount: luggage,
+      extraLuggageCount: extraLuggageCount,
       paymentMethod: 'card',
       agreeToTerms: false
     }
@@ -95,18 +106,34 @@ export function BookingForm({
 
   const paymentMethod = watch('paymentMethod')
   const agreeToTerms = watch('agreeToTerms')
+  const infantSeats = watch('infantSeats')
+  const boosterSeats = watch('boosterSeats')
+  
+  // Calculate total price with all extras
+  const basePrice = vehicleType.price || 50
+  const childSeatsCost = (infantSeats + boosterSeats) * 10
+  const totalPrice = basePrice + childSeatsCost + extraLuggageCost
+  
+  // Notify parent of changes
+  useEffect(() => {
+    if (onExtrasChange) {
+      onExtrasChange(infantSeats, boosterSeats, luggage)
+    }
+  }, [infantSeats, boosterSeats, luggage, onExtrasChange])
 
   const onSubmit = async (data: BookingFormData) => {
     setLoading(true)
     try {
       const result = await createBooking({
-        routeId: route.id,
         vehicleTypeId: vehicleType.id,
+        fromLocationId: route.origin.id,
+        toLocationId: route.destination.id,
         pickupAddress: route.origin.name,
         dropoffAddress: route.destination.name,
         pickupDate: data.pickupDate,
         pickupTime: data.pickupTime,
         passengerCount: passengers,
+        luggageCount: data.luggageCount,
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -116,22 +143,15 @@ export function BookingForm({
           infant: data.infantSeats,
           booster: data.boosterSeats
         },
-        extraLuggage: data.extraLuggage,
+        extraLuggageCount: data.extraLuggageCount,
+        basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,
         paymentMethod: data.paymentMethod
       })
 
       if (result.success) {
-        toast.success('Booking created successfully!')
-        
-        // Redirect based on payment method
-        if (data.paymentMethod === 'card') {
-          // Redirect to payment page
-          router.push(`/payment?booking=${result.bookingId}&amount=${result.totalPrice}`)
-        } else {
-          // Redirect to confirmation page
-          router.push(`/booking/confirmation?booking=${result.bookingNumber}`)
-        }
+        // Redirect to payment page
+        router.push(`/payment?booking=${result.bookingId}&amount=${result.totalPrice}`)
       }
     } catch (error) {
       console.error('Booking error:', error)
@@ -395,19 +415,54 @@ export function BookingForm({
             </div>
           </div>
 
-          {/* Extra Luggage */}
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Luggage className="h-5 w-5" />
+          {/* Luggage */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <Luggage className="h-4 w-4" />
+              Luggage
+            </Label>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
               <div>
-                <p className="font-medium">Extra Luggage</p>
-                <p className="text-sm text-muted-foreground">+{formatCurrency(15)}</p>
+                <p className="font-medium">Total Luggage</p>
+                <p className="text-sm text-muted-foreground">
+                  Vehicle includes {vehicleType.luggage_capacity} bag{vehicleType.luggage_capacity !== 1 ? 's' : ''}
+                </p>
+                {extraLuggageCount > 0 && (
+                  <p className="text-sm text-orange-600 font-medium">
+                    +{extraLuggageCount} extra bag{extraLuggageCount !== 1 ? 's' : ''} ({formatCurrency(extraLuggageCost)})
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newLuggage = Math.max(0, luggage - 1)
+                    setLuggage(newLuggage)
+                    setValue('luggageCount', newLuggage)
+                    setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
+                  }}
+                >
+                  -
+                </Button>
+                <span className="w-8 text-center">{luggage}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newLuggage = Math.min(20, luggage + 1)
+                    setLuggage(newLuggage)
+                    setValue('luggageCount', newLuggage)
+                    setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
+                  }}
+                >
+                  +
+                </Button>
               </div>
             </div>
-            <Checkbox
-              checked={watch('extraLuggage')}
-              onCheckedChange={(checked) => setValue('extraLuggage', checked as boolean)}
-            />
           </div>
 
           {/* Special Requests */}
@@ -431,7 +486,7 @@ export function BookingForm({
         <CardContent>
           <RadioGroup
             value={paymentMethod}
-            onValueChange={(value) => setValue('paymentMethod', value as 'card' | 'cash')}
+            onValueChange={(value) => setValue('paymentMethod', value as 'card')}
           >
             <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
               <RadioGroupItem value="card" id="card" />
@@ -440,16 +495,6 @@ export function BookingForm({
                 <div>
                   <p className="font-medium">Pay by Card</p>
                   <p className="text-sm text-muted-foreground">Secure online payment</p>
-                </div>
-              </Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
-              <RadioGroupItem value="cash" id="cash" />
-              <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
-                <Banknote className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Pay Cash to Driver</p>
-                  <p className="text-sm text-muted-foreground">Pay when you meet your driver</p>
                 </div>
               </Label>
             </div>
@@ -504,7 +549,7 @@ export function BookingForm({
         className="w-full"
         disabled={loading || !agreeToTerms}
       >
-        {loading ? 'Processing...' : paymentMethod === 'card' ? 'Continue to Payment' : 'Confirm Booking'}
+        {loading ? 'Processing...' : 'Continue to Payment'}
       </Button>
     </form>
   )

@@ -14,13 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Vehicle, VehicleType } from "@/lib/types/vehicle"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
-import { VehicleFeature } from "@/lib/types/vehicle-feature"
 import { createAdminVehicle, updateAdminVehicle, AdminVehicleFormData } from "../actions"
 import { getVehicleCategories, getVehicleTypesByCategory } from "@/app/vendor/vehicles/actions"
-import { getActiveVehicleFeatures } from "@/app/vendor/vehicle-features/actions"
 import { Loader2, Save, Building2 } from "lucide-react"
 import { ImageUpload } from "@/app/vendor/vehicles/components/image-upload"
-import { Checkbox } from "@/components/ui/checkbox"
 
 const currentYear = new Date().getFullYear()
 
@@ -39,7 +36,6 @@ const vehicleSchema = z.object({
   seats: z.number().min(1).max(20).optional(),
   luggage_capacity: z.number().min(0).max(20).optional(),
   is_available: z.boolean().default(true),
-  feature_ids: z.array(z.string()).optional(),
 })
 
 interface VehicleWithVendor extends Vehicle {
@@ -75,8 +71,6 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
   const [loadingVehicleTypes, setLoadingVehicleTypes] = useState(true)
-  const [features, setFeatures] = useState<VehicleFeature[]>([])
-  const [loadingFeatures, setLoadingFeatures] = useState(true)
 
   const form = useForm<AdminVehicleFormData>({
     resolver: zodResolver(vehicleSchema),
@@ -93,7 +87,6 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
       seats: initialData?.seats || 5,
       luggage_capacity: initialData?.luggage_capacity || 2,
       is_available: initialData?.is_available ?? true,
-      feature_ids: (initialData as any)?.feature_ids || [],
     },
   })
 
@@ -148,21 +141,6 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
   }, [watchedCategoryId, form])
 
   // Load features on mount
-  useEffect(() => {
-    async function loadFeatures() {
-      try {
-        const result = await getActiveVehicleFeatures()
-        if (result.features) {
-          setFeatures(result.features)
-        }
-      } catch (error) {
-        console.error("Failed to load features:", error)
-      } finally {
-        setLoadingFeatures(false)
-      }
-    }
-    loadFeatures()
-  }, [])
 
   const handlePrimaryImageChange = (files: File[]) => {
     if (files.length > 0) {
@@ -572,73 +550,6 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Vehicle Features</CardTitle>
-            <CardDescription>
-              Select features available in this vehicle
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="feature_ids"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Available Features</FormLabel>
-                  {loadingFeatures ? (
-                    <div className="text-sm text-muted-foreground">Loading features...</div>
-                  ) : (
-                    <div className="space-y-4">
-                      {/* Group features by category */}
-                      {Object.entries(
-                        features.reduce((acc, feature) => {
-                          const category = feature.category || 'other'
-                          if (!acc[category]) acc[category] = []
-                          acc[category].push(feature)
-                          return acc
-                        }, {} as Record<string, VehicleFeature[]>)
-                      ).map(([category, categoryFeatures]) => (
-                        <div key={category}>
-                          <h4 className="text-sm font-medium mb-3 capitalize">{category}</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {categoryFeatures.map((feature) => (
-                              <div key={feature.id} className="flex items-start space-x-2">
-                                <Checkbox
-                                  id={feature.id}
-                                  checked={field.value?.includes(feature.id) || false}
-                                  onCheckedChange={(checked) => {
-                                    const current = field.value || []
-                                    if (checked) {
-                                      field.onChange([...current, feature.id])
-                                    } else {
-                                      field.onChange(current.filter(id => id !== feature.id))
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={feature.id}
-                                  className="text-sm font-normal cursor-pointer"
-                                >
-                                  {feature.name}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <FormDescription>
-                    Select all features that are available in this vehicle
-                  </FormDescription>
-                  <FormMessage />
                 </FormItem>
               )}
             />

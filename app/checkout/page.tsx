@@ -1,10 +1,9 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { BookingForm } from '@/components/checkout/booking-form'
-import { OrderSummary } from '@/components/checkout/order-summary'
+import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getRouteById, getVehicleType } from './actions'
+import { getRouteById, getVehicleType, getLocationDetails } from './actions'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
@@ -21,6 +20,7 @@ interface CheckoutPageProps {
     date?: string
     time?: string
     passengers?: string
+    luggage?: string
   }>
 }
 
@@ -28,7 +28,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const params = await searchParams
   
   // Validate required parameters
-  if (!params.route || !params.vehicleType) {
+  if (!params.from || !params.to || !params.vehicleType) {
     redirect('/')
   }
 
@@ -81,20 +81,43 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     }
   }
 
-  // Fetch route and vehicle type details
-  const [routeDetails, vehicleType] = await Promise.all([
-    getRouteById(params.route),
-    getVehicleType(params.vehicleType)
+  // Fetch location and vehicle type details
+  const [originLocation, destinationLocation, vehicleType] = await Promise.all([
+    getLocationDetails(params.from!),
+    getLocationDetails(params.to!),
+    getVehicleType(params.vehicleType, params.from!, params.to!)
   ])
 
-  if (!routeDetails || !vehicleType) {
+  if (!originLocation || !destinationLocation || !vehicleType) {
     redirect('/')
+  }
+  
+  // Create route details from location data
+  const routeDetails = {
+    id: `${params.from}-${params.to}`,
+    route_name: `${originLocation.name} to ${destinationLocation.name}`,
+    distance_km: 0, // Would be calculated based on actual distance
+    estimated_duration_minutes: 30, // Would be calculated based on actual duration
+    base_price: vehicleType.price,
+    origin: {
+      id: originLocation.id,
+      name: originLocation.name,
+      city: originLocation.city || '',
+      country_code: originLocation.country_code || 'US'
+    },
+    destination: {
+      id: destinationLocation.id,
+      name: destinationLocation.name,
+      city: destinationLocation.city || '',
+      country_code: destinationLocation.country_code || 'US'
+    }
   }
 
   // Parse date and time
   const pickupDate = params.date || new Date().toISOString().split('T')[0]
   const pickupTime = params.time || '10:00'
   const passengers = parseInt(params.passengers || '1')
+  const luggage = parseInt(params.luggage || '0')
 
   return (
     <PublicLayout>
@@ -105,31 +128,16 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Complete Your Booking</h1>
           
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Booking Form - 2 columns on desktop */}
-            <div className="lg:col-span-2">
-              <BookingForm
-                route={routeDetails}
-                vehicleType={vehicleType}
-                initialDate={pickupDate}
-                initialTime={pickupTime}
-                initialPassengers={passengers}
-                user={user}
-                profile={profile}
-              />
-            </div>
-
-            {/* Order Summary - 1 column on desktop, sticky */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4">
-                <OrderSummary
-                  route={routeDetails}
-                  vehicleType={vehicleType}
-                  passengers={passengers}
-                />
-              </div>
-            </div>
-          </div>
+          <CheckoutWrapper
+            route={routeDetails}
+            vehicleType={vehicleType}
+            initialDate={pickupDate}
+            initialTime={pickupTime}
+            initialPassengers={passengers}
+            initialLuggage={luggage}
+            user={user}
+            profile={profile}
+          />
         </div>
       </div>
     </PublicLayout>

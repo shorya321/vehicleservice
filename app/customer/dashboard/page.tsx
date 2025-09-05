@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { CustomerLayout } from "@/components/layout/customer-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { BookingsTable } from "@/components/bookings/bookings-table"
 import { requireCustomer } from "@/lib/auth/user-actions"
 import {
   Shield,
@@ -14,6 +16,8 @@ import {
   ArrowRight,
   Bell,
   Building2,
+  Car,
+  Calendar,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -48,6 +52,7 @@ const recentActivities = [
 export default async function CustomerDashboard() {
   const user = await requireCustomer()
   const supabase = await createClient()
+  const adminClient = createAdminClient()
   
   // Check if user has a vendor application
   const { data: vendorApplication } = await supabase
@@ -55,6 +60,31 @@ export default async function CustomerDashboard() {
     .select('status')
     .eq('user_id', user.id)
     .single()
+  
+  // Fetch user's recent bookings
+  const { data: bookings } = await adminClient
+    .from('bookings')
+    .select(`
+      *,
+      vehicle_type:vehicle_types(name)
+    `)
+    .eq('customer_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(3)
+  
+  // Count total bookings
+  const { count: totalBookings } = await adminClient
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('customer_id', user.id)
+  
+  // Count upcoming bookings
+  const { count: upcomingBookings } = await adminClient
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('customer_id', user.id)
+    .eq('booking_status', 'confirmed')
+    .gte('pickup_datetime', new Date().toISOString())
   
   return (
     <CustomerLayout>
@@ -143,49 +173,89 @@ export default async function CustomerDashboard() {
           </Card>
         )}
 
+        {/* My Bookings Section */}
+        {bookings && bookings.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Recent Bookings</h2>
+                <p className="text-muted-foreground">
+                  Your latest transfer bookings
+                </p>
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/customer/bookings">
+                  View All ({totalBookings})
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+            <BookingsTable bookings={bookings} />
+          </div>
+        )}
+
+        {/* Empty State for Bookings */}
+        {(!bookings || bookings.length === 0) && (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-8">
+              <Car className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Bookings Yet</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Start your journey with us by booking your first transfer
+              </p>
+              <Button asChild>
+                <Link href="/">
+                  Book a Transfer
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+              <Car className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalBookings || 0}</div>
+              <p className="text-xs text-muted-foreground">All time transfers</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{upcomingBookings || 0}</div>
+              <p className="text-xs text-muted-foreground">Future transfers</p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Profile Status</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Complete</div>
-              <p className="text-xs text-muted-foreground">All details verified</p>
+              <div className="text-2xl font-bold">Active</div>
+              <p className="text-xs text-muted-foreground">Account verified</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Security Level</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">High</div>
-              <p className="text-xs text-muted-foreground">2FA enabled</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Notifications</CardTitle>
-              <Bell className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">Unread messages</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Account Age</CardTitle>
+              <CardTitle className="text-sm font-medium">Member Since</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">6 mo</div>
-              <p className="text-xs text-muted-foreground">Member since Jan 2024</p>
+              <div className="text-2xl font-bold">2024</div>
+              <p className="text-xs text-muted-foreground">Trusted customer</p>
             </CardContent>
           </Card>
         </div>

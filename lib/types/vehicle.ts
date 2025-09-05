@@ -22,7 +22,6 @@ export interface VehicleFormData {
   seats?: number
   luggage_capacity?: number
   is_available: boolean
-  feature_ids?: string[]
 }
 
 export interface VehicleFilters {

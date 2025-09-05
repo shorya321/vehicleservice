@@ -10,13 +10,7 @@ export type RouteUpdate = Database['public']['Tables']['routes']['Update']
 export type RouteSearch = Database['public']['Tables']['route_searches']['Row']
 export type RouteSearchInsert = Database['public']['Tables']['route_searches']['Insert']
 
-export type VendorRouteService = Database['public']['Tables']['vendor_route_services']['Row']
-export type VendorRouteServiceInsert = Database['public']['Tables']['vendor_route_services']['Insert']
-export type VendorRouteServiceUpdate = Database['public']['Tables']['vendor_route_services']['Update']
-
-export type RouteVehicleTypePricing = Database['public']['Tables']['route_vehicle_type_pricing']['Row']
-export type RouteVehicleTypePricingInsert = Database['public']['Tables']['route_vehicle_type_pricing']['Insert']
-export type RouteVehicleTypePricingUpdate = Database['public']['Tables']['route_vehicle_type_pricing']['Update']
+// Removed vendor_route_services and route_vehicle_type_pricing types as tables no longer exist
 
 export interface RouteWithLocations extends Route {
   origin_location: Location
@@ -28,13 +22,7 @@ export interface RouteWithDetails extends RouteWithLocations {
   vendor_count?: number
 }
 
-export interface VendorRouteServiceWithRoute extends VendorRouteService {
-  route: RouteWithLocations
-}
-
-export interface VendorRouteServiceWithVendor extends VendorRouteService {
-  vendor: VendorApplication
-}
+// Removed vendor route service interfaces as table no longer exists
 
 export interface RouteFilters {
   search?: string
@@ -62,7 +50,6 @@ export interface RouteFormData {
   route_slug: string
   distance_km: number
   estimated_duration_minutes: number
-  base_price: number
   is_active: boolean
   is_popular: boolean
 }
@@ -85,10 +72,4 @@ export interface RouteSearchParams {
   passengers?: number
 }
 
-export interface RouteVehicleTypePricingWithType extends RouteVehicleTypePricing {
-  vehicle_type: VehicleTypeWithCategory
-}
-
-export interface RouteWithVehicleTypes extends RouteWithLocations {
-  vehicle_types: RouteVehicleTypePricingWithType[]
-}
+// Removed route vehicle type pricing interfaces as table no longer exists

@@ -4,6 +4,32 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 
+export async function getLocationDetails(locationId: string) {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('locations')
+    .select(`
+      id,
+      name,
+      city,
+      country_code,
+      zone_id,
+      zones!locations_zone_id_fkey(
+        id,
+        name
+      )
+    `)
+    .eq('id', locationId)
+    .single()
+  
+  if (error || !data) {
+    return null
+  }
+  
+  return data
+}
+
 export interface RouteDetails {
   id: string
   route_name: string
@@ -71,11 +97,15 @@ export async function getRouteById(routeId: string): Promise<RouteDetails | null
   return data as RouteDetails
 }
 
-export async function getVehicleType(vehicleTypeId: string): Promise<VehicleTypeDetails | null> {
+export async function getVehicleType(
+  vehicleTypeId: string, 
+  fromLocationId?: string, 
+  toLocationId?: string
+): Promise<VehicleTypeDetails | null> {
   const supabase = createAdminClient()
   
   // Get vehicle type with pricing
-  const { data, error } = await supabase
+  const { data: vehicleType, error } = await supabase
     .from('vehicle_types')
     .select(`
       id,
@@ -84,34 +114,68 @@ export async function getVehicleType(vehicleTypeId: string): Promise<VehicleType
       description,
       passenger_capacity,
       luggage_capacity,
-      image_url
+      image_url,
+      price_multiplier
     `)
     .eq('id', vehicleTypeId)
     .eq('is_active', true)
     .single()
 
-  if (error || !data) {
+  if (error || !vehicleType) {
     console.error('Error fetching vehicle type:', error)
     return null
   }
 
-  // For now, return with a default price
-  // In production, you'd fetch the actual pricing from route_vehicle_type_pricing
+  let price = 50 // Default base price
+  
+  // If location IDs provided, get zone-based pricing
+  if (fromLocationId && toLocationId) {
+    // Get zones for both locations
+    const { data: locations } = await supabase
+      .from('locations')
+      .select('id, zone_id')
+      .in('id', [fromLocationId, toLocationId])
+    
+    if (locations && locations.length === 2) {
+      const fromZoneId = locations.find(l => l.id === fromLocationId)?.zone_id
+      const toZoneId = locations.find(l => l.id === toLocationId)?.zone_id
+      
+      if (fromZoneId && toZoneId) {
+        // Get zone pricing
+        const { data: zonePricing } = await supabase
+          .from('zone_pricing')
+          .select('base_price')
+          .eq('from_zone_id', fromZoneId)
+          .eq('to_zone_id', toZoneId)
+          .eq('is_active', true)
+          .single()
+        
+        if (zonePricing) {
+          // Calculate price with vehicle type multiplier
+          const multiplier = vehicleType.price_multiplier || 1.0
+          price = zonePricing.base_price * multiplier
+        }
+      }
+    }
+  }
+
   return {
-    ...data,
-    price: 50 // Default price, should be fetched from pricing table
+    ...vehicleType,
+    price
   } as VehicleTypeDetails
 }
 
 // Booking creation schema
 const bookingSchema = z.object({
-  routeId: z.string().uuid(),
   vehicleTypeId: z.string().uuid(),
+  fromLocationId: z.string().uuid().optional(),
+  toLocationId: z.string().uuid().optional(),
   pickupAddress: z.string().min(1),
   dropoffAddress: z.string().min(1),
   pickupDate: z.string(),
   pickupTime: z.string(),
   passengerCount: z.number().min(1).max(50),
+  luggageCount: z.number().min(0).max(50),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
@@ -121,11 +185,12 @@ const bookingSchema = z.object({
     infant: z.number().min(0).max(4),
     booster: z.number().min(0).max(4)
   }),
-  extraLuggage: z.boolean(),
+  extraLuggageCount: z.number().min(0),
+  basePrice: z.number().min(0),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
   }),
-  paymentMethod: z.enum(['card', 'cash'])
+  paymentMethod: z.enum(['card'])
 })
 
 export type BookingFormData = z.infer<typeof bookingSchema>
@@ -151,29 +216,50 @@ export async function createBooking(formData: BookingFormData) {
   // Combine date and time for pickup datetime
   const pickupDateTime = new Date(`${validatedData.pickupDate}T${validatedData.pickupTime}`)
   
-  // Calculate prices (simplified - in production, fetch actual prices)
-  const basePrice = 50 // Should fetch from route_vehicle_type_pricing
+  // Calculate prices based on actual vehicle data
+  const basePrice = validatedData.basePrice
   const childSeatPrice = (validatedData.childSeats.infant + validatedData.childSeats.booster) * 10
-  const extraLuggagePrice = validatedData.extraLuggage ? 15 : 0
+  const extraLuggagePrice = validatedData.extraLuggageCount * 15 // $15 per extra bag
   const amenitiesPrice = childSeatPrice + extraLuggagePrice
   const totalPrice = basePrice + amenitiesPrice
+  
+  // Get zone IDs if location IDs are provided
+  let fromZoneId = null
+  let toZoneId = null
+  
+  if (validatedData.fromLocationId && validatedData.toLocationId) {
+    const { data: locations } = await adminClient
+      .from('locations')
+      .select('id, zone_id')
+      .in('id', [validatedData.fromLocationId, validatedData.toLocationId])
+    
+    if (locations) {
+      fromZoneId = locations.find(l => l.id === validatedData.fromLocationId)?.zone_id
+      toZoneId = locations.find(l => l.id === validatedData.toLocationId)?.zone_id
+    }
+  }
   
   // Start a transaction
   const { data: booking, error: bookingError } = await adminClient
     .from('bookings')
     .insert({
       booking_number: bookingNumber,
-      route_id: validatedData.routeId,
       customer_id: user.id,
+      vehicle_type_id: validatedData.vehicleTypeId,
+      from_location_id: validatedData.fromLocationId || null,
+      to_location_id: validatedData.toLocationId || null,
+      from_zone_id: fromZoneId,
+      to_zone_id: toZoneId,
       pickup_address: validatedData.pickupAddress,
       dropoff_address: validatedData.dropoffAddress,
       pickup_datetime: pickupDateTime.toISOString(),
       passenger_count: validatedData.passengerCount,
+      luggage_count: validatedData.luggageCount,
       base_price: basePrice,
       amenities_price: amenitiesPrice,
       total_price: totalPrice,
-      status: 'pending',
-      payment_status: validatedData.paymentMethod === 'cash' ? 'pending' : 'processing',
+      booking_status: 'pending',
+      payment_status: 'processing',
       customer_notes: validatedData.specialRequests || null
     })
     .select()
@@ -183,17 +269,20 @@ export async function createBooking(formData: BookingFormData) {
     console.error('Error creating booking:', bookingError)
     console.error('Booking data attempted:', {
       booking_number: bookingNumber,
-      route_id: validatedData.routeId,
       customer_id: user.id,
+      vehicle_type_id: validatedData.vehicleTypeId,
+      from_location_id: validatedData.fromLocationId,
+      to_location_id: validatedData.toLocationId,
       pickup_address: validatedData.pickupAddress,
       dropoff_address: validatedData.dropoffAddress,
       pickup_datetime: pickupDateTime.toISOString(),
       passenger_count: validatedData.passengerCount,
+      luggage_count: validatedData.luggageCount,
       base_price: basePrice,
       amenities_price: amenitiesPrice,
       total_price: totalPrice,
-      status: 'pending',
-      payment_status: validatedData.paymentMethod === 'cash' ? 'pending' : 'processing',
+      booking_status: 'pending',
+      payment_status: 'processing',
       customer_notes: validatedData.specialRequests || null
     })
     throw new Error(`Failed to create booking: ${bookingError?.message || 'Unknown error'}`)
@@ -234,12 +323,12 @@ export async function createBooking(formData: BookingFormData) {
       price: validatedData.childSeats.booster * 10
     })
   }
-  if (validatedData.extraLuggage) {
+  if (validatedData.extraLuggageCount > 0) {
     amenities.push({
       booking_id: booking.id,
       amenity_type: 'extra_luggage',
-      quantity: 1,
-      price: 15
+      quantity: validatedData.extraLuggageCount,
+      price: validatedData.extraLuggageCount * 15
     })
   }
   

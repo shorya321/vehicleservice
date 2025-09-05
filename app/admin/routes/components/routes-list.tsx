@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { 
   Edit, 
   Trash2, 
@@ -18,11 +19,10 @@ import {
   Clock, 
   Car,
   TrendingUp,
-  ToggleLeft,
-  ToggleRight,
   Star,
   StarOff,
-  DollarSign
+  Check,
+  X
 } from "lucide-react"
 import Link from "next/link"
 import { deleteRoute, toggleRouteStatus, toggleRoutePopular } from "../actions"
@@ -120,10 +120,9 @@ export function RoutesList({ routes, pagination }: RoutesListProps) {
             <TableRow>
               <TableHead>Route</TableHead>
               <TableHead>Distance/Duration</TableHead>
-              <TableHead>Base Price</TableHead>
               <TableHead>Popularity</TableHead>
               <TableHead>Vendors</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -150,7 +149,6 @@ export function RoutesList({ routes, pagination }: RoutesListProps) {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{formatPrice(route.base_price)}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -186,32 +184,22 @@ export function RoutesList({ routes, pagination }: RoutesListProps) {
                     {route.vendor_count || 0}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleStatus(route.id, route.is_active)}
-                    disabled={loadingId === route.id}
-                  >
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Switch
+                      checked={route.is_active}
+                      onCheckedChange={() => handleToggleStatus(route.id, route.is_active)}
+                      disabled={loadingId === route.id}
+                    />
                     {route.is_active ? (
-                      <ToggleRight className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <ToggleLeft className="h-4 w-4 text-gray-400" />
+                      <X className="h-4 w-4 text-muted-foreground" />
                     )}
-                  </Button>
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      title="Manage Pricing"
-                    >
-                      <Link href={`/admin/routes/${route.id}/pricing`}>
-                        <DollarSign className="h-4 w-4" />
-                      </Link>
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
