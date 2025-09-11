@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export interface BookingFilters {
@@ -80,6 +81,35 @@ export interface BookingWithCustomer {
     name: string
     description?: string | null
   } | null
+  // Vendor assignment data (array but will have max 1 item due to unique constraint)
+  booking_assignments?: Array<{
+    id: string
+    vendor_id: string
+    driver_id: string | null
+    vehicle_id: string | null
+    status: string
+    assigned_at: string
+    accepted_at: string | null
+    notes: string | null
+    vendor: {
+      id: string
+      business_name: string
+      business_phone: string | null
+      business_email: string | null
+    } | null
+    driver?: {
+      id: string
+      first_name: string
+      last_name: string
+      phone: string
+    } | null
+    vehicle?: {
+      id: string
+      make: string
+      model: string
+      registration_number: string
+    } | null
+  }>
 }
 
 export async function getBookings(filters: BookingFilters = {}) {
@@ -139,6 +169,34 @@ export async function getBookings(filters: BookingFilters = {}) {
         id,
         name,
         description
+      ),
+      booking_assignments!left(
+        id,
+        vendor_id,
+        driver_id,
+        vehicle_id,
+        status,
+        assigned_at,
+        accepted_at,
+        notes,
+        vendor:vendor_applications!left(
+          id,
+          business_name,
+          business_phone,
+          business_email
+        ),
+        driver:vendor_drivers!left(
+          id,
+          first_name,
+          last_name,
+          phone
+        ),
+        vehicle:vehicles!left(
+          id,
+          make,
+          model,
+          registration_number
+        )
       )
     `, { count: 'exact' })
 
@@ -197,8 +255,28 @@ export async function getBookings(filters: BookingFilters = {}) {
     throw new Error(`Failed to fetch bookings: ${error.message}`)
   }
 
+  // Fix null booking_assignments to be empty arrays
+  // Handle both array and single object cases
+  const processedBookings = (bookings || []).map(booking => {
+    let assignments = booking.booking_assignments;
+    
+    // If it's null, make it an empty array
+    if (!assignments) {
+      assignments = [];
+    }
+    // If it's a single object (not an array), wrap it in an array
+    else if (!Array.isArray(assignments)) {
+      assignments = [assignments];
+    }
+    
+    return {
+      ...booking,
+      booking_assignments: assignments
+    };
+  })
+
   return {
-    bookings: (bookings || []) as BookingWithCustomer[],
+    bookings: processedBookings as BookingWithCustomer[],
     total: count || 0,
     page,
     totalPages: Math.ceil((count || 0) / limit)
@@ -250,6 +328,36 @@ export async function getBookingDetails(bookingId: string) {
         id,
         name,
         description
+      ),
+      booking_assignments!left(
+        id,
+        vendor_id,
+        driver_id,
+        vehicle_id,
+        status,
+        assigned_at,
+        accepted_at,
+        notes,
+        vendor:vendor_applications!left(
+          id,
+          business_name,
+          business_phone,
+          business_email
+        ),
+        driver:vendor_drivers!left(
+          id,
+          first_name,
+          last_name,
+          phone,
+          license_number
+        ),
+        vehicle:vehicles!left(
+          id,
+          make,
+          model,
+          year,
+          registration_number
+        )
       )
     `)
     .eq('id', bookingId)
@@ -274,8 +382,17 @@ export async function getBookingDetails(bookingId: string) {
     .select('*')
     .eq('booking_id', bookingId)
 
+  // Handle booking_assignments - could be null, single object, or array
+  let assignments = booking?.booking_assignments;
+  if (!assignments) {
+    assignments = [];
+  } else if (!Array.isArray(assignments)) {
+    assignments = [assignments];
+  }
+
   return {
     ...booking,
+    booking_assignments: assignments,
     booking_passengers: passengers || [],
     booking_amenities: amenities || []
   }
@@ -492,4 +609,133 @@ export async function bulkUpdateBookingStatus(
   revalidatePath('/admin/bookings')
   
   return { success: true }
+}
+
+export async function getAvailableVendors() {
+  const adminClient = createAdminClient()
+  
+  const { data: vendors, error } = await adminClient
+    .from('vendor_applications')
+    .select(`
+      id,
+      business_name,
+      business_email,
+      business_phone,
+      business_city
+    `)
+    .eq('status', 'approved')
+    .order('business_name')
+  
+  if (error) {
+    console.error('Error fetching vendors:', error)
+    throw new Error('Failed to fetch vendors')
+  }
+  
+  return vendors || []
+}
+
+export async function assignBookingToVendor(
+  bookingId: string,
+  vendorId: string,
+  notes?: string
+) {
+  const adminClient = createAdminClient()
+  const supabase = await createClient()
+  
+  // Get the current user (admin) using regular client
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  
+  // Check if booking already has an assignment
+  const { data: existingAssignment } = await adminClient
+    .from('booking_assignments')
+    .select('id')
+    .eq('booking_id', bookingId)
+    .single()
+  
+  if (existingAssignment) {
+    // Update existing assignment
+    const { data: updatedAssignment, error } = await adminClient
+      .from('booking_assignments')
+      .update({
+        vendor_id: vendorId,
+        status: 'pending',
+        notes,
+        assigned_at: new Date().toISOString(),
+        assigned_by: user.id,
+        driver_id: null,
+        vehicle_id: null,
+        accepted_at: null
+      })
+      .eq('booking_id', bookingId)
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error updating booking assignment:', error)
+      throw new Error('Failed to update booking assignment')
+    }
+  } else {
+    // Create new assignment
+    const { data: newAssignment, error } = await adminClient
+      .from('booking_assignments')
+      .insert({
+        booking_id: bookingId,
+        vendor_id: vendorId,
+        status: 'pending',
+        notes,
+        assigned_by: user.id
+      })
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error creating booking assignment:', error)
+      throw new Error('Failed to assign booking to vendor')
+    }
+  }
+  
+  revalidatePath('/admin/bookings')
+  revalidatePath(`/admin/bookings/${bookingId}`)
+  
+  return { success: true }
+}
+
+export async function getBookingAssignment(bookingId: string) {
+  const adminClient = createAdminClient()
+  
+  const { data: assignment, error } = await adminClient
+    .from('booking_assignments')
+    .select(`
+      *,
+      vendor:vendor_applications(
+        id,
+        business_name,
+        business_email,
+        business_phone
+      ),
+      driver:vendor_drivers(
+        id,
+        first_name,
+        last_name,
+        phone
+      ),
+      vehicle:vehicles(
+        id,
+        make,
+        model,
+        registration_number
+      )
+    `)
+    .eq('booking_id', bookingId)
+    .single()
+  
+  if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+    console.error('Error fetching booking assignment:', error)
+    throw new Error('Failed to fetch booking assignment')
+  }
+  
+  return assignment
 }

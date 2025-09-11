@@ -33,6 +33,7 @@ import {
   UserCircle,
   ChevronDown,
   ChevronRight,
+  Users,
 } from "lucide-react"
 
 interface VendorLayoutProps {
@@ -64,6 +65,7 @@ const navigation: NavItem[] = [
       },
     ]
   },
+  { name: "Drivers", href: "/vendor/drivers", icon: Users },
   { name: "My Services", href: "/vendor/services", icon: Package },
   { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
   { name: "Earnings", href: "/vendor/earnings", icon: DollarSign },

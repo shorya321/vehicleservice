@@ -43,6 +43,7 @@ import {
   Car,
   CreditCard,
   User,
+  UserPlus,
   Mail,
   Phone,
   RefreshCw
@@ -52,6 +53,7 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus } from '../actions'
 import { BulkActionsBar } from './bulk-actions-bar'
+import { AssignVendorModal } from './assign-vendor-modal'
 
 interface BookingsTableProps {
   bookings: BookingWithCustomer[]
@@ -63,6 +65,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [statusUpdateId, setStatusUpdateId] = useState<string | null>(null)
   const [newStatus, setNewStatus] = useState<'confirmed' | 'completed' | 'cancelled' | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [assignModalBookingId, setAssignModalBookingId] = useState<string | null>(null)
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -180,7 +183,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 <TableHead className="w-[50px]">
                   <Checkbox
                     checked={isAllSelected}
-                    indeterminate={isIndeterminate}
+                    indeterminate={isIndeterminate || undefined}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
                   />
@@ -190,6 +193,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 <TableHead>Date & Time</TableHead>
                 <TableHead>Route</TableHead>
                 <TableHead>Vehicle</TableHead>
+                <TableHead>Vendor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Payment</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
@@ -276,6 +280,24 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       )}
                     </TableCell>
                     <TableCell>
+                      {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {booking.booking_assignments[0].vendor?.business_name}
+                          </Badge>
+                          {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].driver && (
+                            <span className="text-xs text-muted-foreground">
+                              {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">
+                          Unassigned
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       {getStatusBadge(booking.booking_status)}
                     </TableCell>
                     <TableCell>
@@ -300,6 +322,18 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           >
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuSeparator />
+                          
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setAssignModalBookingId(booking.id)
+                            }}
+                          >
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            {booking.booking_assignments && booking.booking_assignments.length > 0 ? 'Reassign Vendor' : 'Assign Vendor'}
                           </DropdownMenuItem>
                           
                           <DropdownMenuSeparator />
@@ -408,6 +442,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {assignModalBookingId && (
+        <AssignVendorModal
+          bookingId={assignModalBookingId}
+          currentVendorId={bookings.find(b => b.id === assignModalBookingId)?.booking_assignments?.[0]?.vendor_id}
+          onClose={() => setAssignModalBookingId(null)}
+        />
+      )}
     </>
   )
 }

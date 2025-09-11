@@ -31,7 +31,9 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  Building2,
+  UserCheck
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { formatCurrency } from '@/lib/utils'
@@ -241,6 +243,92 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Vendor Assignment */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Vendor Assignment</CardTitle>
+            <CardDescription>Assigned vendor and resources</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <p className="font-semibold">{booking.booking_assignments[0].vendor?.business_name || 'N/A'}</p>
+                      <Badge variant={
+                        booking.booking_assignments[0].status === 'accepted' ? 'default' : 
+                        booking.booking_assignments[0].status === 'rejected' ? 'destructive' : 
+                        'secondary'
+                      } className="mt-1">
+                        {booking.booking_assignments[0].status.charAt(0).toUpperCase() + booking.booking_assignments[0].status.slice(1)}
+                      </Badge>
+                    </div>
+                    
+                    {booking.booking_assignments[0].driver && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <span className="font-medium">Driver: </span>
+                          {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
+                          <span className="text-muted-foreground ml-2">
+                            (License: {booking.booking_assignments[0].driver.license_number})
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {booking.booking_assignments[0].vehicle && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Car className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <span className="font-medium">Vehicle: </span>
+                          {booking.booking_assignments[0].vehicle.make} {booking.booking_assignments[0].vehicle.model} ({booking.booking_assignments[0].vehicle.year})
+                          <span className="text-muted-foreground ml-2">
+                            Reg: {booking.booking_assignments[0].vehicle.registration_number}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {booking.booking_assignments[0].assigned_at && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>Assigned: {format(new Date(booking.booking_assignments[0].assigned_at), 'PPp')}</span>
+                      </div>
+                    )}
+                    
+                    {booking.booking_assignments[0].accepted_at && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Accepted: {format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}</span>
+                      </div>
+                    )}
+                    
+                    {booking.booking_assignments[0].notes && (
+                      <div className="mt-3 p-3 bg-muted rounded-lg">
+                        <p className="text-sm font-medium mb-1">Notes:</p>
+                        <p className="text-sm text-muted-foreground">{booking.booking_assignments[0].notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No vendor assigned yet</p>
+                <Button variant="outline" size="sm" className="mt-3">
+                  Assign Vendor
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

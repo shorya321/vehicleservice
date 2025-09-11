@@ -32,6 +32,7 @@ export default async function VendorProfilePage() {
         <BusinessProfileForm 
           vendorId={user.id}
           initialData={vendorApplication}
+          isApproved={vendorApplication?.status === 'approved'}
         />
       </div>
     </VendorLayout>

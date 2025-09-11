@@ -42,9 +42,10 @@ const businessSchema = z.object({
 interface BusinessProfileFormProps {
   vendorId: string
   initialData: any | null
+  isApproved?: boolean
 }
 
-export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFormProps) {
+export function BusinessProfileForm({ vendorId, initialData, isApproved = false }: BusinessProfileFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -95,6 +96,13 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {isApproved && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong>Note:</strong> Your business profile is locked after approval. To make changes, please contact admin support.
+            </p>
+          </div>
+        )}
         <Card>
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
@@ -110,7 +118,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                 <FormItem>
                   <FormLabel>Business Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="ABC Car Rentals" {...field} />
+                    <Input placeholder="ABC Car Rentals" {...field} disabled={isApproved} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -124,7 +132,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                 <FormItem>
                   <FormLabel>Business Registration Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="123456789" {...field} />
+                    <Input placeholder="123456789" {...field} disabled={isApproved} />
                   </FormControl>
                   <FormDescription>
                     Your official business registration number
@@ -146,6 +154,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                         type="email" 
                         placeholder="contact@abcrentals.com" 
                         {...field} 
+                        disabled={isApproved}
                       />
                     </FormControl>
                     <FormMessage />
@@ -164,6 +173,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                         type="tel" 
                         placeholder="+971 50 123 4567" 
                         {...field} 
+                        disabled={isApproved}
                       />
                     </FormControl>
                     <FormMessage />
@@ -184,6 +194,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                       className="resize-none"
                       rows={4}
                       {...field} 
+                      disabled={isApproved}
                     />
                   </FormControl>
                   <FormDescription>
@@ -214,6 +225,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                     <Input 
                       placeholder="123 Main Street, Building A" 
                       {...field} 
+                      disabled={isApproved}
                     />
                   </FormControl>
                   <FormMessage />
@@ -229,7 +241,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input placeholder="Dubai" {...field} />
+                      <Input placeholder="Dubai" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -242,9 +254,9 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Country</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isApproved}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger disabled={isApproved}>
                           <SelectValue placeholder="Select a country" />
                         </SelectTrigger>
                       </FormControl>
@@ -283,7 +295,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>Trade License Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="TL-123456789" {...field} />
+                      <Input placeholder="TL-123456789" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -297,7 +309,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>Trade License Expiry</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="date" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -313,7 +325,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>Insurance Policy Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="INS-123456789" {...field} />
+                      <Input placeholder="INS-123456789" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -327,7 +339,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>Insurance Expiry</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="date" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -355,7 +367,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                 <FormItem>
                   <FormLabel>Bank Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Emirates NBD" {...field} />
+                    <Input placeholder="Emirates NBD" {...field} disabled={isApproved} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -369,7 +381,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                 <FormItem>
                   <FormLabel>Account Holder Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="ABC Car Rentals LLC" {...field} />
+                    <Input placeholder="ABC Car Rentals LLC" {...field} disabled={isApproved} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -384,7 +396,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>Account Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="1234567890" {...field} />
+                      <Input placeholder="1234567890" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -398,7 +410,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                   <FormItem>
                     <FormLabel>SWIFT Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="EBILAEAD" {...field} />
+                      <Input placeholder="EBILAEAD" {...field} disabled={isApproved} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -413,7 +425,7 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
                 <FormItem>
                   <FormLabel>IBAN</FormLabel>
                   <FormControl>
-                    <Input placeholder="AE07 0331 2345 6789 0123 456" {...field} />
+                    <Input placeholder="AE07 0331 2345 6789 0123 456" {...field} disabled={isApproved} />
                   </FormControl>
                   <FormDescription>
                     International Bank Account Number for international transfers
@@ -426,19 +438,25 @@ export function BusinessProfileForm({ vendorId, initialData }: BusinessProfileFo
         </Card>
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Profile
-              </>
-            )}
-          </Button>
+          {isApproved ? (
+            <Button type="button" variant="secondary" onClick={() => window.location.href = 'mailto:support@vehicleservice.com?subject=Request to Update Business Profile'}>
+              Contact Admin to Update Profile
+            </Button>
+          ) : (
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Profile
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </form>
     </Form>
