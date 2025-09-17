@@ -13,7 +13,8 @@
       "mcp__supabase-server__list_migrations",
       "mcp__supabase-server__apply_migration",
       "Bash(node:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -282,12 +282,35 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     <TableCell>
                       {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
                         <div className="flex flex-col gap-1">
-                          <Badge variant="secondary" className="text-xs">
-                            {booking.booking_assignments[0].vendor?.business_name}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {booking.booking_assignments[0].vendor?.business_name}
+                            </Badge>
+                            {/* Assignment Status Badge */}
+                            {booking.booking_assignments[0].status === 'pending' && (
+                              <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                Pending
+                              </Badge>
+                            )}
+                            {booking.booking_assignments[0].status === 'accepted' && (
+                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                Accepted
+                              </Badge>
+                            )}
+                            {booking.booking_assignments[0].status === 'rejected' && (
+                              <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                                Rejected
+                              </Badge>
+                            )}
+                          </div>
                           {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].driver && (
                             <span className="text-xs text-muted-foreground">
-                              {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
+                              Driver: {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
+                            </span>
+                          )}
+                          {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].vehicle && (
+                            <span className="text-xs text-muted-foreground">
+                              Vehicle: {booking.booking_assignments[0].vehicle.registration_number}
                             </span>
                           )}
                         </div>

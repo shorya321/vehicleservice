@@ -15,67 +15,19 @@ export interface PopularZone {
 export async function getPopularRoutes(): Promise<PopularRoute[]> {
   const supabase = await createClient()
 
-  // Get popular routes with zone pricing
+  // Use RPC function to get popular routes with all data
+  // This bypasses RLS issues with nested joins
   const { data: routes, error } = await supabase
-    .from('routes')
-    .select(`
-      id,
-      route_slug,
-      route_name,
-      distance_km,
-      estimated_duration_minutes,
-      origin_location_id,
-      destination_location_id,
-      origin_location:locations!routes_origin_location_id_fkey(
-        id,
-        name, 
-        city,
-        zone_id,
-        zone:zones!locations_zone_id_fkey(id, name)
-      ),
-      destination_location:locations!routes_destination_location_id_fkey(
-        id,
-        name, 
-        city,
-        zone_id,
-        zone:zones!locations_zone_id_fkey(id, name)
-      )
-    `)
-    .eq('is_active', true)
-    .eq('is_popular', true)
-    .limit(6)
+    .rpc('get_popular_routes')
 
   if (error) {
     console.error('Error fetching popular routes:', error)
     return []
   }
 
-  // Get zone pricing for each route
-  const routesWithZonePricing = await Promise.all(routes.map(async (route) => {
-    const originZoneId = route.origin_location.zone_id
-    const destinationZoneId = route.destination_location.zone_id
-    
-    let zonePrice = 0 // Default price, will be set from zone pricing
-    
-    if (originZoneId && destinationZoneId) {
-      const { data: zonePricing } = await supabase
-        .from('zone_pricing')
-        .select('base_price')
-        .eq('from_zone_id', originZoneId)
-        .eq('to_zone_id', destinationZoneId)
-        .eq('is_active', true)
-        .single()
-      
-      if (zonePricing) {
-        zonePrice = zonePricing.base_price
-      }
-    }
-    
-    return { ...route, zonePrice }
-  }))
 
   // Get search counts for these routes
-  const routeIds = routes.map(r => r.id)
+  const routeIds = routes?.map(r => r.id) || []
   const { data: searchCounts } = await supabase
     .from('route_searches')
     .select('route_id')
@@ -87,20 +39,23 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     return acc
   }, {} as Record<string, number>) || {}
 
-  return routesWithZonePricing.map(route => ({
+  // Map the RPC results to our PopularRoute format
+  const result = routes?.map(route => ({
     id: route.id,
     slug: route.route_slug,
-    originLocationId: route.origin_location.id,
-    destinationLocationId: route.destination_location.id,
-    originName: route.origin_location.name,
-    destinationName: route.destination_location.name,
-    originCity: route.origin_location.city,
-    destinationCity: route.destination_location.city,
-    startingPrice: route.zonePrice, // Use zone price
+    originLocationId: route.origin_location_id,
+    destinationLocationId: route.destination_location_id,
+    originName: route.origin_name,
+    destinationName: route.destination_name,
+    originCity: route.origin_city,
+    destinationCity: route.destination_city,
+    startingPrice: route.base_price || 0,
     searchCount: searchCountMap[route.id] || 0,
     distance: route.distance_km,
     duration: route.estimated_duration_minutes
-  }))
+  })) || []
+  
+  return result
 }
 
 export async function trackRouteSearch(params: {

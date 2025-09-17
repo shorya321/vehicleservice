@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export interface VendorBooking {
@@ -25,12 +26,14 @@ export interface VendorBooking {
     booking_status: string
     payment_status: string
     customer_notes: string | null
-    customer: {
+    booking_passengers: Array<{
       id: string
-      full_name: string | null
-      email: string
+      first_name: string
+      last_name: string
+      email: string | null
       phone: string | null
-    } | null
+      is_primary: boolean
+    }>
     vehicle_type: {
       id: string
       name: string
@@ -56,31 +59,32 @@ export interface VendorBooking {
 
 export async function getVendorAssignedBookings() {
   const supabase = await createClient()
-  
+  const adminClient = createAdminClient()
+
   // Get current user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  
-  // Get vendor application for current user
-  const { data: vendorApp, error: vendorError } = await supabase
+
+  // Get vendor application for current user using admin client to bypass RLS
+  const { data: vendorApp, error: vendorError } = await adminClient
     .from('vendor_applications')
     .select('id, business_name')
     .eq('user_id', user.id)
     .single()
-  
+
   if (vendorError) {
     console.error('Error fetching vendor application:', vendorError)
     throw new Error('Vendor application not found')
   }
-  
+
   if (!vendorApp) {
     throw new Error('Vendor application not found')
   }
-  
-  // Get assigned bookings
-  const { data: assignments, error } = await supabase
+
+  // Get assigned bookings using admin client to bypass RLS issues
+  const { data: assignments, error } = await adminClient
     .from('booking_assignments')
     .select(`
       *,
@@ -96,11 +100,13 @@ export async function getVendorAssignedBookings() {
         booking_status,
         payment_status,
         customer_notes,
-        customer:profiles(
+        booking_passengers(
           id,
-          full_name,
+          first_name,
+          last_name,
           email,
-          phone
+          phone,
+          is_primary
         ),
         vehicle_type:vehicle_types(
           id,
@@ -126,12 +132,12 @@ export async function getVendorAssignedBookings() {
     `)
     .eq('vendor_id', vendorApp.id)
     .order('assigned_at', { ascending: false })
-  
+
   if (error) {
     console.error('Error fetching vendor bookings:', error)
     throw new Error('Failed to fetch assigned bookings')
   }
-  
+
   return (assignments || []) as VendorBooking[]
 }
 

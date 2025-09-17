@@ -49,6 +49,96 @@ export type Database = {
           },
         ]
       }
+      booking_assignments: {
+        Row: {
+          accepted_at: string | null
+          assigned_at: string
+          assigned_by: string | null
+          booking_id: string
+          completed_at: string | null
+          created_at: string | null
+          driver_id: string | null
+          id: string
+          notes: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
+          status: string
+          updated_at: string | null
+          vehicle_id: string | null
+          vendor_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_at?: string
+          assigned_by?: string | null
+          booking_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          driver_id?: string | null
+          id?: string
+          notes?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string | null
+          vehicle_id?: string | null
+          vendor_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_at?: string
+          assigned_by?: string | null
+          booking_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          driver_id?: string | null
+          id?: string
+          notes?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string | null
+          vehicle_id?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignments_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_assignments_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_passengers: {
         Row: {
           booking_id: string | null

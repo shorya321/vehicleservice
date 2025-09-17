@@ -255,6 +255,41 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           <CardContent>
             {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
               <div className="space-y-4">
+                {/* Assignment Status Banner */}
+                <div className={`p-3 rounded-lg border ${
+                  booking.booking_assignments[0].status === 'accepted' 
+                    ? 'bg-green-50 border-green-200' 
+                    : booking.booking_assignments[0].status === 'rejected'
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-yellow-50 border-yellow-200'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {booking.booking_assignments[0].status === 'accepted' ? (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      ) : booking.booking_assignments[0].status === 'rejected' ? (
+                        <XCircle className="h-5 w-5 text-red-600" />
+                      ) : (
+                        <Clock className="h-5 w-5 text-yellow-600" />
+                      )}
+                      <span className={`font-semibold ${
+                        booking.booking_assignments[0].status === 'accepted' 
+                          ? 'text-green-700' 
+                          : booking.booking_assignments[0].status === 'rejected'
+                          ? 'text-red-700'
+                          : 'text-yellow-700'
+                      }`}>
+                        Assignment {booking.booking_assignments[0].status.charAt(0).toUpperCase() + booking.booking_assignments[0].status.slice(1)}
+                      </span>
+                    </div>
+                    {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].accepted_at && (
+                      <span className="text-sm text-green-600">
+                        {format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-4">
                   <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
                     <Building2 className="h-5 w-5 text-muted-foreground" />
@@ -262,13 +297,6 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   <div className="flex-1 space-y-3">
                     <div>
                       <p className="font-semibold">{booking.booking_assignments[0].vendor?.business_name || 'N/A'}</p>
-                      <Badge variant={
-                        booking.booking_assignments[0].status === 'accepted' ? 'default' : 
-                        booking.booking_assignments[0].status === 'rejected' ? 'destructive' : 
-                        'secondary'
-                      } className="mt-1">
-                        {booking.booking_assignments[0].status.charAt(0).toUpperCase() + booking.booking_assignments[0].status.slice(1)}
-                      </Badge>
                     </div>
                     
                     {booking.booking_assignments[0].driver && (

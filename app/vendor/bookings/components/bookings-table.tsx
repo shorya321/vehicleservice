@@ -103,17 +103,28 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <div className="font-medium">
-                        {assignment.booking?.customer?.full_name || 'N/A'}
-                      </div>
-                      <div className="text-muted-foreground">
-                        {assignment.booking?.customer?.email || 'N/A'}
-                      </div>
-                      {assignment.booking?.customer?.phone && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Phone className="h-3 w-3" />
-                          {assignment.booking.customer?.phone}
-                        </div>
+                      {assignment.booking?.booking_passengers && assignment.booking.booking_passengers.length > 0 ? (
+                        (() => {
+                          const primaryPassenger = assignment.booking.booking_passengers.find(p => p.is_primary) || assignment.booking.booking_passengers[0]
+                          return (
+                            <>
+                              <div className="font-medium">
+                                {primaryPassenger.first_name} {primaryPassenger.last_name}
+                              </div>
+                              <div className="text-muted-foreground">
+                                {primaryPassenger.email || 'No email'}
+                              </div>
+                              {primaryPassenger.phone && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Phone className="h-3 w-3" />
+                                  {primaryPassenger.phone}
+                                </div>
+                              )}
+                            </>
+                          )
+                        })()
+                      ) : (
+                        <div className="text-muted-foreground">No passenger info</div>
                       )}
                     </div>
                   </TableCell>

@@ -15,6 +15,8 @@ export async function getLocationDetails(locationId: string) {
       city,
       country_code,
       zone_id,
+      latitude,
+      longitude,
       zones!locations_zone_id_fkey(
         id,
         name

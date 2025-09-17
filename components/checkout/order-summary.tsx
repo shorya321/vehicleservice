@@ -16,7 +16,8 @@ import {
   Shield,
   Clock,
   ChevronRight,
-  Briefcase
+  Briefcase,
+  Route
 } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { formatCurrency } from '@/lib/utils'
@@ -44,10 +45,8 @@ export function OrderSummary({ route, vehicleType, passengers, luggage, infantSe
   const discount = promoDiscount
   const total = subtotal - discount
 
-  const duration = route.estimated_duration_minutes
-  const hours = Math.floor(duration / 60)
-  const minutes = duration % 60
-  const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
+  // Display distance instead of duration
+  const distanceText = route.distance_km ? `${route.distance_km} km` : 'Distance N/A'
 
   const applyPromoCode = () => {
     // Simplified promo code logic
@@ -116,8 +115,8 @@ export function OrderSummary({ route, vehicleType, passengers, luggage, infantSe
 
             <div className="flex items-center gap-4 text-sm">
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {durationText}
+                <Route className="h-3.5 w-3.5" />
+                {distanceText}
               </span>
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />

@@ -92,12 +92,29 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     redirect('/')
   }
   
+  // Calculate distance if coordinates are available
+  let calculatedDistance = 0
+  if (originLocation.latitude && originLocation.longitude && 
+      destinationLocation.latitude && destinationLocation.longitude) {
+    // Use the database function to calculate distance
+    const supabase = await createClient()
+    const { data: distanceData } = await supabase
+      .rpc('calculate_distance_km', {
+        lat1: originLocation.latitude,
+        lon1: originLocation.longitude,
+        lat2: destinationLocation.latitude,
+        lon2: destinationLocation.longitude
+      })
+    
+    calculatedDistance = distanceData || 0
+  }
+  
   // Create route details from location data
   const routeDetails = {
     id: `${params.from}-${params.to}`,
     route_name: `${originLocation.name} to ${destinationLocation.name}`,
-    distance_km: 0, // Would be calculated based on actual distance
-    estimated_duration_minutes: 30, // Would be calculated based on actual duration
+    distance_km: calculatedDistance,
+    estimated_duration_minutes: 30, // Keep for backward compatibility, but we'll show distance instead
     base_price: vehicleType.price,
     origin: {
       id: originLocation.id,
