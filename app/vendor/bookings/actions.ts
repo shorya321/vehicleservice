@@ -254,9 +254,10 @@ export async function acceptAndAssignResources(
     console.error('Error updating assignment:', error)
     throw new Error('Failed to accept and assign resources')
   }
-  
+
   revalidatePath('/vendor/bookings')
-  
+  revalidatePath('/admin/bookings')
+
   return { success: true }
 }
 
@@ -297,8 +298,9 @@ export async function rejectAssignment(
     console.error('Error rejecting assignment:', error)
     throw new Error('Failed to reject assignment')
   }
-  
+
   revalidatePath('/vendor/bookings')
-  
+  revalidatePath('/admin/bookings')
+
   return { success: true }
 }

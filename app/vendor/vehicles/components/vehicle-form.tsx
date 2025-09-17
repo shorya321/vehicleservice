@@ -172,14 +172,37 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
     setGalleryImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = error => reject(error)
+    })
+  }
+
   async function onSubmit(values: VehicleFormData) {
     setIsLoading(true)
-    
+
     try {
+      // Convert files to base64
+      let primaryImageBase64: string | null = null
+      let galleryImagesBase64: string[] = []
+
+      if (primaryImageFile) {
+        primaryImageBase64 = await fileToBase64(primaryImageFile)
+      }
+
+      if (galleryFiles.length > 0) {
+        galleryImagesBase64 = await Promise.all(
+          galleryFiles.map(file => fileToBase64(file))
+        )
+      }
+
       const formData = {
         ...values,
-        primaryImageFile,
-        galleryFiles,
+        primaryImageBase64,
+        galleryImagesBase64,
         existingPrimaryImage: initialData?.primary_image_url || null,
         existingGalleryImages: initialData?.gallery_images || []
       }

@@ -187,8 +187,8 @@ export async function bulkToggleAvailability(
 }
 
 export async function createVehicle(businessId: string, data: VehicleFormData & {
-  primaryImageFile?: File
-  galleryFiles?: File[]
+  primaryImageBase64?: string | null
+  galleryImagesBase64?: string[]
 }): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient()
 
@@ -222,48 +222,64 @@ export async function createVehicle(businessId: string, data: VehicleFormData & 
     let primaryImageUrl = null
     let galleryImageUrls = []
 
-    if (data.primaryImageFile || data.galleryFiles?.length > 0) {
+    if (data.primaryImageBase64 || data.galleryImagesBase64?.length) {
       const vehicleId = vehicle.id
       const folderPath = `vehicles/${businessId}/${vehicleId}`
 
       // Upload primary image
-      if (data.primaryImageFile) {
-        const primaryImagePath = `${folderPath}/primary-${Date.now()}.${data.primaryImageFile.name.split('.').pop()}`
-        const { error: uploadError } = await supabase.storage
-          .from('vehicle-images')
-          .upload(primaryImagePath, data.primaryImageFile, {
-            cacheControl: '3600',
-            upsert: false
-          })
+      if (data.primaryImageBase64) {
+        const matches = data.primaryImageBase64.match(/^data:(.+);base64,(.+)$/)
+        if (matches) {
+          const mimeType = matches[1]
+          const base64Data = matches[2]
+          const fileExt = mimeType.split('/')[1] || 'jpg'
+          const buffer = Buffer.from(base64Data, 'base64')
+          const primaryImagePath = `${folderPath}/primary-${Date.now()}.${fileExt}`
+          const { error: uploadError } = await supabase.storage
+            .from('vehicles')
+            .upload(primaryImagePath, buffer, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: mimeType
+            })
 
-        if (uploadError) {
-          console.error('Error uploading primary image:', uploadError)
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('vehicle-images')
-            .getPublicUrl(primaryImagePath)
-          primaryImageUrl = publicUrl
+          if (uploadError) {
+            console.error('Error uploading primary image:', uploadError)
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('vehicles')
+              .getPublicUrl(primaryImagePath)
+            primaryImageUrl = publicUrl
+          }
         }
       }
 
       // Upload gallery images
-      if (data.galleryFiles?.length > 0) {
-        for (let i = 0; i < data.galleryFiles.length; i++) {
-          const file = data.galleryFiles[i]
-          const galleryImagePath = `${folderPath}/gallery-${i}-${Date.now()}.${file.name.split('.').pop()}`
-          
-          const { error: uploadError } = await supabase.storage
-            .from('vehicle-images')
-            .upload(galleryImagePath, file, {
-              cacheControl: '3600',
-              upsert: false
-            })
+      if (data.galleryImagesBase64?.length > 0) {
+        for (let i = 0; i < data.galleryImagesBase64.length; i++) {
+          const base64 = data.galleryImagesBase64[i]
+          const matches = base64.match(/^data:(.+);base64,(.+)$/)
+          if (matches) {
+            const mimeType = matches[1]
+            const base64Data = matches[2]
+            const fileExt = mimeType.split('/')[1] || 'jpg'
+            const buffer = Buffer.from(base64Data, 'base64')
+            const galleryImagePath = `${folderPath}/gallery-${i}-${Date.now()}.${fileExt}`
 
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('vehicle-images')
-              .getPublicUrl(galleryImagePath)
-            galleryImageUrls.push(publicUrl)
+            const { error: uploadError } = await supabase.storage
+              .from('vehicles')
+              .upload(galleryImagePath, buffer, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: mimeType
+              })
+
+            if (!uploadError) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('vehicles')
+                .getPublicUrl(galleryImagePath)
+              galleryImageUrls.push(publicUrl)
+            }
           }
         }
       }
@@ -295,9 +311,9 @@ export async function updateVehicle(
   vehicleId: string,
   businessId: string,
   data: VehicleFormData & {
-    primaryImageFile?: File
-    galleryFiles?: File[]
-    existingPrimaryImage?: string
+    primaryImageBase64?: string | null
+    galleryImagesBase64?: string[]
+    existingPrimaryImage?: string | null
     existingGalleryImages?: string[]
   }
 ): Promise<{ success?: boolean; error?: string }> {
@@ -335,56 +351,72 @@ export async function updateVehicle(
     const folderPath = `vehicles/${businessId}/${vehicleId}`
 
     // Upload new primary image if provided
-    if (data.primaryImageFile) {
+    if (data.primaryImageBase64) {
       // Delete old primary image if it exists
       if (primaryImageUrl) {
         const oldPath = primaryImageUrl.split('/').slice(-4).join('/')
         await supabase.storage
-          .from('vehicle-images')
+          .from('vehicles')
           .remove([oldPath])
       }
 
-      const primaryImagePath = `${folderPath}/primary-${Date.now()}.${data.primaryImageFile.name.split('.').pop()}`
-      const { error: uploadError } = await supabase.storage
-        .from('vehicle-images')
-        .upload(primaryImagePath, data.primaryImageFile, {
-          cacheControl: '3600',
-          upsert: false
-        })
+      const matches = data.primaryImageBase64.match(/^data:(.+);base64,(.+)$/)
+      if (matches) {
+        const mimeType = matches[1]
+        const base64Data = matches[2]
+        const fileExt = mimeType.split('/')[1] || 'jpg'
+        const buffer = Buffer.from(base64Data, 'base64')
+        const primaryImagePath = `${folderPath}/primary-${Date.now()}.${fileExt}`
+        const { error: uploadError } = await supabase.storage
+          .from('vehicles')
+          .upload(primaryImagePath, buffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: mimeType
+          })
 
-      if (uploadError) {
-        console.error('Error uploading primary image:', uploadError)
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from('vehicle-images')
-          .getPublicUrl(primaryImagePath)
-        primaryImageUrl = publicUrl
+        if (uploadError) {
+          console.error('Error uploading primary image:', uploadError)
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('vehicles')
+            .getPublicUrl(primaryImagePath)
+          primaryImageUrl = publicUrl
+        }
       }
     }
 
     // Upload new gallery images if provided
-    if (data.galleryFiles?.length > 0) {
+    if (data.galleryImagesBase64?.length > 0) {
       const newGalleryUrls = []
-      
-      for (let i = 0; i < data.galleryFiles.length; i++) {
-        const file = data.galleryFiles[i]
-        const galleryImagePath = `${folderPath}/gallery-${galleryImageUrls.length + i}-${Date.now()}.${file.name.split('.').pop()}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('vehicle-images')
-          .upload(galleryImagePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          })
 
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('vehicle-images')
-            .getPublicUrl(galleryImagePath)
-          newGalleryUrls.push(publicUrl)
+      for (let i = 0; i < data.galleryImagesBase64.length; i++) {
+        const base64 = data.galleryImagesBase64[i]
+        const matches = base64.match(/^data:(.+);base64,(.+)$/)
+        if (matches) {
+          const mimeType = matches[1]
+          const base64Data = matches[2]
+          const fileExt = mimeType.split('/')[1] || 'jpg'
+          const buffer = Buffer.from(base64Data, 'base64')
+          const galleryImagePath = `${folderPath}/gallery-${galleryImageUrls.length + i}-${Date.now()}.${fileExt}`
+
+          const { error: uploadError } = await supabase.storage
+            .from('vehicles')
+            .upload(galleryImagePath, buffer, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: mimeType
+            })
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('vehicles')
+              .getPublicUrl(galleryImagePath)
+            newGalleryUrls.push(publicUrl)
+          }
         }
       }
-      
+
       galleryImageUrls = [...galleryImageUrls, ...newGalleryUrls]
     }
 
