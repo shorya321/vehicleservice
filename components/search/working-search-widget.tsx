@@ -28,7 +28,6 @@ export function WorkingSearchWidget() {
   const [fromLocation, setFromLocation] = useState<Location | null>(null)
   const [toLocation, setToLocation] = useState<Location | null>(null)
   const [passengers, setPassengers] = useState(2)
-  const [luggage, setLuggage] = useState(2)
   
   // Initialize with today's date
   const today = new Date()
@@ -195,10 +194,9 @@ export function WorkingSearchWidget() {
         from: fromLocation.id,
         to: toLocation.id,
         date: selectedDate,
-        passengers: passengers.toString(),
-        luggage: luggage.toString()
+        passengers: passengers.toString()
       })
-      
+
       router.push(`/search/results?${params.toString()}`)
     }
   }
@@ -294,8 +292,8 @@ export function WorkingSearchWidget() {
         </div>
       </div>
 
-      {/* Date, passengers and luggage */}
-      <div className="grid gap-4 md:grid-cols-4">
+      {/* Date and passengers */}
+      <div className="grid gap-4 md:grid-cols-3">
         {/* Date picker */}
         <div className="relative">
           <label className="block text-sm font-medium mb-2">Date</label>
@@ -323,28 +321,6 @@ export function WorkingSearchWidget() {
             <button
               onClick={() => setPassengers(Math.min(20, passengers + 1))}
               disabled={passengers >= 20}
-              className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        {/* Luggage selector */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Luggage</label>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setLuggage(Math.max(0, luggage - 1))}
-              disabled={luggage <= 0}
-              className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              -
-            </button>
-            <span className="w-8 text-center">{luggage}</span>
-            <button
-              onClick={() => setLuggage(Math.min(20, luggage + 1))}
-              disabled={luggage >= 20}
               className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               +

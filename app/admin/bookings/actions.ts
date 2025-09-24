@@ -150,27 +150,7 @@ export async function getBookings(filters: BookingFilters = {}) {
         image_url,
         price_multiplier
       ),
-      from_location:locations!bookings_from_location_id_fkey(
-        id,
-        name,
-        type
-      ),
-      to_location:locations!bookings_to_location_id_fkey(
-        id,
-        name,
-        type
-      ),
-      from_zone:zones!bookings_from_zone_id_fkey(
-        id,
-        name,
-        description
-      ),
-      to_zone:zones!bookings_to_zone_id_fkey(
-        id,
-        name,
-        description
-      ),
-      booking_assignments!left(
+      booking_assignments(
         id,
         vendor_id,
         driver_id,
@@ -179,19 +159,19 @@ export async function getBookings(filters: BookingFilters = {}) {
         assigned_at,
         accepted_at,
         notes,
-        vendor:vendor_applications!left(
+        vendor:vendor_applications(
           id,
           business_name,
           business_phone,
           business_email
         ),
-        driver:vendor_drivers!left(
+        driver:vendor_drivers(
           id,
           first_name,
           last_name,
           phone
         ),
-        vehicle:vehicles!left(
+        vehicle:vehicles(
           id,
           make,
           model,
@@ -199,6 +179,7 @@ export async function getBookings(filters: BookingFilters = {}) {
         )
       )
     `, { count: 'exact' })
+    .not('booking_number', 'like', 'TEST-%') // Exclude any test bookings
 
   // Apply search filter
   if (search) {
@@ -255,28 +236,8 @@ export async function getBookings(filters: BookingFilters = {}) {
     throw new Error(`Failed to fetch bookings: ${error.message}`)
   }
 
-  // Fix null booking_assignments to be empty arrays
-  // Handle both array and single object cases
-  const processedBookings = (bookings || []).map(booking => {
-    let assignments = booking.booking_assignments;
-    
-    // If it's null, make it an empty array
-    if (!assignments) {
-      assignments = [];
-    }
-    // If it's a single object (not an array), wrap it in an array
-    else if (!Array.isArray(assignments)) {
-      assignments = [assignments];
-    }
-    
-    return {
-      ...booking,
-      booking_assignments: assignments
-    };
-  })
-
   return {
-    bookings: processedBookings as BookingWithCustomer[],
+    bookings: (bookings || []) as BookingWithCustomer[],
     total: count || 0,
     page,
     totalPages: Math.ceil((count || 0) / limit)
@@ -308,26 +269,6 @@ export async function getBookingDetails(bookingId: string) {
         description,
         image_url,
         price_multiplier
-      ),
-      from_location:locations!bookings_from_location_id_fkey(
-        id,
-        name,
-        type
-      ),
-      to_location:locations!bookings_to_location_id_fkey(
-        id,
-        name,
-        type
-      ),
-      from_zone:zones!bookings_from_zone_id_fkey(
-        id,
-        name,
-        description
-      ),
-      to_zone:zones!bookings_to_zone_id_fkey(
-        id,
-        name,
-        description
       ),
       booking_assignments!left(
         id,
@@ -471,51 +412,84 @@ export async function updatePaymentStatus(
 
 export async function getBookingStats() {
   const adminClient = createAdminClient()
-  
+
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const todayEnd = new Date(todayStart)
   todayEnd.setDate(todayEnd.getDate() + 1)
-  
-  // Get total bookings
-  const { count: totalBookings } = await adminClient
+
+  // Add timestamp to prevent any caching
+  const timestamp = Date.now()
+
+  // Get total bookings - excluding test bookings
+  const { count: totalBookings, error: totalError } = await adminClient
     .from('bookings')
     .select('*', { count: 'exact', head: true })
-  
+    .not('booking_number', 'like', 'TEST-%')
+
+  if (totalError) {
+    console.error('Error fetching total bookings:', totalError)
+  }
+
   // Get today's bookings
-  const { count: todayBookings } = await adminClient
+  const { count: todayBookings, error: todayError } = await adminClient
     .from('bookings')
     .select('*', { count: 'exact', head: true })
+    .not('booking_number', 'like', 'TEST-%')
     .gte('created_at', todayStart.toISOString())
     .lt('created_at', todayEnd.toISOString())
-  
+
+  if (todayError) {
+    console.error('Error fetching today bookings:', todayError)
+  }
+
   // Get upcoming bookings
-  const { count: upcomingBookings } = await adminClient
+  const { count: upcomingBookings, error: upcomingError } = await adminClient
     .from('bookings')
     .select('*', { count: 'exact', head: true })
+    .not('booking_number', 'like', 'TEST-%')
     .eq('booking_status', 'confirmed')
     .gte('pickup_datetime', now.toISOString())
-  
+
+  if (upcomingError) {
+    console.error('Error fetching upcoming bookings:', upcomingError)
+  }
+
   // Get completed bookings
-  const { count: completedBookings } = await adminClient
+  const { count: completedBookings, error: completedError } = await adminClient
     .from('bookings')
     .select('*', { count: 'exact', head: true })
+    .not('booking_number', 'like', 'TEST-%')
     .eq('booking_status', 'completed')
-  
+
+  if (completedError) {
+    console.error('Error fetching completed bookings:', completedError)
+  }
+
   // Get cancelled bookings
-  const { count: cancelledBookings } = await adminClient
+  const { count: cancelledBookings, error: cancelledError } = await adminClient
     .from('bookings')
     .select('*', { count: 'exact', head: true })
+    .not('booking_number', 'like', 'TEST-%')
     .eq('booking_status', 'cancelled')
-  
+
+  if (cancelledError) {
+    console.error('Error fetching cancelled bookings:', cancelledError)
+  }
+
   // Calculate total revenue from completed payments
-  const { data: revenueData } = await adminClient
+  const { data: revenueData, error: revenueError } = await adminClient
     .from('bookings')
     .select('total_price')
+    .not('booking_number', 'like', 'TEST-%')
     .eq('payment_status', 'completed')
-  
+
+  if (revenueError) {
+    console.error('Error fetching revenue data:', revenueError)
+  }
+
   const totalRevenue = revenueData?.reduce((sum, booking) => sum + (booking.total_price || 0), 0) || 0
-  
+
   return {
     total: totalBookings || 0,
     today: todayBookings || 0,

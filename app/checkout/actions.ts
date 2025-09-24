@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -201,11 +202,26 @@ export async function createBooking(formData: BookingFormData) {
   // Get authenticated user first using regular client
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     throw new Error('Authentication required to create booking')
   }
-  
+
+  // Get user profile to check role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  // Only customers can create bookings
+  if (!profile || profile.role !== 'customer') {
+    const roleMessage = profile?.role ?
+      `${profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} users` :
+      'Users'
+    throw new Error(`${roleMessage} cannot create bookings. Only customers can book vehicles.`)
+  }
+
   // Use admin client for database operations to bypass RLS
   const adminClient = createAdminClient()
   
@@ -344,7 +360,13 @@ export async function createBooking(formData: BookingFormData) {
       // Non-critical error, continue
     }
   }
-  
+
+  // Revalidate admin and customer paths to show new booking immediately
+  revalidatePath('/admin/dashboard')
+  revalidatePath('/admin/bookings')
+  revalidatePath('/customer/dashboard')
+  revalidatePath('/customer/bookings')
+
   return {
     success: true,
     bookingNumber: booking.booking_number,

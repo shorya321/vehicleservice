@@ -308,6 +308,11 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                           <span className="text-muted-foreground ml-2">
                             (License: {booking.booking_assignments[0].driver.license_number})
                           </span>
+                          {booking.booking_assignments[0].driver.phone && (
+                            <span className="text-muted-foreground ml-2">
+                              • Phone: {booking.booking_assignments[0].driver.phone}
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}

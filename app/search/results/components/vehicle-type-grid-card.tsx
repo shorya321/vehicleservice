@@ -107,17 +107,17 @@ export function VehicleTypeGridCard({ vehicleType, searchParams }: VehicleTypeGr
 
           {/* Action Button */}
           {vehicleType.availableVehicles === 0 ? (
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               size="lg"
               disabled
             >
               Currently Unavailable
             </Button>
           ) : (
-            <Button 
-              asChild 
-              className="w-full" 
+            <Button
+              asChild
+              className="w-full"
               size="lg"
             >
               <Link href={selectionUrl}>

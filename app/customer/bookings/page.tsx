@@ -41,7 +41,17 @@ async function getBookings(
     .from('bookings')
     .select(`
       *,
-      vehicle_type:vehicle_types(name)
+      vehicle_type:vehicle_types(name),
+      booking_assignments (
+        status,
+        vendor:vendor_applications (
+          business_name
+        ),
+        driver:vendor_drivers (
+          first_name,
+          last_name
+        )
+      )
     `, { count: 'exact' })
     .eq('customer_id', userId)
 
@@ -146,7 +156,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   const stats = await getBookingStats(user.id)
 
   return (
-    <CustomerLayout>
+    <CustomerLayout user={user}>
       <div className="space-y-6">
         {/* Header */}
         <div>

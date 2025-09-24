@@ -36,6 +36,7 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { VendorBooking } from '../actions'
 import { AssignResourcesModal } from './assign-resources-modal'
+import { RejectAssignmentModal } from './reject-assignment-modal'
 
 interface BookingsTableProps {
   bookings: VendorBooking[]
@@ -44,6 +45,10 @@ interface BookingsTableProps {
 export function BookingsTable({ bookings }: BookingsTableProps) {
   const router = useRouter()
   const [assignModalData, setAssignModalData] = useState<{
+    assignmentId: string
+    bookingNumber: string
+  } | null>(null)
+  const [rejectModalData, setRejectModalData] = useState<{
     assignmentId: string
     bookingNumber: string
   } | null>(null)
@@ -81,7 +86,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               <TableHead>Customer</TableHead>
               <TableHead>Pickup Date/Time</TableHead>
               <TableHead>Route</TableHead>
-              <TableHead>Vehicle Type</TableHead>
+              <TableHead>Vehicle</TableHead>
               <TableHead>Assignment</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Amount</TableHead>
@@ -154,9 +159,18 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Car className="h-4 w-4 text-muted-foreground" />
-                      {assignment.booking?.vehicle_type?.name || 'N/A'}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Car className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">
+                          {assignment.booking?.vehicle_type?.name || 'N/A'}
+                        </span>
+                      </div>
+                      {assignment.booking?.vehicle_type?.category && (
+                        <Badge variant="secondary" className="text-xs">
+                          {assignment.booking.vehicle_type.category.name}
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -212,10 +226,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
-                              onClick={() => {
-                                // TODO: Implement reject functionality
-                                toast.error('Reject functionality coming soon')
-                              }}
+                              onClick={() => setRejectModalData({
+                                assignmentId: assignment.id,
+                                bookingNumber: assignment.booking?.booking_number || 'N/A'
+                              })}
                             >
                               <XCircle className="mr-2 h-4 w-4" />
                               Reject Assignment
@@ -261,6 +275,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           assignmentId={assignModalData.assignmentId}
           bookingNumber={assignModalData.bookingNumber}
           onClose={() => setAssignModalData(null)}
+        />
+      )}
+
+      {rejectModalData && (
+        <RejectAssignmentModal
+          assignmentId={rejectModalData.assignmentId}
+          bookingNumber={rejectModalData.bookingNumber}
+          onClose={() => setRejectModalData(null)}
         />
       )}
     </>

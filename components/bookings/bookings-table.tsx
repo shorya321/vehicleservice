@@ -30,15 +30,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { 
-  MoreHorizontal, 
-  Eye, 
-  FileText, 
+import {
+  MoreHorizontal,
+  Eye,
+  FileText,
   XCircle,
   Calendar,
   MapPin,
   Car,
-  CreditCard
+  CreditCard,
+  Building2,
+  User,
+  Clock,
+  AlertCircle
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -58,6 +62,16 @@ interface Booking {
   vehicle_type?: {
     name: string
   }
+  booking_assignments?: Array<{
+    status: string
+    vendor?: {
+      business_name: string
+    }
+    driver?: {
+      first_name: string
+      last_name: string
+    }
+  }>
 }
 
 interface BookingsTableProps {
@@ -137,7 +151,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               <TableHead>Date & Time</TableHead>
               <TableHead>Route</TableHead>
               <TableHead>Vehicle</TableHead>
-              <TableHead>Passengers</TableHead>
+              <TableHead>Service Provider</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead className="text-right">Amount</TableHead>
@@ -199,12 +213,46 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">
-                    {booking.passenger_count}
-                    {booking.luggage_count > 0 && (
-                      <span className="text-muted-foreground">
-                        {' '}+ {booking.luggage_count} bags
-                      </span>
+                  <TableCell>
+                    {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
+                      <div className="space-y-1 text-sm">
+                        {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].vendor ? (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <div className="h-2 w-2 rounded-full bg-green-500" />
+                              <span className="font-medium">{booking.booking_assignments[0].vendor.business_name}</span>
+                            </div>
+                            {booking.booking_assignments[0].driver && (
+                              <div className="flex items-center gap-1.5 text-muted-foreground ml-3.5">
+                                <User className="h-3 w-3" />
+                                <span className="text-xs">
+                                  {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        ) : booking.booking_assignments[0].status === 'pending' ? (
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                            <span className="text-muted-foreground">Pending Assignment</span>
+                          </div>
+                        ) : booking.booking_assignments[0].status === 'rejected' ? (
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-2 w-2 rounded-full bg-red-500" />
+                            <span className="text-muted-foreground">Rejected</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">Processing</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Not Assigned</span>
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>

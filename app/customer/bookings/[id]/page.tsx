@@ -63,6 +63,27 @@ async function getBookingDetails(bookingId: string, userId: string) {
         luggage_capacity,
         description,
         image_url
+      ),
+      booking_assignments (
+        id,
+        status,
+        accepted_at,
+        vendor:vendor_applications (
+          business_name,
+          business_phone,
+          business_email
+        ),
+        driver:vendor_drivers (
+          first_name,
+          last_name,
+          phone
+        ),
+        vehicle:vehicles (
+          make,
+          model,
+          year,
+          registration_number
+        )
       )
     `)
     .eq('id', bookingId)
@@ -131,7 +152,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
     (pickupDate.getTime() - new Date().getTime()) > 24 * 60 * 60 * 1000
 
   return (
-    <CustomerLayout>
+    <CustomerLayout user={user}>
       <div className="space-y-6">
         {/* Header with Back Button */}
         <div className="flex items-center justify-between">
@@ -264,11 +285,105 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
               </CardContent>
             </Card>
 
+            {/* Service Provider Information */}
+            {booking.booking_assignments && booking.booking_assignments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Service Provider Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {booking.booking_assignments[0].status === 'accepted' ? (
+                    <>
+                      {/* Vendor Information */}
+                      {booking.booking_assignments[0].vendor && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Service Provider</p>
+                          <div className="flex items-center gap-2">
+                            <Car className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">{booking.booking_assignments[0].vendor.business_name}</p>
+                              {booking.booking_assignments[0].vendor.business_phone && (
+                                <p className="text-sm text-muted-foreground">
+                                  Contact: {booking.booking_assignments[0].vendor.business_phone}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <Separator />
+
+                      {/* Driver Information */}
+                      {booking.booking_assignments[0].driver && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Your Driver</p>
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">
+                                {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
+                              </p>
+                              {booking.booking_assignments[0].driver.phone && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Phone className="h-3 w-3 text-muted-foreground" />
+                                  <a
+                                    href={`tel:${booking.booking_assignments[0].driver.phone}`}
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    {booking.booking_assignments[0].driver.phone}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Vehicle Details */}
+                      {booking.booking_assignments[0].vehicle && (
+                        <>
+                          <Separator />
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">Vehicle Details</p>
+                            <div className="flex items-center gap-2">
+                              <Car className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="font-medium">
+                                  {booking.booking_assignments[0].vehicle.make} {booking.booking_assignments[0].vehicle.model} ({booking.booking_assignments[0].vehicle.year})
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  Registration: {booking.booking_assignments[0].vehicle.registration_number}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : booking.booking_assignments[0].status === 'pending' ? (
+                    <div className="text-center py-4">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-50 mb-3">
+                        <Clock className="h-6 w-6 text-yellow-600" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Service provider assignment in progress
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Assignment status: {booking.booking_assignments[0].status}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Vehicle Information */}
             {booking.vehicle_type && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Vehicle Information</CardTitle>
+                  <CardTitle>Vehicle Type</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-start gap-4">

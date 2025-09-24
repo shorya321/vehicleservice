@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { AvailabilityService } from '@/lib/availability/service'
 
 export interface VendorBooking {
   id: string
@@ -38,6 +39,10 @@ export interface VendorBooking {
       id: string
       name: string
       passenger_capacity: number
+      category?: {
+        id: string
+        name: string
+      } | null
     } | null
   }
   driver?: {
@@ -111,7 +116,11 @@ export async function getVendorAssignedBookings() {
         vehicle_type:vehicle_types(
           id,
           name,
-          passenger_capacity
+          passenger_capacity,
+          category:vehicle_categories(
+            id,
+            name
+          )
         )
       ),
       driver:vendor_drivers(
@@ -220,24 +229,43 @@ export async function acceptAndAssignResources(
   vehicleId: string
 ) {
   const supabase = await createClient()
-  
+  const adminClient = createAdminClient()
+
   // Get current user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  
+
   // Get vendor application for current user
   const { data: vendorApp } = await supabase
     .from('vendor_applications')
     .select('id')
     .eq('user_id', user.id)
     .single()
-  
+
   if (!vendorApp) {
     throw new Error('Vendor application not found')
   }
-  
+
+  // Get booking details to create schedule
+  const { data: assignment } = await adminClient
+    .from('booking_assignments')
+    .select(`
+      *,
+      booking:bookings(
+        pickup_datetime,
+        dropoff_address,
+        pickup_address
+      )
+    `)
+    .eq('id', assignmentId)
+    .single()
+
+  if (!assignment || !assignment.booking) {
+    throw new Error('Booking not found')
+  }
+
   // Update assignment
   const { error } = await supabase
     .from('booking_assignments')
@@ -249,14 +277,35 @@ export async function acceptAndAssignResources(
     })
     .eq('id', assignmentId)
     .eq('vendor_id', vendorApp.id) // Ensure vendor can only update their own assignments
-  
+
   if (error) {
     console.error('Error updating assignment:', error)
     throw new Error('Failed to accept and assign resources')
   }
 
+  // Create schedule entries for both driver and vehicle
+  const pickupTime = new Date(assignment.booking.pickup_datetime)
+  const estimatedEndTime = new Date(pickupTime.getTime() + 2 * 60 * 60 * 1000) // Estimate 2 hours for trip
+
+  try {
+    await AvailabilityService.createSchedule(
+      assignmentId,
+      vendorApp.id,
+      vehicleId,
+      driverId,
+      pickupTime,
+      estimatedEndTime
+    )
+  } catch (scheduleError) {
+    console.error('Error creating schedule:', scheduleError)
+    // Schedule creation failure is not critical, continue
+  }
+
   revalidatePath('/vendor/bookings')
+  revalidatePath('/vendor/availability')
   revalidatePath('/admin/bookings')
+  revalidatePath(`/admin/bookings/${assignment.booking_id}`)
+  revalidatePath(`/customer/bookings/${assignment.booking_id}`)
 
   return { success: true }
 }
@@ -266,34 +315,44 @@ export async function rejectAssignment(
   reason?: string
 ) {
   const supabase = await createClient()
-  
+  const adminClient = createAdminClient()
+
   // Get current user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  
+
   // Get vendor application for current user
   const { data: vendorApp } = await supabase
     .from('vendor_applications')
     .select('id')
     .eq('user_id', user.id)
     .single()
-  
+
   if (!vendorApp) {
     throw new Error('Vendor application not found')
   }
-  
-  // Update assignment
+
+  // Get the booking_id for this assignment
+  const { data: assignment } = await adminClient
+    .from('booking_assignments')
+    .select('booking_id')
+    .eq('id', assignmentId)
+    .single()
+
+  // Update assignment with rejection details
   const { error } = await supabase
     .from('booking_assignments')
     .update({
       status: 'rejected',
+      rejection_reason: reason || 'Rejected by vendor',
+      rejected_at: new Date().toISOString(),
       notes: reason ? `Rejected: ${reason}` : 'Rejected by vendor'
     })
     .eq('id', assignmentId)
     .eq('vendor_id', vendorApp.id) // Ensure vendor can only update their own assignments
-  
+
   if (error) {
     console.error('Error rejecting assignment:', error)
     throw new Error('Failed to reject assignment')
@@ -301,6 +360,150 @@ export async function rejectAssignment(
 
   revalidatePath('/vendor/bookings')
   revalidatePath('/admin/bookings')
+  revalidatePath('/admin/dashboard')
+  if (assignment?.booking_id) {
+    revalidatePath(`/admin/bookings/${assignment.booking_id}`)
+    revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+  }
 
   return { success: true }
+}
+
+export async function checkResourceAvailabilityForBooking(
+  assignmentId: string
+) {
+  const supabase = await createClient()
+  const adminClient = createAdminClient()
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+
+  // Get vendor application
+  const { data: vendorApp } = await supabase
+    .from('vendor_applications')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!vendorApp) {
+    throw new Error('Vendor application not found')
+  }
+
+  // Get booking details from assignment
+  const { data: assignment } = await adminClient
+    .from('booking_assignments')
+    .select(`
+      *,
+      booking:bookings(
+        pickup_datetime,
+        dropoff_address,
+        pickup_address,
+        vehicle_type:vehicle_types(
+          id,
+          category_id
+        )
+      )
+    `)
+    .eq('id', assignmentId)
+    .single()
+
+  if (!assignment || !assignment.booking) {
+    throw new Error('Booking not found')
+  }
+
+  const pickupTime = new Date(assignment.booking.pickup_datetime)
+  const estimatedEndTime = new Date(pickupTime.getTime() + 2 * 60 * 60 * 1000) // Estimate 2 hours for trip
+
+  // Get all drivers with availability status
+  const { data: drivers } = await supabase
+    .from('vendor_drivers')
+    .select('*')
+    .eq('vendor_id', vendorApp.id)
+    .eq('is_active', true)
+
+  // Get all vehicles with availability status - filtered by booking category
+  const bookingCategoryId = assignment.booking?.vehicle_type?.category_id
+  const { data: vehicles } = await supabase
+    .from('vehicles')
+    .select('*')
+    .eq('business_id', vendorApp.id)
+    .eq('category_id', bookingCategoryId)
+
+  // Check availability for each driver
+  const driversWithAvailability = await Promise.all(
+    (drivers || []).map(async (driver) => {
+      // Check for conflicts in resource_schedules
+      const { data: schedules } = await supabase
+        .from('resource_schedules')
+        .select('*')
+        .eq('resource_id', driver.id)
+        .eq('resource_type', 'driver')
+        .gte('end_datetime', pickupTime.toISOString())
+        .lte('start_datetime', estimatedEndTime.toISOString())
+
+      // Check for unavailability periods
+      const { data: unavailability } = await supabase
+        .from('resource_unavailability')
+        .select('*')
+        .eq('resource_id', driver.id)
+        .eq('resource_type', 'driver')
+        .gte('end_datetime', pickupTime.toISOString())
+        .lte('start_datetime', estimatedEndTime.toISOString())
+
+      const isAvailable = !driver.is_available ? false :
+                          (schedules?.length === 0 && unavailability?.length === 0)
+
+      return {
+        ...driver,
+        availability: {
+          available: isAvailable,
+          conflicts: [...(schedules || []), ...(unavailability || [])]
+        }
+      }
+    })
+  )
+
+  // Check availability for each vehicle
+  const vehiclesWithAvailability = await Promise.all(
+    (vehicles || []).map(async (vehicle) => {
+      // Check for conflicts in resource_schedules
+      const { data: schedules } = await supabase
+        .from('resource_schedules')
+        .select('*')
+        .eq('resource_id', vehicle.id)
+        .eq('resource_type', 'vehicle')
+        .gte('end_datetime', pickupTime.toISOString())
+        .lte('start_datetime', estimatedEndTime.toISOString())
+
+      // Check for unavailability periods
+      const { data: unavailability } = await supabase
+        .from('resource_unavailability')
+        .select('*')
+        .eq('resource_id', vehicle.id)
+        .eq('resource_type', 'vehicle')
+        .gte('end_datetime', pickupTime.toISOString())
+        .lte('start_datetime', estimatedEndTime.toISOString())
+
+      const isAvailable = !vehicle.is_available ? false :
+                          (schedules?.length === 0 && unavailability?.length === 0)
+
+      return {
+        ...vehicle,
+        availability: {
+          available: isAvailable,
+          conflicts: [...(schedules || []), ...(unavailability || [])]
+        }
+      }
+    })
+  )
+
+  return {
+    bookingTime: pickupTime.toISOString(),
+    estimatedEndTime: estimatedEndTime.toISOString(),
+    drivers: driversWithAvailability,
+    vehicles: vehiclesWithAvailability
+  }
 }

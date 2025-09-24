@@ -19,10 +19,10 @@ interface VehicleTypeCategoryTabsProps {
   }
 }
 
-export function VehicleTypeCategoryTabs({ 
-  vehicleTypesByCategory, 
+export function VehicleTypeCategoryTabs({
+  vehicleTypesByCategory,
   allVehicleTypes,
-  searchParams 
+  searchParams
 }: VehicleTypeCategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState('all')
 

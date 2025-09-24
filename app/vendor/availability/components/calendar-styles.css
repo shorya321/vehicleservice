@@ -1,0 +1,150 @@
+/* Custom styles for the vendor availability calendar */
+.vendor-calendar {
+  font-family: inherit;
+}
+
+/* Calendar background and text colors */
+.vendor-calendar .rbc-calendar {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.vendor-calendar .rbc-header {
+  padding: 10px 3px;
+  font-weight: 600;
+  font-size: 14px;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--muted) / 0.5);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.vendor-calendar .rbc-today {
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+.vendor-calendar .rbc-off-range-bg {
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+.vendor-calendar .rbc-event {
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+.vendor-calendar .rbc-event-label {
+  font-size: 11px;
+}
+
+.vendor-calendar .rbc-toolbar {
+  margin-bottom: 20px;
+}
+
+.vendor-calendar .rbc-toolbar button {
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  background-color: transparent;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.vendor-calendar .rbc-toolbar button:hover {
+  background-color: hsl(var(--accent));
+}
+
+.vendor-calendar .rbc-toolbar button.rbc-active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+.vendor-calendar .rbc-month-view,
+.vendor-calendar .rbc-time-view,
+.vendor-calendar .rbc-agenda-view {
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vendor-calendar .rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid hsl(var(--border));
+}
+
+.vendor-calendar .rbc-month-row + .rbc-month-row {
+  border-top: 1px solid hsl(var(--border));
+}
+
+.vendor-calendar .rbc-selected {
+  background-color: hsl(var(--primary) / 0.1) !important;
+}
+
+.vendor-calendar .rbc-show-more {
+  color: hsl(var(--primary));
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Day cells background */
+.vendor-calendar .rbc-day-bg {
+  background-color: hsl(var(--background));
+  border-right: 1px solid hsl(var(--border));
+}
+
+/* Date number in cells */
+.vendor-calendar .rbc-date-cell {
+  color: hsl(var(--foreground));
+  padding: 2px 4px;
+}
+
+.vendor-calendar .rbc-date-cell button {
+  color: hsl(var(--foreground));
+}
+
+/* Current time indicator */
+.vendor-calendar .rbc-current-time-indicator {
+  background-color: hsl(var(--primary));
+}
+
+/* Selected cell */
+.vendor-calendar .rbc-selected-cell {
+  background-color: hsl(var(--accent)) !important;
+}
+
+/* Time view cells */
+.vendor-calendar .rbc-time-view {
+  background-color: hsl(var(--background));
+}
+
+.vendor-calendar .rbc-time-header {
+  background-color: hsl(var(--background));
+}
+
+.vendor-calendar .rbc-time-content {
+  background-color: hsl(var(--background));
+  border-top: 1px solid hsl(var(--border));
+}
+
+.vendor-calendar .rbc-timeslot-group {
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.vendor-calendar .rbc-time-slot {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Agenda view */
+.vendor-calendar .rbc-agenda-view table {
+  background-color: hsl(var(--background));
+}
+
+.vendor-calendar .rbc-agenda-date-cell,
+.vendor-calendar .rbc-agenda-time-cell {
+  color: hsl(var(--foreground));
+}
+
+/* Outside current month days */
+.vendor-calendar .rbc-off-range {
+  color: hsl(var(--muted-foreground));
+}

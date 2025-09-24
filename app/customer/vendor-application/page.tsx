@@ -70,7 +70,7 @@ export default async function VendorApplicationPage() {
   const StatusIcon = statusConfig[status].icon
 
   return (
-    <CustomerLayout>
+    <CustomerLayout user={user}>
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <div>

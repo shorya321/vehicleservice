@@ -10,7 +10,6 @@ import { requireCustomer } from "@/lib/auth/user-actions"
 import {
   Shield,
   Settings,
-  Clock,
   User,
   Activity,
   ArrowRight,
@@ -20,34 +19,6 @@ import {
   Calendar,
 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data for demonstration
-const recentActivities = [
-  {
-    id: "1",
-    action: "Profile updated",
-    details: "Phone number changed",
-    date: "2024-06-25",
-    time: "10:00 AM",
-    type: "profile",
-  },
-  {
-    id: "2",
-    action: "Password changed",
-    details: "Security update completed",
-    date: "2024-06-20",
-    time: "2:30 PM",
-    type: "security",
-  },
-  {
-    id: "3",
-    action: "Email verified",
-    details: "Primary email confirmed",
-    date: "2024-06-15",
-    time: "9:00 AM",
-    type: "verification",
-  },
-]
 
 export default async function CustomerDashboard() {
   const user = await requireCustomer()
@@ -66,7 +37,17 @@ export default async function CustomerDashboard() {
     .from('bookings')
     .select(`
       *,
-      vehicle_type:vehicle_types(name)
+      vehicle_type:vehicle_types(name),
+      booking_assignments (
+        status,
+        vendor:vendor_applications (
+          business_name
+        ),
+        driver:vendor_drivers (
+          first_name,
+          last_name
+        )
+      )
     `)
     .eq('customer_id', user.id)
     .order('created_at', { ascending: false })
@@ -87,7 +68,7 @@ export default async function CustomerDashboard() {
     .gte('pickup_datetime', new Date().toISOString())
   
   return (
-    <CustomerLayout>
+    <CustomerLayout user={user}>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -173,47 +154,7 @@ export default async function CustomerDashboard() {
           </Card>
         )}
 
-        {/* My Bookings Section */}
-        {bookings && bookings.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Recent Bookings</h2>
-                <p className="text-muted-foreground">
-                  Your latest transfer bookings
-                </p>
-              </div>
-              <Button asChild variant="outline">
-                <Link href="/customer/bookings">
-                  View All ({totalBookings})
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            <BookingsTable bookings={bookings} />
-          </div>
-        )}
-
-        {/* Empty State for Bookings */}
-        {(!bookings || bookings.length === 0) && (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-8">
-              <Car className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Bookings Yet</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                Start your journey with us by booking your first transfer
-              </p>
-              <Button asChild>
-                <Link href="/">
-                  Book a Transfer
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Quick Actions */}
+        {/* Quick Actions Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -260,61 +201,47 @@ export default async function CustomerDashboard() {
           </Card>
         </div>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
+        {/* My Bookings Section */}
+        {bookings && bookings.length > 0 && (
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Your account activity log</CardDescription>
+                <h2 className="text-2xl font-bold">Recent Bookings</h2>
+                <p className="text-muted-foreground">
+                  Your latest transfer bookings
+                </p>
               </div>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/customer/activity">
-                  View all
+              <Button asChild variant="outline">
+                <Link href="/customer/bookings">
+                  View All ({totalBookings})
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{activity.action}</p>
-                      <Badge
-                        variant={
-                          activity.type === "security" ? "default" : 
-                          activity.type === "verification" ? "secondary" : "outline"
-                        }
-                      >
-                        {activity.type}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{activity.details}</span>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {activity.date} {activity.time}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+            <BookingsTable bookings={bookings} />
+          </div>
+        )}
 
-        {/* Quick Actions */}
+        {/* Empty State for Bookings */}
+        {(!bookings || bookings.length === 0) && (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-8">
+              <Car className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Bookings Yet</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Start your journey with us by booking your first transfer
+              </p>
+              <Button asChild>
+                <Link href="/">
+                  Book a Transfer
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Account Settings & Support */}
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>

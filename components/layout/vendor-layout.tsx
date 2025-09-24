@@ -53,9 +53,26 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
-  { 
-    name: "Vehicles", 
-    href: "/vendor/vehicles", 
+  {
+    name: "Account",
+    href: "/vendor/account",
+    icon: UserCircle,
+    submenu: [
+      {
+        name: "My Account",
+        href: "/vendor/account",
+        icon: UserCircle,
+      },
+      {
+        name: "Business Profile",
+        href: "/vendor/profile",
+        icon: User,
+      },
+    ]
+  },
+  {
+    name: "Vehicles",
+    href: "/vendor/vehicles",
     icon: Car,
     submenu: [
       {
@@ -66,15 +83,8 @@ const navigation: NavItem[] = [
     ]
   },
   { name: "Drivers", href: "/vendor/drivers", icon: Users },
-  { name: "My Services", href: "/vendor/services", icon: Package },
   { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
-  { name: "Earnings", href: "/vendor/earnings", icon: DollarSign },
-  { name: "Analytics", href: "/vendor/analytics", icon: BarChart3 },
-  { name: "Reviews", href: "/vendor/reviews", icon: Star },
-  { name: "Messages", href: "/vendor/messages", icon: MessageSquare },
-  { name: "Reports", href: "/vendor/reports", icon: FileText },
-  { name: "Business Profile", href: "/vendor/profile", icon: User },
-  { name: "Account", href: "/vendor/account", icon: UserCircle },
+  { name: "Availability", href: "/vendor/availability", icon: BarChart3 },
   { name: "Settings", href: "/vendor/settings", icon: Settings },
 ]
 
@@ -271,12 +281,6 @@ export function VendorLayout({ children }: VendorLayoutProps) {
                 <Link href="/vendor/profile">
                   <User className="mr-2 h-4 w-4" />
                   Business Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/vendor/services">
-                  <Package className="mr-2 h-4 w-4" />
-                  My Services
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

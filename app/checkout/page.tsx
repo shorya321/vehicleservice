@@ -35,7 +35,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   // Check authentication
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   // If not authenticated, redirect to login with return URL
   if (!user) {
     const returnUrl = `/checkout?${new URLSearchParams(params as any).toString()}`
@@ -49,7 +49,19 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     .select('*')
     .eq('id', user.id)
     .single()
-  
+
+  // Check user role - only customers can make bookings
+  if (profile && profile.role !== 'customer') {
+    // Redirect based on role with appropriate message
+    if (profile.role === 'admin') {
+      redirect('/admin/dashboard?error=Admin users cannot make bookings')
+    } else if (profile.role === 'vendor') {
+      redirect('/vendor/dashboard?error=Vendor users cannot make bookings')
+    } else if (profile.role === 'driver') {
+      redirect('/login?error=Driver users cannot make bookings')
+    }
+  }
+
   // If profile doesn't exist or is incomplete, try to get data from user metadata
   if (!profile || (!profile.first_name && !profile.last_name && !profile.phone)) {
     const userData = user.user_metadata

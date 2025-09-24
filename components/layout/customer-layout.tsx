@@ -26,28 +26,28 @@ import {
   Menu,
   X,
   ShoppingBag,
-  History,
-  Heart,
   HelpCircle,
 } from "lucide-react"
 
 interface CustomerLayoutProps {
   children: React.ReactNode
+  user?: {
+    email?: string
+    profile?: {
+      full_name?: string
+    }
+  }
 }
 
 const navigation = [
   { name: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
-  { name: "Book Service", href: "/customer/book", icon: Car },
   { name: "My Bookings", href: "/customer/bookings", icon: Calendar },
-  { name: "Favorites", href: "/customer/favorites", icon: Heart },
-  { name: "Payment Methods", href: "/customer/payments", icon: CreditCard },
-  { name: "Booking History", href: "/customer/history", icon: History },
   { name: "Account", href: "/customer/account", icon: User },
   { name: "Help & Support", href: "/customer/support", icon: HelpCircle },
   { name: "Settings", href: "/customer/settings", icon: Settings },
 ]
 
-export function CustomerLayout({ children }: CustomerLayoutProps) {
+export function CustomerLayout({ children, user }: CustomerLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -121,9 +121,9 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Customer Name</p>
+                <p className="text-sm font-medium truncate">{user?.profile?.full_name || 'Customer'}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  customer@example.com
+                  {user?.email || ''}
                 </p>
               </div>
             </div>
@@ -159,9 +159,9 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Customer Name</p>
+                  <p className="text-sm font-medium leading-none">{user?.profile?.full_name || 'Customer'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    customer@example.com
+                    {user?.email || ''}
                   </p>
                 </div>
               </DropdownMenuLabel>

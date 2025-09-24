@@ -19,9 +19,11 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Loader2, User, Car } from 'lucide-react'
-import { getVendorDrivers, getVendorVehicles, acceptAndAssignResources } from '../actions'
+import { Loader2, User, Car, CheckCircle, XCircle, AlertCircle, Calendar } from 'lucide-react'
+import { getVendorDrivers, getVendorVehicles, acceptAndAssignResources, checkResourceAvailabilityForBooking } from '../actions'
+import Link from 'next/link'
 
 interface AssignResourcesModalProps {
   assignmentId: string
@@ -36,6 +38,10 @@ interface Driver {
   phone: string
   license_number: string
   license_type: string | null
+  availability?: {
+    available: boolean
+    conflicts: any[]
+  }
 }
 
 interface Vehicle {
@@ -47,6 +53,10 @@ interface Vehicle {
   seats: number | null
   transmission: string | null
   fuel_type: string | null
+  availability?: {
+    available: boolean
+    conflicts: any[]
+  }
 }
 
 export function AssignResourcesModal({
@@ -69,12 +79,9 @@ export function AssignResourcesModal({
   const loadResources = async () => {
     setIsLoading(true)
     try {
-      const [driversList, vehiclesList] = await Promise.all([
-        getVendorDrivers(),
-        getVendorVehicles()
-      ])
-      setDrivers(driversList)
-      setVehicles(vehiclesList)
+      const availabilityData = await checkResourceAvailabilityForBooking(assignmentId)
+      setDrivers(availabilityData.drivers)
+      setVehicles(availabilityData.vehicles)
     } catch (error) {
       toast.error('Failed to load resources')
       console.error(error)
@@ -110,6 +117,16 @@ export function AssignResourcesModal({
           <DialogTitle>Assign Driver & Vehicle</DialogTitle>
           <DialogDescription>
             Assign a driver and vehicle for booking #{bookingNumber}
+            <div className="mt-2 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Link
+                href="/vendor/availability"
+                target="_blank"
+                className="text-sm text-primary hover:underline"
+              >
+                View full availability calendar →
+              </Link>
+            </div>
           </DialogDescription>
         </DialogHeader>
 
@@ -135,13 +152,30 @@ export function AssignResourcesModal({
                     </div>
                   ) : (
                     drivers.map((driver) => (
-                      <SelectItem key={driver.id} value={driver.id}>
+                      <SelectItem
+                        key={driver.id}
+                        value={driver.id}
+                        disabled={!driver.availability?.available}
+                      >
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {driver.first_name} {driver.last_name}
-                            </span>
+                          <div className="flex flex-col flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {driver.first_name} {driver.last_name}
+                              </span>
+                              {driver.availability?.available ? (
+                                <Badge variant="outline" className="text-xs">
+                                  <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                                  Available
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs">
+                                  <XCircle className="h-3 w-3 mr-1 text-red-600" />
+                                  Unavailable
+                                </Badge>
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground">
                               License: {driver.license_number}
                               {driver.license_type && ` (${driver.license_type})`}
@@ -177,13 +211,30 @@ export function AssignResourcesModal({
                     </div>
                   ) : (
                     vehicles.map((vehicle) => (
-                      <SelectItem key={vehicle.id} value={vehicle.id}>
+                      <SelectItem
+                        key={vehicle.id}
+                        value={vehicle.id}
+                        disabled={!vehicle.availability?.available}
+                      >
                         <div className="flex items-center gap-2">
                           <Car className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {vehicle.make} {vehicle.model} ({vehicle.year})
-                            </span>
+                          <div className="flex flex-col flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {vehicle.make} {vehicle.model} ({vehicle.year})
+                              </span>
+                              {vehicle.availability?.available ? (
+                                <Badge variant="outline" className="text-xs">
+                                  <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                                  Available
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs">
+                                  <XCircle className="h-3 w-3 mr-1 text-red-600" />
+                                  Unavailable
+                                </Badge>
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground">
                               {vehicle.registration_number}
                               {vehicle.seats && ` • ${vehicle.seats} seats`}

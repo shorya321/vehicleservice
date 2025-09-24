@@ -25,7 +25,7 @@ export default async function CustomerAccountPage() {
   }
 
   return (
-    <CustomerLayout>
+    <CustomerLayout user={userAuth}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
