@@ -39,7 +39,7 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
   }
 
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Edit Vehicle</h1>

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function VendorAccountPage() {
   const user = await requireVendor()
   const supabase = await createClient()
-  
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
@@ -24,8 +24,15 @@ export default async function VendorAccountPage() {
     redirect('/unauthorized')
   }
 
+  // Get vendor application for business name
+  const { data: vendorApplication } = await supabase
+    .from('vendor_applications')
+    .select('business_name')
+    .eq('user_id', user.id)
+    .single()
+
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>

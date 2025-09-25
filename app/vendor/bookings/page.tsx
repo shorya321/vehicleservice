@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { VendorLayout } from '@/components/layout/vendor-layout'
 import { requireVendor } from '@/lib/auth/user-actions'
+import { createClient } from '@/lib/supabase/server'
 import { getVendorAssignedBookings } from './actions'
 import { BookingsTable } from './components/bookings-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,7 +16,16 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function VendorBookingsPage() {
-  await requireVendor()
+  const user = await requireVendor()
+  const supabase = await createClient()
+
+  // Get vendor application for business name
+  const { data: vendorApplication } = await supabase
+    .from('vendor_applications')
+    .select('business_name')
+    .eq('user_id', user.id)
+    .single()
+
   const bookings = await getVendorAssignedBookings()
   
   // Calculate stats
@@ -33,7 +43,7 @@ export default async function VendorBookingsPage() {
   }
   
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="space-y-6">
         {/* Header */}
         <div>

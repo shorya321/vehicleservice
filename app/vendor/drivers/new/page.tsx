@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { VendorLayout } from '@/components/layout/vendor-layout'
 import { DriverForm } from '../components/driver-form'
 import { requireVendor } from '@/lib/auth/user-actions'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Add New Driver | Vendor Dashboard',
@@ -13,10 +14,18 @@ export const metadata: Metadata = {
 }
 
 export default async function NewDriverPage() {
-  await requireVendor()
-  
+  const user = await requireVendor()
+  const supabase = await createClient()
+
+  // Get vendor application for business name
+  const { data: vendorApplication } = await supabase
+    .from('vendor_applications')
+    .select('business_name')
+    .eq('user_id', user.id)
+    .single()
+
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">

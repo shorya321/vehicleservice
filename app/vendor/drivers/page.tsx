@@ -7,6 +7,7 @@ import { VendorLayout } from '@/components/layout/vendor-layout'
 import { DriversTable } from './components/drivers-table'
 import { getDrivers, getDriverStats } from './actions'
 import { requireVendor } from '@/lib/auth/user-actions'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Drivers | Vendor Dashboard',
@@ -14,7 +15,15 @@ export const metadata: Metadata = {
 }
 
 export default async function DriversPage() {
-  await requireVendor()
+  const user = await requireVendor()
+  const supabase = await createClient()
+
+  // Get vendor application for business name
+  const { data: vendorApplication } = await supabase
+    .from('vendor_applications')
+    .select('business_name')
+    .eq('user_id', user.id)
+    .single()
   
   const [driversResult, statsResult] = await Promise.all([
     getDrivers(),
@@ -31,7 +40,7 @@ export default async function DriversPage() {
   }
 
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">

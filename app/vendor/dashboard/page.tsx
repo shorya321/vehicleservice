@@ -57,7 +57,7 @@ export default async function VendorDashboard() {
     .single()
 
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

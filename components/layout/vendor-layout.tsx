@@ -38,6 +38,15 @@ import {
 
 interface VendorLayoutProps {
   children: React.ReactNode
+  user?: {
+    email?: string
+    profile?: {
+      full_name?: string
+    }
+  }
+  vendorApplication?: {
+    business_name?: string
+  }
 }
 
 interface NavItem {
@@ -88,7 +97,7 @@ const navigation: NavItem[] = [
   { name: "Settings", href: "/vendor/settings", icon: Settings },
 ]
 
-export function VendorLayout({ children }: VendorLayoutProps) {
+export function VendorLayout({ children, user, vendorApplication }: VendorLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -226,9 +235,9 @@ export function VendorLayout({ children }: VendorLayoutProps) {
                 <AvatarFallback>VN</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Vendor Business</p>
+                <p className="text-sm font-medium truncate">{user?.profile?.full_name || 'Vendor'}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  vendor@example.com
+                  {user?.email || ''}
                 </p>
               </div>
             </div>
@@ -264,9 +273,9 @@ export function VendorLayout({ children }: VendorLayoutProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Vendor Business</p>
+                  <p className="text-sm font-medium leading-none">{user?.profile?.full_name || 'Vendor'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    vendor@example.com
+                    {user?.email || ''}
                   </p>
                 </div>
               </DropdownMenuLabel>

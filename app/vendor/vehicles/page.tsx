@@ -69,7 +69,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
   const { vehicles, total, page, totalPages } = await getVehicles(vendorApplication.id, filters)
 
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

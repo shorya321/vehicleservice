@@ -17,7 +17,7 @@ export default async function VendorProfilePage() {
 
 
   return (
-    <VendorLayout>
+    <VendorLayout user={user} vendorApplication={vendorApplication}>
       <div className="max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Business Profile</h1>
