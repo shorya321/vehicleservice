@@ -34,7 +34,7 @@ import {
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { VendorBooking } from '../actions'
+import { VendorBooking, completeBooking } from '../actions'
 import { AssignResourcesModal } from './assign-resources-modal'
 import { RejectAssignmentModal } from './reject-assignment-modal'
 
@@ -52,6 +52,21 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     assignmentId: string
     bookingNumber: string
   } | null>(null)
+  const [isCompleting, setIsCompleting] = useState(false)
+
+  const handleCompleteBooking = async (assignmentId: string, bookingNumber: string) => {
+    try {
+      setIsCompleting(true)
+      await completeBooking(assignmentId)
+      toast.success(`Booking ${bookingNumber} marked as completed`)
+      router.refresh()
+    } catch (error) {
+      console.error('Error completing booking:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to complete booking')
+    } finally {
+      setIsCompleting(false)
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -250,15 +265,29 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         )}
                         
                         {assignment.status === 'accepted' && assignment.driver && (
-                          <DropdownMenuItem
-                            onClick={() => setAssignModalData({
-                              assignmentId: assignment.id,
-                              bookingNumber: assignment.booking.booking_number
-                            })}
-                          >
-                            <UserCheck className="mr-2 h-4 w-4" />
-                            Change Assignment
-                          </DropdownMenuItem>
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => setAssignModalData({
+                                assignmentId: assignment.id,
+                                bookingNumber: assignment.booking.booking_number
+                              })}
+                            >
+                              <UserCheck className="mr-2 h-4 w-4" />
+                              Change Assignment
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleCompleteBooking(
+                                assignment.id,
+                                assignment.booking?.booking_number || 'N/A'
+                              )}
+                              disabled={isCompleting}
+                              className="text-green-600"
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Mark Completed
+                            </DropdownMenuItem>
+                          </>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>

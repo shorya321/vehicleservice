@@ -257,15 +257,19 @@ export function BookingDetail({ booking }: BookingDetailProps) {
               <div className="space-y-4">
                 {/* Assignment Status Banner */}
                 <div className={`p-3 rounded-lg border ${
-                  booking.booking_assignments[0].status === 'accepted' 
-                    ? 'bg-green-50 border-green-200' 
+                  booking.booking_assignments[0].status === 'completed'
+                    ? 'bg-blue-50 border-blue-200'
+                    : booking.booking_assignments[0].status === 'accepted'
+                    ? 'bg-green-50 border-green-200'
                     : booking.booking_assignments[0].status === 'rejected'
                     ? 'bg-red-50 border-red-200'
                     : 'bg-yellow-50 border-yellow-200'
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {booking.booking_assignments[0].status === 'accepted' ? (
+                      {booking.booking_assignments[0].status === 'completed' ? (
+                        <CheckCircle className="h-5 w-5 text-blue-600" />
+                      ) : booking.booking_assignments[0].status === 'accepted' ? (
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       ) : booking.booking_assignments[0].status === 'rejected' ? (
                         <XCircle className="h-5 w-5 text-red-600" />
@@ -273,8 +277,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                         <Clock className="h-5 w-5 text-yellow-600" />
                       )}
                       <span className={`font-semibold ${
-                        booking.booking_assignments[0].status === 'accepted' 
-                          ? 'text-green-700' 
+                        booking.booking_assignments[0].status === 'completed'
+                          ? 'text-blue-700'
+                          : booking.booking_assignments[0].status === 'accepted'
+                          ? 'text-green-700'
                           : booking.booking_assignments[0].status === 'rejected'
                           ? 'text-red-700'
                           : 'text-yellow-700'
@@ -282,6 +288,11 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                         Assignment {booking.booking_assignments[0].status.charAt(0).toUpperCase() + booking.booking_assignments[0].status.slice(1)}
                       </span>
                     </div>
+                    {booking.booking_assignments[0].status === 'completed' && booking.booking_assignments[0].completed_at && (
+                      <span className="text-sm text-blue-600 font-medium">
+                        {format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}
+                      </span>
+                    )}
                     {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].accepted_at && (
                       <span className="text-sm text-green-600">
                         {format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}
@@ -343,7 +354,14 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                         <span>Accepted: {format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}</span>
                       </div>
                     )}
-                    
+
+                    {booking.booking_assignments[0].completed_at && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-green-600">Completed: {format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}</span>
+                      </div>
+                    )}
+
                     {booking.booking_assignments[0].notes && (
                       <div className="mt-3 p-3 bg-muted rounded-lg">
                         <p className="text-sm font-medium mb-1">Notes:</p>

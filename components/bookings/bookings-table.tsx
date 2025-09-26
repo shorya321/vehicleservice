@@ -216,7 +216,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   <TableCell>
                     {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
                       <div className="space-y-1 text-sm">
-                        {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].vendor ? (
+                        {(booking.booking_assignments[0].status === 'accepted' || booking.booking_assignments[0].status === 'completed') && booking.booking_assignments[0].vendor ? (
                           <>
                             <div className="flex items-center gap-1.5">
                               <div className="h-2 w-2 rounded-full bg-green-500" />

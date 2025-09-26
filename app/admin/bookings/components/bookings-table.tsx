@@ -302,6 +302,11 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                                 Rejected
                               </Badge>
                             )}
+                            {booking.booking_assignments[0].status === 'completed' && (
+                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                Completed
+                              </Badge>
+                            )}
                           </div>
                           {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].driver && (
                             <span className="text-xs text-muted-foreground">

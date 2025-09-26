@@ -278,6 +278,7 @@ export async function getBookingDetails(bookingId: string) {
         status,
         assigned_at,
         accepted_at,
+        completed_at,
         notes,
         vendor:vendor_applications!left(
           id,
@@ -340,37 +341,63 @@ export async function getBookingDetails(bookingId: string) {
 }
 
 export async function updateBookingStatus(
-  bookingId: string, 
+  bookingId: string,
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled',
   cancellationReason?: string
 ) {
   const adminClient = createAdminClient()
-  
+
   const updateData: any = {
     booking_status: status,
     updated_at: new Date().toISOString()
   }
-  
+
   if (status === 'cancelled') {
     updateData.cancelled_at = new Date().toISOString()
     if (cancellationReason) {
       updateData.cancellation_reason = cancellationReason
     }
   }
-  
+
   const { error } = await adminClient
     .from('bookings')
     .update(updateData)
     .eq('id', bookingId)
-  
+
   if (error) {
     console.error('Error updating booking status:', error)
     throw new Error('Failed to update booking status')
   }
-  
+
+  // Free vehicle and driver resources when booking is completed or cancelled
+  if (status === 'completed' || status === 'cancelled') {
+    const { data: assignment } = await adminClient
+      .from('booking_assignments')
+      .select('id')
+      .eq('booking_id', bookingId)
+      .single()
+
+    if (assignment) {
+      // Update assignment status to completed with timestamp
+      if (status === 'completed') {
+        await adminClient
+          .from('booking_assignments')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', assignment.id)
+      }
+
+      const { AvailabilityService } = await import('@/lib/availability/service')
+      await AvailabilityService.removeSchedule(assignment.id)
+    }
+  }
+
   revalidatePath('/admin/bookings')
   revalidatePath(`/admin/bookings/${bookingId}`)
-  
+
   return { success: true }
 }
 

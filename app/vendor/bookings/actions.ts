@@ -507,3 +507,79 @@ export async function checkResourceAvailabilityForBooking(
     vehicles: vehiclesWithAvailability
   }
 }
+
+export async function completeBooking(assignmentId: string) {
+  const supabase = await createClient()
+  const adminClient = createAdminClient()
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+
+  // Get vendor application for current user
+  const { data: vendorApp } = await supabase
+    .from('vendor_applications')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!vendorApp) {
+    throw new Error('Vendor application not found')
+  }
+
+  // Verify this assignment belongs to the vendor
+  const { data: assignment, error: assignmentError } = await adminClient
+    .from('booking_assignments')
+    .select('booking_id, vendor_id')
+    .eq('id', assignmentId)
+    .single()
+
+  if (assignmentError || !assignment) {
+    throw new Error('Assignment not found')
+  }
+
+  if (assignment.vendor_id !== vendorApp.id) {
+    throw new Error('Unauthorized: This assignment does not belong to your vendor account')
+  }
+
+  // Update booking status to completed
+  const { error: updateError } = await adminClient
+    .from('bookings')
+    .update({
+      booking_status: 'completed',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', assignment.booking_id)
+
+  if (updateError) {
+    console.error('Error updating booking status:', updateError)
+    throw new Error('Failed to complete booking')
+  }
+
+  // Update assignment status to completed with timestamp
+  const { error: assignmentUpdateError } = await adminClient
+    .from('booking_assignments')
+    .update({
+      status: 'completed',
+      completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', assignmentId)
+
+  if (assignmentUpdateError) {
+    console.error('Error updating assignment status:', assignmentUpdateError)
+    // Don't throw - booking is already completed, just log the error
+  }
+
+  // Free vehicle and driver resources
+  await AvailabilityService.removeSchedule(assignmentId)
+
+  revalidatePath('/vendor/bookings')
+  revalidatePath('/admin/bookings')
+  revalidatePath(`/admin/bookings/${assignment.booking_id}`)
+  revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+
+  return { success: true }
+}

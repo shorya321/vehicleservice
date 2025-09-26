@@ -22,7 +22,8 @@ import {
   ArrowLeft,
   Download,
   Printer,
-  MessageSquare
+  MessageSquare,
+  CheckCircle
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -64,10 +65,20 @@ async function getBookingDetails(bookingId: string, userId: string) {
         description,
         image_url
       ),
+      from_zone:zones!bookings_from_zone_id_fkey (
+        id,
+        name
+      ),
+      to_zone:zones!bookings_to_zone_id_fkey (
+        id,
+        name
+      ),
       booking_assignments (
         id,
         status,
+        assigned_at,
         accepted_at,
+        completed_at,
         vendor:vendor_applications (
           business_name,
           business_phone,
@@ -181,37 +192,77 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
           </div>
         </div>
 
-        {/* Status Cards */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Booking Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Badge variant={getStatusColor(booking.booking_status)} className="text-sm">
-                {booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}
-              </Badge>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Payment Status</CardTitle>
-            </CardHeader>
-            <CardContent>
+        {/* Booking Overview */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Booking Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Status Badges */}
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
-                <Badge variant={getPaymentStatusColor(booking.payment_status)} className="text-sm">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <Badge variant={getStatusColor(booking.booking_status)}>
+                  {booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Payment:</span>
+                <Badge variant={getPaymentStatusColor(booking.payment_status)}>
                   <CreditCard className="h-3 w-3 mr-1" />
                   {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
                 </Badge>
-                {booking.payment_status === 'completed' && (
-                  <span className="text-sm text-muted-foreground">
-                    Paid {formatCurrency(booking.total_price)}
-                  </span>
+              </div>
+              {booking.payment_status === 'completed' && (
+                <span className="text-sm text-muted-foreground">
+                  • Paid {formatCurrency(booking.total_price)}
+                </span>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Timeline */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Timeline</p>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Booking Created</span>
+                  <span className="font-medium">{format(new Date(booking.created_at), 'PPp')}</span>
+                </div>
+                {booking.updated_at && new Date(booking.updated_at).getTime() !== new Date(booking.created_at).getTime() && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Last Updated</span>
+                    <span className="font-medium">{format(new Date(booking.updated_at), 'PPp')}</span>
+                  </div>
+                )}
+                {booking.paid_at && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Payment Completed</span>
+                    <span className="font-medium text-green-600">{format(new Date(booking.paid_at), 'PPp')}</span>
+                  </div>
+                )}
+                {booking.cancelled_at && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Cancelled On</span>
+                    <span className="font-medium text-red-600">{format(new Date(booking.cancelled_at), 'PPp')}</span>
+                  </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            {/* Cancellation Reason */}
+            {booking.cancellation_reason && (
+              <>
+                <Separator />
+                <div>
+                  <p className="text-sm font-medium mb-1">Cancellation Reason</p>
+                  <p className="text-sm text-muted-foreground">{booking.cancellation_reason}</p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
@@ -268,17 +319,23 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
 
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <MapPin className="h-5 w-5 text-green-500 mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium">Pickup Location</p>
                       <p className="text-sm text-muted-foreground">{booking.pickup_address}</p>
+                      {booking.from_zone?.name && (
+                        <p className="text-xs text-muted-foreground mt-1">Zone: {booking.from_zone.name}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <MapPin className="h-5 w-5 text-red-500 mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium">Drop-off Location</p>
                       <p className="text-sm text-muted-foreground">{booking.dropoff_address}</p>
+                      {booking.to_zone?.name && (
+                        <p className="text-xs text-muted-foreground mt-1">Zone: {booking.to_zone.name}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -292,7 +349,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                   <CardTitle>Service Provider Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {booking.booking_assignments[0].status === 'accepted' ? (
+                  {(booking.booking_assignments[0].status === 'accepted' || booking.booking_assignments[0].status === 'completed') ? (
                     <>
                       {/* Vendor Information */}
                       {booking.booking_assignments[0].vendor && (
@@ -360,6 +417,35 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                           </div>
                         </>
                       )}
+
+                      {/* Assignment Timeline */}
+                      <Separator />
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground mb-2">Assignment Timeline</p>
+                        <div className="space-y-1.5 text-sm">
+                          {booking.booking_assignments[0].assigned_at && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-muted-foreground">Assigned:</span>
+                              <span className="font-medium">{format(new Date(booking.booking_assignments[0].assigned_at), 'PPp')}</span>
+                            </div>
+                          )}
+                          {booking.booking_assignments[0].accepted_at && (
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-3 w-3 text-green-600" />
+                              <span className="text-muted-foreground">Accepted:</span>
+                              <span className="font-medium">{format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}</span>
+                            </div>
+                          )}
+                          {booking.booking_assignments[0].completed_at && (
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-3 w-3 text-blue-600" />
+                              <span className="text-muted-foreground">Completed:</span>
+                              <span className="font-medium text-blue-600">{format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </>
                   ) : booking.booking_assignments[0].status === 'pending' ? (
                     <div className="text-center py-4">
