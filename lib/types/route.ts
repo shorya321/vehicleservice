@@ -7,10 +7,7 @@ export type Route = Database['public']['Tables']['routes']['Row']
 export type RouteInsert = Database['public']['Tables']['routes']['Insert']
 export type RouteUpdate = Database['public']['Tables']['routes']['Update']
 
-export type RouteSearch = Database['public']['Tables']['route_searches']['Row']
-export type RouteSearchInsert = Database['public']['Tables']['route_searches']['Insert']
-
-// Removed vendor_route_services and route_vehicle_type_pricing types as tables no longer exist
+// Removed vendor_route_services, route_vehicle_type_pricing, and route_searches types as tables no longer exist
 
 export interface RouteWithLocations extends Route {
   origin_location: Location
@@ -30,7 +27,6 @@ export interface RouteFilters {
   destinationLocationId?: string
   isActive?: boolean | 'all'
   isPopular?: boolean | 'all'
-  isShared?: boolean | 'all'
   page?: number
   limit?: number
 }

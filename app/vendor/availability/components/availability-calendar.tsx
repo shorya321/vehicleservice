@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { Calendar, momentLocalizer, View, SlotInfo, Event as BigCalendarEvent } from 'react-big-calendar'
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -67,21 +67,94 @@ export function AvailabilityCalendar({
   const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null)
   const [filterType, setFilterType] = useState<'all' | 'vehicle' | 'driver'>('all')
   const [selectedResourceFilter, setSelectedResourceFilter] = useState<string>('all')
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Get current month start for navigation blocking
+  const currentMonthStart = useMemo(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), 1)
+  }, [])
 
   // Filter events based on selected filters
   const filteredEvents = useMemo(() => {
     let filtered = events
 
-    if (filterType !== 'all') {
-      filtered = filtered.filter(e => e.resourceType === filterType)
+    // Filter by resource type (vehicle/driver/all)
+    if (filterType === 'vehicle') {
+      filtered = filtered.filter(e => {
+        // Show bookings (they have vehicles) or vehicle unavailability
+        return e.type === 'booking' || e.resourceType === 'vehicle'
+      })
+    } else if (filterType === 'driver') {
+      filtered = filtered.filter(e => {
+        // Show bookings (they have drivers) or driver unavailability
+        return e.type === 'booking' || e.resourceType === 'driver'
+      })
     }
 
+    // Filter by specific resource
     if (selectedResourceFilter !== 'all') {
-      filtered = filtered.filter(e => e.resourceId === selectedResourceFilter)
+      filtered = filtered.filter(e => {
+        if (e.type === 'booking') {
+          // Check if booking involves the selected vehicle or driver
+          const vehicleId = e.details?.vehicle?.id
+          const driverId = e.details?.driver?.id
+          return vehicleId === selectedResourceFilter || driverId === selectedResourceFilter
+        } else {
+          // For unavailability events, check resourceId
+          return e.resourceId === selectedResourceFilter
+        }
+      })
     }
 
     return filtered
   }, [events, filterType, selectedResourceFilter])
+
+  // Refetch events when date or view changes
+  useEffect(() => {
+    const fetchEventsForDateRange = async () => {
+      setIsLoading(true)
+      try {
+        // Calculate date range based on current view
+        let startDate: Date
+        let endDate: Date
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (view === 'month') {
+          startDate = moment(date).startOf('month').toDate()
+          endDate = moment(date).endOf('month').toDate()
+        } else if (view === 'week') {
+          startDate = moment(date).startOf('week').toDate()
+          endDate = moment(date).endOf('week').toDate()
+        } else {
+          // day view
+          startDate = moment(date).startOf('day').toDate()
+          endDate = moment(date).endOf('day').toDate()
+        }
+
+        // Only fetch from today onwards (no past bookings)
+        // The server will handle this, but we pass the correct dates
+        const newEvents = await getVendorCalendarEvents(
+          startDate.toISOString(),
+          endDate.toISOString()
+        )
+
+        setEvents(newEvents.map(e => ({
+          ...e,
+          start: new Date(e.start),
+          end: new Date(e.end)
+        })))
+      } catch (error) {
+        console.error('Error fetching events:', error)
+        toast.error('Failed to load calendar events')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchEventsForDateRange()
+  }, [date, view])
 
   // Custom event style
   const eventStyleGetter = useCallback((event: CustomEvent) => {
@@ -102,6 +175,21 @@ export function AvailabilityCalendar({
     setSelectedEvent(event)
     setShowEventDialog(true)
   }, [])
+
+  // Handle calendar navigation with past month blocking
+  const handleNavigate = useCallback((newDate: Date) => {
+    const newMonthStart = new Date(newDate.getFullYear(), newDate.getMonth(), 1)
+
+    // Block navigation to months before current month
+    if (newMonthStart < currentMonthStart) {
+      toast.info('Past bookings are available in the Bookings History page', {
+        description: 'Calendar shows only current and upcoming bookings'
+      })
+      return
+    }
+
+    setDate(newDate)
+  }, [currentMonthStart])
 
   // Handle slot selection (for creating unavailability)
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
@@ -228,7 +316,15 @@ export function AvailabilityCalendar({
       </div>
 
       {/* Calendar */}
-      <div className="h-[600px] bg-background rounded-lg p-4 border">
+      <div className="h-[600px] bg-background rounded-lg p-4 border relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+            <div className="flex flex-col items-center gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="text-sm text-muted-foreground">Loading events...</span>
+            </div>
+          </div>
+        )}
         <Calendar
           localizer={localizer}
           events={filteredEvents}
@@ -237,7 +333,7 @@ export function AvailabilityCalendar({
           view={view}
           onView={setView}
           date={date}
-          onNavigate={setDate}
+          onNavigate={handleNavigate}
           onSelectEvent={handleSelectEvent}
           onSelectSlot={handleSelectSlot}
           selectable
@@ -291,6 +387,36 @@ export function AvailabilityCalendar({
                         <div><span className="font-medium">Dropoff:</span> {selectedEvent.details?.dropoff}</div>
                       </div>
                     </div>
+
+                    {/* Vehicle Details */}
+                    {selectedEvent.details?.vehicle && (
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Car className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Vehicle:</span>
+                        </div>
+                        <div className="text-sm ml-6">
+                          <div>{selectedEvent.details.vehicle.make} {selectedEvent.details.vehicle.model}</div>
+                          <div className="text-muted-foreground">Reg: {selectedEvent.details.vehicle.registrationNumber}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Driver Details */}
+                    {selectedEvent.details?.driver && (
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center gap-2 mb-1">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Driver:</span>
+                        </div>
+                        <div className="text-sm ml-6">
+                          <div>{selectedEvent.details.driver.firstName} {selectedEvent.details.driver.lastName}</div>
+                          {selectedEvent.details.driver.phone && (
+                            <div className="text-muted-foreground">Phone: {selectedEvent.details.driver.phone}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (

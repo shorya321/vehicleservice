@@ -61,13 +61,9 @@ export async function getRoutes(filters: RouteFilters = {}): Promise<PaginatedRo
     throw new Error('Failed to fetch routes')
   }
 
-  // Fetch search counts for each route
-  const routeIds = data?.map(route => route.id) || []
-  const searchCounts = await getSearchCounts(routeIds)
-
   const routesWithDetails: RouteWithDetails[] = (data || []).map(route => ({
     ...route,
-    search_count: searchCounts[route.id] || 0,
+    search_count: 0, // No longer tracking search counts
     vendor_count: 0 // All vendors can service all routes (aggregator model)
   }))
 
@@ -78,30 +74,6 @@ export async function getRoutes(filters: RouteFilters = {}): Promise<PaginatedRo
     limit,
     totalPages: Math.ceil((count || 0) / limit)
   }
-}
-
-async function getSearchCounts(routeIds: string[]): Promise<Record<string, number>> {
-  if (routeIds.length === 0) return {}
-
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('route_searches')
-    .select('route_id')
-    .in('route_id', routeIds)
-
-  if (error) {
-    console.error('Error fetching search counts:', error)
-    return {}
-  }
-
-  const counts: Record<string, number> = {}
-  data?.forEach(search => {
-    if (search.route_id) {
-      counts[search.route_id] = (counts[search.route_id] || 0) + 1
-    }
-  })
-
-  return counts
 }
 
 export async function getRoute(id: string) {
@@ -248,9 +220,8 @@ export async function getPopularRoutes(limit: number = 10) {
 
   // Use the database function we created
   const { data, error } = await supabase
-    .rpc('get_popular_routes', { 
-      limit_count: limit,
-      days_back: 30 
+    .rpc('get_popular_routes', {
+      limit_count: limit
     })
 
   if (error) {

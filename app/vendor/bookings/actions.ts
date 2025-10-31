@@ -266,6 +266,90 @@ export async function acceptAndAssignResources(
     throw new Error('Booking not found')
   }
 
+  // Verify driver belongs to vendor
+  const { data: driverCheck, error: driverError } = await supabase
+    .from('vendor_drivers')
+    .select('id, vendor_id, first_name, last_name')
+    .eq('id', driverId)
+    .single()
+
+  if (driverError || !driverCheck) {
+    console.error('Driver validation error:', {
+      driverId,
+      vendorId: vendorApp.id,
+      error: driverError
+    })
+    throw new Error('Selected driver not found. Please refresh and try again.')
+  }
+
+  if (driverCheck.vendor_id !== vendorApp.id) {
+    console.error('Driver ownership mismatch:', {
+      driverId,
+      driverVendorId: driverCheck.vendor_id,
+      currentVendorId: vendorApp.id
+    })
+    throw new Error('Selected driver does not belong to your vendor account')
+  }
+
+  // Verify vehicle belongs to vendor
+  const { data: vehicleCheck, error: vehicleError } = await supabase
+    .from('vehicles')
+    .select('id, business_id, make, model')
+    .eq('id', vehicleId)
+    .single()
+
+  if (vehicleError || !vehicleCheck) {
+    console.error('Vehicle validation error:', {
+      vehicleId,
+      vendorId: vendorApp.id,
+      error: vehicleError
+    })
+    throw new Error('Selected vehicle not found. Please refresh and try again.')
+  }
+
+  if (vehicleCheck.business_id !== vendorApp.id) {
+    console.error('Vehicle ownership mismatch:', {
+      vehicleId,
+      vehicleBusinessId: vehicleCheck.business_id,
+      currentVendorId: vendorApp.id
+    })
+    throw new Error('Selected vehicle does not belong to your vendor account')
+  }
+
+  // Verify assignment belongs to vendor
+  const { data: assignmentCheck, error: assignmentError } = await adminClient
+    .from('booking_assignments')
+    .select('vendor_id')
+    .eq('id', assignmentId)
+    .single()
+
+  if (assignmentError || !assignmentCheck) {
+    console.error('Assignment validation error:', {
+      assignmentId,
+      vendorId: vendorApp.id,
+      error: assignmentError
+    })
+    throw new Error('Assignment not found. Please refresh and try again.')
+  }
+
+  if (assignmentCheck.vendor_id !== vendorApp.id) {
+    console.error('Assignment ownership mismatch:', {
+      assignmentId,
+      assignmentVendorId: assignmentCheck.vendor_id,
+      currentVendorId: vendorApp.id
+    })
+    throw new Error('This assignment does not belong to your vendor account')
+  }
+
+  console.log('Assignment validation successful:', {
+    assignmentId,
+    vendorId: vendorApp.id,
+    driverId,
+    driverName: `${driverCheck.first_name} ${driverCheck.last_name}`,
+    vehicleId,
+    vehicle: `${vehicleCheck.make} ${vehicleCheck.model}`
+  })
+
   // Update assignment
   const { error } = await supabase
     .from('booking_assignments')
@@ -279,8 +363,18 @@ export async function acceptAndAssignResources(
     .eq('vendor_id', vendorApp.id) // Ensure vendor can only update their own assignments
 
   if (error) {
-    console.error('Error updating assignment:', error)
-    throw new Error('Failed to accept and assign resources')
+    console.error('Failed to update booking assignment - Full error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      assignmentId,
+      driverId,
+      vehicleId,
+      vendorId: vendorApp.id,
+      status: 'accepted'
+    })
+    throw new Error(`Failed to accept and assign resources: ${error.message}`)
   }
 
   // Create schedule entries for both driver and vehicle
@@ -301,11 +395,24 @@ export async function acceptAndAssignResources(
     // Schedule creation failure is not critical, continue
   }
 
-  revalidatePath('/vendor/bookings')
-  revalidatePath('/vendor/availability')
-  revalidatePath('/admin/bookings')
-  revalidatePath(`/admin/bookings/${assignment.booking_id}`)
-  revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+  // Revalidate paths - don't let cache revalidation failures block the response
+  try {
+    revalidatePath('/vendor/bookings')
+    revalidatePath('/vendor/availability')
+    revalidatePath('/admin/bookings')
+    if (assignment?.booking_id) {
+      revalidatePath(`/admin/bookings/${assignment.booking_id}`)
+      revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+    }
+    console.log('Cache revalidation successful for assignment:', assignmentId)
+  } catch (revalidationError) {
+    // Log but don't throw - revalidation errors shouldn't fail the action
+    console.error('Cache revalidation error (non-critical):', {
+      error: revalidationError,
+      assignmentId,
+      bookingId: assignment?.booking_id
+    })
+  }
 
   return { success: true }
 }

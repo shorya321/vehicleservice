@@ -1,4 +1,7 @@
+'use client'
+
 import { Check } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface ProgressBarProps {
@@ -14,35 +17,49 @@ const steps = [
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
-    <div className="bg-muted/30 border-b">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
+    <div
+      className="backdrop-blur-md bg-luxury-darkGray/50 border-b border-luxury-gold/10"
+      role="progressbar"
+      aria-valuenow={currentStep}
+      aria-valuemin={1}
+      aria-valuemax={4}
+      aria-label={`Booking progress: Step ${currentStep} of 4`}
+    >
+      <span className="sr-only">
+        Step {currentStep} of 4: {steps[currentStep - 1]?.label || 'Complete'}
+      </span>
+      <div className="luxury-container py-8">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
           {steps.map((step, index) => (
             <div key={step.number} className="flex items-center flex-1">
               <div className="flex items-center">
-                <div
+                <motion.div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors",
+                    "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all",
                     step.number < currentStep
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-luxury-gold text-luxury-black shadow-gold"
                       : step.number === currentStep
-                      ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                      : "bg-muted text-muted-foreground"
+                      ? "bg-luxury-gold text-luxury-black ring-4 ring-luxury-gold/20 shadow-gold"
+                      : "bg-luxury-darkGray/30 text-luxury-lightGray/60"
                   )}
+                  initial={{ scale: step.number === currentStep ? 1 : 1 }}
+                  animate={{ scale: step.number === currentStep ? 1.1 : 1 }}
+                  transition={{ duration: 0.3 }}
+                  aria-label={`Step ${step.number}: ${step.label}${step.number === currentStep ? ' (current)' : ''}`}
                 >
                   {step.number < currentStep ? (
-                    <Check className="h-5 w-5" />
+                    <Check className="h-6 w-6" aria-hidden="true" />
                   ) : (
                     step.number
                   )}
-                </div>
-                <div className="ml-3">
+                </motion.div>
+                <div className="ml-4 hidden md:block">
                   <p
                     className={cn(
-                      "text-sm font-medium",
+                      "text-sm font-sans font-medium tracking-wider transition-colors",
                       step.number <= currentStep
-                        ? "text-foreground"
-                        : "text-muted-foreground"
+                        ? "text-luxury-pearl"
+                        : "text-luxury-lightGray/60"
                     )}
                   >
                     {step.label}
@@ -50,13 +67,13 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
                 </div>
               </div>
               {index < steps.length - 1 && (
-                <div className="flex-1 ml-4">
+                <div className="flex-1 mx-4">
                   <div
                     className={cn(
-                      "h-1 rounded",
+                      "h-1 rounded transition-all duration-500",
                       step.number < currentStep
-                        ? "bg-primary"
-                        : "bg-muted"
+                        ? "bg-luxury-gold shadow-sm shadow-luxury-gold/50"
+                        : "bg-luxury-darkGray/30"
                     )}
                   />
                 </div>

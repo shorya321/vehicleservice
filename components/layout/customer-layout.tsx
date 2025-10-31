@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { userLogout } from "@/lib/auth/user-actions"
+import { CustomerNotificationBell } from "@/components/customer/notifications/notification-bell"
 import {
   LayoutDashboard,
   Car,
@@ -27,6 +28,7 @@ import {
   X,
   ShoppingBag,
   HelpCircle,
+  Star,
 } from "lucide-react"
 
 interface CustomerLayoutProps {
@@ -42,6 +44,7 @@ interface CustomerLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
   { name: "My Bookings", href: "/customer/bookings", icon: Calendar },
+  { name: "My Reviews", href: "/customer/reviews", icon: Star },
   { name: "Account", href: "/customer/account", icon: User },
   { name: "Help & Support", href: "/customer/support", icon: HelpCircle },
   { name: "Settings", href: "/customer/settings", icon: Settings },
@@ -146,6 +149,9 @@ export function CustomerLayout({ children, user }: CustomerLayoutProps) {
 
           <div className="flex-1" />
 
+          {/* Notification Bell */}
+          <CustomerNotificationBell />
+
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -176,6 +182,12 @@ export function CustomerLayout({ children, user }: CustomerLayoutProps) {
                 <Link href="/customer/bookings">
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   My Bookings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/customer/reviews">
+                  <Star className="mr-2 h-4 w-4" />
+                  My Reviews
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

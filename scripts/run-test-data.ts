@@ -144,11 +144,8 @@ async function runTestData() {
           route_slug: `${origin.city}-to-${dest.city}`.toLowerCase().replace(/ /g, '-'),
           distance_km: distance as number,
           estimated_duration_minutes: duration as number,
-          base_price: price as number,
           is_active: true,
-          is_popular: popular as boolean,
-          created_by: adminUser.id,
-          created_by_type: 'admin'
+          is_popular: popular as boolean
         }
       })
       .filter(route => route !== null)

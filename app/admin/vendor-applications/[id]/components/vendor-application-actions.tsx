@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
+import { approveVendorApplication, rejectVendorApplication } from "../actions"
 
 interface VendorApplicationActionsProps {
   applicationId: string
@@ -31,21 +31,19 @@ export function VendorApplicationActions({ applicationId }: VendorApplicationAct
 
   const handleApprove = async () => {
     setIsApproving(true)
-    const supabase = createClient()
 
     try {
-      const { data, error } = await supabase.rpc('approve_vendor_application', {
-        p_application_id: applicationId,
-        p_admin_notes: adminNotes || null,
+      const result = await approveVendorApplication({
+        applicationId,
+        adminNotes: adminNotes || undefined,
       })
 
-      if (error) throw error
-
-      if (data?.error) {
-        throw new Error(data.error)
+      if (result.error) {
+        toast.error(result.error)
+        return
       }
 
-      toast.success("Application approved successfully!")
+      toast.success("Application approved successfully! Approval email sent to vendor.")
       router.refresh()
       router.push('/admin/vendor-applications')
     } catch (error) {
@@ -63,22 +61,20 @@ export function VendorApplicationActions({ applicationId }: VendorApplicationAct
     }
 
     setIsRejecting(true)
-    const supabase = createClient()
 
     try {
-      const { data, error } = await supabase.rpc('reject_vendor_application', {
-        p_application_id: applicationId,
-        p_rejection_reason: rejectionReason,
-        p_admin_notes: adminNotes || null,
+      const result = await rejectVendorApplication({
+        applicationId,
+        rejectionReason,
+        adminNotes: adminNotes || undefined,
       })
 
-      if (error) throw error
-
-      if (data?.error) {
-        throw new Error(data.error)
+      if (result.error) {
+        toast.error(result.error)
+        return
       }
 
-      toast.success("Application rejected")
+      toast.success("Application rejected. Rejection email sent to applicant.")
       setShowRejectDialog(false)
       router.refresh()
       router.push('/admin/vendor-applications')

@@ -23,7 +23,8 @@ import {
   Download,
   Printer,
   MessageSquare,
-  CheckCircle
+  CheckCircle,
+  Star
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -105,7 +106,14 @@ async function getBookingDetails(bookingId: string, userId: string) {
     return null
   }
 
-  return booking
+  // Check if review exists for this booking
+  const { data: review } = await adminClient
+    .from('reviews')
+    .select('id')
+    .eq('booking_id', bookingId)
+    .single()
+
+  return { ...booking, hasReview: !!review }
 }
 
 export default async function BookingDetailsPage({ params }: BookingDetailsPageProps) {
@@ -633,12 +641,30 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                 <CardTitle>Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                {booking.booking_status === 'completed' && !booking.hasReview && (
+                  <Link href={`/customer/reviews/create?bookingId=${booking.id}`} className="block">
+                    <Button className="w-full bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black">
+                      <Star className="mr-2 h-4 w-4" />
+                      Write a Review
+                    </Button>
+                  </Link>
+                )}
+
+                {booking.booking_status === 'completed' && booking.hasReview && (
+                  <Link href="/customer/reviews" className="block">
+                    <Button variant="outline" className="w-full">
+                      <Star className="mr-2 h-4 w-4" />
+                      View My Review
+                    </Button>
+                  </Link>
+                )}
+
                 {booking.payment_status === 'completed' && (
                   <Button variant="outline" className="w-full">
                     View Receipt
                   </Button>
                 )}
-                
+
                 {booking.booking_status === 'pending' && booking.payment_status === 'processing' && (
                   <Link href={`/payment?booking=${booking.id}`} className="block">
                     <Button className="w-full">
@@ -646,13 +672,13 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                     </Button>
                   </Link>
                 )}
-                
+
                 {canCancel && (
                   <Button variant="destructive" className="w-full">
                     Cancel Booking
                   </Button>
                 )}
-                
+
                 <Button variant="outline" className="w-full">
                   Contact Support
                 </Button>

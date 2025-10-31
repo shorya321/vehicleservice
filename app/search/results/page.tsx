@@ -4,6 +4,7 @@ import { SearchResults } from './components/search-results'
 import { SearchSummary } from './components/search-summary'
 import { getSearchResults } from './actions'
 import { PublicLayout } from '@/components/layout/public-layout'
+import { AmbientBackground } from '@/components/checkout/ambient-background'
 
 export const metadata = {
   title: 'Search Results | Transfer Booking',
@@ -45,14 +46,20 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
   if (!results) {
     return (
       <PublicLayout>
-        <div className="bg-background">
-          <div className="container mx-auto px-4 py-8">
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-semibold mb-4">Unable to load search results</h2>
-              <p className="text-muted-foreground mb-6">
+        <div className="bg-luxury-black min-h-screen relative">
+          <AmbientBackground />
+          <div className="luxury-container py-20 relative z-10">
+            <div className="text-center backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-12 max-w-2xl mx-auto">
+              <h2 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-4">
+                Unable to Load Search Results
+              </h2>
+              <p className="text-luxury-lightGray mb-8">
                 We&apos;re experiencing some issues. Please try again.
               </p>
-              <Link href="/" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center h-14 px-8 rounded-md bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans font-semibold uppercase tracking-wider transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-luxury-black"
+              >
                 Return to Home
               </Link>
             </div>
@@ -69,17 +76,20 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
 
   return (
     <PublicLayout>
-      <div className="bg-background">
-      <SearchSummary
-        originId={from}
-        destinationId={to}
-        date={new Date(date)}
-        passengers={parseInt(passengers)}
-      />
-      
-      <div className="container mx-auto px-4 py-8">
-        <SearchResults results={results} searchParams={params} />
-      </div>
+      <div className="bg-luxury-black relative min-h-screen">
+        <AmbientBackground />
+        <div className="relative z-10">
+          <SearchSummary
+            originId={from}
+            destinationId={to}
+            date={new Date(date)}
+            passengers={parseInt(passengers)}
+          />
+
+          <div className="container mx-auto px-4 py-8">
+            <SearchResults results={results} searchParams={params} />
+          </div>
+        </div>
       </div>
     </PublicLayout>
   )

@@ -117,17 +117,17 @@ export function AssignResourcesModal({
           <DialogTitle>Assign Driver & Vehicle</DialogTitle>
           <DialogDescription>
             Assign a driver and vehicle for booking #{bookingNumber}
-            <div className="mt-2 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <Link
-                href="/vendor/availability"
-                target="_blank"
-                className="text-sm text-primary hover:underline"
-              >
-                View full availability calendar →
-              </Link>
-            </div>
           </DialogDescription>
+          <div className="mt-2 flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Link
+              href="/vendor/availability"
+              target="_blank"
+              className="text-sm text-primary hover:underline"
+            >
+              View full availability calendar →
+            </Link>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

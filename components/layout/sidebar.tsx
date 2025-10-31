@@ -24,11 +24,14 @@ import {
   Tag,
   Route,
   Layers,
+  Mail,
+  Star,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { createClient } from "@/lib/supabase/client"
+import { useAdminNotifications } from "@/lib/hooks/use-admin-notifications"
 
 interface NavItem {
   name: string
@@ -103,6 +106,12 @@ const navigation: NavItem[] = [
     badge: null,
   },
   {
+    name: "Reviews",
+    href: "/admin/reviews",
+    icon: Star,
+    badge: null,
+  },
+  {
     name: "Zones",
     href: "/admin/zones",
     icon: MapPin,
@@ -112,10 +121,16 @@ const navigation: NavItem[] = [
 
 const bottomNavigation = [
   {
+    name: "Emails",
+    href: "/admin/emails",
+    icon: Mail,
+    badge: null,
+  },
+  {
     name: "Notifications",
     href: "/admin/notifications",
     icon: Bell,
-    badge: "5",
+    badge: null,
   },
   {
     name: "Security",
@@ -141,6 +156,7 @@ export function Sidebar() {
     avatar_url: string | null
   } | null>(null)
   const supabase = createClient()
+  const { unreadCount } = useAdminNotifications(5)
 
   useEffect(() => {
     // Auto-expand menu items that contain the current path
@@ -184,24 +200,24 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col border-r bg-card transition-all duration-300",
+        "relative flex h-full flex-col border-r bg-luxury-darkGray/95 backdrop-blur-md border-luxury-gold/20 shadow-2xl transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="flex h-16 items-center justify-between px-4">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-luxury-gold/20">
         {!collapsed && (
-          <Link href="/admin/dashboard" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Car className="h-5 w-5 text-primary-foreground" />
+          <Link href="/admin/dashboard" className="flex items-center space-x-2 group">
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-luxury-gold to-luxury-goldLight transition-transform group-hover:scale-105">
+              <Car className="h-5 w-5 text-luxury-black" />
             </div>
-            <span className="text-lg font-semibold">VehicleService</span>
+            <span className="text-lg font-bold font-serif text-luxury-pearl">VehicleService</span>
           </Link>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className={cn("h-8 w-8", collapsed && "mx-auto")}
+          className={cn("h-8 w-8 text-luxury-gold hover:bg-luxury-gold/10", collapsed && "mx-auto")}
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />
@@ -228,10 +244,10 @@ export function Sidebar() {
                     )
                   }}
                   className={cn(
-                    "group flex w-full items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
+                    "group flex w-full items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 font-sans",
                     isActive
-                      ? "bg-secondary text-secondary-foreground"
-                      : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+                      ? "bg-luxury-gold/10 text-luxury-gold"
+                      : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl"
                   )}
                 >
                   <div className="flex items-center">
@@ -246,7 +262,7 @@ export function Sidebar() {
                   />
                 </button>
                 {isExpanded && (
-                  <div className="mt-1 ml-4 space-y-1 border-l-2 border-muted">
+                  <div className="mt-1 ml-4 space-y-1 border-l-2 border-luxury-gold/20">
                     {item.submenu.map((subItem) => {
                       const isSubActive = pathname.startsWith(subItem.href)
                       return (
@@ -254,10 +270,10 @@ export function Sidebar() {
                           key={subItem.name}
                           href={subItem.href}
                           className={cn(
-                            "group flex items-center rounded-md py-2 pl-6 pr-2 text-sm font-medium transition-all duration-200",
+                            "group flex items-center rounded-md py-2 pl-6 pr-2 text-sm font-medium transition-all duration-200 font-sans",
                             isSubActive
-                              ? "bg-primary/10 text-primary border-l-2 border-primary -ml-[2px]"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-1"
+                              ? "bg-luxury-gold/10 text-luxury-gold border-l-2 border-luxury-gold -ml-[2px]"
+                              : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl hover:translate-x-1"
                           )}
                         >
                           <subItem.icon className="h-4 w-4 mr-3" />
@@ -276,10 +292,10 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
+                "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 font-sans",
                 isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+                  ? "bg-luxury-gold/10 text-luxury-gold"
+                  : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl"
               )}
             >
               <div className="flex items-center">
@@ -292,7 +308,7 @@ export function Sidebar() {
                 {!collapsed && <span>{item.name}</span>}
               </div>
               {!collapsed && item.badge && (
-                <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-medium text-primary-foreground">
+                <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-luxury-gold/20 border border-luxury-gold/40 px-1.5 text-[10px] font-semibold text-luxury-gold uppercase tracking-wider">
                   {item.badge}
                 </span>
               )}
@@ -301,19 +317,22 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t">
+      <div className="border-t border-luxury-gold/20">
         <nav className="space-y-1 px-2 py-4">
           {bottomNavigation.map((item) => {
             const isActive = pathname === item.href
+            const showBadge = item.name === "Notifications" && unreadCount > 0
+            const badgeText = unreadCount > 9 ? "9+" : unreadCount.toString()
+
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
+                  "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 font-sans",
                   isActive
-                    ? "bg-secondary text-secondary-foreground"
-                    : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+                    ? "bg-luxury-gold/10 text-luxury-gold"
+                    : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl"
                 )}
               >
                 <div className="flex items-center">
@@ -325,9 +344,9 @@ export function Sidebar() {
                   />
                   {!collapsed && <span>{item.name}</span>}
                 </div>
-                {!collapsed && item.badge && (
-                  <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-medium text-destructive-foreground">
-                    {item.badge}
+                {!collapsed && (item.badge || showBadge) && (
+                  <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600/20 border border-red-600/40 px-1.5 text-[10px] font-semibold text-red-400 uppercase tracking-wider">
+                    {showBadge ? badgeText : item.badge}
                   </span>
                 )}
               </Link>
@@ -336,41 +355,41 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div className="border-t p-4">
-        <Link 
+      <div className="border-t border-luxury-gold/20 p-4">
+        <Link
           href="/admin/profile"
           className={cn(
-            "flex items-center rounded-md transition-colors hover:bg-secondary/50",
+            "flex items-center rounded-md transition-all duration-200 hover:bg-luxury-gold/5 p-2",
             !collapsed && "space-x-3"
           )}
         >
           {!collapsed ? (
             <>
-              <Avatar className="h-8 w-8">
-                <AvatarImage 
-                  src={userProfile?.avatar_url || undefined} 
+              <Avatar className="h-8 w-8 ring-2 ring-luxury-gold/40">
+                <AvatarImage
+                  src={userProfile?.avatar_url || undefined}
                   alt={userProfile?.full_name || userProfile?.email || "User"}
                 />
-                <AvatarFallback className="bg-secondary text-xs">
+                <AvatarFallback className="bg-luxury-gray/60 text-luxury-gold text-xs font-semibold">
                   {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
+                <p className="text-sm font-medium truncate text-luxury-pearl font-sans">
                   {userProfile?.full_name || 'Admin User'}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs truncate text-luxury-lightGray/70 font-sans">
                   {userProfile?.email || 'admin@vehicleservice.com'}
                 </p>
               </div>
             </>
           ) : (
-            <Avatar className="h-8 w-8 mx-auto">
-              <AvatarImage 
-                src={userProfile?.avatar_url || undefined} 
+            <Avatar className="h-8 w-8 mx-auto ring-2 ring-luxury-gold/40">
+              <AvatarImage
+                src={userProfile?.avatar_url || undefined}
                 alt={userProfile?.full_name || userProfile?.email || "User"}
               />
-              <AvatarFallback className="bg-secondary text-xs">
+              <AvatarFallback className="bg-luxury-gray/60 text-luxury-gold text-xs font-semibold">
                 {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
               </AvatarFallback>
             </Avatar>

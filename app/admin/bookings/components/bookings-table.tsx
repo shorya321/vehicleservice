@@ -54,6 +54,7 @@ import { toast } from 'sonner'
 import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus } from '../actions'
 import { BulkActionsBar } from './bulk-actions-bar'
 import { AssignVendorModal } from './assign-vendor-modal'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface BookingsTableProps {
   bookings: BookingWithCustomer[]
@@ -203,8 +204,12 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center text-muted-foreground">
-                    No bookings found
+                  <TableCell colSpan={11} className="h-[400px] p-0">
+                    <EmptyState
+                      icon={Car}
+                      title="No Bookings Found"
+                      description="There are no bookings matching your current filters. Try adjusting your search criteria."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

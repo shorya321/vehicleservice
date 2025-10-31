@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { userLogout } from "@/lib/auth/user-actions"
+import { VendorNotificationBell } from "@/components/vendor/notifications/notification-bell"
 import {
   LayoutDashboard,
   Package,
@@ -259,6 +260,9 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
           </Button>
 
           <div className="flex-1" />
+
+          {/* Notification Bell */}
+          <VendorNotificationBell />
 
           {/* User menu */}
           <DropdownMenu>

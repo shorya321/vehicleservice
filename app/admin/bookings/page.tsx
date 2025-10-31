@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Car, CheckCircle, XCircle, DollarSign, TrendingUp, FileDown } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { AnimatedCard } from '@/components/ui/animated-card'
 
 export const metadata: Metadata = {
   title: 'Bookings Management - Admin',
@@ -49,7 +52,14 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <AnimatedPage>
+        {/* Breadcrumb */}
+        <Breadcrumb
+          items={[
+            { label: 'Bookings', href: '/admin/bookings' }
+          ]}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -66,71 +76,84 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today's Bookings</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.today}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-              <TrendingUp className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.upcoming}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completed}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
-              <XCircle className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.cancelled}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.revenue)}</div>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+                <Car className="h-4 w-4 text-luxury-gold" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.total}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.2}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Today's Bookings</CardTitle>
+                <Calendar className="h-4 w-4 text-luxury-gold" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.today}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.3}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
+                <TrendingUp className="h-4 w-4 text-blue-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.upcoming}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.4}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Completed</CardTitle>
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.completed}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.5}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
+                <XCircle className="h-4 w-4 text-red-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.cancelled}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.6}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <DollarSign className="h-4 w-4 text-emerald-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(stats.revenue)}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         {/* Bookings Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Bookings</CardTitle>
+        <AnimatedCard delay={0.7}>
+          <Card>
+            <CardHeader>
+              <CardTitle>All Bookings</CardTitle>
             <CardDescription>
               Manage customer bookings and track payment status
             </CardDescription>
@@ -191,7 +214,8 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
             )}
           </CardContent>
         </Card>
-      </div>
+        </AnimatedCard>
+      </AnimatedPage>
     </AdminLayout>
   )
 }

@@ -1,0 +1,1057 @@
+
+> vehicleservice@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping validation of types
+   Linting ...
+ ⨯ ESLint: Invalid Options: - Unknown options: useEslintrc, extensions - 'extensions' has been removed.
+   Collecting page data ...
+(node:128590) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128601) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128612) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128650) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128613) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128623) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128647) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128642) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128669) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128630) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:128658) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+   Generating static pages (0/65) ...
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /logout couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at d (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1060)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:36264
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/server/lib/trace/tracer.js:140:36
+    at NoopContextManager.with (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:7062)
+    at ContextAPI.with (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:518)
+    at NoopTracer.startActiveSpan (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18093)
+    at ProxyTracer.startActiveSpan (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/@opentelemetry/api/index.js:1:18854) {
+  description: "Route /logout couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+    at runNextTicks (node:internal/process/task_queues:60:5)
+    at listOnTimeout (node:internal/timers:545:9) {
+  digest: '344280489'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582) {
+  digest: '3616658343'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+
+Error occurred prerendering page "/customer/reviews/create". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+   Generating static pages (16/65) 
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/test-data couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/test-data/page.js:1:5297)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/test-data couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/test-data couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/test-data/page.js:1:5297)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/test-data couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vendor-applications/[id]/page.js:13:18108)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at d (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/vehicles/new/page.js:1:2305)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vendor-applications/[id]/page.js:13:18108)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at d (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/vehicles/new/page.js:1:2305)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at w (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/dashboard/page.js:1:8866)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at w (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/dashboard/page.js:1:8866)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/routes/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:14695)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:15076)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/routes/new/page.js:9:3990)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /admin/routes/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/routes/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:14695)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:15076)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/routes/new/page.js:9:3990)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /admin/routes/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:15625)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/profile/page.js:1:32898)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:15625)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/profile/page.js:1:32898)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at a (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/api/payment/create-intent/route.js:1:4661)
+    at p (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/profile/page.js:1:24834)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at a (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/api/payment/create-intent/route.js:1:4661)
+    at p (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/profile/page.js:1:24834)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/profile couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at v (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/dashboard/page.js:1:8071)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at v (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/dashboard/page.js:1:8071)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/test-data/page.js:1:14399)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9094.js:14:943)
+    at h (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vehicles/new/page.js:1:2427)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/test-data/page.js:1:14399)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9094.js:14:943)
+    at h (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vehicles/new/page.js:1:2427)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/vehicles/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/vehicle-types couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at T (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vehicle-types/page.js:7:5786)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/vehicle-types couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/vehicle-types couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at T (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vehicle-types/page.js:7:5786)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/vehicle-types couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/vehicle-types/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at b (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vehicle-types/new/page.js:7:4443)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/vehicle-types/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/vehicle-types/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at b (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vehicle-types/new/page.js:7:4443)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/vehicle-types/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (32/65) 
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/zones couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at a (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/api/payment/confirm/route.js:1:4672)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9917.js:1:3974)
+    at h (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/zones/page.js:1:13492)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/zones couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/zones couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at a (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/api/payment/confirm/route.js:1:4672)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9917.js:1:3974)
+    at h (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/zones/page.js:1:13492)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/zones couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/apply-vendor couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at y (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/apply-vendor/page.js:1:34229)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/apply-vendor couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/apply-vendor couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at y (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/apply-vendor/page.js:1:34229)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/apply-vendor couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at p (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/account/page.js:1:34441)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at p (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/account/page.js:1:34441)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /driver/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/driver/dashboard/page.js:1:2899)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /driver/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /driver/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/driver/dashboard/page.js:1:2899)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /driver/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9917.js:1:3974)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/zones/pricing/page.js:1:9470)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9917.js:4:1773)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/zones/pricing/page.js:1:9493)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9917.js:1:3974)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/zones/pricing/page.js:1:9470)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:21388)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9917.js:4:1773)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/zones/pricing/page.js:1:9493)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route /admin/zones/pricing couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/vendor-application/edit couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/test-data/page.js:1:14399)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at b (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/vendor-application/edit/page.js:1:36068)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/vendor-application/edit couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/vendor-application/edit couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/test-data/page.js:1:14399)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at b (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/vendor-application/edit/page.js:1:36068)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/vendor-application/edit couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vendor-applications/[id]/page.js:13:18108)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/account/page.js:1:30327)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vendor-applications/[id]/page.js:13:18108)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at m (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/account/page.js:1:30327)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/account couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at g (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/reviews/page.js:16:3531)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at g (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/reviews/page.js:16:3531)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  digest: '4081354705'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+
+Error occurred prerendering page "/customer/reviews". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at s (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:1:45131)
+    at x (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:1649)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:4:307)
+    at k (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:2412)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:23:983)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3673)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Get featured reviews exception: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:23:983)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3673)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:26:396)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3711)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Get review stats exception: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:26:396)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3711)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at s (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:1:45131)
+    at x (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:1649)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:4:307)
+    at k (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:2412)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:23:983)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3673)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Get featured reviews exception: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:23:983)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3673)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Object.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:26:396)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3711)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runNextTicks (node:internal/process/task_queues:64:3)
+    at listOnTimeout (node:internal/timers:545:9)
+    at process.processTimers (node:internal/timers:519:7) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Get review stats exception: n [Error]: Dynamic server usage: Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at u (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/(auth)/logout/route.js:1:1690)
+    at o (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:26:396)
+    at H (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/page.js:20:3711)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runNextTicks (node:internal/process/task_queues:64:3)
+    at listOnTimeout (node:internal/timers:545:9)
+    at process.processTimers (node:internal/timers:519:7) {
+  description: "Route / couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runNextTicks (node:internal/process/task_queues:64:3) {
+  digest: '3252322325'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at a (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/api/payment/confirm/route.js:1:4672)
+    at P (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/reviews/page.js:4:6175)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at a (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/api/payment/confirm/route.js:1:4672)
+    at P (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/reviews/page.js:4:6175)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/reviews couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  digest: '4081354705'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+
+Error occurred prerendering page "/admin/reviews". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (/home/fanatic1/Documents/apps/vehicleservice/.next/server/webpack-runtime.js:1:143)
+    at require (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18490)
+    at I (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+    at JSON.parse (<anonymous>)
+    at O (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94083)
+    at t (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:100582)
+   Generating static pages (48/65) 
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/vendor-application couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at _ (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/vendor-application/page.js:1:11951)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/vendor-application couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /customer/vendor-application couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at n (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/3182.js:1:7607)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at c (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9295)
+    at _ (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/customer/vendor-application/page.js:1:11951)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /customer/vendor-application couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/drivers couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vendor-applications/[id]/page.js:13:18108)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at N (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/drivers/page.js:1:31401)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/drivers couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/drivers couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/vendor-applications/[id]/page.js:13:18108)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at N (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/drivers/page.js:1:31401)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/drivers couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/drivers/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/drivers/new/page.js:1:12094)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/drivers/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /vendor/drivers/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:10274)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:8886)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/5896.js:1:9397)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/vendor/drivers/new/page.js:1:12094)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755) {
+  description: "Route /vendor/drivers/new couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:15625)
+    at q (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:5217)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Failed to create Supabase client: n [Error]: Dynamic server usage: Route /admin/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at l (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9276.js:1:37249)
+    at f (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/9702.js:5:9165)
+    at i (/home/fanatic1/Documents/apps/vehicleservice/.next/server/chunks/7360.js:1:15625)
+    at q (/home/fanatic1/Documents/apps/vehicleservice/.next/server/app/admin/dashboard/page.js:36:5217)
+    at eh (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:134786)
+    at e (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:137671)
+    at ek (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:138145)
+    at Array.toJSON (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:135755)
+    at stringify (<anonymous>)
+    at eR (/home/fanatic1/Documents/apps/vehicleservice/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:142219) {
+  description: "Route /admin/dashboard couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+ ✓ Generating static pages (65/65)
+
+> Export encountered errors on following paths:
+	/_not-found/page: /_not-found
+	/admin/reviews/page: /admin/reviews
+	/customer/reviews/create/page: /customer/reviews/create
+	/customer/reviews/page: /customer/reviews
+	/page: /

@@ -23,6 +23,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       />
       
       <aside
+        role="navigation"
+        aria-label="Main navigation"
         className={cn(
           "fixed left-0 z-50 h-full transition-transform md:relative md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -33,7 +35,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 overflow-y-auto bg-muted/30">
+        <main role="main" aria-label="Main content" className="flex-1 overflow-y-auto bg-luxury-black">
           <div className="container mx-auto px-4 py-6 md:px-6 lg:px-8">
             {children}
           </div>

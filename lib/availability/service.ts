@@ -105,11 +105,28 @@ export class AvailabilityService {
       .eq('vendor_id', vendorId)
       .order('start_datetime', { ascending: true })
 
-    if (startDate) {
-      query = query.gte('start_datetime', startDate.toISOString())
-    }
-    if (endDate) {
-      query = query.lte('end_datetime', endDate.toISOString())
+    // Get events that overlap with the date range
+    // An event overlaps if it starts on/before the range ends AND ends on/after the range starts
+    // Only show current and future bookings (hide past)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (startDate && endDate) {
+      // Use the later of startDate or today
+      const effectiveStartDate = startDate < today ? today : startDate
+      query = query
+        .lte('start_datetime', endDate.toISOString())
+        .gte('end_datetime', effectiveStartDate.toISOString())
+    } else if (startDate) {
+      const effectiveStartDate = startDate < today ? today : startDate
+      query = query.gte('end_datetime', effectiveStartDate.toISOString())
+    } else if (endDate) {
+      query = query
+        .lte('start_datetime', endDate.toISOString())
+        .gte('end_datetime', today.toISOString())
+    } else {
+      // No date range specified, show only future
+      query = query.gte('end_datetime', today.toISOString())
     }
 
     const { data, error } = await query
@@ -138,11 +155,28 @@ export class AvailabilityService {
       .eq('vendor_id', vendorId)
       .order('start_datetime', { ascending: true })
 
-    if (startDate) {
-      query = query.gte('start_datetime', startDate.toISOString())
-    }
-    if (endDate) {
-      query = query.lte('end_datetime', endDate.toISOString())
+    // Get events that overlap with the date range
+    // An event overlaps if it starts on/before the range ends AND ends on/after the range starts
+    // Only show current and future unavailability (hide past)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (startDate && endDate) {
+      // Use the later of startDate or today
+      const effectiveStartDate = startDate < today ? today : startDate
+      query = query
+        .lte('start_datetime', endDate.toISOString())
+        .gte('end_datetime', effectiveStartDate.toISOString())
+    } else if (startDate) {
+      const effectiveStartDate = startDate < today ? today : startDate
+      query = query.gte('end_datetime', effectiveStartDate.toISOString())
+    } else if (endDate) {
+      query = query
+        .lte('start_datetime', endDate.toISOString())
+        .gte('end_datetime', today.toISOString())
+    } else {
+      // No date range specified, show only future
+      query = query.gte('end_datetime', today.toISOString())
     }
 
     const { data, error } = await query

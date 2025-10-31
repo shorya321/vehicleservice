@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation"
 import { logout } from "@/lib/auth/actions"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { NotificationBell } from "@/components/admin/notifications/notification-bell"
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -68,81 +69,38 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
+    <header role="banner" className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-luxury-gold/20 bg-luxury-darkGray/95 backdrop-blur-md shadow-lg px-4 md:px-6">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="md:hidden text-luxury-gold hover:bg-luxury-gold/10"
           onClick={onMenuClick}
         >
           <Menu className="h-5 w-5" />
         </Button>
         <div className="relative w-64 lg:w-96">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-luxury-gold" />
           <Input
             type="search"
             placeholder="Search..."
-            className="pl-10 bg-secondary/50"
+            className="pl-10"
           />
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
-                5
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium">New booking received</p>
-                <p className="text-xs text-muted-foreground">
-                  Desert Safari booking for 4 people
-                </p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium">Payment completed</p>
-                <p className="text-xs text-muted-foreground">
-                  Transfer booking #1234 paid successfully
-                </p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center justify-center">
-              View all notifications
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage 
-                  src={userProfile?.avatar_url || undefined} 
+            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-luxury-gold/10">
+              <Avatar className="h-8 w-8 ring-2 ring-luxury-gold/40">
+                <AvatarImage
+                  src={userProfile?.avatar_url || undefined}
                   alt={userProfile?.full_name || userProfile?.email || "User"}
                 />
-                <AvatarFallback className="bg-secondary">
+                <AvatarFallback className="bg-luxury-gray/60 text-luxury-gold text-xs font-semibold">
                   {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -151,10 +109,10 @@ export function Header({ onMenuClick }: HeaderProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
+                <p className="text-sm font-medium leading-none text-luxury-pearl">
                   {userProfile?.full_name || 'Admin User'}
                 </p>
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="text-xs leading-none text-luxury-lightGray">
                   {userProfile?.email || 'admin@example.com'}
                 </p>
               </div>
@@ -166,8 +124,8 @@ export function Header({ onMenuClick }: HeaderProps) {
             </DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-destructive cursor-pointer" 
+            <DropdownMenuItem
+              className="text-red-400 cursor-pointer"
               onClick={handleSignOut}
             >
               <LogOut className="mr-2 h-4 w-4" />

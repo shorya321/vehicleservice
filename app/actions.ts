@@ -25,20 +25,6 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     return []
   }
 
-
-  // Get search counts for these routes
-  const routeIds = routes?.map(r => r.id) || []
-  const { data: searchCounts } = await supabase
-    .from('route_searches')
-    .select('route_id')
-    .in('route_id', routeIds)
-    .gte('search_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
-
-  const searchCountMap = searchCounts?.reduce((acc, search) => {
-    acc[search.route_id] = (acc[search.route_id] || 0) + 1
-    return acc
-  }, {} as Record<string, number>) || {}
-
   // Map the RPC results to our PopularRoute format
   const result = routes?.map(route => ({
     id: route.id,
@@ -49,54 +35,13 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     destinationName: route.destination_name,
     originCity: route.origin_city,
     destinationCity: route.destination_city,
-    startingPrice: route.base_price || 0,
-    searchCount: searchCountMap[route.id] || 0,
+    startingPrice: 0, // Pricing is per vehicle type, not at route level
+    searchCount: 0, // No longer tracking search counts
     distance: route.distance_km,
     duration: route.estimated_duration_minutes
   })) || []
-  
+
   return result
-}
-
-export async function trackRouteSearch(params: {
-  routeId?: string
-  originLocationId: string
-  destinationLocationId: string
-  passengerCount: number
-  userId?: string
-}) {
-  const supabase = await createClient()
-
-  // Try to insert with passenger_count first
-  let { error } = await supabase
-    .from('route_searches')
-    .insert({
-      route_id: params.routeId,
-      origin_location_id: params.originLocationId,
-      destination_location_id: params.destinationLocationId,
-      passenger_count: params.passengerCount,
-      user_id: params.userId
-    })
-
-  // If passenger_count column doesn't exist, try without it
-  if (error && error.message.includes('passenger_count')) {
-    console.log('passenger_count column not found, inserting without it...')
-    
-    const { error: fallbackError } = await supabase
-      .from('route_searches')
-      .insert({
-        route_id: params.routeId,
-        origin_location_id: params.originLocationId,
-        destination_location_id: params.destinationLocationId,
-        user_id: params.userId
-      })
-
-    if (fallbackError) {
-      console.error('Error tracking route search (fallback):', fallbackError)
-    }
-  } else if (error) {
-    console.error('Error tracking route search:', error)
-  }
 }
 
 export async function getPopularZones(): Promise<PopularZone[]> {
@@ -126,4 +71,97 @@ export async function getPopularZones(): Promise<PopularZone[]> {
     sortOrder: zone.sort_order,
     locationCount: zone.locations?.[0]?.count || 0
   }))
+}
+
+export interface VehicleTypeForHome {
+  id: string
+  name: string
+  slug: string
+  passengerCapacity: number
+  luggageCapacity: number
+  description: string | null
+  imageUrl: string | null
+  sortOrder: number
+}
+
+export interface VehicleClassCategory {
+  categoryId: string
+  categoryName: string
+  categorySlug: string
+  sortOrder: number
+  vehicleTypes: VehicleTypeForHome[]
+}
+
+export async function getVehicleClassesForHome(): Promise<VehicleClassCategory[]> {
+  const supabase = await createClient()
+
+  // Get active categories with their vehicle types
+  const { data: categories, error } = await supabase
+    .from('vehicle_categories')
+    .select(`
+      id,
+      name,
+      slug,
+      sort_order,
+      vehicle_types!inner(
+        id,
+        name,
+        slug,
+        passenger_capacity,
+        luggage_capacity,
+        description,
+        image_url,
+        sort_order,
+        is_active
+      )
+    `)
+    .order('sort_order', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching vehicle classes for home:', error)
+    return []
+  }
+
+  if (!categories) {
+    return []
+  }
+
+  // Transform and group data by category
+  const categoryMap = new Map<string, VehicleClassCategory>()
+
+  for (const category of categories) {
+    const vehicleTypes = Array.isArray(category.vehicle_types)
+      ? category.vehicle_types
+      : [category.vehicle_types]
+
+    // Filter active vehicle types
+    const activeVehicleTypes = vehicleTypes
+      .filter((vt: any) => vt.is_active === true)
+      .map((vt: any) => ({
+        id: vt.id,
+        name: vt.name,
+        slug: vt.slug,
+        passengerCapacity: vt.passenger_capacity,
+        luggageCapacity: vt.luggage_capacity,
+        description: vt.description,
+        imageUrl: vt.image_url,
+        sortOrder: vt.sort_order || 999
+      }))
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+
+    // Only include categories that have active vehicle types
+    if (activeVehicleTypes.length > 0) {
+      if (!categoryMap.has(category.id)) {
+        categoryMap.set(category.id, {
+          categoryId: category.id,
+          categoryName: category.name,
+          categorySlug: category.slug,
+          sortOrder: category.sort_order || 999,
+          vehicleTypes: activeVehicleTypes
+        })
+      }
+    }
+  }
+
+  return Array.from(categoryMap.values()).sort((a, b) => a.sortOrder - b.sortOrder)
 }

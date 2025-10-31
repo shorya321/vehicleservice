@@ -147,38 +147,42 @@ COMMENT ON COLUMN routes.is_popular IS 'Flag to indicate if this is a popular/fe
 
 COMMENT ON COLUMN vendor_route_services.price_multiplier IS 'Vendor-specific price adjustment (1.0 = base price, 1.5 = 50% more, etc)';
 
--- Create function to get popular routes based on search frequency
+-- Create function to get popular routes based on is_popular flag
 CREATE OR REPLACE FUNCTION get_popular_routes(
-    limit_count INTEGER DEFAULT 10,
-    days_back INTEGER DEFAULT 30
+    limit_count INTEGER DEFAULT 10
 )
 RETURNS TABLE (
-    route_id UUID,
-    route_name VARCHAR,
+    id UUID,
     route_slug VARCHAR,
+    origin_location_id UUID,
+    destination_location_id UUID,
     origin_name VARCHAR,
     destination_name VARCHAR,
-    search_count BIGINT,
-    base_price DECIMAL
+    origin_city VARCHAR,
+    destination_city VARCHAR,
+    base_price DECIMAL,
+    distance_km DECIMAL,
+    estimated_duration_minutes INTEGER
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        r.id as route_id,
-        r.route_name,
+    SELECT
+        r.id,
         r.route_slug,
+        r.origin_location_id,
+        r.destination_location_id,
         ol.name as origin_name,
         dl.name as destination_name,
-        COUNT(rs.id) as search_count,
-        r.base_price
+        ol.city as origin_city,
+        dl.city as destination_city,
+        r.base_price,
+        r.distance_km,
+        r.estimated_duration_minutes
     FROM routes r
     INNER JOIN locations ol ON r.origin_location_id = ol.id
     INNER JOIN locations dl ON r.destination_location_id = dl.id
-    LEFT JOIN route_searches rs ON r.id = rs.route_id
-        AND rs.searched_at >= NOW() - INTERVAL '1 day' * days_back
-    WHERE r.is_active = true
-    GROUP BY r.id, r.route_name, r.route_slug, ol.name, dl.name, r.base_price
-    ORDER BY COUNT(rs.id) DESC, r.route_name
+    WHERE r.is_active = true AND r.is_popular = true
+    ORDER BY r.route_name
     LIMIT limit_count;
 END;
 $$ LANGUAGE plpgsql;

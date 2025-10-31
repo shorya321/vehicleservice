@@ -14,6 +14,7 @@ import { ZoneResultCard } from '@/components/search/zone-result-card'
 import { ZonesList } from '@/components/search/zones-list'
 import { Badge } from '@/components/ui/badge'
 import { Clock, MapPin } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface SearchResultsProps {
   results: SearchResult | null
@@ -136,20 +137,25 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return (
     <div className="space-y-8">
       {/* Route/Zone Information Banner */}
-      <div className="bg-muted/30 rounded-lg p-6">
-        <div className="max-w-7xl mx-auto">
+      <motion.div
+        className="backdrop-blur-lg bg-luxury-darkGray/70 border border-luxury-gold/20 rounded-lg p-6 shadow-xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <div className="luxury-container">
           {results.type === 'zone' && results.zone ? (
             <>
-              <h1 className="text-2xl font-bold mb-2">
+              <h1 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-3">
                 Zone Transfer: {results.zone.fromZone.name} → {results.zone.toZone.name}
               </h1>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-6 text-sm text-luxury-lightGray">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
                   <span>{results.originName} to {results.destinationName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="bg-luxury-gold/20 text-luxury-gold border-luxury-gold/30">
                     Base Price: ${results.zone.basePrice.toFixed(2)}
                   </Badge>
                 </div>
@@ -157,21 +163,21 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold mb-2">{results.routeName}</h1>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <h1 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-3">{results.routeName}</h1>
+              <div className="flex flex-wrap items-center gap-6 text-sm text-luxury-lightGray">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
                   <span>{results.originName} to {results.destinationName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
                   <span>{results.distance} km journey</span>
                 </div>
               </div>
             </>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Vehicle Type Category Tabs */}
       <div className="max-w-7xl mx-auto">

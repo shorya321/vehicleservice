@@ -23,23 +23,22 @@ async function testRoutesQuery() {
     }
   }
   
-  // Test vendor routes query with joins
-  const { data: vendorRoutes, error: vendorError } = await supabase
+  // Test routes query with joins
+  const { data: routesWithJoins, error: joinsError } = await supabase
     .from('routes')
     .select(`
       *,
       origin_location:locations!origin_location_id(*),
       destination_location:locations!destination_location_id(*)
     `)
-    .eq('created_by_type', 'vendor')
     .limit(5)
-  
-  if (vendorError) {
-    console.error('Error querying vendor routes with joins:', vendorError)
+
+  if (joinsError) {
+    console.error('Error querying routes with joins:', joinsError)
   } else {
-    console.log(`✅ Vendor routes with joins query successful (${vendorRoutes?.length || 0} vendor routes found)`)
+    console.log(`✅ Routes with joins query successful (${routesWithJoins?.length || 0} routes found)`)
   }
-  
+
   // Test vendor_route_services query
   const { data: services, error: servicesError } = await supabase
     .from('vendor_route_services')

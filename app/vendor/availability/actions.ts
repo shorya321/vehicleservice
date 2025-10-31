@@ -50,8 +50,21 @@ export async function getVendorCalendarEvents(
     endDate ? new Date(endDate) : undefined
   )
 
-  // Get booking details for schedules
-  for (const schedule of schedules) {
+  // Group schedules by booking_assignment_id to create ONE event per booking
+  const bookingGroups = schedules.reduce((acc, schedule) => {
+    if (!schedule.booking_assignment_id) return acc
+    if (!acc[schedule.booking_assignment_id]) {
+      acc[schedule.booking_assignment_id] = []
+    }
+    acc[schedule.booking_assignment_id].push(schedule)
+    return acc
+  }, {} as Record<string, typeof schedules>)
+
+  // Create one event per booking (not per resource)
+  for (const [assignmentId, groupSchedules] of Object.entries(bookingGroups)) {
+    // Use first schedule for timing (all schedules for same booking have same times)
+    const firstSchedule = groupSchedules[0]
+
     // Get booking details
     const { data: assignment } = await adminClient
       .from('booking_assignments')
@@ -63,36 +76,40 @@ export async function getVendorCalendarEvents(
           dropoff_address,
           pickup_datetime,
           customer:profiles(full_name, phone)
+        ),
+        vehicle:vehicles(
+          id,
+          make,
+          model,
+          registration_number
+        ),
+        driver:vendor_drivers(
+          id,
+          first_name,
+          last_name,
+          phone
         )
       `)
-      .eq('id', schedule.booking_assignment_id)
+      .eq('id', assignmentId)
       .single()
 
-    // Get resource name
-    let resourceName = ''
-    if (schedule.resource_type === 'vehicle') {
-      const { data: vehicle } = await adminClient
-        .from('vehicles')
-        .select('make, model, registration_number')
-        .eq('id', schedule.resource_id)
-        .single()
-      resourceName = vehicle ? `${vehicle.make} ${vehicle.model} (${vehicle.registration_number})` : 'Vehicle'
-    } else {
-      const { data: driver } = await adminClient
-        .from('vendor_drivers')
-        .select('first_name, last_name')
-        .eq('id', schedule.resource_id)
-        .single()
-      resourceName = driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'
-    }
+    if (!assignment) continue
+
+    // Build title with vehicle and driver info
+    const vehicleInfo = assignment.vehicle
+      ? `${assignment.vehicle.make} ${assignment.vehicle.model} (${assignment.vehicle.registration_number})`
+      : 'Vehicle'
+    const driverInfo = assignment.driver
+      ? `${assignment.driver.first_name} ${assignment.driver.last_name}`
+      : 'Driver'
 
     events.push({
-      id: schedule.id,
-      title: `Booking #${assignment?.booking?.booking_number || 'N/A'} - ${resourceName}`,
-      start: new Date(schedule.start_datetime),
-      end: new Date(schedule.end_datetime),
-      resourceId: schedule.resource_id,
-      resourceType: schedule.resource_type,
+      id: assignmentId, // Use assignment ID as unique event ID
+      title: `Booking #${assignment?.booking?.booking_number || 'N/A'}`,
+      start: new Date(firstSchedule.start_datetime),
+      end: new Date(firstSchedule.end_datetime),
+      resourceId: assignmentId, // Use assignment ID
+      resourceType: 'booking' as any, // Combined type
       type: 'booking',
       color: '#3B82F6', // Blue for bookings
       details: {
@@ -101,7 +118,20 @@ export async function getVendorCalendarEvents(
         phone: assignment?.booking?.customer?.phone,
         pickup: assignment?.booking?.pickup_address,
         dropoff: assignment?.booking?.dropoff_address,
-        status: schedule.status
+        status: firstSchedule.status,
+        // Include both vehicle and driver details
+        vehicle: assignment.vehicle ? {
+          id: assignment.vehicle.id,
+          make: assignment.vehicle.make,
+          model: assignment.vehicle.model,
+          registrationNumber: assignment.vehicle.registration_number
+        } : null,
+        driver: assignment.driver ? {
+          id: assignment.driver.id,
+          firstName: assignment.driver.first_name,
+          lastName: assignment.driver.last_name,
+          phone: assignment.driver.phone
+        } : null
       }
     })
   }

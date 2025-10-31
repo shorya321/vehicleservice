@@ -15,6 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { AnimatedPage } from "@/components/layout/animated-page"
+import { AnimatedCard } from "@/components/ui/animated-card"
 
 export const dynamic = 'force-dynamic'
 
@@ -57,7 +60,14 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <AnimatedPage>
+        {/* Breadcrumb */}
+        <Breadcrumb
+          items={[
+            { label: 'Users', href: '/admin/users' }
+          ]}
+        />
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Users</h1>
@@ -74,20 +84,23 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Users
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Users
+                </CardTitle>
+                <Users className="h-4 w-4 text-luxury-gold" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{total}</div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
-        <Card>
+        <AnimatedCard delay={0.2}>
+          <Card>
           <CardHeader>
             <CardTitle>All Users</CardTitle>
             <CardDescription>
@@ -150,7 +163,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             )}
           </CardContent>
         </Card>
-      </div>
+        </AnimatedCard>
+      </AnimatedPage>
     </AdminLayout>
   )
 }

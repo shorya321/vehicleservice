@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail, Lock, User, Phone } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { Loader2, Mail, Lock, User, Phone, Car } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { registerAndAutoVerify } from '../actions'
 
@@ -110,49 +111,81 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Account Access</CardTitle>
-        <CardDescription>
-          Login or create a new account to continue with your booking
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Create Account</TabsTrigger>
-          </TabsList>
+    <motion.div
+      className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-8 md:p-10"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+    >
+      {/* Logo with Spring Animation */}
+      <motion.div
+        className="flex items-center justify-center mb-6"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+      >
+        <div className="h-16 w-16 rounded-lg bg-luxury-gold/10 backdrop-blur-sm border border-luxury-gold/30 flex items-center justify-center">
+          <Car className="h-9 w-9" style={{ color: "#C6AA88" }} aria-hidden="true" />
+        </div>
+      </motion.div>
 
-          {error && (
-            <Alert className="mt-4" variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+      <h2 className="font-serif text-2xl md:text-3xl text-luxury-pearl mb-2 text-center">
+        Complete Your Booking
+      </h2>
+      <p className="text-luxury-lightGray text-sm text-center mb-6">
+        Sign in or create an account to continue
+      </p>
+
+      <Tabs defaultValue="login" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-luxury-black/40 border border-luxury-gold/20">
+          <TabsTrigger value="login" className="data-[state=active]:bg-luxury-gold data-[state=active]:text-luxury-black uppercase tracking-wider font-semibold">
+            Login
+          </TabsTrigger>
+          <TabsTrigger value="register" className="data-[state=active]:bg-luxury-gold data-[state=active]:text-luxury-black uppercase tracking-wider font-semibold">
+            Register
+          </TabsTrigger>
+        </TabsList>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4"
+          >
+            <Alert className="bg-red-950/50 border-red-900/50" variant="destructive">
+              <AlertDescription className="text-red-200">{error}</AlertDescription>
             </Alert>
-          )}
+          </motion.div>
+        )}
 
           {/* Login Tab */}
           <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4 mt-6">
               <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
+                <Label htmlFor="login-email" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                  Email
+                </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="john@example.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
-                    className="pl-10"
+                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="login-password">Password</Label>
+                <Label htmlFor="login-password" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                  Password
+                </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <Input
                     id="login-password"
                     type="password"
@@ -160,42 +193,49 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
-                    className="pl-10"
+                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
+              <div className="text-right">
+                <a
+                  href="/auth/forgot-password"
+                  className="text-sm text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors"
+                  aria-label="Reset your password"
+                >
+                  Forgot your password?
+                </a>
+              </div>
+
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-14 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans uppercase tracking-wider font-semibold transition-all duration-300 active:scale-95"
                 disabled={loading}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" style={{ color: "#0A0A0A" }} aria-hidden="true" />
+                    SIGNING IN...
                   </>
                 ) : (
-                  'Login & Continue'
+                  "Sign In"
                 )}
               </Button>
-
-              <div className="text-center text-sm">
-                <a href="/auth/forgot-password" className="text-primary hover:underline">
-                  Forgot your password?
-                </a>
-              </div>
             </form>
           </TabsContent>
 
           {/* Register Tab */}
           <TabsContent value="register">
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4 mt-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="first-name">First Name</Label>
+                  <Label htmlFor="first-name" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                    First Name
+                  </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                     <Input
                       id="first-name"
                       type="text"
@@ -203,15 +243,18 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       required
-                      className="pl-10"
+                      className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                      disabled={loading}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="last-name">Last Name</Label>
+                  <Label htmlFor="last-name" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                    Last Name
+                  </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                     <Input
                       id="last-name"
                       type="text"
@@ -219,32 +262,38 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       required
-                      className="pl-10"
+                      className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                      disabled={loading}
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="register-email">Email</Label>
+                <Label htmlFor="register-email" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                  Email
+                </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <Input
                     id="register-email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="john@example.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     required
-                    className="pl-10"
+                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                  Phone Number
+                </Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <Input
                     id="phone"
                     type="tel"
@@ -252,15 +301,18 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
-                    className="pl-10"
+                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="register-password">Password</Label>
+                <Label htmlFor="register-password" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                  Password
+                </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <Input
                     id="register-password"
                     type="password"
@@ -268,15 +320,18 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
                     required
-                    className="pl-10"
+                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Label htmlFor="confirm-password" className="text-xs text-luxury-lightGray uppercase tracking-wider">
+                  Confirm Password
+                </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <Input
                     id="confirm-password"
                     type="password"
@@ -284,33 +339,54 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     value={registerConfirmPassword}
                     onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                     required
-                    className="pl-10"
+                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-14 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans uppercase tracking-wider font-semibold transition-all duration-300 active:scale-95"
                 disabled={loading}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" style={{ color: "#0A0A0A" }} aria-hidden="true" />
+                    CREATING ACCOUNT...
                   </>
                 ) : (
-                  'Create Account & Continue'
+                  "Create Account"
                 )}
               </Button>
 
-              <p className="text-xs text-center text-muted-foreground">
-                By creating an account, you agree to our Terms of Service and Privacy Policy
+              <p className="text-xs text-center text-luxury-lightGray mt-4">
+                By creating an account, you agree to our{' '}
+                <a href="/terms" className="text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors">
+                  Terms of Service
+                </a>
+                {' '}and{' '}
+                <a href="/privacy" className="text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors">
+                  Privacy Policy
+                </a>
               </p>
             </form>
+
+            <Separator className="my-6 border-luxury-gold/20" />
+            <div className="text-center">
+              <p className="text-sm text-luxury-lightGray mb-3">
+                Don't want to create an account?
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => router.push(decodeURIComponent(returnUrl))}
+                className="border-luxury-gold/30 text-luxury-lightGray hover:bg-luxury-gold/10 hover:text-luxury-pearl uppercase tracking-wider font-sans"
+              >
+                Continue as Guest
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+      </motion.div>
   )
 }

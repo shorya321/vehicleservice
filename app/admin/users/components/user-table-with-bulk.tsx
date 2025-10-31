@@ -41,6 +41,8 @@ import { BulkActionsBar } from "./bulk-actions-bar"
 import { updateUserStatus, sendPasswordResetEmail, toggleUser2FA, sendVerificationEmail } from "../actions"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { EmptyState } from "@/components/ui/empty-state"
+import { Users } from "lucide-react"
 
 interface UserTableProps {
   users: User[]
@@ -172,8 +174,12 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    No users found
+                  <TableCell colSpan={7} className="h-[400px] p-0">
+                    <EmptyState
+                      icon={Users}
+                      title="No Users Found"
+                      description="There are no users matching your current filters. Try adjusting your search criteria."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

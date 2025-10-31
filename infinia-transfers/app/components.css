@@ -1,0 +1,22 @@
+/* Utility text classes */
+.gold-text {
+  @apply text-luxury-gold;
+}
+
+/* Layout containers */
+.luxury-container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl; /* Max width like KiwiTaxi */
+}
+
+/* Button styles - already handled by Button component */
+
+/* Glass morphism styles */
+.glass {
+  /* General purpose glass, less gold */
+  @apply backdrop-blur-sm bg-luxury-gray/30 border border-luxury-lightGray/10;
+}
+
+.glass-gold {
+  /* For prominent cards, more gold tint */
+  @apply backdrop-blur-md bg-luxury-darkGray/70 border border-luxury-gold/20 shadow-xl;
+}

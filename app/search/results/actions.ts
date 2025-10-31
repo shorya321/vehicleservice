@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { trackRouteSearch } from '@/app/actions'
 
 export interface SearchResultVehicle {
   id: string
@@ -296,15 +295,6 @@ export async function getSearchResults(params: {
     console.error('Route not found:', routeError)
     return null
   }
-
-  // Track the search
-  await trackRouteSearch({
-    routeId: route.id,
-    originLocationId: params.originId,
-    destinationLocationId: params.destinationId,
-    passengerCount: params.passengers,
-    userId: user?.id
-  })
 
   // Get all available vehicles that meet passenger requirements
   // Now showing all vehicles from all vendors (aggregator model)

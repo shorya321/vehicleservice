@@ -2,6 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { sendWelcomeEmail } from "@/lib/email/services/auth-emails"
+import { sendNewUserNotificationEmail } from "@/lib/email/services/admin-emails"
+import { getAppUrl, getAdminEmail } from "@/lib/email/config"
+import { randomBytes } from "crypto"
 
 interface RegisterData {
   full_name: string
@@ -18,14 +22,16 @@ export async function registerUser(data: RegisterData) {
     // Use admin client to create user with email confirmation
     const adminClient = await createAdminClient()
     
-    // First, create the user with admin client to auto-confirm email
+    // First, create the user with admin client
+    // Note: Set email_confirm to false to require email verification
     const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email: data.email,
       password: data.password,
-      email_confirm: true, // Auto-confirm email in development
+      email_confirm: false, // Require email verification
       user_metadata: {
         full_name: data.full_name,
-        phone: data.phone
+        phone: data.phone,
+        email_verified: false
       }
     })
 
@@ -60,13 +66,68 @@ export async function registerUser(data: RegisterData) {
 
     if (profileError) {
       console.error("Profile creation error:", profileError)
-      
+
       // If profile creation fails, we should clean up the auth user
       // But for now, we'll just log the error
       return { error: "Account created but profile setup failed. Please contact support." }
     }
 
-    return { 
+    // Generate verification token
+    const verificationToken = randomBytes(32).toString('hex')
+    const expiresAt = new Date()
+    expiresAt.setHours(expiresAt.getHours() + 24) // 24 hours expiry
+
+    // Store verification token in database
+    const { error: tokenError } = await adminClient
+      .from('email_verification_tokens')
+      .insert({
+        user_id: authData.user.id,
+        token: verificationToken,
+        expires_at: expiresAt.toISOString(),
+      })
+
+    if (tokenError) {
+      console.error("Token creation error:", tokenError)
+      // Continue anyway - user can request new verification email
+    }
+
+    // Send welcome email with verification link
+    const appUrl = getAppUrl()
+    const verificationUrl = `${appUrl}/verify-email?token=${verificationToken}`
+
+    const emailResult = await sendWelcomeEmail({
+      email: data.email,
+      name: data.full_name,
+      verificationUrl,
+    })
+
+    if (!emailResult.success) {
+      console.error("Failed to send welcome email:", emailResult.error)
+      // Don't fail registration if email fails - user can request new verification email
+    }
+
+    // Send admin notification
+    const adminEmail = getAdminEmail()
+    const adminNotificationResult = await sendNewUserNotificationEmail({
+      adminEmail,
+      userId: authData.user.id,
+      userName: data.full_name,
+      userEmail: data.email,
+      userPhone: data.phone,
+      registrationDate: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      userDetailsUrl: `${getAppUrl()}/admin/users/${authData.user.id}`,
+    })
+
+    if (!adminNotificationResult.success) {
+      console.error("Failed to send admin notification:", adminNotificationResult.error)
+      // Don't fail registration if admin notification fails
+    }
+
+    return {
       success: true,
       message: "Account created successfully! Please check your email to verify your account."
     }

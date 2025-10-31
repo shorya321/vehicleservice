@@ -2,15 +2,16 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import {
   PaymentElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Shield, Lock } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatCurrency } from '@/lib/utils'
 
 interface CheckoutFormProps {
   bookingId: string
@@ -90,45 +91,65 @@ export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret }:
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Payment Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit}>
+    <motion.div
+      className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg overflow-hidden"
+      initial={{ opacity: 0, x: -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-6 border-b border-luxury-gold/20">
+        <h2 className="font-serif text-2xl md:text-3xl text-luxury-pearl flex items-center gap-2">
+          <Lock className="h-6 w-6" style={{ color: "#C6AA88" }} />
+          Payment Details
+        </h2>
+        <p className="text-sm text-luxury-lightGray mt-2">Secure payment powered by Stripe</p>
+      </div>
+
+      <div className="p-6 md:p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <PaymentElement
             options={{
               layout: 'tabs',
             }}
           />
-          
+
           {errorMessage && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-md text-sm">
-              {errorMessage}
-            </div>
+            <motion.div
+              className="p-4 bg-red-950/50 border border-red-900/50 text-red-200 rounded-lg text-sm flex items-start gap-2"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span className="text-red-400">⚠</span>
+              <span>{errorMessage}</span>
+            </motion.div>
           )}
 
           <Button
             type="submit"
             disabled={!stripe || !elements || isLoading}
-            className="w-full mt-6"
+            className="w-full h-14 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans font-semibold uppercase tracking-wider transition-all duration-300 active:scale-95"
             size="lg"
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                PROCESSING PAYMENT...
               </>
             ) : (
-              `Pay $${amount.toFixed(2)}`
+              <>
+                <Shield className="mr-2 h-5 w-5" />
+                PAY {formatCurrency(amount)}
+              </>
             )}
           </Button>
 
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            Your payment is secured by Stripe. We never store your card details.
-          </p>
+          <div className="flex items-center justify-center gap-2 text-xs text-luxury-lightGray">
+            <Shield className="h-3.5 w-3.5" style={{ color: "#C6AA88" }} />
+            <p>Your payment is secured by Stripe. We never store your card details.</p>
+          </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }

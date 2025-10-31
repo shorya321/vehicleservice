@@ -2,22 +2,23 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { 
-  MapPin, 
-  Calendar, 
-  Users, 
+import {
+  MapPin,
+  Calendar,
+  Users,
   Car,
   Tag,
   Shield,
   Clock,
   ChevronRight,
   Briefcase,
-  Route
+  Route,
+  Luggage
 } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { formatCurrency } from '@/lib/utils'
@@ -60,166 +61,157 @@ export function OrderSummary({ route, vehicleType, passengers, luggage, infantSe
   }
 
   return (
-    <div className="space-y-6">
-      {/* Order Summary Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Order Summary</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <motion.div
+        className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg sticky top-24"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-6 border-b border-luxury-gold/20">
+          <h2 className="font-serif text-3xl text-luxury-pearl">Order Summary</h2>
+        </div>
+
+        <div className="p-6 space-y-6">
           {/* Vehicle Info */}
-          <div className="space-y-3">
-            <div className="relative h-32 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden">
+          <div className="space-y-4">
+            <div className="relative h-40 bg-gradient-to-br from-luxury-black/60 to-luxury-darkGray/60 backdrop-blur-sm border border-luxury-gold/10 rounded-lg overflow-hidden">
               {vehicleType.image_url && (
                 <Image
                   src={vehicleType.image_url}
                   alt={vehicleType.name}
                   fill
-                  className="object-contain p-2"
+                  className="object-contain p-3"
                 />
               )}
             </div>
             <div>
-              <h3 className="font-semibold text-lg">{vehicleType.name}</h3>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                <span className="flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" />
+              <h3 className="font-sans font-semibold text-lg text-luxury-pearl">{vehicleType.name}</h3>
+              <div className="flex items-center gap-4 text-sm text-luxury-lightGray mt-2">
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   {vehicleType.passenger_capacity} seats
                 </span>
-                <span className="flex items-center gap-1">
-                  <Car className="h-3.5 w-3.5" />
+                <span className="flex items-center gap-1.5">
+                  <Car className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   {vehicleType.luggage_capacity} luggage
                 </span>
               </div>
             </div>
           </div>
 
-          <Separator />
+          <Separator className="border-luxury-gold/10" />
 
           {/* Route Details */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-              <div className="flex-1 space-y-2">
+              <MapPin className="h-5 w-5 mt-1" style={{ color: "#C6AA88" }} aria-hidden="true" />
+              <div className="flex-1 space-y-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">From</p>
-                  <p className="font-medium">{route.origin.name}</p>
+                  <p className="text-xs text-luxury-lightGray uppercase tracking-wider mb-1">From</p>
+                  <p className="font-medium text-luxury-pearl">{route.origin.name}</p>
                 </div>
-                <div className="border-l-2 border-dashed border-muted ml-2 h-4" />
+                <div className="border-l-2 border-dashed border-luxury-gold/30 ml-2 h-4" />
                 <div>
-                  <p className="text-sm text-muted-foreground">To</p>
-                  <p className="font-medium">{route.destination.name}</p>
+                  <p className="text-xs text-luxury-lightGray uppercase tracking-wider mb-1">To</p>
+                  <p className="font-medium text-luxury-pearl">{route.destination.name}</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 text-sm">
-              <span className="flex items-center gap-1">
-                <Route className="h-3.5 w-3.5" />
+            <div className="flex flex-wrap items-center gap-4 text-sm text-luxury-lightGray">
+              <span className="flex items-center gap-1.5">
+                <Route className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
                 {distanceText}
               </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
+              <span className="flex items-center gap-1.5">
+                <Users className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
                 {passengers} passenger{passengers > 1 ? 's' : ''}
               </span>
-              <span className="flex items-center gap-1">
-                <Briefcase className="h-3.5 w-3.5" />
+              <span className="flex items-center gap-1.5">
+                <Briefcase className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
                 {luggage} bag{luggage !== 1 ? 's' : ''}
               </span>
             </div>
           </div>
 
-          <Separator />
+          <Separator className="border-luxury-gold/10" />
 
           {/* Promo Code */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Promo Code</label>
+          <div className="space-y-3">
+            <label className="text-xs text-luxury-lightGray uppercase tracking-wider">Promo Code</label>
             <div className="flex gap-2">
               <Input
                 placeholder="Enter code"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                className="flex-1"
+                className="flex-1 h-14 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={applyPromoCode}
+                className="h-14 px-6 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black uppercase tracking-wider"
               >
                 Apply
               </Button>
             </div>
             {promoApplied && (
-              <p className="text-sm text-green-600">Promo code applied!</p>
+              <p className="text-sm text-luxury-gold">✓ Promo code applied!</p>
             )}
           </div>
 
-          <Separator />
+          <Separator className="border-luxury-gold/10" />
 
           {/* Price Breakdown */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm text-luxury-lightGray">
               <span>Base Fare</span>
-              <span>{formatCurrency(basePrice)}</span>
+              <span className="text-luxury-pearl">{formatCurrency(basePrice)}</span>
             </div>
             {childSeatsCost > 0 && (
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-sm text-luxury-lightGray">
                 <span>Child Seats ({infantSeats + boosterSeats} total)</span>
-                <span>{formatCurrency(childSeatsCost)}</span>
+                <span className="text-luxury-pearl">{formatCurrency(childSeatsCost)}</span>
               </div>
             )}
             {extraLuggageCost > 0 && (
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-sm text-luxury-lightGray">
                 <span>Extra Luggage ({extraLuggageCount} bag{extraLuggageCount > 1 ? 's' : ''})</span>
-                <span>{formatCurrency(extraLuggageCost)}</span>
+                <span className="text-luxury-pearl">{formatCurrency(extraLuggageCost)}</span>
               </div>
             )}
             {promoDiscount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
+              <div className="flex justify-between text-sm text-luxury-gold">
                 <span>Promo Discount</span>
                 <span>-{formatCurrency(promoDiscount)}</span>
               </div>
             )}
-            <Separator />
-            <div className="flex justify-between font-semibold text-lg">
-              <span>Total</span>
-              <span>{formatCurrency(total)}</span>
+            <Separator className="border-luxury-gold/20" />
+            <div className="flex justify-between font-semibold text-xl pt-2">
+              <span className="text-luxury-pearl">Total</span>
+              <span className="text-luxury-gold font-serif">{formatCurrency(total)}</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Trust Badges */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-green-600" />
-              <p className="text-sm">Secure SSL Payment</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-600" />
-              <p className="text-sm">24/7 Customer Support</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Tag className="h-4 w-4 text-purple-600" />
-              <p className="text-sm">Best Price Guarantee</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          <Separator className="border-luxury-gold/10" />
 
-      {/* Need Help */}
-      <Card>
-        <CardContent className="pt-6">
-          <h4 className="font-medium mb-3">Need Help?</h4>
-          <div className="space-y-2 text-sm">
-            <p>Email: support@transfer.com</p>
-            <p>Phone: +1 234 567 8900</p>
-            <p>Available 24/7</p>
+          {/* Trust Badges */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Shield className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
+              <p className="text-sm text-luxury-lightGray">Secure SSL Payment</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
+              <p className="text-sm text-luxury-lightGray">24/7 Customer Support</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Tag className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
+              <p className="text-sm text-luxury-lightGray">Best Price Guarantee</p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </motion.div>
   )
 }

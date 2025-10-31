@@ -541,65 +541,190 @@ export type Database = {
         }
         Relationships: []
       }
-      route_searches: {
+      resource_schedules: {
         Row: {
-          destination_location_id: string | null
+          booking_assignment_id: string | null
+          created_at: string | null
+          end_datetime: string
           id: string
-          origin_location_id: string | null
-          passenger_count: number
-          route_id: string | null
-          search_date: string | null
-          searched_at: string | null
-          session_id: string | null
-          user_id: string | null
+          resource_id: string
+          resource_type: string
+          start_datetime: string
+          status: string | null
+          updated_at: string | null
+          vendor_id: string | null
         }
         Insert: {
-          destination_location_id?: string | null
+          booking_assignment_id?: string | null
+          created_at?: string | null
+          end_datetime: string
           id?: string
-          origin_location_id?: string | null
-          passenger_count?: number
-          route_id?: string | null
-          search_date?: string | null
-          searched_at?: string | null
-          session_id?: string | null
-          user_id?: string | null
+          resource_id: string
+          resource_type: string
+          start_datetime: string
+          status?: string | null
+          updated_at?: string | null
+          vendor_id?: string | null
         }
         Update: {
-          destination_location_id?: string | null
+          booking_assignment_id?: string | null
+          created_at?: string | null
+          end_datetime?: string
           id?: string
-          origin_location_id?: string | null
-          passenger_count?: number
-          route_id?: string | null
-          search_date?: string | null
-          searched_at?: string | null
-          session_id?: string | null
-          user_id?: string | null
+          resource_id?: string
+          resource_type?: string
+          start_datetime?: string
+          status?: string | null
+          updated_at?: string | null
+          vendor_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "route_searches_destination_location_id_fkey"
-            columns: ["destination_location_id"]
+            foreignKeyName: "resource_schedules_booking_assignment_id_fkey"
+            columns: ["booking_assignment_id"]
             isOneToOne: false
-            referencedRelation: "locations"
+            referencedRelation: "booking_assignments"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "route_searches_origin_location_id_fkey"
-            columns: ["origin_location_id"]
+            foreignKeyName: "resource_schedules_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: "locations"
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resource_unavailability: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          end_datetime: string
+          id: string
+          notes: string | null
+          reason: string
+          resource_id: string
+          resource_type: string
+          start_datetime: string
+          updated_at: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          end_datetime: string
+          id?: string
+          notes?: string | null
+          reason: string
+          resource_id: string
+          resource_type: string
+          start_datetime: string
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          end_datetime?: string
+          id?: string
+          notes?: string | null
+          reason?: string
+          resource_id?: string
+          resource_type?: string
+          start_datetime?: string
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_unavailability_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "route_searches_route_id_fkey"
-            columns: ["route_id"]
+            foreignKeyName: "resource_unavailability_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: "routes"
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          admin_responder_id: string | null
+          admin_response: string | null
+          admin_response_at: string | null
+          booking_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          is_featured: boolean
+          photos: string[] | null
+          rating: number
+          review_text: string | null
+          route_from: string | null
+          route_to: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          updated_at: string
+          vehicle_class: string | null
+        }
+        Insert: {
+          admin_responder_id?: string | null
+          admin_response?: string | null
+          admin_response_at?: string | null
+          booking_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_featured?: boolean
+          photos?: string[] | null
+          rating: number
+          review_text?: string | null
+          route_from?: string | null
+          route_to?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          updated_at?: string
+          vehicle_class?: string | null
+        }
+        Update: {
+          admin_responder_id?: string | null
+          admin_response?: string | null
+          admin_response_at?: string | null
+          booking_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_featured?: boolean
+          photos?: string[] | null
+          rating?: number
+          review_text?: string | null
+          route_from?: string | null
+          route_to?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          updated_at?: string
+          vehicle_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_admin_responder_id_fkey"
+            columns: ["admin_responder_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "route_searches_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_customer_id_fkey"
+            columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -609,15 +734,12 @@ export type Database = {
       routes: {
         Row: {
           created_at: string | null
-          created_by: string | null
-          created_by_type: string | null
           destination_location_id: string
           distance_km: number | null
           estimated_duration_minutes: number | null
           id: string
           is_active: boolean | null
           is_popular: boolean | null
-          is_shared: boolean | null
           origin_location_id: string
           route_name: string
           route_slug: string
@@ -625,15 +747,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          created_by?: string | null
-          created_by_type?: string | null
           destination_location_id: string
           distance_km?: number | null
           estimated_duration_minutes?: number | null
           id?: string
           is_active?: boolean | null
           is_popular?: boolean | null
-          is_shared?: boolean | null
           origin_location_id: string
           route_name: string
           route_slug: string
@@ -641,28 +760,18 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          created_by?: string | null
-          created_by_type?: string | null
           destination_location_id?: string
           distance_km?: number | null
           estimated_duration_minutes?: number | null
           id?: string
           is_active?: boolean | null
           is_popular?: boolean | null
-          is_shared?: boolean | null
           origin_location_id?: string
           route_name?: string
           route_slug?: string
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "routes_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "vendor_applications"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "routes_destination_location_id_fkey"
             columns: ["destination_location_id"]
@@ -679,6 +788,33 @@ export type Database = {
           },
         ]
       }
+      theme_settings: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_activity_logs: {
         Row: {
           action: string
@@ -686,7 +822,7 @@ export type Database = {
           created_by: string | null
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string | null
         }
@@ -696,7 +832,7 @@ export type Database = {
           created_by?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -706,7 +842,7 @@ export type Database = {
           created_by?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -979,47 +1115,85 @@ export type Database = {
           },
         ]
       }
-      vendor_route_services: {
+      vendor_drivers: {
         Row: {
+          address: string | null
+          city: string | null
+          country_code: string | null
           created_at: string | null
+          date_of_birth: string | null
+          documents: Json | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          employment_status: string | null
+          first_name: string
           id: string
           is_active: boolean | null
+          is_available: boolean | null
+          joining_date: string | null
+          last_name: string
+          license_expiry: string
+          license_number: string
+          license_type: string | null
           notes: string | null
-          route_id: string
-          service_features: Json | null
+          phone: string
           updated_at: string | null
           vendor_id: string
         }
         Insert: {
+          address?: string | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
+          documents?: Json | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employment_status?: string | null
+          first_name: string
           id?: string
           is_active?: boolean | null
+          is_available?: boolean | null
+          joining_date?: string | null
+          last_name: string
+          license_expiry: string
+          license_number: string
+          license_type?: string | null
           notes?: string | null
-          route_id: string
-          service_features?: Json | null
+          phone: string
           updated_at?: string | null
           vendor_id: string
         }
         Update: {
+          address?: string | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
+          documents?: Json | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employment_status?: string | null
+          first_name?: string
           id?: string
           is_active?: boolean | null
+          is_available?: boolean | null
+          joining_date?: string | null
+          last_name?: string
+          license_expiry?: string
+          license_number?: string
+          license_type?: string | null
           notes?: string | null
-          route_id?: string
-          service_features?: Json | null
+          phone?: string
           updated_at?: string | null
           vendor_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "vendor_route_services_route_id_fkey"
-            columns: ["route_id"]
-            isOneToOne: false
-            referencedRelation: "routes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vendor_route_services_vendor_id_fkey"
+            foreignKeyName: "vendor_drivers_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendor_applications"
@@ -1049,6 +1223,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          base_price?: number
           created_at?: string | null
           currency?: string | null
           from_zone_id?: string
@@ -1116,14 +1291,39 @@ export type Database = {
         Args: { p_admin_notes?: string; p_application_id: string }
         Returns: Json
       }
-      cleanup_expired_verification_tokens: {
-        Args: Record<PropertyKey, never>
+      calculate_distance_km: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
-      get_location_hierarchy: {
-        Args: { city_id: string }
-        Returns: Json
+      cleanup_expired_verification_tokens: { Args: Record<PropertyKey, never>; Returns: number }
+      get_featured_reviews: {
+        Args: { p_limit?: number }
+        Returns: {
+          admin_responder_id: string | null
+          admin_response: string | null
+          admin_response_at: string | null
+          booking_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          is_featured: boolean
+          photos: string[] | null
+          rating: number
+          review_text: string | null
+          route_from: string | null
+          route_to: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          updated_at: string
+          vehicle_class: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
+      get_location_hierarchy: { Args: { city_id: string }; Returns: Json }
       get_or_create_notification_preferences: {
         Args: { p_user_id: string }
         Returns: {
@@ -1145,26 +1345,58 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "notification_preferences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
+      get_pending_reviews_count: { Args: Record<PropertyKey, never>; Returns: number }
       get_popular_routes: {
-        Args: { days_back?: number; limit_count?: number }
+        Args: { limit_count?: number }
         Returns: {
+          destination_city: string
+          destination_location_id: string
           destination_name: string
+          distance_km: number
+          estimated_duration_minutes: number
+          id: string
+          origin_city: string
+          origin_location_id: string
           origin_name: string
-          route_id: string
-          route_name: string
           route_slug: string
-          search_count: number
+        }[]
+      }
+      get_review_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          average_rating: number
+          rating_1_count: number
+          rating_1_percent: number
+          rating_2_count: number
+          rating_2_percent: number
+          rating_3_count: number
+          rating_3_percent: number
+          rating_4_count: number
+          rating_4_percent: number
+          rating_5_count: number
+          rating_5_percent: number
+          total_reviews: number
         }[]
       }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
-      is_admin: {
-        Args: { user_id: string }
-        Returns: boolean
+      get_vehicle_type_rating: {
+        Args: { p_vehicle_type_id: string }
+        Returns: {
+          average_rating: number
+          review_count: number
+        }[]
       }
+      is_admin: { Args: { user_id: string }; Returns: boolean }
       log_user_activity: {
         Args: {
           p_action: string
@@ -1187,10 +1419,7 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
-      verify_email_with_token: {
-        Args: { p_token: string }
-        Returns: Json
-      }
+      verify_email_with_token: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
       booking_status:
@@ -1222,6 +1451,7 @@ export type Database = {
         | "completed"
         | "failed"
         | "refunded"
+      review_status: "pending" | "approved" | "rejected"
       rule_type: "night" | "holiday" | "peak" | "weekend"
       user_role: "admin" | "customer" | "vendor" | "driver"
       user_status: "active" | "inactive" | "suspended"
@@ -1385,6 +1615,7 @@ export const Constants = {
         "failed",
         "refunded",
       ],
+      review_status: ["pending", "approved", "rejected"],
       rule_type: ["night", "holiday", "peak", "weekend"],
       user_role: ["admin", "customer", "vendor", "driver"],
       user_status: ["active", "inactive", "suspended"],
