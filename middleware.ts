@@ -120,6 +120,45 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Protected business routes
+  const publicBusinessPaths = ['/business/login', '/business/signup']
+  const isPublicBusinessPath = publicBusinessPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  if (request.nextUrl.pathname.startsWith('/business') && !isPublicBusinessPath) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/business/login', request.url))
+    }
+
+    // Check if user is a business user
+    try {
+      const { data: businessUser, error } = await supabase
+        .from('business_users')
+        .select('id, is_active, business_accounts(status)')
+        .eq('auth_user_id', user.id)
+        .single()
+
+      if (error || !businessUser) {
+        console.error('Not a business user:', error?.message)
+        return NextResponse.redirect(new URL('/business/login', request.url))
+      }
+
+      // Check if business user is active
+      if (!businessUser.is_active) {
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+
+      // Check if business account is active
+      if (businessUser.business_accounts?.status !== 'active') {
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+    } catch (error) {
+      console.error('Middleware business user fetch error:', error)
+      return NextResponse.redirect(new URL('/unauthorized', request.url))
+    }
+  }
+
 
   // Redirect to admin dashboard if already logged in as admin
   if (request.nextUrl.pathname === '/admin/login' && user) {
@@ -159,6 +198,23 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       console.error('Middleware profile fetch error:', error)
+    }
+  }
+
+  // Redirect business login if already logged in as business user
+  if (request.nextUrl.pathname === '/business/login' && user) {
+    try {
+      const { data: businessUser, error } = await supabase
+        .from('business_users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single()
+
+      if (!error && businessUser) {
+        return NextResponse.redirect(new URL('/business/dashboard', request.url))
+      }
+    } catch (error) {
+      console.error('Middleware business user fetch error:', error)
     }
   }
 

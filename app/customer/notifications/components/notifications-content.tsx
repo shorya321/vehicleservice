@@ -23,6 +23,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 
 const categories: (NotificationCategory | 'all')[] = [
   'all',
@@ -92,6 +93,32 @@ export function NotificationsContent() {
   useEffect(() => {
     fetchStats();
     fetchNotifications(activeTab === 'all' ? undefined : activeTab);
+  }, [activeTab]);
+
+  // Realtime subscription for new notifications
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel('customer-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+        },
+        () => {
+          // Refresh notifications and stats when new notification arrives
+          fetchNotifications(activeTab === 'all' ? undefined : activeTab, 1);
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [activeTab]);
 
   // Mark notification as read
