@@ -53,13 +53,6 @@ export default async function NewBookingPage() {
     .eq('is_active', true)
     .order('name');
 
-  // Get vehicle types
-  const { data: vehicleTypes } = await supabase
-    .from('vehicle_types')
-    .select('id, name, description, base_price, max_passengers, max_luggage, image_url')
-    .eq('is_active', true)
-    .order('base_price');
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Page Header */}
@@ -74,7 +67,6 @@ export default async function NewBookingPage() {
         businessAccountId={businessUser.business_account_id}
         walletBalance={businessUser.business_accounts.wallet_balance}
         locations={locations || []}
-        vehicleTypes={vehicleTypes || []}
       />
     </div>
   );

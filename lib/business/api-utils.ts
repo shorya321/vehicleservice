@@ -3,7 +3,7 @@
  * Provides reusable helpers for API routes, authentication, and responses
  */
 
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 /**
@@ -34,7 +34,7 @@ export interface BusinessUserContext {
  * if (!user) return apiError('Unauthorized', 401);
  */
 export async function getAuthenticatedBusinessUser(): Promise<BusinessUserContext | null> {
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   // Get authenticated user
   const {
@@ -84,7 +84,7 @@ export async function getAuthenticatedBusinessUser(): Promise<BusinessUserContex
  * @returns Business account or null if not found
  */
 export async function getBusinessBySubdomain(subdomain: string) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('business_accounts')
@@ -105,7 +105,7 @@ export async function getBusinessBySubdomain(subdomain: string) {
  * @returns Business account or null if not found
  */
 export async function getBusinessByCustomDomain(customDomain: string) {
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('business_accounts')
@@ -269,7 +269,7 @@ export function getPaginationOffset(page: number, limit: number): number {
  * @returns true if active
  */
 export async function isBusinessActive(businessId: string): Promise<boolean> {
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('business_accounts')

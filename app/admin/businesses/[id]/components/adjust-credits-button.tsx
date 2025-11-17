@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 
 interface AdjustCreditsButtonProps {
@@ -35,7 +35,6 @@ export function AdjustCreditsButton({
   currentBalance,
 }: AdjustCreditsButtonProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [reason, setReason] = useState('');
@@ -45,20 +44,12 @@ export function AdjustCreditsButton({
     const numAmount = parseFloat(amount);
 
     if (isNaN(numAmount) || numAmount === 0) {
-      toast({
-        title: 'Invalid amount',
-        description: 'Please enter a valid non-zero amount',
-        variant: 'destructive',
-      });
+      toast.error('Invalid amount: Please enter a valid non-zero amount');
       return;
     }
 
     if (reason.trim().length < 10) {
-      toast({
-        title: 'Invalid reason',
-        description: 'Please provide a reason (minimum 10 characters)',
-        variant: 'destructive',
-      });
+      toast.error('Invalid reason: Please provide a reason (minimum 10 characters)');
       return;
     }
 
@@ -77,21 +68,14 @@ export function AdjustCreditsButton({
         throw new Error(result.error || 'Failed to adjust credits');
       }
 
-      toast({
-        title: 'Credits adjusted',
-        description: `New balance: ${result.data.new_balance}`,
-      });
+      toast.success(`Credits adjusted. New balance: ${result.data.new_balance}`);
 
       setIsDialogOpen(false);
       setAmount('');
       setReason('');
       router.refresh();
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to adjust credits',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to adjust credits');
     } finally {
       setIsLoading(false);
     }

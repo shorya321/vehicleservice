@@ -69,13 +69,22 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [assignModalBookingId, setAssignModalBookingId] = useState<string | null>(null)
 
   const getStatusBadge = (status: string) => {
+    // Handle undefined/null status
+    if (!status) {
+      return (
+        <Badge variant="outline">
+          Unknown
+        </Badge>
+      )
+    }
+
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       confirmed: 'default',
       completed: 'secondary',
       cancelled: 'destructive',
       pending: 'outline',
     }
-    
+
     return (
       <Badge variant={variants[status] || 'outline'}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -84,6 +93,16 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   }
 
   const getPaymentStatusBadge = (status: string) => {
+    // Handle undefined/null status
+    if (!status) {
+      return (
+        <Badge variant="outline" className="text-xs">
+          <CreditCard className="h-3 w-3 mr-1" />
+          Pending
+        </Badge>
+      )
+    }
+
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       completed: 'default',
       processing: 'secondary',
@@ -91,11 +110,29 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       refunded: 'outline',
       pending: 'outline',
     }
-    
+
     return (
       <Badge variant={variants[status] || 'outline'} className="text-xs">
         <CreditCard className="h-3 w-3 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    )
+  }
+
+  const getBookingTypeBadge = (type?: 'customer' | 'business') => {
+    if (!type || type === 'customer') {
+      return (
+        <Badge variant="outline" className="text-xs">
+          <User className="h-3 w-3 mr-1" />
+          Customer
+        </Badge>
+      )
+    }
+
+    return (
+      <Badge variant="secondary" className="text-xs">
+        <User className="h-3 w-3 mr-1" />
+        Business
       </Badge>
     )
   }
@@ -190,6 +227,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   />
                 </TableHead>
                 <TableHead className="w-[120px]">Booking #</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Date & Time</TableHead>
                 <TableHead>Route</TableHead>
@@ -204,7 +242,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="h-[400px] p-0">
+                  <TableCell colSpan={12} className="h-[400px] p-0">
                     <EmptyState
                       icon={Car}
                       title="No Bookings Found"
@@ -232,6 +270,9 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </TableCell>
                     <TableCell className="font-mono text-sm">
                       {booking.booking_number}
+                    </TableCell>
+                    <TableCell>
+                      {getBookingTypeBadge(booking.bookingType)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -479,6 +520,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       {assignModalBookingId && (
         <AssignVendorModal
           bookingId={assignModalBookingId}
+          bookingType={bookings.find(b => b.id === assignModalBookingId)?.bookingType || 'customer'}
           currentVendorId={bookings.find(b => b.id === assignModalBookingId)?.booking_assignments?.[0]?.vendor_id}
           onClose={() => setAssignModalBookingId(null)}
         />

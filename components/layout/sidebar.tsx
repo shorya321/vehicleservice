@@ -71,6 +71,12 @@ const navigation: NavItem[] = [
     badge: null,
   },
   {
+    name: "Business Accounts",
+    href: "/admin/businesses",
+    icon: Building2,
+    badge: null,
+  },
+  {
     name: "Vehicles",
     href: "/admin/vehicles",
     icon: Car,

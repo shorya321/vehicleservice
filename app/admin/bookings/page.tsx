@@ -24,6 +24,7 @@ interface BookingsPageProps {
     search?: string
     status?: string
     paymentStatus?: string
+    bookingType?: string
     vehicleTypeId?: string
     dateFrom?: string
     dateTo?: string
@@ -39,6 +40,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
     search: params.search,
     status: (params.status as BookingFilters['status']) || 'all',
     paymentStatus: (params.paymentStatus as BookingFilters['paymentStatus']) || 'all',
+    bookingType: (params.bookingType as BookingFilters['bookingType']) || 'all',
     vehicleTypeId: params.vehicleTypeId,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,

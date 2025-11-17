@@ -26,6 +26,7 @@ import { getAvailableVendors, assignBookingToVendor } from '../actions'
 
 interface AssignVendorModalProps {
   bookingId: string
+  bookingType: 'customer' | 'business'
   currentVendorId?: string
   onClose: () => void
 }
@@ -40,6 +41,7 @@ interface Vendor {
 
 export function AssignVendorModal({
   bookingId,
+  bookingType,
   currentVendorId,
   onClose,
 }: AssignVendorModalProps) {
@@ -75,7 +77,7 @@ export function AssignVendorModal({
 
     setIsSaving(true)
     try {
-      await assignBookingToVendor(bookingId, selectedVendorId, notes)
+      await assignBookingToVendor(bookingId, bookingType, selectedVendorId, notes)
       toast.success('Booking assigned to vendor successfully')
       router.refresh()
       onClose()

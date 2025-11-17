@@ -1,5 +1,17 @@
 import type { Config } from "tailwindcss"
 
+/**
+ * Tailwind Configuration with CSS Variable Theming Support
+ *
+ * This config supports white-labeling through CSS custom properties.
+ * Colors are defined using hsl(var(--variable)) pattern, allowing
+ * dynamic theming via CSS variables injected by middleware for
+ * custom business domains.
+ *
+ * Example: When a custom domain is detected, middleware injects
+ * brand colors into response headers, which are read by app/layout.tsx
+ * and applied as CSS variables to override default theme colors.
+ */
 export default {
   darkMode: ["class"],
   content: [

@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { BusinessAccountsTable } from './components/business-accounts-table';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { AnimatedPage } from '@/components/layout/animated-page';
 
 export const metadata: Metadata = {
   title: 'Business Accounts | Admin Portal',
@@ -52,14 +54,16 @@ export default async function AdminBusinessAccountsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Business Accounts</h1>
-          <p className="text-muted-foreground">Manage B2B business accounts</p>
-        </div>
-      </div>
+    <AdminLayout>
+      <AnimatedPage>
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Business Accounts</h1>
+              <p className="text-muted-foreground">Manage B2B business accounts</p>
+            </div>
+          </div>
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-4">
@@ -114,16 +118,18 @@ export default async function AdminBusinessAccountsPage() {
         </Card>
       </div>
 
-      {/* Business Accounts Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Business Accounts</CardTitle>
-          <CardDescription>View and manage business accounts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BusinessAccountsTable accounts={accountsWithCounts} />
-        </CardContent>
-      </Card>
-    </div>
+          {/* Business Accounts Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>All Business Accounts</CardTitle>
+              <CardDescription>View and manage business accounts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BusinessAccountsTable accounts={accountsWithCounts} />
+            </CardContent>
+          </Card>
+        </div>
+      </AnimatedPage>
+    </AdminLayout>
   );
 }

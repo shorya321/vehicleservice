@@ -103,11 +103,12 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               <TableCell>{booking.vehicle_types.name}</TableCell>
               <TableCell>
                 <div className="text-sm">
-                  <p>{new Date(booking.pickup_datetime).toLocaleDateString()}</p>
+                  <p>{new Date(booking.pickup_datetime).toLocaleDateString('en-US')}</p>
                   <p className="text-muted-foreground">
-                    {new Date(booking.pickup_datetime).toLocaleTimeString([], {
+                    {new Date(booking.pickup_datetime).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
+                      hour12: true,
                     })}
                   </p>
                 </div>

@@ -39,6 +39,7 @@ interface RouteStepProps {
   locations: Location[];
   onUpdate: (data: Partial<BookingFormData>) => void;
   onNext: () => void;
+  onFetchVehicles: (fromLocationId: string, toLocationId: string) => Promise<void>;
 }
 
 const routeSchema = z.object({
@@ -51,7 +52,7 @@ const routeSchema = z.object({
 
 type RouteFormData = z.infer<typeof routeSchema>;
 
-export function RouteStep({ formData, locations, onUpdate, onNext }: RouteStepProps) {
+export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
   const form = useForm<RouteFormData>({
     resolver: zodResolver(routeSchema),
     defaultValues: {
@@ -63,8 +64,12 @@ export function RouteStep({ formData, locations, onUpdate, onNext }: RouteStepPr
     },
   });
 
-  function onSubmit(values: RouteFormData) {
+  async function onSubmit(values: RouteFormData) {
     onUpdate(values);
+
+    // Fetch available vehicles for selected route
+    await onFetchVehicles(values.from_location_id, values.to_location_id);
+
     onNext();
   }
 

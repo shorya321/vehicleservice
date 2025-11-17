@@ -78,6 +78,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     user_metadata: {
       business_name: data.business_name,
       contact_person_name: data.contact_person_name,
+      user_type: 'business', // Set user_type for trigger to create profile with role='business'
     },
   });
 
@@ -117,7 +118,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       business_account_id: businessAccount.id,
       auth_user_id: authUser.user.id,
       role: 'owner',
-      is_active: true,
     });
 
     if (businessUserError) {

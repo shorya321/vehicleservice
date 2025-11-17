@@ -6,6 +6,7 @@
  */
 
 import { ArrowDown, ArrowUp, Receipt } from 'lucide-react';
+import { format } from 'date-fns';
 import {
   formatCurrency,
   formatTransactionAmount,
@@ -69,7 +70,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
                 <p className="font-medium">{getTransactionTypeLabel(transaction.transaction_type)}</p>
                 <p className="text-sm text-muted-foreground">{transaction.description}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {new Date(transaction.created_at).toLocaleString()}
+                  {format(new Date(transaction.created_at), 'MMM d, yyyy h:mm a')}
                 </p>
               </div>
             </div>

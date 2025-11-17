@@ -46,10 +46,18 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   }
 
   const handleStatusChange = (status: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      status: status as BookingFilters['status'], 
-      page: 1 
+    onFiltersChange({
+      ...filters,
+      status: status as BookingFilters['status'],
+      page: 1
+    })
+  }
+
+  const handleBookingTypeChange = (type: string) => {
+    onFiltersChange({
+      ...filters,
+      bookingType: type as BookingFilters['bookingType'],
+      page: 1
     })
   }
 
@@ -59,11 +67,12 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     setPaymentStatus('all')
     setVehicleTypeId('')
     setCustomerId('')
-    onFiltersChange({ 
-      page: 1, 
+    onFiltersChange({
+      page: 1,
       limit: filters.limit || 10,
       status: 'all',
-      paymentStatus: 'all'
+      paymentStatus: 'all',
+      bookingType: 'all'
     })
   }
 
@@ -107,6 +116,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   const activeFilterCount = [
     filters.search,
     filters.status && filters.status !== 'all' ? filters.status : null,
+    filters.bookingType && filters.bookingType !== 'all' ? filters.bookingType : null,
     filters.paymentStatus && filters.paymentStatus !== 'all' ? filters.paymentStatus : null,
     filters.dateFrom,
     filters.dateTo,
@@ -140,6 +150,17 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
           </SelectContent>
         </Select>
 
+        <Select value={filters.bookingType || 'all'} onValueChange={handleBookingTypeChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="customer">Customer</SelectItem>
+            <SelectItem value="business">Business</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Popover open={advancedOpen} onOpenChange={setAdvancedOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -149,9 +170,9 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
             >
               <Filter className="mr-2 h-4 w-4" />
               Advanced
-              {activeFilterCount > 2 && (
+              {activeFilterCount > 3 && (
                 <Badge variant="secondary" className="ml-2 h-5 px-1">
-                  {activeFilterCount - 2}
+                  {activeFilterCount - 3}
                 </Badge>
               )}
               <ChevronDown className="ml-2 h-4 w-4" />

@@ -70,6 +70,7 @@ export const walletRechargeSchema = z.object({
     .positive('Amount must be positive')
     .min(10, 'Minimum recharge amount is $10')
     .max(10000, 'Maximum recharge amount is $10,000'),
+  currency: z.string().optional().default('usd'),
 });
 
 export type WalletRechargeInput = z.infer<typeof walletRechargeSchema>;
@@ -148,3 +149,37 @@ export const businessStatusSchema = z.object({
 });
 
 export type BusinessStatusInput = z.infer<typeof businessStatusSchema>;
+
+/**
+ * Branding Settings Schema
+ */
+export const brandingSettingsSchema = z.object({
+  brand_name: z.string().min(2, 'Brand name must be at least 2 characters').max(100).optional(),
+  primary_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #3b82f6)')
+    .optional(),
+  secondary_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #1e40af)')
+    .optional(),
+  accent_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #8b5cf6)')
+    .optional(),
+});
+
+export type BrandingSettingsInput = z.infer<typeof brandingSettingsSchema>;
+
+/**
+ * Logo Upload Schema
+ */
+export const logoUploadSchema = z.object({
+  file_name: z.string().min(1, 'File name required'),
+  file_size: z.number().positive().max(2097152, 'File size must not exceed 2MB'),
+  mime_type: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'], {
+    errorMap: () => ({ message: 'Only JPEG, PNG, WebP, and SVG images are allowed' }),
+  }),
+});
+
+export type LogoUploadInput = z.infer<typeof logoUploadSchema>;

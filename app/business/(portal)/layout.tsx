@@ -34,7 +34,12 @@ export default async function BusinessPortalLayout({
       business_accounts (
         business_name,
         business_email,
-        contact_person_name
+        contact_person_name,
+        brand_name,
+        logo_url,
+        primary_color,
+        secondary_color,
+        accent_color
       )
     `
     )
@@ -48,7 +53,14 @@ export default async function BusinessPortalLayout({
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <BusinessSidebar businessName={businessUser.business_accounts.business_name} />
+      <BusinessSidebar
+        businessName={businessUser.business_accounts.business_name}
+        brandName={businessUser.business_accounts.brand_name}
+        logoUrl={businessUser.business_accounts.logo_url}
+        primaryColor={businessUser.business_accounts.primary_color}
+        secondaryColor={businessUser.business_accounts.secondary_color}
+        accentColor={businessUser.business_accounts.accent_color}
+      />
 
       {/* Main Content Area */}
       <div className="ml-64">
@@ -56,6 +68,12 @@ export default async function BusinessPortalLayout({
         <BusinessHeader
           userEmail={businessUser.business_accounts.business_email}
           contactPersonName={businessUser.business_accounts.contact_person_name}
+          businessName={businessUser.business_accounts.business_name}
+          brandName={businessUser.business_accounts.brand_name}
+          logoUrl={businessUser.business_accounts.logo_url}
+          primaryColor={businessUser.business_accounts.primary_color}
+          secondaryColor={businessUser.business_accounts.secondary_color}
+          accentColor={businessUser.business_accounts.accent_color}
         />
 
         {/* Page Content */}

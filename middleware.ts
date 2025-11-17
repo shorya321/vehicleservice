@@ -36,6 +36,46 @@ export async function middleware(request: NextRequest) {
     console.error('Middleware fetch error:', error)
   }
 
+  // Domain-based business identification for white-labeling
+  const hostname = request.headers.get('host') || request.nextUrl.hostname
+  const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname
+
+  // Check if this is a custom domain (not the main platform domain)
+  if (hostname !== platformDomain && !hostname.endsWith(`.${platformDomain}`) && !hostname.includes('localhost')) {
+    try {
+      // Query business by custom domain
+      const { data: businessContext, error } = await supabase.rpc('get_business_by_custom_domain', {
+        p_domain: hostname
+      })
+
+      if (!error && businessContext && businessContext.length > 0) {
+        const business = businessContext[0]
+
+        // Inject business branding context into response headers
+        response.headers.set('x-business-id', business.id)
+        response.headers.set('x-business-name', business.business_name || '')
+        response.headers.set('x-brand-name', business.brand_name || business.business_name || '')
+        response.headers.set('x-logo-url', business.logo_url || '')
+        response.headers.set('x-primary-color', business.primary_color || '#3b82f6')
+        response.headers.set('x-secondary-color', business.secondary_color || '#1e40af')
+        response.headers.set('x-accent-color', business.accent_color || '#8b5cf6')
+        response.headers.set('x-custom-domain', 'true')
+
+        // Log domain identification
+        console.log('Custom domain identified:', {
+          hostname,
+          businessId: business.id,
+          businessName: business.business_name,
+        })
+      } else {
+        // Custom domain not found or not verified
+        console.warn('Custom domain not verified:', hostname)
+      }
+    } catch (error) {
+      console.error('Error fetching business by custom domain:', error)
+    }
+  }
+
   // Protected admin routes
   if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
     if (!user) {

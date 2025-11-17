@@ -17,14 +17,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { 
-  Calendar, 
-  MapPin, 
-  User, 
-  Phone, 
-  Mail, 
-  Car, 
-  Users, 
+import {
+  Calendar,
+  MapPin,
+  User,
+  Phone,
+  Mail,
+  Car,
+  Users,
   Luggage,
   CreditCard,
   Clock,
@@ -38,6 +38,7 @@ import {
 import { format } from 'date-fns'
 import { formatCurrency } from '@/lib/utils'
 import { updateBookingStatus, updatePaymentStatus } from '../../actions'
+import { AssignVendorModal } from '../../components/assign-vendor-modal'
 import { toast } from 'sonner'
 
 interface BookingDetailProps {
@@ -48,6 +49,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
   const [statusToUpdate, setStatusToUpdate] = useState<'confirmed' | 'completed' | 'cancelled' | null>(null)
+  const [showAssignVendorModal, setShowAssignVendorModal] = useState(false)
   const [paymentStatusToUpdate, setPaymentStatusToUpdate] = useState<'completed' | 'failed' | 'refunded' | null>(null)
 
   const getStatusBadge = (status: string) => {
@@ -375,7 +377,12 @@ export function BookingDetail({ booking }: BookingDetailProps) {
               <div className="text-center py-6">
                 <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground">No vendor assigned yet</p>
-                <Button variant="outline" size="sm" className="mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => setShowAssignVendorModal(true)}
+                >
                   Assign Vendor
                 </Button>
               </div>
@@ -631,6 +638,19 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Vendor Modal */}
+      {showAssignVendorModal && (
+        <AssignVendorModal
+          bookingId={booking.id}
+          bookingType={booking.bookingType || 'customer'}
+          currentVendorId={booking.booking_assignments?.[0]?.vendor_id}
+          onClose={() => {
+            setShowAssignVendorModal(false)
+            router.refresh()
+          }}
+        />
+      )}
     </div>
   )
 }

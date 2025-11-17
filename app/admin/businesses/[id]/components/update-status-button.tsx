@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface UpdateStatusButtonProps {
   businessId: string;
@@ -34,18 +34,13 @@ interface UpdateStatusButtonProps {
 
 export function UpdateStatusButton({ businessId, currentStatus }: UpdateStatusButtonProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState(currentStatus);
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleUpdate() {
     if (newStatus === currentStatus) {
-      toast({
-        title: 'No change',
-        description: 'Status is already set to this value',
-        variant: 'destructive',
-      });
+      toast.error('No change: Status is already set to this value');
       return;
     }
 
@@ -64,19 +59,12 @@ export function UpdateStatusButton({ businessId, currentStatus }: UpdateStatusBu
         throw new Error(result.error || 'Failed to update status');
       }
 
-      toast({
-        title: 'Status updated',
-        description: `Business account is now ${newStatus}`,
-      });
+      toast.success(`Status updated: Business account is now ${newStatus}`);
 
       setIsDialogOpen(false);
       router.refresh();
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update status',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to update status');
     } finally {
       setIsLoading(false);
     }

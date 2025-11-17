@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { AvailabilityService } from '@/lib/availability/service'
+import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
 
 export interface VendorBooking {
   id: string
@@ -88,41 +89,20 @@ export async function getVendorAssignedBookings() {
     throw new Error('Vendor application not found')
   }
 
-  // Get assigned bookings using admin client to bypass RLS issues
+  // Get all assignments for this vendor (without booking joins - we'll fetch separately)
   const { data: assignments, error } = await adminClient
     .from('booking_assignments')
     .select(`
-      *,
-      booking:bookings(
-        id,
-        booking_number,
-        pickup_datetime,
-        pickup_address,
-        dropoff_address,
-        passenger_count,
-        luggage_count,
-        total_price,
-        booking_status,
-        payment_status,
-        customer_notes,
-        booking_passengers(
-          id,
-          first_name,
-          last_name,
-          email,
-          phone,
-          is_primary
-        ),
-        vehicle_type:vehicle_types(
-          id,
-          name,
-          passenger_capacity,
-          category:vehicle_categories(
-            id,
-            name
-          )
-        )
-      ),
+      id,
+      booking_id,
+      business_booking_id,
+      vendor_id,
+      driver_id,
+      vehicle_id,
+      status,
+      assigned_at,
+      accepted_at,
+      notes,
       driver:vendor_drivers(
         id,
         first_name,
@@ -147,7 +127,78 @@ export async function getVendorAssignedBookings() {
     throw new Error('Failed to fetch assigned bookings')
   }
 
-  return (assignments || []) as VendorBooking[]
+  // Fetch booking details for each assignment using unified service
+  console.log(`📋 Processing ${assignments?.length || 0} assignments for vendor`)
+
+  const vendorBookings = await Promise.all(
+    (assignments || []).map(async (assignment) => {
+      const assignmentType = assignment.booking_id ? 'customer' : assignment.business_booking_id ? 'business' : 'unknown'
+      console.log(`🔍 Processing assignment ${assignment.id} - Type: ${assignmentType}, booking_id: ${assignment.booking_id}, business_booking_id: ${assignment.business_booking_id}`)
+
+      // Use unified service to get booking details (handles both customer and business)
+      const booking = await getBookingFromAssignment(assignment.id)
+
+      if (!booking) {
+        console.error(`❌ Booking not found for assignment ${assignment.id} (Type: ${assignmentType})`)
+        return null
+      }
+
+      console.log(`✅ Successfully fetched ${booking.bookingType} booking ${booking.id} for assignment ${assignment.id}`)
+
+      // Get booking passengers if it's a customer booking
+      let bookingPassengers = []
+      if (booking.bookingType === 'customer') {
+        const { data: passengers } = await adminClient
+          .from('booking_passengers')
+          .select('id, first_name, last_name, email, phone, is_primary')
+          .eq('booking_id', booking.id)
+          .order('is_primary', { ascending: false })
+
+        bookingPassengers = passengers || []
+      }
+
+      // Transform to VendorBooking format
+      return {
+        id: assignment.id,
+        booking_id: booking.id, // Can be either customer or business booking ID
+        vendor_id: assignment.vendor_id,
+        driver_id: assignment.driver_id,
+        vehicle_id: assignment.vehicle_id,
+        status: assignment.status,
+        assigned_at: assignment.assigned_at,
+        accepted_at: assignment.accepted_at,
+        notes: assignment.notes,
+        booking: {
+          id: booking.id,
+          booking_number: booking.bookingNumber,
+          pickup_datetime: booking.pickupDatetime,
+          pickup_address: booking.pickupAddress || '',
+          dropoff_address: booking.dropoffAddress || '',
+          passenger_count: booking.passengerCount,
+          luggage_count: booking.luggageCount,
+          total_price: booking.totalPrice,
+          booking_status: booking.bookingStatus,
+          payment_status: 'pending', // Business bookings don't have payment_status
+          customer_notes: booking.customerNotes,
+          booking_passengers: bookingPassengers,
+          vehicle_type: booking.vehicleTypes ? {
+            id: booking.vehicleTypeId,
+            name: booking.vehicleTypes.name,
+            passenger_capacity: booking.vehicleTypes.passengerCapacity,
+            category: booking.vehicleTypes.vehicleCategories ? {
+              id: booking.vehicleTypes.vehicleCategories.name,
+              name: booking.vehicleTypes.vehicleCategories.name
+            } : null
+          } : null
+        },
+        driver: assignment.driver,
+        vehicle: assignment.vehicle
+      } as VendorBooking
+    })
+  )
+
+  // Filter out any null entries (bookings that couldn't be found)
+  return vendorBookings.filter(b => b !== null) as VendorBooking[]
 }
 
 export async function getVendorDrivers() {
@@ -248,22 +299,22 @@ export async function acceptAndAssignResources(
     throw new Error('Vendor application not found')
   }
 
-  // Get booking details to create schedule
+  // Get booking details using unified service
+  const booking = await getBookingFromAssignment(assignmentId)
+
+  if (!booking) {
+    throw new Error('Booking not found')
+  }
+
+  // Get assignment details
   const { data: assignment } = await adminClient
     .from('booking_assignments')
-    .select(`
-      *,
-      booking:bookings(
-        pickup_datetime,
-        dropoff_address,
-        pickup_address
-      )
-    `)
+    .select('*')
     .eq('id', assignmentId)
     .single()
 
-  if (!assignment || !assignment.booking) {
-    throw new Error('Booking not found')
+  if (!assignment) {
+    throw new Error('Assignment not found')
   }
 
   // Verify driver belongs to vendor
@@ -378,7 +429,7 @@ export async function acceptAndAssignResources(
   }
 
   // Create schedule entries for both driver and vehicle
-  const pickupTime = new Date(assignment.booking.pickup_datetime)
+  const pickupTime = new Date(booking.pickupDatetime)
   const estimatedEndTime = new Date(pickupTime.getTime() + 2 * 60 * 60 * 1000) // Estimate 2 hours for trip
 
   try {
@@ -400,9 +451,10 @@ export async function acceptAndAssignResources(
     revalidatePath('/vendor/bookings')
     revalidatePath('/vendor/availability')
     revalidatePath('/admin/bookings')
-    if (assignment?.booking_id) {
-      revalidatePath(`/admin/bookings/${assignment.booking_id}`)
-      revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+    // Revalidate booking detail pages (works for both customer and business)
+    revalidatePath(`/admin/bookings/${booking.id}`)
+    if (booking.bookingType === 'customer') {
+      revalidatePath(`/customer/bookings/${booking.id}`)
     }
     console.log('Cache revalidation successful for assignment:', assignmentId)
   } catch (revalidationError) {
@@ -410,7 +462,7 @@ export async function acceptAndAssignResources(
     console.error('Cache revalidation error (non-critical):', {
       error: revalidationError,
       assignmentId,
-      bookingId: assignment?.booking_id
+      bookingId: booking.id
     })
   }
 
@@ -441,12 +493,8 @@ export async function rejectAssignment(
     throw new Error('Vendor application not found')
   }
 
-  // Get the booking_id for this assignment
-  const { data: assignment } = await adminClient
-    .from('booking_assignments')
-    .select('booking_id')
-    .eq('id', assignmentId)
-    .single()
+  // Get booking details using unified service
+  const booking = await getBookingFromAssignment(assignmentId)
 
   // Update assignment with rejection details
   const { error } = await supabase
@@ -468,9 +516,11 @@ export async function rejectAssignment(
   revalidatePath('/vendor/bookings')
   revalidatePath('/admin/bookings')
   revalidatePath('/admin/dashboard')
-  if (assignment?.booking_id) {
-    revalidatePath(`/admin/bookings/${assignment.booking_id}`)
-    revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+  if (booking) {
+    revalidatePath(`/admin/bookings/${booking.id}`)
+    if (booking.bookingType === 'customer') {
+      revalidatePath(`/customer/bookings/${booking.id}`)
+    }
   }
 
   return { success: true }
@@ -499,29 +549,14 @@ export async function checkResourceAvailabilityForBooking(
     throw new Error('Vendor application not found')
   }
 
-  // Get booking details from assignment
-  const { data: assignment } = await adminClient
-    .from('booking_assignments')
-    .select(`
-      *,
-      booking:bookings(
-        pickup_datetime,
-        dropoff_address,
-        pickup_address,
-        vehicle_type:vehicle_types(
-          id,
-          category_id
-        )
-      )
-    `)
-    .eq('id', assignmentId)
-    .single()
+  // Get booking details using unified service
+  const booking = await getBookingFromAssignment(assignmentId)
 
-  if (!assignment || !assignment.booking) {
+  if (!booking) {
     throw new Error('Booking not found')
   }
 
-  const pickupTime = new Date(assignment.booking.pickup_datetime)
+  const pickupTime = new Date(booking.pickupDatetime)
   const estimatedEndTime = new Date(pickupTime.getTime() + 2 * 60 * 60 * 1000) // Estimate 2 hours for trip
 
   // Get all drivers with availability status
@@ -531,8 +566,15 @@ export async function checkResourceAvailabilityForBooking(
     .eq('vendor_id', vendorApp.id)
     .eq('is_active', true)
 
+  // Get category ID from vehicle type
+  const { data: vehicleType } = await adminClient
+    .from('vehicle_types')
+    .select('category_id')
+    .eq('id', booking.vehicleTypeId)
+    .single()
+
   // Get all vehicles with availability status - filtered by booking category
-  const bookingCategoryId = assignment.booking?.vehicle_type?.category_id
+  const bookingCategoryId = vehicleType?.category_id
   const { data: vehicles } = await supabase
     .from('vehicles')
     .select('*')
@@ -636,10 +678,17 @@ export async function completeBooking(assignmentId: string) {
     throw new Error('Vendor application not found')
   }
 
+  // Get booking details using unified service
+  const booking = await getBookingFromAssignment(assignmentId)
+
+  if (!booking) {
+    throw new Error('Booking not found')
+  }
+
   // Verify this assignment belongs to the vendor
   const { data: assignment, error: assignmentError } = await adminClient
     .from('booking_assignments')
-    .select('booking_id, vendor_id')
+    .select('vendor_id')
     .eq('id', assignmentId)
     .single()
 
@@ -651,14 +700,15 @@ export async function completeBooking(assignmentId: string) {
     throw new Error('Unauthorized: This assignment does not belong to your vendor account')
   }
 
-  // Update booking status to completed
+  // Update booking status to completed (handle both customer and business bookings)
+  const tableName = booking.bookingType === 'customer' ? 'bookings' : 'business_bookings'
   const { error: updateError } = await adminClient
-    .from('bookings')
+    .from(tableName)
     .update({
       booking_status: 'completed',
       updated_at: new Date().toISOString()
     })
-    .eq('id', assignment.booking_id)
+    .eq('id', booking.id)
 
   if (updateError) {
     console.error('Error updating booking status:', updateError)
@@ -685,8 +735,10 @@ export async function completeBooking(assignmentId: string) {
 
   revalidatePath('/vendor/bookings')
   revalidatePath('/admin/bookings')
-  revalidatePath(`/admin/bookings/${assignment.booking_id}`)
-  revalidatePath(`/customer/bookings/${assignment.booking_id}`)
+  revalidatePath(`/admin/bookings/${booking.id}`)
+  if (booking.bookingType === 'customer') {
+    revalidatePath(`/customer/bookings/${booking.id}`)
+  }
 
   return { success: true }
 }

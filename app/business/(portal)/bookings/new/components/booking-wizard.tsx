@@ -15,20 +15,17 @@ import { DetailsStep } from './details-step';
 import { ReviewStep } from './review-step';
 import { toast } from 'sonner';
 
+import {
+  VehicleTypeResult,
+  VehicleTypesByCategory,
+  ZoneInfo,
+  getAvailableVehicleTypesForRoute,
+} from '../actions';
+
 interface Location {
   id: string;
   name: string;
   city: string;
-}
-
-interface VehicleType {
-  id: string;
-  name: string;
-  description: string;
-  base_price: number;
-  max_passengers: number;
-  max_luggage: number;
-  image_url: string | null;
 }
 
 interface BookingWizardProps {
@@ -36,7 +33,6 @@ interface BookingWizardProps {
   businessAccountId: string;
   walletBalance: number;
   locations: Location[];
-  vehicleTypes: VehicleType[];
 }
 
 export interface BookingFormData {
@@ -72,7 +68,6 @@ export function BookingWizard({
   businessAccountId,
   walletBalance,
   locations,
-  vehicleTypes,
 }: BookingWizardProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
@@ -84,8 +79,48 @@ export function BookingWizard({
     amenities_price: 0,
   });
 
+  // Vehicle loading state
+  const [vehicleTypes, setVehicleTypes] = useState<VehicleTypeResult[]>([]);
+  const [vehicleTypesByCategory, setVehicleTypesByCategory] = useState<
+    VehicleTypesByCategory[]
+  >([]);
+  const [zoneInfo, setZoneInfo] = useState<ZoneInfo | undefined>();
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
+  const [vehicleFetchError, setVehicleFetchError] = useState<string | undefined>();
+
   function updateFormData(data: Partial<BookingFormData>) {
     setFormData((prev) => ({ ...prev, ...data }));
+  }
+
+  async function fetchAvailableVehicles(fromLocationId: string, toLocationId: string) {
+    setIsLoadingVehicles(true);
+    setVehicleFetchError(undefined);
+
+    try {
+      const result = await getAvailableVehicleTypesForRoute(
+        fromLocationId,
+        toLocationId,
+        formData.passenger_count || 1
+      );
+
+      if (result.error) {
+        setVehicleFetchError(result.error);
+        setVehicleTypes([]);
+        setVehicleTypesByCategory([]);
+        setZoneInfo(undefined);
+      } else {
+        setVehicleTypes(result.vehicleTypes);
+        setVehicleTypesByCategory(result.vehicleTypesByCategory);
+        setZoneInfo(result.zoneInfo);
+      }
+    } catch (error) {
+      setVehicleFetchError('Failed to load vehicles. Please try again.');
+      setVehicleTypes([]);
+      setVehicleTypesByCategory([]);
+      setZoneInfo(undefined);
+    } finally {
+      setIsLoadingVehicles(false);
+    }
   }
 
   function nextStep() {
@@ -104,10 +139,18 @@ export function BookingWizard({
     setIsSubmitting(true);
 
     try {
+      // Convert datetime-local format to ISO 8601 format for API
+      const submissionData = {
+        ...formData,
+        pickup_datetime: formData.pickup_datetime
+          ? new Date(formData.pickup_datetime).toISOString()
+          : formData.pickup_datetime,
+      };
+
       const response = await fetch('/api/business/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
 
       const result = await response.json();
@@ -148,6 +191,7 @@ export function BookingWizard({
               locations={locations}
               onUpdate={updateFormData}
               onNext={nextStep}
+              onFetchVehicles={fetchAvailableVehicles}
             />
           )}
 
@@ -155,6 +199,10 @@ export function BookingWizard({
             <VehicleStep
               formData={formData}
               vehicleTypes={vehicleTypes}
+              vehicleTypesByCategory={vehicleTypesByCategory}
+              zoneInfo={zoneInfo}
+              isLoading={isLoadingVehicles}
+              error={vehicleFetchError}
               onUpdate={updateFormData}
               onNext={nextStep}
               onBack={previousStep}
@@ -176,6 +224,7 @@ export function BookingWizard({
               walletBalance={walletBalance}
               locations={locations}
               vehicleTypes={vehicleTypes}
+              zoneInfo={zoneInfo}
               onBack={previousStep}
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}

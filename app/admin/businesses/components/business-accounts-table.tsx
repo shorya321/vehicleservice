@@ -112,7 +112,11 @@ export function BusinessAccountsTable({ accounts }: BusinessAccountsTableProps) 
               <TableCell>{account.total_bookings}</TableCell>
               <TableCell>{getStatusBadge(account.status)}</TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {new Date(account.created_at).toLocaleDateString()}
+                {new Date(account.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
               </TableCell>
               <TableCell className="text-right">
                 <Button asChild variant="ghost" size="sm">

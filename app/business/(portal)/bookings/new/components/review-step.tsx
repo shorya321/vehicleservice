@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-operations';
 import { BookingFormData } from './booking-wizard';
+import { VehicleTypeResult, ZoneInfo } from '../actions';
 
 interface Location {
   id: string;
@@ -17,16 +18,12 @@ interface Location {
   city: string;
 }
 
-interface VehicleType {
-  id: string;
-  name: string;
-}
-
 interface ReviewStepProps {
   formData: BookingFormData;
   walletBalance: number;
   locations: Location[];
-  vehicleTypes: VehicleType[];
+  vehicleTypes: VehicleTypeResult[];
+  zoneInfo?: ZoneInfo;
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
@@ -37,6 +34,7 @@ export function ReviewStep({
   walletBalance,
   locations,
   vehicleTypes,
+  zoneInfo,
   onBack,
   onSubmit,
   isSubmitting,

@@ -58,6 +58,12 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete('customerId')
     }
 
+    if (filters.bookingType && filters.bookingType !== 'all') {
+      params.set('bookingType', filters.bookingType)
+    } else {
+      params.delete('bookingType')
+    }
+
     if (filters.page) {
       params.set('page', filters.page.toString())
     } else {
