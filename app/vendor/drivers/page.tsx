@@ -4,7 +4,7 @@ import { Plus, Users, UserCheck, UserX, UserMinus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { VendorLayout } from '@/components/layout/vendor-layout'
-import { DriversTable } from './components/drivers-table'
+import { DriversTableWithBulk } from './components/drivers-table-with-bulk'
 import { getDrivers, getDriverStats } from './actions'
 import { requireVendor } from '@/lib/auth/user-actions'
 import { createClient } from '@/lib/supabase/server'
@@ -131,7 +131,7 @@ export default async function DriversPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DriversTable drivers={drivers} />
+          <DriversTableWithBulk drivers={drivers} />
         </CardContent>
       </Card>
     </div>

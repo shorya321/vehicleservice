@@ -40,6 +40,9 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || request.nextUrl.hostname
   const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname
 
+  // Track if business exists for this domain
+  let businessFound: { id: string; subdomain: string; custom_domain: string | null } | null = null
+
   // Check if this is a custom domain (not the main platform domain)
   if (hostname !== platformDomain && !hostname.endsWith(`.${platformDomain}`) && !hostname.startsWith(`${platformDomain}:`)) {
     try {
@@ -50,6 +53,13 @@ export async function middleware(request: NextRequest) {
 
       if (!error && businessContext && businessContext.length > 0) {
         const business = businessContext[0]
+
+        // Store business info for later subdomain validation
+        businessFound = {
+          id: business.id,
+          subdomain: business.subdomain,
+          custom_domain: business.custom_domain
+        }
 
         // Inject business branding context into response headers
         response.headers.set('x-business-id', business.id)
@@ -86,8 +96,24 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
     // Import helper functions
-    const { isAllowedOnCustomDomain, getBusinessRedirectPath } =
+    const { isAllowedOnCustomDomain, getBusinessRedirectPath, isDevelopmentEnvironment } =
       await import('@/lib/business/domain-routing')
+
+    // HYBRID SUBDOMAIN VALIDATION
+    // Check if business exists for this subdomain/custom domain
+    if (!businessFound) {
+      // Business doesn't exist at this domain
+
+      // In development (localhost), allow access for testing
+      if (isDevelopmentEnvironment(hostname)) {
+        console.log('Development mode: Allowing access to non-existent subdomain for testing')
+        // Continue to normal flow
+      } else {
+        // In production, show "Business Not Found" page
+        console.warn('Production: Business not found, redirecting to not-found page')
+        return NextResponse.redirect(new URL('/business-not-found', request.url))
+      }
+    }
 
     // Root path - redirect to appropriate business entry point
     if (pathname === '/') {
@@ -205,7 +231,7 @@ export async function middleware(request: NextRequest) {
     try {
       const { data: businessUser, error } = await supabase
         .from('business_users')
-        .select('id, is_active, business_accounts(status)')
+        .select('id, is_active, business_accounts(status, subdomain, custom_domain)')
         .eq('auth_user_id', user.id)
         .single()
 
@@ -222,6 +248,39 @@ export async function middleware(request: NextRequest) {
       // Check if business account is active
       if (businessUser.business_accounts?.status !== 'active') {
         return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+
+      // SMART REDIRECT: Check if user is accessing via correct subdomain
+      if (isCustomDomain && businessFound) {
+        const userBusinessSubdomain = businessUser.business_accounts?.subdomain
+        const userBusinessCustomDomain = businessUser.business_accounts?.custom_domain
+
+        // Check if current domain matches user's business
+        const isCorrectDomain =
+          (businessFound.custom_domain && businessFound.custom_domain === userBusinessCustomDomain) ||
+          (businessFound.subdomain === userBusinessSubdomain)
+
+        if (!isCorrectDomain) {
+          // User is accessing via wrong business subdomain/domain
+          // Redirect to their correct business subdomain
+          console.log('Redirecting user to correct business subdomain:', {
+            currentDomain: hostname,
+            correctSubdomain: userBusinessSubdomain,
+            correctCustomDomain: userBusinessCustomDomain
+          })
+
+          const { buildBusinessUrl } = await import('@/lib/business/domain-routing')
+          const protocol = request.nextUrl.protocol.replace(':', '') as 'http' | 'https'
+          const correctUrl = buildBusinessUrl(
+            userBusinessSubdomain,
+            userBusinessCustomDomain,
+            platformDomain,
+            protocol
+          )
+
+          // Redirect to the same path on the correct domain
+          return NextResponse.redirect(new URL(request.nextUrl.pathname, correctUrl))
+        }
       }
     } catch (error) {
       console.error('Middleware business user fetch error:', error)

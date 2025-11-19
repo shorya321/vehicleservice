@@ -43,6 +43,33 @@ Examples:
 - Authenticated users: `/` → `/business/dashboard`
 - Unauthenticated users: `/` → `/business/login`
 
+### Subdomain Validation (Hybrid Approach)
+
+**Non-Existent Subdomain Behavior**:
+
+**Development (localhost)**:
+- Any subdomain allowed for testing (e.g., `test.localhost:3001`)
+- No database validation required
+- Allows developers to test without creating database entries
+
+**Production**:
+- Only verified subdomains/custom domains allowed
+- Non-existent subdomain → Redirects to `/business-not-found` page
+- Clear error message with troubleshooting steps
+
+**Wrong Subdomain Behavior** (Smart Redirect):
+
+When a business user logs in via the wrong subdomain:
+1. System detects user belongs to different business
+2. Automatically redirects to correct business subdomain
+3. Preserves current path during redirect
+4. Seamless UX with no error shown
+
+**Example**:
+- User belongs to "Acme Hotel" (`acme.yourdomain.com`)
+- User logs in at `competitor.yourdomain.com`
+- After authentication: → Redirects to `acme.yourdomain.com/business/dashboard`
+
 ### Why This Matters
 
 1. **Security**: Prevents business users from accidentally accessing other portals or platform routes
@@ -61,35 +88,66 @@ Examples:
 - `isAllowedOnCustomDomain(pathname)` - Checks if a path is allowed on custom domains
 - `getBusinessRedirectPath(isAuthenticated)` - Returns appropriate redirect path based on auth state
 - `shouldRestrictRoute(hostname, platformDomain)` - Determines if route restrictions should apply
+- `isDevelopmentEnvironment(hostname)` - Checks if running on localhost
+- `buildBusinessUrl(subdomain, customDomain, platformDomain, protocol)` - Builds correct business URL
 
 **Usage**:
 ```typescript
-import { isAllowedOnCustomDomain } from '@/lib/business/domain-routing'
+import {
+  isAllowedOnCustomDomain,
+  buildBusinessUrl,
+  isDevelopmentEnvironment
+} from '@/lib/business/domain-routing'
 
 const allowed = isAllowedOnCustomDomain('/business/dashboard') // true
 const blocked = isAllowedOnCustomDomain('/admin') // false
+const isDev = isDevelopmentEnvironment('localhost:3001') // true
+const url = buildBusinessUrl('acme', null, 'localhost:3001', 'http')
+// Returns: 'http://acme.localhost:3001'
 ```
 
 #### 2. Middleware Implementation
-**File**: `middleware.ts` (lines 79-107)
+**File**: `middleware.ts`
 
 **Flow**:
-1. Detect custom domain (not main platform domain, not localhost)
-2. Check if path is root `/`
-   - If yes: redirect to `/business/dashboard` or `/business/login` based on auth
-3. Check if path is in allowed patterns
-   - If no: redirect to business portal
-4. If allowed: continue to business routes
+1. **Business Detection** (lines 39-87): Query database for business by custom domain
+   - If found: Set branding headers and store business info
+   - If not found: Log warning, continue
 
-**Code Location**:
+2. **Subdomain Validation** (lines 102-116): Hybrid approach
+   - If business not found:
+     - Development (localhost): Allow access for testing
+     - Production: Redirect to `/business-not-found`
+
+3. **Route Isolation** (lines 118-129): Restrict to business routes only
+   - Root path: Redirect to business login/dashboard
+   - Non-business routes: Redirect to business portal
+
+4. **Smart Redirect** (lines 253-284): After user authentication
+   - Check if user's business matches current subdomain
+   - If mismatch: Redirect to correct business subdomain
+   - Preserves current path during redirect
+
+**Key Code Sections**:
 ```typescript
-// middleware.ts, after custom domain detection (line 77)
-const isCustomDomain = hostname !== platformDomain &&
-                       !hostname.endsWith(`.${platformDomain}`) &&
-                       !hostname.includes('localhost')
+// Subdomain validation (lines 102-116)
+if (!businessFound) {
+  if (isDevelopmentEnvironment(hostname)) {
+    // Allow for testing
+  } else {
+    return NextResponse.redirect(new URL('/business-not-found', request.url))
+  }
+}
 
-if (isCustomDomain) {
-  // Route restriction logic
+// Smart redirect after authentication (lines 253-284)
+if (isCustomDomain && businessFound) {
+  const userBusinessSubdomain = businessUser.business_accounts?.subdomain
+  const isCorrectDomain = businessFound.subdomain === userBusinessSubdomain
+
+  if (!isCorrectDomain) {
+    const correctUrl = buildBusinessUrl(userBusinessSubdomain, ...)
+    return NextResponse.redirect(new URL(pathname, correctUrl))
+  }
 }
 ```
 
@@ -110,13 +168,32 @@ const platformDomain = new URL(
 ).hostname
 ```
 
+#### 3. Business Not Found Page
+**File**: `app/business-not-found/page.tsx`
+
+**Purpose**: User-friendly error page for non-existent subdomains/custom domains
+
+**Features**:
+- Clear error message explaining the issue
+- List of possible reasons (incorrect URL, pending verification, etc.)
+- Link to return to main platform
+- Responsive design with dark mode support
+- Professional UI matching platform design
+
+**When Shown**:
+- Production only (never in development/localhost)
+- When user accesses non-existent subdomain/custom domain
+- Before authentication (no user context needed)
+
 ### Branding Integration
 
 Custom domain detection works with the existing branding system:
 
-1. **Domain Detection** (lines 39-77): Queries business by custom domain, sets branding headers
-2. **Route Isolation** (lines 79-107): Restricts routes to business portal only
-3. **Result**: Complete white-labeled experience
+1. **Domain Detection** (lines 39-87): Queries business by custom domain, sets branding headers
+2. **Subdomain Validation** (lines 102-116): Validates business exists (prod only)
+3. **Route Isolation** (lines 118-129): Restricts routes to business portal only
+4. **Smart Redirect** (lines 253-284): Redirects users to correct subdomain
+5. **Result**: Complete white-labeled experience with proper isolation
 
 ## Testing
 

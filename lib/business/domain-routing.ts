@@ -88,3 +88,58 @@ export function shouldRestrictRoute(
 
   return true
 }
+
+/**
+ * Check if we're in development environment (localhost)
+ *
+ * @param hostname - Current request hostname
+ * @returns true if running on localhost
+ *
+ * @example
+ * isDevelopmentEnvironment('localhost:3001') // true
+ * isDevelopmentEnvironment('acme.localhost:3001') // true
+ * isDevelopmentEnvironment('production.com') // false
+ */
+export function isDevelopmentEnvironment(hostname: string): boolean {
+  return hostname.includes('localhost')
+}
+
+/**
+ * Build the correct business subdomain URL for a given business
+ *
+ * @param subdomain - Business subdomain (e.g., 'acme-hotel')
+ * @param customDomain - Optional custom domain (e.g., 'transfers.acmehotel.com')
+ * @param platformDomain - Platform domain from environment
+ * @param protocol - HTTP protocol (http or https)
+ * @returns Full URL to business subdomain or custom domain
+ *
+ * @example
+ * buildBusinessUrl('acme', null, 'localhost:3001', 'http')
+ * // 'http://acme.localhost:3001'
+ *
+ * buildBusinessUrl('acme', 'transfers.acme.com', 'yourdomain.com', 'https')
+ * // 'https://transfers.acme.com'
+ */
+export function buildBusinessUrl(
+  subdomain: string,
+  customDomain: string | null,
+  platformDomain: string,
+  protocol: 'http' | 'https' = 'https'
+): string {
+  // Use custom domain if available and verified
+  if (customDomain) {
+    return `${protocol}://${customDomain}`
+  }
+
+  // Build subdomain URL
+  // Handle localhost specially (subdomain.localhost:port)
+  if (platformDomain.includes('localhost')) {
+    const [host, port] = platformDomain.split(':')
+    return port
+      ? `${protocol}://${subdomain}.${host}:${port}`
+      : `${protocol}://${subdomain}.${host}`
+  }
+
+  // Production domain
+  return `${protocol}://${subdomain}.${platformDomain}`
+}

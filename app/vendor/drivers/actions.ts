@@ -270,18 +270,18 @@ export async function updateDriverStatus(driverId: string, status: string) {
 // Get driver statistics
 export async function getDriverStats() {
   const supabase = await createClient()
-  
+
   try {
     const vendorId = await getCurrentVendorId()
-    
+
     const { data, error } = await supabase
       .from('vendor_drivers')
       .select('employment_status, is_available')
       .eq('vendor_id', vendorId)
       .eq('is_active', true)
-    
+
     if (error) throw error
-    
+
     const stats = {
       total: data.length,
       active: data.filter(d => d.employment_status === 'active').length,
@@ -289,10 +289,90 @@ export async function getDriverStats() {
       onLeave: data.filter(d => d.employment_status === 'on_leave').length,
       inactive: data.filter(d => d.employment_status === 'inactive').length
     }
-    
+
     return { data: stats, error: null }
   } catch (error: any) {
     console.error('Error fetching driver stats:', error)
     return { data: null, error: error.message }
+  }
+}
+
+// Bulk delete drivers (soft delete)
+export async function bulkDeleteDrivers(driverIds: string[]) {
+  const supabase = await createClient()
+
+  try {
+    const vendorId = await getCurrentVendorId()
+
+    const { error } = await supabase
+      .from('vendor_drivers')
+      .update({
+        is_active: false,
+        employment_status: 'terminated',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', driverIds)
+      .eq('vendor_id', vendorId)
+
+    if (error) throw error
+
+    revalidatePath('/vendor/drivers')
+    return { success: true, error: null }
+  } catch (error: any) {
+    console.error('Error bulk deleting drivers:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Bulk update driver status
+export async function bulkUpdateDriverStatus(driverIds: string[], status: string) {
+  const supabase = await createClient()
+
+  try {
+    const vendorId = await getCurrentVendorId()
+
+    const { error } = await supabase
+      .from('vendor_drivers')
+      .update({
+        employment_status: status,
+        is_available: status === 'active',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', driverIds)
+      .eq('vendor_id', vendorId)
+
+    if (error) throw error
+
+    revalidatePath('/vendor/drivers')
+    return { success: true, error: null }
+  } catch (error: any) {
+    console.error('Error bulk updating driver status:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Bulk toggle driver availability
+export async function bulkToggleDriverAvailability(driverIds: string[], isAvailable: boolean) {
+  const supabase = await createClient()
+
+  try {
+    const vendorId = await getCurrentVendorId()
+
+    const { error } = await supabase
+      .from('vendor_drivers')
+      .update({
+        is_available: isAvailable,
+        updated_at: new Date().toISOString()
+      })
+      .in('id', driverIds)
+      .eq('vendor_id', vendorId)
+
+    if (error) throw error
+
+    revalidatePath('/vendor/drivers')
+    return { success: true, error: null }
+  } catch (error: any) {
+    console.error('Error bulk toggling driver availability:', error)
+    return { success: false, error: error.message }
   }
 }

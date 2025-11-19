@@ -66,7 +66,15 @@ export interface VendorBooking {
   } | null
 }
 
-export async function getVendorAssignedBookings() {
+export interface BookingFilters {
+  search?: string
+  status?: string
+  sortBy?: string
+  startDate?: string
+  endDate?: string
+}
+
+export async function getVendorAssignedBookings(filters?: BookingFilters) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -92,8 +100,8 @@ export async function getVendorAssignedBookings() {
     throw new Error('Vendor application not found')
   }
 
-  // Get all assignments for this vendor (without booking joins - we'll fetch separately)
-  const { data: assignments, error } = await adminClient
+  // Build query with filters
+  let query = adminClient
     .from('booking_assignments')
     .select(`
       id,
@@ -123,7 +131,25 @@ export async function getVendorAssignedBookings() {
       )
     `)
     .eq('vendor_id', vendorApp.id)
-    .order('assigned_at', { ascending: false })
+
+  // Apply status filter
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
+  }
+
+  // Apply sorting
+  const sortBy = filters?.sortBy || 'newest'
+  switch (sortBy) {
+    case 'oldest':
+      query = query.order('assigned_at', { ascending: true })
+      break
+    case 'newest':
+    default:
+      query = query.order('assigned_at', { ascending: false })
+      break
+  }
+
+  const { data: assignments, error } = await query
 
   if (error) {
     console.error('Error fetching vendor bookings:', error)
@@ -204,7 +230,47 @@ export async function getVendorAssignedBookings() {
   )
 
   // Filter out any null entries (bookings that couldn't be found)
-  return vendorBookings.filter(b => b !== null) as VendorBooking[]
+  let filteredBookings = vendorBookings.filter(b => b !== null) as VendorBooking[]
+
+  // Apply client-side filters (for fields in the booking table)
+  if (filters?.search) {
+    const searchLower = filters.search.toLowerCase()
+    filteredBookings = filteredBookings.filter(b =>
+      b.booking.booking_number.toLowerCase().includes(searchLower) ||
+      b.booking.customer_name?.toLowerCase().includes(searchLower) ||
+      b.booking.customer_email?.toLowerCase().includes(searchLower) ||
+      b.booking.customer_phone?.includes(filters.search)
+    )
+  }
+
+  // Apply date range filter (pickup_datetime)
+  if (filters?.startDate) {
+    const startDate = new Date(filters.startDate)
+    filteredBookings = filteredBookings.filter(b =>
+      new Date(b.booking.pickup_datetime) >= startDate
+    )
+  }
+
+  if (filters?.endDate) {
+    const endDate = new Date(filters.endDate)
+    endDate.setHours(23, 59, 59, 999) // End of day
+    filteredBookings = filteredBookings.filter(b =>
+      new Date(b.booking.pickup_datetime) <= endDate
+    )
+  }
+
+  // Apply pickup date sorting if specified
+  if (filters?.sortBy === 'pickup_asc') {
+    filteredBookings.sort((a, b) =>
+      new Date(a.booking.pickup_datetime).getTime() - new Date(b.booking.pickup_datetime).getTime()
+    )
+  } else if (filters?.sortBy === 'pickup_desc') {
+    filteredBookings.sort((a, b) =>
+      new Date(b.booking.pickup_datetime).getTime() - new Date(a.booking.pickup_datetime).getTime()
+    )
+  }
+
+  return filteredBookings
 }
 
 export async function getVendorDrivers() {

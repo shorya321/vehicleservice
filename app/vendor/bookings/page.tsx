@@ -4,6 +4,7 @@ import { requireVendor } from '@/lib/auth/user-actions'
 import { createClient } from '@/lib/supabase/server'
 import { getVendorAssignedBookings } from './actions'
 import { BookingsTable } from './components/bookings-table'
+import { BookingFilters } from './components/booking-filters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Car, CheckCircle, Clock, XCircle } from 'lucide-react'
@@ -15,9 +16,20 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-export default async function VendorBookingsPage() {
+interface VendorBookingsPageProps {
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    sortBy?: string
+    startDate?: string
+    endDate?: string
+  }>
+}
+
+export default async function VendorBookingsPage({ searchParams }: VendorBookingsPageProps) {
   const user = await requireVendor()
   const supabase = await createClient()
+  const params = await searchParams
 
   // Get vendor application for business name
   const { data: vendorApplication } = await supabase
@@ -26,7 +38,15 @@ export default async function VendorBookingsPage() {
     .eq('user_id', user.id)
     .single()
 
-  const bookings = await getVendorAssignedBookings()
+  const filters = {
+    search: params.search,
+    status: params.status,
+    sortBy: params.sortBy || 'newest',
+    startDate: params.startDate,
+    endDate: params.endDate,
+  }
+
+  const bookings = await getVendorAssignedBookings(filters)
   
   // Calculate stats
   const stats = {
@@ -111,6 +131,19 @@ export default async function VendorBookingsPage() {
           </Card>
         </div>
         
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filter Bookings</CardTitle>
+            <CardDescription>
+              Search and filter your assigned bookings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BookingFilters />
+          </CardContent>
+        </Card>
+
         {/* Bookings Table */}
         <Card>
           <CardHeader>
