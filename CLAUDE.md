@@ -157,6 +157,26 @@ Implement rate limiting for API routes
 Email verification system for user trust
 Two-factor authentication support
 
+### Multi-Tenant Architecture
+
+#### Business Custom Domain Route Isolation
+Business subdomains and custom domains are completely isolated from the main platform for proper tenant security and white-labeling:
+
+**Main Domain** (yourdomain.com):
+- All routes accessible (frontend, admin, vendor, customer, business)
+- No restrictions applied
+
+**Business Subdomain/Custom Domain** (acme.yourdomain.com or transfers.acmehotel.com):
+- ONLY `/business/*` routes accessible
+- Root `/` redirects to `/business/dashboard` (authenticated) or `/business/login` (unauthenticated)
+- All other routes (`/admin`, `/vendor`, `/customer`, frontend) redirected to business portal
+- Ensures complete tenant isolation and branded experience
+
+**Implementation:**
+- Helper utilities: `lib/business/domain-routing.ts`
+- Middleware logic: `middleware.ts` (lines 79-107)
+- Allowed patterns: `/business/*`, `/_next/*`, `/api/business/*`, `/favicon.ico`
+
 ### Testing & Debugging
 Use Puppeteer MCP for visual debugging
 Console.log debugging with Puppeteer
