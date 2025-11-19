@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
   const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname
 
   // Check if this is a custom domain (not the main platform domain)
-  if (hostname !== platformDomain && !hostname.endsWith(`.${platformDomain}`) && !hostname.includes('localhost')) {
+  if (hostname !== platformDomain && !hostname.endsWith(`.${platformDomain}`) && !hostname.startsWith(`${platformDomain}:`)) {
     try {
       // Query business by custom domain
       const { data: businessContext, error } = await supabase.rpc('get_business_by_custom_domain', {
@@ -80,7 +80,7 @@ export async function middleware(request: NextRequest) {
   // Business subdomains and custom domains should ONLY show business portal routes
   const isCustomDomain = hostname !== platformDomain &&
                          !hostname.endsWith(`.${platformDomain}`) &&
-                         !hostname.includes('localhost')
+                         !hostname.startsWith(`${platformDomain}:`)
 
   if (isCustomDomain) {
     const pathname = request.nextUrl.pathname
