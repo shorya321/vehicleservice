@@ -76,6 +76,36 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Custom domain route isolation for business multi-tenancy
+  // Business subdomains and custom domains should ONLY show business portal routes
+  const isCustomDomain = hostname !== platformDomain &&
+                         !hostname.endsWith(`.${platformDomain}`) &&
+                         !hostname.includes('localhost')
+
+  if (isCustomDomain) {
+    const pathname = request.nextUrl.pathname
+
+    // Import helper functions
+    const { isAllowedOnCustomDomain, getBusinessRedirectPath } =
+      await import('@/lib/business/domain-routing')
+
+    // Root path - redirect to appropriate business entry point
+    if (pathname === '/') {
+      const redirectPath = getBusinessRedirectPath(!!user)
+      return NextResponse.redirect(new URL(redirectPath, request.url))
+    }
+
+    // Check if current path is allowed on custom domains
+    if (!isAllowedOnCustomDomain(pathname)) {
+      // Redirect disallowed routes to business portal
+      const redirectPath = getBusinessRedirectPath(!!user)
+      return NextResponse.redirect(new URL(redirectPath, request.url))
+    }
+
+    // Path is allowed, continue to business portal routes
+    // (will be handled by business authentication middleware below)
+  }
+
   // Protected admin routes
   if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
     if (!user) {
