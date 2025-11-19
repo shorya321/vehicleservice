@@ -60,7 +60,7 @@ export default async function BrandingSettingsPage() {
   const businessAccount = businessUser.business_accounts as any;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold">White-Label Branding</h1>

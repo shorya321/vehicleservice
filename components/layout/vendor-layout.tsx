@@ -312,7 +312,7 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
         </header>
 
         {/* Page content */}
-        <main className="p-6">{children}</main>
+        <main className="w-full px-4 py-6 md:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   )

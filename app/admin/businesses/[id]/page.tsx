@@ -11,6 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { AdjustCreditsButton } from './components/adjust-credits-button';
 import { UpdateStatusButton } from './components/update-status-button';
+import { ApproveButton } from './components/approve-button';
+import { RejectButton } from './components/reject-button';
+import { AdminLayout } from '@/components/layout/admin-layout';
+import { AnimatedPage } from '@/components/layout/animated-page';
 
 export const metadata: Metadata = {
   title: 'Business Account Details | Admin Portal',
@@ -60,14 +64,30 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
     .limit(10);
 
   return (
-    <div className="max-w-6xl space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+    <AdminLayout>
+      <AnimatedPage>
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{businessAccount.business_name}</h1>
           <p className="text-muted-foreground">{businessAccount.business_email}</p>
         </div>
         <div className="flex gap-2">
+          {/* Show Approve/Reject buttons for pending businesses */}
+          {businessAccount.status === 'pending' && (
+            <>
+              <ApproveButton
+                businessId={businessAccount.id}
+                businessName={businessAccount.business_name}
+              />
+              <RejectButton
+                businessId={businessAccount.id}
+                businessName={businessAccount.business_name}
+              />
+            </>
+          )}
+          {/* General status update button (for manual overrides) */}
           <UpdateStatusButton
             businessId={businessAccount.id}
             currentStatus={businessAccount.status}
@@ -89,7 +109,15 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
           <CardContent className="space-y-3">
             <div>
               <p className="text-sm text-muted-foreground">Status</p>
-              <Badge variant={businessAccount.status === 'active' ? 'success' : 'destructive'}>
+              <Badge
+                variant={
+                  businessAccount.status === 'active'
+                    ? 'success'
+                    : businessAccount.status === 'pending'
+                    ? 'default'
+                    : 'destructive'
+                }
+              >
                 {businessAccount.status}
               </Badge>
             </div>
@@ -215,6 +243,8 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
           )}
         </CardContent>
       </Card>
-    </div>
+        </div>
+      </AnimatedPage>
+    </AdminLayout>
   );
 }

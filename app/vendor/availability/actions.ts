@@ -65,7 +65,7 @@ export async function getVendorCalendarEvents(
     // Use first schedule for timing (all schedules for same booking have same times)
     const firstSchedule = groupSchedules[0]
 
-    // Get booking details
+    // Get booking details (both customer and business bookings)
     const { data: assignment } = await adminClient
       .from('booking_assignments')
       .select(`
@@ -76,6 +76,16 @@ export async function getVendorCalendarEvents(
           dropoff_address,
           pickup_datetime,
           customer:profiles(full_name, phone)
+        ),
+        business_booking:business_bookings(
+          booking_number,
+          pickup_address,
+          dropoff_address,
+          pickup_datetime,
+          customer_name,
+          customer_phone,
+          from_location:locations!from_location_id(name),
+          to_location:locations!to_location_id(name)
         ),
         vehicle:vehicles(
           id,
@@ -95,6 +105,22 @@ export async function getVendorCalendarEvents(
 
     if (!assignment) continue
 
+    // Normalize booking data - use business_booking if booking is null
+    const bookingData = assignment.booking || (assignment.business_booking ? {
+      booking_number: assignment.business_booking.booking_number,
+      pickup_address: assignment.business_booking.from_location?.name
+        ? `${assignment.business_booking.from_location.name} - ${assignment.business_booking.pickup_address}`
+        : assignment.business_booking.pickup_address,
+      dropoff_address: assignment.business_booking.to_location?.name
+        ? `${assignment.business_booking.to_location.name} - ${assignment.business_booking.dropoff_address}`
+        : assignment.business_booking.dropoff_address,
+      pickup_datetime: assignment.business_booking.pickup_datetime,
+      customer: {
+        full_name: assignment.business_booking.customer_name,
+        phone: assignment.business_booking.customer_phone
+      }
+    } : null)
+
     // Build title with vehicle and driver info
     const vehicleInfo = assignment.vehicle
       ? `${assignment.vehicle.make} ${assignment.vehicle.model} (${assignment.vehicle.registration_number})`
@@ -105,7 +131,7 @@ export async function getVendorCalendarEvents(
 
     events.push({
       id: assignmentId, // Use assignment ID as unique event ID
-      title: `Booking #${assignment?.booking?.booking_number || 'N/A'}`,
+      title: `Booking #${bookingData?.booking_number || 'N/A'}`,
       start: new Date(firstSchedule.start_datetime),
       end: new Date(firstSchedule.end_datetime),
       resourceId: assignmentId, // Use assignment ID
@@ -113,11 +139,11 @@ export async function getVendorCalendarEvents(
       type: 'booking',
       color: '#3B82F6', // Blue for bookings
       details: {
-        bookingNumber: assignment?.booking?.booking_number,
-        customer: assignment?.booking?.customer?.full_name,
-        phone: assignment?.booking?.customer?.phone,
-        pickup: assignment?.booking?.pickup_address,
-        dropoff: assignment?.booking?.dropoff_address,
+        bookingNumber: bookingData?.booking_number,
+        customer: bookingData?.customer?.full_name,
+        phone: bookingData?.customer?.phone,
+        pickup: bookingData?.pickup_address,
+        dropoff: bookingData?.dropoff_address,
         status: firstSchedule.status,
         // Include both vehicle and driver details
         vehicle: assignment.vehicle ? {

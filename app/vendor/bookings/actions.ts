@@ -36,6 +36,9 @@ export interface VendorBooking {
       phone: string | null
       is_primary: boolean
     }>
+    customer_name?: string
+    customer_email?: string | null
+    customer_phone?: string | null
     vehicle_type: {
       id: string
       name: string
@@ -181,6 +184,9 @@ export async function getVendorAssignedBookings() {
           payment_status: 'pending', // Business bookings don't have payment_status
           customer_notes: booking.customerNotes,
           booking_passengers: bookingPassengers,
+          customer_name: booking.customerName,
+          customer_email: booking.customerEmail,
+          customer_phone: booking.customerPhone,
           vehicle_type: booking.vehicleTypes ? {
             id: booking.vehicleTypeId,
             name: booking.vehicleTypes.name,

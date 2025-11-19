@@ -54,7 +54,7 @@ export default async function CustomDomainPage() {
   const businessAccount = businessUser.business_accounts;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold">Custom Domain</h1>

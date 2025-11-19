@@ -161,7 +161,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected business routes
-  const publicBusinessPaths = ['/business/login', '/business/signup']
+  const publicBusinessPaths = ['/business/login', '/business/signup', '/business/signup/success']
   const isPublicBusinessPath = publicBusinessPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )

@@ -36,7 +36,7 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6 max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Edit Route</CardTitle>

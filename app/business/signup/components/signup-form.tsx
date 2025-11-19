@@ -22,12 +22,20 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   businessRegistrationSchema,
   type BusinessRegistrationInput,
 } from '@/lib/business/validators';
 import { generateSubdomain } from '@/lib/business/domain-utils';
+import { countries } from '@/lib/constants/countries';
 
 export function SignupForm() {
   const router = useRouter();
@@ -76,12 +84,12 @@ export function SignupForm() {
         throw new Error(result.error || 'Registration failed');
       }
 
-      toast.success('Success!', {
-        description: 'Your business account has been created.',
+      toast.success('Registration Successful!', {
+        description: 'Your account is pending admin approval. Check your email for updates.',
       });
 
-      // Redirect to business portal
-      router.push('/business/dashboard');
+      // Redirect to success page (pending approval)
+      router.push('/business/signup/success');
     } catch (error) {
       toast.error('Registration failed', {
         description: error instanceof Error ? error.message : 'An error occurred',
@@ -203,10 +211,21 @@ export function SignupForm() {
               name="country_code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="US" maxLength={2} {...field} />
-                  </FormControl>
+                  <FormLabel>Country</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a country" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-[300px]">
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

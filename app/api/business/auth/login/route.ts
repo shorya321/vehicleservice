@@ -81,13 +81,37 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     return apiError('Your account has been deactivated', 403);
   }
 
-  // Check if business account is active
-  if (businessUser.business_accounts.status !== 'active') {
+  // Check business account status and provide specific error messages
+  const accountStatus = businessUser.business_accounts.status;
+
+  if (accountStatus !== 'active') {
     await supabase.auth.signOut();
-    return apiError(
-      `Your business account is ${businessUser.business_accounts.status}. Please contact support.`,
-      403
-    );
+
+    const statusMessages: Record<string, { message: string; code: number }> = {
+      pending: {
+        message: 'Your business account is pending approval. Our admin team will review your application shortly. You will receive an email once your account is approved.',
+        code: 403,
+      },
+      rejected: {
+        message: 'Your business account application was not approved. Please contact support for more information.',
+        code: 403,
+      },
+      suspended: {
+        message: 'Your business account has been suspended. Please contact support to resolve this issue.',
+        code: 403,
+      },
+      inactive: {
+        message: 'Your business account is inactive. Please contact support to reactivate your account.',
+        code: 403,
+      },
+    };
+
+    const statusInfo = statusMessages[accountStatus] || {
+      message: `Your business account status is ${accountStatus}. Please contact support.`,
+      code: 403,
+    };
+
+    return apiError(statusInfo.message, statusInfo.code);
   }
 
   return apiSuccess({

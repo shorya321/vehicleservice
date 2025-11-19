@@ -143,8 +143,23 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             </>
                           )
                         })()
+                      ) : assignment.booking?.customer_name ? (
+                        <>
+                          <div className="font-medium">
+                            {assignment.booking.customer_name}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {assignment.booking.customer_email || 'No email'}
+                          </div>
+                          {assignment.booking.customer_phone && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              {assignment.booking.customer_phone}
+                            </div>
+                          )}
+                        </>
                       ) : (
-                        <div className="text-muted-foreground">No passenger info</div>
+                        <div className="text-muted-foreground">No customer info</div>
                       )}
                     </div>
                   </TableCell>

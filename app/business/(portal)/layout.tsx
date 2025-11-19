@@ -77,7 +77,7 @@ export default async function BusinessPortalLayout({
         />
 
         {/* Page Content */}
-        <main className="mt-16 p-6">{children}</main>
+        <main className="mt-16 p-6 w-full">{children}</main>
       </div>
     </div>
   );

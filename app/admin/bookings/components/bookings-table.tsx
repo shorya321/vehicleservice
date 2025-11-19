@@ -65,6 +65,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set())
   const [statusUpdateId, setStatusUpdateId] = useState<string | null>(null)
   const [newStatus, setNewStatus] = useState<'confirmed' | 'completed' | 'cancelled' | null>(null)
+  const [statusUpdateBookingType, setStatusUpdateBookingType] = useState<'customer' | 'business' | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [assignModalBookingId, setAssignModalBookingId] = useState<string | null>(null)
 
@@ -168,8 +169,13 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       if (newStatus === 'cancelled') {
         cancellationReason = 'Cancelled by admin'
       }
-      
-      await updateBookingStatus(statusUpdateId, newStatus, cancellationReason)
+
+      await updateBookingStatus(
+        statusUpdateId,
+        newStatus,
+        statusUpdateBookingType || 'customer',
+        cancellationReason
+      )
       toast.success(`Booking status updated to ${newStatus}`)
       router.refresh()
     } catch (error) {
@@ -178,6 +184,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       setIsUpdating(false)
       setStatusUpdateId(null)
       setNewStatus(null)
+      setStatusUpdateBookingType(null)
     }
   }
 
@@ -252,13 +259,15 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 </TableRow>
               ) : (
                 bookings.map((booking) => (
-                  <TableRow 
+                  <TableRow
                     key={booking.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={(e) => {
-                      if (!(e.target as HTMLElement).closest('.no-row-click')) {
-                        router.push(`/admin/bookings/${booking.id}`)
+                      // Prevent row click if dialog is open or clicking on interactive elements
+                      if (!(e.target as HTMLElement).closest('.no-row-click') || statusUpdateId) {
+                        return
                       }
+                      router.push(`/admin/bookings/${booking.id}`)
                     }}
                   >
                     <TableCell className="no-row-click">
@@ -418,6 +427,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                               onClick={() => {
                                 setStatusUpdateId(booking.id)
                                 setNewStatus('confirmed')
+                                setStatusUpdateBookingType(booking.bookingType || 'customer')
                               }}
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
@@ -430,6 +440,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                               onClick={() => {
                                 setStatusUpdateId(booking.id)
                                 setNewStatus('completed')
+                                setStatusUpdateBookingType(booking.bookingType || 'customer')
                               }}
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
@@ -442,6 +453,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                               onClick={() => {
                                 setStatusUpdateId(booking.id)
                                 setNewStatus('cancelled')
+                                setStatusUpdateBookingType(booking.bookingType || 'customer')
                               }}
                               className="text-destructive"
                             >

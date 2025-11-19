@@ -36,7 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <main role="main" aria-label="Main content" className="flex-1 overflow-y-auto bg-luxury-black">
-          <div className="container mx-auto px-4 py-6 md:px-6 lg:px-8">
+          <div className="w-full px-4 py-6 md:px-6 lg:px-8">
             {children}
           </div>
         </main>

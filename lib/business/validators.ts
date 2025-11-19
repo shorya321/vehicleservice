@@ -145,7 +145,7 @@ export type TransactionFilterInput = z.infer<typeof transactionFilterSchema>;
  * Business Status Update Schema (Admin)
  */
 export const businessStatusSchema = z.object({
-  status: z.enum(['active', 'suspended', 'inactive']),
+  status: z.enum(['pending', 'active', 'suspended', 'inactive', 'rejected']),
 });
 
 export type BusinessStatusInput = z.infer<typeof businessStatusSchema>;

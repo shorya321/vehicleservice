@@ -21,7 +21,7 @@ export default async function NewVehiclePage() {
 
   return (
     <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Add New Vehicle</h1>
           <p className="text-muted-foreground">

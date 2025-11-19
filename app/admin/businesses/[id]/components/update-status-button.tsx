@@ -93,12 +93,17 @@ export function UpdateStatusButton({ businessId, currentStatus }: UpdateStatusBu
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="suspended">Suspended</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
             <div className="text-xs text-muted-foreground space-y-1 mt-2">
+              <p>
+                <strong>Pending:</strong> Awaiting admin approval (cannot login)
+              </p>
               <p>
                 <strong>Active:</strong> Full access to all features
               </p>
@@ -107,6 +112,9 @@ export function UpdateStatusButton({ businessId, currentStatus }: UpdateStatusBu
               </p>
               <p>
                 <strong>Inactive:</strong> Account temporarily disabled
+              </p>
+              <p>
+                <strong>Rejected:</strong> Application denied (cannot login)
               </p>
             </div>
           </div>

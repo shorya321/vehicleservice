@@ -23,7 +23,7 @@ export default async function NewRoutePage() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6 max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Add New Route</CardTitle>

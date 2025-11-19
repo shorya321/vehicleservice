@@ -101,7 +101,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         country_code: data.country_code || null,
         subdomain,
         wallet_balance: 0.0,
-        status: 'active',
+        status: 'pending', // Business accounts start as pending, awaiting admin approval
       })
       .select()
       .single();
@@ -128,18 +128,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       return apiError('Failed to link user to business account', 500);
     }
 
-    // Success - try to sign in the user automatically
-    try {
-      const supabase = await createSupabaseClient();
-      await supabase.auth.signInWithPassword({
-        email: data.business_email,
-        password: data.password,
-      });
-    } catch (signInError) {
-      // Sign-in failed, but account creation was successful
-      // User can sign in manually
-      console.error('Auto sign-in failed (account created successfully):', signInError);
-    }
+    // NOTE: Auto sign-in removed - pending accounts cannot login until approved by admin
+    // Users will see "pending approval" message when they try to login
 
     return apiSuccess(
       {

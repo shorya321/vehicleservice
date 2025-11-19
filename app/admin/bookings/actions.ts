@@ -360,6 +360,7 @@ export async function getBookingDetails(bookingId: string) {
 export async function updateBookingStatus(
   bookingId: string,
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled',
+  bookingType: 'customer' | 'business',
   cancellationReason?: string
 ) {
   const adminClient = createAdminClient()
@@ -376,8 +377,10 @@ export async function updateBookingStatus(
     }
   }
 
+  // Select correct table based on booking type
+  const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
   const { error } = await adminClient
-    .from('bookings')
+    .from(tableName)
     .update(updateData)
     .eq('id', bookingId)
 
@@ -388,10 +391,12 @@ export async function updateBookingStatus(
 
   // Free vehicle and driver resources when booking is completed or cancelled
   if (status === 'completed' || status === 'cancelled') {
+    // Use correct field based on booking type
+    const fieldName = bookingType === 'customer' ? 'booking_id' : 'business_booking_id'
     const { data: assignment } = await adminClient
       .from('booking_assignments')
       .select('id')
-      .eq('booking_id', bookingId)
+      .eq(fieldName, bookingId)
       .single()
 
     if (assignment) {
