@@ -250,38 +250,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/unauthorized', request.url))
       }
 
-      // SMART REDIRECT: Check if user is accessing via correct subdomain
-      if (isCustomDomain && businessFound) {
-        const userBusinessSubdomain = businessUser.business_accounts?.subdomain
-        const userBusinessCustomDomain = businessUser.business_accounts?.custom_domain
-
-        // Check if current domain matches user's business
-        const isCorrectDomain =
-          (businessFound.custom_domain && businessFound.custom_domain === userBusinessCustomDomain) ||
-          (businessFound.subdomain === userBusinessSubdomain)
-
-        if (!isCorrectDomain) {
-          // User is accessing via wrong business subdomain/domain
-          // Redirect to their correct business subdomain
-          console.log('Redirecting user to correct business subdomain:', {
-            currentDomain: hostname,
-            correctSubdomain: userBusinessSubdomain,
-            correctCustomDomain: userBusinessCustomDomain
-          })
-
-          const { buildBusinessUrl } = await import('@/lib/business/domain-routing')
-          const protocol = request.nextUrl.protocol.replace(':', '') as 'http' | 'https'
-          const correctUrl = buildBusinessUrl(
-            userBusinessSubdomain,
-            userBusinessCustomDomain,
-            platformDomain,
-            protocol
-          )
-
-          // Redirect to the same path on the correct domain
-          return NextResponse.redirect(new URL(request.nextUrl.pathname, correctUrl))
-        }
-      }
+      // Domain ownership validation is now handled in login API
+      // No need for SMART REDIRECT - wrong business users cannot log in
     } catch (error) {
       console.error('Middleware business user fetch error:', error)
       return NextResponse.redirect(new URL('/unauthorized', request.url))
