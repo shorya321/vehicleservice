@@ -118,8 +118,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const hostname = request.headers.get('host') || '';
   const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname;
 
+  // Check if main platform (with or without port number)
+  const isMainPlatform = hostname === platformDomain ||
+                         hostname.startsWith(`${platformDomain}:`);
+
   // Skip validation for main platform domain (open access for all businesses)
-  if (hostname === platformDomain) {
+  if (isMainPlatform) {
     console.log('Login via main platform - no domain validation required');
   } else {
     // Check database FIRST: Is this a registered custom domain?
