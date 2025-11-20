@@ -118,78 +118,61 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const hostname = request.headers.get('host') || '';
   const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname;
 
-  // Determine domain type
-  const isCustomDomain = hostname !== platformDomain &&
-                         !hostname.endsWith(`.${platformDomain}`) &&
-                         !hostname.startsWith(`${platformDomain}:`);
-
-  const isSubdomain = !isCustomDomain &&
-                      hostname !== platformDomain &&
-                      hostname.endsWith(`.${platformDomain}`);
-
-  // Validate custom domain ownership
-  if (isCustomDomain) {
-    console.log('Validating custom domain ownership:', { hostname, businessId: businessUser.business_account_id });
-
+  // Skip validation for main platform domain (open access for all businesses)
+  if (hostname === platformDomain) {
+    console.log('Login via main platform - no domain validation required');
+  } else {
+    // Check database FIRST: Is this a registered custom domain?
+    // Database is source of truth, not string pattern matching
     const { data: domainOwner, error: domainError } = await supabase
       .rpc('get_business_by_custom_domain', { p_domain: hostname });
 
-    if (domainError) {
-      console.error('Error checking domain ownership:', domainError);
-      await supabase.auth.signOut();
-      return apiError('Unable to verify domain ownership', 500);
-    }
+    if (!domainError && domainOwner && domainOwner.length > 0) {
+      // This IS a registered custom domain - validate ownership
+      console.log('Custom domain detected:', { hostname, businessId: businessUser.business_account_id });
 
-    if (!domainOwner || domainOwner.length === 0) {
-      console.warn('Custom domain not found in database:', hostname);
-      await supabase.auth.signOut();
-      return apiError('This custom domain is not registered', 403);
-    }
+      const ownerBusinessId = domainOwner[0].id;
 
-    const ownerBusinessId = domainOwner[0].id;
+      if (businessUser.business_account_id !== ownerBusinessId) {
+        console.warn('Custom domain ownership mismatch:', {
+          hostname,
+          ownerBusinessId,
+          userBusinessId: businessUser.business_account_id,
+        });
+        await supabase.auth.signOut();
+        return apiError('This domain belongs to another business. Please use your own business portal to log in.', 403);
+      }
 
-    if (businessUser.business_account_id !== ownerBusinessId) {
-      console.warn('Domain ownership mismatch:', {
+      console.log('Custom domain ownership verified:', hostname);
+    } else if (hostname.endsWith(`.${platformDomain}`)) {
+      // Not a custom domain - check if it's a subdomain pattern
+      const subdomain = hostname.split('.')[0];
+      const userBusinessSubdomain = businessUser.business_accounts.subdomain;
+
+      console.log('Subdomain detected:', {
         hostname,
-        ownerBusinessId,
-        userBusinessId: businessUser.business_account_id,
-      });
-      await supabase.auth.signOut();
-      return apiError('This domain belongs to another business. Please use your own business portal to log in.', 403);
-    }
-
-    console.log('Custom domain ownership verified:', hostname);
-  }
-
-  // Validate subdomain ownership
-  if (isSubdomain) {
-    // Extract subdomain (first part before first dot)
-    const subdomain = hostname.split('.')[0];
-    const userBusinessSubdomain = businessUser.business_accounts.subdomain;
-
-    console.log('Validating subdomain ownership:', {
-      hostname,
-      subdomain,
-      userBusinessSubdomain,
-      businessId: businessUser.business_account_id
-    });
-
-    if (subdomain !== userBusinessSubdomain) {
-      console.warn('Subdomain ownership mismatch:', {
-        hostname,
-        requestedSubdomain: subdomain,
+        subdomain,
         userBusinessSubdomain,
+        businessId: businessUser.business_account_id
       });
+
+      if (subdomain !== userBusinessSubdomain) {
+        console.warn('Subdomain ownership mismatch:', {
+          hostname,
+          requestedSubdomain: subdomain,
+          userBusinessSubdomain,
+        });
+        await supabase.auth.signOut();
+        return apiError('You cannot access this business subdomain. Please log in at your own business portal or the main platform.', 403);
+      }
+
+      console.log('Subdomain ownership verified:', subdomain);
+    } else {
+      // Unknown domain type - not custom, not subdomain, not main platform
+      console.warn('Unknown domain type:', hostname);
       await supabase.auth.signOut();
-      return apiError('You cannot access this business subdomain. Please log in at your own business portal or the main platform.', 403);
+      return apiError('Invalid domain for business login', 403);
     }
-
-    console.log('Subdomain ownership verified:', subdomain);
-  }
-
-  // Main platform: no validation needed (open access for all businesses)
-  if (!isCustomDomain && !isSubdomain) {
-    console.log('Login via main platform - no domain validation required');
   }
 
   return apiSuccess({
