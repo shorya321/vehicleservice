@@ -43,8 +43,9 @@ export async function middleware(request: NextRequest) {
   // Track if business exists for this domain
   let businessFound: { id: string; subdomain: string; custom_domain: string | null } | null = null
 
-  // Check if this is a custom domain (not the main platform domain)
-  if (hostname !== platformDomain && !hostname.endsWith(`.${platformDomain}`) && !hostname.startsWith(`${platformDomain}:`)) {
+  // Check database for custom domain (query ALL non-main-platform domains)
+  // Database is source of truth for custom domain detection
+  if (hostname !== platformDomain && !hostname.startsWith(`${platformDomain}:`)) {
     try {
       // Query business by custom domain
       const { data: businessContext, error } = await supabase.rpc('get_business_by_custom_domain', {
@@ -88,11 +89,17 @@ export async function middleware(request: NextRequest) {
 
   // Custom domain route isolation for business multi-tenancy
   // Business subdomains and custom domains should ONLY show business portal routes
-  const isCustomDomain = hostname !== platformDomain &&
-                         !hostname.endsWith(`.${platformDomain}`) &&
-                         !hostname.startsWith(`${platformDomain}:`)
+  // Apply route isolation if:
+  // 1. Database found a business for this domain (custom domain), OR
+  // 2. Domain follows subdomain pattern (business subdomain)
 
-  if (isCustomDomain) {
+  // For subdomain detection, strip port number first (e.g., nature.localhost:3001 → nature.localhost)
+  const hostnameWithoutPort = hostname.split(':')[0]
+  const isSubdomainPattern = hostnameWithoutPort !== platformDomain &&
+                             hostnameWithoutPort.endsWith(`.${platformDomain}`)
+  const shouldApplyRouteIsolation = businessFound !== null || isSubdomainPattern
+
+  if (shouldApplyRouteIsolation) {
     const pathname = request.nextUrl.pathname
 
     // Import helper functions
