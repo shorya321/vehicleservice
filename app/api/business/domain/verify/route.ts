@@ -96,8 +96,28 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         return apiError('Verification successful but failed to update status', 500);
       }
 
-      // TODO: Add domain to Vercel via API (if using Vercel)
-      // This would require VERCEL_TOKEN environment variable
+      // Add domain to Vercel for automatic deployment routing
+      const { addDomainToVercel, isVercelConfigured } = await import('@/lib/vercel/api');
+
+      if (isVercelConfigured()) {
+        console.log(`Adding domain ${customDomain} to Vercel...`);
+        const vercelResult = await addDomainToVercel(customDomain);
+
+        if (!vercelResult.success) {
+          console.error('Failed to add domain to Vercel:', vercelResult.error);
+          // Continue anyway - domain is verified in our DB
+          // Admin can manually add to Vercel if needed
+          return apiSuccess({
+            verified: true,
+            message: 'Domain verified successfully! Note: Failed to auto-configure Vercel. Contact support.',
+            vercel_error: vercelResult.error,
+          });
+        }
+
+        console.log(`Domain ${customDomain} successfully added to Vercel`);
+      } else {
+        console.warn('Vercel not configured. Domain verified but not added to Vercel deployment.');
+      }
 
       return apiSuccess({
         verified: true,

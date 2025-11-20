@@ -108,6 +108,39 @@ export const DELETE = requireBusinessAuth(async (request: NextRequest, user) => 
   );
 
   try {
+    // First, get the current domain to remove from Vercel
+    const { data: businessAccount, error: fetchError } = await supabaseAdmin
+      .from('business_accounts')
+      .select('custom_domain')
+      .eq('id', user.businessAccountId)
+      .single();
+
+    if (fetchError || !businessAccount) {
+      console.error('Failed to fetch business account:', fetchError);
+      return apiError('Business account not found', 404);
+    }
+
+    const domainToRemove = businessAccount.custom_domain;
+
+    // Remove from Vercel before database cleanup
+    if (domainToRemove) {
+      const { removeDomainFromVercel, isVercelConfigured } = await import('@/lib/vercel/api');
+
+      if (isVercelConfigured()) {
+        console.log(`Removing domain ${domainToRemove} from Vercel...`);
+        const vercelResult = await removeDomainFromVercel(domainToRemove);
+
+        if (!vercelResult.success) {
+          console.error('Failed to remove domain from Vercel:', vercelResult.error);
+          // Continue with database cleanup even if Vercel removal fails
+          // Admin can manually remove from Vercel if needed
+        } else {
+          console.log(`Domain ${domainToRemove} successfully removed from Vercel`);
+        }
+      }
+    }
+
+    // Now remove from database
     const { error } = await supabaseAdmin
       .from('business_accounts')
       .update({
