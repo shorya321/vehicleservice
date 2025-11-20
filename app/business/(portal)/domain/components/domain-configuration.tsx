@@ -112,6 +112,44 @@ export function DomainConfiguration({
     }
   }
 
+  async function handleRemove() {
+    if (!currentDomain) return;
+
+    // Confirm before deletion
+    const confirmed = confirm(
+      `Are you sure you want to remove ${currentDomain}?\n\n` +
+      'This will remove the domain from Vercel and your custom domain will no longer work.'
+    );
+
+    if (!confirmed) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/business/domain', {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to remove domain');
+      }
+
+      toast.success('Domain removed', {
+        description: 'Your custom domain has been removed successfully.',
+      });
+
+      router.refresh();
+    } catch (error) {
+      toast.error('Error', {
+        description: error instanceof Error ? error.message : 'Failed to remove domain',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -196,6 +234,35 @@ export function DomainConfiguration({
             <p className="text-sm text-green-700 dark:text-green-300 mt-1">
               Your booking portal is now accessible at {currentDomain}
             </p>
+          </div>
+        )}
+
+        {/* Remove Domain Button */}
+        {currentDomain && (
+          <div className="pt-4 border-t">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Remove Custom Domain</p>
+                <p className="text-sm text-muted-foreground">
+                  This will remove your custom domain and revert to subdomain access.
+                </p>
+              </div>
+              <Button
+                onClick={handleRemove}
+                disabled={isLoading || isVerifying}
+                variant="destructive"
+                size="sm"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Removing...
+                  </>
+                ) : (
+                  'Remove Domain'
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
