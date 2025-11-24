@@ -224,7 +224,13 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected business routes
-  const publicBusinessPaths = ['/business/login', '/business/signup', '/business/signup/success']
+  const publicBusinessPaths = [
+    '/business/login',
+    '/business/signup',
+    '/business/signup/success',
+    '/business/forgot-password',
+    '/business/reset-password'
+  ]
   const isPublicBusinessPath = publicBusinessPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )

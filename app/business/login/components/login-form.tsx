@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -105,6 +106,16 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+
+        {/* Forgot Password Link */}
+        <div className="text-right">
+          <Link
+            href="/business/forgot-password"
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            Forgot your password?
+          </Link>
+        </div>
 
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? (
