@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,14 +13,13 @@ import Link from "next/link"
  *
  * Allows business users to request a password reset email.
  * Works on main domain, subdomains, and custom domains.
- * Uses window.location.origin to preserve domain context.
+ * API handles domain context and security validation.
  */
 export default function BusinessForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,14 +28,17 @@ export default function BusinessForgotPasswordPage() {
     setLoading(true)
 
     try {
-      // Use window.location.origin to preserve domain context
-      // Works on main domain, subdomains, and custom domains
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/business/reset-password`,
+      // Call API endpoint - domain context handled server-side
+      const response = await fetch('/api/business/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       })
 
-      if (error) {
-        setError(error.message)
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'Failed to send reset link')
       } else {
         setMessage("Check your email for the password reset link!")
       }

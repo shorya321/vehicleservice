@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,7 +12,7 @@ import { Lock, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
  * Business Reset Password Page
  *
  * Allows business users to set a new password after requesting a reset.
- * Validates session from reset link and updates password.
+ * Validates token from URL and updates password via API.
  * Works on main domain, subdomains, and custom domains.
  */
 export default function BusinessResetPasswordPage() {
@@ -24,18 +23,15 @@ export default function BusinessResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
 
   useEffect(() => {
-    // Check if we have a valid session from the reset link
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.push('/business/forgot-password')
-      }
+    // Check if we have a valid token from the reset link
+    if (!token) {
+      router.push('/business/forgot-password')
     }
-    checkSession()
-  }, [supabase, router])
+  }, [token, router])
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,15 +48,25 @@ export default function BusinessResetPasswordPage() {
       return
     }
 
+    if (!token) {
+      setError("Invalid reset token")
+      return
+    }
+
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
+      // Call API endpoint with token and new password
+      const response = await fetch('/api/business/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
       })
 
-      if (error) {
-        setError(error.message)
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'Failed to update password')
       } else {
         // Successfully updated password, redirect to business login
         router.push('/business/login?message=Password updated successfully')
