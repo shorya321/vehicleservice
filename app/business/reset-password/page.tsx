@@ -2,11 +2,72 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { motion, AnimatePresence } from "framer-motion"
+import { LuxuryButton } from '@/components/business/ui/luxury-button'
+import { LuxuryInput, LuxuryLabel } from '@/components/business/ui/luxury-input'
+import { PasswordStrength } from '@/components/business/ui/password-strength'
+import { RequirementsChecklist } from '@/components/business/ui/requirements-checklist'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Lock, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
+import '@/app/business/globals.css'
+import { useReducedMotion } from '@/lib/business/animation/hooks'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  },
+}
+
+const iconBadgeVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20,
+    },
+  },
+}
+
+const alertVariants = {
+  hidden: { opacity: 0, y: -10, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    transition: {
+      duration: 0.2,
+    },
+  },
+}
 
 /**
  * Business Reset Password Page
@@ -25,6 +86,9 @@ export default function BusinessResetPasswordPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const prefersReducedMotion = useReducedMotion()
+
+  const MotionWrapper = prefersReducedMotion ? 'div' : motion.div
 
   useEffect(() => {
     // Check if we have a valid token from the reset link
@@ -80,102 +144,126 @@ export default function BusinessResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 business-mesh-bg">
+      <MotionWrapper
+        {...(!prefersReducedMotion && {
+          initial: "hidden",
+          animate: "visible",
+          variants: containerVariants,
+        })}
+        className="w-full max-w-md"
+      >
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Lock className="h-8 w-8 text-primary" />
+          <MotionWrapper
+            {...(!prefersReducedMotion && { variants: iconBadgeVariants })}
+            className="flex justify-center mb-4"
+          >
+            <div className="p-3 rounded-full bg-[rgba(99,102,241,0.15)]">
+              <Lock className="h-8 w-8 text-[var(--business-primary-400)]" />
             </div>
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Reset Password</h1>
-          <p className="text-muted-foreground">Enter your new password below</p>
+          </MotionWrapper>
+          <MotionWrapper {...(!prefersReducedMotion && { variants: itemVariants })}>
+            <h1 className="business-text-headline mb-2">Reset Password</h1>
+            <p className="business-text-body text-[var(--business-text-secondary)]">Enter your new password below</p>
+          </MotionWrapper>
         </div>
 
         {/* Form Card */}
-        <div className="bg-card border rounded-lg p-8 shadow-sm">
+        <MotionWrapper
+          {...(!prefersReducedMotion && { variants: itemVariants })}
+          className="business-glass-elevated rounded-2xl p-8"
+        >
           <form onSubmit={handleUpdatePassword} className="space-y-6">
             {/* Error Message */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.div
+                  key="error"
+                  variants={alertVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                >
+                  <Alert className="border-[var(--business-error)]/50 bg-[var(--business-error)]/10">
+                    <AlertCircle className="h-4 w-4 text-[var(--business-error)]" />
+                    <AlertDescription className="text-[var(--business-error)]">{error}</AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* New Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter new password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+              <LuxuryLabel htmlFor="password">New Password</LuxuryLabel>
+              <LuxuryInput
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter new password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)] transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                }
+              />
             </div>
 
             {/* Confirm Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+              <LuxuryLabel htmlFor="confirmPassword">Confirm Password</LuxuryLabel>
+              <LuxuryInput
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={loading}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)] transition-colors"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                }
+              />
             </div>
 
-            {/* Password Requirements */}
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p className="font-medium">Password must:</p>
-              <ul className="list-disc list-inside space-y-0.5 ml-2">
-                <li>Be at least 8 characters long</li>
-                <li>Match in both fields</li>
-              </ul>
-            </div>
+            {/* Password Strength Indicator */}
+            <PasswordStrength password={password} />
+
+            {/* Interactive Password Requirements */}
+            <RequirementsChecklist
+              password={password}
+              confirmPassword={confirmPassword}
+            />
 
             {/* Submit Button */}
-            <Button
+            <LuxuryButton
               type="submit"
               className="w-full"
               disabled={loading}
+              size="lg"
             >
               {loading ? (
                 <>
@@ -185,10 +273,10 @@ export default function BusinessResetPasswordPage() {
               ) : (
                 "Update Password"
               )}
-            </Button>
+            </LuxuryButton>
           </form>
-        </div>
-      </div>
+        </MotionWrapper>
+      </MotionWrapper>
     </div>
   )
 }

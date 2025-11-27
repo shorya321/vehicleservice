@@ -3,15 +3,25 @@
 /**
  * Profile Settings Component
  * Update business profile information
+ *
+ * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * SCOPE: Business module ONLY
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, User } from 'lucide-react';
+import {
+  LuxuryCard,
+  LuxuryCardHeader,
+  LuxuryCardTitle,
+  LuxuryCardDescription,
+  LuxuryCardContent,
+  LuxuryButton,
+  LuxuryInput,
+} from '@/components/business/ui';
 import {
   Form,
   FormControl,
@@ -20,7 +30,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
   businessProfileUpdateSchema,
@@ -72,12 +81,19 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Business Profile</CardTitle>
-        <CardDescription>Update your business information</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <LuxuryCard>
+      <LuxuryCardHeader>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--business-primary-500)]/10">
+            <User className="h-5 w-5 text-[var(--business-primary-400)]" />
+          </div>
+          <div>
+            <LuxuryCardTitle>Business Profile</LuxuryCardTitle>
+            <LuxuryCardDescription>Update your business information</LuxuryCardDescription>
+          </div>
+        </div>
+      </LuxuryCardHeader>
+      <LuxuryCardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Business Information */}
@@ -87,9 +103,11 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
                 name="business_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Name</FormLabel>
+                    <FormLabel className="text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                      Business Name
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Acme Hotel & Resort" {...field} />
+                      <LuxuryInput placeholder="Acme Hotel & Resort" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,9 +119,11 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
                 name="business_phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Phone</FormLabel>
+                    <FormLabel className="text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                      Business Phone
+                    </FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="+1234567890" {...field} />
+                      <LuxuryInput type="tel" placeholder="+1234567890" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -115,9 +135,11 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
                 name="contact_person_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contact Person Name</FormLabel>
+                    <FormLabel className="text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                      Contact Person Name
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <LuxuryInput placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -126,17 +148,21 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
             </div>
 
             {/* Address Information */}
-            <div className="space-y-4 pt-4 border-t">
-              <h3 className="text-sm font-medium">Address (Optional)</h3>
+            <div className="space-y-4 pt-4 border-t border-[var(--business-border-subtle)]">
+              <h3 className="text-sm font-medium text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                Address (Optional)
+              </h3>
 
               <FormField
                 control={form.control}
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Street Address</FormLabel>
+                    <FormLabel className="text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                      Street Address
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main St" {...field} />
+                      <LuxuryInput placeholder="123 Main St" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,9 +175,11 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City</FormLabel>
+                      <FormLabel className="text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                        City
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="New York" {...field} />
+                        <LuxuryInput placeholder="New York" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -163,9 +191,11 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
                   name="country_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Country Code</FormLabel>
+                      <FormLabel className="text-[var(--business-text-secondary)] font-[family-name:var(--business-font-body)]">
+                        Country Code
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="US" maxLength={2} {...field} />
+                        <LuxuryInput placeholder="US" maxLength={2} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -175,7 +205,7 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" disabled={isLoading}>
+            <LuxuryButton type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -184,10 +214,10 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
               ) : (
                 'Save Changes'
               )}
-            </Button>
+            </LuxuryButton>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </LuxuryCardContent>
+    </LuxuryCard>
   );
 }

@@ -10,19 +10,18 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
+import { LuxuryButton } from '@/components/business/ui/luxury-button';
+import { LuxuryInput, LuxuryLabel } from '@/components/business/ui/luxury-input';
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
@@ -35,6 +34,7 @@ type LoginInput = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -84,11 +84,11 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Business Email</FormLabel>
+              <LuxuryLabel>Business Email</LuxuryLabel>
               <FormControl>
-                <Input type="email" placeholder="contact@acmehotel.com" {...field} />
+                <LuxuryInput type="email" placeholder="contact@acmehotel.com" {...field} />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-[var(--business-error)]" />
             </FormItem>
           )}
         />
@@ -98,11 +98,29 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <LuxuryLabel>Password</LuxuryLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <LuxuryInput
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  {...field}
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)] transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  }
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-[var(--business-error)]" />
             </FormItem>
           )}
         />
@@ -111,13 +129,13 @@ export function LoginForm() {
         <div className="text-right">
           <Link
             href="/business/forgot-password"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="text-sm text-[var(--business-text-muted)] hover:text-[var(--business-primary-400)] transition-colors"
           >
             Forgot your password?
           </Link>
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <LuxuryButton type="submit" disabled={isLoading} className="w-full" size="lg">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -126,7 +144,7 @@ export function LoginForm() {
           ) : (
             'Sign In'
           )}
-        </Button>
+        </LuxuryButton>
       </form>
     </Form>
   );

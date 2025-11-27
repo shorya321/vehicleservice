@@ -162,7 +162,7 @@ export function AutoRechargeHistory() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Succeeded</p>
-                <p className="text-2xl font-bold text-green-600">{statistics.succeeded}</p>
+                <p className="text-2xl font-bold text-[var(--business-success)]">{statistics.succeeded}</p>
               </div>
             </CardContent>
           </Card>
@@ -171,7 +171,7 @@ export function AutoRechargeHistory() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Failed</p>
-                <p className="text-2xl font-bold text-red-600">{statistics.failed}</p>
+                <p className="text-2xl font-bold text-[var(--business-error)]">{statistics.failed}</p>
               </div>
             </CardContent>
           </Card>
@@ -180,7 +180,7 @@ export function AutoRechargeHistory() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-2xl font-bold text-[var(--business-warning)]">
                   {statistics.pending + statistics.processing}
                 </p>
               </div>

@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
+import { sendBusinessRejectionEmail } from '@/lib/email/services/business-emails';
 import { z } from 'zod';
 
 /**
@@ -104,9 +105,31 @@ export const PUT = withErrorHandling(
         return apiError('Failed to reject business account', 500);
       }
 
-      // TODO: Send rejection notification email to business_email
-      // Include rejection_reason if provided
-      // This can be implemented later with Resend or other email service
+      // Get the owner's name from business_users
+      const { data: ownerUser } = await supabaseAdmin
+        .from('business_users')
+        .select('full_name')
+        .eq('business_account_id', businessId)
+        .eq('role', 'owner')
+        .single();
+
+      const ownerName = ownerUser?.full_name || 'Business Owner';
+
+      // Send rejection notification email
+      const emailResult = await sendBusinessRejectionEmail({
+        email: business.business_email,
+        businessName: business.business_name,
+        ownerName,
+        reason: rejectionReason,
+        supportEmail: 'support@vehicleservice.com',
+      });
+
+      if (!emailResult.success) {
+        console.error('Failed to send rejection email:', emailResult.error);
+        // Don't fail the rejection if email fails - log and continue
+      } else {
+        console.log('Rejection email sent successfully:', emailResult.emailId);
+      }
 
       return apiSuccess({
         message: 'Business account rejected successfully',

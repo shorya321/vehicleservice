@@ -55,13 +55,13 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
               {/* Icon */}
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  isCredit ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
+                  isCredit ? 'bg-[var(--business-success)]/10' : 'bg-[var(--business-error)]/10'
                 }`}
               >
                 {isCredit ? (
-                  <ArrowUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <ArrowUp className="h-5 w-5 text-[var(--business-success)]" />
                 ) : (
-                  <ArrowDown className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  <ArrowDown className="h-5 w-5 text-[var(--business-error)]" />
                 )}
               </div>
 

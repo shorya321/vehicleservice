@@ -8,8 +8,8 @@
 
 import { useState } from 'react';
 import { Plus, Loader2, CreditCard, ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { LuxuryCard, LuxuryCardContent, LuxuryCardHeader, LuxuryCardTitle } from '@/components/business/ui/luxury-card';
+import { LuxuryButton } from '@/components/business/ui/luxury-button';
 import {
   Dialog,
   DialogContent,
@@ -124,15 +124,15 @@ export function WalletBalance({
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle>Current Balance</CardTitle>
+      <LuxuryCard>
+        <LuxuryCardHeader className="flex flex-row items-center justify-between space-y-0">
+          <LuxuryCardTitle>Current Balance</LuxuryCardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <LuxuryButton>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Credits
-              </Button>
+              </LuxuryButton>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
@@ -185,7 +185,7 @@ export function WalletBalance({
                 </div>
 
                 {/* Action Button */}
-                <Button onClick={handleRecharge} disabled={isLoading} className="w-full">
+                <LuxuryButton onClick={handleRecharge} disabled={isLoading} className="w-full">
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -202,16 +202,16 @@ export function WalletBalance({
                       Proceed to Checkout
                     </>
                   )}
-                </Button>
+                </LuxuryButton>
               </div>
             </DialogContent>
           </Dialog>
-        </CardHeader>
-        <CardContent>
+        </LuxuryCardHeader>
+        <LuxuryCardContent>
           <div className="text-4xl font-bold">{formatCurrency(balance, currency)}</div>
           <p className="text-sm text-muted-foreground mt-2">Available for bookings</p>
-        </CardContent>
-      </Card>
+        </LuxuryCardContent>
+      </LuxuryCard>
 
       {/* Wallet Recharge Modal - Shows saved cards OR payment element */}
       {paymentElementEnabled && (

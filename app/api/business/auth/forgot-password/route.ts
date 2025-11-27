@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { sendPasswordResetEmail } from '@/lib/email/services/auth-emails';
 
 /**
  * Business Forgot Password API
@@ -165,18 +166,24 @@ export async function POST(request: NextRequest) {
     const protocol = hostname.includes('localhost') ? 'http' : 'https';
     const resetLink = `${protocol}://${hostname}/business/reset-password?token=${token}`;
 
-    // STEP 6: Send email (TODO: Implement email sending)
-    console.log('Password reset link:', resetLink);
-    console.log('Reset token for', email, ':', token);
+    // STEP 6: Send password reset email
+    console.log('[FORGOT-PW] Sending password reset email to:', email);
 
-    // TODO: Send email using Resend with business-branded template
-    // await sendBusinessPasswordResetEmail(email, resetLink, {
-    //   businessName: emailUser.business_accounts.business_name,
-    //   brandName: emailUser.business_accounts.brand_name,
-    // });
+    const emailResult = await sendPasswordResetEmail({
+      email,
+      name: 'Business User', // Generic name since we don't have user name in this context
+      resetUrl: resetLink,
+    });
+
+    if (!emailResult.success) {
+      console.error('[FORGOT-PW] Failed to send email:', emailResult.error);
+      // Still return success to user for security (don't reveal email sending status)
+    } else {
+      console.log('[FORGOT-PW] Email sent successfully, emailId:', emailResult.emailId);
+    }
 
     return NextResponse.json(
-      { message: 'Password reset email sent successfully.' },
+      { message: 'If this email is registered, you will receive a password reset link.' },
       { status: 200 }
     );
 

@@ -74,6 +74,62 @@ export default {
           lightGray: "#B0B0B0",
           pearl: "#F5F5F5",
         },
+        // Business Portal Premium Design System
+        business: {
+          // Primary (Indigo)
+          primary: {
+            50: "#EEF2FF",
+            100: "#E0E7FF",
+            200: "#C7D2FE",
+            300: "#A5B4FC",
+            400: "#818CF8",
+            500: "#6366F1",
+            600: "#4F46E5",
+            700: "#4338CA",
+            800: "#3730A3",
+            900: "#312E81",
+          },
+          // Secondary (Teal)
+          secondary: {
+            300: "#5EEAD4",
+            400: "#2DD4BF",
+            500: "#14B8A6",
+            600: "#0D9488",
+          },
+          // Surface layers (Dark mode)
+          surface: {
+            0: "#09090B",
+            1: "#0F0F12",
+            2: "#161619",
+            3: "#1C1C21",
+            4: "#27272A",
+          },
+          // Surface layers (Light mode)
+          surfaceLight: {
+            0: "#FFFFFF",
+            1: "#F9FAFB",
+            2: "#F3F4F6",
+            3: "#E5E7EB",
+            4: "#D1D5DB",
+          },
+          // Text (Dark mode)
+          text: {
+            primary: "#FAFAFA",
+            secondary: "#A1A1AA",
+            muted: "#52525B",
+          },
+          // Text (Light mode)
+          textLight: {
+            primary: "#111827",
+            secondary: "#4B5563",
+            muted: "#9CA3AF",
+          },
+          // Semantic colors
+          success: "#10B981",
+          warning: "#F59E0B",
+          error: "#EF4444",
+          info: "#06B6D4",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -85,6 +141,15 @@ export default {
         xl: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
         "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
         gold: "0 10px 20px -5px rgba(198, 170, 136, 0.15), 0 4px 8px -4px rgba(198, 170, 136, 0.1)",
+        // Business portal shadows with indigo glow
+        "business-sm": "0 1px 2px 0 rgba(0, 0, 0, 0.3)",
+        "business-md": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
+        "business-lg": "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
+        "business-xl": "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
+        "business-glow-sm": "0 0 15px -3px rgba(99, 102, 241, 0.3)",
+        "business-glow": "0 0 20px -5px rgba(99, 102, 241, 0.4)",
+        "business-glow-lg": "0 0 40px -10px rgba(99, 102, 241, 0.5)",
+        "business-elevated": "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 0 20px -5px rgba(99, 102, 241, 0.15)",
       },
       keyframes: {
         "accordion-down": {
@@ -108,6 +173,9 @@ export default {
       fontFamily: {
         serif: ["var(--font-playfair)", "serif"],
         sans: ["var(--font-montserrat)", "sans-serif"],
+        // Business portal fonts
+        "business-display": ["var(--font-jakarta)", "'Plus Jakarta Sans'", "system-ui", "sans-serif"],
+        "business-body": ["var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],
       },
     },
   },

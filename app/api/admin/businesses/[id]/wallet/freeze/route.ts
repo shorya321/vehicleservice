@@ -86,6 +86,63 @@ export async function POST(
       return apiError(error.message, 400);
     }
 
+    // Send wallet frozen notification (email + in-app)
+    try {
+      // Get admin name for notification
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      const adminName = adminProfile?.full_name || 'Admin';
+
+      // Get owner's auth_user_id for in-app notification
+      const { data: ownerUser } = await supabase
+        .from('business_users')
+        .select('auth_user_id')
+        .eq('business_account_id', businessAccountId)
+        .eq('role', 'owner')
+        .single();
+
+      // Send in-app notification
+      if (ownerUser?.auth_user_id) {
+        await supabase.rpc('create_business_notification', {
+          p_business_user_auth_id: ownerUser.auth_user_id,
+          p_category: 'payment',
+          p_type: 'wallet_frozen',
+          p_title: 'Wallet Frozen',
+          p_message: `Your wallet has been frozen. Reason: ${reason}`,
+          p_data: {
+            freeze_reason: reason,
+            frozen_by: adminName,
+          },
+          p_link: '/business/wallet',
+        });
+      }
+
+      // Send email notification via internal API
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({
+          notification_type: 'wallet_frozen',
+          business_account_id: businessAccountId,
+          email_data: {
+            freezeReason: reason,
+            frozenBy: adminName,
+            freezeDate: new Date().toISOString(),
+          },
+        }),
+      });
+    } catch (notifyError) {
+      console.error('Failed to send wallet frozen notification:', notifyError);
+      // Don't fail the freeze if notification fails
+    }
+
     return apiSuccess({
       message: 'Wallet frozen successfully',
       result,

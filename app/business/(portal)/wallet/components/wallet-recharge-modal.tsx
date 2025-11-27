@@ -150,8 +150,8 @@ export function WalletRechargeModal({
             {flowState === 'success' && (
               <div className="space-y-4 text-center py-8">
                 <div className="flex justify-center">
-                  <div className="rounded-full bg-green-100 p-3">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="rounded-full bg-[var(--business-success)]/10 p-3">
+                    <CheckCircle className="h-8 w-8 text-[var(--business-success)]" />
                   </div>
                 </div>
                 <div>

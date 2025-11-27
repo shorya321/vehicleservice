@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MapPin, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { LuxuryButton } from '@/components/business/ui/luxury-button';
 import {
   Form,
   FormControl,
@@ -196,7 +196,7 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
 
         {/* Actions */}
         <div className="flex justify-end">
-          <Button type="submit">Continue to Vehicle Selection</Button>
+          <LuxuryButton type="submit">Continue to Vehicle Selection</LuxuryButton>
         </div>
       </form>
     </Form>

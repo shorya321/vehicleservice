@@ -82,11 +82,11 @@ export default async function CustomDomainPage() {
               <div className="flex items-center gap-2">
                 <p className="font-medium">{businessAccount.custom_domain}</p>
                 {businessAccount.custom_domain_verified ? (
-                  <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded">
+                  <span className="text-xs bg-[var(--business-success)]/10 text-[var(--business-success)] px-2 py-1 rounded">
                     Verified
                   </span>
                 ) : (
-                  <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-1 rounded">
+                  <span className="text-xs bg-[var(--business-warning)]/10 text-[var(--business-warning)] px-2 py-1 rounded">
                     Pending Verification
                   </span>
                 )}

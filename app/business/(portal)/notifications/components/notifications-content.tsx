@@ -127,19 +127,19 @@ export function NotificationsContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Unread</CardTitle>
-            <Bell className="h-4 w-4 text-red-500" />
+            <Bell className="h-4 w-4 text-[var(--business-error)]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{stats.unread}</div>
+            <div className="text-2xl font-bold text-[var(--business-error)]">{stats.unread}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Read</CardTitle>
-            <Bell className="h-4 w-4 text-green-500" />
+            <Bell className="h-4 w-4 text-[var(--business-success)]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{stats.read}</div>
+            <div className="text-2xl font-bold text-[var(--business-success)]">{stats.read}</div>
           </CardContent>
         </Card>
       </div>

@@ -218,8 +218,8 @@ export function AutoRechargeSettings() {
       <CardContent className="space-y-6">
         {/* Warning when enabled */}
         {settings.enabled && (
-          <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-4 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+          <div className="rounded-lg bg-[var(--business-warning)]/10 border border-[var(--business-warning)]/20 p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-[var(--business-warning)] mt-0.5" />
             <div className="flex-1">
               <h4 className="font-medium text-sm">Auto-Recharge Active</h4>
               <p className="text-sm text-muted-foreground mt-1">

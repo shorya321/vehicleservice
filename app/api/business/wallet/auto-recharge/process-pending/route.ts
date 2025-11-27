@@ -199,6 +199,73 @@ async function processAttempt(
         `[Auto-Recharge] ✅ Auto-recharge completed successfully for attempt ${attempt.id}`
       );
 
+      // Get business owner's auth_user_id for in-app notification
+      const { data: ownerUser } = await supabaseAdmin
+        .from('business_users')
+        .select('auth_user_id')
+        .eq('business_account_id', attempt.business_account_id)
+        .eq('role', 'owner')
+        .single();
+
+      // Get payment method display name
+      const { data: pmDetails } = await supabaseAdmin
+        .from('payment_methods')
+        .select('card_brand, card_last_four')
+        .eq('id', attempt.payment_method_id)
+        .single();
+
+      const paymentMethodDisplay = pmDetails
+        ? `${pmDetails.card_brand} •••• ${pmDetails.card_last_four}`
+        : 'Default payment method';
+
+      // Get previous balance (before recharge)
+      const previousBalance = (typedAccount as any).wallet_balance || 0;
+
+      // Send in-app notification
+      if (ownerUser?.auth_user_id) {
+        await supabaseAdmin.rpc('create_business_notification', {
+          p_business_user_auth_id: ownerUser.auth_user_id,
+          p_category: 'payment',
+          p_type: 'auto_recharge_success',
+          p_title: 'Auto-Recharge Successful',
+          p_message: `Your wallet has been recharged with ${actualAmount} ${attempt.currency}. New balance: ${previousBalance + actualAmount} ${attempt.currency}`,
+          p_data: {
+            amount: actualAmount,
+            currency: attempt.currency,
+            payment_method: paymentMethodDisplay,
+            transaction_id: transactionId,
+            attempt_id: attempt.id,
+          },
+          p_link: '/business/wallet',
+        });
+      }
+
+      // Send email notification via internal API
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            notification_type: 'auto_recharge_success',
+            business_account_id: attempt.business_account_id,
+            email_data: {
+              rechargeAmount: actualAmount,
+              previousBalance,
+              newBalance: previousBalance + actualAmount,
+              paymentMethod: paymentMethodDisplay,
+              rechargeDate: new Date().toISOString(),
+              rechargeId: attempt.id,
+            },
+          }),
+        });
+      } catch (emailError) {
+        console.error('[Auto-Recharge] Failed to send success email:', emailError);
+        // Don't fail the recharge if email fails
+      }
+
       return { success: true };
     } else if (
       paymentIntent.status === 'requires_payment_method' ||
@@ -249,6 +316,69 @@ async function processAttempt(
         p_error_code:
           error instanceof Stripe.errors.StripeError ? error.code : 'unknown',
       });
+
+      // Send failed notification (both in-app and email)
+      try {
+        // Get business owner's auth_user_id for in-app notification
+        const { data: ownerUser } = await supabaseAdmin
+          .from('business_users')
+          .select('auth_user_id')
+          .eq('business_account_id', attempt.business_account_id)
+          .eq('role', 'owner')
+          .single();
+
+        // Get payment method display name
+        const { data: pmDetails } = await supabaseAdmin
+          .from('payment_methods')
+          .select('card_brand, card_last_four')
+          .eq('id', attempt.payment_method_id)
+          .single();
+
+        const paymentMethodDisplay = pmDetails
+          ? `${pmDetails.card_brand} •••• ${pmDetails.card_last_four}`
+          : 'Default payment method';
+
+        // Send in-app notification
+        if (ownerUser?.auth_user_id) {
+          await supabaseAdmin.rpc('create_business_notification', {
+            p_business_user_auth_id: ownerUser.auth_user_id,
+            p_category: 'payment',
+            p_type: 'auto_recharge_failed',
+            p_title: 'Auto-Recharge Failed',
+            p_message: `Auto-recharge of ${attempt.requested_amount} ${attempt.currency} failed: ${errorMessage}`,
+            p_data: {
+              amount: attempt.requested_amount,
+              currency: attempt.currency,
+              payment_method: paymentMethodDisplay,
+              error_message: errorMessage,
+              attempt_id: attempt.id,
+            },
+            p_link: '/business/wallet/settings',
+          });
+        }
+
+        // Send email notification via internal API
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            notification_type: 'auto_recharge_failed',
+            business_account_id: attempt.business_account_id,
+            email_data: {
+              attemptedAmount: attempt.requested_amount,
+              paymentMethod: paymentMethodDisplay,
+              failureReason: errorMessage,
+              attemptDate: new Date().toISOString(),
+            },
+          }),
+        });
+      } catch (notifyError) {
+        console.error('[Auto-Recharge] Failed to send failure notification:', notifyError);
+        // Don't fail the operation if notification fails
+      }
     }
 
     return { success: false, error: errorMessage };

@@ -62,7 +62,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
-              <MapPin className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <MapPin className="h-4 w-4 text-[var(--business-success)] mt-0.5 flex-shrink-0" />
               <div className="space-y-1 flex-1">
                 <p className="text-sm font-medium text-muted-foreground">Pickup Location</p>
                 <p className="font-medium">{booking.from_locations.name}</p>
@@ -73,7 +73,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
             <Separator />
 
             <div className="flex items-start gap-3">
-              <MapPin className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <MapPin className="h-4 w-4 text-[var(--business-error)] mt-0.5 flex-shrink-0" />
               <div className="space-y-1 flex-1">
                 <p className="text-sm font-medium text-muted-foreground">Dropoff Location</p>
                 <p className="font-medium">{booking.to_locations.name}</p>
@@ -290,16 +290,16 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                       )}
                       {booking.booking_assignments[0].accepted_at && (
                         <div className="flex items-center gap-2">
-                          <CheckCircle className="h-3 w-3 text-green-600" />
+                          <CheckCircle className="h-3 w-3 text-[var(--business-success)]" />
                           <span className="text-muted-foreground">Accepted:</span>
                           <span className="font-medium">{format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}</span>
                         </div>
                       )}
                       {booking.booking_assignments[0].completed_at && (
                         <div className="flex items-center gap-2">
-                          <CheckCircle className="h-3 w-3 text-blue-600" />
+                          <CheckCircle className="h-3 w-3 text-[var(--business-info)]" />
                           <span className="text-muted-foreground">Completed:</span>
-                          <span className="font-medium text-blue-600">{format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}</span>
+                          <span className="font-medium text-[var(--business-info)]">{format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}</span>
                         </div>
                       )}
                     </div>
@@ -307,8 +307,8 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                 </>
               ) : booking.booking_assignments[0].status === 'pending' ? (
                 <div className="text-center py-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-50 mb-3">
-                    <Clock className="h-6 w-6 text-yellow-600" />
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--business-warning)]/10 mb-3">
+                    <Clock className="h-6 w-6 text-[var(--business-warning)]" />
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Service provider assignment in progress

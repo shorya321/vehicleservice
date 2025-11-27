@@ -12,6 +12,7 @@ import {
 } from '@/lib/business/validators';
 import { generateSubdomain, isValidSubdomain } from '@/lib/business/domain-utils';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
+import { sendBusinessWelcomePendingEmail } from '@/lib/email/services/business-emails';
 
 /**
  * POST /api/business/auth/signup
@@ -130,6 +131,21 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     // NOTE: Auto sign-in removed - pending accounts cannot login until approved by admin
     // Users will see "pending approval" message when they try to login
+
+    // Send welcome email
+    const emailResult = await sendBusinessWelcomePendingEmail({
+      email: data.business_email,
+      businessName: data.business_name,
+      ownerName: data.contact_person_name,
+      subdomain: businessAccount.subdomain,
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send welcome email:', emailResult.error);
+      // Don't fail registration if email fails - just log
+    } else {
+      console.log('Welcome email sent successfully:', emailResult.emailId);
+    }
 
     return apiSuccess(
       {

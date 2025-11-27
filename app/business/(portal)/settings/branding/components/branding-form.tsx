@@ -43,9 +43,9 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
     resolver: zodResolver(brandingSchema),
     defaultValues: {
       brand_name: currentBranding.brand_name || '',
-      primary_color: currentBranding.primary_color || '#181818',
-      secondary_color: currentBranding.secondary_color || '#C6AA88',
-      accent_color: currentBranding.accent_color || '#C6AA88',
+      primary_color: currentBranding.primary_color || '#0F0F12',
+      secondary_color: currentBranding.secondary_color || '#6366F1',
+      accent_color: currentBranding.accent_color || '#818CF8',
     },
   })
 
@@ -84,7 +84,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
 
   // Color preset buttons - Professional dark backgrounds with tasteful accents
   const colorPresets = [
-    { name: 'Luxury', primary: '#181818', secondary: '#C6AA88', accent: '#C6AA88' },
+    { name: 'Indigo', primary: '#0F0F12', secondary: '#6366F1', accent: '#818CF8' },
     { name: 'Executive', primary: '#1e293b', secondary: '#60a5fa', accent: '#60a5fa' },
     { name: 'Forest', primary: '#1e3a2e', secondary: '#86efac', accent: '#86efac' },
     { name: 'Midnight', primary: '#2d1b3d', secondary: '#c084fc', accent: '#c084fc' },

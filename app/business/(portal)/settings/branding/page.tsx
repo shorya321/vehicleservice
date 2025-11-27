@@ -94,14 +94,14 @@ export default async function BrandingSettingsPage() {
               <p className="text-sm text-muted-foreground">Status</p>
               <p
                 className={`font-medium ${
-                  businessAccount.custom_domain_verified ? 'text-green-600' : 'text-amber-600'
+                  businessAccount.custom_domain_verified ? 'text-[var(--business-success)]' : 'text-[var(--business-warning)]'
                 }`}
               >
                 {businessAccount.custom_domain_verified ? 'Verified' : 'Pending Verification'}
               </p>
             </div>
             {businessAccount.custom_domain_verified && (
-              <div className="pt-2 text-sm text-green-600 flex items-center gap-2">
+              <div className="pt-2 text-sm text-[var(--business-success)] flex items-center gap-2">
                 <Info className="h-4 w-4" />
                 Your branding will be visible at https://{businessAccount.custom_domain}
               </div>
@@ -116,9 +116,9 @@ export default async function BrandingSettingsPage() {
         currentBranding={{
           brand_name: businessAccount.brand_name || businessAccount.business_name,
           logo_url: businessAccount.logo_url,
-          primary_color: businessAccount.primary_color || '#181818',
-          secondary_color: businessAccount.secondary_color || '#C6AA88',
-          accent_color: businessAccount.accent_color || '#C6AA88',
+          primary_color: businessAccount.primary_color || '#0F0F12',
+          secondary_color: businessAccount.secondary_color || '#6366F1',
+          accent_color: businessAccount.accent_color || '#818CF8',
         }}
       />
 

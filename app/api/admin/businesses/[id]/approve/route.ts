@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
+import { sendBusinessApprovalEmail } from '@/lib/email/services/business-emails';
 
 /**
  * PUT /api/admin/businesses/[id]/approve
@@ -53,7 +54,7 @@ export const PUT = withErrorHandling(
       // First, check if business exists and is in pending status
       const { data: business, error: fetchError } = await supabaseAdmin
         .from('business_accounts')
-        .select('id, status, business_name, business_email')
+        .select('id, status, business_name, business_email, subdomain, custom_domain')
         .eq('id', businessId)
         .single();
 
@@ -82,8 +83,44 @@ export const PUT = withErrorHandling(
         return apiError('Failed to approve business account', 500);
       }
 
-      // TODO: Send approval notification email to business_email
-      // This can be implemented later with Resend or other email service
+      // Get the owner's name from business_users
+      const { data: ownerUser } = await supabaseAdmin
+        .from('business_users')
+        .select('full_name')
+        .eq('business_account_id', businessId)
+        .eq('role', 'owner')
+        .single();
+
+      const ownerName = ownerUser?.full_name || 'Business Owner';
+
+      // Build the login URL based on custom domain or subdomain
+      const platformDomain = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
+      let loginUrl: string;
+
+      if (business.custom_domain) {
+        loginUrl = `https://${business.custom_domain}/business/login`;
+      } else if (business.subdomain) {
+        const platformHost = new URL(platformDomain).hostname;
+        const protocol = platformHost.includes('localhost') ? 'http' : 'https';
+        loginUrl = `${protocol}://${business.subdomain}.${platformHost}/business/login`;
+      } else {
+        loginUrl = `${platformDomain}/business/login`;
+      }
+
+      // Send approval notification email
+      const emailResult = await sendBusinessApprovalEmail({
+        email: business.business_email,
+        businessName: business.business_name,
+        ownerName,
+        loginUrl,
+      });
+
+      if (!emailResult.success) {
+        console.error('Failed to send approval email:', emailResult.error);
+        // Don't fail the approval if email fails - log and continue
+      } else {
+        console.log('Approval email sent successfully:', emailResult.emailId);
+      }
 
       return apiSuccess({
         message: 'Business account approved successfully',

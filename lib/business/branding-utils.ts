@@ -4,26 +4,26 @@
  */
 
 /**
- * Default branding colors - using luxury theme
+ * Default branding colors - using Deep Indigo theme
  * Applied when business hasn't customized branding
  */
 export const DEFAULT_BRANDING = {
-  primary_color: '#181818', // luxury-darkGray
-  secondary_color: '#C6AA88', // luxury-gold
-  accent_color: '#C6AA88', // luxury-gold
+  primary_color: '#0F0F12', // business-surface-1
+  secondary_color: '#6366F1', // indigo-500
+  accent_color: '#818CF8', // indigo-400
 } as const;
 
 /**
- * Luxury theme colors matching admin dashboard
+ * Business portal theme colors - Deep Indigo design system
  * Used as default for business portal before customization
- * Colors from tailwind.config.ts luxury palette
+ * Colors from business CSS variables
  */
-export const LUXURY_THEME = {
-  background: '#181818', // luxury-darkGray
-  border: '#C6AA88', // luxury-gold
-  accent: '#C6AA88', // luxury-gold
-  text: '#F5F5F5', // luxury-pearl
-  textMuted: '#B0B0B0', // luxury-lightGray
+export const BUSINESS_THEME = {
+  background: '#09090B', // business-base
+  border: '#6366F1', // indigo-500
+  accent: '#818CF8', // indigo-400
+  text: '#FAFAFA', // business-text-primary
+  textMuted: '#A1A1AA', // business-text-secondary
 } as const;
 
 /**
@@ -154,10 +154,10 @@ export function generateThemeStyles(colors: {
  */
 export const COLOR_PRESETS = [
   {
-    name: 'Luxury',
-    primary: '#181818',
-    secondary: '#C6AA88',
-    accent: '#C6AA88',
+    name: 'Indigo',
+    primary: '#0F0F12',
+    secondary: '#6366F1',
+    accent: '#818CF8',
   },
   {
     name: 'Executive',

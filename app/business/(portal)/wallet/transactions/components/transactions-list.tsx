@@ -112,7 +112,7 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
                 <TableCell className="text-right">
                   <span
                     className={`font-medium ${
-                      transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                      transaction.amount > 0 ? 'text-[var(--business-success)]' : 'text-[var(--business-error)]'
                     }`}
                   >
                     {transaction.amount > 0 ? '+' : ''}

@@ -10,8 +10,8 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Loader2, Globe, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { LuxuryButton } from '@/components/business/ui/luxury-button';
+import { LuxuryCard, LuxuryCardContent, LuxuryCardDescription, LuxuryCardHeader, LuxuryCardTitle } from '@/components/business/ui/luxury-card';
 import {
   Form,
   FormControl,
@@ -151,17 +151,17 @@ export function DomainConfiguration({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <LuxuryCard>
+      <LuxuryCardHeader>
+        <LuxuryCardTitle className="flex items-center gap-2">
           <Globe className="h-5 w-5" />
           Configure Custom Domain
-        </CardTitle>
-        <CardDescription>
+        </LuxuryCardTitle>
+        <LuxuryCardDescription>
           Use your own domain (e.g., transfers.yourhotel.com) for your booking portal
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </LuxuryCardDescription>
+      </LuxuryCardHeader>
+      <LuxuryCardContent className="space-y-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -186,7 +186,7 @@ export function DomainConfiguration({
             />
 
             {!isVerified && (
-              <Button type="submit" disabled={isLoading}>
+              <LuxuryButton type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -197,7 +197,7 @@ export function DomainConfiguration({
                 ) : (
                   'Set Custom Domain'
                 )}
-              </Button>
+              </LuxuryButton>
             )}
           </form>
         </Form>
@@ -208,7 +208,7 @@ export function DomainConfiguration({
             <p className="text-sm text-muted-foreground mb-3">
               After configuring your DNS records, click the button below to verify.
             </p>
-            <Button onClick={handleVerify} disabled={isVerifying} variant="outline">
+            <LuxuryButton onClick={handleVerify} disabled={isVerifying} variant="secondary">
               {isVerifying ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -220,18 +220,18 @@ export function DomainConfiguration({
                   Verify DNS Configuration
                 </>
               )}
-            </Button>
+            </LuxuryButton>
           </div>
         )}
 
         {/* Verified Message */}
         {isVerified && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+          <div className="bg-[var(--business-success)]/10 border border-[var(--business-success)]/20 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-[var(--business-success)]">
               <CheckCircle className="h-5 w-5" />
               <p className="font-medium">Domain verified and active!</p>
             </div>
-            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+            <p className="text-sm text-[var(--business-success)]/80 mt-1">
               Your booking portal is now accessible at {currentDomain}
             </p>
           </div>
@@ -247,7 +247,7 @@ export function DomainConfiguration({
                   This will remove your custom domain and revert to subdomain access.
                 </p>
               </div>
-              <Button
+              <LuxuryButton
                 onClick={handleRemove}
                 disabled={isLoading || isVerifying}
                 variant="destructive"
@@ -261,11 +261,11 @@ export function DomainConfiguration({
                 ) : (
                   'Remove Domain'
                 )}
-              </Button>
+              </LuxuryButton>
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </LuxuryCardContent>
+    </LuxuryCard>
   );
 }

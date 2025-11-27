@@ -9,9 +9,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
+import { LuxuryButton } from '@/components/business/ui/luxury-button';
+import { LuxuryInput } from '@/components/business/ui/luxury-input';
 import {
   Form,
   FormControl,
@@ -21,15 +23,16 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  LuxurySelect,
+  LuxurySelectContent,
+  LuxurySelectItem,
+  LuxurySelectTrigger,
+  LuxurySelectValue,
+} from '@/components/business/ui/luxury-select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { PasswordStrength } from '@/components/business/ui/password-strength';
 import {
   businessRegistrationSchema,
   type BusinessRegistrationInput,
@@ -41,6 +44,8 @@ export function SignupForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [generatedSubdomain, setGeneratedSubdomain] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const form = useForm<BusinessRegistrationInput>({
     resolver: zodResolver(businessRegistrationSchema),
@@ -104,22 +109,22 @@ export function SignupForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Business Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Business Information</h3>
+          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Business Information</h3>
 
           <FormField
             control={form.control}
             name="business_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Name</FormLabel>
+                <FormLabel className="text-[var(--business-text-secondary)]">Business Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Acme Hotel & Resort" {...field} />
+                  <LuxuryInput placeholder="Acme Hotel & Resort" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Your subdomain will be: <strong>{generatedSubdomain || 'your-business'}</strong>
+                <FormDescription className="text-[var(--business-text-muted)]">
+                  Your subdomain will be: <strong className="text-[var(--business-primary-400)]">{generatedSubdomain || 'your-business'}</strong>
                   .yourdomain.com
                 </FormDescription>
-                <FormMessage />
+                <FormMessage className="text-[var(--business-error)]" />
               </FormItem>
             )}
           />
@@ -129,11 +134,11 @@ export function SignupForm() {
             name="business_email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Email</FormLabel>
+                <FormLabel className="text-[var(--business-text-secondary)]">Business Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="contact@acmehotel.com" {...field} />
+                  <LuxuryInput type="email" placeholder="contact@acmehotel.com" {...field} />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-[var(--business-error)]" />
               </FormItem>
             )}
           />
@@ -143,12 +148,12 @@ export function SignupForm() {
             name="business_phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Phone</FormLabel>
+                <FormLabel className="text-[var(--business-text-secondary)]">Business Phone</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+1234567890" {...field} />
+                  <LuxuryInput type="tel" placeholder="+1234567890" {...field} />
                 </FormControl>
-                <FormDescription>Include country code (e.g., +1 for US)</FormDescription>
-                <FormMessage />
+                <FormDescription className="text-[var(--business-text-muted)]">Include country code (e.g., +1 for US)</FormDescription>
+                <FormMessage className="text-[var(--business-error)]" />
               </FormItem>
             )}
           />
@@ -156,18 +161,18 @@ export function SignupForm() {
 
         {/* Contact Person */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Contact Person</h3>
+          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Contact Person</h3>
 
           <FormField
             control={form.control}
             name="contact_person_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel className="text-[var(--business-text-secondary)]">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <LuxuryInput placeholder="John Doe" {...field} />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-[var(--business-error)]" />
               </FormItem>
             )}
           />
@@ -175,18 +180,18 @@ export function SignupForm() {
 
         {/* Optional Address */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Address (Optional)</h3>
+          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Address (Optional)</h3>
 
           <FormField
             control={form.control}
             name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Street Address</FormLabel>
+                <FormLabel className="text-[var(--business-text-secondary)]">Street Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="123 Main St" {...field} />
+                  <LuxuryInput placeholder="123 Main St" {...field} />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-[var(--business-error)]" />
               </FormItem>
             )}
           />
@@ -197,11 +202,11 @@ export function SignupForm() {
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>City</FormLabel>
+                  <FormLabel className="text-[var(--business-text-secondary)]">City</FormLabel>
                   <FormControl>
-                    <Input placeholder="New York" {...field} />
+                    <LuxuryInput placeholder="New York" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[var(--business-error)]" />
                 </FormItem>
               )}
             />
@@ -211,22 +216,22 @@ export function SignupForm() {
               name="country_code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <FormLabel className="text-[var(--business-text-secondary)]">Country</FormLabel>
+                  <LuxurySelect onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a country" />
-                      </SelectTrigger>
+                      <LuxurySelectTrigger>
+                        <LuxurySelectValue placeholder="Select a country" />
+                      </LuxurySelectTrigger>
                     </FormControl>
-                    <SelectContent className="max-h-[300px]">
+                    <LuxurySelectContent className="max-h-[300px]">
                       {countries.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
+                        <LuxurySelectItem key={country.code} value={country.code}>
                           {country.name}
-                        </SelectItem>
+                        </LuxurySelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
+                    </LuxurySelectContent>
+                  </LuxurySelect>
+                  <FormMessage className="text-[var(--business-error)]" />
                 </FormItem>
               )}
             />
@@ -234,22 +239,74 @@ export function SignupForm() {
         </div>
 
         {/* Password */}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
-              </FormControl>
-              <FormDescription>Minimum 8 characters</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Security</h3>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[var(--business-text-secondary)]">Password</FormLabel>
+                <FormControl>
+                  <LuxuryInput
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    {...field}
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)] transition-colors"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    }
+                  />
+                </FormControl>
+                <PasswordStrength password={field.value || ''} className="mt-2" />
+                <FormMessage className="text-[var(--business-error)]" />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
+        {/* Terms Acceptance */}
+        <div className="flex items-start space-x-3 py-2">
+          <Checkbox
+            id="terms"
+            checked={acceptedTerms}
+            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+            className="mt-0.5 border-[var(--business-border-default)] data-[state=checked]:bg-[var(--business-primary-500)] data-[state=checked]:border-[var(--business-primary-500)]"
+          />
+          <label
+            htmlFor="terms"
+            className="text-sm text-[var(--business-text-secondary)] leading-relaxed cursor-pointer"
+          >
+            I agree to the{' '}
+            <Link
+              href="/terms"
+              target="_blank"
+              className="text-[var(--business-primary-400)] hover:underline"
+            >
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link
+              href="/privacy"
+              target="_blank"
+              className="text-[var(--business-primary-400)] hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </label>
+        </div>
+
+        <LuxuryButton type="submit" disabled={isLoading || !acceptedTerms} className="w-full" size="lg">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -258,7 +315,7 @@ export function SignupForm() {
           ) : (
             'Create Business Account'
           )}
-        </Button>
+        </LuxuryButton>
       </form>
     </Form>
   );

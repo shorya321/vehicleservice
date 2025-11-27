@@ -71,7 +71,17 @@
       "Skill(superpowers:executing-plans)",
       "Bash(npm test:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__Ref__ref_search_documentation",
+      "mcp__Ref__ref_read_url",
+      "mcp__chrome-devtools__fill_form",
+      "Skill(frontend-design)",
+      "mcp__linear__list_documents",
+      "mcp__linear__create_project",
+      "Bash(npx shadcn@latest add:*)",
+      "mcp__chrome-devtools__hover",
+      "Bash(grep:*)",
+      "Skill(frontend-design:frontend-design)"
     ]
   },
   "enableAllProjectMcpServers": true,

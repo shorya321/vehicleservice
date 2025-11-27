@@ -196,10 +196,10 @@ export function PaymentElementModal({
   const appearance = {
     theme: 'night' as const,
     variables: {
-      colorPrimary: '#3b82f6',
-      colorBackground: '#0a0a0a',
-      colorText: '#f5f5f5',
-      colorDanger: '#ef4444',
+      colorPrimary: '#6366F1', // indigo-500 - match business portal
+      colorBackground: '#0F0F12', // business-surface-1
+      colorText: '#FAFAFA', // business-text-primary
+      colorDanger: '#EF4444', // business-error
       fontFamily: 'system-ui, sans-serif',
       borderRadius: '8px',
     },

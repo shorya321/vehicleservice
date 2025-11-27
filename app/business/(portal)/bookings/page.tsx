@@ -1,16 +1,16 @@
 /**
  * Business Bookings List Page
  * View all bookings for the business account
+ *
+ * Design System: Premium B2B experience with refined luxury aesthetic
  */
 
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookingsTable } from './components/bookings-table';
+import { Plus, CalendarCheck } from 'lucide-react';
+import { BookingsPageContent } from './components/bookings-page-content';
 
 export const metadata: Metadata = {
   title: 'Bookings | Business Portal',
@@ -61,32 +61,23 @@ export default async function BusinessBookingsPage() {
     .eq('business_account_id', businessUser.business_account_id)
     .order('created_at', { ascending: false });
 
-  return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Bookings</h1>
-          <p className="text-muted-foreground">View and manage your transfer bookings</p>
-        </div>
-        <Button asChild>
-          <Link href="/business/bookings/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Booking
-          </Link>
-        </Button>
-      </div>
+  // Get stats for header
+  const { count: totalCount } = await supabase
+    .from('business_bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_account_id', businessUser.business_account_id);
 
-      {/* Bookings Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Bookings</CardTitle>
-          <CardDescription>Complete list of all transfer bookings</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BookingsTable bookings={bookings || []} />
-        </CardContent>
-      </Card>
-    </div>
+  const { count: pendingCount } = await supabase
+    .from('business_bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_account_id', businessUser.business_account_id)
+    .eq('booking_status', 'pending');
+
+  return (
+    <BookingsPageContent
+      bookings={bookings || []}
+      totalCount={totalCount || 0}
+      pendingCount={pendingCount || 0}
+    />
   );
 }

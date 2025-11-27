@@ -129,11 +129,11 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Credits</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-[var(--business-success)]">
                     {formatCurrency(statistics.total_credits, currency)}
                   </p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-green-600" />
+                <TrendingUp className="h-8 w-8 text-[var(--business-success)]" />
               </div>
             </CardContent>
           </Card>
@@ -144,11 +144,11 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Debits</p>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className="text-2xl font-bold text-[var(--business-error)]">
                     {formatCurrency(statistics.total_debits, currency)}
                   </p>
                 </div>
-                <TrendingDown className="h-8 w-8 text-red-600" />
+                <TrendingDown className="h-8 w-8 text-[var(--business-error)]" />
               </div>
             </CardContent>
           </Card>
@@ -161,7 +161,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   <p className="text-sm text-muted-foreground">Net Amount</p>
                   <p
                     className={`text-2xl font-bold ${
-                      statistics.net_amount >= 0 ? 'text-green-600' : 'text-red-600'
+                      statistics.net_amount >= 0 ? 'text-[var(--business-success)]' : 'text-[var(--business-error)]'
                     }`}
                   >
                     {formatCurrency(statistics.net_amount, currency)}
@@ -187,7 +187,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Largest Credit</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-[var(--business-success)]">
                 {formatCurrency(statistics.largest_credit, currency)}
               </p>
             </CardContent>
@@ -196,7 +196,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Largest Debit</p>
-              <p className="text-xl font-bold text-red-600">
+              <p className="text-xl font-bold text-[var(--business-error)]">
                 {formatCurrency(statistics.largest_debit, currency)}
               </p>
             </CardContent>
