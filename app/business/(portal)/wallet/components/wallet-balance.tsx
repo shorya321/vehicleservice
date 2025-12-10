@@ -188,7 +188,7 @@ export function WalletBalance({
 
                 {/* Amount Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="amount" className="text-muted-foreground text-sm">
+                  <Label htmlFor="amount" className="text-foreground text-sm">
                     Amount ({currency})
                   </Label>
                   <Input

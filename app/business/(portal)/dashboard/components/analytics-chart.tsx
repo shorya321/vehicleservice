@@ -131,24 +131,11 @@ interface AnalyticsStatCardProps {
     value: number;
     isPositive: boolean;
   };
-  chartData?: number[];
-  chartColor?: string;
   icon?: React.ReactNode;
   className?: string;
   delay?: number;
-  gradient?: string;
-  accentColor?: string;
   iconBgColor?: string;
-  /** Gradient start color - e.g., "from-slate-900" */
-  gradientFrom?: string;
-  /** Gradient middle color - e.g., "via-slate-800" */
-  gradientVia?: string;
-  /** Gradient end color with accent - e.g., "to-emerald-950/40" */
-  gradientTo?: string;
-  /** Glow color class - e.g., "bg-emerald-500" */
-  glowColor?: string;
-  /** Compact mode for smaller cards */
-  compact?: boolean;
+  valueColor?: string;
 }
 
 export function AnalyticsStatCard({
@@ -156,32 +143,13 @@ export function AnalyticsStatCard({
   value,
   subtitle,
   trend,
-  chartData,
-  chartColor = '#C6AA88',
   icon,
   className,
   delay = 0,
-  gradient,
-  accentColor,
   iconBgColor,
-  gradientFrom,
-  gradientVia,
-  gradientTo,
-  glowColor,
-  compact = false,
+  valueColor,
 }: AnalyticsStatCardProps) {
   const prefersReducedMotion = useReducedMotion();
-
-  // Accent color mapping for gradients
-  const accentGradients: Record<string, string> = {
-    amber: 'to-amber-500/[0.08] dark:to-amber-500/[0.15]',
-    emerald: 'to-emerald-500/[0.08] dark:to-emerald-500/[0.15]',
-    sky: 'to-sky-500/[0.08] dark:to-sky-500/[0.15]',
-    violet: 'to-violet-500/[0.08] dark:to-violet-500/[0.15]',
-    primary: 'to-primary/[0.08] dark:to-primary/[0.15]',
-  };
-
-  const gradientEnd = accentGradients[accentColor as string] || accentGradients.primary;
 
   return (
     <motion.div
@@ -193,17 +161,11 @@ export function AnalyticsStatCard({
       <Card
         className={cn(
           'relative overflow-hidden rounded-xl',
-          // Soft gradient background - elegant and refined
-          'bg-gradient-to-br',
-          'from-white via-gray-50/50',
-          gradientEnd,
-          'dark:from-zinc-800/90 dark:via-zinc-800/70',
-          // Subtle border
-          'border border-border/60 dark:border-white/[0.08]',
-          // Soft shadow
+          'bg-card',
+          'border border-border',
           'shadow-sm',
           'transition-all duration-300 ease-out',
-          'hover:shadow-md hover:border-border dark:hover:border-white/[0.12]',
+          'hover:shadow-md hover:border-border/80 dark:hover:border-white/[0.12]',
           className
         )}
       >
@@ -230,7 +192,10 @@ export function AnalyticsStatCard({
 
           {/* Large value with optional trend */}
           <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            <span className={cn(
+              "text-2xl sm:text-3xl font-bold tracking-tight",
+              valueColor || "text-foreground"
+            )}>
               {value}
             </span>
             {/* Trend indicator */}

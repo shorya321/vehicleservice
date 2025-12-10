@@ -59,7 +59,7 @@ function CardBrandIcon({ brand }: { brand?: string }) {
   if (brandLower === 'visa') {
     return (
       <div className="w-10 h-7 rounded bg-[#1A1F71] flex items-center justify-center">
-        <span className="text-primary-foreground text-xs font-bold italic">VISA</span>
+        <span className="text-white text-xs font-bold italic">VISA</span>
       </div>
     );
   }
@@ -80,7 +80,7 @@ function CardBrandIcon({ brand }: { brand?: string }) {
   if (brandLower === 'amex' || brandLower === 'american_express') {
     return (
       <div className="w-10 h-7 rounded bg-[#006FCF] flex items-center justify-center">
-        <span className="text-primary-foreground text-[8px] font-bold">AMEX</span>
+        <span className="text-white text-[8px] font-bold">AMEX</span>
       </div>
     );
   }
@@ -89,7 +89,7 @@ function CardBrandIcon({ brand }: { brand?: string }) {
   if (brandLower === 'discover') {
     return (
       <div className="w-10 h-7 rounded bg-[#FF6000] flex items-center justify-center">
-        <span className="text-primary-foreground text-[8px] font-bold">DISC</span>
+        <span className="text-white text-[8px] font-bold">DISC</span>
       </div>
     );
   }
@@ -135,7 +135,7 @@ export function PaymentMethodCard({
         'transition-all duration-300',
         'hover:shadow-md',
         // Default card gets primary highlight
-        pm.is_default && 'border-primary/30 shadow-sm'
+        pm.is_default && 'border-border shadow-sm'
       )}
     >
       <div className="flex items-center justify-between">
@@ -148,7 +148,7 @@ export function PaymentMethodCard({
                 {formatCardBrand(pm.card_brand)} •••• {pm.card_last4}
               </p>
               {pm.is_default && (
-                <Badge className="bg-primary/10 text-primary border border-primary/30 text-xs">
+                <Badge className="bg-muted text-foreground border border-border text-xs">
                   Default
                 </Badge>
               )}

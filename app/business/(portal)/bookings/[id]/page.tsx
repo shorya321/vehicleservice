@@ -118,7 +118,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Booking Details</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">Booking Details</h1>
           <p className="text-muted-foreground">{booking.booking_number}</p>
         </div>
         {canCancel && <CancelBookingButton bookingId={id} />}

@@ -19,7 +19,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/app/business/(portal)/components/ui/select';
 import { Download, Filter, X, Search } from 'lucide-react';
 import { getCurrencyOptions, type CurrencyCode } from '@/lib/utils/currency-converter';
 import { cn } from '@/lib/utils';
@@ -124,7 +124,7 @@ export function TransactionFilters({
       <CardContent className="space-y-4">
         {/* Search Bar */}
         <div className="space-y-2">
-          <Label htmlFor="search" className="text-muted-foreground">Search Descriptions</Label>
+          <Label htmlFor="search" className="text-foreground">Search Descriptions</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
             <Input
@@ -141,7 +141,7 @@ export function TransactionFilters({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Transaction Type */}
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-muted-foreground">Transaction Type</Label>
+            <Label htmlFor="type" className="text-foreground">Transaction Type</Label>
             <Select
               value={localFilters.transaction_type || 'all'}
               onValueChange={(value) =>
@@ -166,7 +166,7 @@ export function TransactionFilters({
 
           {/* Start Date */}
           <div className="space-y-2">
-            <Label htmlFor="startDate" className="text-muted-foreground">Start Date</Label>
+            <Label htmlFor="startDate" className="text-foreground">Start Date</Label>
             <Input
               id="startDate"
               type="date"
@@ -183,7 +183,7 @@ export function TransactionFilters({
 
           {/* End Date */}
           <div className="space-y-2">
-            <Label htmlFor="endDate" className="text-muted-foreground">End Date</Label>
+            <Label htmlFor="endDate" className="text-foreground">End Date</Label>
             <Input
               id="endDate"
               type="date"
@@ -200,7 +200,7 @@ export function TransactionFilters({
 
           {/* Currency */}
           <div className="space-y-2">
-            <Label htmlFor="currency" className="text-muted-foreground">Currency</Label>
+            <Label htmlFor="currency" className="text-foreground">Currency</Label>
             <Select
               value={localFilters.currency || 'all'}
               onValueChange={(value) =>
@@ -240,7 +240,7 @@ export function TransactionFilters({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
             {/* Min Amount */}
             <div className="space-y-2">
-              <Label htmlFor="minAmount" className="text-muted-foreground">Minimum Amount</Label>
+              <Label htmlFor="minAmount" className="text-foreground">Minimum Amount</Label>
               <Input
                 id="minAmount"
                 type="number"
@@ -259,7 +259,7 @@ export function TransactionFilters({
 
             {/* Max Amount */}
             <div className="space-y-2">
-              <Label htmlFor="maxAmount" className="text-muted-foreground">Maximum Amount</Label>
+              <Label htmlFor="maxAmount" className="text-foreground">Maximum Amount</Label>
               <Input
                 id="maxAmount"
                 type="number"

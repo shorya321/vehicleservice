@@ -64,7 +64,7 @@ export function AuthBrandPanel({
           initial: 'hidden',
           animate: 'visible',
         })}
-        className="relative z-10 flex flex-col justify-center h-full"
+        className="relative z-10 flex flex-col justify-center h-full max-w-md"
       >
         {/* Logo */}
         {logo && (

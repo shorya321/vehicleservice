@@ -19,7 +19,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/app/business/(portal)/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -153,7 +153,7 @@ export function AutoRechargeHistory() {
     );
   };
 
-  // Mini stat card for statistics row
+  // Mini stat card for statistics row - Matching Bookings Page Pattern
   const MiniStatCard = ({
     label,
     value,
@@ -168,27 +168,46 @@ export function AutoRechargeHistory() {
     icon?: React.ComponentType<{ className?: string }>;
   }) => {
     const [borderClass, textClass] = accentColorClass.split(' ');
+    // Derive background color from border class for icon container
+    const bgClass = borderClass
+      .replace('border-l-', 'bg-')
+      .replace('-500', '-500/10')
+      .replace('-primary', '-primary/10');
+    const darkBgClass = borderClass
+      .replace('border-l-', 'dark:bg-')
+      .replace('-500', '-500/20')
+      .replace('-primary', '-primary/20');
+    // Derive dark mode text color
+    const darkTextClass = textClass
+      .replace('-600', '-400')
+      .replace('text-primary', 'text-primary');
+
     return (
       <div
         className={cn(
-          'rounded-xl p-4',
-          'bg-card border border-border',
-          'shadow-sm'
+          'group relative overflow-hidden rounded-xl bg-card p-5',
+          'border-l-4 border border-border',
+          borderClass,
+          'shadow-sm hover:shadow-md transition-all duration-200'
         )}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
               {label}
             </p>
-            <p className={cn('text-2xl font-bold mt-1', textClass)}>
+            <p className={cn('text-3xl font-bold tracking-tight', textClass, `dark:${darkTextClass}`)}>
               {value}
             </p>
             {subtext && (
-              <p className="text-xs text-muted-foreground mt-1">{subtext}</p>
+              <p className="text-xs text-muted-foreground mt-2">{subtext}</p>
             )}
           </div>
-          {Icon && <Icon className={cn('h-8 w-8', textClass)} />}
+          {Icon && (
+            <div className={cn('flex h-11 w-11 items-center justify-center rounded-full', bgClass, darkBgClass)}>
+              <Icon className={cn('h-5 w-5', textClass, `dark:${darkTextClass}`)} />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -304,16 +323,19 @@ export function AutoRechargeHistory() {
             label="Succeeded"
             value={statistics.succeeded}
             accentColorClass="border-l-emerald-500 text-emerald-600"
+            icon={CheckCircle2}
           />
           <MiniStatCard
             label="Failed"
             value={statistics.failed}
             accentColorClass="border-l-red-500 text-red-600"
+            icon={XCircle}
           />
           <MiniStatCard
             label="Pending"
             value={statistics.pending + statistics.processing}
-            accentColorClass="border-l-yellow-500 text-yellow-600"
+            icon={Clock}
+            accentColorClass="border-l-border text-muted-foreground"
           />
         </div>
       )}

@@ -49,7 +49,7 @@ export function AuthFormPanel({
           initial: 'hidden',
           animate: 'visible',
         })}
-        className={cn('w-full', maxWidthClasses[maxWidth])}
+        className={cn('w-full mx-auto', maxWidthClasses[maxWidth])}
       >
         {children}
       </MotionWrapper>

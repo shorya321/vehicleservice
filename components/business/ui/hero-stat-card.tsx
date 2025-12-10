@@ -71,38 +71,35 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
     const prefersReducedMotion = useReducedMotion();
     const { ref: inViewRef, isInView } = useInView({ once: true });
 
+    // Clean card styling matching dashboard stats cards
+    // Value color matches icon color for visual consistency
     const variantStyles = {
       default: {
-        border: 'border-border',
-        iconBg: 'bg-primary/10',
+        iconBg: 'bg-primary/20',
         iconColor: 'text-primary',
-        labelColor: 'text-primary',
+        valueColor: 'text-primary',
       },
       warning: {
-        border: 'border-border',
-        iconBg: 'bg-amber-500/10',
-        iconColor: 'text-amber-500 dark:text-amber-400',
-        labelColor: 'text-amber-500 dark:text-amber-400',
+        iconBg: 'bg-amber-500/20',
+        iconColor: 'text-amber-600 dark:text-amber-400',
+        valueColor: 'text-amber-600 dark:text-amber-400',
       },
       success: {
-        border: 'border-border',
-        iconBg: 'bg-emerald-500/10',
+        iconBg: 'bg-emerald-500/20',
         iconColor: 'text-emerald-600 dark:text-emerald-400',
-        labelColor: 'text-emerald-600 dark:text-emerald-400',
+        valueColor: 'text-emerald-600 dark:text-emerald-400',
       },
       info: {
-        border: 'border-border',
-        iconBg: 'bg-sky-500/10',
+        iconBg: 'bg-sky-500/20',
         iconColor: 'text-sky-600 dark:text-sky-400',
-        labelColor: 'text-sky-600 dark:text-sky-400',
+        valueColor: 'text-sky-600 dark:text-sky-400',
       },
     };
 
     const styles = variantStyles[variant];
 
     const renderValue = () => {
-      const valueClassName =
-        'text-4xl lg:text-5xl font-medium text-foreground tracking-tight';
+      const valueClassName = cn('text-3xl font-bold tracking-tight', styles.valueColor);
 
       switch (format) {
         case 'currency':
@@ -139,84 +136,68 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
       <div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-xl p-6 lg:p-8',
+          'group relative overflow-hidden rounded-xl p-5 h-full',
           'bg-card',
-          'border',
-          styles.border,
-          'hover:border-primary/30',
+          'border border-border',
           'shadow-sm',
-          'transition-all duration-150',
+          'transition-all duration-300 ease-out',
+          'hover:shadow-md hover:border-border/80 dark:hover:border-white/[0.12]',
           className
         )}
         {...props}
       >
-        {/* Subtle top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-3">
+              {title}
+            </p>
 
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p
-                className={cn(
-                  'text-xs uppercase tracking-wider font-semibold mb-1',
-                  styles.labelColor
-                )}
-              >
-                {title}
-              </p>
-              {subtitle && (
-                <p className="text-sm text-muted-foreground">
-                  {subtitle}
-                </p>
-              )}
+            {/* Value */}
+            <div className="mb-1" ref={inViewRef}>
+              {renderValue()}
             </div>
-            {icon && (
-              <div className={cn('p-3 rounded-xl', styles.iconBg, styles.iconColor)}>
-                {icon}
+
+            {/* Subtitle or Trend */}
+            {trend ? (
+              <div className="flex items-center gap-1 mt-2">
+                <span
+                  className={cn(
+                    'flex items-center gap-1 text-xs font-medium',
+                    trend.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                  )}
+                >
+                  {trend.direction === 'up' ? (
+                    <TrendingUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <TrendingDown className="h-3.5 w-3.5" />
+                  )}
+                  +{trend.value}% {trend.label || 'from last month'}
+                </span>
               </div>
+            ) : subtitle ? (
+              <p className="text-xs text-muted-foreground mt-2">
+                {subtitle}
+              </p>
+            ) : null}
+
+            {/* Action Button */}
+            {actionLabel && onAction && (
+              <LuxuryButton
+                variant="secondary"
+                size="sm"
+                onClick={onAction}
+                className="mt-3"
+              >
+                {actionLabel}
+              </LuxuryButton>
             )}
           </div>
 
-          {/* Value */}
-          <div className="mb-4" ref={inViewRef}>
-            {renderValue()}
-          </div>
-
-          {/* Trend */}
-          {trend && (
-            <div className="flex items-center gap-2 mb-4">
-              <span
-                className={cn(
-                  'flex items-center gap-1 text-sm font-medium',
-                  trend.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
-                )}
-              >
-                {trend.direction === 'up' ? (
-                  <TrendingUp className="h-4 w-4" />
-                ) : (
-                  <TrendingDown className="h-4 w-4" />
-                )}
-                {trend.value}%
-              </span>
-              {trend.label && (
-                <span className="text-sm text-muted-foreground">
-                  {trend.label}
-                </span>
-              )}
+          {/* Icon */}
+          {icon && (
+            <div className={cn('flex h-11 w-11 items-center justify-center rounded-full', styles.iconBg, styles.iconColor)}>
+              {icon}
             </div>
-          )}
-
-          {/* Action Button */}
-          {actionLabel && onAction && (
-            <LuxuryButton
-              variant="secondary"
-              size="sm"
-              onClick={onAction}
-              className="mt-2"
-            >
-              {actionLabel}
-            </LuxuryButton>
           )}
         </div>
       </div>

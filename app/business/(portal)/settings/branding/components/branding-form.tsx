@@ -154,7 +154,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="brand_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">Brand Name (Optional)</FormLabel>
+                    <FormLabel className="text-foreground">Brand Name (Optional)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Your Brand Name"
@@ -174,7 +174,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                  <Label className="text-muted-foreground">Color Presets</Label>
+                  <Label className="text-foreground">Color Presets</Label>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {colorPresets.map((preset) => (
@@ -212,7 +212,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="primary_color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">Primary Color</FormLabel>
+                    <FormLabel className="text-foreground">Primary Color</FormLabel>
                     <div className="flex gap-3 items-center">
                       <FormControl>
                         <Input
@@ -244,7 +244,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="secondary_color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">Secondary Color</FormLabel>
+                    <FormLabel className="text-foreground">Secondary Color</FormLabel>
                     <div className="flex gap-3 items-center">
                       <FormControl>
                         <Input
@@ -276,7 +276,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="accent_color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground">Accent Color</FormLabel>
+                    <FormLabel className="text-foreground">Accent Color</FormLabel>
                     <div className="flex gap-3 items-center">
                       <FormControl>
                         <Input
@@ -304,7 +304,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
 
               {/* Color Preview */}
               <div className="rounded-xl border border-border bg-muted p-4 space-y-3">
-                <Label className="text-muted-foreground text-xs uppercase tracking-wider">
+                <Label className="text-foreground/70 text-xs uppercase tracking-wider">
                   Color Preview
                 </Label>
                 <div className="flex gap-4">

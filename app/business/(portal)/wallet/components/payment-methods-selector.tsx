@@ -33,7 +33,7 @@ interface PaymentMethodsSelectorProps {
 }
 
 const cardBrandColors: Record<string, string> = {
-  visa: 'bg-blue-500',
+  visa: 'bg-[#1A1F71]',
   mastercard: 'bg-orange-500',
   amex: 'bg-green-500',
   discover: 'bg-purple-500',
@@ -139,7 +139,7 @@ export function PaymentMethodsSelector({
           {paymentMethods.map((pm) => (
             <Card
               key={pm.id}
-              className="relative overflow-hidden transition-all duration-200 bg-muted/50 border border-border hover:border-primary/30 hover:shadow-md"
+              className="relative overflow-hidden transition-all duration-200 bg-muted/50 border border-border hover:border-border hover:shadow-md"
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
@@ -206,7 +206,7 @@ export function PaymentMethodsSelector({
         className={cn(
           'w-full',
           paymentMethods.length > 0
-            ? 'bg-muted border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50'
+            ? 'bg-muted border-border text-foreground hover:bg-muted/80 hover:border-border'
             : 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90 border-0'
         )}
       >

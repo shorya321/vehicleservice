@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/business/(portal)/components/ui/select';
 import { Loader2, Save, CreditCard, DollarSign, ShieldCheck, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -155,7 +155,7 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <Label htmlFor="preferred-currency" className="text-muted-foreground">
+            <Label htmlFor="preferred-currency" className="text-foreground">
               Preferred Currency
             </Label>
             <Select

@@ -606,6 +606,58 @@
 }
 
 /* ============================================
+   FORM LABEL STYLES
+   Ensure labels are visible in both light/dark modes
+   SCOPE: Business portal only
+   ============================================ */
+
+/*
+ * Fix for form labels not visible in light mode
+ * Labels should use foreground color, not muted-foreground
+ */
+
+/* Force labels with muted-foreground class to have better contrast in light mode */
+.light label.text-muted-foreground {
+  color: hsl(240 6% 30%) !important; /* Darker gray #4a4a4f for light mode visibility */
+}
+
+/* Ensure FormLabel components in business forms are visible */
+.light [data-slot="form-label"],
+.light form label {
+  color: hsl(var(--foreground));
+}
+
+/* Business portal specific - label utility class for explicit styling */
+.business-label {
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.business-label-muted {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* Light mode override for business-label-muted */
+.light .business-label-muted {
+  color: hsl(240 6% 35%); /* Better contrast than default muted-foreground */
+}
+
+/* Review section labels - high contrast in both modes */
+.text-business-label {
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.light .text-business-label {
+  color: hsl(240 6% 35%); /* #56565e - darker gray for light mode visibility */
+}
+
+/* ============================================
    CARD, BUTTON, INPUT STYLES
    Now handled by shadcn UI components
    ============================================ */
@@ -977,9 +1029,10 @@
 /* Split-screen grid layout */
 .auth-split-screen {
   display: grid;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   grid-template-columns: 1fr 1fr;
+  overflow: hidden;
 }
 
 @media (max-width: 1023px) {
@@ -992,19 +1045,26 @@
   .auth-split-screen {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
   }
 }
 
 /* Brand panel (left side) - Dark gradient with gold accents */
 .auth-brand-panel {
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   padding: 3rem;
   background: var(--luxury-gradient-dark);
   overflow: hidden;
-  height: 100%;
 }
 
 /* Brand panel decorative elements */
@@ -1049,20 +1109,50 @@
   }
 }
 
-/* Form panel (right side) */
+/* Form panel (right side) - scrollable */
 .auth-form-panel {
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
   background-color: var(--luxury-black);
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Center form content vertically when it fits */
+.auth-form-panel > * {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Luxury scrollbar for form panel */
+.auth-form-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.auth-form-panel::-webkit-scrollbar-track {
+  background: rgba(17, 17, 17, 0.5);
+}
+
+.auth-form-panel::-webkit-scrollbar-thumb {
+  background: rgba(198, 170, 136, 0.3);
+  border-radius: 3px;
+}
+
+.auth-form-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(198, 170, 136, 0.5);
 }
 
 @media (max-width: 767px) {
   .auth-form-panel {
+    height: auto;
+    min-height: 0;
     padding: 1.5rem;
+    overflow-y: visible;
   }
 }
 

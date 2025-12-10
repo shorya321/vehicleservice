@@ -204,6 +204,7 @@ export function WalletPageContent({
               value={quickStats?.paymentMethodsCount ?? 0}
               subtitle="Saved cards"
               icon={<CreditCard className="h-5 w-5" />}
+              variant="info"
             />
           </motion.div>
           <motion.div key="monthly-transactions" variants={prefersReducedMotion ? undefined : staggerItem}>
@@ -321,7 +322,7 @@ export function WalletPageContent({
 
             {/* Amount Input */}
             <div className="space-y-2">
-              <Label htmlFor="amount" className="text-muted-foreground text-sm">
+              <Label htmlFor="amount" className="text-foreground text-sm">
                 Amount ({currency})
               </Label>
               <Input

@@ -18,8 +18,6 @@ import {
   TrendingUp,
   Wallet,
   BarChart3,
-  Calendar,
-  ChevronDown,
   Sparkles,
   Settings,
   CreditCard,
@@ -36,12 +34,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { CurrencyCountUp } from '@/components/business/motion';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import {
@@ -214,25 +206,17 @@ export function DashboardContent({
           transition={{ duration: 0.4, delay: 0.3 }}
           className="flex items-center gap-3"
         >
-          {/* Date Range Selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="hidden sm:flex items-center gap-2 border-border bg-card/80 backdrop-blur-sm text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-300"
-              >
-                <Calendar className="h-4 w-4 text-primary" />
-                Last 30 days
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 bg-popover border-border backdrop-blur-xl">
-              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">Last 7 days</DropdownMenuItem>
-              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">Last 30 days</DropdownMenuItem>
-              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">Last 90 days</DropdownMenuItem>
-              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">This year</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Settings Button */}
+          <Button
+            asChild
+            variant="outline"
+            className="hidden sm:flex items-center gap-2 border-border bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:bg-primary/5 transition-all duration-300"
+          >
+            <Link href="/business/settings">
+              <Settings className="h-4 w-4 text-primary" />
+              <span className="text-foreground/80">Settings</span>
+            </Link>
+          </Button>
 
           <Button asChild className="gap-2 border-none rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
             <Link href="/business/bookings/new">
@@ -333,8 +317,8 @@ export function DashboardContent({
                 subtitle="This month"
                 icon={<BarChart3 className="h-4 w-4" />}
                 trend={monthlyBookings > 0 ? { value: 12, isPositive: true } : undefined}
-                accentColor="amber"
                 iconBgColor="bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                valueColor="text-amber-600 dark:text-amber-400"
               />
             </motion.div>
 
@@ -345,8 +329,8 @@ export function DashboardContent({
                 value={completedBookings}
                 subtitle="Successfully delivered"
                 icon={<CalendarCheck className="h-4 w-4" />}
-                accentColor="emerald"
                 iconBgColor="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                valueColor="text-emerald-600 dark:text-emerald-400"
               />
             </motion.div>
 
@@ -357,8 +341,8 @@ export function DashboardContent({
                 value={pendingBookings}
                 subtitle="Awaiting action"
                 icon={<Clock className="h-4 w-4" />}
-                accentColor="sky"
                 iconBgColor="bg-sky-500/20 text-sky-600 dark:text-sky-400"
+                valueColor="text-sky-600 dark:text-sky-400"
               />
             </motion.div>
 
@@ -369,8 +353,8 @@ export function DashboardContent({
                 value={totalBookings}
                 subtitle="All time"
                 icon={<TrendingUp className="h-4 w-4" />}
-                accentColor="violet"
                 iconBgColor="bg-violet-500/20 text-violet-600 dark:text-violet-400"
+                valueColor="text-violet-600 dark:text-violet-400"
               />
             </motion.div>
           </div>

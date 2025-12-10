@@ -246,31 +246,11 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
         {booking.booking_assignments && booking.booking_assignments.length > 0 && (
           <Card className="bg-card border border-border rounded-xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Service Provider Details</CardTitle>
+              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Driver Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {(booking.booking_assignments[0].status === 'accepted' || booking.booking_assignments[0].status === 'completed') ? (
                 <>
-                  {/* Vendor Information */}
-                  {booking.booking_assignments[0].vendor && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Service Provider</p>
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        <div>
-                          <p className="font-medium text-foreground">{booking.booking_assignments[0].vendor.business_name}</p>
-                          {booking.booking_assignments[0].vendor.business_phone && (
-                            <p className="text-sm text-muted-foreground">
-                              Contact: {booking.booking_assignments[0].vendor.business_phone}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <Separator className="bg-border" />
-
                   {/* Driver Information */}
                   {booking.booking_assignments[0].driver && (
                     <div className="space-y-2">

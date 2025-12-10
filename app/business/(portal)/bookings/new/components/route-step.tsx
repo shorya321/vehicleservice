@@ -19,7 +19,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/app/business/(portal)/components/ui/select';
 import {
   Form,
   FormControl,

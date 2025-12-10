@@ -179,7 +179,7 @@ export function DomainConfiguration({
               name="custom_domain"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-muted-foreground">Custom Domain</FormLabel>
+                  <FormLabel className="text-foreground">Custom Domain</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="transfers.yourhotel.com"

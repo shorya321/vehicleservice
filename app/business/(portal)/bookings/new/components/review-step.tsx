@@ -55,20 +55,20 @@ export function ReviewStep({
         <h3 className="font-semibold mb-3 text-foreground">Route</h3>
         <div className="space-y-2 text-sm">
           <div>
-            <span className="text-muted-foreground">From:</span>{' '}
-            <span className="font-medium">
+            <span className="text-business-label">From:</span>{' '}
+            <span className="font-medium text-foreground">
               {fromLocation?.name} - {formData.pickup_address}
             </span>
           </div>
           <div>
-            <span className="text-muted-foreground">To:</span>{' '}
-            <span className="font-medium">
+            <span className="text-business-label">To:</span>{' '}
+            <span className="font-medium text-foreground">
               {toLocation?.name} - {formData.dropoff_address}
             </span>
           </div>
           <div>
-            <span className="text-muted-foreground">Pickup:</span>{' '}
-            <span className="font-medium">
+            <span className="text-business-label">Pickup:</span>{' '}
+            <span className="font-medium text-foreground">
               {new Date(formData.pickup_datetime).toLocaleString()}
             </span>
           </div>
@@ -79,13 +79,13 @@ export function ReviewStep({
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 border rounded-lg">
           <h3 className="font-semibold mb-3 text-foreground">Vehicle</h3>
-          <p className="text-sm font-medium">{vehicleType?.name}</p>
+          <p className="text-sm font-medium text-foreground">{vehicleType?.name}</p>
         </div>
         <div className="p-4 border rounded-lg">
           <h3 className="font-semibold mb-3 text-foreground">Passengers</h3>
           <div className="text-sm space-y-1">
-            <p>{formData.passenger_count} passenger(s)</p>
-            <p>{formData.luggage_count} luggage</p>
+            <p className="text-foreground">{formData.passenger_count} passenger(s)</p>
+            <p className="text-foreground">{formData.luggage_count} luggage</p>
           </div>
         </div>
       </div>
@@ -95,21 +95,21 @@ export function ReviewStep({
         <h3 className="font-semibold mb-3 text-foreground">Customer Information</h3>
         <div className="space-y-2 text-sm">
           <div>
-            <span className="text-muted-foreground">Name:</span>{' '}
-            <span className="font-medium">{formData.customer_name}</span>
+            <span className="text-business-label">Name:</span>{' '}
+            <span className="font-medium text-foreground">{formData.customer_name}</span>
           </div>
           <div>
-            <span className="text-muted-foreground">Email:</span>{' '}
-            <span className="font-medium">{formData.customer_email}</span>
+            <span className="text-business-label">Email:</span>{' '}
+            <span className="font-medium text-foreground">{formData.customer_email}</span>
           </div>
           <div>
-            <span className="text-muted-foreground">Phone:</span>{' '}
-            <span className="font-medium">{formData.customer_phone}</span>
+            <span className="text-business-label">Phone:</span>{' '}
+            <span className="font-medium text-foreground">{formData.customer_phone}</span>
           </div>
           {formData.reference_number && (
             <div>
-              <span className="text-muted-foreground">Reference:</span>{' '}
-              <span className="font-medium">{formData.reference_number}</span>
+              <span className="text-business-label">Reference:</span>{' '}
+              <span className="font-medium text-foreground">{formData.reference_number}</span>
             </div>
           )}
         </div>
@@ -120,15 +120,15 @@ export function ReviewStep({
         <h3 className="font-semibold mb-3 text-foreground">Pricing</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Base Price:</span>
-            <span>{formatCurrency(formData.base_price)}</span>
+            <span className="text-business-label">Base Price:</span>
+            <span className="text-foreground">{formatCurrency(formData.base_price)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Amenities:</span>
-            <span>{formatCurrency(formData.amenities_price)}</span>
+            <span className="text-business-label">Amenities:</span>
+            <span className="text-foreground">{formatCurrency(formData.amenities_price)}</span>
           </div>
           <div className="flex justify-between pt-2 border-t font-semibold text-base">
-            <span>Total:</span>
+            <span className="text-foreground">Total:</span>
             <span className="text-primary">{formatCurrency(formData.total_price)}</span>
           </div>
         </div>

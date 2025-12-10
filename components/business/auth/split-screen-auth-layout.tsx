@@ -88,7 +88,7 @@ export function SplitScreenAuthLayout({
       </div>
 
       {/* Form Panel (right side) */}
-      <AuthFormPanel maxWidth={formMaxWidth}>
+      <AuthFormPanel maxWidth={formMaxWidth} className="h-full">
         {children}
       </AuthFormPanel>
     </div>

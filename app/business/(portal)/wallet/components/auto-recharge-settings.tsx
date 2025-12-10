@@ -21,7 +21,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/app/business/(portal)/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
@@ -272,7 +272,7 @@ export function AutoRechargeSettings() {
 
         {/* Trigger Threshold */}
         <div className="space-y-2">
-          <Label htmlFor="trigger" className="text-muted-foreground">Trigger Threshold</Label>
+          <Label htmlFor="trigger" className="text-foreground">Trigger Threshold</Label>
           <Input
             id="trigger"
             type="number"
@@ -292,7 +292,7 @@ export function AutoRechargeSettings() {
 
         {/* Recharge Amount */}
         <div className="space-y-2">
-          <Label htmlFor="amount" className="text-muted-foreground">Recharge Amount</Label>
+          <Label htmlFor="amount" className="text-foreground">Recharge Amount</Label>
           <Input
             id="amount"
             type="number"
@@ -310,7 +310,7 @@ export function AutoRechargeSettings() {
 
         {/* Monthly Limit */}
         <div className="space-y-2">
-          <Label htmlFor="monthlyLimit" className="text-muted-foreground">Monthly Limit (Optional)</Label>
+          <Label htmlFor="monthlyLimit" className="text-foreground">Monthly Limit (Optional)</Label>
           <Input
             id="monthlyLimit"
             type="number"
@@ -334,7 +334,7 @@ export function AutoRechargeSettings() {
 
         {/* Currency */}
         <div className="space-y-2">
-          <Label htmlFor="currency" className="text-muted-foreground">Currency</Label>
+          <Label htmlFor="currency" className="text-foreground">Currency</Label>
           <Select
             value={settings.currency}
             onValueChange={(value) => setSettings({ ...settings, currency: value as CurrencyCode })}
@@ -363,7 +363,7 @@ export function AutoRechargeSettings() {
         {/* Payment Method Selection */}
         {paymentMethods.length > 0 && (
           <div className="space-y-3">
-            <Label className="text-muted-foreground">Payment Method</Label>
+            <Label className="text-foreground">Payment Method</Label>
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Switch
@@ -377,7 +377,7 @@ export function AutoRechargeSettings() {
                 />
                 <Label
                   htmlFor="useDefault"
-                  className="font-normal cursor-pointer mb-0 text-muted-foreground"
+                  className="font-normal cursor-pointer mb-0 text-foreground/80"
                 >
                   Use default payment method
                 </Label>

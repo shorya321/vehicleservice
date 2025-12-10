@@ -15,12 +15,14 @@ import {
   CalendarCheck,
   Search,
   ArrowRight,
-  CalendarDays,
-  ChevronDown,
   MapPin,
   ChevronRight,
   Eye,
   Filter,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  DollarSign,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -35,7 +37,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/app/business/(portal)/components/ui/select';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 interface Booking {
@@ -77,18 +79,6 @@ function mapBookingStatus(
   return statusMap[status] || 'pending';
 }
 
-// Generate sample sparkline data
-function generateSparklineData(value: number, points: number = 7): number[] {
-  const data: number[] = [];
-  let current = value * 0.6;
-  for (let i = 0; i < points; i++) {
-    const variation = (Math.random() - 0.3) * (value * 0.2);
-    current = Math.max(0, current + variation);
-    data.push(Math.round(current));
-  }
-  data[data.length - 1] = value;
-  return data;
-}
 
 export function BookingsPageContent({
   bookings,
@@ -117,11 +107,6 @@ export function BookingsPageContent({
 
     return matchesSearch && matchesStatus;
   });
-
-  // Generate sparkline data
-  const bookingsSparkline = generateSparklineData(totalCount || 5);
-  const revenueSparkline = generateSparklineData(totalRevenue / 100 || 50);
-  const pendingSparkline = generateSparklineData(pendingCount || 2);
 
   // Refined animations - faster, subtler
   const containerVariants = {
@@ -166,7 +151,10 @@ export function BookingsPageContent({
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+          <h1
+            className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--business-text-primary)]"
+            style={{ fontFamily: 'var(--business-font-display)' }}
+          >
             Bookings
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -175,46 +163,102 @@ export function BookingsPageContent({
         </div>
       </motion.div>
 
-      {/* Stats Row - Obsidian Luxury Cards */}
+      {/* Stats Row - Clean Minimal Cards */}
       <motion.div
         variants={prefersReducedMotion ? undefined : containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
-        {/* Total Bookings */}
+        {/* Total Bookings Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <Card className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Total Bookings</span>
-              <p className="text-3xl font-bold text-primary mt-2">{totalCount}</p>
-              {totalCount > 0 && (
-                <Badge variant="outline" className="mt-2 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 rounded-full">
-                  ↑ 12%
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-primary border border-border shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
+                  Total Bookings
+                </p>
+                <p className="text-3xl font-bold tracking-tight text-foreground">
+                  {totalCount}
+                </p>
+                {totalCount > 0 && (
+                  <div className="flex items-center gap-1 mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    <span>+12% from last month</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                <CalendarCheck className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Revenue */}
+        {/* Revenue Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <Card className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Revenue</span>
-              <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">{formatCurrency(totalRevenue)}</p>
-            </CardContent>
-          </Card>
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-emerald-500 border border-border shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
+                  Revenue
+                </p>
+                <p className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(totalRevenue)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  This period
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-500/20">
+                <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Pending */}
+        {/* Pending Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <Card className="bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Pending</span>
-              <p className="text-3xl font-bold text-sky-600 dark:text-sky-400 mt-2">{pendingCount}</p>
-            </CardContent>
-          </Card>
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-amber-500 border border-border shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
+                  Pending
+                </p>
+                <p className="text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+                  {pendingCount}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {pendingCount > 0 ? "Needs attention" : "All clear"}
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 dark:bg-amber-500/20">
+                <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Completed Card */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-sky-500 border border-border shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
+                  Completed
+                </p>
+                <p className="text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">
+                  {completedCount}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Successfully done
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-500/10 dark:bg-sky-500/20">
+                <CheckCircle2 className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+              </div>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -247,44 +291,22 @@ export function BookingsPageContent({
           </SelectTrigger>
           <SelectContent className="bg-popover border-border">
             <SelectItem value="all" className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-muted-foreground" />
-                All Status
-              </span>
+              All Status
             </SelectItem>
             <SelectItem value="pending" className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary" />
-                Pending
-              </span>
+              Pending
             </SelectItem>
             <SelectItem value="confirmed" className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-sky-500" />
-                Confirmed
-              </span>
+              Confirmed
             </SelectItem>
             <SelectItem value="completed" className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Completed
-              </span>
+              Completed
             </SelectItem>
             <SelectItem value="cancelled" className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-                Cancelled
-              </span>
+              Cancelled
             </SelectItem>
           </SelectContent>
         </Select>
-
-        {/* Date Range */}
-        <Button variant="outline" className="hidden sm:flex items-center gap-2 bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground">
-          <CalendarDays className="h-4 w-4 text-primary" />
-          Last 30 days
-          <ChevronDown className="h-3 w-3 opacity-50" />
-        </Button>
 
         {/* New Booking Button */}
         <Button asChild className="ml-auto gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90">

@@ -159,24 +159,24 @@ export function BusinessHeader({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
-            className="w-56 bg-popover border-border shadow-lg"
+            className="w-56 !bg-popover !border-border shadow-lg"
             align="end"
             sideOffset={8}
           >
             {/* User Info Section */}
-            <DropdownMenuLabel className="font-normal">
+            <DropdownMenuLabel className="font-normal !text-primary">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none text-foreground">{displayPersonName}</p>
                 <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
               </div>
             </DropdownMenuLabel>
 
-            <DropdownMenuSeparator className="bg-primary/20" />
+            <DropdownMenuSeparator className="!bg-border" />
 
             {/* Quick Actions */}
             <DropdownMenuItem
               onClick={() => router.push('/business/wallet')}
-              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
             >
               <Wallet className="mr-2 h-4 w-4 text-primary" />
               <span>Wallet</span>
@@ -184,7 +184,7 @@ export function BusinessHeader({
 
             <DropdownMenuItem
               onClick={() => router.push('/business/settings')}
-              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
             >
               <Settings className="mr-2 h-4 w-4 text-primary" />
               <span>Account Settings</span>
@@ -192,7 +192,7 @@ export function BusinessHeader({
 
             <DropdownMenuItem
               onClick={() => router.push('/business/settings/branding')}
-              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
             >
               <Palette className="mr-2 h-4 w-4 text-primary" />
               <span>Branding</span>
@@ -200,18 +200,18 @@ export function BusinessHeader({
 
             <DropdownMenuItem
               onClick={() => router.push('/business/domain')}
-              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
             >
               <Globe className="mr-2 h-4 w-4 text-primary" />
               <span>Custom Domain</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="bg-primary/20" />
+            <DropdownMenuSeparator className="!bg-border" />
 
             {/* Logout */}
             <DropdownMenuItem
               onClick={handleLogout}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
+              className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
