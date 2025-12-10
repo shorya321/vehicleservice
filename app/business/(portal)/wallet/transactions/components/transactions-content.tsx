@@ -3,6 +3,9 @@
 /**
  * Transactions Content Component
  * Main client component for transaction management with filtering, search, and export
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState, useEffect } from 'react';
@@ -12,6 +15,7 @@ import { TransactionsList } from './transactions-list';
 import { TransactionsStats } from './transactions-stats';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
 
 interface Transaction {
@@ -181,10 +185,12 @@ export function TransactionsContent({
       />
 
       {/* Transactions List */}
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Transaction History
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
             {pagination.total} transactions found
             {filters.search && ` matching "${filters.search}"`}
           </CardDescription>
@@ -192,7 +198,7 @@ export function TransactionsContent({
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
             <TransactionsList

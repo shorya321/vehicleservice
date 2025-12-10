@@ -4,12 +4,17 @@
  * Wallet Balance Component
  * Displays current balance and recharge button
  * Supports both Payment Element (embedded) and Checkout (redirect) flows
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState } from 'react';
-import { Plus, Loader2, CreditCard, ExternalLink } from 'lucide-react';
-import { LuxuryCard, LuxuryCardContent, LuxuryCardHeader, LuxuryCardTitle } from '@/components/business/ui/luxury-card';
-import { LuxuryButton } from '@/components/business/ui/luxury-button';
+import { Plus, Loader2, CreditCard, ExternalLink, Wallet } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -18,10 +23,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { WalletRechargeModal } from './wallet-recharge-modal';
 import {
   formatCurrency,
@@ -124,20 +128,31 @@ export function WalletBalance({
 
   return (
     <>
-      <LuxuryCard>
-        <LuxuryCardHeader className="flex flex-row items-center justify-between space-y-0">
-          <LuxuryCardTitle>Current Balance</LuxuryCardTitle>
+      {/* Balance Card */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-primary" />
+            </div>
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Current Balance
+            </CardTitle>
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <LuxuryButton>
+              <Button className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Credits
-              </LuxuryButton>
+              </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            {/* Dialog */}
+            <DialogContent className="sm:max-w-[500px] bg-card border-border">
               <DialogHeader>
-                <DialogTitle>Add Credits to Wallet</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-foreground text-xl font-semibold">
+                  Add Credits to Wallet
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground">
                   Enter the amount you want to add to your wallet. Minimum{' '}
                   {formatCurrency(minAmount, currency)}, maximum {formatCurrency(maxAmount, currency)}.
                 </DialogDescription>
@@ -146,28 +161,36 @@ export function WalletBalance({
                 {/* Payment Flow Selection (only if Payment Element is enabled) */}
                 {paymentElementEnabled && (
                   <Tabs value={selectedFlow} onValueChange={(v) => setSelectedFlow(v as 'embedded' | 'redirect')}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="embedded">
+                    <TabsList className="grid w-full grid-cols-2 bg-muted border border-border">
+                      <TabsTrigger
+                        value="embedded"
+                        className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+                      >
                         <CreditCard className="mr-2 h-4 w-4" />
                         Instant Payment
                       </TabsTrigger>
-                      <TabsTrigger value="redirect">
+                      <TabsTrigger
+                        value="redirect"
+                        className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+                      >
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Checkout Page
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="embedded" className="text-sm text-muted-foreground mt-2">
+                    <TabsContent value="embedded" className="text-sm text-muted-foreground mt-3">
                       Pay directly on this page with saved payment methods or add a new one.
                     </TabsContent>
-                    <TabsContent value="redirect" className="text-sm text-muted-foreground mt-2">
-                      You'll be redirected to Stripe's secure checkout page to complete payment.
+                    <TabsContent value="redirect" className="text-sm text-muted-foreground mt-3">
+                      You&apos;ll be redirected to Stripe&apos;s secure checkout page to complete payment.
                     </TabsContent>
                   </Tabs>
                 )}
 
                 {/* Amount Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount ({currency})</Label>
+                  <Label htmlFor="amount" className="text-muted-foreground text-sm">
+                    Amount ({currency})
+                  </Label>
                   <Input
                     id="amount"
                     type="number"
@@ -178,14 +201,22 @@ export function WalletBalance({
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder={minAmount.toString()}
                     disabled={isLoading}
+                    className="bg-muted border-border text-foreground focus:border-primary focus:ring-primary/20 placeholder:text-muted-foreground"
                   />
                   <p className="text-sm text-muted-foreground">
-                    You will be charged: {formatCurrency(parseFloat(amount) || 0, currency)}
+                    You will be charged:{' '}
+                    <span className="text-primary font-semibold">
+                      {formatCurrency(parseFloat(amount) || 0, currency)}
+                    </span>
                   </p>
                 </div>
 
                 {/* Action Button */}
-                <LuxuryButton onClick={handleRecharge} disabled={isLoading} className="w-full">
+                <Button
+                  onClick={handleRecharge}
+                  disabled={isLoading}
+                  className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -202,16 +233,18 @@ export function WalletBalance({
                       Proceed to Checkout
                     </>
                   )}
-                </LuxuryButton>
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
-        </LuxuryCardHeader>
-        <LuxuryCardContent>
-          <div className="text-4xl font-bold">{formatCurrency(balance, currency)}</div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-4xl font-bold text-primary">
+            {formatCurrency(balance, currency)}
+          </div>
           <p className="text-sm text-muted-foreground mt-2">Available for bookings</p>
-        </LuxuryCardContent>
-      </LuxuryCard>
+        </CardContent>
+      </Card>
 
       {/* Wallet Recharge Modal - Shows saved cards OR payment element */}
       {paymentElementEnabled && (

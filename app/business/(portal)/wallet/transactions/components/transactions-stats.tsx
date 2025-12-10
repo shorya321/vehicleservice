@@ -3,6 +3,9 @@
 /**
  * Transactions Statistics Component
  * Displays comprehensive transaction statistics
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState, useEffect } from 'react';
@@ -11,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, TrendingDown, DollarSign, Activity, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/currency-converter';
+import { cn } from '@/lib/utils';
 
 interface TransactionsStatsProps {
   businessAccountId: string;
@@ -70,9 +74,9 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </CardContent>
       </Card>
     );
@@ -93,133 +97,140 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
   const currency = filters.currency || getDefaultCurrency();
 
   return (
-    <Card>
+    <Card className="bg-card border border-border rounded-xl shadow-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Transaction Statistics</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Transaction Statistics
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
               Overview of your wallet activity
               {(filters.start_date || filters.end_date) && ' for selected period'}
             </CardDescription>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
+        {/* Main Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Total Transactions */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Transactions</p>
-                  <p className="text-2xl font-bold">{statistics.total_transactions}</p>
-                </div>
-                <Activity className="h-8 w-8 text-primary" />
+          {/* Total Transactions - Gold */}
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Transactions</p>
+                <p className="text-2xl font-bold text-primary">
+                  {statistics.total_transactions}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Activity className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </div>
 
-          {/* Total Credits */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Credits</p>
-                  <p className="text-2xl font-bold text-[var(--business-success)]">
-                    {formatCurrency(statistics.total_credits, currency)}
-                  </p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-[var(--business-success)]" />
+          {/* Total Credits - Green */}
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Credits</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(statistics.total_credits, currency)}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+          </div>
 
-          {/* Total Debits */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Debits</p>
-                  <p className="text-2xl font-bold text-[var(--business-error)]">
-                    {formatCurrency(statistics.total_debits, currency)}
-                  </p>
-                </div>
-                <TrendingDown className="h-8 w-8 text-[var(--business-error)]" />
+          {/* Total Debits - Red */}
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Debits</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  {formatCurrency(statistics.total_debits, currency)}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </div>
 
           {/* Net Amount */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Net Amount</p>
-                  <p
-                    className={`text-2xl font-bold ${
-                      statistics.net_amount >= 0 ? 'text-[var(--business-success)]' : 'text-[var(--business-error)]'
-                    }`}
-                  >
-                    {formatCurrency(statistics.net_amount, currency)}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-primary" />
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Net Amount</p>
+                <p
+                  className={cn(
+                    'text-2xl font-bold',
+                    statistics.net_amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                  )}
+                >
+                  {formatCurrency(statistics.net_amount, currency)}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Additional Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Average Transaction</p>
-              <p className="text-xl font-bold">
-                {formatCurrency(statistics.average_transaction, currency)}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Average Transaction</p>
+            <p className="text-xl font-bold text-foreground">
+              {formatCurrency(statistics.average_transaction, currency)}
+            </p>
+          </div>
 
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Largest Credit</p>
-              <p className="text-xl font-bold text-[var(--business-success)]">
-                {formatCurrency(statistics.largest_credit, currency)}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Largest Credit</p>
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              {formatCurrency(statistics.largest_credit, currency)}
+            </p>
+          </div>
 
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Largest Debit</p>
-              <p className="text-xl font-bold text-[var(--business-error)]">
-                {formatCurrency(statistics.largest_debit, currency)}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-xl bg-muted border border-border p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Largest Debit</p>
+            <p className="text-xl font-bold text-red-600 dark:text-red-400">
+              {formatCurrency(statistics.largest_debit, currency)}
+            </p>
+          </div>
         </div>
 
         {/* Breakdown by Type */}
         {statistics.by_type && Object.keys(statistics.by_type).length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium mb-3">Breakdown by Type</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              Breakdown by Type
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {Object.entries(statistics.by_type).map(([type, data]) => (
-                <Card key={type}>
-                  <CardContent className="p-3">
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {type.replace(/_/g, ' ')}
-                    </p>
-                    <p className="text-lg font-bold">{data.count}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatCurrency(data.total_amount, currency)}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div key={type} className="rounded-xl bg-muted border border-border p-3">
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {type.replace(/_/g, ' ')}
+                  </p>
+                  <p className="text-lg font-bold text-foreground">
+                    {data.count}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatCurrency(data.total_amount, currency)}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
@@ -228,18 +239,20 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
         {/* Breakdown by Currency */}
         {statistics.by_currency && Object.keys(statistics.by_currency).length > 1 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium mb-3">Breakdown by Currency</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              Breakdown by Currency
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {Object.entries(statistics.by_currency).map(([curr, data]) => (
-                <Card key={curr}>
-                  <CardContent className="p-3">
-                    <p className="text-xs text-muted-foreground">{curr}</p>
-                    <p className="text-lg font-bold">{data.count} transactions</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatCurrency(data.total_amount, curr)}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div key={curr} className="rounded-xl bg-muted border border-border p-3">
+                  <p className="text-xs text-muted-foreground">{curr}</p>
+                  <p className="text-lg font-bold text-foreground">
+                    {data.count} transactions
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatCurrency(data.total_amount, curr)}
+                  </p>
+                </div>
               ))}
             </div>
           </div>

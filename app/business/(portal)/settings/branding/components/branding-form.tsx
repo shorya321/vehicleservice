@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Branding Form Component
+ * Form for customizing brand colors and logo
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,8 +18,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Loader2, Palette, Save } from 'lucide-react'
+import { Loader2, Palette, Save, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { LogoUpload } from './logo-upload'
 
 const brandingSchema = z.object({
@@ -32,6 +41,19 @@ interface BrandingFormProps {
     secondary_color: string
     accent_color: string
   }
+}
+
+// Helper function to determine text color based on background luminance
+function getContrastTextColor(hexColor: string): string {
+  // Default to dark text if invalid color
+  if (!hexColor || !hexColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+    return 'text-zinc-900';
+  }
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? 'text-zinc-900' : 'text-white';
 }
 
 export function BrandingForm({ businessAccountId, currentBranding }: BrandingFormProps) {
@@ -82,12 +104,13 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
     router.refresh()
   }
 
-  // Color preset buttons - Professional dark backgrounds with tasteful accents
+  // Color preset buttons - Obsidian Luxury presets
   const colorPresets = [
-    { name: 'Indigo', primary: '#0F0F12', secondary: '#6366F1', accent: '#818CF8' },
-    { name: 'Executive', primary: '#1e293b', secondary: '#60a5fa', accent: '#60a5fa' },
-    { name: 'Forest', primary: '#1e3a2e', secondary: '#86efac', accent: '#86efac' },
-    { name: 'Midnight', primary: '#2d1b3d', secondary: '#c084fc', accent: '#c084fc' },
+    { name: 'Obsidian Gold', primary: '#050505', secondary: '#C6AA88', accent: '#A68B5B', icon: '✨' },
+    { name: 'Indigo', primary: '#0F0F12', secondary: '#6366F1', accent: '#818CF8', icon: '💜' },
+    { name: 'Executive', primary: '#1e293b', secondary: '#60a5fa', accent: '#60a5fa', icon: '💎' },
+    { name: 'Forest', primary: '#1e3a2e', secondary: '#86efac', accent: '#86efac', icon: '🌲' },
+    { name: 'Midnight', primary: '#2d1b3d', secondary: '#c084fc', accent: '#c084fc', icon: '🌙' },
   ]
 
   const applyPreset = (preset: typeof colorPresets[0]) => {
@@ -106,15 +129,21 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       />
 
       {/* Brand Colors */}
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            Brand Colors
-          </CardTitle>
-          <CardDescription>
-            Customize the color scheme for your white-label platform
-          </CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+              <Palette className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div>
+              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Brand Colors
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Customize the color scheme for your white-label platform
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -125,11 +154,15 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="brand_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Brand Name (Optional)</FormLabel>
+                    <FormLabel className="text-muted-foreground">Brand Name (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Brand Name" {...field} />
+                      <Input
+                        placeholder="Your Brand Name"
+                        {...field}
+                        className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-violet-500 focus:ring-violet-500/20"
+                      />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="text-muted-foreground">
                       Override your business name with a custom brand name for public display
                     </FormDescription>
                     <FormMessage />
@@ -138,8 +171,11 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
               />
 
               {/* Color Presets */}
-              <div className="space-y-2">
-                <Label>Color Presets</Label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                  <Label className="text-muted-foreground">Color Presets</Label>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {colorPresets.map((preset) => (
                     <Button
@@ -148,23 +184,23 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                       variant="outline"
                       size="sm"
                       onClick={() => applyPreset(preset)}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:border-violet-500/30 transition-all duration-200"
                     >
                       <div className="flex gap-1">
                         <div
-                          className="w-4 h-4 rounded-full border"
+                          className="w-4 h-4 rounded-full border border-border shadow-inner"
                           style={{ backgroundColor: preset.primary }}
                         />
                         <div
-                          className="w-4 h-4 rounded-full border"
+                          className="w-4 h-4 rounded-full border border-border"
                           style={{ backgroundColor: preset.secondary }}
                         />
                         <div
-                          className="w-4 h-4 rounded-full border"
+                          className="w-4 h-4 rounded-full border border-border"
                           style={{ backgroundColor: preset.accent }}
                         />
                       </div>
-                      {preset.name}
+                      <span className="text-xs">{preset.name}</span>
                     </Button>
                   ))}
                 </div>
@@ -176,21 +212,25 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="primary_color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Primary Color</FormLabel>
+                    <FormLabel className="text-muted-foreground">Primary Color</FormLabel>
                     <div className="flex gap-3 items-center">
                       <FormControl>
-                        <Input type="color" className="w-20 h-10 cursor-pointer" {...field} />
+                        <Input
+                          type="color"
+                          className="w-20 h-10 cursor-pointer rounded-lg bg-muted border-border hover:border-violet-500/30"
+                          {...field}
+                        />
                       </FormControl>
                       <FormControl>
                         <Input
                           type="text"
                           placeholder="#3b82f6"
                           {...field}
-                          className="font-mono"
+                          className="font-mono bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-violet-500 focus:ring-violet-500/20"
                         />
                       </FormControl>
                     </div>
-                    <FormDescription>
+                    <FormDescription className="text-muted-foreground">
                       Main brand color used for primary buttons and accents
                     </FormDescription>
                     <FormMessage />
@@ -204,21 +244,25 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="secondary_color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Secondary Color</FormLabel>
+                    <FormLabel className="text-muted-foreground">Secondary Color</FormLabel>
                     <div className="flex gap-3 items-center">
                       <FormControl>
-                        <Input type="color" className="w-20 h-10 cursor-pointer" {...field} />
+                        <Input
+                          type="color"
+                          className="w-20 h-10 cursor-pointer rounded-lg bg-muted border-border hover:border-violet-500/30"
+                          {...field}
+                        />
                       </FormControl>
                       <FormControl>
                         <Input
                           type="text"
                           placeholder="#1e40af"
                           {...field}
-                          className="font-mono"
+                          className="font-mono bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-violet-500 focus:ring-violet-500/20"
                         />
                       </FormControl>
                     </div>
-                    <FormDescription>
+                    <FormDescription className="text-muted-foreground">
                       Secondary brand color for hover states and highlights
                     </FormDescription>
                     <FormMessage />
@@ -232,21 +276,25 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 name="accent_color"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Accent Color</FormLabel>
+                    <FormLabel className="text-muted-foreground">Accent Color</FormLabel>
                     <div className="flex gap-3 items-center">
                       <FormControl>
-                        <Input type="color" className="w-20 h-10 cursor-pointer" {...field} />
+                        <Input
+                          type="color"
+                          className="w-20 h-10 cursor-pointer rounded-lg bg-muted border-border hover:border-violet-500/30"
+                          {...field}
+                        />
                       </FormControl>
                       <FormControl>
                         <Input
                           type="text"
                           placeholder="#8b5cf6"
                           {...field}
-                          className="font-mono"
+                          className="font-mono bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-violet-500 focus:ring-violet-500/20"
                         />
                       </FormControl>
                     </div>
-                    <FormDescription>
+                    <FormDescription className="text-muted-foreground">
                       Accent color for special elements and call-to-actions
                     </FormDescription>
                     <FormMessage />
@@ -255,12 +303,17 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
               />
 
               {/* Color Preview */}
-              <div className="rounded-lg border p-4 space-y-3">
-                <Label>Color Preview</Label>
+              <div className="rounded-xl border border-border bg-muted p-4 space-y-3">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wider">
+                  Color Preview
+                </Label>
                 <div className="flex gap-4">
                   <div className="flex-1 space-y-2">
                     <div
-                      className="h-20 rounded-md flex items-center justify-center text-white font-medium"
+                      className={cn(
+                        "h-20 rounded-xl flex items-center justify-center font-medium text-sm border border-border shadow-lg transition-all duration-300",
+                        getContrastTextColor(form.watch('primary_color'))
+                      )}
                       style={{ backgroundColor: form.watch('primary_color') }}
                     >
                       Primary
@@ -268,7 +321,10 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                   </div>
                   <div className="flex-1 space-y-2">
                     <div
-                      className="h-20 rounded-md flex items-center justify-center text-white font-medium"
+                      className={cn(
+                        "h-20 rounded-xl flex items-center justify-center font-medium text-sm border border-border shadow-lg transition-all duration-300",
+                        getContrastTextColor(form.watch('secondary_color'))
+                      )}
                       style={{ backgroundColor: form.watch('secondary_color') }}
                     >
                       Secondary
@@ -276,7 +332,10 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                   </div>
                   <div className="flex-1 space-y-2">
                     <div
-                      className="h-20 rounded-md flex items-center justify-center text-white font-medium"
+                      className={cn(
+                        "h-20 rounded-xl flex items-center justify-center font-medium text-sm border border-border shadow-lg transition-all duration-300",
+                        getContrastTextColor(form.watch('accent_color'))
+                      )}
                       style={{ backgroundColor: form.watch('accent_color') }}
                     >
                       Accent
@@ -286,7 +345,11 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
               </div>
 
               {/* Submit Button */}
-              <Button type="submit" disabled={isLoading} className="w-full">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

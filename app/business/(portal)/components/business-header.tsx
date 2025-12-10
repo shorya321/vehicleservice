@@ -2,18 +2,23 @@
 
 /**
  * Business Portal Header Component
- * Top navigation bar with glassmorphism, theme toggle, and user menu
+ * Clean header with gold accents using semantic CSS variables
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
- * Primary: Deep Indigo (#6366F1)
- * Secondary: Teal (#14B8A6)
+ * Design System: Clean shadcn with Gold Accent
+ * Uses bg-card, text-foreground, text-primary for theme-aware colors
  */
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, Settings, Palette, ChevronDown, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  LogOut,
+  Settings,
+  Palette,
+  ChevronDown,
+  Menu,
+  Globe,
+  Wallet,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { BusinessNotificationBell } from '@/components/business/notifications/notification-bell';
@@ -51,12 +57,12 @@ export function BusinessHeader({
   brandName,
 }: BusinessHeaderProps) {
   const router = useRouter();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, openMobile } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
 
-  // Sidebar widths - match sidebar component
-  const expandedWidth = 240;
-  const collapsedWidth = 64;
+  // Sidebar widths - match sidebar component (desktop only)
+  const expandedWidth = 260;
+  const collapsedWidth = 72;
   const currentWidth = isCollapsed ? collapsedWidth : expandedWidth;
 
   // Display values
@@ -98,156 +104,118 @@ export function BusinessHeader({
   return (
     <motion.header
       initial={false}
-      animate={{
-        left: currentWidth,
-      }}
+      animate={{ left: currentWidth }}
       transition={
         prefersReducedMotion
           ? { duration: 0 }
-          : {
-              type: 'spring',
-              stiffness: 300,
-              damping: 30,
-            }
+          : { type: 'spring', stiffness: 300, damping: 30 }
       }
-      style={{
-        left: prefersReducedMotion ? currentWidth : undefined,
-      }}
+      style={{ left: prefersReducedMotion ? currentWidth : undefined }}
       className={cn(
-        'fixed top-0 right-0 z-30 flex h-16 items-center justify-between',
-        // Glassmorphism effect
-        'bg-[var(--business-surface-1)]/80 backdrop-blur-xl',
-        'border-b border-[var(--business-border-subtle)]',
-        'px-6',
-        'transition-[left] duration-300 ease-out'
+        'fixed top-0 right-0 z-30 flex h-14 items-center justify-between',
+        'bg-card/95 backdrop-blur-sm',
+        'border-b border-border',
+        'shadow-sm',
+        'px-4 md:px-6',
+        'max-md:!left-0'
       )}
     >
-      {/* Left side - Page title / breadcrumbs placeholder */}
-      <div className="flex items-center">
-        {/* Can be populated with breadcrumbs or page title */}
+      {/* Left side - Mobile menu toggle */}
+      <div className="relative z-10 flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={openMobile}
+          className="md:hidden text-muted-foreground hover:text-primary hover:bg-primary/10"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
       </div>
 
-      {/* Right side - Theme Toggle, Notifications, and User Dropdown */}
-      <div className="flex items-center gap-2">
+      {/* Right side - Theme Toggle, Notifications and User Dropdown */}
+      <div className="relative z-10 flex items-center gap-1">
         {/* Theme Toggle */}
-        <ThemeToggle size="default" />
+        <ThemeToggle size="sm" />
 
         {/* Notification Bell */}
         <BusinessNotificationBell />
 
-        {/* User Dropdown */}
+        {/* User Dropdown Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 h-auto ml-1',
-                'text-[var(--business-text-primary)] hover:bg-[var(--business-primary-500)]/10',
-                'rounded-xl transition-all duration-200',
-                'border border-transparent hover:border-[var(--business-primary-500)]/20'
-              )}
-              style={{ fontFamily: 'var(--business-font-body)' }}
-            >
-              <Avatar className="h-9 w-9 border-2 border-[var(--business-primary-500)]/20">
-                <AvatarFallback
-                  className={cn(
-                    'bg-gradient-to-br from-[var(--business-primary-500)]/20 to-[var(--business-primary-600)]/20',
-                    'text-[var(--business-primary-400)] text-sm font-semibold'
-                  )}
-                >
+            <Button variant="ghost" className="relative h-9 px-2 ml-1 hover:bg-primary/10">
+              <Avatar className="h-8 w-8 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                   {getInitials(displayPersonName)}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-medium text-[var(--business-text-primary)]">
-                  {displayPersonName}
-                </span>
-                <span className="text-xs text-[var(--business-text-muted)]">
-                  {displayName}
-                </span>
+              <div className="hidden sm:flex flex-col items-start ml-2">
+                <span className="text-sm font-medium text-foreground">{displayPersonName}</span>
+                <span className="text-xs text-muted-foreground">{displayName}</span>
               </div>
-              <ChevronDown className="h-4 w-4 text-[var(--business-text-muted)]" />
+              <ChevronDown className="h-4 w-4 ml-2 text-primary" />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent
-            className={cn(
-              'w-64',
-              'bg-[var(--business-surface-2)] backdrop-blur-xl',
-              'border border-[var(--business-border-default)]',
-              'shadow-business-elevated rounded-xl'
-            )}
-            style={{ fontFamily: 'var(--business-font-body)' }}
+            className="w-56 bg-popover border-border shadow-lg"
             align="end"
-            forceMount
+            sideOffset={8}
           >
             {/* User Info Section */}
-            <DropdownMenuLabel className="px-4 py-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--business-primary-500)]/20 to-[var(--business-primary-600)]/20">
-                  <User className="h-5 w-5 text-[var(--business-primary-400)]" />
-                </div>
-                <div className="flex flex-col">
-                  <p className="text-sm font-medium text-[var(--business-text-primary)]">
-                    {displayPersonName}
-                  </p>
-                  <p className="text-xs text-[var(--business-text-muted)]">
-                    {userEmail}
-                  </p>
-                </div>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none text-foreground">{displayPersonName}</p>
+                <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-[var(--business-border-subtle)]" />
 
-            {/* Settings Options */}
-            <div className="p-1">
-              <DropdownMenuItem
-                onClick={() => router.push('/business/settings')}
-                className={cn(
-                  'px-3 py-2.5 rounded-lg cursor-pointer',
-                  'text-[var(--business-text-secondary)]',
-                  'hover:text-[var(--business-text-primary)]',
-                  'hover:bg-[var(--business-primary-500)]/10',
-                  'focus:bg-[var(--business-primary-500)]/10',
-                  'transition-colors duration-200'
-                )}
-              >
-                <Settings className="mr-3 h-4 w-4 text-[var(--business-text-muted)]" />
-                Account Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => router.push('/business/settings/branding')}
-                className={cn(
-                  'px-3 py-2.5 rounded-lg cursor-pointer',
-                  'text-[var(--business-text-secondary)]',
-                  'hover:text-[var(--business-text-primary)]',
-                  'hover:bg-[var(--business-primary-500)]/10',
-                  'focus:bg-[var(--business-primary-500)]/10',
-                  'transition-colors duration-200'
-                )}
-              >
-                <Palette className="mr-3 h-4 w-4 text-[var(--business-text-muted)]" />
-                Branding
-              </DropdownMenuItem>
-            </div>
-            <DropdownMenuSeparator className="bg-[var(--business-border-subtle)]" />
+            <DropdownMenuSeparator className="bg-primary/20" />
+
+            {/* Quick Actions */}
+            <DropdownMenuItem
+              onClick={() => router.push('/business/wallet')}
+              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+            >
+              <Wallet className="mr-2 h-4 w-4 text-primary" />
+              <span>Wallet</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => router.push('/business/settings')}
+              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+            >
+              <Settings className="mr-2 h-4 w-4 text-primary" />
+              <span>Account Settings</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => router.push('/business/settings/branding')}
+              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+            >
+              <Palette className="mr-2 h-4 w-4 text-primary" />
+              <span>Branding</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => router.push('/business/domain')}
+              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+            >
+              <Globe className="mr-2 h-4 w-4 text-primary" />
+              <span>Custom Domain</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-primary/20" />
 
             {/* Logout */}
-            <div className="p-1">
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className={cn(
-                  'px-3 py-2.5 rounded-lg cursor-pointer',
-                  'text-[var(--business-error)]',
-                  'hover:text-[var(--business-error)]',
-                  'hover:bg-[var(--business-error)]/10',
-                  'focus:bg-[var(--business-error)]/10',
-                  'transition-colors duration-200'
-                )}
-              >
-                <LogOut className="mr-3 h-4 w-4" />
-                Log out
-              </DropdownMenuItem>
-            </div>
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 focus:bg-destructive/10 cursor-pointer"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

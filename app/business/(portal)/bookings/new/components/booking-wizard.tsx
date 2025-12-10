@@ -3,11 +3,20 @@
 /**
  * Booking Wizard Component
  * Multi-step form for creating bookings
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { StepIndicator } from './step-indicator';
 import { RouteStep } from './route-step';
 import { VehicleStep } from './vehicle-step';
@@ -179,10 +188,17 @@ export function BookingWizard({
       {/* Step Indicator */}
       <StepIndicator steps={STEPS} currentStep={currentStep} />
 
-      {/* Step Content */}
-      <Card>
+      {/* Step Content - Clean Card */}
+      <Card className={cn(
+        'relative overflow-hidden rounded-xl',
+        'bg-card',
+        'border border-border',
+        'shadow-sm'
+      )}>
         <CardHeader>
-          <CardTitle>{STEPS[currentStep]}</CardTitle>
+          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            {STEPS[currentStep]}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {currentStep === 0 && (

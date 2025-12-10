@@ -3,10 +3,17 @@
 /**
  * Vehicle Category Tabs Component
  * For business booking wizard - displays vehicle types grouped by category
+ *
+ * Design: shadcn/ui theme-aware components
  */
 
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { VehicleTypeCard } from './vehicle-type-card';
 import { VehicleTypeResult, VehicleTypesByCategory } from '../actions';
 

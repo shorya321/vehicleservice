@@ -1,11 +1,20 @@
 'use client'
 
+/**
+ * Logo Upload Component
+ * Upload and manage business logo with drag & drop support
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Upload, X, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Upload, X, Image as ImageIcon, Info } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 interface LogoUploadProps {
   businessAccountId: string
@@ -108,21 +117,31 @@ export function LogoUpload({ businessAccountId, currentLogoUrl, onLogoUpdate }: 
   }
 
   return (
-    <Card>
+    <Card className="bg-card border border-border rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ImageIcon className="h-5 w-5" />
-          Brand Logo
-        </CardTitle>
-        <CardDescription>
-          Upload your company logo for white-label branding (Max 2MB, JPEG/PNG/WebP/SVG)
-        </CardDescription>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+            <ImageIcon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          </div>
+          <div>
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Brand Logo
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Upload your company logo for white-label branding (Max 2MB, JPEG/PNG/WebP/SVG)
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Logo Preview */}
         {previewUrl ? (
-          <div className="space-y-3">
-            <div className="relative w-full max-w-xs mx-auto aspect-[3/1] rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
+          <div className="space-y-4">
+            <div className={cn(
+              'relative w-full max-w-sm mx-auto aspect-[3/1] rounded-xl',
+              'bg-muted border border-border',
+              'flex items-center justify-center overflow-hidden'
+            )}>
               <Image
                 src={previewUrl}
                 alt="Brand logo"
@@ -137,6 +156,7 @@ export function LogoUpload({ businessAccountId, currentLogoUrl, onLogoUpdate }: 
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading || isDeleting}
+                className="bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:border-violet-500/30 disabled:opacity-50"
               >
                 {isUploading ? (
                   <>
@@ -155,6 +175,7 @@ export function LogoUpload({ businessAccountId, currentLogoUrl, onLogoUpdate }: 
                 size="sm"
                 onClick={handleDelete}
                 disabled={isUploading || isDeleting}
+                className="bg-muted border-border text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>
@@ -173,11 +194,26 @@ export function LogoUpload({ businessAccountId, currentLogoUrl, onLogoUpdate }: 
         ) : (
           <div className="space-y-3">
             <div
-              className="relative w-full max-w-xs mx-auto aspect-[3/1] rounded-lg border-2 border-dashed bg-muted flex flex-col items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors"
+              className={cn(
+                'relative w-full max-w-sm mx-auto aspect-[3/1] rounded-xl',
+                'border-2 border-dashed border-border',
+                'bg-muted',
+                'flex flex-col items-center justify-center',
+                'cursor-pointer transition-all duration-300',
+                'hover:border-violet-500/40 hover:bg-violet-500/5',
+                'group'
+              )}
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">Click to upload logo</p>
+              <div className={cn(
+                'h-12 w-12 rounded-xl bg-violet-500/10 flex items-center justify-center mb-3',
+                'transition-transform duration-300 group-hover:scale-110'
+              )}>
+                <Upload className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+              </div>
+              <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                Click to upload logo
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 JPEG, PNG, WebP, or SVG (max 2MB)
               </p>
@@ -195,13 +231,28 @@ export function LogoUpload({ businessAccountId, currentLogoUrl, onLogoUpdate }: 
         />
 
         {/* Upload Guidelines */}
-        <div className="rounded-lg bg-muted p-4 space-y-2 text-sm">
-          <p className="font-medium">Logo Guidelines:</p>
-          <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-            <li>Recommended dimensions: 600x200 pixels (3:1 ratio)</li>
-            <li>Use transparent backgrounds for best results (PNG or SVG)</li>
-            <li>Ensure good contrast with both light and dark backgrounds</li>
-            <li>Keep file size under 2MB for faster loading</li>
+        <div className="rounded-xl bg-muted border border-border p-4 space-y-3 text-sm">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <p className="font-medium text-muted-foreground">Logo Guidelines</p>
+          </div>
+          <ul className="list-none space-y-2 text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-violet-600 dark:text-violet-400 mt-0.5">•</span>
+              <span>Recommended dimensions: 600x200 pixels (3:1 ratio)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-violet-600 dark:text-violet-400 mt-0.5">•</span>
+              <span>Use transparent backgrounds for best results (PNG or SVG)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-violet-600 dark:text-violet-400 mt-0.5">•</span>
+              <span>Ensure good contrast with both light and dark backgrounds</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-violet-600 dark:text-violet-400 mt-0.5">•</span>
+              <span>Keep file size under 2MB for faster loading</span>
+            </li>
           </ul>
         </div>
       </CardContent>

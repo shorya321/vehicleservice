@@ -1,36 +1,73 @@
 /**
- * Business Portal Premium Design System
- * World-class UI/UX inspired by Stripe, Linear, Apple, and Figma
+ * Business Portal Clean Design System
+ * Modern shadcn-inspired UI with clean gold accent
  *
  * SCOPE: Business module ONLY - does not affect admin, vendor, or customer modules
  *
  * Design Philosophy:
- * - Deep Indigo (#6366F1) as primary accent - modern and trustworthy
- * - Teal (#14B8A6) as secondary accent - fresh and distinctive
- * - Subtle dark grays with breathing room
+ * - Gold (#C6AA88) as primary accent - premium and distinctive
+ * - Clean surfaces with proper light/dark mode support
+ * - Semantic CSS variables for consistent theming
  * - Clean sans-serif (Inter) + distinctive display font (Plus Jakarta Sans)
- * - Refined glass effects only where appropriate
- * - Intentional animations that delight
+ * - Subtle shadows instead of heavy glassmorphism
+ * - Professional animations
  */
 
-/* Import premium fonts: Plus Jakarta Sans (display) + Inter (body) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+/* Import premium fonts: Playfair Display (luxury display) + Montserrat (accent) + Inter (body) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 /* ============================================
-   BUSINESS THEME CSS VARIABLES
+   SHADCN-COMPATIBLE CSS VARIABLES (HSL FORMAT)
+   These enable proper Tailwind semantic classes like
+   bg-background, text-foreground, bg-primary, etc.
    ============================================ */
 
 :root {
-  /* Primary (Indigo) - Main accent color */
-  --business-primary-50: #EEF2FF;
-  --business-primary-100: #E0E7FF;
-  --business-primary-200: #C7D2FE;
-  --business-primary-300: #A5B4FC;
-  --business-primary-400: #818CF8;
-  --business-primary-500: #6366F1;
-  --business-primary-600: #4F46E5;
-  --business-primary-700: #4338CA;
-  --business-primary: #6366F1;
+  /* Core shadcn theme variables - Dark mode (default) */
+  --background: 240 10% 4%;          /* #09090B - zinc-950 */
+  --foreground: 0 0% 98%;            /* #FAFAFA - zinc-50 */
+
+  --card: 240 6% 6%;                 /* #0F0F12 */
+  --card-foreground: 0 0% 98%;       /* #FAFAFA */
+
+  --popover: 240 6% 6%;              /* Same as card */
+  --popover-foreground: 0 0%98%;
+
+  --primary: 36 33% 66%;             /* #C6AA88 - Gold */
+  --primary-foreground: 240 10% 4%;  /* Dark text on gold */
+
+  --secondary: 240 4% 16%;           /* #27272A - zinc-800 */
+  --secondary-foreground: 0 0% 98%;
+
+  --muted: 240 4% 16%;               /* #27272A */
+  --muted-foreground: 240 5% 65%;    /* #A1A1AA - zinc-400 */
+
+  --accent: 36 33% 66%;              /* Gold accent */
+  --accent-foreground: 240 10% 4%;
+
+  --destructive: 0 84% 60%;          /* #EF4444 */
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 4% 16%;              /* #27272A */
+  --input: 240 4% 16%;
+  --ring: 36 33% 66%;                /* Gold ring */
+
+  --radius: 0.5rem;
+
+  /* ============================================
+     BUSINESS THEME EXTENDED VARIABLES
+     ============================================ */
+
+  /* Primary (Gold) - Main accent color */
+  --business-primary-50: #FAF7F2;
+  --business-primary-100: #F0E9DE;
+  --business-primary-200: #E3D5C3;
+  --business-primary-300: #D4BC9A;
+  --business-primary-400: #C6AA88;
+  --business-primary-500: #B89B6A;
+  --business-primary-600: #A68B5B;
+  --business-primary-700: #8B7349;
+  --business-primary: #C6AA88;
 
   /* Secondary (Teal) - Accent for data viz, secondary actions */
   --business-secondary-300: #5EEAD4;
@@ -39,47 +76,72 @@
   --business-secondary: #14B8A6;
 
   /* Surface Layers - Dark mode depth system */
-  --business-surface-0: #09090B;
-  --business-surface-1: #0F0F12;
-  --business-surface-2: #161619;
-  --business-surface-3: #1C1C21;
-  --business-surface-4: #27272A;
+  --business-surface-0: #09090B;  /* Main bg */
+  --business-surface-1: #0F0F12;  /* Sidebar/elevated */
+  --business-surface-2: #18181B;  /* Cards */
+  --business-surface-3: #27272A;  /* Hover states */
+  --business-surface-4: #3F3F46;  /* Elevated elements */
 
   /* Surface Layers - Light mode */
   --business-surface-light-0: #FFFFFF;
-  --business-surface-light-1: #F9FAFB;
-  --business-surface-light-2: #F3F4F6;
-  --business-surface-light-3: #E5E7EB;
-  --business-surface-light-4: #D1D5DB;
+  --business-surface-light-1: #FAFAFA;
+  --business-surface-light-2: #F4F4F5;
+  --business-surface-light-3: #E4E4E7;
+  --business-surface-light-4: #D4D4D8;
 
   /* Text colors - Dark mode */
   --business-text-primary: #FAFAFA;
   --business-text-secondary: #A1A1AA;
-  --business-text-muted: #52525B;
+  --business-text-muted: #71717A;
 
   /* Text colors - Light mode */
-  --business-text-light-primary: #111827;
-  --business-text-light-secondary: #4B5563;
-  --business-text-light-muted: #9CA3AF;
+  --business-text-light-primary: #09090B;
+  --business-text-light-secondary: #3F3F46;
+  --business-text-light-muted: #71717A;
 
   /* Semantic colors */
-  --business-success: #10B981;
+  --business-success: #22C55E;
   --business-warning: #F59E0B;
+  --business-warning-bright: #EAB308;
   --business-error: #EF4444;
   --business-info: #06B6D4;
 
-  /* Borders */
+  /* Payment brand colors */
+  --business-brand-visa: #1A1F71;
+  --business-brand-mastercard-red: #EB001B;
+  --business-brand-mastercard-orange: #F79E1B;
+  --business-brand-amex: #006FCF;
+  --business-brand-discover: #FF6000;
+
+  /* Borders - Dark mode */
   --business-border-subtle: rgba(255, 255, 255, 0.06);
   --business-border-default: rgba(255, 255, 255, 0.1);
-  --business-border-hover: rgba(99, 102, 241, 0.4);
-  --business-border-active: rgba(99, 102, 241, 0.6);
+  --business-border-hover: rgba(255, 255, 255, 0.15);
+  --business-border-active: rgba(255, 255, 255, 0.2);
 
-  /* Animation timing */
-  --business-duration-instant: 100ms;
-  --business-duration-quick: 150ms;
-  --business-duration-base: 250ms;
-  --business-duration-moderate: 350ms;
-  --business-duration-slow: 500ms;
+  /* Card styling */
+  --card-bg: #18181B;
+  --card-bg-elevated: #27272A;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-border-hover: rgba(255, 255, 255, 0.15);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --card-radius: 0.75rem;
+
+  /* Gold accent - Primary theme color */
+  --accent-gold: #C6AA88;
+  --accent-gold-light: #D4BC9A;
+  --accent-gold-dark: #B89B6A;
+  --accent-gold-muted: rgba(198, 170, 136, 0.15);
+  --accent-gold-glow: rgba(198, 170, 136, 0.25);
+  --accent-cream: #E8DFD3;
+
+  /* Animation timing - faster, more professional */
+  --business-duration-instant: 80ms;
+  --business-duration-quick: 120ms;
+  --business-duration-base: 200ms;
+  --business-duration-moderate: 280ms;
+  --business-duration-slow: 400ms;
 
   /* Easing curves */
   --business-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -95,18 +157,133 @@
   --business-font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
   --business-font-body: 'Inter', system-ui, sans-serif;
 
-  /* Gradients */
-  --business-gradient-primary: linear-gradient(135deg, #6366F1 0%, #818CF8 50%, #6366F1 100%);
+  /* Luxury Auth Font families */
+  --luxury-font-display: 'Playfair Display', Georgia, serif;
+  --luxury-font-accent: 'Montserrat', system-ui, sans-serif;
+  --luxury-font-body: 'Inter', system-ui, sans-serif;
+
+  /* ============================================
+     LUXURY AUTH COLOR PALETTE
+     Black/Gold premium aesthetic
+     ============================================ */
+  --luxury-gold: #C6AA88;
+  --luxury-gold-light: #E8D9C5;
+  --luxury-gold-dark: #A68B5B;
+  --luxury-black: #111111;
+  --luxury-dark-gray: #222222;
+  --luxury-gray: #333333;
+  --luxury-light-gray: #AAAAAA;
+  --luxury-pearl: #F5F5F5;
+
+  /* Luxury gradients */
+  --luxury-gradient-dark: linear-gradient(135deg, #111111 0%, #000000 100%);
+  --luxury-gradient-gold: linear-gradient(135deg, #C6AA88 0%, #E8D9C5 50%, #C6AA88 100%);
+  --luxury-gradient-subtle: linear-gradient(135deg, rgba(198, 170, 136, 0.1) 0%, transparent 50%, rgba(198, 170, 136, 0.05) 100%);
+
+  /* Luxury borders */
+  --luxury-border-subtle: rgba(198, 170, 136, 0.15);
+  --luxury-border-default: rgba(198, 170, 136, 0.25);
+  --luxury-border-strong: rgba(198, 170, 136, 0.4);
+
+  /* Gradients - Gold themed */
+  --business-gradient-primary: linear-gradient(135deg, #C6AA88 0%, #E8D9C5 50%, #C6AA88 100%);
   --business-gradient-secondary: linear-gradient(135deg, #14B8A6 0%, #2DD4BF 100%);
-  --business-gradient-aurora: linear-gradient(135deg, #6366F1 0%, #14B8A6 50%, #06B6D4 100%);
+  --business-gradient-aurora: linear-gradient(135deg, #C6AA88 0%, #14B8A6 50%, #06B6D4 100%);
   --business-gradient-mesh:
-    radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, rgba(198, 170, 136, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(198, 170, 136, 0.06) 0px, transparent 50%);
+
+  /* Premium Background System - Atmospheric gradients with depth */
+  --business-bg-gradient: linear-gradient(180deg, rgba(17, 17, 17, 0.95) 0%, rgba(10, 10, 10, 0.98) 50%, rgba(8, 8, 8, 1) 100%);
+  --business-sidebar-gradient: linear-gradient(180deg, rgba(18, 18, 18, 0.85) 0%, rgba(12, 12, 12, 0.92) 100%);
+  --business-header-gradient: linear-gradient(90deg, rgba(15, 15, 15, 0.88) 0%, rgba(18, 18, 18, 0.85) 50%, rgba(15, 15, 15, 0.88) 100%);
+
+  /* ============================================
+     SPACING SCALE
+     ============================================ */
+  --business-space-0: 0;
+  --business-space-1: 0.25rem;    /* 4px */
+  --business-space-2: 0.5rem;     /* 8px */
+  --business-space-3: 0.75rem;    /* 12px */
+  --business-space-4: 1rem;       /* 16px */
+  --business-space-5: 1.25rem;    /* 20px */
+  --business-space-6: 1.5rem;     /* 24px */
+  --business-space-8: 2rem;       /* 32px */
+  --business-space-10: 2.5rem;    /* 40px */
+  --business-space-12: 3rem;      /* 48px */
+  --business-space-16: 4rem;      /* 64px */
+  --business-space-20: 5rem;      /* 80px */
+  --business-space-24: 6rem;      /* 96px */
+
+  /* ============================================
+     RADIUS SCALE
+     ============================================ */
+  --business-radius-none: 0;
+  --business-radius-sm: 0.375rem;   /* 6px */
+  --business-radius-md: 0.5rem;     /* 8px */
+  --business-radius-lg: 0.75rem;    /* 12px */
+  --business-radius-xl: 1rem;       /* 16px */
+  --business-radius-2xl: 1.5rem;    /* 24px */
+  --business-radius-full: 9999px;
+
+  /* ============================================
+     Z-INDEX SYSTEM
+     ============================================ */
+  --business-z-base: 0;
+  --business-z-dropdown: 50;
+  --business-z-sticky: 100;
+  --business-z-fixed: 200;
+  --business-z-sidebar: 250;
+  --business-z-modal-backdrop: 300;
+  --business-z-modal: 400;
+  --business-z-popover: 500;
+  --business-z-tooltip: 600;
+  --business-z-toast: 700;
+
+  /* ============================================
+     CONTAINER WIDTHS
+     ============================================ */
+  --business-container-narrow: 640px;
+  --business-container-default: 1024px;
+  --business-container-wide: 1280px;
+  --business-container-full: 100%;
 }
 
-/* Light mode overrides */
+/* ============================================
+   LIGHT MODE OVERRIDES
+   ============================================ */
 .light {
+  /* Core shadcn theme variables - Light mode */
+  --background: 0 0% 100%;           /* #FFFFFF */
+  --foreground: 240 10% 4%;          /* #09090B */
+
+  --card: 0 0% 100%;                 /* #FFFFFF */
+  --card-foreground: 240 10% 4%;     /* #09090B */
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 4%;
+
+  --primary: 36 28% 57%;             /* #B89B6A - Darker gold for light mode */
+  --primary-foreground: 0 0% 100%;   /* White text on gold */
+
+  --secondary: 240 5% 96%;           /* #F4F4F5 - zinc-100 */
+  --secondary-foreground: 240 6% 10%;
+
+  --muted: 240 5% 96%;               /* #F4F4F5 */
+  --muted-foreground: 240 4% 46%;    /* #71717A - zinc-500 */
+
+  --accent: 36 28% 57%;              /* Darker gold */
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 6% 90%;              /* #E4E4E7 - zinc-200 */
+  --input: 240 6% 90%;
+  --ring: 36 28% 57%;                /* Gold ring */
+
+  /* Business theme light mode */
   --business-surface-0: var(--business-surface-light-0);
   --business-surface-1: var(--business-surface-light-1);
   --business-surface-2: var(--business-surface-light-2);
@@ -115,9 +292,25 @@
   --business-text-primary: var(--business-text-light-primary);
   --business-text-secondary: var(--business-text-light-secondary);
   --business-text-muted: var(--business-text-light-muted);
-  --business-border-subtle: rgba(0, 0, 0, 0.06);
+  --business-border-subtle: rgba(0, 0, 0, 0.05);
   --business-border-default: rgba(0, 0, 0, 0.1);
-  --business-border-hover: rgba(99, 102, 241, 0.3);
+  --business-border-hover: rgba(0, 0, 0, 0.15);
+  --business-border-active: rgba(0, 0, 0, 0.2);
+
+  /* Card styling - light mode */
+  --card-bg: #FFFFFF;
+  --card-bg-elevated: #FAFAFA;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --card-border-hover: rgba(0, 0, 0, 0.15);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* Gold accent - darker for light mode contrast */
+  --accent-gold: #B89B6A;
+  --accent-gold-light: #C6AA88;
+  --accent-gold-dark: #9A8254;
+  --accent-gold-muted: rgba(184, 155, 106, 0.15);
+  --accent-gold-glow: rgba(184, 155, 106, 0.2);
 }
 
 /* ============================================
@@ -220,62 +413,59 @@
 }
 
 /* ============================================
-   GLASSMORPHISM EFFECTS
+   GLASSMORPHISM EFFECTS (Simplified)
+   Clean, subtle backdrop blur for modern look
    ============================================ */
 
 .business-glass-subtle {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  background-color: rgba(15, 15, 18, 0.6);
-  border: 1px solid var(--business-border-subtle);
+  background-color: hsl(var(--card) / 0.8);
+  border: 1px solid hsl(var(--border));
 }
 
 .business-glass-medium {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background-color: rgba(15, 15, 18, 0.75);
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  background-color: hsl(var(--card) / 0.9);
+  border: 1px solid hsl(var(--border));
 }
 
 .business-glass-elevated {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  background: linear-gradient(
-    135deg,
-    rgba(15, 15, 18, 0.85) 0%,
-    rgba(22, 22, 25, 0.8) 100%
-  );
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background-color: hsl(var(--card) / 0.95);
+  border: 1px solid hsl(var(--border));
 }
 
 .business-glass-premium {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  background: linear-gradient(
-    135deg,
-    rgba(15, 15, 18, 0.9) 0%,
-    rgba(22, 22, 25, 0.85) 50%,
-    rgba(15, 15, 18, 0.9) 100%
-  );
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  box-shadow: 0 0 40px -8px rgba(99, 102, 241, 0.15);
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Light mode glass */
-.light .business-glass-subtle {
-  background-color: rgba(255, 255, 255, 0.7);
+/* ============================================
+   BACKGROUND SYSTEM (Clean)
+   Simple, solid backgrounds that work in both modes
+   ============================================ */
+
+.business-bg-premium {
+  background-color: hsl(var(--background));
+  min-height: 100vh;
 }
 
-.light .business-glass-medium {
-  background-color: rgba(255, 255, 255, 0.8);
+.business-sidebar-glass {
+  background-color: hsl(var(--card));
+  border-right: 1px solid hsl(var(--border));
 }
 
-.light .business-glass-elevated {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(249, 250, 251, 0.85) 100%
-  );
+.business-header-glass {
+  background-color: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 /* ============================================
@@ -298,24 +488,24 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-/* Glow shadows with indigo tint */
+/* Glow shadows with gold tint */
 .business-shadow-glow-sm {
-  box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 15px -3px rgba(198, 170, 136, 0.2);
 }
 
 .business-shadow-glow {
-  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 20px -5px rgba(198, 170, 136, 0.3);
 }
 
 .business-shadow-glow-lg {
-  box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 40px -10px rgba(198, 170, 136, 0.4);
 }
 
 /* Combined elevation + glow */
 .business-shadow-elevated-glow {
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.3),
-    0 0 20px -5px rgba(99, 102, 241, 0.15);
+    0 0 20px -5px rgba(198, 170, 136, 0.15);
 }
 
 /* Light mode shadows */
@@ -365,7 +555,7 @@
 }
 
 /* ============================================
-   GRADIENT BORDERS
+   GRADIENT BORDERS - Gold Accent
    ============================================ */
 
 .business-gradient-border {
@@ -382,9 +572,9 @@
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.5) 0%,
-    rgba(20, 184, 166, 0.3) 50%,
-    rgba(99, 102, 241, 0.5) 100%
+    rgba(198, 170, 136, 0.4) 0%,
+    rgba(198, 170, 136, 0.2) 50%,
+    rgba(198, 170, 136, 0.4) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -397,9 +587,9 @@
 .business-gradient-border-animated::before {
   background: linear-gradient(
     var(--angle, 135deg),
-    rgba(99, 102, 241, 0.6) 0%,
-    rgba(20, 184, 166, 0.4) 50%,
-    rgba(99, 102, 241, 0.6) 100%
+    rgba(198, 170, 136, 0.5) 0%,
+    rgba(198, 170, 136, 0.25) 50%,
+    rgba(198, 170, 136, 0.5) 100%
   );
   animation: gradient-rotate 4s linear infinite;
 }
@@ -416,206 +606,9 @@
 }
 
 /* ============================================
-   CARD VARIANTS
+   CARD, BUTTON, INPUT STYLES
+   Now handled by shadcn UI components
    ============================================ */
-
-.business-card {
-  background-color: var(--business-surface-1);
-  border: 1px solid var(--business-border-default);
-  border-radius: 1rem;
-  transition: all var(--business-duration-base) var(--business-ease-out);
-}
-
-.business-card:hover {
-  border-color: var(--business-border-hover);
-}
-
-.business-card-elevated {
-  background-color: var(--business-surface-2);
-  border: 1px solid var(--business-border-default);
-  border-radius: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  transition: all var(--business-duration-base) var(--business-ease-out);
-}
-
-.business-card-elevated:hover {
-  border-color: var(--business-border-hover);
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.3),
-    0 0 20px -5px rgba(99, 102, 241, 0.15);
-  transform: translateY(-4px);
-}
-
-.business-card-hero {
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.08) 0%,
-    transparent 50%,
-    rgba(20, 184, 166, 0.05) 100%
-  );
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 1rem;
-  box-shadow:
-    0 10px 20px -5px rgba(0, 0, 0, 0.2),
-    0 0 30px -10px rgba(99, 102, 241, 0.15);
-}
-
-.business-card-interactive {
-  cursor: pointer;
-  transition: all var(--business-duration-base) var(--business-ease-out);
-}
-
-.business-card-interactive:hover {
-  border-color: var(--business-border-active);
-  transform: translateY(-4px);
-  box-shadow:
-    0 15px 25px -5px rgba(0, 0, 0, 0.3),
-    0 0 25px -5px rgba(99, 102, 241, 0.2);
-}
-
-.business-card-stat {
-  background-color: var(--business-surface-1);
-  border: 1px solid rgba(99, 102, 241, 0.15);
-  border-radius: 1rem;
-}
-
-/* Light mode cards */
-.light .business-card {
-  background-color: var(--business-surface-light-0);
-  border-color: var(--business-border-default);
-}
-
-.light .business-card-elevated {
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.03),
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 12px 24px -4px rgba(0, 0, 0, 0.08);
-}
-
-/* ============================================
-   BUTTON VARIANTS
-   ============================================ */
-
-.business-btn {
-  font-family: var(--business-font-body);
-  font-weight: 600;
-  border-radius: 0.75rem;
-  transition: all var(--business-duration-quick) var(--business-ease-out);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.business-btn-primary {
-  background: var(--business-gradient-primary);
-  background-size: 200% 100%;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.3);
-}
-
-.business-btn-primary:hover {
-  background-position: 100% 0;
-  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.5);
-  transform: translateY(-1px);
-}
-
-.business-btn-primary:active {
-  transform: scale(0.98);
-}
-
-.business-btn-secondary {
-  background-color: transparent;
-  color: var(--business-primary-400);
-  border: 1px solid rgba(99, 102, 241, 0.4);
-  padding: 0.75rem 1.5rem;
-}
-
-.business-btn-secondary:hover {
-  background-color: rgba(99, 102, 241, 0.1);
-  border-color: var(--business-primary-500);
-}
-
-.business-btn-ghost {
-  background-color: transparent;
-  color: var(--business-text-secondary);
-  padding: 0.5rem 1rem;
-}
-
-.business-btn-ghost:hover {
-  background-color: var(--business-surface-3);
-  color: var(--business-text-primary);
-}
-
-.business-btn-premium {
-  background: var(--business-gradient-aurora);
-  background-size: 200% 100%;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  animation: gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* Light mode buttons */
-.light .business-btn-secondary {
-  color: var(--business-primary-600);
-  border-color: rgba(99, 102, 241, 0.3);
-}
-
-.light .business-btn-ghost {
-  color: var(--business-text-light-secondary);
-}
-
-.light .business-btn-ghost:hover {
-  background-color: var(--business-surface-light-2);
-  color: var(--business-text-light-primary);
-}
-
-/* ============================================
-   INPUT STYLES
-   ============================================ */
-
-.business-input {
-  background-color: var(--business-surface-3);
-  border: 1px solid var(--business-border-default);
-  color: var(--business-text-primary);
-  font-family: var(--business-font-body);
-  font-size: 0.875rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  height: 2.75rem;
-  transition: all var(--business-duration-quick) var(--business-ease-out);
-}
-
-.business-input::placeholder {
-  color: var(--business-text-muted);
-}
-
-.business-input:hover:not(:focus) {
-  border-color: var(--business-border-hover);
-}
-
-.business-input:focus {
-  outline: none;
-  border-color: var(--business-primary-500);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-}
-
-/* Light mode inputs */
-.light .business-input {
-  background-color: var(--business-surface-light-0);
-  border-color: var(--business-border-default);
-  color: var(--business-text-light-primary);
-}
-
-.light .business-input::placeholder {
-  color: var(--business-text-light-muted);
-}
 
 /* ============================================
    TABLE STYLES
@@ -657,7 +650,7 @@
 }
 
 .business-table-row:hover {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: hsl(var(--primary) / 0.05);
 }
 
 .business-table-row:hover::before {
@@ -667,7 +660,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--business-gradient-primary);
+  background: hsl(var(--primary));
   border-radius: 0 2px 2px 0;
 }
 
@@ -679,81 +672,9 @@
 }
 
 /* ============================================
-   STATUS BADGES
+   TABS & BADGES
+   Now handled by shadcn UI components
    ============================================ */
-
-.business-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-family: var(--business-font-body);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.business-badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.business-badge-dot-pulse {
-  animation: business-pulse 2s infinite;
-}
-
-@keyframes business-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Badge variants */
-.business-badge-pending {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
-}
-
-.business-badge-pending .business-badge-dot {
-  background-color: #F59E0B;
-}
-
-.business-badge-confirmed {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #10B981;
-}
-
-.business-badge-confirmed .business-badge-dot {
-  background-color: #10B981;
-}
-
-.business-badge-in-progress {
-  background-color: rgba(99, 102, 241, 0.15);
-  color: var(--business-primary-400);
-}
-
-.business-badge-in-progress .business-badge-dot {
-  background-color: var(--business-primary-400);
-}
-
-.business-badge-completed {
-  background-color: rgba(20, 184, 166, 0.15);
-  color: var(--business-secondary-400);
-}
-
-.business-badge-completed .business-badge-dot {
-  background-color: var(--business-secondary-400);
-}
-
-.business-badge-cancelled {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #EF4444;
-}
-
-.business-badge-cancelled .business-badge-dot {
-  background-color: #EF4444;
-}
 
 /* ============================================
    SIDEBAR STYLES
@@ -788,13 +709,13 @@
 }
 
 .business-nav-item:hover {
-  background-color: rgba(99, 102, 241, 0.08);
-  color: var(--business-text-primary);
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--foreground));
 }
 
 .business-nav-item-active {
-  background-color: rgba(99, 102, 241, 0.12);
-  color: var(--business-primary-400);
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
 }
 
 .business-nav-item-active::before {
@@ -804,9 +725,9 @@
   top: 0.375rem;
   bottom: 0.375rem;
   width: 3px;
-  background: var(--business-gradient-primary);
+  background: hsl(var(--primary));
   border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 8px 0 rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 8px 0 hsl(var(--primary) / 0.4);
 }
 
 .business-nav-section-title {
@@ -821,17 +742,17 @@
 
 /* Light mode sidebar */
 .light .business-sidebar {
-  background-color: var(--business-surface-light-0);
-  border-color: var(--business-border-default);
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
 }
 
 .light .business-nav-item:hover {
-  background-color: rgba(99, 102, 241, 0.06);
+  background-color: hsl(var(--primary) / 0.06);
 }
 
 .light .business-nav-item-active {
-  background-color: rgba(99, 102, 241, 0.1);
-  color: var(--business-primary-600);
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
 }
 
 /* ============================================
@@ -931,40 +852,40 @@
    UTILITY CLASSES
    ============================================ */
 
-/* Primary gradient text */
+/* Primary gradient text - Gold */
 .business-text-gradient {
-  background: var(--business-gradient-primary);
+  background: linear-gradient(135deg, #C6AA88 0%, #E8D9C5 50%, #C6AA88 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Aurora gradient text */
+/* Aurora gradient text - Gold to Teal */
 .business-text-gradient-aurora {
-  background: var(--business-gradient-aurora);
+  background: linear-gradient(135deg, #C6AA88 0%, #14B8A6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Indigo accent border */
+/* Gold accent border */
 .business-border-primary {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: hsl(var(--primary) / 0.3);
 }
 
 .business-border-primary-strong {
-  border-color: rgba(99, 102, 241, 0.5);
+  border-color: hsl(var(--primary) / 0.5);
 }
 
 /* Focus ring */
 .business-focus-ring:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--business-surface-0), 0 0 0 4px var(--business-primary-500);
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary));
 }
 
 .business-focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--business-surface-0), 0 0 0 4px var(--business-primary-500);
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary));
 }
 
 /* Scrollbar styling */
@@ -979,18 +900,446 @@
 }
 
 .business-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(99, 102, 241, 0.3);
+  background-color: rgba(198, 170, 136, 0.3);
   border-radius: 3px;
 }
 
 .business-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(99, 102, 241, 0.5);
+  background-color: rgba(198, 170, 136, 0.5);
 }
 
 /* Divider */
 .business-divider {
   height: 1px;
   background: var(--business-border-subtle);
+}
+
+/* ============================================
+   WALLET STYLES (Simplified for Consistency)
+   ============================================ */
+
+/* Transaction Type Accents - Subtle visual indicators */
+.transaction-credit {
+  border-left: 3px solid var(--business-border-default);
+  padding-left: 1rem;
+}
+
+.transaction-debit {
+  border-left: 3px solid var(--business-border-default);
+  padding-left: 1rem;
+}
+
+.transaction-pending {
+  border-left: 3px solid var(--business-border-default);
+  padding-left: 1rem;
+}
+
+/* Transaction Amount Colors */
+.amount-positive {
+  color: var(--business-success);
+  font-weight: 600;
+}
+
+.amount-negative {
+  color: var(--business-error);
+  font-weight: 600;
+}
+
+/* Payment Method Card Hover - Consistent with other cards */
+.payment-card-hover {
+  transition: all var(--business-duration-base) var(--business-ease-out);
+}
+
+.payment-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--business-shadow-elevated);
+}
+
+/* Add New Card Dashed Border */
+.add-card-dashed {
+  border: 2px dashed var(--business-border-default);
+  border-radius: 0.75rem;
+  background: transparent;
+  transition: all var(--business-duration-base) var(--business-ease-out);
+  cursor: pointer;
+}
+
+.add-card-dashed:hover {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.05);
+}
+
+/* ============================================
+   LUXURY AUTH SPLIT-SCREEN LAYOUT
+   Premium authentication page styles
+   ============================================ */
+
+/* Split-screen grid layout */
+.auth-split-screen {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1023px) {
+  .auth-split-screen {
+    grid-template-columns: 40% 60%;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-split-screen {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+/* Brand panel (left side) - Dark gradient with gold accents */
+.auth-brand-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem;
+  background: var(--luxury-gradient-dark);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Brand panel decorative elements */
+.auth-brand-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(198, 170, 136, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(198, 170, 136, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(198, 170, 136, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Gold accent line decoration */
+.auth-brand-panel::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 1px;
+  height: 60%;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(198, 170, 136, 0.3) 20%,
+    rgba(198, 170, 136, 0.5) 50%,
+    rgba(198, 170, 136, 0.3) 80%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 767px) {
+  .auth-brand-panel {
+    padding: 2rem 1.5rem;
+    min-height: auto;
+  }
+
+  .auth-brand-panel::after {
+    display: none;
+  }
+}
+
+/* Form panel (right side) */
+.auth-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--luxury-black);
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .auth-form-panel {
+    padding: 1.5rem;
+  }
+}
+
+/* Luxury glass card for forms */
+.auth-glass-card {
+  background: rgba(17, 17, 17, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--luxury-border-default);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 0 0 1px rgba(198, 170, 136, 0.1) inset,
+    0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Gold glow effect for elements */
+.auth-gold-glow {
+  box-shadow: 0 0 20px -5px rgba(198, 170, 136, 0.3);
+}
+
+.auth-gold-glow-strong {
+  box-shadow: 0 0 30px -5px rgba(198, 170, 136, 0.5);
+}
+
+/* Luxury text styles */
+.luxury-text-display {
+  font-family: var(--luxury-font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--luxury-pearl);
+}
+
+.luxury-text-accent {
+  font-family: var(--luxury-font-accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--luxury-gold);
+}
+
+.luxury-text-body {
+  font-family: var(--luxury-font-body);
+  font-weight: 400;
+  color: var(--luxury-light-gray);
+}
+
+/* Gold gradient text */
+.luxury-text-gradient {
+  background: var(--luxury-gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Auth input styling with gold accents */
+.auth-input {
+  background-color: rgba(34, 34, 34, 0.8);
+  border: 1px solid var(--luxury-border-subtle);
+  color: var(--luxury-pearl);
+  font-family: var(--luxury-font-body);
+  font-size: 0.9375rem;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+/* Auth input with icons - ensure Tailwind padding utilities override base styles */
+.auth-input.pl-10 {
+  padding-left: 2.5rem !important;
+}
+
+.auth-input.pr-10 {
+  padding-right: 2.5rem !important;
+}
+
+/* Auth input without icons - default horizontal padding */
+.auth-input:not(.pl-10):not(.pr-10) {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.auth-input.pl-10:not(.pr-10) {
+  padding-right: 1rem;
+}
+
+.auth-input.pr-10:not(.pl-10) {
+  padding-left: 1rem;
+}
+
+.auth-input::placeholder {
+  color: var(--luxury-light-gray);
+  opacity: 0.6;
+}
+
+/* Auth input icons - make visible against dark background */
+.relative:has(.auth-input) > .absolute {
+  color: var(--luxury-light-gray) !important;
+}
+
+.auth-input:hover:not(:focus) {
+  border-color: var(--luxury-border-default);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--luxury-gold);
+  box-shadow: 0 0 0 3px rgba(198, 170, 136, 0.15);
+}
+
+/* Auth select dropdown arrow - use gold theme to match auth inputs */
+.auth-input[data-radix-collection-item] svg,
+button.auth-input svg {
+  color: var(--luxury-light-gray) !important;
+}
+
+/* Auth button primary (gold) */
+.auth-btn-primary {
+  font-family: var(--luxury-font-accent);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--luxury-gradient-gold);
+  color: var(--luxury-black);
+  padding: 0.875rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px -3px rgba(198, 170, 136, 0.4);
+}
+
+.auth-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(198, 170, 136, 0.5);
+}
+
+.auth-btn-primary:active {
+  transform: translateY(0);
+}
+
+.auth-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Auth button secondary (outlined) */
+.auth-btn-secondary {
+  font-family: var(--luxury-font-accent);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  background: transparent;
+  color: var(--luxury-pearl);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--luxury-border-default);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn-secondary:hover {
+  border-color: var(--luxury-gold);
+  color: var(--luxury-gold);
+  background: rgba(198, 170, 136, 0.05);
+}
+
+/* Social button styling */
+.auth-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--luxury-border-subtle);
+  border-radius: 0.75rem;
+  color: var(--luxury-pearl);
+  font-family: var(--luxury-font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-social-btn:hover {
+  border-color: var(--luxury-gold);
+  background: rgba(198, 170, 136, 0.05);
+}
+
+/* Auth divider with text */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--luxury-light-gray);
+  font-family: var(--luxury-font-body);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--luxury-border-subtle) 50%,
+    transparent 100%
+  );
+}
+
+/* Auth link styling */
+.auth-link {
+  color: var(--luxury-gold);
+  font-family: var(--luxury-font-body);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.auth-link:hover {
+  color: var(--luxury-gold-light);
+  text-decoration: underline;
+}
+
+/* Floating particles animation for brand panel */
+@keyframes auth-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+.auth-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--luxury-gold);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: auth-float 6s ease-in-out infinite;
+}
+
+.auth-particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+.auth-particle:nth-child(2) { top: 60%; left: 25%; animation-delay: 1s; }
+.auth-particle:nth-child(3) { top: 30%; left: 70%; animation-delay: 2s; }
+.auth-particle:nth-child(4) { top: 80%; left: 60%; animation-delay: 3s; }
+.auth-particle:nth-child(5) { top: 45%; left: 85%; animation-delay: 4s; }
+
+/* Gold icon glow */
+.auth-icon-glow {
+  filter: drop-shadow(0 0 8px rgba(198, 170, 136, 0.4));
+}
+
+/* ============================================
+   NOISE TEXTURE OVERLAY
+   ============================================ */
+
+/* Subtle noise texture for depth and tactile feel */
+.business-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  border-radius: inherit;
 }
 
 /* ============================================

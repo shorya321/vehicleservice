@@ -76,18 +76,18 @@ export default {
         },
         // Business Portal Premium Design System
         business: {
-          // Primary (Indigo)
+          // Primary (Gold)
           primary: {
-            50: "#EEF2FF",
-            100: "#E0E7FF",
-            200: "#C7D2FE",
-            300: "#A5B4FC",
-            400: "#818CF8",
-            500: "#6366F1",
-            600: "#4F46E5",
-            700: "#4338CA",
-            800: "#3730A3",
-            900: "#312E81",
+            50: "#FAF7F2",
+            100: "#F0E9DE",
+            200: "#E3D5C3",
+            300: "#D4BC9A",
+            400: "#C6AA88",
+            500: "#B89B6A",
+            600: "#A68B5B",
+            700: "#8B7349",
+            800: "#705C3A",
+            900: "#5A4A2E",
           },
           // Secondary (Teal)
           secondary: {
@@ -141,15 +141,15 @@ export default {
         xl: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
         "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
         gold: "0 10px 20px -5px rgba(198, 170, 136, 0.15), 0 4px 8px -4px rgba(198, 170, 136, 0.1)",
-        // Business portal shadows with indigo glow
+        // Business portal shadows with gold glow
         "business-sm": "0 1px 2px 0 rgba(0, 0, 0, 0.3)",
         "business-md": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
         "business-lg": "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
         "business-xl": "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
-        "business-glow-sm": "0 0 15px -3px rgba(99, 102, 241, 0.3)",
-        "business-glow": "0 0 20px -5px rgba(99, 102, 241, 0.4)",
-        "business-glow-lg": "0 0 40px -10px rgba(99, 102, 241, 0.5)",
-        "business-elevated": "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 0 20px -5px rgba(99, 102, 241, 0.15)",
+        "business-glow-sm": "0 0 15px -3px rgba(198, 170, 136, 0.2)",
+        "business-glow": "0 0 20px -5px rgba(198, 170, 136, 0.3)",
+        "business-glow-lg": "0 0 40px -10px rgba(198, 170, 136, 0.4)",
+        "business-elevated": "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 0 20px -5px rgba(198, 170, 136, 0.15)",
       },
       keyframes: {
         "accordion-down": {

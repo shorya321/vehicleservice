@@ -3,6 +3,8 @@
 /**
  * Review Step Component
  * Final review and confirmation before booking
+ *
+ * Design: shadcn/ui theme-aware components
  */
 
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
@@ -50,7 +52,7 @@ export function ReviewStep({
     <div className="space-y-6">
       {/* Route Summary */}
       <div className="p-4 border rounded-lg">
-        <h3 className="font-semibold mb-3">Route</h3>
+        <h3 className="font-semibold mb-3 text-foreground">Route</h3>
         <div className="space-y-2 text-sm">
           <div>
             <span className="text-muted-foreground">From:</span>{' '}
@@ -76,11 +78,11 @@ export function ReviewStep({
       {/* Vehicle & Passengers */}
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 border rounded-lg">
-          <h3 className="font-semibold mb-3">Vehicle</h3>
+          <h3 className="font-semibold mb-3 text-foreground">Vehicle</h3>
           <p className="text-sm font-medium">{vehicleType?.name}</p>
         </div>
         <div className="p-4 border rounded-lg">
-          <h3 className="font-semibold mb-3">Passengers</h3>
+          <h3 className="font-semibold mb-3 text-foreground">Passengers</h3>
           <div className="text-sm space-y-1">
             <p>{formData.passenger_count} passenger(s)</p>
             <p>{formData.luggage_count} luggage</p>
@@ -90,7 +92,7 @@ export function ReviewStep({
 
       {/* Customer Details */}
       <div className="p-4 border rounded-lg">
-        <h3 className="font-semibold mb-3">Customer Information</h3>
+        <h3 className="font-semibold mb-3 text-foreground">Customer Information</h3>
         <div className="space-y-2 text-sm">
           <div>
             <span className="text-muted-foreground">Name:</span>{' '}
@@ -115,7 +117,7 @@ export function ReviewStep({
 
       {/* Pricing Breakdown */}
       <div className="p-4 border rounded-lg">
-        <h3 className="font-semibold mb-3">Pricing</h3>
+        <h3 className="font-semibold mb-3 text-foreground">Pricing</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Base Price:</span>
@@ -134,10 +136,10 @@ export function ReviewStep({
 
       {/* Wallet Balance Check */}
       {hasBalance ? (
-        <Alert>
-          <CheckCircle className="h-4 w-4" />
-          <AlertTitle>Sufficient Balance</AlertTitle>
-          <AlertDescription>
+        <Alert className="border-green-500/30 bg-green-500/10">
+          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertTitle className="text-green-600 dark:text-green-400">Sufficient Balance</AlertTitle>
+          <AlertDescription className="text-green-600/80 dark:text-green-400/80">
             Current balance: {formatCurrency(walletBalance)}
             <br />
             After booking: {formatCurrency(remainingBalance)}

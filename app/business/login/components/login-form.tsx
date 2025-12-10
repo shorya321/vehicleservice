@@ -1,19 +1,20 @@
-'use client';
-
 /**
  * Business Account Login Form Component
- * Handles business user authentication
+ * Handles business user authentication with luxury styling
+ *
+ * SCOPE: Business module ONLY
  */
+
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2, Mail } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-import { LuxuryButton } from '@/components/business/ui/luxury-button';
 import { LuxuryInput, LuxuryLabel } from '@/components/business/ui/luxury-input';
 import {
   Form,
@@ -23,9 +24,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { toast } from 'sonner';
+import {
+  PasswordInput,
+  ForgotPasswordLink,
+  AuthFormContainer,
+  AuthFormField,
+} from '@/components/business/auth';
+import { authFormItem } from '@/lib/business/animation/variants';
+import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -34,7 +43,7 @@ type LoginInput = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -60,11 +69,10 @@ export function LoginForm() {
         throw new Error(result.error || 'Login failed');
       }
 
-      toast.success('Success!', {
-        description: 'Welcome back to your business portal.',
+      toast.success('Welcome back!', {
+        description: 'Redirecting to your dashboard...',
       });
 
-      // Redirect to business dashboard
       router.push('/business/dashboard');
       router.refresh();
     } catch (error) {
@@ -76,75 +84,88 @@ export function LoginForm() {
     }
   }
 
+  const MotionWrapper = prefersReducedMotion ? 'div' : motion.div;
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <LuxuryLabel>Business Email</LuxuryLabel>
-              <FormControl>
-                <LuxuryInput type="email" placeholder="contact@acmehotel.com" {...field} />
-              </FormControl>
-              <FormMessage className="text-[var(--business-error)]" />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <AuthFormContainer className="space-y-5">
+          {/* Email Field */}
+          <AuthFormField>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <LuxuryLabel className="text-[var(--luxury-pearl)]">
+                    Email Address
+                  </LuxuryLabel>
+                  <FormControl>
+                    <LuxuryInput
+                      type="email"
+                      placeholder="you@company.com"
+                      leftIcon={<Mail className="h-4 w-4" />}
+                      className="auth-input"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-sm" />
+                </FormItem>
+              )}
+            />
+          </AuthFormField>
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <LuxuryLabel>Password</LuxuryLabel>
-              <FormControl>
-                <LuxuryInput
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  {...field}
-                  rightIcon={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)] transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  }
-                />
-              </FormControl>
-              <FormMessage className="text-[var(--business-error)]" />
-            </FormItem>
-          )}
-        />
+          {/* Password Field */}
+          <AuthFormField>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <LuxuryLabel className="text-[var(--luxury-pearl)]">
+                    Password
+                  </LuxuryLabel>
+                  <FormControl>
+                    <PasswordInput
+                      placeholder="Enter your password"
+                      showLockIcon
+                      className="auth-input"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-sm" />
+                </FormItem>
+              )}
+            />
+          </AuthFormField>
 
-        {/* Forgot Password Link */}
-        <div className="text-right">
-          <Link
-            href="/business/forgot-password"
-            className="text-sm text-[var(--business-text-muted)] hover:text-[var(--business-primary-400)] transition-colors"
-          >
-            Forgot your password?
-          </Link>
-        </div>
+          {/* Forgot Password Link */}
+          <AuthFormField>
+            <ForgotPasswordLink />
+          </AuthFormField>
 
-        <LuxuryButton type="submit" disabled={isLoading} className="w-full" size="lg">
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
-            </>
-          ) : (
-            'Sign In'
-          )}
-        </LuxuryButton>
+          {/* Submit Button */}
+          <AuthFormField>
+            <MotionWrapper
+              {...(!prefersReducedMotion && { variants: authFormItem })}
+            >
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="auth-btn-primary w-full flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </MotionWrapper>
+          </AuthFormField>
+        </AuthFormContainer>
       </form>
     </Form>
   );

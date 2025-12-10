@@ -1,8 +1,8 @@
 /**
  * Luxury Button Component
- * Premium buttons with glow effects and animations
+ * Premium buttons using semantic CSS variables
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
  * SCOPE: Business module ONLY
  */
 
@@ -18,26 +18,26 @@ import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Loader2 } from 'lucide-react';
 
 const luxuryButtonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--business-primary-500)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--business-surface-0)] disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         primary:
-          'bg-gradient-to-r from-[var(--business-primary-600)] to-[var(--business-primary-500)] text-white hover:from-[var(--business-primary-500)] hover:to-[var(--business-primary-400)] shadow-[0_0_20px_-5px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)]',
+          'bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-sm hover:shadow-md',
         secondary:
-          'border border-[var(--business-primary-500)]/50 bg-transparent text-[var(--business-primary-400)] hover:bg-[var(--business-primary-500)]/10 hover:border-[var(--business-primary-400)]',
+          'border border-border bg-transparent text-primary hover:bg-primary/10 hover:border-primary/30',
         ghost:
-          'text-[var(--business-text-secondary)] hover:bg-[var(--business-primary-500)]/10 hover:text-[var(--business-text-primary)]',
+          'text-muted-foreground hover:bg-muted hover:text-foreground',
         outline:
-          'border border-[var(--business-border-default)] bg-transparent text-[var(--business-text-primary)] hover:bg-[var(--business-primary-500)]/10 hover:border-[var(--business-primary-500)]/50',
+          'border border-border bg-transparent text-foreground hover:bg-muted hover:border-border',
         destructive:
-          'bg-[var(--business-error)]/10 text-[var(--business-error)] border border-[var(--business-error)]/30 hover:bg-[var(--business-error)]/20 hover:border-[var(--business-error)]/50',
+          'bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/15 hover:border-destructive/30',
         link:
-          'text-[var(--business-primary-400)] underline-offset-4 hover:underline',
+          'text-primary underline-offset-4 hover:underline',
         premium:
-          'bg-gradient-to-r from-[var(--business-primary-500)] via-[var(--business-primary-400)] to-[var(--business-secondary-400)] text-white font-semibold shadow-[0_0_20px_-4px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_-4px_rgba(99,102,241,0.6)]',
+          'bg-primary text-primary-foreground font-semibold shadow-md hover:shadow-lg hover:bg-primary/90',
         success:
-          'bg-[var(--business-success)]/10 text-[var(--business-success)] border border-[var(--business-success)]/30 hover:bg-[var(--business-success)]/20 hover:border-[var(--business-success)]/50',
+          'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/15 hover:border-emerald-500/30',
       },
       size: {
         sm: 'h-8 px-3 text-xs',
@@ -117,7 +117,6 @@ const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
         <Slot
           ref={ref}
           className={cn(luxuryButtonVariants({ variant, size }), className)}
-          style={{ fontFamily: 'var(--business-font-body)' }}
           {...props}
         >
           {children}
@@ -132,7 +131,6 @@ const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
           ref={ref}
           className={cn(luxuryButtonVariants({ variant, size }), className)}
           disabled={isDisabled}
-          style={{ fontFamily: 'var(--business-font-body)' }}
           initial="rest"
           whileHover="hover"
           whileTap="tap"
@@ -149,7 +147,6 @@ const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
         ref={ref}
         className={cn(luxuryButtonVariants({ variant, size }), className)}
         disabled={isDisabled}
-        style={{ fontFamily: 'var(--business-font-body)' }}
         {...props}
       >
         {content}

@@ -2,41 +2,55 @@
 
 /**
  * Dashboard Content Component
- * Client component with premium indigo styling and animations
+ * Business analytics dashboard
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  Wallet,
   CalendarCheck,
   Plus,
-  TrendingUp,
   Clock,
-  CheckCircle2,
   ArrowRight,
+  TrendingUp,
+  Wallet,
+  BarChart3,
+  Calendar,
+  ChevronDown,
   Sparkles,
+  Settings,
+  CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import {
-  LuxuryCard,
-  LuxuryCardHeader,
-  LuxuryCardTitle,
-  LuxuryCardDescription,
-  LuxuryCardContent,
-  HeroStatCard,
-  WalletHeroCard,
-  ActionCard,
-  QuickActionsGrid,
-  LuxuryButton,
-  StatusBadge,
-} from '@/components/business/ui';
-import { FadeIn, StaggerContainer, StaggerItem, CurrencyCountUp } from '@/components/business/motion';
-import { staggerContainer, staggerItem, fadeInUp } from '@/lib/business/animation/variants';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { CurrencyCountUp } from '@/components/business/motion';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
+import {
+  AnalyticsStatCard,
+  LocationsCard,
+  Sparkline,
+  type LocationData,
+} from './analytics-chart';
+import { RecentActivity } from './recent-activity';
 
 interface RecentBooking {
   id: string;
@@ -55,6 +69,71 @@ interface DashboardContentProps {
   completedBookings: number;
   monthlyBookings: number;
   recentBookings: RecentBooking[];
+  locations: LocationData[];
+}
+
+// Quick Action configuration with unique colors per action
+const quickActionConfig = [
+  {
+    key: 'createBooking',
+    href: '/business/bookings/new',
+    icon: Plus,
+    label: 'Create Booking',
+    description: 'Start a new booking',
+    color: 'text-primary',
+    bg: 'bg-primary/10',
+    hoverBg: 'hover:bg-primary/15',
+    borderHover: 'hover:border-primary/40',
+  },
+  {
+    key: 'manageWallet',
+    href: '/business/wallet',
+    icon: Wallet,
+    label: 'Manage Wallet',
+    description: 'View balance & add funds',
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-500/10',
+    hoverBg: 'hover:bg-emerald-500/15',
+    borderHover: 'hover:border-emerald-500/40',
+  },
+  {
+    key: 'viewBookings',
+    href: '/business/bookings',
+    icon: CalendarCheck,
+    label: 'View Bookings',
+    description: 'All your bookings',
+    color: 'text-sky-500',
+    bg: 'bg-sky-500/10',
+    hoverBg: 'hover:bg-sky-500/15',
+    borderHover: 'hover:border-sky-500/40',
+  },
+  {
+    key: 'settings',
+    href: '/business/settings',
+    icon: Settings,
+    label: 'Settings',
+    description: 'Account preferences',
+    color: 'text-violet-500',
+    bg: 'bg-violet-500/10',
+    hoverBg: 'hover:bg-violet-500/15',
+    borderHover: 'hover:border-violet-500/40',
+  },
+];
+
+// Generate sample chart data based on real values
+function generateChartData(baseValue: number, points: number = 7): number[] {
+  const data: number[] = [];
+  let current = baseValue * 0.6;
+
+  for (let i = 0; i < points; i++) {
+    const variation = (Math.random() - 0.3) * (baseValue * 0.2);
+    current = Math.max(0, current + variation);
+    data.push(Math.round(current));
+  }
+
+  // Ensure last value trends toward current
+  data[data.length - 1] = baseValue;
+  return data;
 }
 
 export function DashboardContent({
@@ -65,6 +144,7 @@ export function DashboardContent({
   completedBookings,
   monthlyBookings,
   recentBookings,
+  locations,
 }: DashboardContentProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -76,245 +156,386 @@ export function DashboardContent({
     return 'Good evening';
   };
 
-  const getStatusVariant = (status: string): 'success' | 'warning' | 'info' | 'default' => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'confirmed':
-        return 'info';
-      default:
-        return 'default';
-    }
+  // Chart data for wallet sparkline
+  const revenueChartData = generateChartData(walletBalance / 100 || 50);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.04,
+        delayChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+    },
   };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header with Greeting */}
-      <FadeIn>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1
-              className="text-3xl sm:text-4xl font-semibold text-[var(--business-text-primary)] tracking-tight"
-              style={{ fontFamily: 'var(--business-font-display)' }}
-            >
-              {getGreeting()}
-            </h1>
-            <p
-              className="mt-1 text-[var(--business-text-muted)]"
-              style={{ fontFamily: 'var(--business-font-body)' }}
-            >
-              Welcome back to{' '}
-              <span className="text-[var(--business-primary-400)]">{businessName}</span>
-            </p>
-          </div>
-          <LuxuryButton asChild variant="primary" className="gap-2">
+    <div className="pb-12 space-y-6">
+      {/* Header Section */}
+      <motion.div
+        initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <div>
+          <motion.h1
+            initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight"
+          >
+            {getGreeting()}, <span className="text-primary">{businessName}</span>
+          </motion.h1>
+          <motion.p
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-muted-foreground mt-1"
+          >
+            Here&apos;s what&apos;s happening with your business today
+          </motion.p>
+        </div>
+
+        {/* Actions */}
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="flex items-center gap-3"
+        >
+          {/* Date Range Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="hidden sm:flex items-center gap-2 border-border bg-card/80 backdrop-blur-sm text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-300"
+              >
+                <Calendar className="h-4 w-4 text-primary" />
+                Last 30 days
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 bg-popover border-border backdrop-blur-xl">
+              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">Last 7 days</DropdownMenuItem>
+              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">Last 30 days</DropdownMenuItem>
+              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">Last 90 days</DropdownMenuItem>
+              <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-primary/10 focus:bg-primary/10">This year</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button asChild className="gap-2 border-none rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
             <Link href="/business/bookings/new">
               <Plus className="h-4 w-4" />
               New Booking
             </Link>
-          </LuxuryButton>
-        </div>
-      </FadeIn>
-
-      {/* Hero Stats Grid */}
-      <motion.div
-        variants={prefersReducedMotion ? undefined : staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        {/* Wallet Balance - Hero Card */}
-        <motion.div variants={prefersReducedMotion ? undefined : staggerItem} className="sm:col-span-2">
-          <WalletHeroCard
-            balance={walletBalance}
-            trend={{ value: monthlyBookings, label: 'bookings this month' }}
-          />
-        </motion.div>
-
-        {/* Total Bookings */}
-        <motion.div variants={prefersReducedMotion ? undefined : staggerItem}>
-          <HeroStatCard
-            title="Total Bookings"
-            value={totalBookings}
-            subtitle="All time"
-            icon={<CalendarCheck className="h-5 w-5" />}
-          />
-        </motion.div>
-
-        {/* Pending Bookings */}
-        <motion.div variants={prefersReducedMotion ? undefined : staggerItem}>
-          <HeroStatCard
-            title="Pending"
-            value={pendingBookings}
-            subtitle="Awaiting assignment"
-            icon={<Clock className="h-5 w-5" />}
-            variant={pendingBookings > 0 ? 'warning' : 'default'}
-          />
+          </Button>
         </motion.div>
       </motion.div>
 
-      {/* Quick Actions */}
-      <FadeIn delay={0.2}>
-        <div className="space-y-4">
-          <h2
-            className="text-xl font-medium text-[var(--business-text-primary)]"
-            style={{ fontFamily: 'var(--business-font-display)' }}
-          >
-            Quick Actions
-          </h2>
-          <QuickActionsGrid>
-            <ActionCard
-              href="/business/bookings/new"
-              variant="primary"
-              icon={<Plus className="h-6 w-6" />}
-              title="New Booking"
-              description="Create a new transfer booking"
-            />
-            <ActionCard
-              href="/business/wallet"
-              icon={<Wallet className="h-6 w-6" />}
-              title="Wallet"
-              description="Manage your credits"
-            />
-            <ActionCard
-              href="/business/bookings"
-              icon={<CalendarCheck className="h-6 w-6" />}
-              title="View Bookings"
-              description="See all your bookings"
-            />
-          </QuickActionsGrid>
-        </div>
-      </FadeIn>
+      {/* Main Analytics Grid */}
+      <motion.div
+        variants={prefersReducedMotion ? undefined : containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid gap-5 lg:gap-6 lg:grid-cols-12"
+      >
+        {/* Left Column - Main Stats */}
+        <div className="lg:col-span-8 space-y-5">
+          {/* Hero Stat Cards - Single Row */}
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            {/* Wallet Balance - Hero Card */}
+            <motion.div
+              variants={prefersReducedMotion ? undefined : itemVariants}
+              className="col-span-2 lg:col-span-4"
+              whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            >
+              <Card className={cn(
+                "relative overflow-hidden group rounded-2xl",
+                "bg-card",
+                "border border-border",
+                "shadow-md",
+                "transition-all duration-300 ease-out",
+                "hover:shadow-lg"
+              )}>
+                <CardContent className="p-6 sm:p-8 relative z-10">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      {/* Icon with colored background */}
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                        className="flex h-14 w-14 items-center justify-center rounded-xl mb-5 bg-primary/10"
+                      >
+                        <Wallet className="h-7 w-7 text-primary" />
+                      </motion.div>
 
-      {/* Recent Bookings */}
-      <FadeIn delay={0.3}>
-        <LuxuryCard>
-          <LuxuryCardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <LuxuryCardTitle>Recent Bookings</LuxuryCardTitle>
-              <LuxuryCardDescription>Your latest transfer bookings</LuxuryCardDescription>
-            </div>
-            {recentBookings.length > 0 && (
-              <LuxuryButton asChild variant="ghost" size="sm" className="gap-1">
-                <Link href="/business/bookings">
-                  View All
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </LuxuryButton>
-            )}
-          </LuxuryCardHeader>
-          <LuxuryCardContent>
-            {recentBookings.length === 0 ? (
-              <EmptyBookingsState />
-            ) : (
-              <div className="space-y-3">
-                {recentBookings.map((booking, index) => (
-                  <motion.div
-                    key={booking.id}
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                      {/* Large value - dramatic typography */}
+                      <div className="flex items-baseline gap-4 mb-3">
+                        <span className="text-5xl sm:text-6xl font-bold tracking-tight text-primary">
+                          <CurrencyCountUp value={walletBalance} />
+                        </span>
+                      </div>
+
+                      {/* Title below value */}
+                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Wallet Balance
+                      </span>
+
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Available for bookings
+                      </p>
+                    </div>
+
+                    <div className="hidden sm:block">
+                      <Sparkline
+                        data={revenueChartData}
+                        width={160}
+                        height={70}
+                        color="hsl(var(--primary))"
+                        gradientId="wallet-gradient"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator className="my-5 bg-border" />
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 transition-all duration-300"
                   >
-                    <Link
-                      href={`/business/bookings/${booking.id}`}
-                      className={cn(
-                        'group flex items-center justify-between p-4 rounded-xl',
-                        'bg-[var(--business-surface-2)]/50 hover:bg-[var(--business-surface-3)]',
-                        'border border-transparent hover:border-[var(--business-primary-500)]/20',
-                        'transition-all duration-200'
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={cn(
-                            'flex h-10 w-10 items-center justify-center rounded-xl',
-                            'bg-[var(--business-primary-500)]/10 text-[var(--business-primary-400)]'
-                          )}
-                        >
-                          <CalendarCheck className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p
-                            className="font-medium text-[var(--business-text-primary)]"
-                            style={{ fontFamily: 'var(--business-font-body)' }}
-                          >
-                            {booking.booking_number}
-                          </p>
-                          <p className="text-sm text-[var(--business-text-muted)]">
-                            {booking.customer_name}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                          <p className="font-medium text-[var(--business-text-primary)]">
-                            {formatCurrency(booking.total_price)}
-                          </p>
-                          <p className="text-xs text-[var(--business-text-muted)]">
-                            {new Date(booking.pickup_datetime).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                        </div>
-                        <StatusBadge variant={getStatusVariant(booking.booking_status)}>
-                          {booking.booking_status}
-                        </StatusBadge>
-                        <ArrowRight className="h-4 w-4 text-[var(--business-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
+                    <Link href="/business/wallet">
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Add Credits
                     </Link>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </LuxuryCardContent>
-        </LuxuryCard>
-      </FadeIn>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Monthly Bookings */}
+            <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+              <AnalyticsStatCard
+                title="Monthly Bookings"
+                value={monthlyBookings}
+                subtitle="This month"
+                icon={<BarChart3 className="h-4 w-4" />}
+                trend={monthlyBookings > 0 ? { value: 12, isPositive: true } : undefined}
+                accentColor="amber"
+                iconBgColor="bg-amber-500/20 text-amber-600 dark:text-amber-400"
+              />
+            </motion.div>
+
+            {/* Completed */}
+            <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+              <AnalyticsStatCard
+                title="Completed"
+                value={completedBookings}
+                subtitle="Successfully delivered"
+                icon={<CalendarCheck className="h-4 w-4" />}
+                accentColor="emerald"
+                iconBgColor="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+              />
+            </motion.div>
+
+            {/* Pending */}
+            <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+              <AnalyticsStatCard
+                title="Pending"
+                value={pendingBookings}
+                subtitle="Awaiting action"
+                icon={<Clock className="h-4 w-4" />}
+                accentColor="sky"
+                iconBgColor="bg-sky-500/20 text-sky-600 dark:text-sky-400"
+              />
+            </motion.div>
+
+            {/* Total Bookings */}
+            <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+              <AnalyticsStatCard
+                title="Total Bookings"
+                value={totalBookings}
+                subtitle="All time"
+                icon={<TrendingUp className="h-4 w-4" />}
+                accentColor="violet"
+                iconBgColor="bg-violet-500/20 text-violet-600 dark:text-violet-400"
+              />
+            </motion.div>
+          </div>
+
+          {/* Recent Activity */}
+          <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+            <RecentActivity bookings={recentBookings} />
+          </motion.div>
+        </div>
+
+        {/* Right Column - Traffic & Quick Actions */}
+        <div className="lg:col-span-4 space-y-5">
+          {/* Locations */}
+          <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+            <LocationsCard locations={locations} />
+          </motion.div>
+
+          {/* Quick Actions - 2x2 Grid */}
+          <motion.div
+            variants={prefersReducedMotion ? undefined : itemVariants}
+            whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          >
+            <Card className={cn(
+              'relative overflow-hidden group rounded-xl',
+              'bg-card',
+              'border border-border',
+              'shadow-sm',
+              'transition-all duration-300 ease-out',
+              'hover:shadow-md'
+            )}>
+              <CardHeader className="pb-3 relative z-10">
+                <CardTitle className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 pb-4 px-4 relative z-10">
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+                    }
+                  }}
+                  className="grid grid-cols-2 gap-3"
+                >
+                  {quickActionConfig.map((config) => (
+                    <motion.div
+                      key={config.key}
+                      variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
+                    >
+                      <QuickActionCard config={config} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Pro Features Card */}
+          <motion.div
+            variants={prefersReducedMotion ? undefined : itemVariants}
+            whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          >
+            <Card className={cn(
+              'relative overflow-hidden group rounded-2xl',
+              'bg-card',
+              'border border-border',
+              'shadow-sm',
+              'transition-all duration-300 ease-out',
+              'hover:shadow-md'
+            )}>
+              <CardContent className="p-5 relative z-10">
+                {/* Icon with colored background */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="flex h-12 w-12 items-center justify-center rounded-xl mb-4 bg-violet-500/10"
+                >
+                  <Sparkles className="h-6 w-6 text-violet-500" />
+                </motion.div>
+
+                <span className="text-base font-semibold text-foreground">
+                  Premium Features
+                </span>
+                <p className="text-sm text-muted-foreground mt-1 mb-4">
+                  Unlock advanced analytics, custom branding, and priority support
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
+                >
+                  Learn More
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 }
 
-// Empty state component
-function EmptyBookingsState() {
+// Quick Action Card - 2x2 Grid Item
+interface QuickActionCardProps {
+  config: {
+    key: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    description: string;
+    color: string;
+    bg: string;
+    hoverBg: string;
+    borderHover: string;
+  };
+}
+
+function QuickActionCard({ config }: QuickActionCardProps) {
+  const Icon = config.icon;
+
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="relative mb-6">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--business-primary-500)]/10">
-          <CalendarCheck className="h-8 w-8 text-[var(--business-primary-400)]" />
-        </div>
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.3, type: 'spring' }}
-          className="absolute -right-1 -top-1"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[var(--business-primary-500)] to-[var(--business-primary-400)]">
-            <Sparkles className="h-3 w-3 text-white" />
-          </div>
-        </motion.div>
+    <Link
+      href={config.href}
+      className={cn(
+        'group flex flex-col p-3 rounded-xl',
+        'border border-border',
+        'bg-card',
+        'transition-all duration-200',
+        config.hoverBg,
+        config.borderHover,
+        'hover:shadow-sm hover:-translate-y-0.5'
+      )}
+    >
+      {/* Icon */}
+      <div className={cn(
+        'flex h-10 w-10 items-center justify-center rounded-lg mb-2',
+        config.bg
+      )}>
+        <Icon className={cn('h-5 w-5', config.color)} />
       </div>
-      <h3
-        className="mb-2 text-lg font-medium text-[var(--business-text-primary)]"
-        style={{ fontFamily: 'var(--business-font-display)' }}
-      >
-        No bookings yet
-      </h3>
-      <p
-        className="mb-6 text-sm text-[var(--business-text-muted)] max-w-sm"
-        style={{ fontFamily: 'var(--business-font-body)' }}
-      >
-        Create your first booking to start managing your transfers with ease
-      </p>
-      <LuxuryButton asChild variant="primary">
-        <Link href="/business/bookings/new">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Your First Booking
-        </Link>
-      </LuxuryButton>
-    </div>
+
+      {/* Label */}
+      <span className="text-sm font-medium text-foreground">
+        {config.label}
+      </span>
+
+      {/* Description */}
+      <span className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+        {config.description}
+      </span>
+
+      {/* Arrow indicator */}
+      <ArrowRight className={cn(
+        'h-3.5 w-3.5 mt-2 self-end',
+        config.color,
+        'opacity-0 -translate-x-1',
+        'group-hover:opacity-100 group-hover:translate-x-0',
+        'transition-all duration-200'
+      )} />
+    </Link>
   );
 }

@@ -2,7 +2,7 @@
  * Status Badge Component
  * Premium badges with dot indicators and pulse animations
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
  * SCOPE: Business module ONLY
  */
 
@@ -13,29 +13,29 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const statusBadgeVariants = cva(
-  'inline-flex items-center gap-1.5 rounded-full font-medium text-xs px-2.5 py-1',
+  'inline-flex items-center gap-1.5 rounded-full font-medium text-xs px-2.5 py-1 border',
   {
     variants: {
       variant: {
-        default: 'bg-[var(--business-surface-3)] text-[var(--business-text-secondary)]',
-        pending: 'bg-[var(--business-warning)]/15 text-[var(--business-warning)]',
-        confirmed: 'bg-[var(--business-success)]/15 text-[var(--business-success)]',
-        'in-progress': 'bg-[var(--business-info)]/15 text-[var(--business-info)]',
-        completed: 'bg-[var(--business-primary-500)]/15 text-[var(--business-primary-400)]',
-        cancelled: 'bg-[var(--business-error)]/15 text-[var(--business-error)]',
-        draft: 'bg-[var(--business-surface-3)] text-[var(--business-text-muted)]',
-        active: 'bg-[var(--business-success)]/15 text-[var(--business-success)]',
-        inactive: 'bg-[var(--business-surface-3)] text-[var(--business-text-muted)]',
-        frozen: 'bg-[var(--business-info)]/15 text-[var(--business-info)]',
-        warning: 'bg-[var(--business-warning)]/15 text-[var(--business-warning)]',
-        success: 'bg-[var(--business-success)]/15 text-[var(--business-success)]',
-        error: 'bg-[var(--business-error)]/15 text-[var(--business-error)]',
-        info: 'bg-[var(--business-info)]/15 text-[var(--business-info)]',
+        default: 'bg-muted text-muted-foreground border-border',
+        pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+        confirmed: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        'in-progress': 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+        completed: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        cancelled: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+        draft: 'bg-muted text-muted-foreground border-border',
+        active: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        inactive: 'bg-muted text-muted-foreground border-border',
+        frozen: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+        warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+        success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        error: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+        info: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
         // Payment specific
-        paid: 'bg-[var(--business-success)]/15 text-[var(--business-success)]',
-        unpaid: 'bg-[var(--business-error)]/15 text-[var(--business-error)]',
-        refunded: 'bg-purple-500/15 text-purple-400',
-        'partially-paid': 'bg-[var(--business-warning)]/15 text-[var(--business-warning)]',
+        paid: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        unpaid: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+        refunded: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+        'partially-paid': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       },
       size: {
         sm: 'text-[10px] px-2 py-0.5',
@@ -51,24 +51,24 @@ const statusBadgeVariants = cva(
 );
 
 const dotColorMap: Record<string, string> = {
-  default: 'bg-[var(--business-text-muted)]',
-  pending: 'bg-[var(--business-warning)]',
-  confirmed: 'bg-[var(--business-success)]',
-  'in-progress': 'bg-[var(--business-info)]',
-  completed: 'bg-[var(--business-primary-400)]',
-  cancelled: 'bg-[var(--business-error)]',
-  draft: 'bg-[var(--business-text-muted)]',
-  active: 'bg-[var(--business-success)]',
-  inactive: 'bg-[var(--business-text-muted)]',
-  frozen: 'bg-[var(--business-info)]',
-  warning: 'bg-[var(--business-warning)]',
-  success: 'bg-[var(--business-success)]',
-  error: 'bg-[var(--business-error)]',
-  info: 'bg-[var(--business-info)]',
-  paid: 'bg-[var(--business-success)]',
-  unpaid: 'bg-[var(--business-error)]',
-  refunded: 'bg-purple-400',
-  'partially-paid': 'bg-[var(--business-warning)]',
+  default: 'bg-muted-foreground/40',
+  pending: 'bg-amber-500',
+  confirmed: 'bg-emerald-500',
+  'in-progress': 'bg-sky-500',
+  completed: 'bg-emerald-500',
+  cancelled: 'bg-red-500',
+  draft: 'bg-muted-foreground/40',
+  active: 'bg-emerald-500',
+  inactive: 'bg-muted-foreground/40',
+  frozen: 'bg-sky-500',
+  warning: 'bg-amber-500',
+  success: 'bg-emerald-500',
+  error: 'bg-red-500',
+  info: 'bg-sky-500',
+  paid: 'bg-emerald-500',
+  unpaid: 'bg-red-500',
+  refunded: 'bg-sky-500',
+  'partially-paid': 'bg-amber-500',
 };
 
 export interface StatusBadgeProps
@@ -101,8 +101,9 @@ const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
     return (
       <span
         ref={ref}
+        role="status"
+        aria-label={`Status: ${children}`}
         className={cn(statusBadgeVariants({ variant, size }), className)}
-        style={{ fontFamily: 'var(--business-font-body)' }}
         {...props}
       >
         {showDot && (
@@ -112,6 +113,7 @@ const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
               dotBgColor,
               pulseDot && 'animate-pulse'
             )}
+            aria-hidden="true"
           />
         )}
         {children}

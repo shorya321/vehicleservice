@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, MutableRefObject } from 'react';
 import { useInView as useFramerInView } from 'framer-motion';
 import { viewportOptions } from './config';
 
@@ -82,9 +82,15 @@ export function useCountUp(
   } = options ?? {};
 
   const [count, setCount] = useState(startValue);
+  const hasCompletedRef = useRef(false); // Track if animation has completed
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // If animation already completed, preserve the final value
+    if (hasCompletedRef.current) {
+      return;
+    }
+
     if (!enabled) {
       setCount(startValue);
       return;
@@ -93,6 +99,7 @@ export function useCountUp(
     // Skip animation if user prefers reduced motion
     if (prefersReducedMotion) {
       setCount(endValue);
+      hasCompletedRef.current = true;
       return;
     }
 
@@ -111,6 +118,9 @@ export function useCountUp(
 
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);
+      } else {
+        // Mark animation as completed to preserve final value
+        hasCompletedRef.current = true;
       }
     };
 

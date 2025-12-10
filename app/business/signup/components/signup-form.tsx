@@ -1,18 +1,19 @@
-'use client';
-
 /**
  * Business Account Signup Form Component
  * Handles business registration with validation
+ *
+ * SCOPE: Business module ONLY
  */
+
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-import { LuxuryButton } from '@/components/business/ui/luxury-button';
 import { LuxuryInput } from '@/components/business/ui/luxury-input';
 import {
   Form,
@@ -30,9 +31,14 @@ import {
   LuxurySelectTrigger,
   LuxurySelectValue,
 } from '@/components/business/ui/luxury-select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { PasswordStrength } from '@/components/business/ui/password-strength';
+import {
+  PasswordInput,
+  PasswordStrengthBar,
+  AuthFormContainer,
+  AuthFormField,
+} from '@/components/business/auth';
+import { LuxuryCheckbox } from '@/components/business/ui/luxury-checkbox';
 import {
   businessRegistrationSchema,
   type BusinessRegistrationInput,
@@ -44,7 +50,6 @@ export function SignupForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [generatedSubdomain, setGeneratedSubdomain] = useState<string>('');
-  const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const form = useForm<BusinessRegistrationInput>({
@@ -107,215 +112,236 @@ export function SignupForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Business Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Business Information</h3>
+        <AuthFormContainer className="space-y-6">
+          {/* Business Information */}
+          <div className="space-y-4">
+            <h3 className="text-base font-semibold text-[var(--luxury-pearl)] font-[family-name:var(--luxury-font-accent)]">
+              Business Information
+            </h3>
 
-          <FormField
-            control={form.control}
-            name="business_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[var(--business-text-secondary)]">Business Name</FormLabel>
-                <FormControl>
-                  <LuxuryInput placeholder="Acme Hotel & Resort" {...field} />
-                </FormControl>
-                <FormDescription className="text-[var(--business-text-muted)]">
-                  Your subdomain will be: <strong className="text-[var(--business-primary-400)]">{generatedSubdomain || 'your-business'}</strong>
-                  .yourdomain.com
-                </FormDescription>
-                <FormMessage className="text-[var(--business-error)]" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="business_email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[var(--business-text-secondary)]">Business Email</FormLabel>
-                <FormControl>
-                  <LuxuryInput type="email" placeholder="contact@acmehotel.com" {...field} />
-                </FormControl>
-                <FormMessage className="text-[var(--business-error)]" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="business_phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[var(--business-text-secondary)]">Business Phone</FormLabel>
-                <FormControl>
-                  <LuxuryInput type="tel" placeholder="+1234567890" {...field} />
-                </FormControl>
-                <FormDescription className="text-[var(--business-text-muted)]">Include country code (e.g., +1 for US)</FormDescription>
-                <FormMessage className="text-[var(--business-error)]" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Contact Person */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Contact Person</h3>
-
-          <FormField
-            control={form.control}
-            name="contact_person_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[var(--business-text-secondary)]">Full Name</FormLabel>
-                <FormControl>
-                  <LuxuryInput placeholder="John Doe" {...field} />
-                </FormControl>
-                <FormMessage className="text-[var(--business-error)]" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Optional Address */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Address (Optional)</h3>
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[var(--business-text-secondary)]">Street Address</FormLabel>
-                <FormControl>
-                  <LuxuryInput placeholder="123 Main St" {...field} />
-                </FormControl>
-                <FormMessage className="text-[var(--business-error)]" />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[var(--business-text-secondary)]">City</FormLabel>
-                  <FormControl>
-                    <LuxuryInput placeholder="New York" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-[var(--business-error)]" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="country_code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[var(--business-text-secondary)]">Country</FormLabel>
-                  <LuxurySelect onValueChange={field.onChange} value={field.value || ''}>
+            <AuthFormField>
+              <FormField
+                control={form.control}
+                name="business_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[var(--luxury-light-gray)]">Business Name</FormLabel>
                     <FormControl>
-                      <LuxurySelectTrigger>
-                        <LuxurySelectValue placeholder="Select a country" />
-                      </LuxurySelectTrigger>
+                      <LuxuryInput placeholder="Acme Hotel & Resort" className="auth-input" {...field} />
                     </FormControl>
-                    <LuxurySelectContent className="max-h-[300px]">
-                      {countries.map((country) => (
-                        <LuxurySelectItem key={country.code} value={country.code}>
-                          {country.name}
-                        </LuxurySelectItem>
-                      ))}
-                    </LuxurySelectContent>
-                  </LuxurySelect>
-                  <FormMessage className="text-[var(--business-error)]" />
-                </FormItem>
-              )}
-            />
+                    <FormDescription className="text-[var(--luxury-light-gray)]/70 text-xs">
+                      Your subdomain will be: <strong className="text-[var(--luxury-gold)]">{generatedSubdomain || 'your-business'}</strong>
+                      .yourdomain.com
+                    </FormDescription>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+            </AuthFormField>
+
+            {/* Email + Phone - 2 Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AuthFormField>
+                <FormField
+                  control={form.control}
+                  name="business_email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[var(--luxury-light-gray)]">Business Email</FormLabel>
+                      <FormControl>
+                        <LuxuryInput type="email" placeholder="contact@acmehotel.com" className="auth-input" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </AuthFormField>
+
+              <AuthFormField>
+                <FormField
+                  control={form.control}
+                  name="business_phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[var(--luxury-light-gray)]">Business Phone</FormLabel>
+                      <FormControl>
+                        <LuxuryInput type="tel" placeholder="+1234567890" className="auth-input" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </AuthFormField>
+            </div>
           </div>
-        </div>
 
-        {/* Password */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-[var(--business-text-primary)]">Security</h3>
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[var(--business-text-secondary)]">Password</FormLabel>
-                <FormControl>
-                  <LuxuryInput
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    {...field}
-                    rightIcon={
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)] transition-colors"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    }
-                  />
-                </FormControl>
-                <PasswordStrength password={field.value || ''} className="mt-2" />
-                <FormMessage className="text-[var(--business-error)]" />
-              </FormItem>
-            )}
-          />
-        </div>
+          {/* Contact & Address - Merged Section */}
+          <div className="space-y-4">
+            <h3 className="text-base font-semibold text-[var(--luxury-pearl)] font-[family-name:var(--luxury-font-accent)]">
+              Contact & Address
+            </h3>
 
-        {/* Terms Acceptance */}
-        <div className="flex items-start space-x-3 py-2">
-          <Checkbox
-            id="terms"
-            checked={acceptedTerms}
-            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-            className="mt-0.5 border-[var(--business-border-default)] data-[state=checked]:bg-[var(--business-primary-500)] data-[state=checked]:border-[var(--business-primary-500)]"
-          />
-          <label
-            htmlFor="terms"
-            className="text-sm text-[var(--business-text-secondary)] leading-relaxed cursor-pointer"
-          >
-            I agree to the{' '}
-            <Link
-              href="/terms"
-              target="_blank"
-              className="text-[var(--business-primary-400)] hover:underline"
+            {/* Full Name + Street Address - 2 Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AuthFormField>
+                <FormField
+                  control={form.control}
+                  name="contact_person_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[var(--luxury-light-gray)]">Full Name</FormLabel>
+                      <FormControl>
+                        <LuxuryInput placeholder="John Doe" className="auth-input" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </AuthFormField>
+
+              <AuthFormField>
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[var(--luxury-light-gray)]">Street Address</FormLabel>
+                      <FormControl>
+                        <LuxuryInput placeholder="123 Main St" className="auth-input" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </AuthFormField>
+            </div>
+
+            {/* City + Country - 2 Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AuthFormField>
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[var(--luxury-light-gray)]">City</FormLabel>
+                      <FormControl>
+                        <LuxuryInput placeholder="New York" className="auth-input" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </AuthFormField>
+
+              <AuthFormField>
+                <FormField
+                  control={form.control}
+                  name="country_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[var(--luxury-light-gray)]">Country</FormLabel>
+                      <LuxurySelect onValueChange={field.onChange} value={field.value || ''}>
+                        <FormControl>
+                          <LuxurySelectTrigger className="auth-input">
+                            <LuxurySelectValue placeholder="Select a country" />
+                          </LuxurySelectTrigger>
+                        </FormControl>
+                        <LuxurySelectContent className="max-h-[300px] bg-[var(--luxury-dark-gray)] border-[var(--luxury-gray)]">
+                          {countries.map((country) => (
+                            <LuxurySelectItem key={country.code} value={country.code}>
+                              {country.name}
+                            </LuxurySelectItem>
+                          ))}
+                        </LuxurySelectContent>
+                      </LuxurySelect>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </AuthFormField>
+            </div>
+          </div>
+
+          {/* Password */}
+          <div className="space-y-4">
+            <h3 className="text-base font-semibold text-[var(--luxury-pearl)] font-[family-name:var(--luxury-font-accent)]">
+              Security
+            </h3>
+            <AuthFormField>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[var(--luxury-light-gray)]">Password</FormLabel>
+                    <FormControl>
+                      <PasswordInput
+                        placeholder="Create a strong password"
+                        showLockIcon
+                        className="auth-input"
+                        {...field}
+                      />
+                    </FormControl>
+                    <PasswordStrengthBar password={field.value || ''} />
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+            </AuthFormField>
+          </div>
+
+          {/* Terms Acceptance */}
+          <AuthFormField>
+            <div className="flex items-start space-x-3 py-2">
+              <LuxuryCheckbox
+                id="terms"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                className="mt-0.5"
+              />
+              <label
+                htmlFor="terms"
+                className="text-sm text-[var(--luxury-light-gray)] leading-relaxed cursor-pointer"
+              >
+                I agree to the{' '}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  className="text-[var(--luxury-gold)] hover:text-[var(--luxury-gold-light)] transition-colors"
+                >
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-[var(--luxury-gold)] hover:text-[var(--luxury-gold-light)] transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </label>
+            </div>
+          </AuthFormField>
+
+          {/* Submit Button */}
+          <AuthFormField>
+            <button
+              type="submit"
+              disabled={isLoading || !acceptedTerms}
+              className="auth-btn-primary w-full flex items-center justify-center gap-2"
             >
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link
-              href="/privacy"
-              target="_blank"
-              className="text-[var(--business-primary-400)] hover:underline"
-            >
-              Privacy Policy
-            </Link>
-          </label>
-        </div>
-
-        <LuxuryButton type="submit" disabled={isLoading || !acceptedTerms} className="w-full" size="lg">
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating account...
-            </>
-          ) : (
-            'Create Business Account'
-          )}
-        </LuxuryButton>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Create Business Account'
+              )}
+            </button>
+          </AuthFormField>
+        </AuthFormContainer>
       </form>
     </Form>
   );

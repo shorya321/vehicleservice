@@ -131,7 +131,7 @@ export const pageTransition: Variants = {
   },
 };
 
-// Stagger container for children animations
+// Stagger container for children animations - refined timing
 export const staggerContainer: Variants = {
   hidden: {
     opacity: 0,
@@ -139,13 +139,13 @@ export const staggerContainer: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: stagger.cards,
-      delayChildren: 0.1,
+      staggerChildren: 0.04,
+      delayChildren: 0.05,
     },
   },
 };
 
-// Stagger container (fast)
+// Stagger container (fast) - for lists and grids
 export const staggerContainerFast: Variants = {
   hidden: {
     opacity: 0,
@@ -153,8 +153,8 @@ export const staggerContainerFast: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: stagger.fast,
-      delayChildren: 0.05,
+      staggerChildren: 0.03,
+      delayChildren: 0.02,
     },
   },
 };
@@ -175,40 +175,40 @@ export const staggerItem: Variants = {
   },
 };
 
-// Card hover animation
+// Card hover animation - refined and subtle
 export const cardHover: Variants = {
   rest: {
     y: 0,
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.25)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
   },
   hover: {
-    y: -4,
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 0 20px -4px rgba(99, 102, 241, 0.25)',
+    y: -2,
+    boxShadow: '0 12px 20px -5px rgba(0, 0, 0, 0.3), 0 0 15px -4px rgba(201, 168, 124, 0.15)',
     transition: {
-      duration: duration.quick,
+      duration: 0.15,
       ease: easing.easeOut,
     },
   },
   tap: {
     y: 0,
-    scale: 0.98,
+    scale: 0.99,
   },
 };
 
-// Button press animation
+// Button press animation - subtle and responsive
 export const buttonPress: Variants = {
   rest: {
     scale: 1,
   },
   hover: {
-    scale: 1.02,
+    scale: 1.01,
     transition: {
-      duration: duration.quick,
+      duration: 0.12,
       ease: easing.easeOut,
     },
   },
   tap: {
-    scale: 0.98,
+    scale: 0.99,
   },
 };
 
@@ -267,15 +267,15 @@ export const tooltip: Variants = {
   },
 };
 
-// Table row hover
+// Table row hover - with gold accent
 export const tableRowHover: Variants = {
   rest: {
     backgroundColor: 'transparent',
   },
   hover: {
-    backgroundColor: 'rgba(99, 102, 241, 0.08)',
+    backgroundColor: 'rgba(201, 168, 124, 0.05)',
     transition: {
-      duration: duration.quick,
+      duration: 0.12,
     },
   },
 };
@@ -328,4 +328,185 @@ export const notification: Variants = {
       duration: duration.quick,
     },
   },
+};
+
+// ============================================
+// AUTH PAGE ANIMATIONS
+// Luxury split-screen authentication flow
+// ============================================
+
+// Brand panel (left side) - slides in from left
+export const authBrandPanel: Variants = {
+  hidden: {
+    opacity: 0,
+    x: -40,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: duration.slow,
+      ease: easing.smooth,
+      staggerChildren: 0.15,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+// Form panel (right side) - slides in from right
+export const authFormPanel: Variants = {
+  hidden: {
+    opacity: 0,
+    x: 40,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: duration.moderate,
+      ease: easing.easeOut,
+      delay: 0.3,
+      staggerChildren: 0.1,
+      delayChildren: 0.4,
+    },
+  },
+};
+
+// Auth tagline animation (staggered text reveal)
+export const authTagline: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: duration.moderate,
+      ease: easing.easeOut,
+    },
+  },
+};
+
+// Auth form item animation
+export const authFormItem: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 16,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: duration.base,
+      ease: easing.easeOut,
+    },
+  },
+};
+
+// Auth alert animation
+export const authAlert: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: duration.base,
+      ease: easing.spring,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    transition: {
+      duration: duration.quick,
+      ease: easing.easeOut,
+    },
+  },
+};
+
+// Auth social button stagger
+export const authSocialButton: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 8,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: duration.quick,
+      ease: easing.easeOut,
+    },
+  },
+};
+
+// Auth icon badge animation
+export const authIconBadge: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20,
+    },
+  },
+};
+
+// Auth brand logo animation
+export const authBrandLogo: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.9,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: duration.moderate,
+      ease: easing.spring,
+    },
+  },
+};
+
+// Auth stagger container for form elements
+export const authStaggerContainer: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+// Floating particle animation (for brand panel)
+export const authParticle: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: (custom: number) => ({
+    opacity: [0.2, 0.5, 0.2],
+    y: [0, -15, 0],
+    transition: {
+      duration: 4 + custom,
+      ease: 'easeInOut',
+      repeat: Infinity,
+      delay: custom * 0.5,
+    },
+  }),
 };

@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Payment Element Modal
+ * Stripe Payment Element integration for adding funds
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
@@ -17,6 +25,7 @@ import { Loader2, CreditCard, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/currency-converter'
 import type { CurrencyCode } from '@/lib/utils/currency-converter'
+import { cn } from '@/lib/utils'
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
@@ -95,9 +104,11 @@ function CheckoutForm({ amount, currency, clientSecret, onSuccess, onClose }: Ch
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Amount Display */}
-      <div className="rounded-lg bg-muted p-4 text-center">
+      <div className="rounded-xl p-4 text-center bg-muted border border-border">
         <p className="text-sm text-muted-foreground">Amount to Add</p>
-        <p className="text-2xl font-bold">{formatCurrency(amount, currency)}</p>
+        <p className="text-2xl font-bold text-primary">
+          {formatCurrency(amount, currency)}
+        </p>
       </div>
 
       {/* Payment Element */}
@@ -105,7 +116,7 @@ function CheckoutForm({ amount, currency, clientSecret, onSuccess, onClose }: Ch
 
       {/* Error Message */}
       {errorMessage && (
-        <Alert variant="destructive">
+        <Alert className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
@@ -118,11 +129,15 @@ function CheckoutForm({ amount, currency, clientSecret, onSuccess, onClose }: Ch
           variant="outline"
           onClick={onClose}
           disabled={isProcessing}
-          className="flex-1"
+          className="flex-1 bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground"
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={!stripe || isProcessing} className="flex-1">
+        <Button
+          type="submit"
+          disabled={!stripe || isProcessing}
+          className="flex-1 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+        >
           {isProcessing ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -193,27 +208,43 @@ export function PaymentElementModal({
     onOpenChange(false)
   }
 
+  // Theme for Stripe Payment Element - adapts to light/dark mode via CSS variables
   const appearance = {
-    theme: 'night' as const,
+    theme: 'stripe' as const,
     variables: {
-      colorPrimary: '#6366F1', // indigo-500 - match business portal
-      colorBackground: '#0F0F12', // business-surface-1
-      colorText: '#FAFAFA', // business-text-primary
-      colorDanger: '#EF4444', // business-error
+      colorPrimary: 'hsl(var(--primary))',
+      colorBackground: 'hsl(var(--card))',
+      colorText: 'hsl(var(--foreground))',
+      colorDanger: 'hsl(0 84.2% 60.2%)',
       fontFamily: 'system-ui, sans-serif',
-      borderRadius: '8px',
+      borderRadius: '12px',
+      colorTextSecondary: 'hsl(var(--muted-foreground))',
+      colorTextPlaceholder: 'hsl(var(--muted-foreground))',
+    },
+    rules: {
+      '.Input': {
+        backgroundColor: 'hsl(var(--muted))',
+        border: '1px solid hsl(var(--border))',
+      },
+      '.Input:focus': {
+        borderColor: 'hsl(var(--primary))',
+        boxShadow: '0 0 0 2px hsl(var(--primary) / 0.2)',
+      },
+      '.Label': {
+        color: 'hsl(var(--muted-foreground))',
+      },
     },
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-foreground">
+            <CreditCard className="h-5 w-5 text-primary" />
             Add Funds to Wallet
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-muted-foreground">
             Securely add funds using Stripe Payment Element. Your payment information is never
             stored on our servers.
           </DialogDescription>
@@ -222,17 +253,23 @@ export function PaymentElementModal({
         <div className="py-4">
           {isLoading && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
             </div>
           )}
 
           {error && !isLoading && (
             <div className="space-y-4">
-              <Alert variant="destructive">
+              <Alert className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
-              <Button onClick={createPaymentIntent} className="w-full">
+              <Button
+                onClick={createPaymentIntent}
+                className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+              >
                 Try Again
               </Button>
             </div>

@@ -1,8 +1,8 @@
 /**
  * Luxury Card Component
- * Premium card variants with CVA styling
+ * Premium card variants with CVA styling using semantic CSS variables
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
  * SCOPE: Business module ONLY
  */
 
@@ -16,24 +16,24 @@ import { cardHover } from '@/lib/business/animation/variants';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 const luxuryCardVariants = cva(
-  'rounded-2xl border backdrop-blur-md transition-all',
+  'rounded-xl border transition-all',
   {
     variants: {
       variant: {
         default:
-          'border-[var(--business-border-default)] bg-[var(--business-surface-1)]/80',
+          'border-border bg-card',
         hero:
-          'border-[var(--business-primary-500)]/30 bg-gradient-to-br from-[var(--business-surface-1)] via-[var(--business-surface-2)] to-[var(--business-surface-1)] shadow-business-elevated',
+          'border-primary/30 bg-card shadow-lg',
         interactive:
-          'border-[var(--business-border-default)] bg-[var(--business-surface-1)]/80 cursor-pointer hover:border-[var(--business-primary-500)]/40 hover:shadow-business-glow hover:-translate-y-1',
+          'border-border bg-card cursor-pointer hover:border-primary/40 hover:shadow-md hover:-translate-y-1',
         stat:
-          'border-[var(--business-border-subtle)] bg-[var(--business-surface-1)]/60',
+          'border-border bg-card/80',
         elevated:
-          'border-[var(--business-border-default)] bg-[var(--business-surface-1)] shadow-business-elevated',
+          'border-border bg-card shadow-md',
         glass:
-          'border-[var(--business-border-subtle)] bg-[var(--business-surface-1)]/60 backdrop-blur-xl',
+          'border-border bg-card/80 backdrop-blur-sm',
         gradient:
-          'border-[var(--business-primary-500)]/20 bg-gradient-to-br from-[var(--business-primary-500)]/5 to-[var(--business-surface-1)]',
+          'border-primary/20 bg-gradient-to-br from-primary/5 to-card',
       },
       size: {
         sm: 'p-4',
@@ -113,10 +113,9 @@ const LuxuryCardTitle = forwardRef<HTMLHeadingElement, LuxuryCardTitleProps>(
     <h3
       ref={ref}
       className={cn(
-        'text-xl font-medium text-[var(--business-text-primary)] tracking-tight',
+        'text-xl font-medium text-card-foreground tracking-tight',
         className
       )}
-      style={{ fontFamily: 'var(--business-font-display)' }}
       {...props}
     />
   )
@@ -135,10 +134,9 @@ const LuxuryCardDescription = forwardRef<
   <p
     ref={ref}
     className={cn(
-      'text-sm text-[var(--business-text-secondary)]',
+      'text-sm text-muted-foreground',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     {...props}
   />
 ));

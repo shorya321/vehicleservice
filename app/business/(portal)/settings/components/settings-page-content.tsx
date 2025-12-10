@@ -4,7 +4,8 @@
  * Settings Page Content Component
  * Client component with luxury styling and animations
  *
- * Design System: Premium B2B experience with refined luxury aesthetic
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import Link from 'next/link';
@@ -21,14 +22,9 @@ import {
   Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  LuxuryCard,
-  LuxuryCardHeader,
-  LuxuryCardTitle,
-  LuxuryCardDescription,
-  LuxuryCardContent,
-  StatusBadge,
-} from '@/components/business/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { PageHeader, PageContainer } from '@/components/business/layout';
 import { FadeIn } from '@/components/business/motion';
 import { staggerContainer, staggerItem } from '@/lib/business/animation/variants';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
@@ -53,34 +49,39 @@ interface SettingsPageContentProps {
   userRole: string;
 }
 
+// Settings links with accent colors
 const settingsLinks = [
   {
     href: '/business/settings/payment',
     icon: CreditCard,
     title: 'Payment Settings',
     description: 'Manage payment methods, currency, and auto-save preferences',
-    color: '#60a5fa', // Blue
+    colorClass: 'border-l-emerald-500',
+    iconColorClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   },
   {
     href: '/business/settings/branding',
     icon: Palette,
     title: 'Branding',
     description: 'Customize your business logo and brand colors',
-    color: '#818CF8', // Indigo-400
+    colorClass: 'border-l-violet-500',
+    iconColorClass: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
   },
   {
     href: '/business/settings/notifications',
     icon: Bell,
     title: 'Notifications',
     description: 'Configure email and wallet notification preferences',
-    color: '#f472b6', // Pink
+    colorClass: 'border-l-primary',
+    iconColorClass: 'bg-primary/10 text-primary',
   },
   {
     href: '/business/domain',
     icon: Globe,
     title: 'Custom Domain',
     description: 'Configure your custom domain and DNS settings',
-    color: '#34d399', // Green
+    colorClass: 'border-l-sky-500',
+    iconColorClass: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
   },
 ];
 
@@ -91,32 +92,28 @@ export function SettingsPageContent({
 }: SettingsPageContentProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const getStatusVariant = (status: string): 'success' | 'warning' | 'info' | 'default' => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'suspended':
-        return 'destructive' as 'warning';
-      default:
-        return 'default';
-    }
+  // Status badges with semantic colors
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { className: string; label: string }> = {
+      active: { className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30', label: 'Active' },
+      pending: { className: 'bg-primary/10 text-primary border border-primary/30', label: 'Pending' },
+      suspended: { className: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30', label: 'Suspended' },
+    };
+    const config = variants[status.toLowerCase()] || { className: 'bg-muted text-muted-foreground border border-border', label: status };
+    return (
+      <Badge className={cn('capitalize', config.className)}>
+        {config.label}
+      </Badge>
+    );
   };
 
   return (
-    <div className="space-y-8">
+    <PageContainer>
       {/* Page Header */}
-      <FadeIn>
-        <div>
-          <h1 className="font-[family-name:var(--business-font-display)] text-3xl sm:text-4xl font-semibold text-[var(--business-text-primary)] tracking-tight">
-            Settings
-          </h1>
-          <p className="mt-1 text-[var(--business-text-muted)] font-[family-name:var(--business-font-body)]">
-            Manage your business account settings
-          </p>
-        </div>
-      </FadeIn>
+      <PageHeader
+        title="Settings"
+        description="Manage your business account settings"
+      />
 
       {/* Settings Navigation Grid */}
       <motion.div
@@ -125,7 +122,7 @@ export function SettingsPageContent({
         animate="visible"
         className="grid gap-4 sm:grid-cols-2"
       >
-        {settingsLinks.map((link, index) => {
+        {settingsLinks.map((link) => {
           const Icon = link.icon;
           return (
             <motion.div
@@ -133,35 +130,34 @@ export function SettingsPageContent({
               variants={prefersReducedMotion ? undefined : staggerItem}
             >
               <Link href={link.href} className="block h-full">
-                <LuxuryCard
-                  variant="interactive"
+                <Card
                   className={cn(
-                    'h-full group cursor-pointer',
-                    'hover:border-[var(--business-primary-500)]/40',
+                    'h-full group cursor-pointer rounded-xl',
+                    'bg-card border border-border',
+                    'shadow-sm hover:shadow-md',
                     'transition-all duration-300'
                   )}
                 >
-                  <LuxuryCardContent className="flex items-center gap-4 p-6">
+                  <CardContent className="flex items-center gap-4 p-6">
                     <div
-                      className="flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
-                      style={{
-                        backgroundColor: `${link.color}1A`,
-                        color: link.color,
-                      }}
+                      className={cn(
+                        'flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110',
+                        link.iconColorClass
+                      )}
                     >
                       <Icon className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-[var(--business-text-primary)] font-[family-name:var(--business-font-body)]">
+                      <h3 className="font-semibold text-foreground group-hover:text-foreground transition-colors duration-200">
                         {link.title}
                       </h3>
-                      <p className="text-sm text-[var(--business-text-muted)] line-clamp-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {link.description}
                       </p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-[var(--business-text-muted)] transition-transform duration-200 group-hover:translate-x-1 group-hover:text-[var(--business-primary-400)]" />
-                  </LuxuryCardContent>
-                </LuxuryCard>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground transition-all duration-200 group-hover:translate-x-1 group-hover:text-foreground" />
+                  </CardContent>
+                </Card>
               </Link>
             </motion.div>
           );
@@ -170,53 +166,55 @@ export function SettingsPageContent({
 
       {/* Account Information */}
       <FadeIn delay={0.2}>
-        <LuxuryCard>
-          <LuxuryCardHeader>
+        <Card className="bg-card border border-border rounded-xl shadow-sm">
+          <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--business-primary-500)]/10">
-                <Building2 className="h-5 w-5 text-[var(--business-primary-400)]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Building2 className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <LuxuryCardTitle>Account Information</LuxuryCardTitle>
-                <LuxuryCardDescription>Your business account details</LuxuryCardDescription>
+                <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Account Information
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Your business account details
+                </CardDescription>
               </div>
             </div>
-          </LuxuryCardHeader>
-          <LuxuryCardContent>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-6 sm:grid-cols-3">
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-[var(--business-text-muted)] font-[family-name:var(--business-font-body)]">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
                   Account Status
                 </p>
                 <div className="flex items-center gap-2">
-                  <StatusBadge variant={getStatusVariant(businessAccount.status)}>
-                    {businessAccount.status}
-                  </StatusBadge>
+                  {getStatusBadge(businessAccount.status)}
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-[var(--business-text-muted)] font-[family-name:var(--business-font-body)]">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
                   Your Role
                 </p>
-                <p className="text-[var(--business-text-primary)] font-medium capitalize flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-[var(--business-primary-400)]" />
+                <p className="text-foreground font-medium capitalize flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
                   {userRole}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-[var(--business-text-muted)] font-[family-name:var(--business-font-body)]">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
                   Subdomain
                 </p>
-                <p className="text-[var(--business-text-secondary)] font-medium text-sm truncate">
-                  <span className="text-[var(--business-primary-400)]">{businessAccount.subdomain}</span>
-                  <span className="text-[var(--business-text-muted)]">
+                <p className="font-medium text-sm truncate">
+                  <span className="text-primary">{businessAccount.subdomain}</span>
+                  <span className="text-muted-foreground">
                     .{process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '').replace('http://', '')}
                   </span>
                 </p>
               </div>
             </div>
-          </LuxuryCardContent>
-        </LuxuryCard>
+          </CardContent>
+        </Card>
       </FadeIn>
 
       {/* Profile Settings */}
@@ -233,6 +231,6 @@ export function SettingsPageContent({
           }}
         />
       </FadeIn>
-    </div>
+    </PageContainer>
   );
 }

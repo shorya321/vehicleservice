@@ -3,12 +3,16 @@
 /**
  * Details Step Component
  * Enter customer details and booking preferences
+ *
+ * Design: shadcn/ui theme-aware components
  */
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -18,8 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { BookingFormData } from './booking-wizard';
 
 interface DetailsStepProps {
@@ -74,7 +76,7 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Customer Information */}
         <div className="space-y-4 p-4 border rounded-lg">
-          <h3 className="font-semibold">Customer Information</h3>
+          <h3 className="font-semibold text-foreground">Customer Information</h3>
 
           <FormField
             control={form.control}
@@ -123,7 +125,7 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
 
         {/* Booking Details */}
         <div className="space-y-4 p-4 border rounded-lg">
-          <h3 className="font-semibold">Booking Details</h3>
+          <h3 className="font-semibold text-foreground">Booking Details</h3>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -192,7 +194,7 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
 
         {/* Optional Information */}
         <div className="space-y-4 p-4 border rounded-lg">
-          <h3 className="font-semibold">Optional Information</h3>
+          <h3 className="font-semibold text-foreground">Optional Information</h3>
 
           <FormField
             control={form.control}

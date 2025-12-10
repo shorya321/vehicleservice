@@ -3,13 +3,23 @@
 /**
  * Route Step Component
  * Select pickup/dropoff locations and datetime
+ *
+ * Design: shadcn/ui theme-aware components
  */
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MapPin, ArrowRight } from 'lucide-react';
-import { LuxuryButton } from '@/components/business/ui/luxury-button';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Form,
   FormControl,
@@ -18,14 +28,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { BookingFormData } from './booking-wizard';
 
 interface Location {
@@ -85,7 +87,7 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
         <div className="space-y-4 p-4 border rounded-lg">
           <div className="flex items-center gap-2 text-primary">
             <MapPin className="h-5 w-5" />
-            <h3 className="font-semibold">Pickup Details</h3>
+            <h3 className="font-semibold text-foreground">Pickup Details</h3>
           </div>
 
           <FormField
@@ -151,7 +153,7 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
         <div className="space-y-4 p-4 border rounded-lg">
           <div className="flex items-center gap-2 text-primary">
             <MapPin className="h-5 w-5" />
-            <h3 className="font-semibold">Dropoff Details</h3>
+            <h3 className="font-semibold text-foreground">Dropoff Details</h3>
           </div>
 
           <FormField
@@ -196,7 +198,7 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
 
         {/* Actions */}
         <div className="flex justify-end">
-          <LuxuryButton type="submit">Continue to Vehicle Selection</LuxuryButton>
+          <Button type="submit">Continue to Vehicle Selection</Button>
         </div>
       </form>
     </Form>

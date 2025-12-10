@@ -6,7 +6,14 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  LuxuryCard,
+  LuxuryCardContent,
+  LuxuryCardDescription,
+  LuxuryCardHeader,
+  LuxuryCardTitle,
+} from '@/components/business/ui';
+import { PageHeader, PageContainer } from '@/components/business/layout';
 import { DomainConfiguration } from './components/domain-configuration';
 import { DNSInstructions } from './components/dns-instructions';
 
@@ -54,33 +61,31 @@ export default async function CustomDomainPage() {
   const businessAccount = businessUser.business_accounts;
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Custom Domain</h1>
-        <p className="text-muted-foreground">
-          Configure a custom domain for your booking portal
-        </p>
-      </div>
+      <PageHeader
+        title="Custom Domain"
+        description="Configure a custom domain for your booking portal"
+      />
 
       {/* Current Setup */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Configuration</CardTitle>
-          <CardDescription>Your booking portal is accessible at these URLs</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <LuxuryCard>
+        <LuxuryCardHeader>
+          <LuxuryCardTitle>Current Configuration</LuxuryCardTitle>
+          <LuxuryCardDescription>Your booking portal is accessible at these URLs</LuxuryCardDescription>
+        </LuxuryCardHeader>
+        <LuxuryCardContent className="space-y-3">
           <div>
-            <p className="text-sm text-muted-foreground">Default Subdomain</p>
-            <p className="font-medium">
+            <p className="text-sm text-[var(--business-text-muted)]">Default Subdomain</p>
+            <p className="font-medium text-[var(--business-text-primary)]">
               {businessAccount.subdomain}.{process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '').replace('http://', '')}
             </p>
           </div>
           {businessAccount.custom_domain && (
             <div>
-              <p className="text-sm text-muted-foreground">Custom Domain</p>
+              <p className="text-sm text-[var(--business-text-muted)]">Custom Domain</p>
               <div className="flex items-center gap-2">
-                <p className="font-medium">{businessAccount.custom_domain}</p>
+                <p className="font-medium text-[var(--business-text-primary)]">{businessAccount.custom_domain}</p>
                 {businessAccount.custom_domain_verified ? (
                   <span className="text-xs bg-[var(--business-success)]/10 text-[var(--business-success)] px-2 py-1 rounded">
                     Verified
@@ -93,8 +98,8 @@ export default async function CustomDomainPage() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </LuxuryCardContent>
+      </LuxuryCard>
 
       {/* Domain Configuration */}
       <DomainConfiguration
@@ -110,6 +115,6 @@ export default async function CustomDomainPage() {
           verificationToken={businessAccount.domain_verification_token}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

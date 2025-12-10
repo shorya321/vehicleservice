@@ -2,18 +2,17 @@
 
 /**
  * Business Portal Sidebar Component
- * Collapsible navigation sidebar with nav groups and premium styling
+ * Clean sidebar with gold accents using semantic CSS variables
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
- * Primary: Deep Indigo (#6366F1)
- * Secondary: Teal (#14B8A6)
+ * Design System: Clean shadcn with Gold Accent
+ * Uses bg-card, text-foreground, text-primary for theme-aware colors
  */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -22,37 +21,40 @@ import {
   Palette,
   Plus,
   ChevronLeft,
-  ChevronRight,
+  X,
+  Bell,
+  Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  getBusinessInitials,
-  getContrastColor,
-} from '@/lib/business/branding-utils';
+import { getBusinessInitials } from '@/lib/business/branding-utils';
 import { useSidebar } from '@/components/business/sidebar-context';
-import { sidebarCollapse } from '@/lib/business/animation/variants';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
+import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 interface SidebarNavItem {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 }
 
 interface NavGroup {
-  title: string;
+  label: string;
   items: SidebarNavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    title: 'Overview',
+    label: 'Overview',
     items: [
       {
         title: 'Dashboard',
@@ -62,7 +64,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Management',
+    label: 'Management',
     items: [
       {
         title: 'Bookings',
@@ -77,12 +79,22 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Settings',
+    label: 'Settings',
     items: [
       {
         title: 'Branding',
         href: '/business/settings/branding',
         icon: Palette,
+      },
+      {
+        title: 'Notifications',
+        href: '/business/settings/notifications',
+        icon: Bell,
+      },
+      {
+        title: 'Domain',
+        href: '/business/domain',
+        icon: Globe,
       },
       {
         title: 'Settings',
@@ -102,6 +114,196 @@ interface BusinessSidebarProps {
   accentColor?: string | null;
 }
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < breakpoint);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
+function WorkspaceSelector({
+  displayName,
+  initials,
+  logoUrl,
+  logoError,
+  onLogoError,
+  isCollapsed,
+  onToggle,
+}: {
+  displayName: string;
+  initials: string;
+  logoUrl?: string | null;
+  logoError: boolean;
+  onLogoError: () => void;
+  isCollapsed: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="relative z-10 flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+      <div className={cn(
+        'flex items-center gap-3 flex-1 min-w-0 p-2 rounded-xl',
+        'hover:bg-primary/10 transition-all duration-200 cursor-pointer'
+      )}>
+        {logoUrl && !logoError ? (
+          <div className="relative h-9 w-9 flex-shrink-0 rounded-xl overflow-hidden ring-2 ring-primary/20">
+            <Image
+              src={logoUrl}
+              alt={`${displayName} logo`}
+              height={36}
+              width={36}
+              className="h-9 w-9 object-cover"
+              unoptimized
+              onError={onLogoError}
+              priority={false}
+            />
+          </div>
+        ) : (
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm ring-2 ring-primary/20">
+            {initials}
+          </div>
+        )}
+
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex-1 min-w-0 overflow-hidden"
+            >
+              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+              <p className="text-xs text-primary">Business Portal</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onToggle}
+        className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <motion.div animate={{ rotate: isCollapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronLeft className="h-4 w-4" />
+        </motion.div>
+      </Button>
+    </div>
+  );
+}
+
+function NavItem({
+  item,
+  isActive,
+  isCollapsed,
+  onClick,
+}: {
+  item: SidebarNavItem;
+  isActive: boolean;
+  isCollapsed: boolean;
+  onClick?: () => void;
+}) {
+  const Icon = item.icon;
+
+  return (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className={cn(
+        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5',
+        'text-sm font-medium transition-all duration-200',
+        isActive
+          ? 'bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(198,170,136,0.08)]'
+          : 'text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(198,170,136,0.05)]',
+        isCollapsed && 'justify-center px-2'
+      )}
+    >
+      {isActive && (
+        <motion.div
+          layoutId="sidebarActiveIndicator"
+          className="absolute left-0 inset-y-2 w-1 rounded-r-full bg-primary shadow-business-glow-sm"
+          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+        />
+      )}
+
+      <Icon
+        className={cn(
+          'h-4 w-4 flex-shrink-0 transition-all duration-200',
+          'group-hover:scale-110',
+          isActive ? 'text-primary' : 'text-foreground/60 group-hover:text-primary'
+        )}
+      />
+
+      <AnimatePresence>
+        {!isCollapsed && (
+          <motion.span
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.2 }}
+            className="whitespace-nowrap overflow-hidden flex-1"
+          >
+            {item.title}
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {item.badge && !isCollapsed && (
+        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium border border-primary/20">
+          {item.badge}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function NewBookingButton({ isCollapsed, onClick }: { isCollapsed: boolean; onClick?: () => void }) {
+  return (
+    <div className={cn('relative z-10 py-2', isCollapsed ? 'px-2' : 'px-3')}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            asChild
+            className={cn(
+              'w-full',
+              'border-none rounded-xl',
+              'shadow-business-glow-sm hover:shadow-business-glow',
+              'transition-all duration-300',
+              isCollapsed ? 'px-2' : 'gap-2'
+            )}
+          >
+            <Link href="/business/bookings/new" onClick={onClick}>
+              <Plus className="h-4 w-4" />
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="whitespace-nowrap overflow-hidden"
+                  >
+                    New Booking
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+          </Button>
+        </TooltipTrigger>
+        {isCollapsed && <TooltipContent side="right" className="bg-popover border-border text-popover-foreground">New Booking</TooltipContent>}
+      </Tooltip>
+    </div>
+  );
+}
+
 export function BusinessSidebar({
   businessName,
   brandName,
@@ -109,282 +311,178 @@ export function BusinessSidebar({
 }: BusinessSidebarProps) {
   const pathname = usePathname();
   const [logoError, setLogoError] = useState(false);
-  const { isCollapsed, toggle } = useSidebar();
+  const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
-  // Display values
   const displayName = brandName || businessName;
   const initials = getBusinessInitials(businessName);
+  const sidebarWidth = isCollapsed ? 72 : 256;
 
-  const sidebarWidth = isCollapsed ? 64 : 240;
+  useEffect(() => {
+    if (isMobile) closeMobile();
+  }, [pathname, isMobile, closeMobile]);
+
+  const isPathActive = (href: string) => {
+    if (href === '/business/settings') return pathname === href;
+    return pathname === href || pathname.startsWith(href);
+  };
+
+  const SidebarContent = ({ isMobileView = false }: { isMobileView?: boolean }) => (
+    <LayoutGroup>
+      {isMobileView ? (
+        <div className="relative z-10 flex items-center justify-between p-3">
+          <div className="flex items-center gap-3">
+            {logoUrl && !logoError ? (
+              <div className="relative h-9 w-9 flex-shrink-0 rounded-xl overflow-hidden ring-2 ring-primary/20">
+                <Image
+                  src={logoUrl}
+                  alt={`${displayName} logo`}
+                  height={36}
+                  width={36}
+                  className="h-9 w-9 object-cover"
+                  unoptimized
+                  onError={() => setLogoError(true)}
+                />
+              </div>
+            ) : (
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm ring-2 ring-primary/20">
+                {initials}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+              <p className="text-xs text-primary">Business Portal</p>
+            </div>
+          </div>
+
+          <Button variant="ghost" size="icon" onClick={closeMobile} aria-label="Close menu" className="text-muted-foreground hover:text-primary hover:bg-primary/10">
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+      ) : (
+        <WorkspaceSelector
+          displayName={displayName}
+          initials={initials}
+          logoUrl={logoUrl}
+          logoError={logoError}
+          onLogoError={() => setLogoError(true)}
+          isCollapsed={isCollapsed}
+          onToggle={toggle}
+        />
+      )}
+
+      <NewBookingButton
+        isCollapsed={!isMobileView && isCollapsed}
+        onClick={isMobileView ? closeMobile : undefined}
+      />
+
+      <ScrollArea className="relative z-10 flex-1 px-3 pb-4">
+        {navGroups.map((group, groupIndex) => (
+          <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
+            <AnimatePresence>
+              {(!isCollapsed || isMobileView) && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="px-3 py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
+                    <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
+                      {group.label}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const isActive = isPathActive(item.href);
+
+                if (!isMobileView && isCollapsed) {
+                  return (
+                    <Tooltip key={item.href}>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <NavItem item={item} isActive={isActive} isCollapsed={true} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-popover border-border text-popover-foreground">{item.title}</TooltipContent>
+                    </Tooltip>
+                  );
+                }
+
+                return (
+                  <NavItem
+                    key={item.href}
+                    item={item}
+                    isActive={isActive}
+                    isCollapsed={!isMobileView && isCollapsed}
+                    onClick={isMobileView ? closeMobile : undefined}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </ScrollArea>
+
+      <Separator className="bg-primary/10" />
+      <div className={cn('relative z-10 p-4', isCollapsed && !isMobileView && 'px-2')}>
+        <AnimatePresence>
+          {(!isCollapsed || isMobileView) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center justify-center gap-2"
+            >
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+              <span className="text-[10px] text-muted-foreground/70 font-medium tracking-wider">
+                v1.0
+              </span>
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </LayoutGroup>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={isMobileOpen} onOpenChange={(open) => !open && closeMobile()}>
+        <SheetContent
+          side="left"
+          className="w-[280px] p-0 [&>button]:hidden bg-card border-r border-border"
+        >
+          <div className="relative flex flex-col h-full overflow-hidden">
+            <SidebarContent isMobileView />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
       <motion.aside
         initial={false}
-        animate={isCollapsed ? 'collapsed' : 'expanded'}
-        variants={prefersReducedMotion ? undefined : sidebarCollapse}
-        style={{
-          width: prefersReducedMotion ? sidebarWidth : undefined,
-        }}
+        animate={{ width: sidebarWidth }}
+        transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
         className={cn(
           'fixed left-0 top-0 z-40 h-screen',
-          'flex flex-col',
-          'bg-[var(--business-surface-1)]',
-          'border-r border-[var(--business-border-subtle)]',
-          'transition-[width] duration-300 ease-out',
+          'flex flex-col overflow-hidden',
+          'bg-card border-r border-border',
+          'shadow-lg',
           !prefersReducedMotion && 'will-change-[width]'
         )}
       >
-        {/* Header with Logo and Toggle */}
-        <div className="flex h-16 items-center justify-between border-b border-[var(--business-border-subtle)] px-4">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {/* Logo or Initials */}
-            {logoUrl && !logoError ? (
-              <div className="relative h-10 w-10 flex-shrink-0 flex items-center justify-center">
-                <Image
-                  src={logoUrl}
-                  alt={`${displayName} logo`}
-                  height={40}
-                  width={40}
-                  className="h-10 w-10 rounded-xl object-cover"
-                  unoptimized
-                  onError={() => setLogoError(true)}
-                  priority={false}
-                />
-              </div>
-            ) : (
-              <div
-                className={cn(
-                  'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl',
-                  'bg-[var(--business-primary-500)]/10 text-[var(--business-primary-400)]',
-                  'text-sm font-bold'
-                )}
-              >
-                {initials}
-              </div>
-            )}
-
-            {/* Business Name - Hidden when collapsed */}
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <h2
-                    className="truncate text-sm font-semibold text-[var(--business-text-primary)]"
-                    style={{ fontFamily: 'var(--business-font-body)' }}
-                  >
-                    {displayName}
-                  </h2>
-                  <p
-                    className="text-xs text-[var(--business-text-muted)]"
-                    style={{ fontFamily: 'var(--business-font-body)' }}
-                  >
-                    Business Portal
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Collapse Toggle */}
-          <button
-            onClick={toggle}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg',
-              'text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)]',
-              'hover:bg-[var(--business-primary-500)]/10',
-              'transition-colors duration-200',
-              isCollapsed && 'absolute right-2'
-            )}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-
-        {/* New Booking CTA */}
-        <div className={cn('p-3', isCollapsed && 'px-2')}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="/business/bookings/new"
-                className={cn(
-                  'flex items-center justify-center gap-2 rounded-xl py-2.5 px-4',
-                  'bg-gradient-to-r from-[var(--business-primary-600)] to-[var(--business-primary-500)]',
-                  'text-white font-semibold text-sm',
-                  'hover:from-[var(--business-primary-500)] hover:to-[var(--business-primary-400)]',
-                  'shadow-[0_0_20px_-5px_rgba(99,102,241,0.3)]',
-                  'hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)]',
-                  'transition-all duration-200',
-                  isCollapsed && 'px-2'
-                )}
-                style={{ fontFamily: 'var(--business-font-body)' }}
-              >
-                <Plus className="h-5 w-5 flex-shrink-0" />
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="whitespace-nowrap overflow-hidden"
-                    >
-                      New Booking
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </Link>
-            </TooltipTrigger>
-            {isCollapsed && (
-              <TooltipContent
-                side="right"
-                className="bg-[var(--business-surface-3)] text-[var(--business-text-primary)] border-[var(--business-border-default)]"
-              >
-                New Booking
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </div>
-
-        {/* Navigation Groups */}
-        <nav className="flex-1 overflow-y-auto business-scrollbar px-3 pb-4">
-          {navGroups.map((group, groupIndex) => (
-            <div key={group.title} className={cn(groupIndex > 0 && 'mt-4')}>
-              {/* Group Title - Hidden when collapsed */}
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.h3
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="mb-2 px-3 text-[10px] uppercase tracking-wider text-[var(--business-text-muted)] font-semibold"
-                    style={{ fontFamily: 'var(--business-font-body)' }}
-                  >
-                    {group.title}
-                  </motion.h3>
-                )}
-              </AnimatePresence>
-
-              {/* Nav Items */}
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== '/business/settings' &&
-                      pathname.startsWith(item.href));
-
-                  const navLink = (
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'group relative flex items-center gap-3 rounded-lg px-3 py-2.5',
-                        'text-sm font-medium transition-all duration-200',
-                        isActive
-                          ? 'bg-[var(--business-primary-500)]/12 text-[var(--business-primary-400)]'
-                          : 'text-[var(--business-text-secondary)] hover:bg-[var(--business-primary-500)]/8 hover:text-[var(--business-text-primary)]',
-                        isCollapsed && 'justify-center px-2'
-                      )}
-                      style={{ fontFamily: 'var(--business-font-body)' }}
-                    >
-                      {/* Active Indicator */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeIndicator"
-                          className={cn(
-                            'absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full',
-                            'bg-gradient-to-b from-[var(--business-primary-500)] to-[var(--business-primary-400)]',
-                            'shadow-[0_0_8px_0_rgba(99,102,241,0.4)]'
-                          )}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-
-                      <Icon
-                        className={cn(
-                          'h-5 w-5 flex-shrink-0 transition-colors duration-200',
-                          isActive
-                            ? 'text-[var(--business-primary-400)]'
-                            : 'text-[var(--business-text-muted)] group-hover:text-[var(--business-primary-400)]'
-                        )}
-                      />
-
-                      {/* Item Title - Hidden when collapsed */}
-                      <AnimatePresence>
-                        {!isCollapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 'auto' }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="whitespace-nowrap overflow-hidden"
-                          >
-                            {item.title}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </Link>
-                  );
-
-                  // Wrap with tooltip when collapsed
-                  if (isCollapsed) {
-                    return (
-                      <Tooltip key={item.href}>
-                        <TooltipTrigger asChild>{navLink}</TooltipTrigger>
-                        <TooltipContent
-                          side="right"
-                          className="bg-[var(--business-surface-3)] text-[var(--business-text-primary)] border-[var(--business-border-default)]"
-                        >
-                          {item.title}
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  }
-
-                  return <div key={item.href}>{navLink}</div>;
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        {/* Footer - Version/Help */}
-        <div
-          className={cn(
-            'border-t border-[var(--business-border-subtle)] p-4',
-            isCollapsed && 'px-2'
-          )}
-        >
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-xs text-[var(--business-text-muted)] text-center"
-                style={{ fontFamily: 'var(--business-font-body)' }}
-              >
-                Business Portal v1.0
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
+        <SidebarContent />
       </motion.aside>
     </TooltipProvider>
   );

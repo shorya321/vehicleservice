@@ -57,8 +57,13 @@ export default async function BusinessTransactionsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold">Transactions</h1>
-        <p className="text-muted-foreground">
+        <h1
+          className="text-3xl font-bold text-[var(--business-text-primary)]"
+          style={{ fontFamily: 'var(--business-font-display)' }}
+        >
+          Transactions
+        </h1>
+        <p className="text-[var(--business-text-muted)]">
           Advanced filtering, search, and export of your wallet transactions
         </p>
       </div>

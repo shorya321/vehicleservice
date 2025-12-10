@@ -3,16 +3,26 @@
 /**
  * Auto-Recharge Settings Component
  * Configure automatic wallet recharge when balance falls below threshold
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +34,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Loader2, Save, Zap, AlertTriangle, Info } from 'lucide-react';
+import { Loader2, Save, Zap, AlertTriangle, Info, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { formatCurrency, type CurrencyCode, getCurrencyOptions } from '@/lib/utils/currency-converter';
+import { fadeInUp } from '@/lib/business/animation/variants';
 
 interface AutoRechargeSettings {
   enabled: boolean;
@@ -190,54 +202,69 @@ export function AutoRechargeSettings() {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
+    <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary" />
-            <CardTitle>Auto-Recharge Settings</CardTitle>
-          </div>
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Zap className={cn('h-5 w-5 transition-colors duration-300', settings.enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')} />
+            Auto-Recharge
+          </CardTitle>
           <Switch
             checked={settings.enabled}
             onCheckedChange={(checked) => setSettings({ ...settings, enabled: checked })}
+            className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-muted"
           />
         </div>
-        <CardDescription>
-          Automatically recharge your wallet when the balance falls below the threshold
-        </CardDescription>
+        <p className="text-sm text-muted-foreground">
+          Automatically recharge when balance falls below threshold
+        </p>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-5">
         {/* Warning when enabled */}
-        {settings.enabled && (
-          <div className="rounded-lg bg-[var(--business-warning)]/10 border border-[var(--business-warning)]/20 p-4 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-[var(--business-warning)] mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-medium text-sm">Auto-Recharge Active</h4>
-              <p className="text-sm text-muted-foreground mt-1">
-                Your wallet will be automatically recharged when the balance falls below{' '}
-                {formatCurrency(settings.trigger_threshold, settings.currency)}.
-              </p>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {settings.enabled && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 flex items-start gap-3"
+            >
+              <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-medium text-sm text-foreground">
+                  Auto-Recharge Active
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Recharges when balance falls below{' '}
+                  {formatCurrency(settings.trigger_threshold, settings.currency)}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Info about payment methods */}
         {paymentMethods.length === 0 && (
-          <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-4 flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+          <div className="rounded-xl bg-sky-500/10 border border-sky-500/20 p-4 flex items-start gap-3">
+            <Info className="h-5 w-5 text-sky-600 dark:text-sky-400 mt-0.5" />
             <div className="flex-1">
-              <h4 className="font-medium text-sm">No Payment Methods</h4>
+              <h4 className="font-medium text-sm text-foreground">
+                No Payment Methods
+              </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                You need to add at least one payment method before you can enable auto-recharge.
+                Add a payment method first to enable auto-recharge.
               </p>
             </div>
           </div>
@@ -245,7 +272,7 @@ export function AutoRechargeSettings() {
 
         {/* Trigger Threshold */}
         <div className="space-y-2">
-          <Label htmlFor="trigger">Trigger Threshold</Label>
+          <Label htmlFor="trigger" className="text-muted-foreground">Trigger Threshold</Label>
           <Input
             id="trigger"
             type="number"
@@ -256,15 +283,16 @@ export function AutoRechargeSettings() {
               setSettings({ ...settings, trigger_threshold: parseFloat(e.target.value) || 0 })
             }
             disabled={!settings.enabled}
+            className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 disabled:opacity-50"
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Recharge when balance falls below this amount
           </p>
         </div>
 
         {/* Recharge Amount */}
         <div className="space-y-2">
-          <Label htmlFor="amount">Recharge Amount</Label>
+          <Label htmlFor="amount" className="text-muted-foreground">Recharge Amount</Label>
           <Input
             id="amount"
             type="number"
@@ -275,13 +303,14 @@ export function AutoRechargeSettings() {
               setSettings({ ...settings, recharge_amount: parseFloat(e.target.value) || 0 })
             }
             disabled={!settings.enabled}
+            className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 disabled:opacity-50"
           />
-          <p className="text-sm text-muted-foreground">Amount to add when triggered</p>
+          <p className="text-xs text-muted-foreground">Amount to add when triggered</p>
         </div>
 
         {/* Monthly Limit */}
         <div className="space-y-2">
-          <Label htmlFor="monthlyLimit">Monthly Recharge Limit (Optional)</Label>
+          <Label htmlFor="monthlyLimit" className="text-muted-foreground">Monthly Limit (Optional)</Label>
           <Input
             id="monthlyLimit"
             type="number"
@@ -296,26 +325,34 @@ export function AutoRechargeSettings() {
             }
             placeholder="No limit"
             disabled={!settings.enabled}
+            className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 disabled:opacity-50"
           />
-          <p className="text-sm text-muted-foreground">
-            Maximum total auto-recharge amount per month (safety limit)
+          <p className="text-xs text-muted-foreground">
+            Maximum auto-recharge amount per month
           </p>
         </div>
 
         {/* Currency */}
         <div className="space-y-2">
-          <Label htmlFor="currency">Currency</Label>
+          <Label htmlFor="currency" className="text-muted-foreground">Currency</Label>
           <Select
             value={settings.currency}
             onValueChange={(value) => setSettings({ ...settings, currency: value as CurrencyCode })}
             disabled={!settings.enabled}
           >
-            <SelectTrigger id="currency">
+            <SelectTrigger
+              id="currency"
+              className="bg-muted border-border text-foreground focus:border-primary focus:ring-primary/20 disabled:opacity-50"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-popover border-border">
               {getCurrencyOptions().map((option) => (
-                <SelectItem key={option.code} value={option.code}>
+                <SelectItem
+                  key={option.code}
+                  value={option.code}
+                  className="text-foreground focus:bg-primary/10 focus:text-foreground"
+                >
                   {option.code} - {option.name} ({option.symbol})
                 </SelectItem>
               ))}
@@ -326,8 +363,8 @@ export function AutoRechargeSettings() {
         {/* Payment Method Selection */}
         {paymentMethods.length > 0 && (
           <div className="space-y-3">
-            <Label>Payment Method</Label>
-            <div className="space-y-2">
+            <Label className="text-muted-foreground">Payment Method</Label>
+            <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Switch
                   id="useDefault"
@@ -336,38 +373,58 @@ export function AutoRechargeSettings() {
                     setSettings({ ...settings, use_default_payment_method: checked })
                   }
                   disabled={!settings.enabled}
+                  className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted"
                 />
-                <Label htmlFor="useDefault" className="font-normal cursor-pointer">
+                <Label
+                  htmlFor="useDefault"
+                  className="font-normal cursor-pointer mb-0 text-muted-foreground"
+                >
                   Use default payment method
                 </Label>
               </div>
 
-              {!settings.use_default_payment_method && (
-                <Select
-                  value={settings.payment_method_id || ''}
-                  onValueChange={(value) => setSettings({ ...settings, payment_method_id: value })}
-                  disabled={!settings.enabled}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {paymentMethods.map((pm) => (
-                      <SelectItem key={pm.id} value={pm.id}>
-                        {pm.card_brand} •••• {pm.card_last4}
-                        {pm.is_default && ' (Default)'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <AnimatePresence>
+                {!settings.use_default_payment_method && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <Select
+                      value={settings.payment_method_id || ''}
+                      onValueChange={(value) => setSettings({ ...settings, payment_method_id: value })}
+                      disabled={!settings.enabled}
+                    >
+                      <SelectTrigger className="bg-muted border-border text-foreground focus:border-primary focus:ring-primary/20 disabled:opacity-50">
+                        <SelectValue placeholder="Select a payment method" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border">
+                        {paymentMethods.map((pm) => (
+                          <SelectItem
+                            key={pm.id}
+                            value={pm.id}
+                            className="text-foreground focus:bg-primary/10 focus:text-foreground"
+                          >
+                            {pm.card_brand} •••• {pm.card_last4}
+                            {pm.is_default && ' (Default)'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4">
-          <Button onClick={handleSave} disabled={isSaving} className="flex-1">
+        <div className="flex gap-3 pt-2">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex-1 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+          >
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -384,23 +441,30 @@ export function AutoRechargeSettings() {
           {exists && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" disabled={isSaving}>
-                  Delete
+                <Button
+                  variant="ghost"
+                  disabled={isSaving}
+                  className="text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="bg-card border-border">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Auto-Recharge Settings?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete your auto-recharge configuration. Auto-recharge will be
-                    disabled and all settings will be removed.
+                  <AlertDialogTitle className="text-foreground">
+                    Delete Auto-Recharge Settings?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-muted-foreground">
+                    This will permanently delete your auto-recharge configuration.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="bg-transparent border-border text-muted-foreground hover:bg-muted hover:text-foreground">
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-red-600 text-white hover:bg-red-600/90"
                   >
                     Delete Settings
                   </AlertDialogAction>

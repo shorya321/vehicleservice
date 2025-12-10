@@ -1,10 +1,18 @@
 'use client';
 
+/**
+ * Notifications Content Component
+ * Display and manage business notifications
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
 import { useEffect, useState } from 'react';
-import { Bell } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bell, Inbox } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NotificationItem } from '@/components/admin/notifications/notification-item';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
@@ -14,6 +22,8 @@ import {
   getNotificationStatsAction,
 } from '../actions';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { PageHeader, PageContainer } from '@/components/business/layout';
 
 export function NotificationsContent() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -97,17 +107,18 @@ export function NotificationsContent() {
   const filteredNotifications = notifications;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <PageContainer>
+      {/* Page Header with action button */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">
-            Stay updated with your bookings and account activities
-          </p>
-        </div>
+        <PageHeader
+          title="Notifications"
+          description="Stay updated with your bookings and account activities"
+        />
         {stats.unread > 0 && (
-          <Button onClick={handleMarkAllAsRead} variant="outline">
+          <Button
+            onClick={handleMarkAllAsRead}
+            className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50"
+          >
             Mark all as read
           </Button>
         )}
@@ -115,50 +126,85 @@ export function NotificationsContent() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        {/* Total Notifications - Gold accent */}
+        <Card className="bg-card border border-border rounded-xl shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Notifications</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Total Notifications
+            </CardTitle>
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Bell className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-3xl font-bold text-primary">
+              {stats.total}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+
+        {/* Unread - Red accent */}
+        <Card className="bg-card border border-border rounded-xl shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unread</CardTitle>
-            <Bell className="h-4 w-4 text-[var(--business-error)]" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Unread
+            </CardTitle>
+            <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <Bell className="h-4 w-4 text-red-600 dark:text-red-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[var(--business-error)]">{stats.unread}</div>
+            <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+              {stats.unread}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+
+        {/* Read - Green accent */}
+        <Card className="bg-card border border-border rounded-xl shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Read</CardTitle>
-            <Bell className="h-4 w-4 text-[var(--business-success)]" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Read
+            </CardTitle>
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <Bell className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[var(--business-success)]">{stats.read}</div>
+            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+              {stats.read}
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Notifications List */}
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader>
           <Tabs value={activeCategory} onValueChange={handleCategoryChange}>
-            <TabsList>
-              <TabsTrigger value="all">
+            <TabsList className="bg-muted border border-border">
+              <TabsTrigger
+                value="all"
+                className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+              >
                 All {stats.total > 0 && `(${stats.total})`}
               </TabsTrigger>
-              <TabsTrigger value="booking">
+              <TabsTrigger
+                value="booking"
+                className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+              >
                 Bookings {stats.booking > 0 && `(${stats.booking})`}
               </TabsTrigger>
-              <TabsTrigger value="payment">
+              <TabsTrigger
+                value="payment"
+                className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+              >
                 Payments {stats.payment > 0 && `(${stats.payment})`}
               </TabsTrigger>
-              <TabsTrigger value="system">
+              <TabsTrigger
+                value="system"
+                className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+              >
                 System {stats.system > 0 && `(${stats.system})`}
               </TabsTrigger>
             </TabsList>
@@ -168,15 +214,22 @@ export function NotificationsContent() {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <Bell className="mx-auto h-12 w-12 text-muted-foreground/50 animate-pulse" />
-                <p className="mt-2 text-sm text-muted-foreground">Loading notifications...</p>
+                <div className="mx-auto w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center mb-4">
+                  <Bell className="h-8 w-8 text-primary animate-pulse" />
+                </div>
+                <p className="text-sm text-muted-foreground">Loading notifications...</p>
               </div>
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <Bell className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <p className="mt-2 text-sm text-muted-foreground">No notifications found</p>
+                <div className="mx-auto w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center mb-4">
+                  <Inbox className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-foreground font-medium">No notifications found</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You're all caught up!
+                </p>
               </div>
             </div>
           ) : (
@@ -192,6 +245,6 @@ export function NotificationsContent() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

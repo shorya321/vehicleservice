@@ -3,9 +3,6 @@
 /**
  * Business Portal Content Wrapper
  * Handles dynamic margin based on sidebar collapse state
- *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
- * SCOPE: Business module ONLY
  */
 
 import { type ReactNode } from 'react';
@@ -42,36 +39,27 @@ export function BusinessPortalContent({
   const prefersReducedMotion = useReducedMotion();
 
   // Sidebar widths - match sidebar component
-  const expandedWidth = 240;
-  const collapsedWidth = 64;
+  const expandedWidth = 256;
+  const collapsedWidth = 72;
   const currentWidth = isCollapsed ? collapsedWidth : expandedWidth;
 
   return (
     <motion.div
       initial={false}
-      animate={{
-        marginLeft: currentWidth,
-      }}
+      animate={{ marginLeft: currentWidth }}
       transition={
         prefersReducedMotion
           ? { duration: 0 }
-          : {
-              type: 'spring',
-              stiffness: 300,
-              damping: 30,
-            }
+          : { type: 'spring', stiffness: 300, damping: 30 }
       }
       className={cn(
         'min-h-screen flex flex-col',
-        'bg-[var(--business-surface-0)]',
-        'transition-[margin-left] duration-300 ease-out',
-        !prefersReducedMotion && 'will-change-[margin-left]'
+        'bg-background',
+        !prefersReducedMotion && 'will-change-[margin-left]',
+        'max-md:!ml-0'
       )}
-      style={{
-        marginLeft: prefersReducedMotion ? currentWidth : undefined,
-      }}
+      style={{ marginLeft: prefersReducedMotion ? currentWidth : undefined }}
     >
-      {/* Header */}
       <BusinessHeader
         userEmail={userEmail}
         contactPersonName={contactPersonName}
@@ -83,9 +71,8 @@ export function BusinessPortalContent({
         accentColor={accentColor}
       />
 
-      {/* Main Content - with top padding for fixed header */}
-      <main className="flex-1 pt-16">
-        <div className="p-6 lg:p-8">
+      <main id="main-content" className="flex-1 pt-14" tabIndex={-1}>
+        <div className="p-4 md:p-6 lg:p-8">
           {children}
         </div>
       </main>

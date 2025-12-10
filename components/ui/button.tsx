@@ -9,20 +9,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Luxury gold primary button
-        default: "bg-luxury-gold text-luxury-black hover:bg-luxury-gold/90 shadow-md hover:shadow-lg active:scale-95",
+        // Primary gold gradient button - matches auth sign-in button styling
+        default: "bg-gradient-to-br from-[#C6AA88] via-[#E8D9C5] to-[#C6AA88] text-[#111111] shadow-[0_4px_15px_-3px_rgba(198,170,136,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(198,170,136,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95",
         // Gold border outline button
-        outline: "border-2 border-luxury-gold text-luxury-gold bg-transparent hover:bg-luxury-gold hover:text-luxury-black active:scale-95",
-        // Subtle gray button
-        subtle: "bg-luxury-gray/60 text-luxury-pearl hover:bg-luxury-gray",
-        // Ghost button with gold hover
-        ghost: "hover:bg-luxury-gold/10 text-luxury-gold",
+        outline: "border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground active:scale-95",
+        // Subtle muted button
+        subtle: "bg-muted text-muted-foreground hover:bg-muted/80",
+        // Ghost button with accent hover
+        ghost: "hover:bg-accent/10 text-accent-foreground",
         // Destructive action
-        destructive: "bg-red-600/80 hover:bg-red-600 text-white border border-red-600/40 shadow-lg hover:shadow-xl active:scale-95",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg hover:shadow-xl active:scale-95",
         // Secondary action
-        secondary: "bg-luxury-gray/60 text-luxury-pearl hover:bg-luxury-gray/80 border border-luxury-gold/20",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
         // Link style
-        link: "text-luxury-gold underline-offset-4 hover:underline",
+        link: "text-primary underline-offset-4 hover:underline",
+        // Premium gold gradient button - matches auth button styling
+        premium: "bg-gradient-to-r from-[#C6AA88] via-[#E8D9C5] to-[#C6AA88] text-zinc-900 font-semibold shadow-md hover:shadow-lg active:scale-95",
       },
       size: {
         sm: "h-10 px-4 text-xs",

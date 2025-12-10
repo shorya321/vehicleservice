@@ -2,19 +2,17 @@
  * Action Card Component
  * Quick action cards for dashboard
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
  * SCOPE: Business module ONLY
  */
 
 'use client';
 
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { cardHover } from '@/lib/business/animation/variants';
-import { useReducedMotion } from '@/lib/business/animation/hooks';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Plus, Wallet, CalendarCheck, Settings } from 'lucide-react';
+
 
 interface ActionCardProps extends HTMLAttributes<HTMLDivElement> {
   /** Action title */
@@ -28,7 +26,7 @@ interface ActionCardProps extends HTMLAttributes<HTMLDivElement> {
   /** Click handler (if not a link) */
   onClick?: () => void;
   /** Variant style */
-  variant?: 'default' | 'primary' | 'outline';
+  variant?: 'default' | 'primary';
   /** Animation delay */
   delay?: number;
 }
@@ -48,124 +46,132 @@ const ActionCard = forwardRef<HTMLDivElement, ActionCardProps>(
     },
     ref
   ) => {
-    const prefersReducedMotion = useReducedMotion();
-
-    const variantStyles = {
-      default:
-        'bg-[var(--business-surface-2)] border-[rgba(99,102,241,0.2)] hover:border-[rgba(99,102,241,0.5)] hover:bg-[var(--business-surface-3)]',
-      primary:
-        'bg-[rgba(99,102,241,0.15)] border-[rgba(99,102,241,0.4)] hover:border-[rgba(129,140,248,0.6)] hover:bg-[rgba(99,102,241,0.2)]',
-      outline:
-        'bg-transparent border-2 border-dashed border-[rgba(99,102,241,0.2)] hover:border-[rgba(99,102,241,0.5)] hover:bg-[rgba(22,22,25,0.5)]',
-    };
-
-    const iconVariantStyles = {
-      default: 'bg-[var(--business-surface-3)] text-[var(--business-primary-400)]',
-      primary: 'bg-[rgba(99,102,241,0.25)] text-[var(--business-primary-400)]',
-      outline: 'bg-[var(--business-surface-2)] text-[var(--business-primary-400)]',
-    };
+    const isPrimary = variant === 'primary';
 
     const cardContent = (
       <>
-        {/* Icon */}
+        {/* Background gradient accent on hover */}
         <div
           className={cn(
-            'w-12 h-12 rounded-xl flex items-center justify-center mb-4',
-            iconVariantStyles[variant]
+            'absolute inset-0 transition-opacity duration-200 pointer-events-none',
+            'bg-gradient-to-br from-primary/5 via-transparent to-transparent',
+            'opacity-0 group-hover:opacity-100'
           )}
-        >
-          {icon}
-        </div>
+        />
 
         {/* Content */}
-        <h3
-          className="text-lg font-medium text-[var(--business-text-primary)] mb-1"
-          style={{ fontFamily: 'var(--business-font-display)' }}
-        >
-          {title}
-        </h3>
-        {description && (
-          <p
-            className="text-sm text-[var(--business-text-muted)]"
-            style={{ fontFamily: 'var(--business-font-body)' }}
+        <div className="relative z-10">
+          {/* Icon Container - refined styling */}
+          <div
+            className={cn(
+              'w-12 h-12 rounded-xl flex items-center justify-center mb-4',
+              'border transition-all duration-200',
+              isPrimary
+                ? [
+                    'bg-primary/10',
+                    'border-primary/20',
+                    'text-primary',
+                    'group-hover:bg-primary/15',
+                    'group-hover:border-primary/30',
+                  ]
+                : [
+                    'bg-muted',
+                    'border-border',
+                    'text-muted-foreground',
+                    'group-hover:bg-primary/10',
+                    'group-hover:border-primary/20',
+                    'group-hover:text-primary',
+                  ]
+            )}
           >
-            {description}
-          </p>
-        )}
+            {icon}
+          </div>
 
-        {/* Arrow indicator */}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--business-primary-400)] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200">
-          <ArrowRight className="w-5 h-5" />
+          {/* Text content with proper spacing for arrow */}
+          <div className="pr-10">
+            <h3
+              className={cn(
+                'text-base font-semibold mb-1 transition-colors duration-150',
+                'text-foreground',
+                isPrimary && 'group-hover:text-primary'
+              )}
+            >
+              {title}
+            </h3>
+            {description && (
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                {description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Arrow indicator - enhanced slide-in animation */}
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-primary">
+          <ArrowRight
+            className={cn(
+              'w-5 h-5 transition-all duration-150',
+              'opacity-0 -translate-x-2',
+              'group-hover:opacity-100 group-hover:translate-x-0'
+            )}
+          />
         </div>
       </>
     );
 
     const baseClasses = cn(
-      'relative group p-6 rounded-2xl border cursor-pointer transition-all',
-      variantStyles[variant],
-      'hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.4)] hover:-translate-y-1',
+      // Layout
+      'relative group p-5 rounded-xl overflow-hidden',
+      // Background
+      'bg-card',
+      // Border
+      'border',
+      'border-border',
+      // Interaction
+      'cursor-pointer',
+      // Transitions
+      'transition-all duration-200 ease-out',
+      // Hover states
+      'hover:border-primary/20',
+      'hover:shadow-md',
+      'hover:-translate-y-0.5',
+      // Active state
+      'active:scale-[0.99]',
       className
     );
-
-    // Animated wrapper
-    const MotionWrapper = ({
-      children,
-    }: {
-      children: ReactNode;
-    }) => {
-      if (prefersReducedMotion) {
-        return <>{children}</>;
-      }
-
-      return (
-        <motion.div
-          initial="rest"
-          whileHover="hover"
-          whileTap="tap"
-          variants={cardHover}
-          transition={{ delay }}
-        >
-          {children}
-        </motion.div>
-      );
-    };
 
     // Render as link or button
     if (href) {
       return (
-        <MotionWrapper>
-          <Link href={href} className={baseClasses}>
-            {cardContent}
-          </Link>
-        </MotionWrapper>
+        <Link href={href} className={baseClasses}>
+          {cardContent}
+        </Link>
       );
     }
 
     return (
-      <MotionWrapper>
-        <div
-          ref={ref}
-          className={baseClasses}
-          onClick={onClick}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              onClick?.();
-            }
-          }}
-          {...props}
-        >
-          {cardContent}
-        </div>
-      </MotionWrapper>
+      <div
+        ref={ref}
+        className={baseClasses}
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onClick?.();
+          }
+        }}
+        {...props}
+      >
+        {cardContent}
+      </div>
     );
   }
 );
 
 ActionCard.displayName = 'ActionCard';
 
-// Quick Actions Grid
+// Updated Quick Actions Grid - 2x2 layout for 4 cards
 interface QuickActionsGridProps {
   children: ReactNode;
   className?: string;
@@ -175,7 +181,7 @@ const QuickActionsGrid = ({ children, className }: QuickActionsGridProps) => {
   return (
     <div
       className={cn(
-        'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4',
+        'grid grid-cols-1 sm:grid-cols-2 gap-4',
         className
       )}
     >
@@ -184,83 +190,41 @@ const QuickActionsGrid = ({ children, className }: QuickActionsGridProps) => {
   );
 };
 
-// Preset Quick Actions
+// Preset Quick Actions with Lucide icons
 const NewBookingAction = ({ href = '/business/bookings/new' }) => (
   <ActionCard
     href={href}
     variant="primary"
-    icon={
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 4v16m8-8H4"
-        />
-      </svg>
-    }
+    icon={<Plus className="h-6 w-6" />}
     title="New Booking"
-    description="Create a new transfer booking"
+    description="Create a new transfer booking for your customers"
   />
 );
 
 const WalletAction = ({ href = '/business/wallet' }) => (
   <ActionCard
     href={href}
-    icon={
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-        />
-      </svg>
-    }
+    icon={<Wallet className="h-6 w-6" />}
     title="Wallet"
-    description="Manage your credits"
+    description="View balance and manage your credits"
   />
 );
 
 const ViewBookingsAction = ({ href = '/business/bookings' }) => (
   <ActionCard
     href={href}
-    icon={
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-        />
-      </svg>
-    }
+    icon={<CalendarCheck className="h-6 w-6" />}
     title="View Bookings"
-    description="See all your bookings"
+    description="See all your transfer bookings"
   />
 );
 
 const SettingsAction = ({ href = '/business/settings' }) => (
   <ActionCard
     href={href}
-    icon={
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-        />
-      </svg>
-    }
+    icon={<Settings className="h-6 w-6" />}
     title="Settings"
-    description="Account settings"
+    description="Manage your account preferences"
   />
 );
 

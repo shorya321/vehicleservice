@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Wallet Recharge Modal
+ * Modal for adding funds to business wallet
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -17,6 +25,7 @@ import { formatCurrency } from '@/lib/utils/currency-converter'
 import type { CurrencyCode } from '@/lib/utils/currency-converter'
 import { PaymentMethodsSelector } from './payment-methods-selector'
 import { PaymentElementModal } from './payment-element-modal'
+import { cn } from '@/lib/utils'
 
 interface WalletRechargeModalProps {
   open: boolean
@@ -128,34 +137,36 @@ export function WalletRechargeModal({
     <>
       {/* Main Modal - Payment Method Selection */}
       <Dialog open={open && !showPaymentElement} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <CreditCard className="h-5 w-5 text-primary" />
               Add Funds to Wallet
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-muted-foreground">
               Add {formatCurrency(amount, currency)} to your business wallet
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
             {/* Amount Display */}
-            <div className="rounded-lg bg-muted p-4 text-center mb-6">
+            <div className="rounded-xl p-4 text-center mb-6 bg-muted border border-border">
               <p className="text-sm text-muted-foreground">Amount to Add</p>
-              <p className="text-2xl font-bold">{formatCurrency(amount, currency)}</p>
+              <p className="text-2xl font-bold text-primary">
+                {formatCurrency(amount, currency)}
+              </p>
             </div>
 
             {/* Success State */}
             {flowState === 'success' && (
               <div className="space-y-4 text-center py-8">
                 <div className="flex justify-center">
-                  <div className="rounded-full bg-[var(--business-success)]/10 p-3">
-                    <CheckCircle className="h-8 w-8 text-[var(--business-success)]" />
+                  <div className="rounded-full bg-emerald-500/10 ring-2 ring-emerald-500/20 p-3">
+                    <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Payment Successful!</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Payment Successful!</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     Your wallet has been recharged
                   </p>
@@ -166,11 +177,15 @@ export function WalletRechargeModal({
             {/* Error State */}
             {flowState === 'error' && error && (
               <div className="space-y-4">
-                <Alert variant="destructive">
+                <Alert className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
-                <Button onClick={handleReset} variant="outline" className="w-full">
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="w-full bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                >
                   Try Again
                 </Button>
               </div>
@@ -188,8 +203,12 @@ export function WalletRechargeModal({
 
           {/* Cancel Button (only in select mode) */}
           {flowState === 'select' && !isProcessing && (
-            <div className="flex justify-end pt-4 border-t">
-              <Button variant="ghost" onClick={handleClose}>
+            <div className="flex justify-end pt-4 border-t border-border">
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
                 Cancel
               </Button>
             </div>

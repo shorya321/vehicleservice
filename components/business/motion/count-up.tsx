@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useCountUp, useReducedMotion, useInView } from '@/lib/business/animation/hooks';
 
 interface CountUpProps {
@@ -56,8 +56,10 @@ export function CountUp({
   formatter,
 }: CountUpProps) {
   const prefersReducedMotion = useReducedMotion();
-  const { ref, isInView } = useInView({ once: true });
+  const { ref, isInView } = useInView({ once: true, margin: '0px', amount: 0 });
   const [hasAnimated, setHasAnimated] = useState(false);
+  // Track if we've ever shown the final value (survives re-renders, not remounts)
+  const hasShownFinalRef = useRef(false);
 
   // Determine if animation should be enabled
   const shouldAnimate = triggerOnView ? isInView && !hasAnimated : !hasAnimated;
@@ -73,18 +75,37 @@ export function CountUp({
   useEffect(() => {
     if (count === value && shouldAnimate) {
       setHasAnimated(true);
+      hasShownFinalRef.current = true;
     }
   }, [count, value, shouldAnimate]);
 
-  // Format the display value
+  // Format values
   const displayValue = formatter
     ? formatter(count)
     : formatNumber(count, decimals, separator);
 
+  const finalValue = formatter
+    ? formatter(value)
+    : formatNumber(value, decimals, separator);
+
+  // FIX: Determine which value to show
+  // 1. If animation completed (hasAnimated or ref), show final
+  // 2. If count reached value, show final
+  // 3. If animation is in progress (count > startValue or count is animating towards value), show animated count
+  // 4. If count is stuck at startValue but should have animated (isInView is true for a while), show final
+  const animationInProgress = count > startValue && count < value;
+  const animationComplete = hasShownFinalRef.current || hasAnimated || count === value;
+
+  // If we're supposed to animate but count is still at 0 after being in view, show final value
+  // This handles the case where component remounts and animation resets
+  const shouldShowFinal = animationComplete || (isInView && !animationInProgress && count === startValue && value !== startValue);
+
+  const showValue = shouldShowFinal ? finalValue : displayValue;
+
   return (
     <span ref={ref} className={className}>
       {prefix}
-      {displayValue}
+      {showValue}
       {suffix}
     </span>
   );

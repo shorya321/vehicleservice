@@ -3,6 +3,9 @@
 /**
  * Payment Settings Form Component
  * Allows business owners to configure payment-related settings
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState } from 'react';
@@ -12,8 +15,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, CreditCard, DollarSign, ShieldCheck } from 'lucide-react';
+import { Loader2, Save, CreditCard, DollarSign, ShieldCheck, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { getCurrencyOptions, type CurrencyCode } from '@/lib/utils/currency-converter';
 
 interface PaymentSettings {
@@ -69,21 +73,27 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
   return (
     <div className="space-y-6">
       {/* Payment Methods Card */}
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            <CardTitle>Payment Methods</CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+              <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Payment Methods
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Configure how payment methods are saved and managed for your business
+              </CardDescription>
+            </div>
           </div>
-          <CardDescription>
-            Configure how payment methods are saved and managed for your business
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Save Payment Methods Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5 flex-1 max-w-2xl">
-              <Label htmlFor="save-payment-methods" className="text-base">
+          <div className="flex items-center justify-between rounded-xl bg-muted border border-border p-4">
+            <div className="space-y-1 flex-1 max-w-2xl">
+              <Label htmlFor="save-payment-methods" className="text-foreground font-medium">
                 Save Payment Methods Automatically
               </Label>
               <p className="text-sm text-muted-foreground">
@@ -98,13 +108,14 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
               onCheckedChange={(checked) =>
                 setSettings((prev) => ({ ...prev, save_payment_methods: checked }))
               }
+              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
 
           {/* Payment Element Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5 flex-1 max-w-2xl">
-              <Label htmlFor="payment-element" className="text-base">
+          <div className="flex items-center justify-between rounded-xl bg-muted border border-border p-4">
+            <div className="space-y-1 flex-1 max-w-2xl">
+              <Label htmlFor="payment-element" className="text-foreground font-medium">
                 Enable Instant Payment
               </Label>
               <p className="text-sm text-muted-foreground">
@@ -119,35 +130,53 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
               onCheckedChange={(checked) =>
                 setSettings((prev) => ({ ...prev, payment_element_enabled: checked }))
               }
+              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Currency Settings Card */}
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            <CardTitle>Currency Settings</CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <DollarSign className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Currency Settings
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Select your preferred currency for wallet transactions
+              </CardDescription>
+            </div>
           </div>
-          <CardDescription>Select your preferred currency for wallet transactions</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="preferred-currency">Preferred Currency</Label>
+          <div className="space-y-3">
+            <Label htmlFor="preferred-currency" className="text-muted-foreground">
+              Preferred Currency
+            </Label>
             <Select
               value={settings.preferred_currency}
               onValueChange={(value: CurrencyCode) =>
                 setSettings((prev) => ({ ...prev, preferred_currency: value }))
               }
             >
-              <SelectTrigger id="preferred-currency" className="max-w-xs">
+              <SelectTrigger
+                id="preferred-currency"
+                className="max-w-xs bg-muted border-border text-foreground focus:ring-primary/20 focus:border-primary"
+              >
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border-border">
                 {currencies.map((currency) => (
-                  <SelectItem key={currency.code} value={currency.code}>
+                  <SelectItem
+                    key={currency.code}
+                    value={currency.code}
+                    className="text-foreground focus:bg-primary/10 focus:text-foreground"
+                  >
                     {currency.code} - {currency.name} ({currency.symbol})
                   </SelectItem>
                 ))}
@@ -162,26 +191,68 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
       </Card>
 
       {/* Security Info Card */}
-      <Card className="border-muted-foreground/20">
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-            <CardTitle className="text-base">Security & Privacy</CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+              <ShieldCheck className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+            </div>
+            <div>
+              <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Security & Privacy
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                How we protect your payment data
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Payment methods are securely stored with Stripe, not on our servers</li>
-            <li>• You can view and delete saved payment methods at any time from your wallet</li>
-            <li>• Disabling automatic saving won't delete existing saved payment methods</li>
-            <li>• All payment data is encrypted and PCI DSS compliant</li>
+          <ul className="space-y-3 text-sm">
+            <li className="flex items-start gap-3">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/10 flex-shrink-0 mt-0.5">
+                <Check className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+              </div>
+              <span className="text-muted-foreground">
+                Payment methods are securely stored with Stripe, not on our servers
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/10 flex-shrink-0 mt-0.5">
+                <Check className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+              </div>
+              <span className="text-muted-foreground">
+                You can view and delete saved payment methods at any time from your wallet
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/10 flex-shrink-0 mt-0.5">
+                <Check className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+              </div>
+              <span className="text-muted-foreground">
+                Disabling automatic saving won't delete existing saved payment methods
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/10 flex-shrink-0 mt-0.5">
+                <Check className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+              </div>
+              <span className="text-muted-foreground">
+                All payment data is encrypted and PCI DSS compliant
+              </span>
+            </li>
           </ul>
         </CardContent>
       </Card>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaving || !hasChanges} size="lg">
+        <Button
+          onClick={handleSave}
+          disabled={isSaving || !hasChanges}
+          size="lg"
+          className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {isSaving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

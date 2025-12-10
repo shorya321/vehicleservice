@@ -52,7 +52,7 @@ export default async function BusinessDashboardPage() {
   }
 
   const businessAccountId = businessUser.business_account_id;
-  const walletBalance = businessUser.business_accounts.wallet_balance;
+  const walletBalance = Number(businessUser.business_accounts.wallet_balance) || 0;
   const businessName = businessUser.business_accounts.brand_name || businessUser.business_accounts.business_name;
 
   // Get booking statistics
@@ -92,6 +92,27 @@ export default async function BusinessDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // Get all available locations with booking counts
+  const { data: locationsData } = await supabase
+    .rpc('get_locations_with_booking_counts')
+    .limit(6);
+
+  // Fallback: if RPC doesn't exist, fetch locations directly
+  let locations = locationsData || [];
+  if (!locationsData || locationsData.length === 0) {
+    const { data: rawLocations } = await supabase
+      .from('locations')
+      .select('id, name, type, city, country_code')
+      .eq('is_active', true)
+      .order('name')
+      .limit(6);
+
+    locations = (rawLocations || []).map(loc => ({
+      ...loc,
+      booking_count: 0
+    }));
+  }
+
   return (
     <DashboardContent
       businessName={businessName}
@@ -101,6 +122,7 @@ export default async function BusinessDashboardPage() {
       completedBookings={completedBookings || 0}
       monthlyBookings={monthlyBookings || 0}
       recentBookings={recentBookings || []}
+      locations={locations}
     />
   );
 }

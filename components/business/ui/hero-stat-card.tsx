@@ -2,7 +2,7 @@
  * Hero Stat Card Component
  * Large prominent stat cards for dashboard hero sections
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
  * SCOPE: Business module ONLY
  */
 
@@ -73,28 +73,28 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
 
     const variantStyles = {
       default: {
-        border: 'border-[var(--business-primary-500)]/30',
-        iconBg: 'bg-[var(--business-primary-500)]/10',
-        iconColor: 'text-[var(--business-primary-400)]',
-        labelColor: 'text-[var(--business-primary-400)]',
+        border: 'border-border',
+        iconBg: 'bg-primary/10',
+        iconColor: 'text-primary',
+        labelColor: 'text-primary',
       },
       warning: {
-        border: 'border-[var(--business-warning)]/30',
-        iconBg: 'bg-[var(--business-warning)]/10',
-        iconColor: 'text-[var(--business-warning)]',
-        labelColor: 'text-[var(--business-warning)]',
+        border: 'border-border',
+        iconBg: 'bg-amber-500/10',
+        iconColor: 'text-amber-500 dark:text-amber-400',
+        labelColor: 'text-amber-500 dark:text-amber-400',
       },
       success: {
-        border: 'border-[var(--business-success)]/30',
-        iconBg: 'bg-[var(--business-success)]/10',
-        iconColor: 'text-[var(--business-success)]',
-        labelColor: 'text-[var(--business-success)]',
+        border: 'border-border',
+        iconBg: 'bg-emerald-500/10',
+        iconColor: 'text-emerald-600 dark:text-emerald-400',
+        labelColor: 'text-emerald-600 dark:text-emerald-400',
       },
       info: {
-        border: 'border-[var(--business-info)]/30',
-        iconBg: 'bg-[var(--business-info)]/10',
-        iconColor: 'text-[var(--business-info)]',
-        labelColor: 'text-[var(--business-info)]',
+        border: 'border-border',
+        iconBg: 'bg-sky-500/10',
+        iconColor: 'text-sky-600 dark:text-sky-400',
+        labelColor: 'text-sky-600 dark:text-sky-400',
       },
     };
 
@@ -102,7 +102,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
 
     const renderValue = () => {
       const valueClassName =
-        'text-4xl lg:text-5xl font-medium text-[var(--business-text-primary)] tracking-tight';
+        'text-4xl lg:text-5xl font-medium text-foreground tracking-tight';
 
       switch (format) {
         case 'currency':
@@ -139,17 +139,19 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
       <div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-2xl p-6 lg:p-8',
-          'bg-gradient-to-br from-[var(--business-surface-1)] via-[var(--business-surface-2)] to-[var(--business-surface-1)]',
+          'relative overflow-hidden rounded-xl p-6 lg:p-8',
+          'bg-card',
           'border',
           styles.border,
-          'shadow-business-elevated',
+          'hover:border-primary/30',
+          'shadow-sm',
+          'transition-all duration-150',
           className
         )}
         {...props}
       >
-        {/* Background gradient accent */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--business-primary-500)]/5 to-transparent pointer-events-none" />
+        {/* Subtle top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
         <div className="relative z-10">
           {/* Header */}
@@ -160,15 +162,11 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
                   'text-xs uppercase tracking-wider font-semibold mb-1',
                   styles.labelColor
                 )}
-                style={{ fontFamily: 'var(--business-font-body)' }}
               >
                 {title}
               </p>
               {subtitle && (
-                <p
-                  className="text-sm text-[var(--business-text-muted)]"
-                  style={{ fontFamily: 'var(--business-font-body)' }}
-                >
+                <p className="text-sm text-muted-foreground">
                   {subtitle}
                 </p>
               )}
@@ -181,7 +179,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
           </div>
 
           {/* Value */}
-          <div className="mb-4" ref={inViewRef} style={{ fontFamily: 'var(--business-font-display)' }}>
+          <div className="mb-4" ref={inViewRef}>
             {renderValue()}
           </div>
 
@@ -191,7 +189,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
               <span
                 className={cn(
                   'flex items-center gap-1 text-sm font-medium',
-                  trend.direction === 'up' ? 'text-[var(--business-success)]' : 'text-[var(--business-error)]'
+                  trend.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
                 )}
               >
                 {trend.direction === 'up' ? (
@@ -202,7 +200,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
                 {trend.value}%
               </span>
               {trend.label && (
-                <span className="text-sm text-[var(--business-text-muted)]">
+                <span className="text-sm text-muted-foreground">
                   {trend.label}
                 </span>
               )}
@@ -244,47 +242,4 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
 
 HeroStatCard.displayName = 'HeroStatCard';
 
-// Wallet Balance Hero Card - Preset configuration
-interface WalletHeroCardProps extends Omit<HeroStatCardProps, 'format' | 'title'> {
-  balance: number;
-  currency?: string;
-  onAddCredits?: () => void;
-}
-
-const WalletHeroCard = ({
-  balance,
-  currency = '$',
-  onAddCredits,
-  trend,
-  ...props
-}: WalletHeroCardProps) => {
-  return (
-    <HeroStatCard
-      title="Wallet Balance"
-      value={balance}
-      format="currency"
-      currency={currency}
-      actionLabel="Add Credits"
-      onAction={onAddCredits}
-      trend={trend}
-      icon={
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-          />
-        </svg>
-      }
-      {...props}
-    />
-  );
-};
-
-export { HeroStatCard, WalletHeroCard };
+export { HeroStatCard };

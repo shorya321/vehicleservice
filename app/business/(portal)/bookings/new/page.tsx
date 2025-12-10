@@ -57,8 +57,8 @@ export default async function NewBookingPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold">Create New Booking</h1>
-        <p className="text-muted-foreground">Book a transfer for your customer</p>
+        <h1 className="text-3xl font-bold text-[var(--business-text-primary)]">Create New Booking</h1>
+        <p className="text-[var(--business-text-muted)]">Book a transfer for your customer</p>
       </div>
 
       {/* Booking Wizard */}

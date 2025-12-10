@@ -3,15 +3,19 @@
 /**
  * Domain Configuration Component
  * Add or update custom domain
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Loader2, Globe, CheckCircle } from 'lucide-react';
-import { LuxuryButton } from '@/components/business/ui/luxury-button';
-import { LuxuryCard, LuxuryCardContent, LuxuryCardDescription, LuxuryCardHeader, LuxuryCardTitle } from '@/components/business/ui/luxury-card';
+import { Loader2, Globe, CheckCircle, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -21,8 +25,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { customDomainSchema, type CustomDomainInput } from '@/lib/business/validators';
 
 interface DomainConfigurationProps {
@@ -151,17 +155,23 @@ export function DomainConfiguration({
   }
 
   return (
-    <LuxuryCard>
-      <LuxuryCardHeader>
-        <LuxuryCardTitle className="flex items-center gap-2">
-          <Globe className="h-5 w-5" />
-          Configure Custom Domain
-        </LuxuryCardTitle>
-        <LuxuryCardDescription>
-          Use your own domain (e.g., transfers.yourhotel.com) for your booking portal
-        </LuxuryCardDescription>
-      </LuxuryCardHeader>
-      <LuxuryCardContent className="space-y-6">
+    <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+            <Globe className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+          </div>
+          <div>
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Configure Custom Domain
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Use your own domain (e.g., transfers.yourhotel.com) for your booking portal
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -169,15 +179,16 @@ export function DomainConfiguration({
               name="custom_domain"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Custom Domain</FormLabel>
+                  <FormLabel className="text-muted-foreground">Custom Domain</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="transfers.yourhotel.com"
                       {...field}
                       disabled={isVerified}
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-sky-500 focus:ring-sky-500/20 disabled:opacity-50"
                     />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-muted-foreground">
                     Enter the subdomain you want to use (e.g., transfers.yourhotel.com)
                   </FormDescription>
                   <FormMessage />
@@ -186,7 +197,11 @@ export function DomainConfiguration({
             />
 
             {!isVerified && (
-              <LuxuryButton type="submit" disabled={isLoading}>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -197,18 +212,22 @@ export function DomainConfiguration({
                 ) : (
                   'Set Custom Domain'
                 )}
-              </LuxuryButton>
+              </Button>
             )}
           </form>
         </Form>
 
         {/* Verification Button */}
         {currentDomain && !isVerified && (
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t border-border">
             <p className="text-sm text-muted-foreground mb-3">
               After configuring your DNS records, click the button below to verify.
             </p>
-            <LuxuryButton onClick={handleVerify} disabled={isVerifying} variant="secondary">
+            <Button
+              onClick={handleVerify}
+              disabled={isVerifying}
+              className="bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 hover:border-sky-500/50 disabled:opacity-50"
+            >
               {isVerifying ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -220,18 +239,18 @@ export function DomainConfiguration({
                   Verify DNS Configuration
                 </>
               )}
-            </LuxuryButton>
+            </Button>
           </div>
         )}
 
         {/* Verified Message */}
         {isVerified && (
-          <div className="bg-[var(--business-success)]/10 border border-[var(--business-success)]/20 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-[var(--business-success)]">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
               <CheckCircle className="h-5 w-5" />
               <p className="font-medium">Domain verified and active!</p>
             </div>
-            <p className="text-sm text-[var(--business-success)]/80 mt-1">
+            <p className="text-sm text-emerald-600/70 dark:text-emerald-400/70 mt-1">
               Your booking portal is now accessible at {currentDomain}
             </p>
           </div>
@@ -239,19 +258,19 @@ export function DomainConfiguration({
 
         {/* Remove Domain Button */}
         {currentDomain && (
-          <div className="pt-4 border-t">
-            <div className="flex items-center justify-between">
+          <div className="pt-4 border-t border-border">
+            <div className="flex items-center justify-between rounded-xl bg-muted border border-border p-4">
               <div>
-                <p className="text-sm font-medium">Remove Custom Domain</p>
+                <p className="text-sm font-medium text-foreground">Remove Custom Domain</p>
                 <p className="text-sm text-muted-foreground">
                   This will remove your custom domain and revert to subdomain access.
                 </p>
               </div>
-              <LuxuryButton
+              <Button
                 onClick={handleRemove}
                 disabled={isLoading || isVerifying}
-                variant="destructive"
                 size="sm"
+                className="bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -259,13 +278,16 @@ export function DomainConfiguration({
                     Removing...
                   </>
                 ) : (
-                  'Remove Domain'
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Remove Domain
+                  </>
                 )}
-              </LuxuryButton>
+              </Button>
             </div>
           </div>
         )}
-      </LuxuryCardContent>
-    </LuxuryCard>
+      </CardContent>
+    </Card>
   );
 }

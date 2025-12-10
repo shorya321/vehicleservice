@@ -124,10 +124,10 @@ export function CheckoutSuccessHandler() {
   if (isVerifying) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-        <div className="flex flex-col items-center gap-4 rounded-lg border bg-card p-8 shadow-lg">
+        <div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-card p-8 shadow-lg">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <div className="text-center">
-            <p className="font-medium">Verifying Payment...</p>
+            <p className="font-medium text-foreground">Verifying Payment...</p>
             <p className="text-sm text-muted-foreground">Please wait while we confirm your payment</p>
           </div>
         </div>

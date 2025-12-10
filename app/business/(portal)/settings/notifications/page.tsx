@@ -3,14 +3,17 @@
 /**
  * Business Notification Preferences Settings Page
  * Allows businesses to configure wallet notification preferences
+ *
+ * Design System: Premium Indigo - Stripe/Linear inspired
  */
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { PageHeader, PageContainer } from '@/components/business/layout';
 import { toast } from 'sonner';
 import { Loader2, Bell, Mail, CheckCircle2 } from 'lucide-react';
 
@@ -109,13 +112,11 @@ export default function NotificationPreferencesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Notification Preferences</h1>
-        <p className="text-muted-foreground">
-          Configure how and when you receive wallet notifications
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Notification Preferences"
+        description="Configure how and when you receive wallet notifications"
+      />
 
       {/* Low Balance Alert */}
       <Card>
@@ -344,6 +345,6 @@ export default function NotificationPreferencesPage() {
           )}
         </Button>
       </div>
-    </div>
+    </PageContainer>
   );
 }

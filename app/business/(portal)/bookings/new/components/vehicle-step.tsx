@@ -3,6 +3,8 @@
 /**
  * Vehicle Step Component
  * Select vehicle type for the booking with category tabs
+ *
+ * Design: shadcn/ui theme-aware components
  */
 
 import { useState } from 'react';
@@ -62,7 +64,7 @@ export function VehicleStep({
       <div className="space-y-6">
         <div className="flex flex-col items-center justify-center py-12">
           <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-          <h3 className="text-lg font-medium mb-2">Loading available vehicles...</h3>
+          <h3 className="text-lg font-medium mb-2 text-foreground">Loading available vehicles...</h3>
           <p className="text-sm text-muted-foreground">
             Finding vehicles for your selected route
           </p>
@@ -92,7 +94,7 @@ export function VehicleStep({
 
         <div className="text-center py-8">
           <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No vehicles available</h3>
+          <h3 className="text-lg font-medium mb-2 text-foreground">No vehicles available</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Please select different locations or contact support.
           </p>
@@ -114,7 +116,7 @@ export function VehicleStep({
       <div className="space-y-6">
         <div className="text-center py-12">
           <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No vehicles available</h3>
+          <h3 className="text-lg font-medium mb-2 text-foreground">No vehicles available</h3>
           <p className="text-sm text-muted-foreground">
             No vehicles found for the selected route.
           </p>
@@ -134,7 +136,7 @@ export function VehicleStep({
     <div className="space-y-6">
       {/* Zone Information Banner */}
       {zoneInfo && (
-        <div className="p-4 border rounded-lg bg-muted/50">
+        <div className="p-4 border rounded-lg bg-muted">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
@@ -145,7 +147,7 @@ export function VehicleStep({
                 <p className="text-xs text-muted-foreground">Zone Transfer</p>
               </div>
             </div>
-            <Badge variant="secondary">
+            <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0">
               Base: {formatCurrency(zoneInfo.basePrice)}
             </Badge>
           </div>

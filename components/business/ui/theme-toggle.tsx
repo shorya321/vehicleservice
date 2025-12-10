@@ -44,11 +44,11 @@ export function ThemeToggle({ className, size = "default" }: ThemeToggleProps) {
       onClick={toggleTheme}
       className={cn(
         "relative inline-flex items-center justify-center rounded-lg",
-        "bg-transparent hover:bg-business-primary-500/10",
-        "border border-transparent hover:border-business-primary-500/20",
-        "text-[var(--business-text-secondary)] hover:text-[var(--business-primary-400)]",
+        "bg-transparent hover:bg-primary/10",
+        "border border-transparent hover:border-primary/20",
+        "text-muted-foreground hover:text-primary",
         "transition-colors duration-200",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--business-primary-500)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--business-surface-0)]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         config.button,
         className
       )}
@@ -90,7 +90,7 @@ export function ThemeToggle({ className, size = "default" }: ThemeToggleProps) {
       <motion.div
         className="absolute inset-0 rounded-lg opacity-0"
         style={{
-          background: "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(198, 170, 136, 0.15) 0%, transparent 70%)",
         }}
         whileHover={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
@@ -117,11 +117,11 @@ export function ThemeToggleWithLabel({
       onClick={toggleTheme}
       className={cn(
         "inline-flex items-center gap-2 rounded-lg px-3 py-2",
-        "bg-transparent hover:bg-business-primary-500/10",
-        "border border-transparent hover:border-business-primary-500/20",
-        "text-[var(--business-text-secondary)] hover:text-[var(--business-primary-400)]",
+        "bg-transparent hover:bg-primary/10",
+        "border border-transparent hover:border-primary/20",
+        "text-muted-foreground hover:text-primary",
         "transition-colors duration-200",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--business-primary-500)]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className
       )}
       whileHover={{ scale: 1.02 }}

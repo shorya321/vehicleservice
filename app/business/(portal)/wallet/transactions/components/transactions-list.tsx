@@ -3,14 +3,25 @@
 /**
  * Transactions List Component
  * Displays transactions in a table with pagination
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
  */
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Receipt } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Transaction {
   id: string;
@@ -37,23 +48,24 @@ interface TransactionsListProps {
 }
 
 export function TransactionsList({ transactions, pagination, onPageChange }: TransactionsListProps) {
+  // Transaction type badges with semantic colors
   const getTransactionTypeBadge = (type: string) => {
     const types = {
-      credit_added: { variant: 'default' as const, label: 'Credit Added', icon: ArrowUpCircle },
-      booking_deduction: { variant: 'destructive' as const, label: 'Deduction', icon: ArrowDownCircle },
-      refund: { variant: 'default' as const, label: 'Refund', icon: ArrowUpCircle },
-      admin_adjustment: { variant: 'secondary' as const, label: 'Adjustment', icon: Receipt },
+      credit_added: { className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30', label: 'Credit Added', icon: ArrowUpCircle },
+      booking_deduction: { className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30', label: 'Deduction', icon: ArrowDownCircle },
+      refund: { className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30', label: 'Refund', icon: ArrowUpCircle },
+      admin_adjustment: { className: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30', label: 'Adjustment', icon: Receipt },
     };
 
     const config = types[type as keyof typeof types] || {
-      variant: 'outline' as const,
+      className: 'bg-muted text-muted-foreground border-border',
       label: type,
       icon: Receipt,
     };
     const Icon = config.icon;
 
     return (
-      <Badge variant={config.variant} className="gap-1.5">
+      <Badge className={cn('gap-1.5 border', config.className)}>
         <Icon className="h-3 w-3" />
         {config.label}
       </Badge>
@@ -63,8 +75,10 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
   if (transactions.length === 0) {
     return (
       <div className="text-center py-12">
-        <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">No transactions found</p>
+        <div className="mx-auto w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center mb-4">
+          <Receipt className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <p className="text-foreground font-medium">No transactions found</p>
         <p className="text-sm text-muted-foreground mt-2">
           Try adjusting your filters or search criteria
         </p>
@@ -75,22 +89,22 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
   return (
     <div className="space-y-4">
       {/* Transactions Table */}
-      <div className="rounded-md border">
+      <div className="rounded-xl border border-border overflow-hidden bg-card">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Date & Time</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="text-right">Balance After</TableHead>
-              <TableHead>Reference</TableHead>
+            <TableRow className="border-border hover:bg-muted/50">
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider">Date & Time</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider">Type</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider">Description</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider text-right">Amount</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider text-right">Balance After</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider">Reference</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {transactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell className="font-medium">
+              <TableRow key={transaction.id} className="border-border hover:bg-muted/50 transition-colors duration-200">
+                <TableCell className="font-medium text-foreground">
                   <div className="flex flex-col">
                     <span>{format(new Date(transaction.created_at), 'MMM d, yyyy')}</span>
                     <span className="text-xs text-muted-foreground">
@@ -101,9 +115,9 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
                 <TableCell>{getTransactionTypeBadge(transaction.transaction_type)}</TableCell>
                 <TableCell>
                   <div className="max-w-xs">
-                    <p className="truncate">{transaction.description}</p>
+                    <p className="truncate text-muted-foreground">{transaction.description}</p>
                     {transaction.stripe_payment_intent_id && (
-                      <p className="text-xs text-muted-foreground font-mono truncate mt-1">
+                      <p className="text-xs text-muted-foreground/60 font-mono truncate mt-1">
                         {transaction.stripe_payment_intent_id}
                       </p>
                     )}
@@ -111,20 +125,21 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
                 </TableCell>
                 <TableCell className="text-right">
                   <span
-                    className={`font-medium ${
-                      transaction.amount > 0 ? 'text-[var(--business-success)]' : 'text-[var(--business-error)]'
-                    }`}
+                    className={cn(
+                      'font-semibold',
+                      transaction.amount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                    )}
                   >
                     {transaction.amount > 0 ? '+' : ''}
                     {formatCurrency(transaction.amount, transaction.currency)}
                   </span>
                 </TableCell>
-                <TableCell className="text-right font-medium">
+                <TableCell className="text-right font-medium text-muted-foreground">
                   {formatCurrency(transaction.balance_after, transaction.currency)}
                 </TableCell>
                 <TableCell>
                   {transaction.reference_id && (
-                    <span className="text-xs font-mono">{transaction.reference_id.slice(0, 8)}...</span>
+                    <span className="text-xs font-mono text-muted-foreground">{transaction.reference_id.slice(0, 8)}...</span>
                   )}
                 </TableCell>
               </TableRow>
@@ -147,11 +162,12 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
               size="sm"
               onClick={() => onPageChange(pagination.page - 1)}
               disabled={pagination.page === 1}
+              className="bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
-            <div className="text-sm font-medium">
+            <div className="text-sm font-medium text-muted-foreground">
               Page {pagination.page} of {pagination.totalPages}
             </div>
             <Button
@@ -159,6 +175,7 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
               size="sm"
               onClick={() => onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
+              className="bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground disabled:opacity-30"
             >
               Next
               <ChevronRight className="h-4 w-4" />

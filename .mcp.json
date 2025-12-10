@@ -12,28 +12,45 @@
       ],
       "transportType": "stdio",
       "timeout": 60,
-      "autoApprove": ["list_tables", "list_projects"],
+      "autoApprove": [
+        "list_tables",
+        "list_projects"
+      ],
       "disabled": true
     },
     "context7-server": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
       "transportType": "stdio",
       "timeout": 60,
-      "autoApprove": ["get-library-docs", "resolve-library-id"],
+      "autoApprove": [
+        "get-library-docs",
+        "resolve-library-id"
+      ],
       "disabled": false
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
       "transportType": "stdio",
       "timeout": 60,
-      "autoApprove": ["sequentialthinking"],
+      "autoApprove": [
+        "sequentialthinking"
+      ],
       "disabled": false
     },
     "github-server": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       },
@@ -44,15 +61,22 @@
     },
     "puppeteer": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ],
       "transportType": "stdio",
       "timeout": 60,
       "autoApprove": [],
       "disabled": false
     },
-     "linear": {
+    "linear": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.linear.app/sse"],
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.linear.app/sse"
+      ],
       "transportType": "stdio",
       "timeout": 60,
       "autoApprove": [],
@@ -60,15 +84,22 @@
     },
     "consult7": {
       "command": "uvx",
-      "args": ["consult7", "openrouter", "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"],
+      "args": [
+        "consult7",
+        "openrouter",
+        "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"
+      ],
       "transportType": "stdio",
       "timeout": 60,
       "autoApprove": [],
       "disabled": false
     },
-     "chrome-devtools": {
+    "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
       "transportType": "stdio",
       "timeout": 60,
       "autoApprove": [],
@@ -76,12 +107,22 @@
     },
     "Sentry": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.sentry.dev/mcp"],
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.sentry.dev/mcp"
+      ],
       "transportType": "stdio",
       "timeout": 60,
       "autoApprove": [],
       "disabled": false
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }
-

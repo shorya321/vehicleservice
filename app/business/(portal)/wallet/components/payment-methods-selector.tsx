@@ -1,11 +1,20 @@
 'use client'
 
+/**
+ * Payment Methods Selector Component
+ * Select from saved payment methods or add a new one
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
 import { useState, useEffect } from 'react'
 import { CreditCard, Plus, Loader2, AlertCircle } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 interface PaymentMethod {
   id: string
@@ -28,7 +37,7 @@ const cardBrandColors: Record<string, string> = {
   mastercard: 'bg-orange-500',
   amex: 'bg-green-500',
   discover: 'bg-purple-500',
-  default: 'bg-gray-500',
+  default: 'bg-muted-foreground',
 }
 
 const cardBrandNames: Record<string, string> = {
@@ -87,7 +96,10 @@ export function PaymentMethodsSelector({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
     )
   }
@@ -95,11 +107,15 @@ export function PaymentMethodsSelector({
   if (error) {
     return (
       <div className="space-y-4">
-        <Alert variant="destructive">
+        <Alert className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <Button onClick={fetchPaymentMethods} variant="outline" className="w-full">
+        <Button
+          onClick={fetchPaymentMethods}
+          variant="outline"
+          className="w-full bg-muted border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+        >
           Try Again
         </Button>
       </div>
@@ -110,7 +126,7 @@ export function PaymentMethodsSelector({
     <div className="space-y-4">
       {/* Header */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold">Select Payment Method</h3>
+        <h3 className="text-lg font-semibold text-foreground">Select Payment Method</h3>
         <p className="text-sm text-muted-foreground">
           Choose a saved card or add a new one
         </p>
@@ -123,7 +139,7 @@ export function PaymentMethodsSelector({
           {paymentMethods.map((pm) => (
             <Card
               key={pm.id}
-              className="relative overflow-hidden transition-all hover:shadow-md hover:border-primary/50"
+              className="relative overflow-hidden transition-all duration-200 bg-muted/50 border border-border hover:border-primary/30 hover:shadow-md"
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
@@ -139,11 +155,11 @@ export function PaymentMethodsSelector({
                     {/* Card Details */}
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium">
+                        <p className="font-medium text-foreground">
                           {getBrandName(pm.card_brand)} ••••{pm.card_last4}
                         </p>
                         {pm.is_default && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-0">
                             Default
                           </Badge>
                         )}
@@ -152,7 +168,7 @@ export function PaymentMethodsSelector({
                         Expires {formatExpiry(pm.card_exp_month, pm.card_exp_year)}
                       </p>
                       {pm.last_used_at && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground/70">
                           Last used: {new Date(pm.last_used_at).toLocaleDateString()}
                         </p>
                       )}
@@ -164,7 +180,7 @@ export function PaymentMethodsSelector({
                     onClick={() => onSelectSaved(pm.id)}
                     disabled={isProcessing}
                     size="sm"
-                    className="shrink-0"
+                    className="shrink-0 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
                   >
                     {isProcessing ? (
                       <>
@@ -185,9 +201,14 @@ export function PaymentMethodsSelector({
       {/* Add New Card Button */}
       <Button
         onClick={onAddNew}
-        variant={paymentMethods.length > 0 ? 'outline' : 'default'}
+        variant="outline"
         disabled={isProcessing}
-        className="w-full"
+        className={cn(
+          'w-full',
+          paymentMethods.length > 0
+            ? 'bg-muted border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50'
+            : 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90 border-0'
+        )}
       >
         <Plus className="mr-2 h-4 w-4" />
         Add New Card

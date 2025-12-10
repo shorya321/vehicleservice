@@ -1,8 +1,8 @@
 /**
  * Luxury Input Component
- * Premium form inputs with enhanced focus and glow effects
+ * Premium form inputs using semantic CSS variables
  *
- * Design System: Premium Indigo - Stripe/Linear/Apple inspired
+ * Design System: Clean shadcn with Gold Accent
  * SCOPE: Business module ONLY
  */
 
@@ -13,16 +13,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const luxuryInputVariants = cva(
-  'w-full rounded-xl font-[family-name:var(--business-font-body)] transition-all duration-200 placeholder:text-[var(--business-text-muted)] disabled:cursor-not-allowed disabled:opacity-50',
+  'w-full rounded-xl transition-all duration-150 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       variant: {
         default:
-          'bg-[var(--business-surface-3)] border border-[var(--business-border-default)] text-[var(--business-text-primary)] focus:border-[var(--business-primary-500)] focus:ring-2 focus:ring-[var(--business-primary-500)]/20 focus:outline-none hover:border-[var(--business-primary-500)]/40',
+          'bg-muted border border-border text-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/15 focus:outline-none hover:border-border/80',
         filled:
-          'bg-[var(--business-surface-2)] border-transparent text-[var(--business-text-primary)] focus:bg-[var(--business-surface-3)] focus:border-[var(--business-primary-500)] focus:ring-2 focus:ring-[var(--business-primary-500)]/20 focus:outline-none',
+          'bg-muted border-transparent text-foreground focus:bg-muted/80 focus:border-primary/50 focus:ring-2 focus:ring-primary/15 focus:outline-none',
         ghost:
-          'bg-transparent border-b border-[var(--business-border-default)] rounded-none text-[var(--business-text-primary)] focus:border-[var(--business-primary-500)] focus:outline-none px-0',
+          'bg-transparent border-b border-border rounded-none text-foreground focus:border-primary/50 focus:outline-none px-0',
       },
       inputSize: {
         sm: 'h-8 px-3 text-xs',
@@ -75,7 +75,7 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
       <div className={cn('relative', wrapperClassName)}>
         {/* Left Icon */}
         {hasLeftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--business-text-muted)]">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             {leftIcon}
           </div>
         )}
@@ -88,7 +88,7 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
             hasLeftIcon && 'pl-10',
             hasRightIcon && 'pr-10',
             isError &&
-              'border-[var(--business-error)]/50 focus:border-[var(--business-error)] focus:ring-[var(--business-error)]/15',
+              'border-destructive/50 focus:border-destructive focus:ring-destructive/15',
             className
           )}
           {...props}
@@ -96,14 +96,14 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
 
         {/* Right Icon */}
         {hasRightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--business-text-muted)]">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             {rightIcon}
           </div>
         )}
 
         {/* Error Message */}
         {isError && errorMessage && (
-          <p className="mt-1.5 text-xs text-[var(--business-error)]">{errorMessage}</p>
+          <p className="mt-1.5 text-xs text-destructive">{errorMessage}</p>
         )}
       </div>
     );
@@ -141,7 +141,7 @@ const LuxuryTextarea = forwardRef<HTMLTextAreaElement, LuxuryTextareaProps>(
             inputSize === 'default' && 'text-sm px-4',
             inputSize === 'lg' && 'text-base px-4',
             isError &&
-              'border-[var(--business-error)]/50 focus:border-[var(--business-error)] focus:ring-[var(--business-error)]/15',
+              'border-destructive/50 focus:border-destructive focus:ring-destructive/15',
             className
           )}
           {...props}
@@ -149,7 +149,7 @@ const LuxuryTextarea = forwardRef<HTMLTextAreaElement, LuxuryTextareaProps>(
 
         {/* Error Message */}
         {isError && errorMessage && (
-          <p className="mt-1.5 text-xs text-[var(--business-error)]">{errorMessage}</p>
+          <p className="mt-1.5 text-xs text-destructive">{errorMessage}</p>
         )}
       </div>
     );
@@ -171,13 +171,13 @@ const LuxuryLabel = forwardRef<HTMLLabelElement, LuxuryLabelProps>(
       <label
         ref={ref}
         className={cn(
-          'block text-sm font-medium text-[var(--business-text-secondary)] mb-1.5 font-[family-name:var(--business-font-body)]',
+          'block text-sm font-medium text-muted-foreground mb-1.5',
           className
         )}
         {...props}
       >
         {children}
-        {required && <span className="text-[var(--business-primary-400)] ml-1">*</span>}
+        {required && <span className="text-primary ml-1">*</span>}
       </label>
     );
   }
@@ -208,9 +208,9 @@ const LuxuryFormGroup = ({
       <LuxuryLabel required={required}>{label}</LuxuryLabel>
       {children}
       {hint && !error && (
-        <p className="text-xs text-[var(--business-text-muted)]">{hint}</p>
+        <p className="text-xs text-muted-foreground">{hint}</p>
       )}
-      {error && <p className="text-xs text-[var(--business-error)]">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 };

@@ -6,6 +6,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { PageHeader, PageContainer } from '@/components/business/layout';
 import { PaymentSettingsForm } from './components/payment-settings-form';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
 
@@ -58,17 +59,15 @@ export default async function PaymentSettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <PageContainer maxWidth="narrow">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Payment Settings</h1>
-        <p className="text-muted-foreground">
-          Configure how payment methods are saved and managed for your business
-        </p>
-      </div>
+      <PageHeader
+        title="Payment Settings"
+        description="Configure how payment methods are saved and managed for your business"
+      />
 
       {/* Payment Settings Form */}
       <PaymentSettingsForm initialSettings={settings} />
-    </div>
+    </PageContainer>
   );
 }

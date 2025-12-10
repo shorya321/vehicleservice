@@ -17,7 +17,7 @@ import {
 } from 'react';
 
 interface SidebarContextValue {
-  /** Whether sidebar is collapsed */
+  /** Whether sidebar is collapsed (desktop) */
   isCollapsed: boolean;
   /** Toggle sidebar collapse state */
   toggle: () => void;
@@ -27,6 +27,14 @@ interface SidebarContextValue {
   collapse: () => void;
   /** Set collapse state directly */
   setCollapsed: (collapsed: boolean) => void;
+  /** Whether mobile menu is open */
+  isMobileOpen: boolean;
+  /** Toggle mobile menu */
+  toggleMobile: () => void;
+  /** Open mobile menu */
+  openMobile: () => void;
+  /** Close mobile menu */
+  closeMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | undefined>(undefined);
@@ -47,6 +55,7 @@ export function SidebarProvider({
   persist = true,
 }: SidebarProviderProps) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Load persisted state on mount
@@ -67,6 +76,17 @@ export function SidebarProvider({
     }
   }, [isCollapsed, persist, isInitialized]);
 
+  // Close mobile menu on route change or resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMobileOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const toggle = useCallback(() => {
     setIsCollapsed((prev) => !prev);
   }, []);
@@ -83,12 +103,28 @@ export function SidebarProvider({
     setIsCollapsed(collapsed);
   }, []);
 
+  const toggleMobile = useCallback(() => {
+    setIsMobileOpen((prev) => !prev);
+  }, []);
+
+  const openMobile = useCallback(() => {
+    setIsMobileOpen(true);
+  }, []);
+
+  const closeMobile = useCallback(() => {
+    setIsMobileOpen(false);
+  }, []);
+
   const value: SidebarContextValue = {
     isCollapsed,
     toggle,
     expand,
     collapse,
     setCollapsed,
+    isMobileOpen,
+    toggleMobile,
+    openMobile,
+    closeMobile,
   };
 
   return (

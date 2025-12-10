@@ -1,73 +1,74 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Loader2, CreditCard, Trash2, Star, StarOff } from 'lucide-react'
-import { toast } from 'sonner'
+/**
+ * Payment Methods List Component
+ * Displays and manages saved payment methods
+ *
+ * Design System: Clean shadcn with Gold Accent
+ * SCOPE: Business module ONLY
+ */
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, CreditCard } from 'lucide-react';
+import { toast } from 'sonner';
+import { PaymentMethodCard } from './payment-method-card';
+import { staggerContainer, staggerItem } from '@/lib/business/animation/variants';
+import { useReducedMotion } from '@/lib/business/animation/hooks';
+import { cn } from '@/lib/utils';
 
 interface PaymentMethod {
-  id: string
-  stripe_payment_method_id: string
-  payment_method_type: string
-  card_brand?: string
-  card_last4?: string
-  card_exp_month?: number
-  card_exp_year?: number
-  card_funding?: string
-  is_default: boolean
-  is_active: boolean
-  last_used_at?: string
-  created_at: string
+  id: string;
+  stripe_payment_method_id: string;
+  payment_method_type: string;
+  card_brand?: string;
+  card_last4?: string;
+  card_exp_month?: number;
+  card_exp_year?: number;
+  card_funding?: string;
+  is_default: boolean;
+  is_active: boolean;
+  last_used_at?: string;
+  created_at: string;
 }
 
 export function PaymentMethodsList() {
-  const router = useRouter()
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null)
+  const router = useRouter();
+  const prefersReducedMotion = useReducedMotion();
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPaymentMethods()
-  }, [])
+    loadPaymentMethods();
+  }, []);
 
   const loadPaymentMethods = async () => {
     try {
-      setIsLoading(true)
-      const response = await fetch('/api/business/wallet/payment-element/payment-methods')
-      const result = await response.json()
+      setIsLoading(true);
+      const response = await fetch('/api/business/wallet/payment-element/payment-methods');
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to load payment methods')
+        throw new Error(result.error || 'Failed to load payment methods');
       }
 
       // API wraps response in { data: { payment_methods } }
-      setPaymentMethods(result.data?.payment_methods || [])
+      setPaymentMethods(result.data?.payment_methods || []);
     } catch (error) {
-      console.error('Load payment methods error:', error)
-      toast.error('Failed to load payment methods')
+      console.error('Load payment methods error:', error);
+      toast.error('Failed to load payment methods');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSetDefault = async (paymentMethodId: string) => {
     try {
-      setSettingDefaultId(paymentMethodId)
+      setSettingDefaultId(paymentMethodId);
 
       const response = await fetch('/api/business/wallet/payment-element/payment-methods', {
         method: 'PATCH',
@@ -78,194 +79,135 @@ export function PaymentMethodsList() {
           payment_method_id: paymentMethodId,
           set_as_default: true,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to set default payment method')
+        throw new Error(data.error || 'Failed to set default payment method');
       }
 
-      toast.success('Default payment method updated')
-      loadPaymentMethods()
-      router.refresh()
+      toast.success('Default payment method updated');
+      loadPaymentMethods();
+      router.refresh();
     } catch (error) {
-      console.error('Set default error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to set default payment method')
+      console.error('Set default error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to set default payment method');
     } finally {
-      setSettingDefaultId(null)
+      setSettingDefaultId(null);
     }
-  }
+  };
 
   const handleDelete = async (paymentMethodId: string) => {
     try {
-      setDeletingId(paymentMethodId)
+      setDeletingId(paymentMethodId);
 
       const response = await fetch(
         `/api/business/wallet/payment-element/payment-methods?id=${paymentMethodId}`,
         {
           method: 'DELETE',
         }
-      )
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete payment method')
+        throw new Error(data.error || 'Failed to delete payment method');
       }
 
-      toast.success('Payment method deleted')
-      loadPaymentMethods()
-      router.refresh()
+      toast.success('Payment method deleted');
+      loadPaymentMethods();
+      router.refresh();
     } catch (error) {
-      console.error('Delete error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete payment method')
+      console.error('Delete error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete payment method');
     } finally {
-      setDeletingId(null)
+      setDeletingId(null);
     }
-  }
-
-  const getCardBrandIcon = (brand?: string) => {
-    // In production, you'd use actual brand logos
-    return <CreditCard className="h-8 w-8" />
-  }
-
-  const formatCardBrand = (brand?: string) => {
-    if (!brand) return 'Card'
-    return brand.charAt(0).toUpperCase() + brand.slice(1)
-  }
+  };
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (paymentMethods.length === 0) {
     return (
-      <Card>
+      <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
         <CardHeader>
-          <CardTitle>Saved Payment Methods</CardTitle>
-          <CardDescription>No payment methods saved yet</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <CreditCard className="h-5 w-5 text-primary" />
+            Payment Methods
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Payment methods will be saved automatically when you make a wallet recharge. This allows
-            for faster future transactions.
-          </p>
+          <div className="text-center py-8">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 ring-2 ring-primary/20 flex items-center justify-center mb-4">
+              <CreditCard className="h-8 w-8 text-primary" />
+            </div>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+              Payment methods will be saved automatically when you make a wallet recharge.
+            </p>
+          </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
+  const listContent = paymentMethods.map((pm) => (
+    <PaymentMethodCard
+      key={pm.id}
+      paymentMethod={pm}
+      onSetDefault={handleSetDefault}
+      onDelete={handleDelete}
+      isSettingDefault={settingDefaultId === pm.id}
+      isDeleting={deletingId === pm.id}
+    />
+  ));
+
   return (
-    <Card>
+    <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
       <CardHeader>
-        <CardTitle>Saved Payment Methods</CardTitle>
-        <CardDescription>Manage your saved payment methods for quick recharges</CardDescription>
+        <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <CreditCard className="h-5 w-5 text-primary" />
+          Payment Methods
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {paymentMethods.length} {paymentMethods.length === 1 ? 'card' : 'cards'} saved
+        </p>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {paymentMethods.map((pm) => (
-          <div
-            key={pm.id}
-            className="flex items-center justify-between rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+      <CardContent>
+        {prefersReducedMotion ? (
+          <div className="space-y-3">{listContent}</div>
+        ) : (
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="space-y-3"
           >
-            {/* Payment Method Info */}
-            <div className="flex items-center gap-4">
-              <div className="text-muted-foreground">{getCardBrandIcon(pm.card_brand)}</div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">
-                    {formatCardBrand(pm.card_brand)} •••• {pm.card_last4}
-                  </p>
-                  {pm.is_default && (
-                    <Badge variant="secondary" className="text-xs">
-                      Default
-                    </Badge>
-                  )}
-                  {pm.card_funding && (
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {pm.card_funding}
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                  {pm.card_exp_month && pm.card_exp_year && (
-                    <span>
-                      Expires {pm.card_exp_month.toString().padStart(2, '0')}/{pm.card_exp_year}
-                    </span>
-                  )}
-                  {pm.last_used_at && (
-                    <span>Last used {new Date(pm.last_used_at).toLocaleDateString()}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              {!pm.is_default && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleSetDefault(pm.id)}
-                  disabled={settingDefaultId === pm.id}
-                >
-                  {settingDefaultId === pm.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Setting...
-                    </>
-                  ) : (
-                    <>
-                      <Star className="mr-2 h-4 w-4" />
-                      Set Default
-                    </>
-                  )}
-                </Button>
-              )}
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={deletingId === pm.id}
-                  >
-                    {deletingId === pm.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Payment Method?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this payment method? This action cannot be
-                      undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDelete(pm.id)}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        ))}
+            {paymentMethods.map((pm) => (
+              <motion.div key={pm.id} variants={staggerItem}>
+                <PaymentMethodCard
+                  paymentMethod={pm}
+                  onSetDefault={handleSetDefault}
+                  onDelete={handleDelete}
+                  isSettingDefault={settingDefaultId === pm.id}
+                  isDeleting={deletingId === pm.id}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }
