@@ -5,8 +5,11 @@
  * SCOPE: Business module ONLY
  */
 
+'use client';
+
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useDomainInfo } from '@/lib/business/hooks/use-domain-info';
 
 type AuthPageVariant = 'login' | 'signup' | 'forgot-password' | 'reset-password';
 
@@ -50,6 +53,14 @@ const linkConfig: Record<AuthPageVariant, {
 
 export function AuthFooterLinks({ variant, className }: AuthFooterLinksProps) {
   const config = linkConfig[variant];
+  const { isMainDomain, isLoading } = useDomainInfo();
+
+  // Hide signup link on custom domains and subdomains
+  // Signup should only be visible on main platform domain (and localhost for dev)
+  // This prevents users from trying to sign up on tenant portals
+  if (variant === 'login' && !isMainDomain && !isLoading) {
+    return null;
+  }
 
   // Handle single link config
   if (!Array.isArray(config)) {

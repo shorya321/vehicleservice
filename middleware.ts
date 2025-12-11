@@ -128,6 +128,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(redirectPath, request.url))
     }
 
+    // Block signup routes on custom domains and subdomains
+    // Signup should only be allowed on main platform domain
+    // Business users must register on the main website first
+    if (pathname.startsWith('/business/signup')) {
+      console.log('Signup blocked on custom domain/subdomain, redirecting to login')
+      return NextResponse.redirect(new URL('/business/login', request.url))
+    }
+
     // Check if current path is allowed on custom domains
     if (!isAllowedOnCustomDomain(pathname)) {
       // Redirect disallowed routes to business portal
