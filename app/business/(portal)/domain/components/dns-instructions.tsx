@@ -9,16 +9,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Code, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getVercelCNAME } from '@/lib/business/domain-utils';
 
 interface DNSInstructionsProps {
   customDomain: string;
   verificationToken: string | null;
+  cnameTarget?: string; // Optional - auto-fetched from Vercel API
 }
 
-export function DNSInstructions({ customDomain, verificationToken }: DNSInstructionsProps) {
-  const cnameTarget = getVercelCNAME();
+export function DNSInstructions({ customDomain, verificationToken, cnameTarget = 'cname.vercel-dns.com' }: DNSInstructionsProps) {
   const txtRecordName = `_verify.${customDomain}`;
 
   return (

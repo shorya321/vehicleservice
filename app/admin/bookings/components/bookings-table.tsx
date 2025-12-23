@@ -31,7 +31,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   MoreHorizontal, 
   Eye, 
@@ -198,18 +197,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     }
   }
 
-  const getInitials = (name: string | null | undefined, email: string) => {
-    if (name) {
-      return name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    }
-    return email.slice(0, 2).toUpperCase()
-  }
-
   return (
     <>
       <div className="space-y-4">
@@ -235,7 +222,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 </TableHead>
                 <TableHead className="w-[120px]">Booking #</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Customer</TableHead>
                 <TableHead>Date & Time</TableHead>
                 <TableHead>Route</TableHead>
                 <TableHead>Vehicle</TableHead>
@@ -249,7 +235,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="h-[400px] p-0">
+                  <TableCell colSpan={11} className="h-[400px] p-0">
                     <EmptyState
                       icon={Car}
                       title="No Bookings Found"
@@ -282,24 +268,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </TableCell>
                     <TableCell>
                       {getBookingTypeBadge(booking.bookingType)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={booking.customer?.avatar_url || ''} />
-                          <AvatarFallback>
-                            {getInitials(booking.customer?.full_name, booking.customer?.email || '')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="text-sm">
-                          <div className="font-medium">
-                            {booking.customer?.full_name || 'N/A'}
-                          </div>
-                          <div className="text-muted-foreground">
-                            {booking.customer?.email}
-                          </div>
-                        </div>
-                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm">

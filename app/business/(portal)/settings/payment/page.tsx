@@ -59,7 +59,7 @@ export default async function PaymentSettingsPage() {
   };
 
   return (
-    <PageContainer maxWidth="narrow">
+    <PageContainer>
       {/* Page Header */}
       <PageHeader
         title="Payment Settings"

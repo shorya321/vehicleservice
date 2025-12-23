@@ -16,6 +16,7 @@ import {
 import { PageHeader, PageContainer } from '@/components/business/layout';
 import { DomainConfiguration } from './components/domain-configuration';
 import { DNSInstructions } from './components/dns-instructions';
+import { getVercelCNAMEAsync } from '@/lib/business/domain-utils';
 
 export const metadata: Metadata = {
   title: 'Custom Domain | Business Portal',
@@ -59,6 +60,9 @@ export default async function CustomDomainPage() {
   }
 
   const businessAccount = businessUser.business_accounts;
+
+  // Fetch project-specific CNAME from Vercel API (cached for 1 hour)
+  const cnameTarget = await getVercelCNAMEAsync();
 
   return (
     <PageContainer>
@@ -113,6 +117,7 @@ export default async function CustomDomainPage() {
         <DNSInstructions
           customDomain={businessAccount.custom_domain}
           verificationToken={businessAccount.domain_verification_token}
+          cnameTarget={cnameTarget}
         />
       )}
     </PageContainer>

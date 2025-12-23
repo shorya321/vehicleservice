@@ -288,3 +288,72 @@ export async function checkDomainStatus(domain: string): Promise<{
 export function isVercelConfigured(): boolean {
   return !!(process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID);
 }
+
+/**
+ * Get project's recommended CNAME from Vercel API
+ * Uses domain config endpoint to get project-specific CNAME
+ *
+ * @returns The recommended CNAME value or fallback
+ *
+ * @example
+ * ```typescript
+ * const cname = await getProjectRecommendedCNAME();
+ * // Returns: 'b7479c1ebf87ff02.vercel-dns-017.com' or 'cname.vercel-dns.com'
+ * ```
+ */
+export async function getProjectRecommendedCNAME(): Promise<string> {
+  const fallback = 'cname.vercel-dns.com';
+
+  try {
+    if (!isVercelConfigured()) {
+      return fallback;
+    }
+
+    const projectId = getProjectId();
+
+    // Get first domain from project to fetch recommended CNAME
+    const domainsUrl = buildVercelUrl(`/v9/projects/${projectId}/domains?limit=1`);
+    const domainsResponse = await fetch(domainsUrl, {
+      method: 'GET',
+      headers: getVercelHeaders(),
+      cache: 'force-cache',
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    } as RequestInit);
+
+    if (!domainsResponse.ok) {
+      return fallback;
+    }
+
+    const domainsData = await domainsResponse.json();
+
+    if (!domainsData.domains?.length) {
+      return fallback;
+    }
+
+    // Get domain config which includes recommendedCNAME
+    const domain = domainsData.domains[0].name;
+    const configUrl = buildVercelUrl(`/v6/domains/${domain}/config`);
+    const configResponse = await fetch(configUrl, {
+      method: 'GET',
+      headers: getVercelHeaders(),
+      cache: 'force-cache',
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    } as RequestInit);
+
+    if (!configResponse.ok) {
+      return fallback;
+    }
+
+    const configData = await configResponse.json();
+
+    // Get rank 1 (preferred) CNAME
+    const recommended = configData.recommendedCNAME?.find(
+      (c: { rank: number; value: string }) => c.rank === 1
+    );
+
+    return recommended?.value || fallback;
+  } catch (error) {
+    console.error('Error fetching recommended CNAME:', error);
+    return fallback;
+  }
+}

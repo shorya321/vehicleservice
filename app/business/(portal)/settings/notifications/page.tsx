@@ -4,10 +4,11 @@
  * Business Notification Preferences Settings Page
  * Allows businesses to configure wallet notification preferences
  *
- * Design System: Premium Indigo - Stripe/Linear inspired
+ * Design System: Clean shadcn with Gold Accent - matches dashboard styling
  */
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,20 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { PageHeader, PageContainer } from '@/components/business/layout';
 import { toast } from 'sonner';
-import { Loader2, Bell, Mail, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/business/animation/hooks';
+import {
+  Loader2,
+  Bell,
+  Mail,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  ShieldAlert,
+  TrendingDown,
+  FileText,
+  RefreshCw,
+} from 'lucide-react';
 
 interface NotificationConfig {
   enabled: boolean;
@@ -34,11 +48,88 @@ interface NotificationPreferences {
   monthly_statement?: NotificationConfig;
 }
 
+// Notification type configurations with semantic colors
+const notificationTypes = {
+  low_balance_alert: {
+    icon: AlertTriangle,
+    title: 'Low Balance Alert',
+    description: 'Get notified when your wallet balance falls below a threshold',
+    iconBg: 'bg-amber-500/10',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+  },
+  transaction_completed: {
+    icon: CheckCircle2,
+    title: 'Transaction Completed',
+    description: 'Receive confirmation for every wallet transaction',
+    iconBg: 'bg-emerald-500/10',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+  },
+  auto_recharge_success: {
+    icon: RefreshCw,
+    title: 'Auto-Recharge Success',
+    description: 'Get notified when automatic recharge completes successfully',
+    iconBg: 'bg-emerald-500/10',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+  },
+  auto_recharge_failed: {
+    icon: XCircle,
+    title: 'Auto-Recharge Failed',
+    description: 'Get notified when automatic recharge fails (always on)',
+    iconBg: 'bg-red-500/10',
+    iconColor: 'text-red-600 dark:text-red-400',
+  },
+  wallet_frozen: {
+    icon: ShieldAlert,
+    title: 'Wallet Frozen',
+    description: 'Get notified when your wallet is frozen (always on)',
+    iconBg: 'bg-red-500/10',
+    iconColor: 'text-red-600 dark:text-red-400',
+    disabled: true,
+  },
+  spending_limit_reached: {
+    icon: TrendingDown,
+    title: 'Spending Limit Reached',
+    description: 'Get notified when you reach your spending limits',
+    iconBg: 'bg-amber-500/10',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+  },
+  monthly_statement: {
+    icon: FileText,
+    title: 'Monthly Statement',
+    description: 'Receive a comprehensive monthly wallet statement',
+    iconBg: 'bg-sky-500/10',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    emailNote: 'Sent on the 1st of each month via email',
+  },
+};
+
 export default function NotificationPreferencesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [preferences, setPreferences] = useState<NotificationPreferences>({});
   const [hasChanges, setHasChanges] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.06,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+    },
+  };
 
   // Fetch current preferences
   useEffect(() => {
@@ -103,6 +194,15 @@ export default function NotificationPreferencesPage() {
     }
   };
 
+  // Helper to check if a notification is enabled
+  const isEnabled = (key: keyof NotificationPreferences) => {
+    if (key === 'wallet_frozen') return true; // Always on
+    if (key === 'auto_recharge_failed' || key === 'spending_limit_reached') {
+      return preferences[key]?.enabled !== false;
+    }
+    return preferences[key]?.enabled || false;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -118,233 +218,327 @@ export default function NotificationPreferencesPage() {
         description="Configure how and when you receive wallet notifications"
       />
 
-      {/* Low Balance Alert */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Low Balance Alert
-              </CardTitle>
-              <CardDescription>
-                Get notified when your wallet balance falls below a threshold
-              </CardDescription>
-            </div>
-            <Switch
-              checked={preferences.low_balance_alert?.enabled || false}
-              onCheckedChange={(checked) =>
-                updatePreference('low_balance_alert', { enabled: checked })
-              }
-            />
-          </div>
-        </CardHeader>
-        {preferences.low_balance_alert?.enabled && (
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="low-balance-threshold">Alert Threshold (AED)</Label>
-              <Input
-                id="low-balance-threshold"
-                type="number"
-                min="0"
-                step="0.01"
-                value={preferences.low_balance_alert?.threshold || 0}
-                onChange={(e) =>
-                  updatePreference('low_balance_alert', {
-                    threshold: parseFloat(e.target.value) || 0,
-                  })
-                }
-                className="mt-2"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                You'll receive an alert when your balance drops below this amount
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Notifications sent via email</span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+      <motion.div
+        variants={prefersReducedMotion ? undefined : containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-4"
+      >
+        {/* Low Balance Alert */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.low_balance_alert.iconBg
+                  )}>
+                    <AlertTriangle className={cn('h-5 w-5', notificationTypes.low_balance_alert.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.low_balance_alert.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.low_balance_alert.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch
+                  checked={isEnabled('low_balance_alert')}
+                  onCheckedChange={(checked) =>
+                    updatePreference('low_balance_alert', { enabled: checked })
+                  }
+                />
+              </div>
+            </CardHeader>
+            {isEnabled('low_balance_alert') && (
+              <CardContent className="space-y-4 pt-0">
+                <div>
+                  <Label htmlFor="low-balance-threshold" className="text-sm font-medium text-foreground">
+                    Alert Threshold (AED)
+                  </Label>
+                  <Input
+                    id="low-balance-threshold"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={preferences.low_balance_alert?.threshold || 0}
+                    onChange={(e) =>
+                      updatePreference('low_balance_alert', {
+                        threshold: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className="mt-2 bg-background"
+                  />
+                  <p className="mt-1.5 text-sm text-muted-foreground">
+                    You&apos;ll receive an alert when your balance drops below this amount
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>Notifications sent via email</span>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </motion.div>
 
-      {/* Transaction Completed */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                Transaction Completed
-              </CardTitle>
-              <CardDescription>
-                Receive confirmation for every wallet transaction
-              </CardDescription>
-            </div>
-            <Switch
-              checked={preferences.transaction_completed?.enabled || false}
-              onCheckedChange={(checked) =>
-                updatePreference('transaction_completed', { enabled: checked })
-              }
-            />
-          </div>
-        </CardHeader>
-        {preferences.transaction_completed?.enabled && (
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Notifications sent via email</span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+        {/* Transaction Completed */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.transaction_completed.iconBg
+                  )}>
+                    <CheckCircle2 className={cn('h-5 w-5', notificationTypes.transaction_completed.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.transaction_completed.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.transaction_completed.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch
+                  checked={isEnabled('transaction_completed')}
+                  onCheckedChange={(checked) =>
+                    updatePreference('transaction_completed', { enabled: checked })
+                  }
+                />
+              </div>
+            </CardHeader>
+            {isEnabled('transaction_completed') && (
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>Notifications sent via email</span>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </motion.div>
 
-      {/* Auto-Recharge Success */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>Auto-Recharge Success</CardTitle>
-              <CardDescription>
-                Get notified when automatic recharge completes successfully
-              </CardDescription>
-            </div>
-            <Switch
-              checked={preferences.auto_recharge_success?.enabled || false}
-              onCheckedChange={(checked) =>
-                updatePreference('auto_recharge_success', { enabled: checked })
-              }
-            />
-          </div>
-        </CardHeader>
-        {preferences.auto_recharge_success?.enabled && (
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Notifications sent via email</span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+        {/* Auto-Recharge Success */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.auto_recharge_success.iconBg
+                  )}>
+                    <RefreshCw className={cn('h-5 w-5', notificationTypes.auto_recharge_success.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.auto_recharge_success.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.auto_recharge_success.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch
+                  checked={isEnabled('auto_recharge_success')}
+                  onCheckedChange={(checked) =>
+                    updatePreference('auto_recharge_success', { enabled: checked })
+                  }
+                />
+              </div>
+            </CardHeader>
+            {isEnabled('auto_recharge_success') && (
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>Notifications sent via email</span>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </motion.div>
 
-      {/* Auto-Recharge Failed */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>Auto-Recharge Failed</CardTitle>
-              <CardDescription>
-                Get notified when automatic recharge fails (always on)
-              </CardDescription>
-            </div>
-            <Switch
-              checked={preferences.auto_recharge_failed?.enabled !== false}
-              onCheckedChange={(checked) =>
-                updatePreference('auto_recharge_failed', { enabled: checked })
-              }
-            />
-          </div>
-        </CardHeader>
-        {preferences.auto_recharge_failed?.enabled !== false && (
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Notifications sent via email</span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+        {/* Auto-Recharge Failed */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.auto_recharge_failed.iconBg
+                  )}>
+                    <XCircle className={cn('h-5 w-5', notificationTypes.auto_recharge_failed.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.auto_recharge_failed.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.auto_recharge_failed.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch
+                  checked={isEnabled('auto_recharge_failed')}
+                  onCheckedChange={(checked) =>
+                    updatePreference('auto_recharge_failed', { enabled: checked })
+                  }
+                />
+              </div>
+            </CardHeader>
+            {isEnabled('auto_recharge_failed') && (
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>Notifications sent via email</span>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </motion.div>
 
-      {/* Wallet Frozen */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>Wallet Frozen</CardTitle>
-              <CardDescription>
-                Get notified when your wallet is frozen (always on)
-              </CardDescription>
-            </div>
-            <Switch checked={true} disabled />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4" />
-            <span>Critical notifications cannot be disabled</span>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Wallet Frozen */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.wallet_frozen.iconBg
+                  )}>
+                    <ShieldAlert className={cn('h-5 w-5', notificationTypes.wallet_frozen.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.wallet_frozen.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.wallet_frozen.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch checked={true} disabled />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Mail className="h-4 w-4" />
+                <span>Critical notifications cannot be disabled</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Spending Limit Reached */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>Spending Limit Reached</CardTitle>
-              <CardDescription>
-                Get notified when you reach your spending limits
-              </CardDescription>
-            </div>
-            <Switch
-              checked={preferences.spending_limit_reached?.enabled !== false}
-              onCheckedChange={(checked) =>
-                updatePreference('spending_limit_reached', { enabled: checked })
-              }
-            />
-          </div>
-        </CardHeader>
-        {preferences.spending_limit_reached?.enabled !== false && (
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Notifications sent via email</span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+        {/* Spending Limit Reached */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.spending_limit_reached.iconBg
+                  )}>
+                    <TrendingDown className={cn('h-5 w-5', notificationTypes.spending_limit_reached.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.spending_limit_reached.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.spending_limit_reached.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch
+                  checked={isEnabled('spending_limit_reached')}
+                  onCheckedChange={(checked) =>
+                    updatePreference('spending_limit_reached', { enabled: checked })
+                  }
+                />
+              </div>
+            </CardHeader>
+            {isEnabled('spending_limit_reached') && (
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>Notifications sent via email</span>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </motion.div>
 
-      {/* Monthly Statement */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>Monthly Statement</CardTitle>
-              <CardDescription>
-                Receive a comprehensive monthly wallet statement
-              </CardDescription>
-            </div>
-            <Switch
-              checked={preferences.monthly_statement?.enabled || false}
-              onCheckedChange={(checked) =>
-                updatePreference('monthly_statement', { enabled: checked })
-              }
-            />
-          </div>
-        </CardHeader>
-        {preferences.monthly_statement?.enabled && (
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Sent on the 1st of each month via email</span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+        {/* Monthly Statement */}
+        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
+          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                    notificationTypes.monthly_statement.iconBg
+                  )}>
+                    <FileText className={cn('h-5 w-5', notificationTypes.monthly_statement.iconColor)} />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {notificationTypes.monthly_statement.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      {notificationTypes.monthly_statement.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Switch
+                  checked={isEnabled('monthly_statement')}
+                  onCheckedChange={(checked) =>
+                    updatePreference('monthly_statement', { enabled: checked })
+                  }
+                />
+              </div>
+            </CardHeader>
+            {isEnabled('monthly_statement') && (
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>Sent on the 1st of each month via email</span>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </motion.div>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={!hasChanges || saving}>
-          {saving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Preferences'
-          )}
-        </Button>
-      </div>
+        {/* Save Button */}
+        <motion.div
+          variants={prefersReducedMotion ? undefined : itemVariants}
+          className="flex justify-end pt-2"
+        >
+          <Button
+            onClick={handleSave}
+            disabled={!hasChanges || saving}
+            className="shadow-sm"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Preferences'
+            )}
+          </Button>
+        </motion.div>
+      </motion.div>
     </PageContainer>
   );
 }

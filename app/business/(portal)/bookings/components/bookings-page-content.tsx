@@ -9,6 +9,7 @@
  */
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -17,12 +18,16 @@ import {
   ArrowRight,
   MapPin,
   ChevronRight,
-  Eye,
   Filter,
   TrendingUp,
   Clock,
   CheckCircle2,
   DollarSign,
+  Trash2,
+  Loader2,
+  AlertTriangle,
+  MoreHorizontal,
+  Pencil,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -31,6 +36,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/app/business/(portal)/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -39,6 +61,7 @@ import {
   SelectValue,
 } from '@/app/business/(portal)/components/ui/select';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
+import { toast } from 'sonner';
 
 interface Booking {
   id: string;
@@ -85,9 +108,14 @@ export function BookingsPageContent({
   totalCount,
   pendingCount,
 }: BookingsPageContentProps) {
+  const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
 
   // Calculate stats
   const completedCount = bookings.filter(
@@ -107,6 +135,77 @@ export function BookingsPageContent({
 
     return matchesSearch && matchesStatus;
   });
+
+  // Selection handlers
+  const toggleSelectAll = () => {
+    if (selectedBookings.size === filteredBookings.length) {
+      setSelectedBookings(new Set());
+    } else {
+      setSelectedBookings(new Set(filteredBookings.map((b) => b.id)));
+    }
+  };
+
+  const toggleSelectBooking = (bookingId: string) => {
+    const newSelected = new Set(selectedBookings);
+    if (newSelected.has(bookingId)) {
+      newSelected.delete(bookingId);
+    } else {
+      newSelected.add(bookingId);
+    }
+    setSelectedBookings(newSelected);
+  };
+
+  const isAllSelected = filteredBookings.length > 0 && selectedBookings.size === filteredBookings.length;
+  const isSomeSelected = selectedBookings.size > 0 && selectedBookings.size < filteredBookings.length;
+
+  // Delete handlers
+  const handleDeleteSingle = async (bookingId: string) => {
+    setBookingToDelete(bookingId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedBookings.size === 0) return;
+    setBookingToDelete(null);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      if (bookingToDelete) {
+        // Single delete
+        const response = await fetch(`/api/business/bookings/${bookingToDelete}`, {
+          method: 'DELETE',
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete booking');
+        }
+        toast.success('Booking deleted successfully');
+      } else {
+        // Bulk delete
+        const response = await fetch('/api/business/bookings/bulk-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_ids: Array.from(selectedBookings) }),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete bookings');
+        }
+        toast.success(`${result.data.deleted_count} booking(s) deleted successfully`);
+        setSelectedBookings(new Set());
+      }
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setBookingToDelete(null);
+    }
+  };
 
   // Refined animations - faster, subtler
   const containerVariants = {
@@ -308,6 +407,19 @@ export function BookingsPageContent({
           </SelectContent>
         </Select>
 
+        {/* Bulk Delete Button - Shows when items selected */}
+        {selectedBookings.size > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleBulkDelete}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete ({selectedBookings.size})
+          </Button>
+        )}
+
         {/* New Booking Button */}
         <Button asChild className="ml-auto gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
           <Link href="/business/bookings/new">
@@ -333,7 +445,20 @@ export function BookingsPageContent({
                 <div className="hidden md:block">
                   {/* Table Header */}
                   <div className="bg-muted/50 border-b border-border">
-                    <div className="grid grid-cols-[1fr,1fr,1.5fr,100px,100px,40px] px-5 py-3">
+                    <div className="grid grid-cols-[40px,1fr,1fr,1.5fr,100px,100px,80px] px-5 py-3 items-center">
+                      <div className="flex items-center justify-center">
+                        <Checkbox
+                          checked={isAllSelected}
+                          ref={(el) => {
+                            if (el) {
+                              (el as HTMLButtonElement).dataset.state = isSomeSelected ? 'indeterminate' : isAllSelected ? 'checked' : 'unchecked';
+                            }
+                          }}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Select all"
+                          className="border-border"
+                        />
+                      </div>
                       <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
                         Date
                       </span>
@@ -349,7 +474,9 @@ export function BookingsPageContent({
                       <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground text-right">
                         Amount
                       </span>
-                      <span></span>
+                      <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground text-center">
+                        Actions
+                      </span>
                     </div>
                   </div>
 
@@ -361,6 +488,9 @@ export function BookingsPageContent({
                         booking={booking}
                         index={index}
                         prefersReducedMotion={prefersReducedMotion}
+                        isSelected={selectedBookings.has(booking.id)}
+                        onToggleSelect={() => toggleSelectBooking(booking.id)}
+                        onDelete={() => handleDeleteSingle(booking.id)}
                       />
                     ))}
                   </div>
@@ -374,6 +504,9 @@ export function BookingsPageContent({
                       booking={booking}
                       index={index}
                       prefersReducedMotion={prefersReducedMotion}
+                      isSelected={selectedBookings.has(booking.id)}
+                      onToggleSelect={() => toggleSelectBooking(booking.id)}
+                      onDelete={() => handleDeleteSingle(booking.id)}
                     />
                   ))}
                 </div>
@@ -382,6 +515,57 @@ export function BookingsPageContent({
           </div>
         </Card>
       </motion.div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) {
+            setBookingToDelete(null);
+            // Fix for DropdownMenu + AlertDialog pointer-events race condition
+            setTimeout(() => {
+              if (document.body.style.pointerEvents === 'none') {
+                document.body.style.pointerEvents = '';
+              }
+            }, 300);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {bookingToDelete ? 'Delete Booking' : `Delete ${selectedBookings.size} Booking(s)`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {bookingToDelete
+                ? 'Are you sure you want to delete this booking? This action cannot be undone. If the booking was charged, the amount will be refunded to your wallet.'
+                : `Are you sure you want to delete ${selectedBookings.size} booking(s)? This action cannot be undone. Any charged amounts will be refunded to your wallet.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -391,9 +575,12 @@ interface TableRowProps {
   booking: Booking;
   index: number;
   prefersReducedMotion: boolean;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  onDelete: () => void;
 }
 
-function TableRow({ booking, index, prefersReducedMotion }: TableRowProps) {
+function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSelect, onDelete }: TableRowProps) {
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDate = pickupDate.toLocaleDateString('en-US', {
     month: 'short',
@@ -412,53 +599,88 @@ function TableRow({ booking, index, prefersReducedMotion }: TableRowProps) {
       initial={prefersReducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, delay: index * 0.03 }}
+      className={cn(
+        'group grid grid-cols-[40px,1fr,1fr,1.5fr,100px,100px,80px] px-5 py-4 items-center hover:bg-muted/50 border-l-2 border-transparent hover:border-l-primary transition-all duration-150',
+        isSelected && 'bg-primary/5'
+      )}
     >
-      <Link
-        href={`/business/bookings/${booking.id}`}
-        className="group grid grid-cols-[1fr,1fr,1.5fr,100px,100px,40px] px-5 py-4 items-center hover:bg-muted/50 border-l-2 border-transparent hover:border-l-primary transition-all duration-150"
-      >
-        {/* Date */}
-        <div>
-          <p className="text-sm font-medium text-foreground">
-            {formattedDate}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {formattedTime}
-          </p>
-        </div>
+      {/* Checkbox */}
+      <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onToggleSelect}
+          aria-label={`Select booking ${booking.booking_number}`}
+          className="border-border"
+        />
+      </div>
 
-        {/* Customer */}
-        <div>
-          <p className="text-sm text-foreground group-hover:text-primary transition-colors">
-            {booking.customer_name}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {booking.booking_number}
-          </p>
-        </div>
-
-        {/* Route */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="truncate max-w-[120px]">
-            {booking.from_locations?.name || 'N/A'}
-          </span>
-          <ArrowRight className="h-3 w-3 text-primary/50 flex-shrink-0" />
-          <span className="truncate max-w-[120px]">
-            {booking.to_locations?.name || 'N/A'}
-          </span>
-        </div>
-
-        {/* Status */}
-        <StatusBadge status={mapBookingStatus(booking.booking_status)} />
-
-        {/* Amount */}
-        <span className="text-sm font-bold text-primary text-right">
-          {formatCurrency(booking.total_price)}
-        </span>
-
-        {/* View Icon */}
-        <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors justify-self-end" />
+      {/* Date */}
+      <Link href={`/business/bookings/${booking.id}`} className="block">
+        <p className="text-sm font-medium text-foreground">
+          {formattedDate}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {formattedTime}
+        </p>
       </Link>
+
+      {/* Customer */}
+      <Link href={`/business/bookings/${booking.id}`} className="block">
+        <p className="text-sm text-foreground group-hover:text-primary transition-colors">
+          {booking.customer_name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {booking.booking_number}
+        </p>
+      </Link>
+
+      {/* Route */}
+      <Link href={`/business/bookings/${booking.id}`} className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span className="truncate max-w-[120px]">
+          {booking.from_locations?.name || 'N/A'}
+        </span>
+        <ArrowRight className="h-3 w-3 text-primary/50 flex-shrink-0" />
+        <span className="truncate max-w-[120px]">
+          {booking.to_locations?.name || 'N/A'}
+        </span>
+      </Link>
+
+      {/* Status */}
+      <StatusBadge status={mapBookingStatus(booking.booking_status)} />
+
+      {/* Amount */}
+      <span className="text-sm font-bold text-primary text-right">
+        {formatCurrency(booking.total_price)}
+      </span>
+
+      {/* Actions */}
+      <div className="flex items-center justify-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/business/bookings/${booking.id}`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </motion.div>
   );
 }
@@ -518,12 +740,18 @@ interface MobileBookingCardProps {
   booking: Booking;
   index: number;
   prefersReducedMotion: boolean;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  onDelete: () => void;
 }
 
 function MobileBookingCard({
   booking,
   index,
   prefersReducedMotion,
+  isSelected,
+  onToggleSelect,
+  onDelete,
 }: MobileBookingCardProps) {
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDateTime = pickupDate.toLocaleDateString('en-US', {
@@ -545,45 +773,80 @@ function MobileBookingCard({
         ease: [0.25, 0.1, 0.25, 1],
       }}
     >
-      <Link href={`/business/bookings/${booking.id}`} className="block group">
-        <Card className="bg-card border border-border rounded-xl active:bg-muted/50 transition-all duration-200 hover:shadow-md">
-          <CardContent className="p-4">
-            {/* Header: Status + Date */}
-            <div className="flex items-center justify-between mb-3">
+      <Card className={cn(
+        'bg-card border border-border rounded-xl transition-all duration-200 hover:shadow-md',
+        isSelected && 'ring-2 ring-primary/50 bg-primary/5'
+      )}>
+        <CardContent className="p-4">
+          {/* Header: Checkbox + Status + Date */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={onToggleSelect}
+                  aria-label={`Select booking ${booking.booking_number}`}
+                  className="border-border"
+                />
+              </div>
               <StatusBadge status={mapBookingStatus(booking.booking_status)} />
-              <span className="text-xs text-muted-foreground">
-                {formattedDateTime}
-              </span>
             </div>
+            <span className="text-xs text-muted-foreground">
+              {formattedDateTime}
+            </span>
+          </div>
 
-            {/* Customer */}
-            <div className="mb-3">
-              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                {booking.customer_name}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {booking.booking_number}
-              </p>
-            </div>
+          {/* Customer */}
+          <Link href={`/business/bookings/${booking.id}`} className="block mb-3">
+            <p className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+              {booking.customer_name}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {booking.booking_number}
+            </p>
+          </Link>
 
-            {/* Route */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-              <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-              <span className="truncate">{booking.from_locations?.name || 'N/A'}</span>
-              <ArrowRight className="h-3 w-3 text-primary/50 flex-shrink-0" />
-              <span className="truncate">{booking.to_locations?.name || 'N/A'}</span>
-            </div>
+          {/* Route */}
+          <Link href={`/business/bookings/${booking.id}`} className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+            <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+            <span className="truncate">{booking.from_locations?.name || 'N/A'}</span>
+            <ArrowRight className="h-3 w-3 text-primary/50 flex-shrink-0" />
+            <span className="truncate">{booking.to_locations?.name || 'N/A'}</span>
+          </Link>
 
-            {/* Footer: Price */}
-            <div className="flex items-center justify-between pt-3 border-t border-border">
-              <span className="text-lg font-bold text-primary">
-                {formatCurrency(booking.total_price)}
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
+          {/* Footer: Price + Actions */}
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            <span className="text-lg font-bold text-primary">
+              {formatCurrency(booking.total_price)}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/business/bookings/${booking.id}`}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

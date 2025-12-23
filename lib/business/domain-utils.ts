@@ -90,11 +90,38 @@ export function isValidSubdomain(subdomain: string): boolean {
 }
 
 /**
- * Get Vercel CNAME target from environment
+ * Get Vercel CNAME target (sync version - uses env var only)
  * @returns CNAME target for DNS configuration
+ * @deprecated Use getVercelCNAMEAsync() for automatic project-specific CNAME
  */
 export function getVercelCNAME(): string {
   return process.env.VERCEL_CNAME || 'cname.vercel-dns.com';
+}
+
+/**
+ * Get Vercel CNAME target (async version - fetches from Vercel API)
+ * Priority: ENV var > Vercel API > Default fallback
+ * @returns CNAME target for DNS configuration
+ */
+export async function getVercelCNAMEAsync(): Promise<string> {
+  // 1. Check env var first (allows override)
+  if (process.env.VERCEL_CNAME) {
+    return process.env.VERCEL_CNAME;
+  }
+
+  // 2. Fetch from Vercel API (server-side only)
+  try {
+    const { getProjectRecommendedCNAME, isVercelConfigured } = await import('@/lib/vercel/api');
+
+    if (isVercelConfigured()) {
+      return await getProjectRecommendedCNAME();
+    }
+  } catch (error) {
+    console.error('Error fetching CNAME from Vercel API:', error);
+  }
+
+  // 3. Default fallback
+  return 'cname.vercel-dns.com';
 }
 
 /**
