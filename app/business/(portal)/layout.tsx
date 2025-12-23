@@ -62,7 +62,14 @@ export default async function BusinessPortalLayout({
   }
 
   return (
-    <BusinessThemeProvider defaultTheme="dark">
+    <BusinessThemeProvider
+      defaultTheme="dark"
+      brandingColors={{
+        primary: businessUser.business_accounts.primary_color,
+        secondary: businessUser.business_accounts.secondary_color,
+        accent: businessUser.business_accounts.accent_color,
+      }}
+    >
       <SidebarProvider>
         <div className="min-h-screen bg-background">
           {/* Skip Navigation Link - Accessibility */}

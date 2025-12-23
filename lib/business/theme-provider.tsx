@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { hexToHsl } from "@/lib/business/branding-utils";
 
 /**
  * Business Portal Theme Provider
@@ -10,11 +11,18 @@ import { createContext, useContext, useEffect, useState } from "react";
  * - System preference detection
  * - LocalStorage persistence
  * - Smooth transitions
+ * - Branding color application (overrides root layout inline styles)
  *
  * SCOPE: Business module ONLY
  */
 
 type Theme = "dark" | "light" | "system";
+
+interface BrandingColors {
+  primary?: string | null;
+  secondary?: string | null;
+  accent?: string | null;
+}
 
 interface ThemeProviderContextValue {
   theme: Theme;
@@ -29,16 +37,25 @@ const ThemeProviderContext = createContext<ThemeProviderContextValue | undefined
 
 const STORAGE_KEY = "business-theme";
 
+// Default business portal colors (gold theme)
+const DEFAULT_BRANDING_COLORS = {
+  primary: "#C6AA88",     // Gold
+  secondary: "#14B8A6",   // Teal
+  accent: "#06B6D4",      // Cyan
+};
+
 interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
+  brandingColors?: BrandingColors;
 }
 
 export function BusinessThemeProvider({
   children,
   defaultTheme = "dark",
   storageKey = STORAGE_KEY,
+  brandingColors,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
@@ -84,6 +101,40 @@ export function BusinessThemeProvider({
     // Also set a data attribute for more flexible styling
     root.setAttribute("data-business-theme", resolved);
   }, [theme, mounted]);
+
+  // Apply branding colors on mount - this OVERRIDES root layout inline styles
+  // This ensures business portal uses its own gold theme regardless of custom domain overrides
+  useEffect(() => {
+    if (!mounted) return;
+
+    const root = document.documentElement;
+
+    // Determine which colors to use: provided branding or defaults
+    const primary = brandingColors?.primary || DEFAULT_BRANDING_COLORS.primary;
+    const secondary = brandingColors?.secondary || DEFAULT_BRANDING_COLORS.secondary;
+    const accent = brandingColors?.accent || DEFAULT_BRANDING_COLORS.accent;
+
+    // Apply business portal branding colors as CSS variables
+    // These override any inline styles set by root layout for custom domains
+    root.style.setProperty("--primary", hexToHsl(primary));
+    root.style.setProperty("--primary-foreground", "240 10% 4%"); // Dark text on gold
+    root.style.setProperty("--secondary", hexToHsl(secondary));
+    root.style.setProperty("--accent", hexToHsl(accent));
+    root.style.setProperty("--ring", hexToHsl(primary));
+
+    // Set data attribute to indicate business portal branding is active
+    root.setAttribute("data-business-branding", "true");
+
+    // Cleanup: remove branding styles when component unmounts
+    return () => {
+      root.style.removeProperty("--primary");
+      root.style.removeProperty("--primary-foreground");
+      root.style.removeProperty("--secondary");
+      root.style.removeProperty("--accent");
+      root.style.removeProperty("--ring");
+      root.removeAttribute("data-business-branding");
+    };
+  }, [mounted, brandingColors]);
 
   // Listen for system preference changes
   useEffect(() => {

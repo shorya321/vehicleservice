@@ -4,24 +4,25 @@
  */
 
 /**
- * Default branding colors - using Deep Indigo theme
+ * Default branding colors - Gold theme (matches business portal design system)
  * Applied when business hasn't customized branding
  */
 export const DEFAULT_BRANDING = {
-  primary_color: '#0F0F12', // business-surface-1
-  secondary_color: '#6366F1', // indigo-500
-  accent_color: '#818CF8', // indigo-400
+  primary_color: '#C6AA88', // Gold - primary accent
+  secondary_color: '#14B8A6', // Teal - secondary accent
+  accent_color: '#06B6D4', // Cyan - tertiary accent
 } as const;
 
 /**
- * Business portal theme colors - Deep Indigo design system
+ * Business portal theme colors - Gold design system
  * Used as default for business portal before customization
- * Colors from business CSS variables
+ * Colors from business CSS variables (app/business/globals.css)
  */
 export const BUSINESS_THEME = {
-  background: '#09090B', // business-base
-  border: '#6366F1', // indigo-500
-  accent: '#818CF8', // indigo-400
+  background: '#09090B', // business-surface-0
+  surface: '#18181B', // business-surface-2
+  border: '#27272A', // business-border
+  accent: '#C6AA88', // Gold accent
   text: '#FAFAFA', // business-text-primary
   textMuted: '#A1A1AA', // business-text-secondary
 } as const;
