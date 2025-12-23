@@ -151,22 +151,55 @@ export const businessStatusSchema = z.object({
 export type BusinessStatusInput = z.infer<typeof businessStatusSchema>;
 
 /**
+ * Hex Color Schema - reusable validation for hex colors
+ */
+export const hexColorSchema = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #3b82f6)');
+
+/**
+ * Theme Mode Colors Schema (for dark or light mode)
+ */
+export const themeModeColorsSchema = z.object({
+  background: hexColorSchema.optional(),
+  surface: hexColorSchema.optional(),
+  sidebar: hexColorSchema.optional(),
+  text_primary: hexColorSchema.optional(),
+  text_secondary: hexColorSchema.optional(),
+  border: hexColorSchema.optional(),
+});
+
+/**
+ * Theme Accent Colors Schema
+ */
+export const themeAccentColorsSchema = z.object({
+  primary: hexColorSchema.optional(),
+  secondary: hexColorSchema.optional(),
+  tertiary: hexColorSchema.optional(),
+});
+
+/**
+ * ThemeConfig Schema - matches database JSONB structure
+ */
+export const themeConfigSchema = z.object({
+  accent: themeAccentColorsSchema.optional(),
+  dark: themeModeColorsSchema.optional(),
+  light: themeModeColorsSchema.optional(),
+  _version: z.number().optional(),
+});
+
+export type ThemeConfigInput = z.infer<typeof themeConfigSchema>;
+
+/**
  * Branding Settings Schema
+ * Uses theme_config JSONB structure for all colors
  */
 export const brandingSettingsSchema = z.object({
+  // Brand Identity (separate columns)
   brand_name: z.string().min(2, 'Brand name must be at least 2 characters').max(100).optional(),
-  primary_color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #3b82f6)')
-    .optional(),
-  secondary_color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #1e40af)')
-    .optional(),
-  accent_color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format (e.g., #8b5cf6)')
-    .optional(),
+
+  // Theme Configuration (JSONB column)
+  theme_config: themeConfigSchema.optional(),
 });
 
 export type BrandingSettingsInput = z.infer<typeof brandingSettingsSchema>;

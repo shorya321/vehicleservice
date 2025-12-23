@@ -1,6 +1,6 @@
 /**
  * Branding Settings API
- * Manages business branding configuration (colors, brand name)
+ * Manages business branding configuration using theme_config JSONB
  */
 
 import { NextRequest } from 'next/server';
@@ -11,19 +11,20 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { brandingSettingsSchema } from '@/lib/business/validators';
+import { parseThemeConfig, mergeThemeConfig, type ThemeConfig } from '@/lib/business/branding-utils';
 
 /**
  * GET /api/business/branding/settings
- * Retrieve current branding settings for the business
+ * Retrieve current branding settings (brand_name, logo_url, theme_config)
  */
 export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
   try {
     const { createClient } = await import('@/lib/supabase/server');
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: businessAccount, error } = await supabase
       .from('business_accounts')
-      .select('brand_name, primary_color, secondary_color, accent_color, logo_url')
+      .select('brand_name, logo_url, theme_config')
       .eq('id', user.businessAccountId)
       .single();
 
@@ -32,12 +33,13 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
       return apiError('Failed to fetch branding settings', 500);
     }
 
+    // Parse theme_config with defaults
+    const themeConfig = parseThemeConfig(businessAccount.theme_config);
+
     return apiSuccess({
       brand_name: businessAccount.brand_name,
-      primary_color: businessAccount.primary_color,
-      secondary_color: businessAccount.secondary_color,
-      accent_color: businessAccount.accent_color,
       logo_url: businessAccount.logo_url,
+      theme_config: themeConfig,
     });
   } catch (error) {
     console.error('Branding settings fetch error:', error);
@@ -47,7 +49,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
 
 /**
  * PUT /api/business/branding/settings
- * Update branding settings for the business
+ * Update branding settings (brand_name and/or theme_config)
  */
 export const PUT = requireBusinessAuth(async (request: NextRequest, user) => {
   // Parse and validate request body
@@ -61,19 +63,53 @@ export const PUT = requireBusinessAuth(async (request: NextRequest, user) => {
     const { createClient } = await import('@/lib/supabase/server');
     const supabase = await createClient();
 
-    // Build update object with only provided fields
-    const updateData: Record<string, string> = {};
-    if (body.brand_name !== undefined) updateData.brand_name = body.brand_name;
-    if (body.primary_color !== undefined) updateData.primary_color = body.primary_color;
-    if (body.secondary_color !== undefined) updateData.secondary_color = body.secondary_color;
-    if (body.accent_color !== undefined) updateData.accent_color = body.accent_color;
+    // Build update object
+    const updateData: Record<string, string | ThemeConfig | null> = {};
+
+    // Update brand_name if provided
+    if (body.brand_name !== undefined) {
+      updateData.brand_name = body.brand_name;
+    }
+
+    // Update theme_config if provided
+    if (body.theme_config !== undefined) {
+      // First fetch current theme_config to merge with
+      const { data: current } = await supabase
+        .from('business_accounts')
+        .select('theme_config')
+        .eq('id', user.businessAccountId)
+        .single();
+
+      const currentConfig = parseThemeConfig(current?.theme_config);
+
+      // Merge new values with current config
+      updateData.theme_config = mergeThemeConfig(body.theme_config, currentConfig);
+    }
+
+    // If nothing to update, return current settings
+    if (Object.keys(updateData).length === 0) {
+      const { data: currentSettings } = await supabase
+        .from('business_accounts')
+        .select('brand_name, logo_url, theme_config')
+        .eq('id', user.businessAccountId)
+        .single();
+
+      return apiSuccess({
+        message: 'No changes to apply',
+        branding: {
+          brand_name: currentSettings?.brand_name,
+          logo_url: currentSettings?.logo_url,
+          theme_config: parseThemeConfig(currentSettings?.theme_config),
+        },
+      });
+    }
 
     // Update branding settings
     const { data, error } = await supabase
       .from('business_accounts')
       .update(updateData)
       .eq('id', user.businessAccountId)
-      .select('brand_name, primary_color, secondary_color, accent_color, logo_url')
+      .select('brand_name, logo_url, theme_config')
       .single();
 
     if (error) {
@@ -83,7 +119,11 @@ export const PUT = requireBusinessAuth(async (request: NextRequest, user) => {
 
     return apiSuccess({
       message: 'Branding settings updated successfully',
-      branding: data,
+      branding: {
+        brand_name: data.brand_name,
+        logo_url: data.logo_url,
+        theme_config: parseThemeConfig(data.theme_config),
+      },
     });
   } catch (error) {
     console.error('Branding settings update error:', error);

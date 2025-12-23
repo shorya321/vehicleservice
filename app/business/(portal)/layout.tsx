@@ -6,7 +6,7 @@
  * - Typography: Plus Jakarta Sans (display) + Inter (body)
  * - Colors: Deep Indigo (#6366F1) with surface depth layers
  * - Effects: Glassmorphism, glow shadows, smooth animations
- * - Theme: Dark/Light mode support
+ * - Theme: Dark/Light mode support via theme_config JSONB
  */
 
 import { redirect } from 'next/navigation';
@@ -15,6 +15,7 @@ import { BusinessSidebar } from './components/business-sidebar';
 import { SidebarProvider } from '@/components/business/sidebar-context';
 import { BusinessThemeProvider } from '@/lib/business/theme-provider';
 import { BusinessPortalContent } from './components/business-portal-content';
+import { parseThemeConfig } from '@/lib/business/branding-utils';
 
 // Import business-specific design system
 import '@/app/business/globals.css';
@@ -35,7 +36,7 @@ export default async function BusinessPortalLayout({
     redirect('/business/login');
   }
 
-  // Get business user details
+  // Get business user details with theme_config
   const { data: businessUser, error } = await supabase
     .from('business_users')
     .select(
@@ -48,9 +49,7 @@ export default async function BusinessPortalLayout({
         contact_person_name,
         brand_name,
         logo_url,
-        primary_color,
-        secondary_color,
-        accent_color
+        theme_config
       )
     `
     )
@@ -61,14 +60,23 @@ export default async function BusinessPortalLayout({
     redirect('/business/login');
   }
 
+  // Extract branding for convenience
+  const branding = businessUser.business_accounts as {
+    business_name: string;
+    business_email: string;
+    contact_person_name: string | null;
+    brand_name: string | null;
+    logo_url: string | null;
+    theme_config: unknown;
+  };
+
+  // Parse theme config with defaults
+  const themeConfig = parseThemeConfig(branding.theme_config);
+
   return (
     <BusinessThemeProvider
       defaultTheme="dark"
-      brandingColors={{
-        primary: businessUser.business_accounts.primary_color,
-        secondary: businessUser.business_accounts.secondary_color,
-        accent: businessUser.business_accounts.accent_color,
-      }}
+      themeConfig={themeConfig}
     >
       <SidebarProvider>
         <div className="min-h-screen bg-background">
@@ -82,24 +90,24 @@ export default async function BusinessPortalLayout({
 
           {/* Sidebar */}
           <BusinessSidebar
-            businessName={businessUser.business_accounts.business_name}
-            brandName={businessUser.business_accounts.brand_name}
-            logoUrl={businessUser.business_accounts.logo_url}
-            primaryColor={businessUser.business_accounts.primary_color}
-            secondaryColor={businessUser.business_accounts.secondary_color}
-            accentColor={businessUser.business_accounts.accent_color}
+            businessName={branding.business_name}
+            brandName={branding.brand_name}
+            logoUrl={branding.logo_url}
+            primaryColor={themeConfig.accent.primary}
+            secondaryColor={themeConfig.accent.secondary}
+            accentColor={themeConfig.accent.tertiary}
           />
 
           {/* Main Content Area - with dynamic margin based on sidebar state */}
           <BusinessPortalContent
-            userEmail={businessUser.business_accounts.business_email}
-            contactPersonName={businessUser.business_accounts.contact_person_name}
-            businessName={businessUser.business_accounts.business_name}
-            brandName={businessUser.business_accounts.brand_name}
-            logoUrl={businessUser.business_accounts.logo_url}
-            primaryColor={businessUser.business_accounts.primary_color}
-            secondaryColor={businessUser.business_accounts.secondary_color}
-            accentColor={businessUser.business_accounts.accent_color}
+            userEmail={branding.business_email}
+            contactPersonName={branding.contact_person_name}
+            businessName={branding.business_name}
+            brandName={branding.brand_name}
+            logoUrl={branding.logo_url}
+            primaryColor={themeConfig.accent.primary}
+            secondaryColor={themeConfig.accent.secondary}
+            accentColor={themeConfig.accent.tertiary}
           >
             {children}
           </BusinessPortalContent>

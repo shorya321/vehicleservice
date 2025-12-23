@@ -67,9 +67,19 @@ export async function middleware(request: NextRequest) {
         response.headers.set('x-business-name', business.business_name || '')
         response.headers.set('x-brand-name', business.brand_name || business.business_name || '')
         response.headers.set('x-logo-url', business.logo_url || '')
-        response.headers.set('x-primary-color', business.primary_color || '#3b82f6')
-        response.headers.set('x-secondary-color', business.secondary_color || '#1e40af')
-        response.headers.set('x-accent-color', business.accent_color || '#8b5cf6')
+
+        // Extract colors from theme_config JSONB (new consolidated structure)
+        // Falls back to defaults if theme_config is not set
+        const themeConfig = business.theme_config as {
+          accent?: { primary?: string; secondary?: string; tertiary?: string };
+        } | null
+        const primaryColor = themeConfig?.accent?.primary || '#C6AA88'
+        const secondaryColor = themeConfig?.accent?.secondary || '#14B8A6'
+        const accentColor = themeConfig?.accent?.tertiary || '#06B6D4'
+
+        response.headers.set('x-primary-color', primaryColor)
+        response.headers.set('x-secondary-color', secondaryColor)
+        response.headers.set('x-accent-color', accentColor)
         response.headers.set('x-custom-domain', 'true')
 
         // Log domain identification

@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { hexToHsl } from "@/lib/business/branding-utils";
+import {
+  hexToHsl,
+  parseThemeConfig,
+  DEFAULT_THEME_CONFIG,
+  type ThemeConfig,
+} from "@/lib/business/branding-utils";
 
 /**
  * Business Portal Theme Provider
@@ -11,18 +16,13 @@ import { hexToHsl } from "@/lib/business/branding-utils";
  * - System preference detection
  * - LocalStorage persistence
  * - Smooth transitions
- * - Branding color application (overrides root layout inline styles)
+ * - Full branding color application (dark/light mode support)
+ * - Overrides root layout inline styles for custom domains
  *
  * SCOPE: Business module ONLY
  */
 
 type Theme = "dark" | "light" | "system";
-
-interface BrandingColors {
-  primary?: string | null;
-  secondary?: string | null;
-  accent?: string | null;
-}
 
 interface ThemeProviderContextValue {
   theme: Theme;
@@ -37,29 +37,26 @@ const ThemeProviderContext = createContext<ThemeProviderContextValue | undefined
 
 const STORAGE_KEY = "business-theme";
 
-// Default business portal colors (gold theme)
-const DEFAULT_BRANDING_COLORS = {
-  primary: "#C6AA88",     // Gold
-  secondary: "#14B8A6",   // Teal
-  accent: "#06B6D4",      // Cyan
-};
-
 interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
-  brandingColors?: BrandingColors;
+  /** Theme configuration from database (JSONB) */
+  themeConfig?: ThemeConfig | unknown;
 }
 
 export function BusinessThemeProvider({
   children,
   defaultTheme = "dark",
   storageKey = STORAGE_KEY,
-  brandingColors,
+  themeConfig,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
+
+  // Parse theme config with defaults
+  const config = parseThemeConfig(themeConfig);
 
   // Get system preference
   const getSystemTheme = (): "dark" | "light" => {
@@ -102,39 +99,86 @@ export function BusinessThemeProvider({
     root.setAttribute("data-business-theme", resolved);
   }, [theme, mounted]);
 
-  // Apply branding colors on mount - this OVERRIDES root layout inline styles
-  // This ensures business portal uses its own gold theme regardless of custom domain overrides
+  // Apply branding colors on mount and when theme changes
+  // This OVERRIDES root layout inline styles for custom domains
+  // Applies dark or light mode colors based on resolvedTheme
   useEffect(() => {
     if (!mounted) return;
 
     const root = document.documentElement;
+    const isDark = resolvedTheme === "dark";
 
-    // Determine which colors to use: provided branding or defaults
-    const primary = brandingColors?.primary || DEFAULT_BRANDING_COLORS.primary;
-    const secondary = brandingColors?.secondary || DEFAULT_BRANDING_COLORS.secondary;
-    const accent = brandingColors?.accent || DEFAULT_BRANDING_COLORS.accent;
+    // Get accent colors from config
+    const primary = config.accent.primary;
+    const secondary = config.accent.secondary;
+    const tertiary = config.accent.tertiary;
 
-    // Apply business portal branding colors as CSS variables
-    // These override any inline styles set by root layout for custom domains
+    // Get mode-specific colors based on resolved theme
+    const modeColors = isDark ? config.dark : config.light;
+
+    // Apply accent colors (shared across modes)
     root.style.setProperty("--primary", hexToHsl(primary));
-    root.style.setProperty("--primary-foreground", "240 10% 4%"); // Dark text on gold
+    root.style.setProperty("--primary-foreground", isDark ? "240 10% 4%" : "0 0% 100%");
     root.style.setProperty("--secondary", hexToHsl(secondary));
-    root.style.setProperty("--accent", hexToHsl(accent));
+    root.style.setProperty("--secondary-foreground", "0 0% 100%");
+    root.style.setProperty("--accent", hexToHsl(tertiary));
+    root.style.setProperty("--accent-foreground", "0 0% 100%");
     root.style.setProperty("--ring", hexToHsl(primary));
+
+    // Apply mode-specific colors as CSS variables
+    // These map to business portal CSS variable system
+    root.style.setProperty("--background", hexToHsl(modeColors.background));
+    root.style.setProperty("--foreground", hexToHsl(modeColors.text_primary));
+    root.style.setProperty("--card", hexToHsl(modeColors.surface));
+    root.style.setProperty("--card-foreground", hexToHsl(modeColors.text_primary));
+    root.style.setProperty("--popover", hexToHsl(modeColors.surface));
+    root.style.setProperty("--popover-foreground", hexToHsl(modeColors.text_primary));
+    root.style.setProperty("--muted", hexToHsl(modeColors.surface));
+    root.style.setProperty("--muted-foreground", hexToHsl(modeColors.text_secondary));
+    root.style.setProperty("--border", hexToHsl(modeColors.border));
+    root.style.setProperty("--input", hexToHsl(modeColors.border));
+
+    // Business-specific CSS variables for sidebar and surfaces
+    // These use HEX values directly since they're used as var(--business-*) without hsl() wrapper
+    root.style.setProperty("--business-sidebar", modeColors.sidebar);
+    root.style.setProperty("--business-surface", modeColors.surface);
+    root.style.setProperty("--business-border", modeColors.border);
+    root.style.setProperty("--business-text-primary", modeColors.text_primary);
+    root.style.setProperty("--business-text-secondary", modeColors.text_secondary);
 
     // Set data attribute to indicate business portal branding is active
     root.setAttribute("data-business-branding", "true");
 
     // Cleanup: remove branding styles when component unmounts
     return () => {
+      // Accent colors
       root.style.removeProperty("--primary");
       root.style.removeProperty("--primary-foreground");
       root.style.removeProperty("--secondary");
+      root.style.removeProperty("--secondary-foreground");
       root.style.removeProperty("--accent");
+      root.style.removeProperty("--accent-foreground");
       root.style.removeProperty("--ring");
+      // Mode colors
+      root.style.removeProperty("--background");
+      root.style.removeProperty("--foreground");
+      root.style.removeProperty("--card");
+      root.style.removeProperty("--card-foreground");
+      root.style.removeProperty("--popover");
+      root.style.removeProperty("--popover-foreground");
+      root.style.removeProperty("--muted");
+      root.style.removeProperty("--muted-foreground");
+      root.style.removeProperty("--border");
+      root.style.removeProperty("--input");
+      // Business-specific
+      root.style.removeProperty("--business-sidebar");
+      root.style.removeProperty("--business-surface");
+      root.style.removeProperty("--business-border");
+      root.style.removeProperty("--business-text-primary");
+      root.style.removeProperty("--business-text-secondary");
       root.removeAttribute("data-business-branding");
     };
-  }, [mounted, brandingColors]);
+  }, [mounted, config, resolvedTheme]);
 
   // Listen for system preference changes
   useEffect(() => {

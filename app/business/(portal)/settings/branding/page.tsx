@@ -17,6 +17,7 @@ import {
 import { PageHeader, PageContainer } from '@/components/business/layout';
 import { Info } from 'lucide-react';
 import { BrandingForm } from './components/branding-form';
+import { parseThemeConfig } from '@/lib/business/branding-utils';
 
 export const metadata: Metadata = {
   title: 'Branding Settings | Business Portal',
@@ -35,7 +36,7 @@ export default async function BrandingSettingsPage() {
     redirect('/business/login');
   }
 
-  // Get business account with branding settings
+  // Get business account with theme_config
   const { data: businessUser } = await supabase
     .from('business_users')
     .select(
@@ -48,9 +49,7 @@ export default async function BrandingSettingsPage() {
         business_name,
         brand_name,
         logo_url,
-        primary_color,
-        secondary_color,
-        accent_color,
+        theme_config,
         custom_domain,
         custom_domain_verified,
         custom_domain_verified_at
@@ -64,7 +63,19 @@ export default async function BrandingSettingsPage() {
     redirect('/business/login');
   }
 
-  const businessAccount = businessUser.business_accounts as any;
+  const businessAccount = businessUser.business_accounts as {
+    id: string;
+    business_name: string;
+    brand_name: string | null;
+    logo_url: string | null;
+    theme_config: unknown;
+    custom_domain: string | null;
+    custom_domain_verified: boolean | null;
+    custom_domain_verified_at: string | null;
+  };
+
+  // Parse theme config with defaults
+  const themeConfig = parseThemeConfig(businessAccount.theme_config);
 
   return (
     <PageContainer>
@@ -121,9 +132,7 @@ export default async function BrandingSettingsPage() {
         currentBranding={{
           brand_name: businessAccount.brand_name || businessAccount.business_name,
           logo_url: businessAccount.logo_url,
-          primary_color: businessAccount.primary_color || '#0F0F12',
-          secondary_color: businessAccount.secondary_color || '#6366F1',
-          accent_color: businessAccount.accent_color || '#818CF8',
+          theme_config: themeConfig,
         }}
       />
 
