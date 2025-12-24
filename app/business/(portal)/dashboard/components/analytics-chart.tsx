@@ -391,18 +391,26 @@ export function LocationsCard({ locations, className }: LocationsCardProps) {
         'transition-all duration-300',
         className
       )}>
-        <CardHeader className="pb-3">
+        <div className="p-5 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
-            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Locations
-            </CardTitle>
+            </h3>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
+        </div>
+        <div className="p-5 space-y-3">
           {locations.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground text-sm">
-              No locations available
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl mb-4 bg-primary/10">
+                <MapPin className="h-6 w-6 text-primary" />
+              </div>
+              <h4 className="text-sm font-medium text-foreground mb-1">
+                No locations yet
+              </h4>
+              <p className="text-xs text-muted-foreground max-w-[200px]">
+                Your most popular pickup and dropoff locations will appear here
+              </p>
             </div>
           ) : (
             locations.map((location, index) => (
@@ -414,7 +422,7 @@ export function LocationsCard({ locations, className }: LocationsCardProps) {
               />
             ))
           )}
-        </CardContent>
+        </div>
       </Card>
     </motion.div>
   );

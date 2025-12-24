@@ -98,7 +98,8 @@
       "mcp__shadcn__view_items_in_registries",
       "mcp__shadcn__get_item_examples_from_registries",
       "Bash(wc:*)",
-      "mcp__linear__search_documentation"
+      "mcp__linear__search_documentation",
+      "Skill(admin-panel-design)"
     ]
   },
   "enableAllProjectMcpServers": true,

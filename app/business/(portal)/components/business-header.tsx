@@ -18,7 +18,10 @@ import {
   Menu,
   Globe,
   Wallet,
+  Search,
 } from 'lucide-react';
+import { BusinessCommandPalette } from './business-command-palette';
+import { useCommandPalette } from '@/lib/business/command-palette/use-command-palette';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +62,7 @@ export function BusinessHeader({
   const router = useRouter();
   const { isCollapsed, openMobile } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
+  const { isOpen: commandOpen, setIsOpen: setCommandOpen } = useCommandPalette();
 
   // Sidebar widths - match sidebar component (desktop only)
   const expandedWidth = 260;
@@ -120,8 +124,8 @@ export function BusinessHeader({
         'max-md:!left-0'
       )}
     >
-      {/* Left side - Mobile menu toggle */}
-      <div className="relative z-10 flex items-center">
+      {/* Left side - Mobile menu toggle + Search */}
+      <div className="relative z-10 flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
@@ -131,12 +135,24 @@ export function BusinessHeader({
         >
           <Menu className="h-5 w-5" />
         </Button>
+
+        {/* Command Palette Trigger */}
+        <button
+          onClick={() => setCommandOpen(true)}
+          className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground hover:border-primary/30"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span className="hidden md:inline">Search...</span>
+          <kbd className="ml-2 hidden md:inline rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium">
+            ⌘K
+          </kbd>
+        </button>
       </div>
 
       {/* Right side - Theme Toggle, Notifications and User Dropdown */}
       <div className="relative z-10 flex items-center gap-1">
         {/* Theme Toggle */}
-        <ThemeToggle size="sm" />
+        <ThemeToggle size="default" />
 
         {/* Notification Bell */}
         <BusinessNotificationBell />
@@ -151,7 +167,7 @@ export function BusinessHeader({
                 </AvatarFallback>
               </Avatar>
               <div className="hidden sm:flex flex-col items-start ml-2">
-                <span className="text-sm font-medium text-foreground">{displayPersonName}</span>
+                <span className="text-sm font-medium text-foreground font-display">{displayPersonName}</span>
                 <span className="text-xs text-muted-foreground">{displayName}</span>
               </div>
               <ChevronDown className="h-4 w-4 ml-2 text-primary" />
@@ -219,6 +235,9 @@ export function BusinessHeader({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Command Palette */}
+      <BusinessCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </motion.header>
   );
 }

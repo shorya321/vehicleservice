@@ -58,8 +58,7 @@ export default async function BusinessTransactionsPage() {
       {/* Page Header */}
       <div>
         <h1
-          className="text-3xl font-bold text-[var(--business-text-primary)]"
-          style={{ fontFamily: 'var(--business-font-display)' }}
+          className="text-3xl font-bold text-[var(--business-text-primary)] font-display"
         >
           Transactions
         </h1>

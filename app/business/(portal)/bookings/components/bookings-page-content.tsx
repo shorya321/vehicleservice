@@ -251,8 +251,7 @@ export function BookingsPageContent({
       >
         <div>
           <h1
-            className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--business-text-primary)]"
-            style={{ fontFamily: 'var(--business-font-display)' }}
+            className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--business-text-primary)] font-display"
           >
             Bookings
           </h1>
@@ -456,7 +455,6 @@ export function BookingsPageContent({
                           }}
                           onCheckedChange={toggleSelectAll}
                           aria-label="Select all"
-                          className="border-border"
                         />
                       </div>
                       <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
@@ -610,7 +608,6 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
           checked={isSelected}
           onCheckedChange={onToggleSelect}
           aria-label={`Select booking ${booking.booking_number}`}
-          className="border-border"
         />
       </div>
 
@@ -786,7 +783,6 @@ function MobileBookingCard({
                   checked={isSelected}
                   onCheckedChange={onToggleSelect}
                   aria-label={`Select booking ${booking.booking_number}`}
-                  className="border-border"
                 />
               </div>
               <StatusBadge status={mapBookingStatus(booking.booking_status)} />

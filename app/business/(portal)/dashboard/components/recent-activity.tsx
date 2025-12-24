@@ -16,6 +16,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
@@ -256,23 +257,30 @@ function ActivityItem({ booking, index, isLast }: ActivityItemProps) {
 
 function EmptyActivityState() {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-xl mb-4 bg-primary/10">
-        <CalendarCheck className="h-7 w-7 text-primary" />
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+      {/* Larger, more prominent icon */}
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl mb-6 bg-primary/10">
+        <CalendarCheck className="h-8 w-8 text-primary" />
       </div>
-      <CardTitle className="text-sm font-medium text-foreground mb-1">
-        No recent activity
-      </CardTitle>
-      <CardDescription className="text-sm mb-4 max-w-[240px] text-muted-foreground">
-        Your recent bookings and updates will appear here
-      </CardDescription>
+
+      {/* Clear heading */}
+      <h3 className="text-lg font-semibold text-foreground mb-2">
+        No activity yet
+      </h3>
+
+      {/* Helpful description */}
+      <p className="text-sm text-muted-foreground mb-6 max-w-[280px]">
+        Create your first booking to see activity here. It only takes a moment to get started.
+      </p>
+
+      {/* Primary action button */}
       <Button
         asChild
-        size="sm"
-        className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+        className="gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
       >
         <Link href="/business/bookings/new">
-          Create Booking
+          <Plus className="h-4 w-4" />
+          Create First Booking
         </Link>
       </Button>
     </div>

@@ -200,6 +200,15 @@
   --business-header-gradient: linear-gradient(90deg, rgba(15, 15, 15, 0.88) 0%, rgba(18, 18, 18, 0.85) 50%, rgba(15, 15, 15, 0.88) 100%);
 
   /* ============================================
+     LUXURY SHADOW SYSTEM (Admin Panel Design)
+     Subtle, refined shadows for premium feel
+     ============================================ */
+  --business-shadow-luxury: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);
+  --business-shadow-luxury-lg: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.06);
+  --business-shadow-hover: 0 8px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(198, 170, 136, 0.1);
+  --business-shadow-glow: 0 0 20px rgba(198, 170, 136, 0.15);
+
+  /* ============================================
      SPACING SCALE
      ============================================ */
   --business-space-0: 0;
@@ -305,12 +314,35 @@
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
   --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
 
+  /* Luxury shadows - light mode (slightly stronger for visibility) */
+  --business-shadow-luxury: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  --business-shadow-luxury-lg: 0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.08);
+  --business-shadow-hover: 0 8px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(184, 155, 106, 0.15);
+  --business-shadow-glow: 0 0 20px rgba(184, 155, 106, 0.2);
+
   /* Gold accent - darker for light mode contrast */
   --accent-gold: #B89B6A;
   --accent-gold-light: #C6AA88;
   --accent-gold-dark: #9A8254;
   --accent-gold-muted: rgba(184, 155, 106, 0.15);
   --accent-gold-glow: rgba(184, 155, 106, 0.2);
+}
+
+/* ============================================
+   GLOBAL BODY STYLES
+   ============================================ */
+
+body {
+  font-family: var(--business-font-body) !important;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: unset;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Font display class - matches HTML design's font-display utility */
+.font-display {
+  font-family: var(--business-font-display);
 }
 
 /* ============================================
@@ -1430,6 +1462,92 @@ button.auth-input svg {
   pointer-events: none;
   mix-blend-mode: overlay;
   border-radius: inherit;
+}
+
+/* ============================================
+   BUTTON & DROPDOWN EFFECTS (HTML Design Match)
+   ============================================ */
+
+/* Button hover glow effect - gold glow on primary buttons */
+.btn-primary-glow:hover {
+  box-shadow: 0 0 20px rgba(198, 170, 136, 0.4);
+}
+
+/* Dropdown animation - smooth scale and fade */
+.dropdown-animate {
+  transform-origin: top right;
+  animation: dropdownOpen 0.2s ease-out forwards;
+}
+
+@keyframes dropdownOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Active nav indicator glow - gold glow on active sidebar item */
+.nav-active-glow {
+  box-shadow: 0 0 10px hsl(var(--primary));
+}
+
+/* ============================================
+   HTML DESIGN MATCHING - Additional Effects
+   ============================================ */
+
+/* Pulse Animation - fade in/out cycle */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-custom {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Progress Bar Transition - smooth width animation */
+.progress-bar {
+  transition: width 0.6s ease-out;
+}
+
+/* Sparkline Glow Effect - SVG chart glow */
+.sparkline-glow {
+  filter: drop-shadow(0 0 6px hsl(var(--primary)));
+}
+
+/* Stagger Children Animation - cascading fade-in */
+.stagger-children > * {
+  opacity: 0;
+  animation: business-fade-in 0.4s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Card Hover Effect - lift and shadow */
+.card-hover {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Sidebar Transition - smooth width animation */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Content Transition - smooth margin animation */
+.content-transition {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ============================================

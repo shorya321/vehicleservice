@@ -178,7 +178,7 @@ function WorkspaceSelector({
               transition={{ duration: 0.2 }}
               className="flex-1 min-w-0 overflow-hidden"
             >
-              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+              <p className="text-sm font-semibold truncate text-foreground font-display">{displayName}</p>
               <p className="text-xs text-primary">Business Portal</p>
             </motion.div>
           )}
@@ -229,7 +229,7 @@ function NavItem({
       {isActive && (
         <motion.div
           layoutId="sidebarActiveIndicator"
-          className="absolute left-0 inset-y-2 w-1 rounded-r-full bg-primary shadow-business-glow-sm"
+          className="absolute left-0 inset-y-2 w-1 rounded-r-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
           transition={{ type: 'spring', stiffness: 500, damping: 35 }}
         />
       )}
@@ -351,7 +351,7 @@ export function BusinessSidebar({
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+              <p className="text-sm font-semibold truncate text-foreground font-display">{displayName}</p>
               <p className="text-xs text-primary">Business Portal</p>
             </div>
           </div>
@@ -475,10 +475,10 @@ export function BusinessSidebar({
         animate={{ width: sidebarWidth }}
         transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen',
+          'fixed left-0 top-0 z-50 h-screen',
           'flex flex-col overflow-hidden',
           'bg-card border-r border-border',
-          'shadow-lg',
+          'shadow-lg sidebar-transition',
           !prefersReducedMotion && 'will-change-[width]'
         )}
       >
