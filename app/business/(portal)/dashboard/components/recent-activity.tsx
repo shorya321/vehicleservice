@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/business/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -50,11 +50,11 @@ const statusConfig: Record<string, {
   label: string;
 }> = {
   completed: {
-    color: 'text-emerald-600 dark:text-emerald-400',
+    color: 'text-emerald-500',
     bgColor: 'bg-emerald-500/10',
     borderColor: 'border-emerald-500/30',
     dotColor: 'bg-emerald-500',
-    icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+    icon: <CheckCircle2 className="h-3 w-3" />,
     label: 'Completed',
   },
   pending: {
@@ -62,23 +62,23 @@ const statusConfig: Record<string, {
     bgColor: 'bg-primary/10',
     borderColor: 'border-primary/30',
     dotColor: 'bg-primary',
-    icon: <Clock className="h-3.5 w-3.5" />,
+    icon: <Clock className="h-3 w-3" />,
     label: 'Pending',
   },
   confirmed: {
-    color: 'text-sky-600 dark:text-sky-400',
+    color: 'text-sky-500',
     bgColor: 'bg-sky-500/10',
     borderColor: 'border-sky-500/30',
     dotColor: 'bg-sky-500',
-    icon: <CalendarCheck className="h-3.5 w-3.5" />,
+    icon: <CalendarCheck className="h-3 w-3" />,
     label: 'Confirmed',
   },
   cancelled: {
-    color: 'text-red-600 dark:text-red-400',
+    color: 'text-red-500',
     bgColor: 'bg-red-500/10',
     borderColor: 'border-red-500/30',
     dotColor: 'bg-red-500',
-    icon: <AlertCircle className="h-3.5 w-3.5" />,
+    icon: <AlertCircle className="h-3 w-3" />,
     label: 'Cancelled',
   },
 };
@@ -125,8 +125,8 @@ export function RecentActivity({
         'bg-card',
         'border border-border',
         'shadow-sm',
-        'transition-all duration-300 ease-out',
-        'hover:shadow-md',
+        'transition-all duration-300',
+        'hover:shadow-md card-hover',
         className
       )}>
         {/* Header */}
@@ -224,7 +224,7 @@ function ActivityItem({ booking, index, isLast }: ActivityItemProps) {
             <Badge
               variant="outline"
               className={cn(
-                'gap-1 rounded-full px-2 py-0.5 text-xs border',
+                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs',
                 status.bgColor,
                 status.color,
                 status.borderColor

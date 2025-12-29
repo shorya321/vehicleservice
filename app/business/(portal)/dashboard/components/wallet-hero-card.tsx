@@ -12,9 +12,9 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Wallet, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/business/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { CurrencyCountUp } from '@/components/business/motion';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Sparkline } from './analytics-chart';
@@ -86,7 +86,7 @@ export function WalletHeroCard({ walletBalance, className }: WalletHeroCardProps
 
               {/* Large value - dramatic typography */}
               <div className="flex items-baseline gap-4 mb-3">
-                <span className="text-5xl sm:text-6xl font-bold tracking-tight text-primary font-display">
+                <span className="text-5xl sm:text-6xl font-bold tracking-tight text-primary">
                   <CurrencyCountUp value={walletBalance} />
                 </span>
               </div>
@@ -114,12 +114,7 @@ export function WalletHeroCard({ walletBalance, className }: WalletHeroCardProps
           </div>
 
           <Separator className="my-5 bg-border" />
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 transition-all duration-200"
-          >
+          <Button asChild variant="ghost" size="sm" className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50">
             <Link href="/business/wallet">
               <CreditCard className="h-4 w-4 mr-2" />
               Add Credits

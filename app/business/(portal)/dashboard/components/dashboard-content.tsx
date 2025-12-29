@@ -11,8 +11,8 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Plus, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
+import { Button } from '@/components/ui/button';
 import { WalletHeroCard } from './wallet-hero-card';
 import { StatsGrid } from './stats-grid';
 import { QuickActionsCard } from './quick-actions-card';
@@ -143,7 +143,7 @@ function DashboardHeader({ greeting, businessName, prefersReducedMotion }: Dashb
           initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight font-display"
+          className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight"
         >
           {greeting}, <span className="text-primary">{businessName}</span>
         </motion.h1>
@@ -165,20 +165,16 @@ function DashboardHeader({ greeting, businessName, prefersReducedMotion }: Dashb
         className="flex items-center gap-3"
       >
         {/* Settings Button */}
-        <Button
-          asChild
-          variant="outline"
-          className="hidden sm:flex items-center gap-2 border-border bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:bg-primary/5 transition-all duration-200"
-        >
+        <Button asChild variant="ghost" className="hidden sm:flex border border-border bg-card/80 backdrop-blur-sm text-foreground/80 hover:border-primary/30 hover:bg-primary/5">
           <Link href="/business/settings">
-            <Settings className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80">Settings</span>
+            <Settings className="h-4 w-4 mr-2 text-primary" />
+            Settings
           </Link>
         </Button>
 
-        <Button asChild className="gap-2 border-none rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+        <Button asChild className="rounded-xl shadow-sm hover:shadow-lg">
           <Link href="/business/bookings/new">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 mr-2" />
             New Booking
           </Link>
         </Button>

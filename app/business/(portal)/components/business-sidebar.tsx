@@ -178,7 +178,7 @@ function WorkspaceSelector({
               transition={{ duration: 0.2 }}
               className="flex-1 min-w-0 overflow-hidden"
             >
-              <p className="text-sm font-semibold truncate text-foreground font-display">{displayName}</p>
+              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
               <p className="text-xs text-primary">Business Portal</p>
             </motion.div>
           )}
@@ -273,11 +273,8 @@ function NewBookingButton({ isCollapsed, onClick }: { isCollapsed: boolean; onCl
           <Button
             asChild
             className={cn(
-              'w-full',
-              'border-none rounded-xl',
-              'shadow-business-glow-sm hover:shadow-business-glow',
-              'transition-all duration-300',
-              isCollapsed ? 'px-2' : 'gap-2'
+              'w-full rounded-xl shadow-sm hover:shadow-glow-gold',
+              isCollapsed ? '' : 'gap-2'
             )}
           >
             <Link href="/business/bookings/new" onClick={onClick}>
@@ -351,7 +348,7 @@ export function BusinessSidebar({
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold truncate text-foreground font-display">{displayName}</p>
+              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
               <p className="text-xs text-primary">Business Portal</p>
             </div>
           </div>

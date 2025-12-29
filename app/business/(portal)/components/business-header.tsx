@@ -30,8 +30,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { BusinessNotificationBell } from '@/components/business/notifications/notification-bell';
 import { ThemeToggle } from '@/components/business/ui/theme-toggle';
@@ -130,23 +130,24 @@ export function BusinessHeader({
           variant="ghost"
           size="icon"
           onClick={openMobile}
-          className="md:hidden text-muted-foreground hover:text-primary hover:bg-primary/10"
+          className="md:hidden h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/10"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </Button>
 
         {/* Command Palette Trigger */}
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setCommandOpen(true)}
-          className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground hover:border-primary/30"
+          className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30"
         >
           <Search className="h-3.5 w-3.5" />
           <span className="hidden md:inline">Search...</span>
           <kbd className="ml-2 hidden md:inline rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium">
             ⌘K
           </kbd>
-        </button>
+        </Button>
       </div>
 
       {/* Right side - Theme Toggle, Notifications and User Dropdown */}
@@ -160,17 +161,17 @@ export function BusinessHeader({
         {/* User Dropdown Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 px-2 ml-1 hover:bg-primary/10">
+            <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 font-normal hover:bg-primary/10">
               <Avatar className="h-8 w-8 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200">
                 <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                   {getInitials(displayPersonName)}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden sm:flex flex-col items-start ml-2">
-                <span className="text-sm font-medium text-foreground font-display">{displayPersonName}</span>
+              <div className="hidden sm:flex flex-col items-start">
+                <span className="text-sm font-medium text-foreground">{displayPersonName}</span>
                 <span className="text-xs text-muted-foreground">{displayName}</span>
               </div>
-              <ChevronDown className="h-4 w-4 ml-2 text-primary" />
+              <ChevronDown className="h-4 w-4 text-primary" />
             </Button>
           </DropdownMenuTrigger>
 

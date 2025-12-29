@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -164,8 +164,8 @@ export function AnalyticsStatCard({
           'bg-card',
           'border border-border',
           'shadow-sm',
-          'transition-all duration-300 ease-out',
-          'hover:shadow-md hover:border-border/80 dark:hover:border-white/[0.12]',
+          'transition-all duration-300',
+          'hover:shadow-md card-hover',
           className
         )}
       >
@@ -358,18 +358,18 @@ interface LocationsCardProps {
 }
 
 const locationTypeConfig = {
-  airport: { icon: Plane, color: 'text-sky-500', bg: 'bg-sky-500/10', progressBg: 'bg-sky-500', badgeClass: 'border-sky-500/20 bg-sky-500/5 text-sky-500' },
-  city: { icon: Building2, color: 'text-emerald-500', bg: 'bg-emerald-500/10', progressBg: 'bg-emerald-500', badgeClass: 'border-emerald-500/20 bg-emerald-500/5 text-emerald-500' },
-  hotel: { icon: Hotel, color: 'text-amber-500', bg: 'bg-amber-500/10', progressBg: 'bg-amber-500', badgeClass: 'border-amber-500/20 bg-amber-500/5 text-amber-500' },
-  station: { icon: Train, color: 'text-violet-500', bg: 'bg-violet-500/10', progressBg: 'bg-violet-500', badgeClass: 'border-violet-500/20 bg-violet-500/5 text-violet-500' },
+  airport: { icon: Plane, color: 'text-sky-500', bg: 'bg-sky-500/10', progressBg: 'bg-sky-500', badgeClass: 'border border-sky-500/20 bg-sky-500/5 text-sky-500' },
+  city: { icon: Building2, color: 'text-emerald-500', bg: 'bg-emerald-500/10', progressBg: 'bg-emerald-500', badgeClass: 'border border-emerald-500/20 bg-emerald-500/5 text-emerald-500' },
+  hotel: { icon: Hotel, color: 'text-amber-500', bg: 'bg-amber-500/10', progressBg: 'bg-amber-500', badgeClass: 'border border-amber-500/20 bg-amber-500/5 text-amber-500' },
+  station: { icon: Train, color: 'text-violet-500', bg: 'bg-violet-500/10', progressBg: 'bg-violet-500', badgeClass: 'border border-violet-500/20 bg-violet-500/5 text-violet-500' },
 };
 
 // Color variants for cities to avoid repetition
 const cityColorVariants = [
-  { color: 'text-emerald-500', bg: 'bg-emerald-500/10', progressBg: 'bg-emerald-500', badgeClass: 'border-emerald-500/20 bg-emerald-500/5 text-emerald-500' },
-  { color: 'text-rose-500', bg: 'bg-rose-500/10', progressBg: 'bg-rose-500', badgeClass: 'border-rose-500/20 bg-rose-500/5 text-rose-500' },
-  { color: 'text-cyan-500', bg: 'bg-cyan-500/10', progressBg: 'bg-cyan-500', badgeClass: 'border-cyan-500/20 bg-cyan-500/5 text-cyan-500' },
-  { color: 'text-orange-500', bg: 'bg-orange-500/10', progressBg: 'bg-orange-500', badgeClass: 'border-orange-500/20 bg-orange-500/5 text-orange-500' },
+  { color: 'text-emerald-500', bg: 'bg-emerald-500/10', progressBg: 'bg-emerald-500', badgeClass: 'border border-emerald-500/20 bg-emerald-500/5 text-emerald-500' },
+  { color: 'text-rose-500', bg: 'bg-rose-500/10', progressBg: 'bg-rose-500', badgeClass: 'border border-rose-500/20 bg-rose-500/5 text-rose-500' },
+  { color: 'text-cyan-500', bg: 'bg-cyan-500/10', progressBg: 'bg-cyan-500', badgeClass: 'border border-cyan-500/20 bg-cyan-500/5 text-cyan-500' },
+  { color: 'text-orange-500', bg: 'bg-orange-500/10', progressBg: 'bg-orange-500', badgeClass: 'border border-orange-500/20 bg-orange-500/5 text-orange-500' },
 ];
 
 export function LocationsCard({ locations, className }: LocationsCardProps) {
@@ -387,7 +387,7 @@ export function LocationsCard({ locations, className }: LocationsCardProps) {
         'relative overflow-hidden group rounded-xl',
         'bg-card',
         'border border-border',
-        'shadow-sm hover:shadow-md',
+        'shadow-sm hover:shadow-md card-hover',
         'transition-all duration-300',
         className
       )}>
@@ -473,7 +473,7 @@ function LocationItem({ location, maxBookings, index }: LocationItemProps) {
             <span className="text-sm font-medium text-foreground truncate">
               {location.name}
             </span>
-            <Badge variant="outline" className={cn("shrink-0 text-xs px-2 py-0.5", config.badgeClass)}>
+            <Badge variant="outline" className={cn("shrink-0", config.badgeClass)}>
               {location.booking_count} {location.booking_count === 1 ? 'trip' : 'trips'}
             </Badge>
           </div>
