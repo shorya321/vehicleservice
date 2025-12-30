@@ -203,7 +203,7 @@ export function AutoRechargeSettings() {
   if (isLoading) {
     return (
       <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
-        <CardContent className="flex items-center justify-center py-12">
+        <CardContent className="p-5 flex items-center justify-center py-12">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -215,23 +215,25 @@ export function AutoRechargeSettings() {
 
   return (
     <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
-      <CardHeader>
+      <CardHeader className="p-5 border-b border-border">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Zap className={cn('h-5 w-5 transition-colors duration-300', settings.enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')} />
-            Auto-Recharge
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Zap className={cn('h-5 w-5 transition-colors duration-300', settings.enabled ? 'text-emerald-500' : 'text-muted-foreground')} />
+            <CardTitle className="text-lg font-semibold text-foreground">
+              Auto-Recharge
+            </CardTitle>
+          </div>
           <Switch
             checked={settings.enabled}
             onCheckedChange={(checked) => setSettings({ ...settings, enabled: checked })}
             className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-muted"
           />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mt-1">
           Automatically recharge when balance falls below threshold
         </p>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="p-5 space-y-5">
         {/* Warning when enabled */}
         <AnimatePresence>
           {settings.enabled && (
@@ -433,7 +435,7 @@ export function AutoRechargeSettings() {
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Settings
+                SAVE SETTINGS
               </>
             )}
           </Button>

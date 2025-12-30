@@ -186,7 +186,7 @@ export function WalletPageContent({
           animate="visible"
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
-          <motion.div key="wallet-balance" variants={prefersReducedMotion ? undefined : staggerItem}>
+          <motion.div key="wallet-balance" variants={prefersReducedMotion ? undefined : staggerItem} className="h-full">
             <HeroStatCard
               title="Wallet Balance"
               value={walletBalance}
@@ -198,7 +198,7 @@ export function WalletPageContent({
               onAction={handleAddCreditsClick}
             />
           </motion.div>
-          <motion.div key="payment-methods" variants={prefersReducedMotion ? undefined : staggerItem}>
+          <motion.div key="payment-methods" variants={prefersReducedMotion ? undefined : staggerItem} className="h-full">
             <HeroStatCard
               title="Payment Methods"
               value={quickStats?.paymentMethodsCount ?? 0}
@@ -207,7 +207,7 @@ export function WalletPageContent({
               variant="info"
             />
           </motion.div>
-          <motion.div key="monthly-transactions" variants={prefersReducedMotion ? undefined : staggerItem}>
+          <motion.div key="monthly-transactions" variants={prefersReducedMotion ? undefined : staggerItem} className="h-full">
             <HeroStatCard
               title="This Month"
               value={quickStats?.monthlyTransactionCount ?? 0}
@@ -240,10 +240,10 @@ export function WalletPageContent({
         {/* Recent Transactions */}
         <FadeIn delay={0.5}>
           <Card className="bg-card border border-border rounded-xl shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="p-5 border-b border-border flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Recent Transactions
+                  RECENT TRANSACTIONS
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {totalTransactions && totalTransactions > 8
@@ -256,16 +256,16 @@ export function WalletPageContent({
                   variant="ghost"
                   size="sm"
                   asChild
-                  className="text-primary hover:text-primary hover:bg-primary/10"
+                  className="text-primary hover:text-foreground hover:bg-muted px-3 py-1.5 font-medium"
                 >
                   <Link href="/business/wallet/transactions">
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    VIEW ALL
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Link>
                 </Button>
               )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <TransactionHistory transactions={transactions} />
             </CardContent>
           </Card>
@@ -274,7 +274,7 @@ export function WalletPageContent({
 
       {/* Add Credits Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-card border-border">
+        <DialogContent className="sm:max-w-[500px] bg-card border-border rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-foreground text-xl font-semibold">
               Add Credits to Wallet
@@ -284,24 +284,24 @@ export function WalletPageContent({
               {formatCurrency(minAmount, currency)}, maximum {formatCurrency(maxAmount, currency)}.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             {/* Payment Flow Selection (only if Payment Element is enabled) */}
             {paymentElementEnabled && (
               <Tabs
                 value={selectedFlow}
                 onValueChange={(v) => setSelectedFlow(v as 'embedded' | 'redirect')}
               >
-                <TabsList className="grid w-full grid-cols-2 bg-muted border border-border">
+                <TabsList className="grid w-full grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
                   <TabsTrigger
                     value="embedded"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=inactive]:text-muted-foreground rounded-lg"
                   >
                     <CreditCard className="mr-2 h-4 w-4" />
                     Instant Payment
                   </TabsTrigger>
                   <TabsTrigger
                     value="redirect"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary text-muted-foreground"
+                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=inactive]:text-muted-foreground rounded-lg"
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Checkout Page
@@ -322,21 +322,26 @@ export function WalletPageContent({
 
             {/* Amount Input */}
             <div className="space-y-2">
-              <Label htmlFor="amount" className="text-foreground text-sm">
+              <Label htmlFor="amount" className="text-foreground text-sm font-medium">
                 Amount ({currency})
               </Label>
-              <Input
-                id="amount"
-                type="number"
-                min={minAmount}
-                max={maxAmount}
-                step={currency === 'JPY' ? '100' : '10'}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder={minAmount.toString()}
-                disabled={isLoading}
-                className="bg-muted border-border text-foreground focus:border-primary focus:ring-primary/20 placeholder:text-muted-foreground"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '¥'}
+                </span>
+                <Input
+                  id="amount"
+                  type="number"
+                  min={minAmount}
+                  max={maxAmount}
+                  step={currency === 'JPY' ? '100' : '10'}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder={minAmount.toString()}
+                  disabled={isLoading}
+                  className="pl-8 bg-muted border-border text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+                />
+              </div>
               <p className="text-sm text-muted-foreground">
                 You will be charged:{' '}
                 <span className="text-primary font-semibold">
@@ -345,11 +350,32 @@ export function WalletPageContent({
               </p>
             </div>
 
+            {/* Quick Amount Buttons */}
+            <div className="flex gap-2">
+              {[50, 100, 250, 500].map((quickAmount) => (
+                <button
+                  key={quickAmount}
+                  type="button"
+                  onClick={() => setAmount(quickAmount.toString())}
+                  disabled={isLoading}
+                  className={cn(
+                    'flex-1 h-9 rounded-lg border text-sm transition-all duration-200',
+                    parseFloat(amount) === quickAmount
+                      ? 'border-primary bg-primary/10 text-primary font-medium'
+                      : 'border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5'
+                  )}
+                >
+                  {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '¥'}
+                  {quickAmount}
+                </button>
+              ))}
+            </div>
+
             {/* Action Button */}
             <Button
               onClick={handleRecharge}
               disabled={isLoading}
-              className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+              className="w-full h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
             >
               {isLoading ? (
                 <>

@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { CalendarDays, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Location } from '@/lib/types/location'
@@ -66,90 +65,92 @@ export function SearchForm() {
   }
 
   return (
-    <motion.form
-      onSubmit={handleSearch}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-      className="w-full max-w-6xl p-3 rounded-xl shadow-2xl backdrop-blur-lg border bg-luxury-darkGray/50 border-luxury-gold/20"
-    >
-      <div className="flex flex-col md:flex-row items-center gap-2">
+    <div className="booking-card w-full">
+      {/* Card Header */}
+      <div className="booking-card-header">
+        <h2 className="booking-card-title">Book Your Transfer</h2>
+        <p className="booking-card-subtitle">Enter your journey details</p>
+      </div>
+
+      <form onSubmit={handleSearch} className="booking-form">
         {/* From Input */}
-        <LocationAutocomplete
-          value={fromInput}
-          onChange={handleFromInput}
-          onSelect={selectFromLocation}
-          placeholder="From (airport, port, address)"
-          ariaLabel="Pick-up location"
-          selectedLocation={fromLocation}
-        />
-
-        <div className="hidden md:block border-l h-8 mx-1 border-luxury-gold/20" aria-hidden="true"></div>
-        <div className="w-full md:w-auto h-px md:h-auto my-1 md:my-0 bg-luxury-gold/20" aria-hidden="true"></div>
-
-        {/* To Input */}
-        <LocationAutocomplete
-          value={toInput}
-          onChange={handleToInput}
-          onSelect={selectToLocation}
-          placeholder="To (airport, port, address)"
-          ariaLabel="Drop-off location"
-          selectedLocation={toLocation}
-        />
-
-        <div className="hidden md:block border-l h-8 mx-1 border-luxury-gold/20" aria-hidden="true"></div>
-        <div className="w-full md:w-auto h-px md:h-auto my-1 md:my-0 bg-luxury-gold/20" aria-hidden="true"></div>
-
-        {/* Date Input */}
-        <div className="relative w-full md:w-auto">
-          <label htmlFor="travel-date" className="sr-only">Travel date</label>
-          <CalendarDays
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-luxury-gold"
-            aria-hidden="true"
-          />
-          <Input
-            id="travel-date"
-            type="date"
-            value={selectedDate}
-            min={todayStr}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full md:w-40 h-14 bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-luxury-gold pl-12 text-base text-luxury-pearl"
+        <div className="form-group">
+          <label className="form-label">Pick-up Location</label>
+          <LocationAutocomplete
+            value={fromInput}
+            onChange={handleFromInput}
+            onSelect={selectFromLocation}
+            placeholder="Airport, hotel, or address"
+            ariaLabel="Pick-up location"
+            selectedLocation={fromLocation}
           />
         </div>
 
-        <div className="hidden md:block border-l h-8 mx-1 border-luxury-gold/20" aria-hidden="true"></div>
-        <div className="w-full md:w-auto h-px md:h-auto my-1 md:my-0 bg-luxury-gold/20" aria-hidden="true"></div>
+        {/* To Input */}
+        <div className="form-group">
+          <label className="form-label">Drop-off Location</label>
+          <LocationAutocomplete
+            value={toInput}
+            onChange={handleToInput}
+            onSelect={selectToLocation}
+            placeholder="Airport, hotel, or address"
+            ariaLabel="Drop-off location"
+            selectedLocation={toLocation}
+          />
+        </div>
 
-        {/* Passengers Input */}
-        <div className="relative w-full md:w-auto">
-          <label htmlFor="passengers" className="sr-only">Number of passengers</label>
-          <Users
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-luxury-gold"
-            aria-hidden="true"
-          />
-          <Input
-            id="passengers"
-            type="number"
-            placeholder="Guests"
-            min="1"
-            max="20"
-            value={passengers}
-            onChange={(e) => setPassengers(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))}
-            className="w-full md:w-32 h-14 bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-luxury-gold pl-12 text-base text-luxury-pearl placeholder:text-luxury-gold/70"
-          />
+        {/* Date & Passengers Row */}
+        <div className="form-row">
+          {/* Date Input */}
+          <div className="form-group">
+            <label htmlFor="travel-date" className="form-label">Date</label>
+            <div className="relative">
+              <CalendarDays
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--gold)]"
+                aria-hidden="true"
+              />
+              <Input
+                id="travel-date"
+                type="date"
+                value={selectedDate}
+                min={todayStr}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="luxury-input pl-11 h-12"
+              />
+            </div>
+          </div>
+
+          {/* Passengers Input */}
+          <div className="form-group">
+            <label htmlFor="passengers" className="form-label">Passengers</label>
+            <div className="relative">
+              <Users
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--gold)]"
+                aria-hidden="true"
+              />
+              <Input
+                id="passengers"
+                type="number"
+                placeholder="2"
+                min="1"
+                max="20"
+                value={passengers}
+                onChange={(e) => setPassengers(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))}
+                className="luxury-input pl-11 h-12"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Search Button */}
-        <Button
+        <button
           type="submit"
-          size="default"
           disabled={!fromLocation || !toLocation || !mounted}
-          className="w-full md:w-auto flex-shrink-0 h-14 mt-2 md:mt-0 ml-0 md:ml-1"
+          className="btn btn-primary btn-lg w-full mt-2 disabled:cursor-not-allowed"
         >
-          SEARCH
-        </Button>
-      </div>
-    </motion.form>
+          Search Vehicles
+        </button>
+      </form>
+    </div>
   )
 }

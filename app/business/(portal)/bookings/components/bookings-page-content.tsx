@@ -18,6 +18,7 @@ import {
   ArrowRight,
   MapPin,
   ChevronRight,
+  ChevronLeft,
   Filter,
   TrendingUp,
   Clock,
@@ -29,7 +30,7 @@ import {
   MoreHorizontal,
   Pencil,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { Card, CardContent } from '@/components/ui/card';
@@ -117,6 +118,10 @@ export function BookingsPageContent({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Calculate stats
   const completedCount = bookings.filter(
     (b) => b.booking_status === 'completed'
@@ -124,24 +129,63 @@ export function BookingsPageContent({
   const totalRevenue = bookings.reduce((sum, b) => sum + b.total_price, 0);
 
   // Filter bookings
-  const filteredBookings = bookings.filter((booking) => {
-    const matchesSearch =
-      booking.booking_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((booking) => {
+      const matchesSearch =
+        booking.booking_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        booking.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        booking.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all' || booking.booking_status === statusFilter;
+      const matchesStatus =
+        statusFilter === 'all' || booking.booking_status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [bookings, searchQuery, statusFilter]);
 
-  // Selection handlers
-  const toggleSelectAll = () => {
-    if (selectedBookings.size === filteredBookings.length) {
-      setSelectedBookings(new Set());
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredBookings.length);
+  const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      setSelectedBookings(new Set(filteredBookings.map((b) => b.id)));
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
+  // Selection handlers - select all on current page
+  const toggleSelectAll = () => {
+    const currentPageBookingIds = paginatedBookings.map((b) => b.id);
+    const allCurrentPageSelected = currentPageBookingIds.every((id) => selectedBookings.has(id));
+
+    if (allCurrentPageSelected) {
+      // Deselect all on current page
+      const newSelected = new Set(selectedBookings);
+      currentPageBookingIds.forEach((id) => newSelected.delete(id));
+      setSelectedBookings(newSelected);
+    } else {
+      // Select all on current page
+      const newSelected = new Set(selectedBookings);
+      currentPageBookingIds.forEach((id) => newSelected.add(id));
+      setSelectedBookings(newSelected);
     }
   };
 
@@ -155,8 +199,10 @@ export function BookingsPageContent({
     setSelectedBookings(newSelected);
   };
 
-  const isAllSelected = filteredBookings.length > 0 && selectedBookings.size === filteredBookings.length;
-  const isSomeSelected = selectedBookings.size > 0 && selectedBookings.size < filteredBookings.length;
+  // Check selection state for current page
+  const currentPageBookingIds = paginatedBookings.map((b) => b.id);
+  const isAllSelected = paginatedBookings.length > 0 && currentPageBookingIds.every((id) => selectedBookings.has(id));
+  const isSomeSelected = selectedBookings.size > 0 && !isAllSelected;
 
   // Delete handlers
   const handleDeleteSingle = async (bookingId: string) => {
@@ -270,7 +316,7 @@ export function BookingsPageContent({
       >
         {/* Total Bookings Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-primary border border-border shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-primary border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -295,7 +341,7 @@ export function BookingsPageContent({
 
         {/* Revenue Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-emerald-500 border border-border shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-emerald-500 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -317,7 +363,7 @@ export function BookingsPageContent({
 
         {/* Pending Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-amber-500 border border-border shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-amber-500 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -339,7 +385,7 @@ export function BookingsPageContent({
 
         {/* Completed Card */}
         <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-sky-500 border border-border shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-sky-500 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -375,13 +421,13 @@ export function BookingsPageContent({
             placeholder="Search bookings..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
+            className="h-10 pl-10 pr-4 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
 
         {/* Status Filter Dropdown */}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px] bg-muted border-border text-muted-foreground">
+          <SelectTrigger className="h-10 w-[160px] rounded-lg bg-muted border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all">
             <div className="flex items-center gap-2">
               <Filter className="h-3.5 w-3.5 text-primary" />
               <SelectValue placeholder="All Status" />
@@ -455,6 +501,7 @@ export function BookingsPageContent({
                           }}
                           onCheckedChange={toggleSelectAll}
                           aria-label="Select all"
+                          className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
                         />
                       </div>
                       <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
@@ -480,7 +527,7 @@ export function BookingsPageContent({
 
                   {/* Table Rows */}
                   <div className="divide-y divide-border">
-                    {filteredBookings.map((booking, index) => (
+                    {paginatedBookings.map((booking, index) => (
                       <TableRow
                         key={booking.id}
                         booking={booking}
@@ -496,7 +543,7 @@ export function BookingsPageContent({
 
                 {/* Mobile Cards */}
                 <div className="md:hidden p-4 space-y-3">
-                  {filteredBookings.map((booking, index) => (
+                  {paginatedBookings.map((booking, index) => (
                     <MobileBookingCard
                       key={booking.id}
                       booking={booking}
@@ -508,6 +555,61 @@ export function BookingsPageContent({
                     />
                   ))}
                 </div>
+
+                {/* Pagination */}
+                {filteredBookings.length > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4 border-t border-border">
+                    <p className="text-sm text-muted-foreground">
+                      Showing <span className="font-medium text-foreground">{startIndex + 1}-{endIndex}</span> of{' '}
+                      <span className="font-medium text-foreground">{filteredBookings.length}</span> bookings
+                    </p>
+                    <div className="flex items-center gap-1">
+                      {/* Previous Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+
+                      {/* Page Numbers */}
+                      {getPageNumbers().map((page, idx) =>
+                        typeof page === 'number' ? (
+                          <Button
+                            key={idx}
+                            variant={page === currentPage ? 'default' : 'ghost'}
+                            size="icon"
+                            className={cn(
+                              'h-9 w-9',
+                              page === currentPage && 'bg-primary text-primary-foreground font-medium'
+                            )}
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </Button>
+                        ) : (
+                          <span key={idx} className="text-muted-foreground px-1">
+                            {page}
+                          </span>
+                        )
+                      )}
+
+                      {/* Next Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -598,7 +700,7 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, delay: index * 0.03 }}
       className={cn(
-        'group grid grid-cols-[40px,1fr,1fr,1.5fr,100px,100px,80px] px-5 py-4 items-center hover:bg-muted/50 border-l-2 border-transparent hover:border-l-primary transition-all duration-150',
+        'group grid grid-cols-[40px,1fr,1fr,1.5fr,100px,100px,80px] px-5 py-4 items-center hover:bg-muted/50 border-l-2 border-transparent hover:border-l-primary transition-all duration-150 cursor-pointer',
         isSelected && 'bg-primary/5'
       )}
     >
@@ -608,6 +710,7 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
           checked={isSelected}
           onCheckedChange={onToggleSelect}
           aria-label={`Select booking ${booking.booking_number}`}
+          className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
         />
       </div>
 
@@ -783,6 +886,7 @@ function MobileBookingCard({
                   checked={isSelected}
                   onCheckedChange={onToggleSelect}
                   aria-label={`Select booking ${booking.booking_number}`}
+                  className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
                 />
               </div>
               <StatusBadge status={mapBookingStatus(booking.booking_status)} />

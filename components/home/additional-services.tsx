@@ -29,56 +29,62 @@ const additionalServicesData = [
 
 export function AdditionalServices() {
   return (
-    <div className="section-padding">
+    <section className="section-padding relative bg-[var(--black-void)]" id="services">
       <div className="luxury-container">
+        {/* Section Header */}
         <motion.div
-          className="section-title-wrapper"
+          className="section-header"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true }}
         >
+          <span className="section-eyebrow">Extras</span>
           <h2 className="section-title">Additional Services</h2>
-          <div className="section-divider"></div>
+          <div className="section-divider">
+            <div className="section-divider-icon"></div>
+          </div>
           <p className="section-subtitle">
             Customize your ride to suit all your needs with our range of optional extras.
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Services Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {additionalServicesData.map((service, index) => (
             <motion.div
               key={service.title}
-              className="luxury-card luxury-card-hover flex flex-col overflow-hidden"
+              className="service-card group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <div className="relative w-full h-56">
+              {/* Image */}
+              <div className="relative w-full h-48 overflow-hidden">
                 <Image
                   src={service.image || "/placeholder.svg"}
                   alt={service.title}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--charcoal)] via-transparent to-transparent"></div>
               </div>
 
-              <div className="p-6 flex flex-col flex-grow">
-                <div className="flex items-center mb-3">
-                  <div className="p-2 bg-luxury-gold/10 rounded-md mr-3" aria-hidden="true">
-                    <service.icon className="w-5 h-5 text-luxury-gold" />
-                  </div>
-                  <h3 className="text-xl font-serif text-luxury-pearl">{service.title}</h3>
+              {/* Content */}
+              <div className="p-6">
+                {/* Icon above title */}
+                <div className="benefit-icon">
+                  <service.icon className="w-5 h-5 text-[var(--gold)]" aria-hidden="true" />
                 </div>
-                <p className="text-sm text-luxury-lightGray/90 flex-grow mb-4">{service.description}</p>
+                <h3 className="font-display text-lg text-[var(--text-primary)] mb-2">{service.title}</h3>
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">{service.description}</p>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   )
 }

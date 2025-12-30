@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Plus, Wallet, CalendarCheck, Settings, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 // Quick Action configuration with unique colors per action

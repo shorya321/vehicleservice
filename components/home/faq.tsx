@@ -1,7 +1,8 @@
 "use client"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { motion } from "framer-motion"
-import { ChevronDown } from "lucide-react"
+import { Plus } from "lucide-react"
+import Link from "next/link"
 
 const faqData = [
   {
@@ -33,21 +34,23 @@ const faqData = [
 
 export function FAQ() {
   return (
-    <div className="section-padding">
+    <section className="section-padding faq-section" id="faq">
       <div className="luxury-container">
-        <div className="grid lg:grid-cols-3 gap-12">
+        <div className="grid lg:grid-cols-[1fr_1.5fr] gap-12 lg:gap-16">
+          {/* Left Column - Intro */}
           <motion.div
-            className="lg:col-span-1"
+            className=""
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, amount: 0.3 }}
           >
-            <div className="section-title-wrapper text-left">
-              <h2 className="section-title text-left mb-3">Your Premium Transfer Experience</h2>
-              <div className="section-divider mx-0 mb-5"></div>
-            </div>
-            <div className="space-y-4 text-sm text-luxury-lightGray/90 leading-relaxed">
+            <span className="section-eyebrow mb-4 block">Need Help?</span>
+            <h2 className="font-display text-3xl md:text-4xl text-[var(--text-primary)] mb-6">
+              Your Premium Transfer Experience
+            </h2>
+            <div className="w-16 h-px bg-[var(--gold)] mb-6"></div>
+            <div className="space-y-4 text-[var(--text-secondary)] leading-relaxed">
               <p>
                 From the dazzling heights of Dubai to the cultural heart of Abu Dhabi, navigating the UAE requires
                 comfort, reliability, and a touch of class.
@@ -57,32 +60,35 @@ export function FAQ() {
                 pre-booked vehicle, and fixed-price journey ensure a seamless experience from start to finish.
               </p>
             </div>
+            <Link href="#contact" className="btn btn-secondary mt-6">
+              Contact Support
+            </Link>
           </motion.div>
 
+          {/* Right Column - FAQ */}
           <motion.div
-            className="lg:col-span-2"
+            className=""
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, amount: 0.3 }}
           >
-            <div className="section-title-wrapper text-left">
-              <h2 className="section-title text-left mb-3">Frequently Asked Questions</h2>
-              <div className="section-divider mx-0 mb-8"></div>
-            </div>
+            <h3 className="font-display text-2xl text-[var(--text-primary)] mb-8">
+              Frequently Asked Questions
+            </h3>
             <Accordion type="single" collapsible className="w-full space-y-4">
               {faqData.map((faq, index) => (
                 <AccordionItem
                   key={index}
                   value={`item-${index}`}
-                  className="luxury-card border-none overflow-hidden group"
+                  className="faq-item group"
                 >
-                  <AccordionTrigger className="p-6 text-left hover:no-underline text-base text-luxury-pearl w-full flex justify-between items-center data-[state=open]:text-luxury-gold">
-                    <span className="font-sans font-semibold">{faq.question}</span>
-                    <ChevronDown className="h-5 w-5 shrink-0 text-luxury-gold/70 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180 group-hover:text-luxury-gold" />
+                  <AccordionTrigger className="faq-trigger">
+                    <span className="font-body font-medium text-left pr-4">{faq.question}</span>
+                    <Plus className="faq-icon" aria-hidden="true" />
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6 pt-0">
-                    <p className="text-luxury-lightGray/90 leading-relaxed text-sm">{faq.answer}</p>
+                  <AccordionContent className="px-8 pb-5 pt-0">
+                    <p className="text-[var(--text-secondary)] leading-[1.7] text-sm">{faq.answer}</p>
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -90,6 +96,6 @@ export function FAQ() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

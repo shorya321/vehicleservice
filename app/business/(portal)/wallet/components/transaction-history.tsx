@@ -80,90 +80,89 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
     const relativeTime = formatDistanceToNow(new Date(transaction.created_at), { addSuffix: true });
     const fullDate = format(new Date(transaction.created_at), 'MMM d, yyyy h:mm a');
 
+    // Row classes for the outer wrapper (so divide-y and border-l are on same element)
+    const rowClasses = cn(
+      // Timeline accent border - matching HTML design
+      isCredit ? 'border-l-2 border-l-emerald-500' : 'border-l-2 border-l-red-500',
+      // Row styling - matching HTML: py-3 px-4 ml-4
+      'py-3 px-4 ml-4',
+      'transition-all duration-200',
+      'hover:bg-muted/30',
+      'group'
+    );
+
+    // Inner content (just the flex container)
     const content = (
-      <div
-        className={cn(
-          'relative',
-          // Timeline accent border
-          isCredit ? 'border-l-2 border-l-emerald-500' : 'border-l-2 border-l-red-500',
-          // Row styling
-          'rounded-lg py-3 pr-3 pl-3',
-          'transition-all duration-300',
-          'hover:bg-muted/50',
-          'group'
-        )}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Icon with colored background */}
-            <div
-              className={cn(
-                'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg',
-                'transition-transform duration-300',
-                'group-hover:scale-105',
-                isCredit
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-red-500/10 text-red-600 dark:text-red-400'
-              )}
-            >
-              {getTransactionIcon(transaction.transaction_type, isCredit)}
-            </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {/* Icon with colored background */}
+          <div
+            className={cn(
+              'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg',
+              'transition-transform duration-300',
+              'group-hover:scale-105',
+              isCredit
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : 'bg-red-500/10 text-red-600 dark:text-red-400'
+            )}
+          >
+            {getTransactionIcon(transaction.transaction_type, isCredit)}
+          </div>
 
-            {/* Transaction Details */}
-            <div className="min-w-0">
-              <p className="font-medium text-foreground truncate">
-                {getTransactionTypeLabel(transaction.transaction_type)}
+          {/* Transaction Details */}
+          <div className="min-w-0">
+            <p className="font-medium text-foreground truncate">
+              {getTransactionTypeLabel(transaction.transaction_type)}
+            </p>
+            {transaction.description && (
+              <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-none">
+                {transaction.description}
               </p>
-              {transaction.description && (
-                <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-none">
-                  {transaction.description}
-                </p>
-              )}
-              {/* Time with tooltip for full date */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5 cursor-help">
-                      {relativeTime}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="bottom"
-                    className="bg-popover border-border text-popover-foreground"
-                  >
-                    {fullDate}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+            )}
+            {/* Time with tooltip for full date */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5 cursor-help">
+                    {relativeTime}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="bg-popover border-border text-popover-foreground"
+                >
+                  {fullDate}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
+        </div>
 
-          {/* Amount Display */}
-          <div className="text-right flex-shrink-0 ml-4">
-            <p
-              className={cn(
-                'text-base font-semibold tabular-nums',
-                isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
-              )}
-            >
-              {isCredit ? '+' : ''}{formatTransactionAmount(transaction.amount)}
-            </p>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {formatCurrency(transaction.balance_after)}
-            </p>
-          </div>
+        {/* Amount Display */}
+        <div className="text-right flex-shrink-0 ml-4">
+          <p
+            className={cn(
+              'text-base font-semibold tabular-nums',
+              isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            )}
+          >
+            {isCredit ? '+' : ''}{formatTransactionAmount(transaction.amount)}
+          </p>
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {formatCurrency(transaction.balance_after)}
+          </p>
         </div>
       </div>
     );
 
     if (prefersReducedMotion) {
-      return <div className="border-b border-border last:border-0">{content}</div>;
+      return <div className={rowClasses}>{content}</div>;
     }
 
     return (
       <motion.div
+        className={rowClasses}
         variants={staggerItem}
-        className="border-b border-border last:border-0"
         custom={index}
       >
         {content}
@@ -173,7 +172,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
 
   if (prefersReducedMotion) {
     return (
-      <div className="space-y-0">
+      <div className="divide-y divide-border">
         {transactions.map((transaction, index) => (
           <TransactionRow key={transaction.id} transaction={transaction} index={index} />
         ))}
@@ -186,7 +185,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="space-y-0"
+      className="divide-y divide-border"
     >
       {transactions.map((transaction, index) => (
         <TransactionRow key={transaction.id} transaction={transaction} index={index} />

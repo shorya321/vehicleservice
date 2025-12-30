@@ -97,10 +97,9 @@ const LuxuryAlertDialogTitle = React.forwardRef<
   <AlertDialogPrimitive.Title
     ref={ref}
     className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
+      'font-business-display text-lg font-semibold leading-none tracking-tight',
       'text-[var(--business-text-primary)]'
     )}
-    style={{ fontFamily: 'var(--business-font-display)' }}
     {...props}
   />
 ));
@@ -112,8 +111,7 @@ const LuxuryAlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Description
     ref={ref}
-    className={cn('text-sm text-[var(--business-text-muted)]', className)}
-    style={{ fontFamily: 'var(--business-font-body)' }}
+    className={cn('font-business-body text-sm text-[var(--business-text-muted)]', className)}
     {...props}
   />
 ));

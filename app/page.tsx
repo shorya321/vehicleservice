@@ -5,7 +5,6 @@ import { TransportationBenefits } from '@/components/home/transportation-benefit
 import { VehicleClasses } from '@/components/home/vehicle-classes'
 import { AdditionalServices } from '@/components/home/additional-services'
 import { Testimonials } from '@/components/home/testimonials'
-import { OurPartners } from '@/components/home/our-partners'
 import { JoinCommunity } from '@/components/home/join-community'
 import { FAQ } from '@/components/home/faq'
 import { Footer } from '@/components/layout/footer'
@@ -35,10 +34,7 @@ export default function HomePage() {
       <div className="bg-luxury-darkGray">
         <Testimonials />
       </div>
-      <div className="bg-luxury-black">
-        <OurPartners />
-      </div>
-      <div className="bg-luxury-darkGray">
+            <div className="bg-luxury-darkGray">
         <JoinCommunity />
       </div>
       <div className="bg-luxury-black" id="faq">

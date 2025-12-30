@@ -13,7 +13,9 @@
 export interface ThemeModeColors {
   background: string;
   surface: string;
+  card: string;
   sidebar: string;
+  muted: string;
   text_primary: string;
   text_secondary: string;
   border: string;
@@ -50,16 +52,20 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   },
   dark: {
     background: '#09090B',
-    surface: '#18181B',
+    surface: '#0F0F12',
+    card: '#0e0e10',
     sidebar: '#0F0F12',
+    muted: '#27272A',
     text_primary: '#FAFAFA',
     text_secondary: '#A1A1AA',
-    border: '#27272A',
+    border: '#323234',
   },
   light: {
     background: '#FFFFFF',
     surface: '#FAFAFA',
+    card: '#FFFFFF',
     sidebar: '#FFFFFF',
+    muted: '#F4F4F5',
     text_primary: '#09090B',
     text_secondary: '#71717A',
     border: '#E4E4E7',
@@ -231,16 +237,20 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     },
     dark: {
       background: '#09090B',
-      surface: '#18181B',
+      surface: '#0F0F12',
+      card: '#0e0e10',
       sidebar: '#0F0F12',
+      muted: '#27272A',
       text_primary: '#FAFAFA',
       text_secondary: '#A1A1AA',
-      border: '#27272A',
+      border: '#323234',
     },
     light: {
       background: '#FFFFFF',
       surface: '#FAFAFA',
+      card: '#FFFFFF',
       sidebar: '#FFFFFF',
+      muted: '#F4F4F5',
       text_primary: '#09090B',
       text_secondary: '#71717A',
       border: '#E4E4E7',
@@ -258,7 +268,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     dark: {
       background: '#0F0F12',
       surface: '#1A1A1F',
+      card: '#1E1E24',
       sidebar: '#0C0C0E',
+      muted: '#27272A',
       text_primary: '#F8FAFC',
       text_secondary: '#94A3B8',
       border: '#27272A',
@@ -266,7 +278,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     light: {
       background: '#FAFBFF',
       surface: '#FFFFFF',
+      card: '#FFFFFF',
       sidebar: '#F8F9FC',
+      muted: '#F1F5F9',
       text_primary: '#0F172A',
       text_secondary: '#64748B',
       border: '#E2E8F0',
@@ -284,7 +298,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     dark: {
       background: '#0A0F0D',
       surface: '#141C18',
+      card: '#18221D',
       sidebar: '#0C120F',
+      muted: '#1C2D24',
       text_primary: '#F0FDF4',
       text_secondary: '#86EFAC',
       border: '#1C2D24',
@@ -292,7 +308,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     light: {
       background: '#F0FDF4',
       surface: '#FFFFFF',
+      card: '#FFFFFF',
       sidebar: '#ECFDF5',
+      muted: '#DCFCE7',
       text_primary: '#052E16',
       text_secondary: '#166534',
       border: '#BBF7D0',
@@ -310,7 +328,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     dark: {
       background: '#0F0A0B',
       surface: '#1A1314',
+      card: '#1E1718',
       sidebar: '#0D0809',
+      muted: '#2D1F21',
       text_primary: '#FFF1F2',
       text_secondary: '#FDA4AF',
       border: '#2D1F21',
@@ -318,7 +338,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     light: {
       background: '#FFF1F2',
       surface: '#FFFFFF',
+      card: '#FFFFFF',
       sidebar: '#FFFBFB',
+      muted: '#FFE4E6',
       text_primary: '#1C0B0D',
       text_secondary: '#9F1239',
       border: '#FECDD3',
@@ -336,7 +358,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     dark: {
       background: '#0F172A',
       surface: '#1E293B',
+      card: '#243044',
       sidebar: '#0B1120',
+      muted: '#334155',
       text_primary: '#F8FAFC',
       text_secondary: '#94A3B8',
       border: '#334155',
@@ -344,7 +368,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     light: {
       background: '#F8FAFC',
       surface: '#FFFFFF',
+      card: '#FFFFFF',
       sidebar: '#F1F5F9',
+      muted: '#F1F5F9',
       text_primary: '#0F172A',
       text_secondary: '#64748B',
       border: '#E2E8F0',
@@ -362,7 +388,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     dark: {
       background: '#0F0D09',
       surface: '#1A1714',
+      card: '#1E1B17',
       sidebar: '#0D0B08',
+      muted: '#2D2614',
       text_primary: '#FFFBEB',
       text_secondary: '#FCD34D',
       border: '#2D2614',
@@ -370,7 +398,9 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     light: {
       background: '#FFFBEB',
       surface: '#FFFFFF',
+      card: '#FFFFFF',
       sidebar: '#FEF3C7',
+      muted: '#FEF3C7',
       text_primary: '#1C1203',
       text_secondary: '#92400E',
       border: '#FDE68A',
@@ -511,7 +541,9 @@ export function parseThemeConfig(themeConfig: unknown): ThemeConfig {
   const dark: ThemeModeColors = {
     background: (darkRaw?.background as string) || DEFAULT_THEME_CONFIG.dark.background,
     surface: (darkRaw?.surface as string) || DEFAULT_THEME_CONFIG.dark.surface,
+    card: (darkRaw?.card as string) || DEFAULT_THEME_CONFIG.dark.card,
     sidebar: (darkRaw?.sidebar as string) || DEFAULT_THEME_CONFIG.dark.sidebar,
+    muted: (darkRaw?.muted as string) || DEFAULT_THEME_CONFIG.dark.muted,
     text_primary: (darkRaw?.text_primary as string) || DEFAULT_THEME_CONFIG.dark.text_primary,
     text_secondary: (darkRaw?.text_secondary as string) || DEFAULT_THEME_CONFIG.dark.text_secondary,
     border: (darkRaw?.border as string) || DEFAULT_THEME_CONFIG.dark.border,
@@ -522,7 +554,9 @@ export function parseThemeConfig(themeConfig: unknown): ThemeConfig {
   const light: ThemeModeColors = {
     background: (lightRaw?.background as string) || DEFAULT_THEME_CONFIG.light.background,
     surface: (lightRaw?.surface as string) || DEFAULT_THEME_CONFIG.light.surface,
+    card: (lightRaw?.card as string) || DEFAULT_THEME_CONFIG.light.card,
     sidebar: (lightRaw?.sidebar as string) || DEFAULT_THEME_CONFIG.light.sidebar,
+    muted: (lightRaw?.muted as string) || DEFAULT_THEME_CONFIG.light.muted,
     text_primary: (lightRaw?.text_primary as string) || DEFAULT_THEME_CONFIG.light.text_primary,
     text_secondary: (lightRaw?.text_secondary as string) || DEFAULT_THEME_CONFIG.light.text_secondary,
     border: (lightRaw?.border as string) || DEFAULT_THEME_CONFIG.light.border,

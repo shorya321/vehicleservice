@@ -140,7 +140,7 @@ export function LocationAutocomplete({
         aria-autocomplete="list"
         aria-controls={showSuggestions ? "location-suggestions" : undefined}
         aria-expanded={showSuggestions}
-        className="w-full h-14 bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-luxury-gold pl-12 text-base text-luxury-pearl placeholder:text-luxury-gold/70"
+        className="luxury-input w-full h-14 pl-12 text-base text-luxury-pearl placeholder:text-luxury-gold/70"
       />
 
       {loading && (

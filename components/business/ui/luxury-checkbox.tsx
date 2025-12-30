@@ -63,20 +63,16 @@ const LuxuryCheckbox = React.forwardRef<
             <label
               htmlFor={checkboxId}
               className={cn(
-                'text-sm font-medium cursor-pointer',
+                'font-business-body text-sm font-medium cursor-pointer',
                 'text-[var(--business-text-primary)]',
                 'peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
               )}
-              style={{ fontFamily: 'var(--business-font-body)' }}
             >
               {label}
             </label>
           )}
           {description && (
-            <p
-              className="text-sm text-[var(--business-text-muted)]"
-              style={{ fontFamily: 'var(--business-font-body)' }}
-            >
+            <p className="font-business-body text-sm text-[var(--business-text-muted)]">
               {description}
             </p>
           )}

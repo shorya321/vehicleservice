@@ -1,21 +1,38 @@
 import type { Metadata } from 'next'
-import { Montserrat, Playfair_Display } from 'next/font/google'
+import { Cormorant_Garamond, Outfit, Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
 import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
 
-// Infinia Luxury fonts
-const montserrat = Montserrat({
+// Infinia Luxury fonts - "Midnight Opulence" theme
+const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
-  variable: '--font-montserrat',
+  variable: '--font-cormorant',
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
   display: 'swap',
 })
 
-const playfair = Playfair_Display({
+const outfit = Outfit({
   subsets: ['latin'],
-  variable: '--font-playfair',
+  variable: '--font-outfit',
+  weight: ['200', '300', '400', '500', '600', '700'],
+  display: 'swap',
+})
+
+// Business portal fonts
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
+  weight: ['500', '600', '700', '800'],
   display: 'swap',
 })
 
@@ -53,11 +70,11 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${montserrat.variable} ${playfair.variable}`}
+      className={`${cormorant.variable} ${outfit.variable} ${inter.variable} ${plusJakartaSans.variable}`}
       style={themeStyles}
       suppressHydrationWarning
     >
-      <body className={`${montserrat.className} luxury-scrollbar`}>
+      <body className={`${outfit.className} luxury-scrollbar`}>
         <NextThemesProvider
           attribute="class"
           defaultTheme="dark"

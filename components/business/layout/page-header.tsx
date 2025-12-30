@@ -54,18 +54,14 @@ export function PageHeader({
                 <Link
                   href={item.href}
                   className={cn(
-                    'text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)]',
+                    'font-business-body text-[var(--business-text-muted)] hover:text-[var(--business-text-primary)]',
                     'transition-colors duration-200'
                   )}
-                  style={{ fontFamily: 'var(--business-font-body)' }}
                 >
                   {item.label}
                 </Link>
               ) : (
-                <span
-                  className="text-[var(--business-text-secondary)]"
-                  style={{ fontFamily: 'var(--business-font-body)' }}
-                >
+                <span className="font-business-body text-[var(--business-text-secondary)]">
                   {item.label}
                 </span>
               )}
@@ -79,18 +75,14 @@ export function PageHeader({
         <div className="space-y-1">
           <h1
             className={cn(
-              'text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight',
+              'font-business-display text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight',
               'text-[var(--business-text-primary)]'
             )}
-            style={{ fontFamily: 'var(--business-font-display)' }}
           >
             {title}
           </h1>
           {description && (
-            <p
-              className="text-[var(--business-text-muted)] text-sm sm:text-base max-w-2xl"
-              style={{ fontFamily: 'var(--business-font-body)' }}
-            >
+            <p className="font-business-body text-[var(--business-text-muted)] text-sm sm:text-base max-w-2xl">
               {description}
             </p>
           )}

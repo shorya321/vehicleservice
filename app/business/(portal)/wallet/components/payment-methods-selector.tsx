@@ -206,7 +206,7 @@ export function PaymentMethodsSelector({
         className={cn(
           'w-full',
           paymentMethods.length > 0
-            ? 'bg-muted border-border text-foreground hover:bg-muted/80 hover:border-border'
+            ? 'bg-muted border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30'
             : 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90 border-0'
         )}
       >

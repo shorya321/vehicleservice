@@ -26,56 +26,69 @@ const benefitsData = [
 
 export function TransportationBenefits() {
   return (
-    <div className="section-padding">
+    <section className="section-padding benefits-section">
       <div className="luxury-container">
+        {/* Section Header */}
         <motion.div
-          className="section-title-wrapper"
+          className="section-header"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true }}
         >
+          <span className="section-eyebrow">Our Promise</span>
           <h2 className="section-title">Transportation Beyond Expectations</h2>
-          <div className="section-divider"></div>
+          <div className="section-divider">
+            <div className="section-divider-icon"></div>
+          </div>
           <p className="section-subtitle">
             Relax and enjoy the ride, knowing that every detail is managed for your peace of mind.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Benefits Grid */}
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {benefitsData.map((benefit, index) => (
             <motion.div
               key={benefit.title}
-              className="group relative overflow-hidden rounded-lg shadow-xl luxury-card luxury-card-hover"
+              className="benefit-card group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
-              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.2 }}
             >
-              <div className="relative w-full aspect-[4/3]">
+              {/* Image Container */}
+              <div className="relative w-full aspect-[4/5] overflow-hidden">
                 <Image
                   src={benefit.image || "/placeholder.svg"}
                   alt={benefit.title}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                {/* Enhanced overlay for better text visibility */}
-                <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/95 via-luxury-black/60 to-transparent"></div>
+                {/* Multi-layer gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--black-void)] via-[var(--black-void)]/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--gold)]/5"></div>
+
               </div>
-              <div className="absolute bottom-0 left-0 p-6 md:p-8 text-luxury-pearl w-full">
-                <div className="flex items-center mb-3">
-                  <div className="p-3 bg-luxury-gold rounded-lg mr-4 shadow-md" aria-hidden="true">
-                    <benefit.icon className="w-6 h-6 text-luxury-black" />
-                  </div>
-                  <h3 className="text-xl lg:text-2xl font-serif text-luxury-pearl">{benefit.title}</h3>
+
+              {/* Content */}
+              <div className="absolute bottom-0 left-0 w-full p-6">
+                {/* Icon above title */}
+                <div className="benefit-icon">
+                  <benefit.icon className="w-5 h-5 text-[var(--gold)]" aria-hidden="true" />
                 </div>
-                <p className="text-sm text-luxury-pearl/80 leading-relaxed">{benefit.description}</p>
+                <h3 className="font-display text-xl lg:text-2xl text-[var(--text-primary)] mb-2">
+                  {benefit.title}
+                </h3>
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                  {benefit.description}
+                </p>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   )
 }

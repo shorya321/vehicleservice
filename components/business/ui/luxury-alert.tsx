@@ -109,22 +109,18 @@ const LuxuryAlert = React.forwardRef<HTMLDivElement, LuxuryAlertProps>(
         {/* Content */}
         <div className="flex-1 space-y-1">
           {title && (
-            <h5
-              className="font-medium leading-none tracking-tight"
-              style={{ fontFamily: 'var(--business-font-display)' }}
-            >
+            <h5 className="font-business-display font-medium leading-none tracking-tight">
               {title}
             </h5>
           )}
           {children && (
             <div
               className={cn(
-                'text-sm',
+                'font-business-body text-sm',
                 variant === 'default'
                   ? 'text-[var(--business-text-muted)]'
                   : 'opacity-90'
               )}
-              style={{ fontFamily: 'var(--business-font-body)' }}
             >
               {children}
             </div>

@@ -5,9 +5,10 @@
 
 import { Metadata } from 'next';
 import { redirect, notFound } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
 import { BookingDetails } from './components/booking-details';
 import { CancelBookingButton } from './components/cancel-booking-button';
 
@@ -115,13 +116,32 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+      {/* Breadcrumb & Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">Booking Details</h1>
-          <p className="text-muted-foreground">{booking.booking_number}</p>
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <Link
+              href="/business/bookings"
+              className="hover:text-primary transition-colors flex items-center gap-1.5"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Bookings</span>
+            </Link>
+            <span className="text-muted-foreground/50">/</span>
+            <span className="text-foreground font-medium">{booking.booking_number}</span>
+          </nav>
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-display">
+            Booking Details
+          </h1>
         </div>
-        {canCancel && <CancelBookingButton bookingId={id} />}
+        {/* Actions */}
+        {canCancel && (
+          <div className="flex items-center gap-3">
+            <CancelBookingButton bookingId={id} />
+          </div>
+        )}
       </div>
 
       {/* Booking Details */}

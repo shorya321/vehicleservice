@@ -142,13 +142,18 @@ export function PaymentMethodsList() {
   if (paymentMethods.length === 0) {
     return (
       <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <CardHeader className="p-5 border-b border-border">
+          <div className="flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            Payment Methods
-          </CardTitle>
+            <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              PAYMENT METHODS
+            </CardTitle>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            <span className="text-foreground font-medium">0</span> cards saved
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           <div className="text-center py-8">
             <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 ring-2 ring-primary/20 flex items-center justify-center mb-4">
               <CreditCard className="h-8 w-8 text-primary" />
@@ -175,16 +180,18 @@ export function PaymentMethodsList() {
 
   return (
     <Card className="bg-card border border-border rounded-xl shadow-sm h-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      <CardHeader className="p-5 border-b border-border">
+        <div className="flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-primary" />
-          Payment Methods
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {paymentMethods.length} {paymentMethods.length === 1 ? 'card' : 'cards'} saved
+          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            PAYMENT METHODS
+          </CardTitle>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          <span className="text-foreground font-medium">{paymentMethods.length}</span> {paymentMethods.length === 1 ? 'card' : 'cards'} saved
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5">
         {prefersReducedMotion ? (
           <div className="space-y-3">{listContent}</div>
         ) : (

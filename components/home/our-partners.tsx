@@ -13,33 +13,38 @@ const partnersData = [
 
 export function OurPartners() {
   return (
-    <div className="section-padding">
+    <section className="section-padding relative bg-[var(--charcoal)]">
       <div className="luxury-container">
+        {/* Section Header */}
         <motion.div
-          className="section-title-wrapper"
+          className="section-header"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true }}
         >
+          <span className="section-eyebrow">Trusted By</span>
           <h2 className="section-title">Our Partners</h2>
-          <div className="section-divider"></div>
+          <div className="section-divider">
+            <div className="section-divider-icon"></div>
+          </div>
           <p className="section-subtitle">
             Trusted by leading airlines, hotels, and tourism organizations across the UAE
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        {/* Partners Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {partnersData.map((partner, index) => (
             <motion.div
               key={partner.name}
-              className="luxury-card luxury-card-hover flex items-center justify-center p-6"
+              className="partner-card group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.05, ease: "easeOut" }}
+              transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true, amount: 0.3 }}
             >
-              <div className="relative w-full h-12 grayscale hover:grayscale-0 transition-all duration-300">
+              <div className="relative w-full h-12 grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500">
                 <Image
                   src={partner.logo}
                   alt={`${partner.name} logo`}
@@ -52,6 +57,6 @@ export function OurPartners() {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   )
 }

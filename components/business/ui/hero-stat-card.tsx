@@ -207,6 +207,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
     if (!prefersReducedMotion) {
       return (
         <motion.div
+          className="h-full"
           initial="hidden"
           animate="visible"
           variants={fadeInUp}

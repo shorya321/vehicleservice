@@ -13,6 +13,7 @@ import {
 import { generateSubdomain, isValidSubdomain } from '@/lib/business/domain-utils';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
 import { sendBusinessWelcomePendingEmail } from '@/lib/email/services/business-emails';
+import { DEFAULT_THEME_CONFIG } from '@/lib/business/branding-utils';
 
 /**
  * POST /api/business/auth/signup
@@ -103,6 +104,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         subdomain,
         wallet_balance: 0.0,
         status: 'pending', // Business accounts start as pending, awaiting admin approval
+        theme_config: DEFAULT_THEME_CONFIG, // Gold Luxury preset as default branding
       })
       .select()
       .single();

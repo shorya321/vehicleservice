@@ -42,6 +42,7 @@ const brandingFormSchema = z.object({
   // Dark mode colors
   dark_background: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_surface: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
+  dark_card: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_sidebar: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_text_primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_text_secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
@@ -49,6 +50,7 @@ const brandingFormSchema = z.object({
   // Light mode colors
   light_background: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_surface: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
+  light_card: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_sidebar: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_text_primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_text_secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
@@ -123,6 +125,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       // Dark mode from theme_config
       dark_background: themeConfig.dark.background,
       dark_surface: themeConfig.dark.surface,
+      dark_card: themeConfig.dark.card,
       dark_sidebar: themeConfig.dark.sidebar,
       dark_text_primary: themeConfig.dark.text_primary,
       dark_text_secondary: themeConfig.dark.text_secondary,
@@ -130,6 +133,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       // Light mode from theme_config
       light_background: themeConfig.light.background,
       light_surface: themeConfig.light.surface,
+      light_card: themeConfig.light.card,
       light_sidebar: themeConfig.light.sidebar,
       light_text_primary: themeConfig.light.text_primary,
       light_text_secondary: themeConfig.light.text_secondary,
@@ -147,6 +151,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       accent: watchedValues.accent_tertiary,
       background: watchedValues.dark_background,
       surface: watchedValues.dark_surface,
+      card: watchedValues.dark_card,
       sidebar: watchedValues.dark_sidebar,
       textPrimary: watchedValues.dark_text_primary,
       textSecondary: watchedValues.dark_text_secondary,
@@ -158,6 +163,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       accent: watchedValues.accent_tertiary,
       background: watchedValues.light_background,
       surface: watchedValues.light_surface,
+      card: watchedValues.light_card,
       sidebar: watchedValues.light_sidebar,
       textPrimary: watchedValues.light_text_primary,
       textSecondary: watchedValues.light_text_secondary,
@@ -179,6 +185,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
         dark: {
           background: data.dark_background,
           surface: data.dark_surface,
+          card: data.dark_card,
           sidebar: data.dark_sidebar,
           text_primary: data.dark_text_primary,
           text_secondary: data.dark_text_secondary,
@@ -187,6 +194,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
         light: {
           background: data.light_background,
           surface: data.light_surface,
+          card: data.light_card,
           sidebar: data.light_sidebar,
           text_primary: data.light_text_primary,
           text_secondary: data.light_text_secondary,
@@ -232,6 +240,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
     // Dark mode
     form.setValue('dark_background', preset.dark.background)
     form.setValue('dark_surface', preset.dark.surface)
+    form.setValue('dark_card', preset.dark.card)
     form.setValue('dark_sidebar', preset.dark.sidebar)
     form.setValue('dark_text_primary', preset.dark.text_primary)
     form.setValue('dark_text_secondary', preset.dark.text_secondary)
@@ -239,6 +248,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
     // Light mode
     form.setValue('light_background', preset.light.background)
     form.setValue('light_surface', preset.light.surface)
+    form.setValue('light_card', preset.light.card)
     form.setValue('light_sidebar', preset.light.sidebar)
     form.setValue('light_text_primary', preset.light.text_primary)
     form.setValue('light_text_secondary', preset.light.text_secondary)
@@ -401,6 +411,12 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                         onChange={(v) => form.setValue('dark_surface', v)}
                       />
                       <ColorInput
+                        label="Card"
+                        value={watchedValues.dark_card}
+                        onChange={(v) => form.setValue('dark_card', v)}
+                        description="Card background color"
+                      />
+                      <ColorInput
                         label="Sidebar"
                         value={watchedValues.dark_sidebar}
                         onChange={(v) => form.setValue('dark_sidebar', v)}
@@ -434,6 +450,12 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                         label="Surface"
                         value={watchedValues.light_surface}
                         onChange={(v) => form.setValue('light_surface', v)}
+                      />
+                      <ColorInput
+                        label="Card"
+                        value={watchedValues.light_card}
+                        onChange={(v) => form.setValue('light_card', v)}
+                        description="Card background color"
                       />
                       <ColorInput
                         label="Sidebar"

@@ -169,14 +169,18 @@ export function AutoRechargeHistory() {
   }) => {
     const [borderClass, textClass] = accentColorClass.split(' ');
     // Derive background color from border class for icon container
-    const bgClass = borderClass
-      .replace('border-l-', 'bg-')
-      .replace('-500', '-500/10')
-      .replace('-primary', '-primary/10');
-    const darkBgClass = borderClass
-      .replace('border-l-', 'dark:bg-')
-      .replace('-500', '-500/20')
-      .replace('-primary', '-primary/20');
+    const bgClass = borderClass === 'border-l-muted-foreground'
+      ? 'bg-muted'
+      : borderClass
+          .replace('border-l-', 'bg-')
+          .replace('-500', '-500/10')
+          .replace('-primary', '-primary/10');
+    const darkBgClass = borderClass === 'border-l-muted-foreground'
+      ? 'dark:bg-muted'
+      : borderClass
+          .replace('border-l-', 'dark:bg-')
+          .replace('-500', '-500/20')
+          .replace('-primary', '-primary/20');
     // Derive dark mode text color
     const darkTextClass = textClass
       .replace('-600', '-400')
@@ -335,19 +339,21 @@ export function AutoRechargeHistory() {
             label="Pending"
             value={statistics.pending + statistics.processing}
             icon={Clock}
-            accentColorClass="border-l-border text-muted-foreground"
+            accentColorClass="border-l-muted-foreground text-muted-foreground"
           />
         </div>
       )}
 
       {/* History Card */}
       <Card className="bg-card border border-border rounded-xl shadow-sm">
-        <CardHeader>
+        <CardHeader className="p-5 border-b border-border">
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <CardTitle className="flex items-center gap-2 text-foreground">
+            <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-              Recharge History
-            </CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">
+                Recharge History
+              </CardTitle>
+            </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px] bg-muted border-border focus:border-primary focus:ring-primary/20 text-foreground">
                 <SelectValue placeholder="Filter by status" />
@@ -362,11 +368,11 @@ export function AutoRechargeHistory() {
               </SelectContent>
             </Select>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-1">
             View all automatic wallet recharge attempts
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="relative">

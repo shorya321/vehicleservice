@@ -45,19 +45,15 @@ export function Section({
             {title && (
               <h2
                 className={cn(
-                  'text-lg sm:text-xl font-medium',
+                  'font-business-display text-lg sm:text-xl font-medium',
                   'text-[var(--business-text-primary)]'
                 )}
-                style={{ fontFamily: 'var(--business-font-display)' }}
               >
                 {title}
               </h2>
             )}
             {description && (
-              <p
-                className="text-sm text-[var(--business-text-muted)]"
-                style={{ fontFamily: 'var(--business-font-body)' }}
-              >
+              <p className="font-business-body text-sm text-[var(--business-text-muted)]">
                 {description}
               </p>
             )}

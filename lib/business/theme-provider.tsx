@@ -129,11 +129,11 @@ export function BusinessThemeProvider({
     // These map to business portal CSS variable system
     root.style.setProperty("--background", hexToHsl(modeColors.background));
     root.style.setProperty("--foreground", hexToHsl(modeColors.text_primary));
-    root.style.setProperty("--card", hexToHsl(modeColors.surface));
+    root.style.setProperty("--card", hexToHsl(modeColors.card));
     root.style.setProperty("--card-foreground", hexToHsl(modeColors.text_primary));
     root.style.setProperty("--popover", hexToHsl(modeColors.surface));
     root.style.setProperty("--popover-foreground", hexToHsl(modeColors.text_primary));
-    root.style.setProperty("--muted", hexToHsl(modeColors.surface));
+    root.style.setProperty("--muted", hexToHsl(modeColors.muted));
     root.style.setProperty("--muted-foreground", hexToHsl(modeColors.text_secondary));
     root.style.setProperty("--border", hexToHsl(modeColors.border));
     root.style.setProperty("--input", hexToHsl(modeColors.border));
@@ -142,6 +142,7 @@ export function BusinessThemeProvider({
     // These use HEX values directly since they're used as var(--business-*) without hsl() wrapper
     root.style.setProperty("--business-sidebar", modeColors.sidebar);
     root.style.setProperty("--business-surface", modeColors.surface);
+    root.style.setProperty("--business-card", modeColors.card);
     root.style.setProperty("--business-border", modeColors.border);
     root.style.setProperty("--business-text-primary", modeColors.text_primary);
     root.style.setProperty("--business-text-secondary", modeColors.text_secondary);
@@ -173,6 +174,7 @@ export function BusinessThemeProvider({
       // Business-specific
       root.style.removeProperty("--business-sidebar");
       root.style.removeProperty("--business-surface");
+      root.style.removeProperty("--business-card");
       root.style.removeProperty("--business-border");
       root.style.removeProperty("--business-text-primary");
       root.style.removeProperty("--business-text-secondary");

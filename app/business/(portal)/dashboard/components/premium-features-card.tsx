@@ -11,7 +11,7 @@
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/business/ui/card';
 import { Button } from '@/components/ui/button';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
@@ -67,7 +67,7 @@ export function PremiumFeaturesCard({ className }: PremiumFeaturesCardProps) {
           <Button
             variant="outline"
             size="sm"
-            className="w-full bg-violet-500/10 border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/50 transition-all duration-200"
+            className="w-full bg-violet-500/10 border-violet-500/30 text-violet-500 font-medium hover:bg-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
           >
             Learn More
           </Button>

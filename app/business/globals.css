@@ -13,8 +13,7 @@
  * - Professional animations
  */
 
-/* Import premium fonts: Playfair Display (luxury display) + Montserrat (accent) + Inter (body) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+/* Fonts are loaded via next/font in app/layout.tsx for optimal performance */
 
 /* ============================================
    SHADCN-COMPATIBLE CSS VARIABLES (HSL FORMAT)
@@ -153,14 +152,14 @@
   --business-stagger-list: 40ms;
   --business-stagger-nav: 60ms;
 
-  /* Font families */
-  --business-font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --business-font-body: 'Inter', system-ui, sans-serif;
+  /* Font families - reference next/font variables from app/layout.tsx */
+  --business-font-display: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
+  --business-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
 
   /* Luxury Auth Font families */
-  --luxury-font-display: 'Playfair Display', Georgia, serif;
-  --luxury-font-accent: 'Montserrat', system-ui, sans-serif;
-  --luxury-font-body: 'Inter', system-ui, sans-serif;
+  --luxury-font-display: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  --luxury-font-accent: var(--font-montserrat), 'Montserrat', system-ui, sans-serif;
+  --luxury-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
 
   /* ============================================
      LUXURY AUTH COLOR PALETTE
@@ -341,6 +340,8 @@ body {
 }
 
 /* Font display class - matches HTML design's font-display utility */
+/* Use this class explicitly on h1 headings and large display numbers */
+/* All other text (h2-h6, p, span, div) inherits Inter from body */
 .font-display {
   font-family: var(--business-font-display);
 }
@@ -1548,6 +1549,20 @@ button.auth-input svg {
 /* Content Transition - smooth margin animation */
 .content-transition {
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   ROUTE VISUAL LINE (Booking Details)
+   Gradient connector from pickup to dropoff
+   ============================================ */
+.route-line {
+  position: absolute;
+  left: 7px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background: linear-gradient(to bottom, hsl(142 76% 36%), hsl(var(--primary)), hsl(0 84% 60%));
+  border-radius: 2px;
 }
 
 /* ============================================

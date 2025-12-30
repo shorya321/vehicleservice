@@ -21,6 +21,7 @@ interface PreviewColors {
   // Mode-specific colors
   background: string
   surface: string
+  card: string
   sidebar: string
   textPrimary: string
   textSecondary: string
@@ -167,7 +168,7 @@ export function LivePreview({ darkColors, lightColors, brandName = 'Your Brand',
                   key={i}
                   className="p-3 rounded-lg border transition-colors duration-300"
                   style={{
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.card,
                     borderColor: colors.border,
                   }}
                 >
@@ -203,7 +204,7 @@ export function LivePreview({ darkColors, lightColors, brandName = 'Your Brand',
             <div
               className="rounded-lg border transition-colors duration-300"
               style={{
-                backgroundColor: colors.surface,
+                backgroundColor: colors.card,
                 borderColor: colors.border,
               }}
             >

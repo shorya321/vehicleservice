@@ -65,14 +65,33 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Midnight Opulence - Extended Luxury Palette
         luxury: {
-          gold: "#C6AA88",
-          goldLight: "#E8D9C5",
-          black: "#0A0A0A",
-          darkGray: "#181818",
-          gray: "#2C2C2C",
-          lightGray: "#B0B0B0",
-          pearl: "#F5F5F5",
+          // Gold Spectrum (graduated)
+          goldPale: "#f4ece0",
+          goldCream: "#e8d9c5",
+          goldLight: "#d4c4a8",
+          gold: "#c6aa88",
+          goldMedium: "#b89b6a",
+          goldDeep: "#a68b5b",
+          goldDark: "#8b7349",
+          // Deep Blacks with Warm Undertones
+          void: "#050506",
+          rich: "#0a0a0b",
+          warm: "#0f0e0d",
+          charcoal: "#161514",
+          charcoalLight: "#1f1e1c",
+          graphite: "#2a2826",
+          // Legacy mappings for compatibility
+          black: "#050506",
+          darkGray: "#161514",
+          gray: "#2a2826",
+          lightGray: "#7a7672",
+          pearl: "#f8f6f3",
+          // Text Colors
+          textPrimary: "#f8f6f3",
+          textSecondary: "#b8b4ae",
+          textMuted: "#7a7672",
         },
         // Business Portal Premium Design System
         business: {
@@ -164,15 +183,38 @@ export default {
           "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(30px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "pulse-gold": {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(198, 170, 136, 0.4)" },
+          "50%": { boxShadow: "0 0 20px 5px rgba(198, 170, 136, 0.2)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in-bottom": "fade-in-bottom 0.6s ease-out forwards",
+        "fade-in-up": "fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "float": "float 6s ease-in-out infinite",
+        "shimmer": "shimmer 3s infinite",
+        "pulse-gold": "pulse-gold 2s ease-in-out infinite",
       },
       fontFamily: {
-        serif: ["var(--font-playfair)", "serif"],
-        sans: ["var(--font-montserrat)", "sans-serif"],
+        // Midnight Opulence - Luxury Fonts
+        serif: ["var(--font-cormorant)", "'Cormorant Garamond'", "Georgia", "serif"],
+        sans: ["var(--font-outfit)", "'Outfit'", "system-ui", "sans-serif"],
+        display: ["var(--font-cormorant)", "'Cormorant Garamond'", "Georgia", "serif"],
+        body: ["var(--font-outfit)", "'Outfit'", "system-ui", "sans-serif"],
         // Business portal fonts
         "business-display": ["var(--font-jakarta)", "'Plus Jakarta Sans'", "system-ui", "sans-serif"],
         "business-body": ["var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],

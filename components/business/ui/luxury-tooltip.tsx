@@ -25,7 +25,7 @@ const LuxuryTooltipContent = React.forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={cn(
-      'z-[var(--business-z-tooltip)]',
+      'font-business-body z-[var(--business-z-tooltip)]',
       'overflow-hidden rounded-[var(--business-radius-md)]',
       'bg-[var(--business-surface-3)]',
       'border border-[var(--business-border-default)]',
@@ -40,7 +40,6 @@ const LuxuryTooltipContent = React.forwardRef<
       'data-[side=top]:slide-in-from-bottom-2',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     {...props}
   />
 ));

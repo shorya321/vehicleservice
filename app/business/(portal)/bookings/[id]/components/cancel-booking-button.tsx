@@ -3,19 +3,18 @@
 /**
  * Cancel Booking Button Component
  * Handle booking cancellation with refund
+ *
+ * Design System: Premium Admin Panel with Gold Accent
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, XCircle } from 'lucide-react';
+import { AlertTriangle, Loader2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -73,45 +72,74 @@ export function CancelBookingButton({ bookingId }: CancelBookingButtonProps) {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-10 px-4 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all"
+        >
           <XCircle className="mr-2 h-4 w-4" />
           Cancel Booking
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Cancel Booking</DialogTitle>
-          <DialogDescription>
-            This will cancel the booking and refund the amount to your wallet. This action cannot
-            be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="reason">Cancellation Reason</Label>
-            <Textarea
-              id="reason"
-              placeholder="Please provide a reason for cancellation..."
-              rows={4}
-              value={cancellationReason}
-              onChange={(e) => setCancellationReason(e.target.value)}
-              disabled={isLoading}
-            />
-            <p className="text-xs text-muted-foreground">Minimum 10 characters</p>
+      <DialogContent className="sm:max-w-md rounded-2xl">
+        {/* Custom Header with Icon */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 flex-shrink-0">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Cancel Booking</h3>
+            <p className="text-sm text-muted-foreground">This action cannot be undone</p>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isLoading}>
+
+        {/* Description */}
+        <p className="text-sm text-muted-foreground mb-4">
+          Are you sure you want to cancel this booking? The amount will be refunded to your wallet.
+        </p>
+
+        {/* Cancellation Reason */}
+        <div className="space-y-2 mb-6">
+          <Label htmlFor="reason" className="text-sm font-medium text-foreground">
+            Reason for cancellation
+          </Label>
+          <Textarea
+            id="reason"
+            placeholder="Please provide a reason for cancellation..."
+            rows={4}
+            value={cancellationReason}
+            onChange={(e) => setCancellationReason(e.target.value)}
+            disabled={isLoading}
+            className="resize-none rounded-lg bg-muted border-border focus:border-primary/50 focus:ring-2 focus:ring-primary/20 text-sm"
+          />
+          <p className="text-xs text-muted-foreground">Minimum 10 characters</p>
+        </div>
+
+        <DialogFooter className="flex-row justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setIsDialogOpen(false)}
+            disabled={isLoading}
+            className="rounded-lg"
+          >
             Keep Booking
           </Button>
-          <Button variant="destructive" onClick={handleCancel} disabled={isLoading}>
+          <Button
+            variant="destructive"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className="rounded-lg"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Cancelling...
               </>
             ) : (
-              'Confirm Cancellation'
+              <>
+                <XCircle className="mr-2 h-4 w-4" />
+                Cancel Booking
+              </>
             )}
           </Button>
         </DialogFooter>

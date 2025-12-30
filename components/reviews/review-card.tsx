@@ -172,7 +172,7 @@ export function ReviewCard({
     }
   }
 
-  const customerName = review.customer.full_name || review.customer.email.split('@')[0]
+  const customerName = review.customer?.full_name || review.customer?.email?.split('@')[0] || 'Customer'
   const initials = customerName
     .split(' ')
     .map((n) => n[0])
@@ -197,7 +197,7 @@ export function ReviewCard({
       <Card className="p-4 bg-luxury-black/50 backdrop-blur-sm border-luxury-lightGray/10">
         <div className="flex gap-4">
           <Avatar className="w-10 h-10">
-            <AvatarImage src={review.customer.avatar_url || undefined} />
+            <AvatarImage src={review.customer?.avatar_url || undefined} />
             <AvatarFallback className="bg-luxury-gold/20 text-luxury-gold">
               {initials}
             </AvatarFallback>
@@ -241,7 +241,7 @@ export function ReviewCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-4">
             <Avatar className={variant === 'featured' ? 'w-14 h-14' : 'w-12 h-12'}>
-              <AvatarImage src={review.customer.avatar_url || undefined} />
+              <AvatarImage src={review.customer?.avatar_url || undefined} />
               <AvatarFallback className="bg-luxury-gold/20 text-luxury-gold text-lg">
                 {initials}
               </AvatarFallback>

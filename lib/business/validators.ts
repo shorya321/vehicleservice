@@ -163,6 +163,7 @@ export const hexColorSchema = z
 export const themeModeColorsSchema = z.object({
   background: hexColorSchema.optional(),
   surface: hexColorSchema.optional(),
+  card: hexColorSchema.optional(),
   sidebar: hexColorSchema.optional(),
   text_primary: hexColorSchema.optional(),
   text_secondary: hexColorSchema.optional(),

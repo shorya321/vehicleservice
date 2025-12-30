@@ -1,7 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { CheckCircle2 } from "lucide-react"
+import { Check, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 const benefits = [
@@ -13,54 +12,73 @@ const benefits = [
 
 export function JoinCommunity() {
   return (
-    <div className="section-padding">
+    <section className="section-padding cta-section">
       <div className="luxury-container">
-        <div className="luxury-card p-8 md:p-12 max-w-4xl mx-auto">
-          <motion.div
-            className="section-title-wrapper"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            viewport={{ once: true }}
-          >
-            <h2 className="section-title">Join Our Community</h2>
-            <div className="section-divider"></div>
-            <p className="section-subtitle">
+        <motion.div
+          className="cta-card"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true }}
+        >
+          {/* Corner Decorations */}
+          <div className="cta-corner cta-corner--tl"></div>
+          <div className="cta-corner cta-corner--br"></div>
+
+          {/* Content */}
+          <div className="relative z-10 text-center">
+            <span className="section-eyebrow">Membership</span>
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl text-[var(--text-primary)] mb-4">
+              Join Our <span className="gold-text">Community</span>
+            </h2>
+            <p className="text-[var(--text-secondary)] max-w-xl mx-auto mb-10">
               Become a member and unlock exclusive benefits, rewards, and premium travel experiences
             </p>
-          </motion.div>
 
-          <motion.div
-            className="grid md:grid-cols-2 gap-4 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-            viewport={{ once: true }}
-          >
-            {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <CheckCircle2 className="w-5 h-5 text-luxury-gold flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <span className="text-luxury-lightGray">{benefit}</span>
-              </div>
-            ))}
-          </motion.div>
+            {/* Benefits Grid */}
+            <motion.div
+              className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true }}
+            >
+              {benefits.map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-center gap-3 text-left"
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="cta-feature-check">
+                    <Check aria-hidden="true" />
+                  </div>
+                  <span className="text-[var(--text-secondary)] text-sm">{benefit}</span>
+                </motion.div>
+              ))}
+            </motion.div>
 
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-            viewport={{ once: true }}
-          >
-            <Button asChild size="lg">
-              <Link href="/register">JOIN NOW</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/how-it-works">LEARN MORE</Link>
-            </Button>
-          </motion.div>
-        </div>
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true }}
+            >
+              <Link href="/register" className="btn btn-primary btn-lg">
+                Join Now
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link href="/how-it-works" className="btn btn-secondary btn-lg">
+                Learn More
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </section>
   )
 }

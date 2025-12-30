@@ -33,14 +33,13 @@ const LuxuryDropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      'flex cursor-default select-none items-center rounded-[var(--business-radius-md)] px-2 py-1.5 text-sm outline-none',
+      'font-business-body flex cursor-default select-none items-center rounded-[var(--business-radius-md)] px-2 py-1.5 text-sm outline-none',
       'text-[var(--business-text-primary)]',
       'focus:bg-[var(--business-primary-500)]/10',
       'data-[state=open]:bg-[var(--business-primary-500)]/10',
       inset && 'pl-8',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     {...props}
   >
     {children}
@@ -116,7 +115,7 @@ const LuxuryDropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-[var(--business-radius-md)] px-2 py-1.5 text-sm outline-none',
+      'font-business-body relative flex cursor-pointer select-none items-center rounded-[var(--business-radius-md)] px-2 py-1.5 text-sm outline-none',
       'text-[var(--business-text-primary)]',
       'transition-colors duration-150',
       'focus:bg-[var(--business-primary-500)]/10 focus:text-[var(--business-primary-400)]',
@@ -124,7 +123,6 @@ const LuxuryDropdownMenuItem = React.forwardRef<
       inset && 'pl-8',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     {...props}
   />
 ));
@@ -137,14 +135,13 @@ const LuxuryDropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-[var(--business-radius-md)] py-1.5 pl-8 pr-2 text-sm outline-none',
+      'font-business-body relative flex cursor-pointer select-none items-center rounded-[var(--business-radius-md)] py-1.5 pl-8 pr-2 text-sm outline-none',
       'text-[var(--business-text-primary)]',
       'transition-colors duration-150',
       'focus:bg-[var(--business-primary-500)]/10 focus:text-[var(--business-primary-400)]',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     checked={checked}
     {...props}
   >
@@ -166,14 +163,13 @@ const LuxuryDropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-[var(--business-radius-md)] py-1.5 pl-8 pr-2 text-sm outline-none',
+      'font-business-body relative flex cursor-pointer select-none items-center rounded-[var(--business-radius-md)] py-1.5 pl-8 pr-2 text-sm outline-none',
       'text-[var(--business-text-primary)]',
       'transition-colors duration-150',
       'focus:bg-[var(--business-primary-500)]/10 focus:text-[var(--business-primary-400)]',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
@@ -196,12 +192,11 @@ const LuxuryDropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      'px-2 py-1.5 text-xs font-semibold',
+      'font-business-body px-2 py-1.5 text-xs font-semibold',
       'text-[var(--business-text-muted)]',
       inset && 'pl-8',
       className
     )}
-    style={{ fontFamily: 'var(--business-font-body)' }}
     {...props}
   />
 ));
