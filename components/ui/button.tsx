@@ -9,8 +9,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary gold gradient button - matches auth sign-in button styling
-        default: "bg-gradient-to-br from-[#C6AA88] via-[#E8D9C5] to-[#C6AA88] text-[#111111] shadow-[0_4px_15px_-3px_rgba(198,170,136,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(198,170,136,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95",
+        // Primary gold gradient button - matches auth tab styling
+        default: "bg-gradient-to-br from-[#C6AA88] to-[#A68B5B] text-[#050506] shadow-[0_4px_15px_-3px_rgba(198,170,136,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(198,170,136,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95",
         // Gold border outline button
         outline: "border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground active:scale-95",
         // Subtle muted button
@@ -24,7 +24,7 @@ const buttonVariants = cva(
         // Link style
         link: "text-primary underline-offset-4 hover:underline",
         // Premium gold gradient button - matches auth button styling
-        premium: "bg-gradient-to-r from-[#C6AA88] via-[#E8D9C5] to-[#C6AA88] text-zinc-900 font-semibold shadow-md hover:shadow-lg active:scale-95",
+        premium: "bg-gradient-to-br from-[#C6AA88] to-[#A68B5B] text-[#050506] font-semibold shadow-md hover:shadow-lg active:scale-95",
       },
       size: {
         sm: "h-10 px-4 text-xs",

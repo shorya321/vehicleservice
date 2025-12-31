@@ -1,27 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
-  MapPin,
   Calendar,
+  Clock,
   Users,
-  Car,
   Tag,
   Shield,
-  Clock,
-  ChevronRight,
-  Briefcase,
-  Route,
-  Luggage
+  Lock,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight,
+  Check,
+  Briefcase
 } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { formatCurrency } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 interface OrderSummaryProps {
   route: RouteDetails
@@ -30,12 +30,32 @@ interface OrderSummaryProps {
   luggage: number
   infantSeats?: number
   boosterSeats?: number
+  pickupDate?: string
+  pickupTime?: string
+  onSubmit?: () => void
+  isSubmitting?: boolean
+  agreeToTerms?: boolean
+  onAgreeToTermsChange?: (checked: boolean) => void
 }
 
-export function OrderSummary({ route, vehicleType, passengers, luggage, infantSeats = 0, boosterSeats = 0 }: OrderSummaryProps) {
+export function OrderSummary({
+  route,
+  vehicleType,
+  passengers,
+  luggage,
+  infantSeats = 0,
+  boosterSeats = 0,
+  pickupDate,
+  pickupTime,
+  onSubmit,
+  isSubmitting = false,
+  agreeToTerms = false,
+  onAgreeToTermsChange
+}: OrderSummaryProps) {
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
+  const [showPromo, setShowPromo] = useState(false)
 
   // Calculate prices including all extras
   const basePrice = vehicleType.price || 50
@@ -46,8 +66,18 @@ export function OrderSummary({ route, vehicleType, passengers, luggage, infantSe
   const discount = promoDiscount
   const total = subtotal - discount
 
-  // Display distance instead of duration
-  const distanceText = route.distance_km ? `${route.distance_km} km` : 'Distance N/A'
+  // Format date and time
+  const formattedDate = pickupDate
+    ? new Date(pickupDate).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      })
+    : ''
+
+  const formattedTime = pickupTime
+    ? pickupTime
+    : ''
 
   const applyPromoCode = () => {
     // Simplified promo code logic
@@ -62,156 +92,200 @@ export function OrderSummary({ route, vehicleType, passengers, luggage, infantSe
 
   return (
     <motion.div
-        className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg sticky top-24"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-6 border-b border-luxury-gold/20">
-          <h2 className="font-serif text-3xl text-luxury-pearl">Order Summary</h2>
-        </div>
+      className="checkout-summary-card"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Header */}
+      <div className="checkout-summary-header">
+        <h2 className="checkout-summary-title">Order Summary</h2>
+      </div>
 
-        <div className="p-6 space-y-6">
-          {/* Vehicle Info */}
-          <div className="space-y-4">
-            <div className="relative h-40 bg-gradient-to-br from-luxury-black/60 to-luxury-darkGray/60 backdrop-blur-sm border border-luxury-gold/10 rounded-lg overflow-hidden">
-              {vehicleType.image_url && (
-                <Image
-                  src={vehicleType.image_url}
-                  alt={vehicleType.name}
-                  fill
-                  className="object-contain p-3"
-                />
-              )}
-            </div>
-            <div>
-              <h3 className="font-sans font-semibold text-lg text-luxury-pearl">{vehicleType.name}</h3>
-              <div className="flex items-center gap-4 text-sm text-luxury-lightGray mt-2">
-                <span className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                  {vehicleType.passenger_capacity} seats
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Car className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                  {vehicleType.luggage_capacity} luggage
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <Separator className="border-luxury-gold/10" />
-
-          {/* Route Details */}
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 mt-1" style={{ color: "#C6AA88" }} aria-hidden="true" />
-              <div className="flex-1 space-y-3">
-                <div>
-                  <p className="text-xs text-luxury-lightGray uppercase tracking-wider mb-1">From</p>
-                  <p className="font-medium text-luxury-pearl">{route.origin.name}</p>
-                </div>
-                <div className="border-l-2 border-dashed border-luxury-gold/30 ml-2 h-4" />
-                <div>
-                  <p className="text-xs text-luxury-lightGray uppercase tracking-wider mb-1">To</p>
-                  <p className="font-medium text-luxury-pearl">{route.destination.name}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-luxury-lightGray">
-              <span className="flex items-center gap-1.5">
-                <Route className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                {distanceText}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                {passengers} passenger{passengers > 1 ? 's' : ''}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Briefcase className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                {luggage} bag{luggage !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-
-          <Separator className="border-luxury-gold/10" />
-
-          {/* Promo Code */}
-          <div className="space-y-3">
-            <label className="text-xs text-luxury-lightGray uppercase tracking-wider">Promo Code</label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Enter code"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                className="flex-1 h-14 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+      {/* Content */}
+      <div className="checkout-summary-content">
+        {/* Vehicle Info */}
+        <div className="checkout-summary-vehicle">
+          {vehicleType.image_url && (
+            <div className="relative w-20 h-[55px] rounded-lg overflow-hidden bg-[#161514] flex-shrink-0">
+              <Image
+                src={vehicleType.image_url}
+                alt={vehicleType.name}
+                fill
+                className="object-contain p-1"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={applyPromoCode}
-                className="h-14 px-6 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black uppercase tracking-wider"
-              >
-                Apply
-              </Button>
             </div>
-            {promoApplied && (
-              <p className="text-sm text-luxury-gold">✓ Promo code applied!</p>
-            )}
+          )}
+          <div className="checkout-summary-vehicle-info">
+            <span className="checkout-summary-vehicle-category">
+              {vehicleType.category || 'Premium'}
+            </span>
+            <p className="checkout-summary-vehicle-name">{vehicleType.name}</p>
           </div>
+        </div>
 
-          <Separator className="border-luxury-gold/10" />
-
-          {/* Price Breakdown */}
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm text-luxury-lightGray">
-              <span>Base Fare</span>
-              <span className="text-luxury-pearl">{formatCurrency(basePrice)}</span>
-            </div>
-            {childSeatsCost > 0 && (
-              <div className="flex justify-between text-sm text-luxury-lightGray">
-                <span>Child Seats ({infantSeats + boosterSeats} total)</span>
-                <span className="text-luxury-pearl">{formatCurrency(childSeatsCost)}</span>
-              </div>
-            )}
-            {extraLuggageCost > 0 && (
-              <div className="flex justify-between text-sm text-luxury-lightGray">
-                <span>Extra Luggage ({extraLuggageCount} bag{extraLuggageCount > 1 ? 's' : ''})</span>
-                <span className="text-luxury-pearl">{formatCurrency(extraLuggageCost)}</span>
-              </div>
-            )}
-            {promoDiscount > 0 && (
-              <div className="flex justify-between text-sm text-luxury-gold">
-                <span>Promo Discount</span>
-                <span>-{formatCurrency(promoDiscount)}</span>
-              </div>
-            )}
-            <Separator className="border-luxury-gold/20" />
-            <div className="flex justify-between font-semibold text-xl pt-2">
-              <span className="text-luxury-pearl">Total</span>
-              <span className="text-luxury-gold font-serif">{formatCurrency(total)}</span>
+        {/* Route Info */}
+        <div className="checkout-summary-route">
+          <div className="checkout-summary-route-item">
+            <div className="checkout-summary-route-dot pickup" />
+            <div className="checkout-summary-route-text">
+              <span className="checkout-summary-route-label">Pickup</span>
+              <p className="checkout-summary-route-name">{route.origin.name}</p>
             </div>
           </div>
-
-          <Separator className="border-luxury-gold/10" />
-
-          {/* Trust Badges */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-              <p className="text-sm text-luxury-lightGray">Secure SSL Payment</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-              <p className="text-sm text-luxury-lightGray">24/7 Customer Support</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Tag className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-              <p className="text-sm text-luxury-lightGray">Best Price Guarantee</p>
+          <div className="checkout-summary-route-item">
+            <div className="checkout-summary-route-dot dropoff" />
+            <div className="checkout-summary-route-text">
+              <span className="checkout-summary-route-label">Drop-off</span>
+              <p className="checkout-summary-route-name">{route.destination.name}</p>
             </div>
           </div>
         </div>
-      </motion.div>
+
+        {/* Trip Details */}
+        <div className="checkout-summary-details">
+          {formattedDate && (
+            <div className="checkout-summary-detail">
+              <Calendar className="h-4 w-4 text-[#c6aa88]" />
+              <span>{formattedDate}</span>
+            </div>
+          )}
+          {formattedTime && (
+            <div className="checkout-summary-detail">
+              <Clock className="h-4 w-4 text-[#c6aa88]" />
+              <span>{formattedTime}</span>
+            </div>
+          )}
+          <div className="checkout-summary-detail">
+            <Users className="h-4 w-4 text-[#c6aa88]" />
+            <span>{passengers} passengers</span>
+          </div>
+          <div className="checkout-summary-detail">
+            <Briefcase className="h-4 w-4 text-[#c6aa88]" />
+            <span>{luggage} bags</span>
+          </div>
+        </div>
+
+        {/* Promo Code */}
+        <div className="checkout-promo-section">
+          <button
+            type="button"
+            className="checkout-promo-toggle"
+            onClick={() => setShowPromo(!showPromo)}
+          >
+            <Tag className="h-4 w-4" />
+            Have a promo code?
+            {showPromo ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+          <div className={cn("checkout-promo-form", showPromo && "visible")}>
+            <Input
+              placeholder="Enter code"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              className="flex-1 h-12 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] placeholder:text-[#7a7672]/50"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={applyPromoCode}
+              className="h-12 px-4 border-[#c6aa88]/30 text-[#c6aa88] hover:bg-[#c6aa88] hover:text-[#050506]"
+            >
+              Apply
+            </Button>
+          </div>
+          {promoApplied && (
+            <p className="text-sm text-green-400 mt-2 flex items-center gap-1">
+              <Check className="h-4 w-4" />
+              Promo code applied!
+            </p>
+          )}
+        </div>
+
+        {/* Price Breakdown */}
+        <div className="checkout-price-breakdown">
+          <div className="checkout-price-row">
+            <span className="checkout-price-label">Base Fare</span>
+            <span className="checkout-price-value">{formatCurrency(basePrice)}</span>
+          </div>
+          {childSeatsCost > 0 && (
+            <div className="checkout-price-row">
+              <span className="checkout-price-label">Child Seats ({infantSeats + boosterSeats})</span>
+              <span className="checkout-price-value">{formatCurrency(childSeatsCost)}</span>
+            </div>
+          )}
+          {extraLuggageCost > 0 && (
+            <div className="checkout-price-row">
+              <span className="checkout-price-label">Extra Luggage ({extraLuggageCount})</span>
+              <span className="checkout-price-value">{formatCurrency(extraLuggageCost)}</span>
+            </div>
+          )}
+          {promoDiscount > 0 && (
+            <div className="checkout-price-row discount">
+              <span className="checkout-price-label">Promo Discount</span>
+              <span className="checkout-price-value">-{formatCurrency(promoDiscount)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Total */}
+        <div className="checkout-price-total">
+          <span className="checkout-total-label">Total</span>
+          <span className="checkout-total-value">{formatCurrency(total)}</span>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="checkout-summary-footer">
+        {/* Terms Checkbox - if onAgreeToTermsChange is provided */}
+        {onAgreeToTermsChange && (
+          <label className="checkout-terms-checkbox">
+            <Checkbox
+              checked={agreeToTerms}
+              onCheckedChange={onAgreeToTermsChange}
+              className="border-[#c6aa88]/30 data-[state=checked]:bg-[#c6aa88] data-[state=checked]:border-[#c6aa88]"
+            />
+            <span className="checkout-terms-checkbox-label">
+              I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+            </span>
+          </label>
+        )}
+
+        {/* Book Button - if onSubmit is provided */}
+        {onSubmit && (
+          <button
+            type="submit"
+            className="checkout-btn-book"
+            disabled={isSubmitting || !agreeToTerms}
+            onClick={onSubmit}
+          >
+            {isSubmitting ? (
+              'Processing...'
+            ) : (
+              <>
+                Confirm Booking
+                <ArrowRight className="h-5 w-5" />
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Trust Badges */}
+        <div className="checkout-trust-badges">
+          <div className="checkout-trust-badge">
+            <Shield className="h-4 w-4 text-[#c6aa88]" />
+            <span>SSL Secure</span>
+          </div>
+          <div className="checkout-trust-badge">
+            <Lock className="h-4 w-4 text-[#c6aa88]" />
+            <span>Encrypted</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   )
 }

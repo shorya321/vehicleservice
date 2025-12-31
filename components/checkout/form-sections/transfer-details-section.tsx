@@ -2,10 +2,11 @@
 
 import { UseFormReturn } from 'react-hook-form'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, MapPin, Users } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Plane, ArrowRight, Briefcase } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 
 interface TransferDetailsSectionProps {
@@ -14,13 +15,15 @@ interface TransferDetailsSectionProps {
   vehicleType: VehicleTypeDetails
   passengers: number
   setPassengers: (value: number) => void
+  onDateTimeChange?: (date: string, time: string) => void
 }
 
 /**
  * Transfer Details Section Component
  *
  * Displays and manages:
- * - Pickup and drop-off locations
+ * - Route card with pickup and drop-off locations
+ * - Selected vehicle card with image and specs
  * - Date and time selection
  * - Flight number (optional)
  * - Passenger count with increment/decrement controls
@@ -32,77 +35,133 @@ export function TransferDetailsSection({
   route,
   vehicleType,
   passengers,
-  setPassengers
+  setPassengers,
+  onDateTimeChange
 }: TransferDetailsSectionProps) {
-  const { register, formState: { errors } } = form
+  const { register, formState: { errors }, watch } = form
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value
+    const currentTime = watch('pickupTime')
+    onDateTimeChange?.(newDate, currentTime)
+  }
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const currentDate = watch('pickupDate')
+    const newTime = e.target.value
+    onDateTimeChange?.(currentDate, newTime)
+  }
 
   return (
     <motion.div
-      className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6 md:p-8 space-y-6"
+      className="checkout-form-section"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="font-serif text-3xl text-luxury-pearl mb-6">Transfer Details</h2>
+      {/* Section Header */}
+      <div className="checkout-section-header">
+        <span className="checkout-section-number">1</span>
+        <h2 className="checkout-section-title">Transfer Details</h2>
+        <MapPin className="checkout-section-icon" />
+      </div>
 
-      <div className="space-y-6">
-        {/* Route Info */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label className="flex items-center gap-2 mb-2 text-luxury-lightGray">
-              <MapPin className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-              Pickup Location
-            </Label>
-            <div className="p-4 backdrop-blur-sm bg-luxury-black/30 border border-luxury-gold/10 rounded-md">
-              <p className="font-medium text-luxury-pearl">{route.origin.name}</p>
-              {route.origin.city && (
-                <p className="text-sm text-luxury-lightGray mt-1">{route.origin.city}</p>
-              )}
+      {/* Section Content */}
+      <div className="checkout-section-content space-y-6">
+        {/* Route Card */}
+        <div className="checkout-transfer-route">
+          <div className="checkout-route-point">
+            <span className="checkout-route-label">Pickup</span>
+            <p className="checkout-route-name">{route.origin.name}</p>
+            {route.origin.city && (
+              <span className="checkout-route-city">{route.origin.city}</span>
+            )}
+          </div>
+
+          <div className="checkout-route-connector">
+            <div className="checkout-route-connector-icon">
+              <ArrowRight className="h-4 w-4 text-[#c6aa88]" />
+            </div>
+            {route.distance_km && (
+              <span className="checkout-route-distance">{route.distance_km} km</span>
+            )}
+          </div>
+
+          <div className="checkout-route-point">
+            <span className="checkout-route-label">Drop-off</span>
+            <p className="checkout-route-name">{route.destination.name}</p>
+            {route.destination.city && (
+              <span className="checkout-route-city">{route.destination.city}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Vehicle Selected Card */}
+        <div className="checkout-vehicle-selected">
+          {vehicleType.image_url && (
+            <div className="relative w-[140px] h-[90px] flex-shrink-0 rounded-lg overflow-hidden bg-[#161514]">
+              <Image
+                src={vehicleType.image_url}
+                alt={vehicleType.name}
+                fill
+                className="object-contain p-2"
+              />
+            </div>
+          )}
+          <div className="checkout-vehicle-info">
+            <span className="checkout-vehicle-category">{vehicleType.category || 'Premium'}</span>
+            <h3 className="checkout-vehicle-name">{vehicleType.name}</h3>
+            <div className="checkout-vehicle-specs">
+              <span className="checkout-vehicle-spec">
+                <Users className="h-4 w-4 text-[#c6aa88]" />
+                {vehicleType.passenger_capacity} seats
+              </span>
+              <span className="checkout-vehicle-spec">
+                <Briefcase className="h-4 w-4 text-[#c6aa88]" />
+                {vehicleType.luggage_capacity} bags
+              </span>
             </div>
           </div>
-          <div>
-            <Label className="flex items-center gap-2 mb-2 text-luxury-lightGray">
-              <MapPin className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-              Drop-off Location
-            </Label>
-            <div className="p-4 backdrop-blur-sm bg-luxury-black/30 border border-luxury-gold/10 rounded-md">
-              <p className="font-medium text-luxury-pearl">{route.destination.name}</p>
-              {route.destination.city && (
-                <p className="text-sm text-luxury-lightGray mt-1">{route.destination.city}</p>
-              )}
-            </div>
-          </div>
+          <button
+            type="button"
+            className="checkout-vehicle-change"
+            onClick={() => window.history.back()}
+          >
+            Change
+          </button>
         </div>
 
         {/* Date and Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="pickupDate" className="flex items-center gap-2 mb-2 text-luxury-lightGray">
-              <Calendar className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
+            <Label htmlFor="pickupDate" className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
+              <Calendar className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
               Pickup Date
             </Label>
             <Input
               id="pickupDate"
               type="date"
-              className="h-14 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+              className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
               {...register('pickupDate')}
               min={new Date().toISOString().split('T')[0]}
+              onChange={handleDateChange}
             />
             {errors.pickupDate && (
               <p className="text-sm text-red-500 mt-1">{errors.pickupDate.message as string}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="pickupTime" className="flex items-center gap-2 mb-2 text-luxury-lightGray">
-              <Clock className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
+            <Label htmlFor="pickupTime" className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
+              <Clock className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
               Pickup Time
             </Label>
             <Input
               id="pickupTime"
               type="time"
-              className="h-14 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+              className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
               {...register('pickupTime')}
+              onChange={handleTimeChange}
             />
             {errors.pickupTime && (
               <p className="text-sm text-red-500 mt-1">{errors.pickupTime.message as string}</p>
@@ -112,50 +171,52 @@ export function TransferDetailsSection({
 
         {/* Flight Number (Optional) */}
         <div>
-          <Label htmlFor="flightNumber" className="mb-2 block text-luxury-lightGray">
+          <Label htmlFor="flightNumber" className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
+            <Plane className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
             Flight Number (Optional)
           </Label>
           <Input
             id="flightNumber"
-            placeholder="e.g., AA123"
-            className="h-14 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
+            placeholder="e.g., EK 123"
+            className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] placeholder:text-[#7a7672]/50 focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
             {...register('flightNumber')}
           />
+          <p className="text-xs text-[#7a7672] mt-2">We'll track your flight for delays</p>
         </div>
 
         {/* Passengers */}
         <div>
-          <Label className="flex items-center gap-2 mb-3 text-luxury-lightGray">
-            <Users className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
+          <Label className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
+            <Users className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
             Number of Passengers
           </Label>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 p-4 bg-[#1f1e1c]/30 border border-[#c6aa88]/10 rounded-lg">
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-12 w-12 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
+              className="h-12 w-12 border-[#c6aa88]/30 hover:bg-[#c6aa88] hover:text-[#050506] hover:border-[#c6aa88] text-[#f8f6f3]"
               onClick={() => setPassengers(Math.max(1, passengers - 1))}
               disabled={passengers <= 1}
               aria-label="Decrease passenger count"
             >
               -
             </Button>
-            <span className="w-16 text-center font-medium text-luxury-pearl text-lg">
+            <span className="w-20 text-center font-serif text-2xl text-[#f8f6f3]">
               {passengers}
             </span>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-12 w-12 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
+              className="h-12 w-12 border-[#c6aa88]/30 hover:bg-[#c6aa88] hover:text-[#050506] hover:border-[#c6aa88] text-[#f8f6f3]"
               onClick={() => setPassengers(Math.min(vehicleType.passenger_capacity, passengers + 1))}
               disabled={passengers >= vehicleType.passenger_capacity}
               aria-label="Increase passenger count"
             >
               +
             </Button>
-            <span className="text-sm text-luxury-lightGray ml-2">
+            <span className="text-sm text-[#7a7672] ml-2">
               Max: {vehicleType.passenger_capacity}
             </span>
           </div>

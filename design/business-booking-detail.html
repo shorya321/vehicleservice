@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Details - Business Portal | Infinia Transfers</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: {
+              DEFAULT: 'hsl(var(--primary))',
+              foreground: 'hsl(var(--primary-foreground))',
+            },
+            secondary: {
+              DEFAULT: 'hsl(var(--secondary))',
+              foreground: 'hsl(var(--secondary-foreground))',
+            },
+            destructive: {
+              DEFAULT: 'hsl(var(--destructive))',
+              foreground: 'hsl(var(--destructive-foreground))',
+            },
+            muted: {
+              DEFAULT: 'hsl(var(--muted))',
+              foreground: 'hsl(var(--muted-foreground))',
+            },
+            accent: {
+              DEFAULT: 'hsl(var(--accent))',
+              foreground: 'hsl(var(--accent-foreground))',
+            },
+            popover: {
+              DEFAULT: 'hsl(var(--popover))',
+              foreground: 'hsl(var(--popover-foreground))',
+            },
+            card: {
+              DEFAULT: 'hsl(var(--card))',
+              foreground: 'hsl(var(--card-foreground))',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'luxury': '0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04)',
+            'luxury-lg': '0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.06)',
+            'glow-gold': '0 0 20px rgba(198, 170, 136, 0.3)',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /* CSS Variables - Dark Mode (Default) */
+    :root {
+      --background: 240 10% 4%;
+      --foreground: 0 0% 98%;
+      --card: 240 6% 6%;
+      --card-foreground: 0 0% 98%;
+      --popover: 240 6% 6%;
+      --popover-foreground: 0 0% 98%;
+      --primary: 36 33% 66%;
+      --primary-foreground: 240 10% 4%;
+      --secondary: 240 4% 16%;
+      --secondary-foreground: 0 0% 98%;
+      --muted: 240 4% 16%;
+      --muted-foreground: 240 5% 65%;
+      --accent: 36 33% 66%;
+      --accent-foreground: 240 10% 4%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 4% 16%;
+      --input: 240 4% 16%;
+      --ring: 36 33% 66%;
+      --radius: 0.5rem;
+    }
+
+    /* Light Mode */
+    .light {
+      --background: 0 0% 100%;
+      --foreground: 240 10% 4%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 4%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 4%;
+      --primary: 36 40% 55%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 240 5% 96%;
+      --secondary-foreground: 240 6% 10%;
+      --muted: 240 5% 96%;
+      --muted-foreground: 240 4% 46%;
+      --accent: 36 40% 55%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 6% 90%;
+      --input: 240 6% 90%;
+      --ring: 36 40% 55%;
+    }
+
+    * {
+      border-color: hsl(var(--border));
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground) / 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--muted-foreground) / 0.5);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    /* Stagger children animation */
+    .stagger-children > * {
+      opacity: 0;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+    .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+    .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+    .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+
+    /* Dropdown animation */
+    .dropdown-content {
+      transform-origin: top right;
+      animation: dropdownOpen 0.2s ease-out forwards;
+    }
+
+    @keyframes dropdownOpen {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Sidebar transition */
+    .sidebar-transition {
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Content margin transition */
+    .content-transition {
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Mobile overlay */
+    .mobile-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Button hover glow */
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(198, 170, 136, 0.4);
+    }
+
+    /* Card hover effect */
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Active nav indicator */
+    .nav-active-indicator {
+      box-shadow: 0 0 10px hsl(var(--primary));
+    }
+
+    /* Status badge base */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid;
+    }
+
+    /* Timeline connector */
+    .timeline-connector {
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, hsl(var(--primary) / 0.3), transparent);
+    }
+
+    /* Route visual line */
+    .route-line {
+      position: absolute;
+      left: 7px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: linear-gradient(to bottom, hsl(142 76% 36%), hsl(var(--primary)), hsl(0 84% 60%));
+      border-radius: 2px;
+    }
+
+    /* Pulse animation for in-progress */
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .pulse-ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Mobile Overlay -->
+  <div id="mobileOverlay" class="fixed inset-0 z-40 mobile-overlay hidden md:hidden" onclick="closeMobileSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed left-0 top-0 z-50 h-screen flex flex-col overflow-hidden bg-card border-r border-border shadow-lg sidebar-transition w-64">
+    <!-- Workspace Selector -->
+    <div class="relative z-10 flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+      <div class="flex items-center gap-3 flex-1 min-w-0 p-2 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
+        <!-- Logo/Initials -->
+        <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm ring-2 ring-primary/20">
+          AB
+        </div>
+        <!-- Business Name -->
+        <div id="workspaceName" class="flex-1 min-w-0 overflow-hidden transition-all duration-200">
+          <p class="text-sm font-semibold truncate text-foreground">Acme Business</p>
+          <p class="text-xs text-primary">Business Portal</p>
+        </div>
+      </div>
+      <!-- Collapse Toggle (Desktop) -->
+      <button id="collapseBtn" onclick="toggleSidebar()" class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hidden md:flex" aria-label="Toggle sidebar">
+        <i data-lucide="chevron-left" class="h-4 w-4 transition-transform duration-200" id="collapseIcon"></i>
+      </button>
+      <!-- Close Button (Mobile) -->
+      <button onclick="closeMobileSidebar()" class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 md:hidden" aria-label="Close menu">
+        <i data-lucide="x" class="h-5 w-5"></i>
+      </button>
+    </div>
+
+    <!-- New Booking Button -->
+    <div id="newBookingWrapper" class="relative z-10 py-2 px-3">
+      <a href="#" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium shadow-sm hover:shadow-glow-gold transition-all duration-300 btn-primary">
+        <i data-lucide="plus" class="h-4 w-4"></i>
+        <span id="newBookingText">New Booking</span>
+      </a>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto px-3 pb-4">
+      <!-- Overview Group -->
+      <div class="mt-4">
+        <div id="overviewLabel" class="px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Overview</span>
+        </div>
+        <div class="space-y-1">
+          <a href="business-dashboard.html" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="layout-dashboard" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Dashboard</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Group -->
+      <div class="mt-6">
+        <div id="managementLabel" class="px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Management</span>
+        </div>
+        <div class="space-y-1">
+          <!-- Bookings - Active -->
+          <a href="business-bookings.html" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(198,170,136,0.08)]">
+            <div class="absolute left-0 inset-y-2 w-1 rounded-r-full bg-primary nav-active-indicator"></div>
+            <i data-lucide="calendar-check" class="h-4 w-4 flex-shrink-0"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Bookings</span>
+          </a>
+          <a href="business-wallet.html" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="wallet" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Wallet</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Settings Group -->
+      <div class="mt-6">
+        <div id="settingsLabel" class="px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Settings</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="palette" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Branding</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="bell" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Notifications</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="globe" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Domain</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="settings" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Settings</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Footer -->
+    <div class="border-t border-primary/10">
+      <div id="versionInfo" class="relative z-10 p-4 flex items-center justify-center gap-2 transition-all duration-200">
+        <span class="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent"></span>
+        <span class="text-[10px] text-muted-foreground/70 font-medium tracking-wider">v1.0</span>
+        <span class="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Header -->
+  <header id="header" class="fixed top-0 right-0 z-30 flex h-14 items-center justify-between bg-card/95 backdrop-blur-sm border-b border-border shadow-sm px-4 md:px-6 content-transition" style="left: 256px;">
+    <!-- Left side - Mobile menu toggle -->
+    <div class="relative z-10 flex items-center">
+      <button onclick="openMobileSidebar()" class="md:hidden h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200" aria-label="Open menu">
+        <i data-lucide="menu" class="h-5 w-5"></i>
+      </button>
+    </div>
+
+    <!-- Right side - Controls -->
+    <div class="relative z-10 flex items-center gap-1">
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" class="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200" aria-label="Toggle theme">
+        <i data-lucide="moon" class="h-4 w-4 dark:hidden"></i>
+        <i data-lucide="sun" class="h-4 w-4 hidden dark:block"></i>
+      </button>
+
+      <!-- Notifications -->
+      <div class="relative">
+        <button onclick="toggleDropdown('notifDropdown')" class="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 relative" aria-label="Notifications">
+          <i data-lucide="bell" class="h-4 w-4"></i>
+          <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary"></span>
+        </button>
+        <!-- Notification Dropdown -->
+        <div id="notifDropdown" class="hidden absolute right-0 top-full mt-2 w-80 rounded-xl bg-popover border border-border shadow-lg dropdown-content">
+          <div class="p-4 border-b border-border">
+            <h3 class="font-semibold text-foreground">Notifications</h3>
+            <p class="text-sm text-muted-foreground">You have 3 unread messages</p>
+          </div>
+          <div class="max-h-80 overflow-y-auto">
+            <a href="#" class="flex items-start gap-3 p-4 hover:bg-muted/50 transition-colors">
+              <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="calendar-check" class="h-5 w-5 text-primary"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">New booking received</p>
+                <p class="text-xs text-muted-foreground mt-0.5">John Doe booked a transfer for Dec 25</p>
+                <p class="text-xs text-primary mt-1">5 minutes ago</p>
+              </div>
+            </a>
+          </div>
+          <div class="p-3 border-t border-border">
+            <a href="#" class="block text-center text-sm text-primary hover:underline">View all notifications</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Dropdown -->
+      <div class="relative ml-1">
+        <button onclick="toggleDropdown('userDropdown')" class="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10 transition-all duration-200">
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-xs font-semibold ring-2 ring-primary/20">
+            JD
+          </div>
+          <div class="hidden sm:flex flex-col items-start">
+            <span class="text-sm font-medium text-foreground">John Doe</span>
+            <span class="text-xs text-muted-foreground">Acme Business</span>
+          </div>
+          <i data-lucide="chevron-down" class="h-4 w-4 text-primary"></i>
+        </button>
+        <!-- User Dropdown Menu -->
+        <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 rounded-xl bg-popover border border-border shadow-lg dropdown-content">
+          <div class="p-3 border-b border-border">
+            <p class="text-sm font-medium text-foreground">John Doe</p>
+            <p class="text-xs text-muted-foreground">john@acmebusiness.com</p>
+          </div>
+          <div class="p-1">
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors">
+              <i data-lucide="wallet" class="h-4 w-4 text-primary"></i>
+              Wallet
+            </a>
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors">
+              <i data-lucide="settings" class="h-4 w-4 text-primary"></i>
+              Account Settings
+            </a>
+          </div>
+          <div class="p-1 border-t border-border">
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors">
+              <i data-lucide="log-out" class="h-4 w-4"></i>
+              Log out
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="mainContent" class="pt-14 content-transition" style="margin-left: 256px;">
+    <div class="p-4 md:p-6 lg:p-8 pb-12 space-y-6 stagger-children">
+
+      <!-- Breadcrumb & Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
+        <div>
+          <!-- Breadcrumb -->
+          <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <a href="business-bookings.html" class="hover:text-primary transition-colors flex items-center gap-1.5">
+              <i data-lucide="arrow-left" class="h-4 w-4"></i>
+              <span>Back to Bookings</span>
+            </a>
+            <span class="text-muted-foreground/50">/</span>
+            <span class="text-foreground font-medium">TRF-2024-003</span>
+          </nav>
+          <!-- Title -->
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-display">
+            Booking Details
+          </h1>
+        </div>
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <button onclick="openCancelDialog()" class="flex items-center gap-2 h-10 px-4 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 font-medium transition-all">
+            <i data-lucide="x-circle" class="h-4 w-4"></i>
+            Cancel Booking
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Summary Bar -->
+      <div class="rounded-xl bg-gradient-to-r from-sky-500/10 via-sky-500/5 to-transparent border border-sky-500/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="h-12 w-12 rounded-xl bg-sky-500/20 flex items-center justify-center">
+            <i data-lucide="check-circle" class="h-6 w-6 text-sky-500"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="status-badge bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30">
+                <i data-lucide="check-circle" class="h-3 w-3"></i>
+                Confirmed
+              </span>
+              <span class="text-sm font-mono text-muted-foreground">TRF-2024-003</span>
+            </div>
+            <p class="text-sm text-muted-foreground mt-1">Booked on Dec 28, 2024 at 3:45 PM</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-muted-foreground">Pickup in</span>
+          <span class="font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">2 days</span>
+        </div>
+      </div>
+
+      <!-- Main Grid Layout -->
+      <div class="grid gap-6 lg:grid-cols-3">
+
+        <!-- Left Column - Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Route Details Card -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="route" class="h-4 w-4 text-primary"></i>
+                Route Details
+              </h2>
+            </div>
+            <div class="p-5">
+              <!-- Route Visual -->
+              <div class="relative pl-8 space-y-6">
+                <!-- Route Line -->
+                <div class="route-line"></div>
+
+                <!-- Pickup -->
+                <div class="relative">
+                  <div class="absolute -left-8 top-0 h-4 w-4 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></div>
+                  <div class="space-y-1">
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Pickup Location</p>
+                    <p class="font-semibold text-foreground text-lg">Grand Central Terminal</p>
+                    <p class="text-sm text-muted-foreground">89 E 42nd St, New York, NY 10017</p>
+                  </div>
+                </div>
+
+                <!-- Dropoff -->
+                <div class="relative">
+                  <div class="absolute -left-8 top-0 h-4 w-4 rounded-full bg-red-500 ring-4 ring-red-500/20"></div>
+                  <div class="space-y-1">
+                    <p class="text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400">Dropoff Location</p>
+                    <p class="font-semibold text-foreground text-lg">The Plaza Hotel</p>
+                    <p class="text-sm text-muted-foreground">768 5th Ave, New York, NY 10019</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="h-px bg-border my-5"></div>
+
+              <!-- Date & Time -->
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="calendar" class="h-5 w-5 text-primary"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Pickup Date & Time</p>
+                  <p class="text-lg font-semibold text-foreground mt-1">December 30, 2024</p>
+                  <p class="text-primary font-medium">9:00 AM</p>
+                </div>
+              </div>
+
+              <!-- Special Instructions -->
+              <div class="mt-5 p-4 rounded-xl bg-muted/50 border border-border">
+                <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Special Instructions</p>
+                <p class="text-sm text-foreground">Please wait at the main entrance. I will be wearing a blue jacket. Flight landing at 8:15 AM, may need 30-45 minutes for customs.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicle & Passengers Card -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="car" class="h-4 w-4 text-primary"></i>
+                Vehicle & Passengers
+              </h2>
+            </div>
+            <div class="p-5">
+              <!-- Vehicle Info -->
+              <div class="flex items-start gap-4">
+                <div class="h-14 w-14 rounded-xl bg-sky-500/10 flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="car" class="h-7 w-7 text-sky-600 dark:text-sky-400"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">Executive</span>
+                    <span class="text-xs text-muted-foreground">Category</span>
+                  </div>
+                  <p class="text-lg font-semibold text-foreground mt-1">Mercedes S-Class</p>
+                  <p class="text-sm text-muted-foreground">Luxury sedan with premium amenities</p>
+                </div>
+              </div>
+
+              <!-- Vehicle Capacity -->
+              <div class="flex items-center gap-6 mt-4 pt-4 border-t border-border">
+                <div class="flex items-center gap-2">
+                  <div class="h-9 w-9 rounded-lg bg-muted flex items-center justify-center">
+                    <i data-lucide="users" class="h-4 w-4 text-sky-600 dark:text-sky-400"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Max Passengers</p>
+                    <p class="font-semibold text-foreground">3</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-9 w-9 rounded-lg bg-muted flex items-center justify-center">
+                    <i data-lucide="briefcase" class="h-4 w-4 text-sky-600 dark:text-sky-400"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Max Luggage</p>
+                    <p class="font-semibold text-foreground">3</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="h-px bg-border my-5"></div>
+
+              <!-- Booking Details -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <i data-lucide="users" class="h-4 w-4 text-primary"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Passengers</p>
+                    <p class="font-semibold text-foreground">2 Passengers</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <i data-lucide="briefcase" class="h-4 w-4 text-primary"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Luggage</p>
+                    <p class="font-semibold text-foreground">2 Pieces</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Information Card -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="user" class="h-4 w-4 text-primary"></i>
+                Customer Information
+              </h2>
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="flex items-center gap-3">
+                <div class="h-12 w-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-semibold text-lg">
+                  ED
+                </div>
+                <div>
+                  <p class="font-semibold text-foreground text-lg">Emily Davis</p>
+                  <p class="text-sm text-muted-foreground">Guest</p>
+                </div>
+              </div>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <i data-lucide="mail" class="h-4 w-4 text-muted-foreground"></i>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Email</p>
+                    <a href="mailto:emily.davis@example.com" class="text-sm text-foreground hover:text-primary transition-colors">emily.davis@example.com</a>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <i data-lucide="phone" class="h-4 w-4 text-muted-foreground"></i>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Phone</p>
+                    <a href="tel:+1234567890" class="text-sm text-foreground hover:text-primary transition-colors">+1 (234) 567-890</a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reference Number -->
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <i data-lucide="hash" class="h-4 w-4 text-primary"></i>
+                <div>
+                  <p class="text-xs text-muted-foreground">Reference Number</p>
+                  <p class="text-sm font-mono font-medium text-primary">CONF-2024-XYZ789</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Driver Details Card (Conditional - shown when assigned) -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="user-check" class="h-4 w-4 text-primary"></i>
+                Driver Details
+              </h2>
+            </div>
+            <div class="p-5">
+              <!-- Driver Info -->
+              <div class="flex items-start gap-4">
+                <div class="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-lg">
+                  MR
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <p class="font-semibold text-foreground text-lg">Michael Rodriguez</p>
+                    <span class="status-badge bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
+                      Accepted
+                    </span>
+                  </div>
+                  <a href="tel:+1987654321" class="flex items-center gap-1.5 text-sm text-primary hover:underline mt-1">
+                    <i data-lucide="phone" class="h-3.5 w-3.5"></i>
+                    +1 (987) 654-321
+                  </a>
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="h-px bg-border my-5"></div>
+
+              <!-- Vehicle Details -->
+              <div class="space-y-2">
+                <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Vehicle Details</p>
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-lg bg-sky-500/10 flex items-center justify-center">
+                    <i data-lucide="car" class="h-5 w-5 text-sky-600 dark:text-sky-400"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-foreground">Mercedes S-Class (2024)</p>
+                    <p class="text-sm text-muted-foreground">Registration: <span class="font-mono">NYC-5678</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="h-px bg-border my-5"></div>
+
+              <!-- Assignment Timeline -->
+              <div class="space-y-3">
+                <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Assignment Timeline</p>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <i data-lucide="clock" class="h-4 w-4 text-muted-foreground"></i>
+                    <span class="text-muted-foreground">Assigned:</span>
+                    <span class="font-medium text-foreground">Dec 28, 2024 at 4:00 PM</span>
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600 dark:text-emerald-400"></i>
+                    <span class="text-muted-foreground">Accepted:</span>
+                    <span class="font-medium text-foreground">Dec 28, 2024 at 4:15 PM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="space-y-6">
+
+          <!-- Booking Status Card -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="activity" class="h-4 w-4 text-primary"></i>
+                Booking Status
+              </h2>
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Status</span>
+                <span class="status-badge bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30">
+                  <i data-lucide="check-circle" class="h-3 w-3"></i>
+                  Confirmed
+                </span>
+              </div>
+
+              <div class="h-px bg-border"></div>
+
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="h-8 w-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="clock" class="h-4 w-4 text-primary"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Created</p>
+                    <p class="text-sm font-medium text-foreground">Dec 28, 2024 at 3:45 PM</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="h-8 w-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="check" class="h-4 w-4 text-sky-600 dark:text-sky-400"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground">Confirmed</p>
+                    <p class="text-sm font-medium text-foreground">Dec 28, 2024 at 3:46 PM</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing Card -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="receipt" class="h-4 w-4 text-emerald-600 dark:text-emerald-400"></i>
+                Pricing
+              </h2>
+            </div>
+            <div class="p-5 space-y-3">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted-foreground">Base Price</span>
+                <span class="font-medium text-foreground">$180.00</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted-foreground">Meet & Greet</span>
+                <span class="font-medium text-foreground">$20.00</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted-foreground">Child Seat</span>
+                <span class="font-medium text-foreground">$10.00</span>
+              </div>
+
+              <div class="h-px bg-border my-2"></div>
+
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-foreground">Total Amount</span>
+                <span class="text-2xl font-bold text-primary">$210.00</span>
+              </div>
+
+              <div class="h-px bg-border my-2"></div>
+
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted-foreground">Wallet Deduction</span>
+                <span class="font-medium text-emerald-600 dark:text-emerald-400">-$210.00</span>
+              </div>
+
+              <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mt-2">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600 dark:text-emerald-400"></i>
+                  <span class="text-sm font-medium text-emerald-600 dark:text-emerald-400">Paid via Wallet</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions Card -->
+          <div class="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-border bg-muted/30">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <i data-lucide="zap" class="h-4 w-4 text-primary"></i>
+                Quick Actions
+              </h2>
+            </div>
+            <div class="p-4 space-y-2">
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                <i data-lucide="printer" class="h-4 w-4 text-muted-foreground"></i>
+                Print Confirmation
+              </button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                <i data-lucide="mail" class="h-4 w-4 text-muted-foreground"></i>
+                Resend Confirmation
+              </button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                <i data-lucide="copy" class="h-4 w-4 text-muted-foreground"></i>
+                Duplicate Booking
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Cancel Booking Dialog -->
+  <div id="cancelDialog" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeCancelDialog()"></div>
+    <div class="relative bg-card border border-border rounded-2xl shadow-xl max-w-md w-full mx-4 animate-fade-in">
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <i data-lucide="alert-triangle" class="h-6 w-6 text-destructive"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-foreground">Cancel Booking</h3>
+            <p class="text-sm text-muted-foreground">This action cannot be undone</p>
+          </div>
+        </div>
+        <p class="text-sm text-muted-foreground mb-4">
+          Are you sure you want to cancel this booking? The amount will be refunded to your wallet.
+        </p>
+
+        <!-- Cancellation Reason -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-foreground mb-2">Reason for cancellation</label>
+          <textarea
+            class="w-full h-24 px-3 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all resize-none text-sm"
+            placeholder="Please provide a reason for cancellation..."
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+          <button onclick="closeCancelDialog()" class="h-10 px-4 rounded-lg border border-border text-foreground hover:bg-muted transition-all">
+            Keep Booking
+          </button>
+          <button class="h-10 px-4 rounded-lg bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 transition-all flex items-center gap-2">
+            <i data-lucide="x-circle" class="h-4 w-4"></i>
+            Cancel Booking
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // State
+    let sidebarCollapsed = false;
+    let isMobile = window.innerWidth < 768;
+
+    // Theme Management
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('theme', 'dark');
+      }
+      lucide.createIcons();
+    }
+
+    // Sidebar Management
+    function toggleSidebar() {
+      sidebarCollapsed = !sidebarCollapsed;
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+      const collapseIcon = document.getElementById('collapseIcon');
+      const workspaceName = document.getElementById('workspaceName');
+      const newBookingText = document.getElementById('newBookingText');
+      const newBookingWrapper = document.getElementById('newBookingWrapper');
+      const versionInfo = document.getElementById('versionInfo');
+
+      const navLabels = document.querySelectorAll('#overviewLabel, #managementLabel, #settingsLabel');
+      const navItems = document.querySelectorAll('.nav-label');
+
+      if (sidebarCollapsed) {
+        sidebar.style.width = '72px';
+        header.style.left = '72px';
+        mainContent.style.marginLeft = '72px';
+        collapseIcon.style.transform = 'rotate(180deg)';
+        workspaceName.style.display = 'none';
+        newBookingText.style.display = 'none';
+        newBookingWrapper.classList.remove('px-3');
+        newBookingWrapper.classList.add('px-2');
+        versionInfo.style.display = 'none';
+
+        navLabels.forEach(label => label.style.display = 'none');
+        navItems.forEach(item => item.style.display = 'none');
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.add('justify-center', 'px-2');
+          item.classList.remove('px-3');
+        });
+      } else {
+        sidebar.style.width = '256px';
+        header.style.left = '256px';
+        mainContent.style.marginLeft = '256px';
+        collapseIcon.style.transform = 'rotate(0deg)';
+        workspaceName.style.display = 'block';
+        newBookingText.style.display = 'inline';
+        newBookingWrapper.classList.add('px-3');
+        newBookingWrapper.classList.remove('px-2');
+        versionInfo.style.display = 'flex';
+
+        navLabels.forEach(label => label.style.display = 'flex');
+        navItems.forEach(item => item.style.display = 'inline');
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('justify-center', 'px-2');
+          item.classList.add('px-3');
+        });
+      }
+    }
+
+    function openMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.add('animate-slide-in');
+      sidebar.style.transform = 'translateX(0)';
+      overlay.classList.remove('hidden');
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.style.transform = 'translateX(-100%)';
+      overlay.classList.add('hidden');
+    }
+
+    // Dropdown Management
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(id);
+      const allDropdowns = document.querySelectorAll('[id$="Dropdown"], [id^="actions"]');
+
+      allDropdowns.forEach(dd => {
+        if (dd.id !== id) {
+          dd.classList.add('hidden');
+        }
+      });
+
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdowns = document.querySelectorAll('[id$="Dropdown"], [id^="actions"]');
+      dropdowns.forEach(dropdown => {
+        const trigger = dropdown.previousElementSibling;
+        if (!dropdown.contains(e.target) && trigger && !trigger.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    });
+
+    // Cancel Dialog
+    function openCancelDialog() {
+      document.getElementById('cancelDialog').classList.remove('hidden');
+    }
+
+    function closeCancelDialog() {
+      document.getElementById('cancelDialog').classList.add('hidden');
+    }
+
+    // Handle responsive behavior
+    function handleResize() {
+      const newIsMobile = window.innerWidth < 768;
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+
+      if (newIsMobile !== isMobile) {
+        isMobile = newIsMobile;
+
+        if (isMobile) {
+          sidebar.style.transform = 'translateX(-100%)';
+          header.style.left = '0';
+          mainContent.style.marginLeft = '0';
+        } else {
+          sidebar.style.transform = 'translateX(0)';
+          if (sidebarCollapsed) {
+            sidebar.style.width = '72px';
+            header.style.left = '72px';
+            mainContent.style.marginLeft = '72px';
+          } else {
+            sidebar.style.width = '256px';
+            header.style.left = '256px';
+            mainContent.style.marginLeft = '256px';
+          }
+        }
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      handleResize();
+    });
+
+    window.addEventListener('resize', handleResize);
+
+    // Initial mobile state
+    if (window.innerWidth < 768) {
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+
+      sidebar.style.transform = 'translateX(-100%)';
+      header.style.left = '0';
+      mainContent.style.marginLeft = '0';
+    }
+  </script>
+</body>
+</html>

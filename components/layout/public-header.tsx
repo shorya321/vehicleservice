@@ -6,7 +6,7 @@ import { Phone, Menu, X, User, LogOut, Star } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import {
@@ -25,6 +25,8 @@ export function PublicHeader() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
+  const isSearchPage = pathname?.startsWith('/search')
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const supabase = createClient()
@@ -120,7 +122,7 @@ export function PublicHeader() {
       initial={{ y: -120 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 25 }}
-      className={`nav-luxury ${isScrolled ? "scrolled" : ""}`}
+      className={`nav-luxury ${isScrolled ? "scrolled" : ""} ${isSearchPage ? "has-border" : ""}`}
     >
       <div className="luxury-container">
         <div className="flex items-center justify-between">

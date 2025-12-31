@@ -86,7 +86,7 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
             passengers={parseInt(passengers)}
           />
 
-          <div className="container mx-auto px-4 py-8">
+          <div className="luxury-container py-8">
             <SearchResults results={results} searchParams={params} />
           </div>
         </div>

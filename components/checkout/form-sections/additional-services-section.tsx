@@ -1,13 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { motion } from 'framer-motion'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Baby, Luggage } from 'lucide-react'
+import { Baby, Briefcase, Wifi, Coffee, HeadphonesIcon, HandHeart, Check } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { VehicleTypeDetails } from '@/app/checkout/actions'
+import { cn } from '@/lib/utils'
 
 interface AdditionalServicesSectionProps {
   form: UseFormReturn<any>
@@ -16,13 +16,24 @@ interface AdditionalServicesSectionProps {
   setLuggage: (value: number) => void
 }
 
+interface ServiceCard {
+  id: string
+  name: string
+  description: string
+  price: number
+  icon: React.ElementType
+  isFree?: boolean
+  defaultSelected?: boolean
+}
+
 /**
  * Additional Services Section Component
  *
  * Manages optional booking add-ons:
  * - Child seats (infant and booster) with pricing
  * - Luggage management with capacity tracking and extra bag fees
- * - Special requests text area
+ * - Meet & Greet service
+ * - WiFi, Refreshments, Priority Support
  *
  * @component
  */
@@ -32,177 +43,279 @@ export function AdditionalServicesSection({
   luggage,
   setLuggage
 }: AdditionalServicesSectionProps) {
-  const { register, watch, setValue, formState: { errors } } = form
+  const { watch, setValue } = form
+
+  // Service states
+  const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set(['meet-greet', 'refreshments']))
 
   // Calculate extra luggage based on vehicle capacity
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
   const extraLuggageCost = extraLuggageCount * 15 // $15 per extra bag
 
+  const infantSeats = watch('infantSeats')
+  const boosterSeats = watch('boosterSeats')
+
+  const services: ServiceCard[] = [
+    {
+      id: 'meet-greet',
+      name: 'Meet & Greet',
+      description: 'Driver with name board at arrival',
+      price: 0,
+      icon: HandHeart,
+      isFree: true,
+      defaultSelected: true
+    },
+    {
+      id: 'child-seat',
+      name: 'Child Seat',
+      description: 'Infant or booster seat available',
+      price: 10,
+      icon: Baby
+    },
+    {
+      id: 'extra-luggage',
+      name: 'Extra Luggage',
+      description: `${vehicleType.luggage_capacity} bags included`,
+      price: 15,
+      icon: Briefcase
+    },
+    {
+      id: 'wifi',
+      name: 'In-Car WiFi',
+      description: 'High-speed internet access',
+      price: 8,
+      icon: Wifi
+    },
+    {
+      id: 'refreshments',
+      name: 'Refreshments',
+      description: 'Complimentary water & snacks',
+      price: 0,
+      icon: Coffee,
+      isFree: true,
+      defaultSelected: true
+    },
+    {
+      id: 'priority-support',
+      name: 'Priority Support',
+      description: '24/7 dedicated assistance',
+      price: 5,
+      icon: HeadphonesIcon
+    }
+  ]
+
+  const toggleService = (id: string) => {
+    const newSelected = new Set(selectedServices)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedServices(newSelected)
+  }
+
   return (
     <motion.div
-      className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6 md:p-8 space-y-6"
+      className="checkout-form-section"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <h2 className="font-serif text-3xl text-luxury-pearl mb-6">Additional Services</h2>
+      {/* Section Header */}
+      <div className="checkout-section-header">
+        <span className="checkout-section-number">3</span>
+        <h2 className="checkout-section-title">Additional Services</h2>
+        <Briefcase className="checkout-section-icon" />
+      </div>
 
-      <div className="space-y-6">
-        {/* Child Seats */}
-        <div className="space-y-4">
-          <Label className="flex items-center gap-2 text-luxury-lightGray">
-            <Baby className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-            Child Seats
-          </Label>
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Infant Seat */}
-            <div className="flex items-center justify-between p-4 backdrop-blur-sm bg-luxury-black/30 border border-luxury-gold/10 rounded-lg">
-              <div>
-                <p className="font-medium text-luxury-pearl">Infant Seat (0-1 year)</p>
-                <p className="text-sm text-luxury-gold">+{formatCurrency(10)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
-                  onClick={() => {
-                    const current = watch('infantSeats')
-                    setValue('infantSeats', Math.max(0, current - 1))
-                  }}
-                  aria-label="Decrease infant seats"
-                >
-                  -
-                </Button>
-                <span className="w-8 text-center text-luxury-pearl font-medium">
-                  {watch('infantSeats')}
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
-                  onClick={() => {
-                    const current = watch('infantSeats')
-                    setValue('infantSeats', Math.min(4, current + 1))
-                  }}
-                  aria-label="Increase infant seats"
-                >
-                  +
-                </Button>
-              </div>
-            </div>
+      {/* Section Content */}
+      <div className="checkout-section-content space-y-6">
+        {/* Service Cards Grid */}
+        <div className="checkout-services-grid">
+          {services.map((service) => {
+            const isSelected = selectedServices.has(service.id)
+            const Icon = service.icon
 
-            {/* Booster Seat */}
-            <div className="flex items-center justify-between p-4 backdrop-blur-sm bg-luxury-black/30 border border-luxury-gold/10 rounded-lg">
-              <div>
-                <p className="font-medium text-luxury-pearl">Booster Seat (1-4 years)</p>
-                <p className="text-sm text-luxury-gold">+{formatCurrency(10)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
-                  onClick={() => {
-                    const current = watch('boosterSeats')
-                    setValue('boosterSeats', Math.max(0, current - 1))
-                  }}
-                  aria-label="Decrease booster seats"
+            // Special handling for child seat and luggage
+            if (service.id === 'child-seat') {
+              return (
+                <div
+                  key={service.id}
+                  className={cn(
+                    "checkout-service-card",
+                    (infantSeats > 0 || boosterSeats > 0) && "selected"
+                  )}
                 >
-                  -
-                </Button>
-                <span className="w-8 text-center text-luxury-pearl font-medium">
-                  {watch('boosterSeats')}
+                  <div className="checkout-service-checkbox">
+                    {(infantSeats > 0 || boosterSeats > 0) && (
+                      <Check className="h-3 w-3 text-[#050506]" />
+                    )}
+                  </div>
+                  <div className="checkout-service-icon">
+                    <Icon className="h-5 w-5 text-[#c6aa88]" />
+                  </div>
+                  <div className="checkout-service-content">
+                    <p className="checkout-service-name">{service.name}</p>
+                    <p className="checkout-service-description">
+                      {infantSeats + boosterSeats > 0
+                        ? `${infantSeats} infant + ${boosterSeats} booster`
+                        : service.description
+                      }
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                        onClick={() => {
+                          const current = infantSeats
+                          setValue('infantSeats', Math.max(0, current - 1))
+                        }}
+                      >
+                        -
+                      </Button>
+                      <span className="text-sm text-[#f8f6f3] w-5 text-center">{infantSeats + boosterSeats}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                        onClick={() => {
+                          const current = infantSeats
+                          setValue('infantSeats', Math.min(4, current + 1))
+                        }}
+                      >
+                        +
+                      </Button>
+                    </div>
+                    <span className="checkout-service-price">
+                      {formatCurrency(service.price)}/ea
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+
+            if (service.id === 'extra-luggage') {
+              return (
+                <div
+                  key={service.id}
+                  className={cn(
+                    "checkout-service-card",
+                    extraLuggageCount > 0 && "selected"
+                  )}
+                >
+                  <div className="checkout-service-checkbox">
+                    {extraLuggageCount > 0 && (
+                      <Check className="h-3 w-3 text-[#050506]" />
+                    )}
+                  </div>
+                  <div className="checkout-service-icon">
+                    <Icon className="h-5 w-5 text-[#c6aa88]" />
+                  </div>
+                  <div className="checkout-service-content">
+                    <p className="checkout-service-name">{service.name}</p>
+                    <p className="checkout-service-description">
+                      {luggage} of {vehicleType.luggage_capacity} included
+                      {extraLuggageCount > 0 && (
+                        <span className="text-[#c6aa88]"> (+{extraLuggageCount} extra)</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                        onClick={() => {
+                          const newLuggage = Math.max(0, luggage - 1)
+                          setLuggage(newLuggage)
+                          setValue('luggageCount', newLuggage)
+                          setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
+                        }}
+                      >
+                        -
+                      </Button>
+                      <span className="text-sm text-[#f8f6f3] w-5 text-center">{luggage}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                        onClick={() => {
+                          const newLuggage = Math.min(20, luggage + 1)
+                          setLuggage(newLuggage)
+                          setValue('luggageCount', newLuggage)
+                          setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
+                        }}
+                      >
+                        +
+                      </Button>
+                    </div>
+                    <span className="checkout-service-price">
+                      {formatCurrency(service.price)}/ea
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <div
+                key={service.id}
+                className={cn(
+                  "checkout-service-card",
+                  isSelected && "selected"
+                )}
+                onClick={() => toggleService(service.id)}
+              >
+                <div className="checkout-service-checkbox">
+                  {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
+                </div>
+                <div className="checkout-service-icon">
+                  <Icon className="h-5 w-5 text-[#c6aa88]" />
+                </div>
+                <div className="checkout-service-content">
+                  <p className="checkout-service-name">{service.name}</p>
+                  <p className="checkout-service-description">{service.description}</p>
+                </div>
+                <span className={cn(
+                  "checkout-service-price",
+                  service.isFree && "checkout-service-price-free"
+                )}>
+                  {service.isFree ? 'Free' : `+${formatCurrency(service.price)}`}
                 </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
-                  onClick={() => {
-                    const current = watch('boosterSeats')
-                    setValue('boosterSeats', Math.min(4, current + 1))
-                  }}
-                  aria-label="Increase booster seats"
-                >
-                  +
-                </Button>
               </div>
-            </div>
-          </div>
+            )
+          })}
         </div>
 
-        {/* Luggage */}
-        <div className="space-y-4">
-          <Label className="flex items-center gap-2 text-luxury-lightGray">
-            <Luggage className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-            Luggage
-          </Label>
-          <div className="flex items-center justify-between p-4 backdrop-blur-sm bg-luxury-black/30 border border-luxury-gold/10 rounded-lg">
-            <div>
-              <p className="font-medium text-luxury-pearl">Total Luggage</p>
-              <p className="text-sm text-luxury-lightGray">
-                Vehicle includes {vehicleType.luggage_capacity} bag{vehicleType.luggage_capacity !== 1 ? 's' : ''}
-              </p>
+        {/* Cost Summary */}
+        {(infantSeats + boosterSeats > 0 || extraLuggageCount > 0) && (
+          <div className="p-4 bg-[#1f1e1c]/30 border border-[#c6aa88]/10 rounded-lg">
+            <p className="text-sm text-[#b8b4ae] mb-2">Additional Costs:</p>
+            <div className="space-y-1">
+              {(infantSeats + boosterSeats > 0) && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#b8b4ae]">Child Seats ({infantSeats + boosterSeats})</span>
+                  <span className="text-[#c6aa88]">+{formatCurrency((infantSeats + boosterSeats) * 10)}</span>
+                </div>
+              )}
               {extraLuggageCount > 0 && (
-                <p className="text-sm text-luxury-gold font-medium mt-1">
-                  +{extraLuggageCount} extra bag{extraLuggageCount !== 1 ? 's' : ''} ({formatCurrency(extraLuggageCost)})
-                </p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#b8b4ae]">Extra Luggage ({extraLuggageCount})</span>
+                  <span className="text-[#c6aa88]">+{formatCurrency(extraLuggageCost)}</span>
+                </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 w-9 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
-                onClick={() => {
-                  const newLuggage = Math.max(0, luggage - 1)
-                  setLuggage(newLuggage)
-                  setValue('luggageCount', newLuggage)
-                  setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
-                }}
-                aria-label="Decrease luggage count"
-              >
-                -
-              </Button>
-              <span className="w-8 text-center text-luxury-pearl font-medium">{luggage}</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 w-9 border-luxury-gold/30 hover:bg-luxury-gold hover:text-luxury-black"
-                onClick={() => {
-                  const newLuggage = Math.min(20, luggage + 1)
-                  setLuggage(newLuggage)
-                  setValue('luggageCount', newLuggage)
-                  setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
-                }}
-                aria-label="Increase luggage count"
-              >
-                +
-              </Button>
-            </div>
           </div>
-        </div>
-
-        {/* Special Requests */}
-        <div>
-          <Label htmlFor="specialRequests" className="mb-2 block text-luxury-lightGray">
-            Special Requests (Optional)
-          </Label>
-          <Textarea
-            id="specialRequests"
-            className="min-h-[100px] bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold"
-            {...register('specialRequests')}
-            placeholder="Any special requirements or requests..."
-            rows={3}
-          />
-        </div>
+        )}
       </div>
     </motion.div>
   )

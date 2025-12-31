@@ -1,6 +1,6 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { Check, Search, Car, CreditCard, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -9,16 +9,16 @@ interface ProgressBarProps {
 }
 
 const steps = [
-  { number: 1, label: 'Search' },
-  { number: 2, label: 'Select Vehicle' },
-  { number: 3, label: 'Checkout' },
-  { number: 4, label: 'Confirmation' }
+  { number: 1, label: 'Search', icon: Search },
+  { number: 2, label: 'Select', icon: Car },
+  { number: 3, label: 'Checkout', icon: CreditCard },
+  { number: 4, label: 'Complete', icon: CheckCircle }
 ]
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
     <div
-      className="backdrop-blur-md bg-luxury-darkGray/50 border-b border-luxury-gold/10"
+      className="bg-[#0a0a0b]/80 backdrop-blur-md border-b border-[#c6aa88]/10"
       role="progressbar"
       aria-valuenow={currentStep}
       aria-valuemin={1}
@@ -28,58 +28,47 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
       <span className="sr-only">
         Step {currentStep} of 4: {steps[currentStep - 1]?.label || 'Complete'}
       </span>
-      <div className="luxury-container py-8">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          {steps.map((step, index) => (
-            <div key={step.number} className="flex items-center flex-1">
-              <div className="flex items-center">
+      <div className="luxury-container py-6">
+        <div className="checkout-progress-bar">
+          {steps.map((step) => {
+            const Icon = step.icon
+            const isCompleted = step.number < currentStep
+            const isActive = step.number === currentStep
+
+            return (
+              <div
+                key={step.number}
+                className={cn(
+                  'checkout-progress-step',
+                  isCompleted && 'completed',
+                  isActive && 'active'
+                )}
+              >
                 <motion.div
-                  className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all",
-                    step.number < currentStep
-                      ? "bg-luxury-gold text-luxury-black shadow-gold"
-                      : step.number === currentStep
-                      ? "bg-luxury-gold text-luxury-black ring-4 ring-luxury-gold/20 shadow-gold"
-                      : "bg-luxury-darkGray/30 text-luxury-lightGray/60"
-                  )}
-                  initial={{ scale: step.number === currentStep ? 1 : 1 }}
-                  animate={{ scale: step.number === currentStep ? 1.1 : 1 }}
+                  className="checkout-progress-icon"
+                  initial={{ scale: 1 }}
+                  animate={{ scale: isActive ? 1.1 : 1 }}
                   transition={{ duration: 0.3 }}
-                  aria-label={`Step ${step.number}: ${step.label}${step.number === currentStep ? ' (current)' : ''}`}
+                  aria-label={`Step ${step.number}: ${step.label}${isActive ? ' (current)' : ''}`}
                 >
-                  {step.number < currentStep ? (
-                    <Check className="h-6 w-6" aria-hidden="true" />
+                  {isCompleted ? (
+                    <Check className="h-4 w-4 text-[#050506]" aria-hidden="true" />
                   ) : (
-                    step.number
+                    <Icon
+                      className={cn(
+                        "h-4 w-4",
+                        isActive ? "text-[#c6aa88]" : "text-[#7a7672]"
+                      )}
+                      aria-hidden="true"
+                    />
                   )}
                 </motion.div>
-                <div className="ml-4 hidden md:block">
-                  <p
-                    className={cn(
-                      "text-sm font-sans font-medium tracking-wider transition-colors",
-                      step.number <= currentStep
-                        ? "text-luxury-pearl"
-                        : "text-luxury-lightGray/60"
-                    )}
-                  >
-                    {step.label}
-                  </p>
-                </div>
+                <span className="checkout-progress-label hidden sm:block">
+                  {step.label}
+                </span>
               </div>
-              {index < steps.length - 1 && (
-                <div className="flex-1 mx-4">
-                  <div
-                    className={cn(
-                      "h-1 rounded transition-all duration-500",
-                      step.number < currentStep
-                        ? "bg-luxury-gold shadow-sm shadow-luxury-gold/50"
-                        : "bg-luxury-darkGray/30"
-                    )}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>

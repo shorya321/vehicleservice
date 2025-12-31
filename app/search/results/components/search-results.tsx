@@ -12,7 +12,6 @@ import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZoneResultCard } from '@/components/search/zone-result-card'
 import { ZonesList } from '@/components/search/zones-list'
-import { Badge } from '@/components/ui/badge'
 import { Clock, MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -134,53 +133,78 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       return <EmptyState searchParams={searchParams} />
     }
 
+    // Calculate min price from vehicle types
+    const minPrice = results.vehicleTypes.length > 0
+      ? Math.min(...results.vehicleTypes.map(vt => vt.price))
+      : 0
+
     return (
-    <div className="space-y-8">
-      {/* Route/Zone Information Banner */}
+    <div className="space-y-6">
+      {/* Route/Zone Information Banner - Art Deco Style */}
       <motion.div
-        className="backdrop-blur-lg bg-luxury-darkGray/70 border border-luxury-gold/20 rounded-lg p-6 shadow-xl"
+        className="relative bg-gradient-to-br from-luxury-charcoal via-luxury-charcoalLight to-luxury-charcoal border border-luxury-gold/15 rounded-2xl p-8 md:p-10 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="luxury-container">
-          {results.type === 'zone' && results.zone ? (
-            <>
-              <h1 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-3">
-                Zone Transfer: {results.zone.fromZone.name} → {results.zone.toZone.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-luxury-lightGray">
-                <div className="flex items-center gap-2">
+        {/* Art Deco Corner - Top Left */}
+        <div className="absolute top-4 left-4 w-16 h-16 md:w-20 md:h-20 border-l border-t border-luxury-gold/20 pointer-events-none" />
+        {/* Art Deco Corner - Bottom Right */}
+        <div className="absolute bottom-4 right-4 w-16 h-16 md:w-20 md:h-20 border-r border-b border-luxury-gold/20 pointer-events-none" />
+
+        {/* Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[200px] bg-[radial-gradient(ellipse,rgba(198,170,136,0.08)_0%,transparent_70%)] pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          {/* Route Info */}
+          <div className="space-y-3">
+            {results.type === 'zone' && results.zone ? (
+              <>
+                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl text-luxury-pearl">
+                  Zone Transfer: {results.zone.fromZone.name} <span className="text-luxury-gold italic">&rarr;</span> {results.zone.toZone.name}
+                </h1>
+                <div className="flex items-center gap-2 text-sm text-luxury-lightGray">
                   <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
                   <span>{results.originName} to {results.destinationName}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-luxury-gold/20 text-luxury-gold border-luxury-gold/30">
-                    Base Price: ${results.zone.basePrice.toFixed(2)}
-                  </Badge>
+              </>
+            ) : (
+              <>
+                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl text-luxury-pearl">
+                  {results.routeName || `${results.originName} to ${results.destinationName}`}
+                </h1>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-luxury-lightGray">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
+                    <span>{results.originName} to {results.destinationName}</span>
+                  </div>
+                  {results.distance && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
+                      <span>{results.distance} km journey</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-3">{results.routeName}</h1>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-luxury-lightGray">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
-                  <span>{results.originName} to {results.destinationName}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
-                  <span>{results.distance} km journey</span>
-                </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
+
+          {/* Price Badge */}
+          <div className="flex flex-col items-start md:items-end gap-1">
+            <span className="text-[0.7rem] font-medium tracking-[0.1em] uppercase text-luxury-lightGray/70">
+              {results.type === 'zone' && results.zone ? 'Base Price' : 'Starting from'}
+            </span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-luxury-gold/15 to-luxury-gold/5 border border-luxury-gold/30 rounded-lg">
+              <span className="font-serif text-2xl md:text-3xl font-medium bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent">
+                ${results.type === 'zone' && results.zone ? results.zone.basePrice.toFixed(2) : minPrice.toFixed(2)}
+              </span>
+            </div>
+          </div>
         </div>
       </motion.div>
 
       {/* Vehicle Type Category Tabs */}
-      <div className="max-w-7xl mx-auto">
+      <div>
         {results.vehicleTypesByCategory && results.vehicleTypesByCategory.length > 0 ? (
           <VehicleTypeCategoryTabs
             vehicleTypesByCategory={results.vehicleTypesByCategory}
@@ -189,7 +213,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
           />
         ) : (
           /* Fallback to grid if no categories */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {results.vehicleTypes.map(vehicleType => (
               <VehicleTypeGridCard
                 key={vehicleType.id}

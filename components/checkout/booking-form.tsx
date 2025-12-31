@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { RouteDetails, VehicleTypeDetails, createBooking } from '@/app/checkout/actions'
 import { toast } from 'sonner'
 
@@ -16,7 +13,6 @@ import { TransferDetailsSection } from './form-sections/transfer-details-section
 import { PassengerInfoSection } from './form-sections/passenger-info-section'
 import { AdditionalServicesSection } from './form-sections/additional-services-section'
 import { PaymentMethodSection } from './form-sections/payment-method-section'
-import { TermsConditionsSection } from './form-sections/terms-conditions-section'
 
 const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -49,6 +45,13 @@ interface BookingFormProps {
   user: any
   profile: any
   onExtrasChange?: (infantSeats: number, boosterSeats: number, luggage: number) => void
+  onDateTimeChange?: (date: string, time: string) => void
+  onFormReady?: (formMethods: {
+    submit: () => void
+    isSubmitting: boolean
+    agreeToTerms: boolean
+    setAgreeToTerms: (value: boolean) => void
+  }) => void
 }
 
 /**
@@ -72,7 +75,9 @@ export function BookingForm({
   initialLuggage,
   user,
   profile,
-  onExtrasChange
+  onExtrasChange,
+  onDateTimeChange,
+  onFormReady
 }: BookingFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -97,7 +102,7 @@ export function BookingForm({
     }
   })
 
-  const { handleSubmit, watch } = form
+  const { handleSubmit, watch, setValue } = form
   const agreeToTerms = watch('agreeToTerms')
   const infantSeats = watch('infantSeats')
   const boosterSeats = watch('boosterSeats')
@@ -115,6 +120,18 @@ export function BookingForm({
       onExtrasChange(infantSeats, boosterSeats, luggage)
     }
   }, [infantSeats, boosterSeats, luggage, onExtrasChange])
+
+  // Expose form methods to parent
+  useEffect(() => {
+    if (onFormReady) {
+      onFormReady({
+        submit: handleSubmit(onSubmit),
+        isSubmitting: loading,
+        agreeToTerms,
+        setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value)
+      })
+    }
+  }, [loading, agreeToTerms])
 
   const onSubmit = async (data: BookingFormData) => {
     setLoading(true)
@@ -156,7 +173,7 @@ export function BookingForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Transfer Details */}
       <TransferDetailsSection
         form={form}
@@ -164,14 +181,11 @@ export function BookingForm({
         vehicleType={vehicleType}
         passengers={passengers}
         setPassengers={setPassengers}
+        onDateTimeChange={onDateTimeChange}
       />
-
-      <Separator className="border-luxury-gold/20" />
 
       {/* Passenger Information */}
       <PassengerInfoSection form={form} />
-
-      <Separator className="border-luxury-gold/20" />
 
       {/* Additional Services */}
       <AdditionalServicesSection
@@ -181,32 +195,11 @@ export function BookingForm({
         setLuggage={setLuggage}
       />
 
-      <Separator className="border-luxury-gold/20" />
-
       {/* Payment Method */}
       <PaymentMethodSection form={form} />
 
-      <Separator className="border-luxury-gold/20" />
-
-      {/* Terms and Conditions */}
-      <TermsConditionsSection form={form} />
-
-      {/* Submit Button */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-      >
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full h-14 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans uppercase tracking-wider font-semibold transition-all duration-300 active:scale-95"
-          disabled={loading || !agreeToTerms}
-        >
-          {loading ? 'Processing...' : 'Continue to Payment'}
-        </Button>
-      </motion.div>
+      {/* Hidden submit - actual submit is in OrderSummary on desktop */}
+      <input type="submit" className="hidden" />
     </form>
   )
 }

@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { BookmarkCheck, History, Gift, HelpCircle } from 'lucide-react'
 import { CheckoutAuthForm } from './checkout-auth-form'
+import { CheckoutHeroPanel } from './checkout-hero-panel'
 
 interface CheckoutLoginContentProps {
   returnUrl: string
@@ -11,11 +12,18 @@ interface CheckoutLoginContentProps {
 
 export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
   return (
-    <div className="relative min-h-screen bg-luxury-black overflow-hidden">
-      {/* Ambient Background Animations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="checkout-split-screen">
+      {/* Left Panel Spacer - maintains grid space for fixed hero */}
+      <div className="hidden lg:block" aria-hidden="true" />
+
+      {/* Fixed Hero Panel (Desktop Only) */}
+      <CheckoutHeroPanel />
+
+      {/* Right Panel - Auth Form */}
+      <section className="relative flex flex-col items-center px-6 py-12 md:px-12">
+        {/* Ambient Glow */}
         <motion.div
-          className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl"
+          className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl pointer-events-none"
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
@@ -26,133 +34,96 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
             ease: "easeInOut"
           }}
         />
-        <motion.div
-          className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
 
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <motion.div
-            className="text-center mb-12"
+        <div className="w-full max-w-lg relative z-10">
+          {/* Page Header */}
+          <motion.header
+            className="text-center mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <motion.h1
-              className="font-serif text-4xl md:text-5xl text-luxury-pearl mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            >
-              Secure Checkout
-            </motion.h1>
-            <motion.p
-              className="text-luxury-lightGray text-lg max-w-2xl mx-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
+            <h1 className="font-serif text-4xl md:text-5xl font-light mb-4 text-luxury-pearl">
+              Secure <span className="gold-text">Checkout</span>
+            </h1>
+            <p className="text-luxury-textSecondary text-lg max-w-md mx-auto">
               Log in to your account or create one to continue with your booking
-            </motion.p>
-            <motion.div
-              className="w-20 h-1 bg-luxury-gold rounded-full mx-auto mt-4"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.6, duration: 0.6, ease: "easeOut" }}
-            />
-          </motion.div>
-
-          <div className="grid lg:grid-cols-5 gap-8">
-            {/* Auth Form - 3 columns */}
-            <div className="lg:col-span-3">
-              <Suspense fallback={<div>Loading...</div>}>
-                <CheckoutAuthForm returnUrl={returnUrl} />
-              </Suspense>
+            </p>
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent via-luxury-gold to-transparent" />
+              <div className="w-2 h-2 border border-luxury-gold rotate-45" />
+              <div className="h-px w-12 bg-gradient-to-r from-transparent via-luxury-gold to-transparent" />
             </div>
+          </motion.header>
 
-            {/* Benefits - 2 columns */}
-            <div className="lg:col-span-2 space-y-4">
-              <motion.div
-                className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg overflow-hidden"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-6 border-b border-luxury-gold/20">
-                  <h2 className="font-serif text-2xl md:text-3xl text-luxury-pearl">Why Create an Account?</h2>
-                </div>
-                <div className="p-6 space-y-4">
-                  {[
-                    {
-                      icon: BookmarkCheck,
-                      title: "Save Your Details",
-                      description: "Your information will be saved for faster checkout next time"
-                    },
-                    {
-                      icon: History,
-                      title: "Track Bookings",
-                      description: "View and manage all your bookings in one place"
-                    },
-                    {
-                      icon: Gift,
-                      title: "Exclusive Offers",
-                      description: "Get access to member-only deals and discounts"
-                    }
-                  ].map((benefit, index) => (
-                    <motion.div
-                      key={index}
-                      className="flex items-start space-x-3"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + (index * 0.1) }}
-                    >
-                      <benefit.icon className="h-5 w-5 mt-0.5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                      <div className="flex-1">
-                        <h3 className="font-medium text-luxury-pearl mb-1">{benefit.title}</h3>
-                        <p className="text-sm text-luxury-lightGray">{benefit.description}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
+          {/* Auth Form */}
+          <Suspense fallback={<div className="h-96 animate-pulse bg-luxury-charcoal/50 rounded-2xl" />}>
+            <CheckoutAuthForm returnUrl={returnUrl} />
+          </Suspense>
 
-              <motion.div
-                className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <div className="flex items-start space-x-3">
-                  <HelpCircle className="h-5 w-5 mt-0.5" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                  <div className="flex-1">
-                    <h3 className="font-medium text-luxury-pearl mb-2">Need Help?</h3>
-                    <p className="text-sm text-luxury-lightGray mb-3">
-                      Having trouble logging in or creating an account?
-                    </p>
-                    <a
-                      href="/contact"
-                      className="text-sm text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors"
-                    >
-                      Contact Support →
-                    </a>
+          {/* Benefits Section */}
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="luxury-card rounded-2xl overflow-hidden">
+              <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-5 border-b border-luxury-gold/10">
+                <h3 className="font-serif text-xl text-luxury-pearl">Why Create an Account?</h3>
+              </div>
+              <div className="p-6 space-y-5">
+                {[
+                  {
+                    icon: BookmarkCheck,
+                    title: "Save Your Details",
+                    desc: "Your information will be saved for faster checkout next time"
+                  },
+                  {
+                    icon: History,
+                    title: "Track Bookings",
+                    desc: "View and manage all your bookings in one place"
+                  },
+                  {
+                    icon: Gift,
+                    title: "Exclusive Offers",
+                    desc: "Get access to member-only deals and discounts"
+                  }
+                ].map((benefit, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="w-9 h-9 rounded-lg bg-luxury-gold/10 border border-luxury-gold/20 flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="w-4 h-4 text-luxury-gold" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-luxury-pearl mb-1">{benefit.title}</h4>
+                      <p className="text-sm text-luxury-textMuted leading-relaxed">{benefit.desc}</p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
+
+            {/* Help Section */}
+            <div className="mt-4 p-5 rounded-xl bg-luxury-graphite/30 border border-luxury-gold/10 flex items-center gap-4">
+              <div className="w-9 h-9 rounded-full bg-luxury-gold/10 flex items-center justify-center flex-shrink-0">
+                <HelpCircle className="w-4 h-4 text-luxury-gold" />
+              </div>
+              <div>
+                <p className="text-sm text-luxury-textMuted mb-1">
+                  Having trouble logging in or creating an account?
+                </p>
+                <a
+                  href="/contact"
+                  className="text-sm text-luxury-gold hover:text-luxury-goldLight font-medium transition-colors"
+                >
+                  Contact Support &rarr;
+                </a>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }
