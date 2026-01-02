@@ -23,7 +23,7 @@ export function CheckoutHeading({
 }: CheckoutHeadingProps) {
   return (
     <motion.div
-      className="text-center mb-12 md:mb-16"
+      className="flex flex-col items-center text-center mb-12 md:mb-16"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}

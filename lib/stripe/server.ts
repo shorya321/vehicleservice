@@ -84,9 +84,7 @@ export async function createPaymentIntent(
   const params: Stripe.PaymentIntentCreateParams = {
     amount: Math.round(amount * 100), // Convert to cents
     currency: 'usd',
-    automatic_payment_methods: {
-      enabled: true,
-    },
+    payment_method_types: ['card'],
     metadata: {
       bookingId,
     },
