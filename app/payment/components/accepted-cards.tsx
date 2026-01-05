@@ -32,7 +32,7 @@ export function AcceptedCards() {
       {/* Stripe */}
       <div className="w-12 h-8 flex items-center justify-center bg-[rgba(42,40,38,0.5)] border border-[rgba(198,170,136,0.1)] rounded-md opacity-70 hover:opacity-100 hover:border-[rgba(198,170,136,0.3)] transition-all">
         <svg width="32" height="20" viewBox="0 0 32 20">
-          <rect width="32" height="20" rx="3" fill="#635BFF"/>
+          <rect width="32" height="20" rx="3" fill="#000"/>
           <text x="16" y="13" fontSize="6" fill="white" textAnchor="middle" fontWeight="bold">STRIPE</text>
         </svg>
       </div>

@@ -35,20 +35,21 @@ export function PaymentWrapper({
         colorIconTabSelected: '#050506',
       },
       rules: {
-                '.Input': {
+        '.Input': {
           border: '1px solid rgba(198, 170, 136, 0.2)',
-          backgroundColor: 'rgba(26, 26, 26, 0.6)',
+          backgroundColor: 'rgba(31, 30, 28, 0.5)',
           color: '#f8f6f3',
           padding: '14px 16px',
           transition: 'all 200ms ease',
+          boxShadow: 'none',
         },
         '.Input:focus': {
           border: '1px solid #c6aa88',
-          boxShadow: '0 0 0 3px rgba(198, 170, 136, 0.1)',
+          boxShadow: '0 0 0 2px #c6aa88',
           outline: 'none',
         },
         '.Input::placeholder': {
-          color: '#7a7672',
+          color: 'rgba(122, 118, 114, 0.5)',
         },
         '.Input--invalid': {
           border: '1px solid #f87171',
@@ -68,7 +69,7 @@ export function PaymentWrapper({
           marginTop: '8px',
         },
         '.CheckboxInput': {
-          backgroundColor: 'rgba(26, 26, 26, 0.6)',
+          backgroundColor: 'rgba(31, 30, 28, 0.5)',
           border: '1px solid rgba(198, 170, 136, 0.2)',
         },
         '.CheckboxInput--checked': {
@@ -79,30 +80,35 @@ export function PaymentWrapper({
           color: '#b8b4ae',
           fontSize: '13px',
         },
-        // Accordion styles
+        // Accordion styles - explicitly remove any theme shadows
         '.AccordionItem': {
           border: '1px solid rgba(198, 170, 136, 0.15)',
           borderRadius: '12px',
-          backgroundColor: 'rgba(26, 26, 26, 0.6)',
-          marginBottom: '0',
+          backgroundColor: 'rgba(31, 30, 28, 0.5)',
+          boxShadow: 'none',
         },
         '.AccordionItem--selected': {
           border: '1px solid rgba(198, 170, 136, 0.3)',
-          backgroundColor: 'rgba(26, 26, 26, 0.8)',
+          backgroundColor: 'rgba(31, 30, 28, 0.7)',
+          boxShadow: 'none',
         },
-        '.AccordionItemHeader': {
-          padding: '16px',
+        // Remove shadows from tabs and blocks
+        '.Tab': {
+          boxShadow: 'none',
+          border: '1px solid rgba(198, 170, 136, 0.15)',
+          backgroundColor: 'rgba(31, 30, 28, 0.5)',
         },
-        '.AccordionItemIcon': {
-          fill: '#c6aa88',
+        '.Tab--selected': {
+          boxShadow: 'none',
+          border: '1px solid rgba(198, 170, 136, 0.3)',
+          backgroundColor: 'rgba(31, 30, 28, 0.7)',
         },
-        '.AccordionItemLabel': {
-          color: '#f8f6f3',
-          fontSize: '15px',
-          fontWeight: '500',
+        '.Tab:hover': {
+          boxShadow: 'none',
         },
-        '.AccordionItemContent': {
-          padding: '0 16px 16px 16px',
+        '.Block': {
+          boxShadow: 'none',
+          backgroundColor: 'transparent',
         },
       },
     },
