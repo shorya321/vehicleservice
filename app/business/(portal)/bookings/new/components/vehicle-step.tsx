@@ -11,7 +11,6 @@ import { useState } from 'react';
 import { Car, Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { VehicleCategoryTabs } from './vehicle-category-tabs';
 import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, VehicleTypesByCategory, ZoneInfo } from '../actions';
@@ -136,21 +135,21 @@ export function VehicleStep({
     <div className="space-y-6">
       {/* Zone Information Banner */}
       {zoneInfo && (
-        <div className="p-4 border rounded-lg bg-muted">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/50">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <MapPin className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium">
-                  {zoneInfo.fromZone.name} → {zoneInfo.toZone.name}
-                </p>
-                <p className="text-xs text-muted-foreground">Zone Transfer</p>
-              </div>
             </div>
-            <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0">
-              Base: {formatCurrency(zoneInfo.basePrice)}
-            </Badge>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {zoneInfo.fromZone.name} → {zoneInfo.toZone.name}
+              </p>
+              <p className="text-xs text-muted-foreground">Zone Transfer</p>
+            </div>
           </div>
+          <span className="px-3 py-1.5 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 text-sm font-semibold">
+            Base: {formatCurrency(zoneInfo.basePrice)}
+          </span>
         </div>
       )}
 

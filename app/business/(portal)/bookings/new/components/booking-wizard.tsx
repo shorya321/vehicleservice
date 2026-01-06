@@ -188,19 +188,19 @@ export function BookingWizard({
       {/* Step Indicator */}
       <StepIndicator steps={STEPS} currentStep={currentStep} />
 
-      {/* Step Content - Clean Card */}
+      {/* Step Content - Luxury Card */}
       <Card className={cn(
-        'relative overflow-hidden rounded-xl',
+        'relative overflow-hidden rounded-2xl',
         'bg-card',
         'border border-border',
         'shadow-sm'
       )}>
-        <CardHeader>
-          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <CardHeader className="px-6 py-4 border-b border-border bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-primary">
             {STEPS[currentStep]}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {currentStep === 0 && (
             <RouteStep
               formData={formData}

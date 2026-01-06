@@ -26,7 +26,7 @@ export function PublicHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const isSearchPage = pathname?.startsWith('/search')
+  const isNotHomePage = pathname !== '/'
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const supabase = createClient()
@@ -122,7 +122,7 @@ export function PublicHeader() {
       initial={{ y: -120 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 25 }}
-      className={`nav-luxury ${isScrolled ? "scrolled" : ""} ${isSearchPage ? "has-border" : ""}`}
+      className={`nav-luxury ${isScrolled ? "scrolled" : ""} ${isNotHomePage ? "has-border" : ""}`}
     >
       <div className="luxury-container">
         <div className="flex items-center justify-between">

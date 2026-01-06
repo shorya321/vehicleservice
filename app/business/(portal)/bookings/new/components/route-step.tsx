@@ -7,19 +7,13 @@
  * Design: shadcn/ui theme-aware components
  */
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/app/business/(portal)/components/ui/select';
 import {
   Form,
   FormControl,
@@ -29,6 +23,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { BookingFormData } from './booking-wizard';
+import { LocationAutocomplete } from './location-autocomplete';
 
 interface Location {
   id: string;
@@ -50,6 +45,7 @@ const routeSchema = z.object({
   pickup_address: z.string().min(5, 'Pickup address is required'),
   dropoff_address: z.string().min(5, 'Dropoff address is required'),
   pickup_datetime: z.string().min(1, 'Pickup date and time is required'),
+  passenger_count: z.number().int().min(1).max(20),
 });
 
 type RouteFormData = z.infer<typeof routeSchema>;
@@ -63,7 +59,18 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
       pickup_address: formData.pickup_address || '',
       dropoff_address: formData.dropoff_address || '',
       pickup_datetime: formData.pickup_datetime || '',
+      passenger_count: formData.passenger_count || 1,
     },
+  });
+
+  // Input state for autocomplete fields
+  const [fromInput, setFromInput] = useState(() => {
+    const loc = locations.find((l) => l.id === formData.from_location_id);
+    return loc ? `${loc.name} - ${loc.city}` : '';
+  });
+  const [toInput, setToInput] = useState(() => {
+    const loc = locations.find((l) => l.id === formData.to_location_id);
+    return loc ? `${loc.name} - ${loc.city}` : '';
   });
 
   async function onSubmit(values: RouteFormData) {
@@ -84,10 +91,12 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Pickup Section */}
-        <div className="space-y-4 p-4 border rounded-lg">
-          <div className="flex items-center gap-2 text-primary">
-            <MapPin className="h-5 w-5" />
-            <h3 className="font-semibold text-foreground">Pickup Details</h3>
+        <div className="space-y-4 p-5 border border-border rounded-xl bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+              <MapPin className="h-5 w-5 text-emerald-500" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">Pickup Details</h3>
           </div>
 
           <FormField
@@ -96,20 +105,19 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Pickup Location</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select pickup location" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name} - {location.city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <LocationAutocomplete
+                    value={fromInput}
+                    onChange={setFromInput}
+                    onSelect={(id) => {
+                      field.onChange(id);
+                      const loc = locations.find((l) => l.id === id);
+                      if (loc) setFromInput(`${loc.name} - ${loc.city}`);
+                    }}
+                    placeholder="Search pickup location..."
+                    locations={locations}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -142,18 +150,42 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="passenger_count"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Passengers</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Arrow Separator */}
         <div className="flex justify-center">
-          <ArrowRight className="h-6 w-6 text-muted-foreground" />
+          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 border border-primary/20">
+            <ArrowDown className="h-5 w-5 text-primary" />
+          </div>
         </div>
 
         {/* Dropoff Section */}
-        <div className="space-y-4 p-4 border rounded-lg">
-          <div className="flex items-center gap-2 text-primary">
-            <MapPin className="h-5 w-5" />
-            <h3 className="font-semibold text-foreground">Dropoff Details</h3>
+        <div className="space-y-4 p-5 border border-border rounded-xl bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10">
+              <MapPin className="h-5 w-5 text-rose-500" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">Dropoff Details</h3>
           </div>
 
           <FormField
@@ -162,20 +194,19 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Dropoff Location</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select dropoff location" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name} - {location.city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <LocationAutocomplete
+                    value={toInput}
+                    onChange={setToInput}
+                    onSelect={(id) => {
+                      field.onChange(id);
+                      const loc = locations.find((l) => l.id === id);
+                      if (loc) setToInput(`${loc.name} - ${loc.city}`);
+                    }}
+                    placeholder="Search dropoff location..."
+                    locations={locations}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

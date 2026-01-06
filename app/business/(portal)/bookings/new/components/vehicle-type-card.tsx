@@ -28,12 +28,12 @@ export function VehicleTypeCard({
     <button
       onClick={() => onSelect(vehicleType)}
       className={cn(
-        'relative p-6 rounded-xl text-left transition-all duration-300',
-        'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background',
+        'relative p-5 rounded-xl text-left transition-all duration-300',
+        'focus:outline-none',
         'border-2',
         isSelected
-          ? 'border-primary bg-primary/5 shadow-md'
-          : 'border-border bg-card hover:border-primary/40 hover:shadow-sm'
+          ? 'border-primary bg-primary/5 shadow-[0_0_0_2px_hsl(var(--primary)/0.2)]'
+          : 'border-border bg-card hover:border-primary/40 hover:-translate-y-0.5'
       )}
     >
       {/* Selected Indicator */}
@@ -59,7 +59,7 @@ export function VehicleTypeCard({
       </div>
 
       {/* Vehicle Info */}
-      <div className="space-y-3">
+      <div>
         <div>
           <h3 className={cn(
             'font-semibold text-lg mb-1 transition-colors duration-300',
@@ -67,13 +67,13 @@ export function VehicleTypeCard({
           )}>
             {vehicleType.name}
           </h3>
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
             {vehicleType.description}
           </p>
         </div>
 
         {/* Capacity */}
-        <div className="flex gap-4 text-sm">
+        <div className="flex gap-4 text-sm mb-4">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Users className="h-4 w-4 text-primary/50" />
             <span>Up to {vehicleType.capacity}</span>

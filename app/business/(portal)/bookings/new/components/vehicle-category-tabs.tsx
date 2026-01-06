@@ -34,13 +34,13 @@ export function VehicleCategoryTabs({
 
   return (
     <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-      <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 mb-6">
+      <TabsList className="w-full flex gap-2 p-1.5 bg-muted/50 rounded-xl h-auto mb-6 overflow-x-auto flex-nowrap">
         {/* All Vehicle Types Tab */}
         <TabsTrigger
           value="all"
-          className="whitespace-nowrap px-4 py-2 text-sm font-medium"
+          className="flex-1 whitespace-nowrap px-4 py-2.5 text-sm font-medium rounded-lg border border-transparent transition-all data-[state=active]:bg-background data-[state=active]:border-border data-[state=active]:shadow-sm"
         >
-          All ({allVehicleTypes.length})
+          All Vehicles ({allVehicleTypes.length})
         </TabsTrigger>
 
         {/* Category Tabs */}
@@ -48,7 +48,7 @@ export function VehicleCategoryTabs({
           <TabsTrigger
             key={category.categoryId}
             value={category.categoryId}
-            className="whitespace-nowrap px-4 py-2 text-sm font-medium"
+            className="flex-1 whitespace-nowrap px-4 py-2.5 text-sm font-medium rounded-lg border border-transparent transition-all data-[state=active]:bg-background data-[state=active]:border-border data-[state=active]:shadow-sm"
           >
             {category.categoryName} ({category.vehicleTypes.length})
           </TabsTrigger>

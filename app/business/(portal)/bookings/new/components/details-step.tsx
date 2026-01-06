@@ -10,6 +10,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { User, CalendarDays, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,7 +36,6 @@ const detailsSchema = z.object({
   customer_name: z.string().min(2, 'Customer name is required'),
   customer_email: z.string().email('Invalid email address'),
   customer_phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number'),
-  passenger_count: z.number().int().min(1).max(20),
   luggage_count: z.number().int().min(0).max(50),
   customer_notes: z.string().max(500).optional(),
   reference_number: z.string().max(50).optional(),
@@ -51,7 +51,6 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
       customer_name: formData.customer_name || '',
       customer_email: formData.customer_email || '',
       customer_phone: formData.customer_phone || '',
-      passenger_count: formData.passenger_count || 1,
       luggage_count: formData.luggage_count || 0,
       customer_notes: formData.customer_notes || '',
       reference_number: formData.reference_number || '',
@@ -75,8 +74,13 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Customer Information */}
-        <div className="space-y-4 p-4 border rounded-lg">
-          <h3 className="font-semibold text-foreground">Customer Information</h3>
+        <div className="space-y-4 p-5 border border-border rounded-xl bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <User className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">Customer Information</h3>
+          </div>
 
           <FormField
             control={form.control}
@@ -124,50 +128,33 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
         </div>
 
         {/* Booking Details */}
-        <div className="space-y-4 p-4 border rounded-lg">
-          <h3 className="font-semibold text-foreground">Booking Details</h3>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="passenger_count"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Number of Passengers</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="20"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="luggage_count"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Luggage Count</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="50"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="space-y-4 p-5 border border-border rounded-xl bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+              <CalendarDays className="h-5 w-5 text-sky-500" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">Booking Details</h3>
           </div>
+
+          <FormField
+            control={form.control}
+            name="luggage_count"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Luggage Count</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
@@ -193,8 +180,13 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
         </div>
 
         {/* Optional Information */}
-        <div className="space-y-4 p-4 border rounded-lg">
-          <h3 className="font-semibold text-foreground">Optional Information</h3>
+        <div className="space-y-4 p-5 border border-border rounded-xl bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+              <MessageSquare className="h-5 w-5 text-violet-500" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">Optional Information</h3>
+          </div>
 
           <FormField
             control={form.control}

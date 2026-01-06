@@ -12,7 +12,7 @@ const steps = [
   { number: 1, label: 'Search', icon: Search },
   { number: 2, label: 'Select', icon: Car },
   { number: 3, label: 'Checkout', icon: CreditCard },
-  { number: 4, label: 'Complete', icon: CheckCircle }
+  { number: 4, label: 'Payment', icon: CreditCard }
 ]
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
