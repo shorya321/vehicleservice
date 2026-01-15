@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
@@ -25,6 +25,7 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
 
   // Fetch initial notifications and unread count
   const fetchNotifications = useCallback(async () => {
@@ -78,7 +79,12 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        fetchNotifications();
+        if (!hasFetchedRef.current) {
+          hasFetchedRef.current = true;
+          fetchNotifications();
+        }
+      } else {
+        setLoading(false);
       }
     });
 
@@ -88,11 +94,17 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUserId(session.user.id);
-        fetchNotifications();
+        // Only fetch if this is not the initial session (already handled by getUser)
+        if (!hasFetchedRef.current) {
+          hasFetchedRef.current = true;
+          fetchNotifications();
+        }
       } else {
         setUserId(null);
         setNotifications([]);
         setUnreadCount(0);
+        setLoading(false);
+        hasFetchedRef.current = false;
       }
     });
 

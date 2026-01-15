@@ -61,7 +61,7 @@
   --card-foreground: 30 20% 96%;
   --popover: 30 4% 8%;
   --popover-foreground: 30 20% 96%;
-  --primary: 35 30% 65%;             /* --gold */
+  --primary: 36 40% 55%;             /* Gold - matches design */
   --primary-foreground: 240 10% 2%;
   --secondary: 30 4% 12%;            /* --charcoal-light */
   --secondary-foreground: 30 20% 96%;
@@ -85,7 +85,7 @@
   --card-foreground: 30 20% 96%;
   --popover: 30 4% 8%;
   --popover-foreground: 30 20% 96%;
-  --primary: 35 30% 65%;
+  --primary: 36 40% 55%;
   --primary-foreground: 240 10% 2%;
   --secondary: 30 4% 12%;
   --secondary-foreground: 30 20% 96%;
@@ -107,7 +107,7 @@
   }
 
   html {
-    overflow-x: hidden;
+    /* overflow-x: hidden removed - breaks CSS sticky positioning */
   }
 
   /* Noise Texture Overlay for Depth */
@@ -129,7 +129,7 @@
     font-weight: 300;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    /* overflow-x: hidden removed - breaks CSS sticky positioning */
   }
 
   /* Typography System - Headings inherit from body font-family */

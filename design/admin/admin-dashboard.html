@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - VehicleService</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    /* ============================================
+       MIDNIGHT OPULENCE - Luxury Design System
+       ============================================ */
+
+    :root {
+      /* Refined Color System - Deep Blacks with Warm Undertones */
+      --black-void: #050506;
+      --black-rich: #0a0a0b;
+      --black-warm: #0f0e0d;
+      --charcoal: #161514;
+      --charcoal-light: #1f1e1c;
+      --graphite: #2a2826;
+
+      /* Gold Spectrum - Graduated Luxury Accents */
+      --gold-pale: #f4ece0;
+      --gold-cream: #e8d9c5;
+      --gold-light: #d4c4a8;
+      --gold: #c6aa88;
+      --gold-medium: #b89b6a;
+      --gold-deep: #a68b5b;
+      --gold-dark: #8b7349;
+
+      /* Text Colors with Warm Undertones */
+      --text-primary: #f8f6f3;
+      --text-secondary: #b8b4ae;
+      --text-muted: #7a7672;
+
+      /* Status Colors */
+      --emerald: #34d399;
+      --emerald-dark: #059669;
+      --red: #ef4444;
+      --red-dark: #dc2626;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --orange: #f97316;
+
+      /* Typography */
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Outfit', system-ui, sans-serif;
+
+      /* Animation */
+      --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-fast: 200ms;
+      --duration-normal: 400ms;
+      --duration-slow: 800ms;
+
+      /* Shadows */
+      --shadow-luxury: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);
+      --shadow-luxury-lg: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--black-void);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Noise Texture Overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    /* ============================================
+       LAYOUT STRUCTURE
+       ============================================ */
+
+    .app-container {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ============================================
+       SIDEBAR
+       ============================================ */
+
+    .sidebar {
+      width: 256px;
+      height: 100vh;
+      background: rgba(22, 21, 20, 0.95);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid rgba(198, 170, 136, 0.2);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-luxury-lg);
+      transition: width var(--duration-normal) var(--ease-luxury);
+    }
+
+    .sidebar-header {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(198, 170, 136, 0.2);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--duration-fast) var(--ease-luxury);
+    }
+
+    .brand:hover .brand-icon {
+      transform: scale(1.05);
+    }
+
+    .brand-icon svg {
+      width: 20px;
+      height: 20px;
+      color: var(--black-void);
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .collapse-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--gold);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--duration-fast) var(--ease-luxury);
+    }
+
+    .collapse-btn:hover {
+      background: rgba(198, 170, 136, 0.1);
+    }
+
+    /* Navigation */
+    .nav-main {
+      flex: 1;
+      padding: 16px 8px;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all var(--duration-fast) var(--ease-luxury);
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: rgba(198, 170, 136, 0.05);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: rgba(198, 170, 136, 0.1);
+      color: var(--gold);
+    }
+
+    .nav-item-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #f87171;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Submenu */
+    .nav-submenu {
+      margin-left: 16px;
+      margin-top: 4px;
+      border-left: 2px solid rgba(198, 170, 136, 0.2);
+    }
+
+    .nav-submenu .nav-item {
+      padding-left: 24px;
+      font-size: 13px;
+    }
+
+    /* Bottom Navigation */
+    .nav-bottom {
+      border-top: 1px solid rgba(198, 170, 136, 0.2);
+      padding: 16px 8px;
+    }
+
+    /* User Profile */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-top: 1px solid rgba(198, 170, 136, 0.2);
+      text-decoration: none;
+      transition: background var(--duration-fast) var(--ease-luxury);
+    }
+
+    .user-profile:hover {
+      background: rgba(198, 170, 136, 0.05);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(198, 170, 136, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold);
+      ring: 2px solid rgba(198, 170, 136, 0.4);
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: rgba(184, 180, 174, 0.7);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================
+       MAIN CONTENT AREA
+       ============================================ */
+
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      height: 64px;
+      background: rgba(22, 21, 20, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(198, 170, 136, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-luxury);
+    }
+
+    .search-container {
+      position: relative;
+      width: 384px;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 16px 0 40px;
+      background: var(--charcoal-light);
+      border: 1px solid rgba(198, 170, 136, 0.2);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-body);
+      transition: all var(--duration-fast) var(--ease-luxury);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(198, 170, 136, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold);
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background var(--duration-fast) var(--ease-luxury);
+    }
+
+    .header-btn:hover {
+      background: rgba(198, 170, 136, 0.1);
+    }
+
+    .header-btn svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--red);
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(198, 170, 136, 0.4);
+      overflow: hidden;
+    }
+
+    .header-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--black-void);
+      padding: 24px 32px;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-luxury);
+      text-decoration: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(198, 170, 136, 0.3);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      background: rgba(198, 170, 136, 0.1);
+      border-color: rgba(198, 170, 136, 0.5);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(198, 170, 136, 0.1);
+      color: var(--text-primary);
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ============================================
+       CARDS & COMPONENTS
+       ============================================ */
+
+    .card {
+      background: var(--charcoal);
+      border: 1px solid rgba(198, 170, 136, 0.15);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all var(--duration-fast) var(--ease-luxury);
+    }
+
+    .card:hover {
+      border-color: rgba(198, 170, 136, 0.25);
+      box-shadow: var(--shadow-luxury);
+    }
+
+    .card-header {
+      padding: 20px 24px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .card-title-lg {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .card-description {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .card-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--gold);
+    }
+
+    .card-content {
+      padding: 0 24px 20px;
+    }
+
+    .card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .card-change {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .card-change.positive {
+      color: var(--emerald);
+    }
+
+    .card-change.negative {
+      color: var(--red);
+    }
+
+    .card-change svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ============================================
+       STATS GRID
+       ============================================ */
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 1400px) {
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* ============================================
+       MAIN DASHBOARD GRID
+       ============================================ */
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dashboard-left {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .dashboard-right {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ============================================
+       REVENUE CHART
+       ============================================ */
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 24px 16px;
+    }
+
+    .chart-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .chart-total {
+      font-size: 14px;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    .chart-toggle {
+      display: flex;
+      gap: 4px;
+    }
+
+    .chart-toggle-btn {
+      padding: 6px 12px;
+      border: 1px solid rgba(198, 170, 136, 0.2);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-luxury);
+    }
+
+    .chart-toggle-btn:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+
+    .chart-toggle-btn:last-child {
+      border-radius: 0 6px 6px 0;
+    }
+
+    .chart-toggle-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--black-void);
+    }
+
+    .chart-toggle-btn:hover:not(.active) {
+      background: rgba(198, 170, 136, 0.1);
+      color: var(--text-primary);
+    }
+
+    .chart-container {
+      padding: 0 24px 24px;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 200px;
+      padding-bottom: 32px;
+      position: relative;
+    }
+
+    .chart-bar-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      position: relative;
+    }
+
+    .chart-bar {
+      width: 60%;
+      max-width: 60px;
+      background: var(--blue);
+      border-radius: 4px 4px 0 0;
+      transition: all var(--duration-fast) var(--ease-luxury);
+      position: absolute;
+      bottom: 32px;
+    }
+
+    .chart-bar:hover {
+      background: var(--gold);
+    }
+
+    .chart-bar-label {
+      position: absolute;
+      bottom: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .chart-baseline {
+      position: absolute;
+      bottom: 32px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(198, 170, 136, 0.15);
+    }
+
+    /* ============================================
+       BOOKINGS LIST
+       ============================================ */
+
+    .booking-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(198, 170, 136, 0.1);
+    }
+
+    .booking-item:last-child {
+      border-bottom: none;
+    }
+
+    .booking-info {
+      flex: 1;
+    }
+
+    .booking-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .booking-id {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-luxury);
+    }
+
+    .booking-id:hover {
+      color: var(--gold);
+      text-decoration: underline;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-confirmed {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--emerald);
+    }
+
+    .badge-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber);
+    }
+
+    .badge-cancelled {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+    }
+
+    .booking-details {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .booking-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .booking-amount {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ============================================
+       OPERATIONS STATS
+       ============================================ */
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    .stat-row:not(:last-child) {
+      border-bottom: 1px solid rgba(198, 170, 136, 0.1);
+    }
+
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .stat-label svg {
+      width: 16px;
+      height: 16px;
+      color: var(--gold);
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ============================================
+       ACTIVITY FEED
+       ============================================ */
+
+    .activity-feed {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background var(--duration-fast) var(--ease-luxury);
+    }
+
+    .activity-item:hover {
+      background: rgba(198, 170, 136, 0.05);
+    }
+
+    .activity-icon {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+    }
+
+    .activity-icon.booking {
+      color: var(--blue);
+    }
+
+    .activity-icon.vendor {
+      color: var(--orange);
+    }
+
+    .activity-icon.vehicle {
+      color: var(--emerald);
+    }
+
+    .activity-icon.user {
+      color: var(--purple);
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .activity-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ============================================
+       QUICK ACTIONS
+       ============================================ */
+
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: transparent;
+      border: 1px solid rgba(198, 170, 136, 0.2);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-luxury);
+    }
+
+    .action-btn:hover {
+      background: rgba(198, 170, 136, 0.1);
+      border-color: rgba(198, 170, 136, 0.3);
+    }
+
+    .action-btn svg {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       CUSTOM SCROLLBAR
+       ============================================ */
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(198, 170, 136, 0.3);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(198, 170, 136, 0.5);
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeIn 0.4s var(--ease-luxury) forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    .delay-5 { animation-delay: 0.5s; opacity: 0; }
+    .delay-6 { animation-delay: 0.6s; opacity: 0; }
+    .delay-7 { animation-delay: 0.7s; opacity: 0; }
+    .delay-8 { animation-delay: 0.8s; opacity: 0; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="brand">
+          <div class="brand-icon">
+            <i data-lucide="car"></i>
+          </div>
+          <span class="brand-name">VehicleService</span>
+        </a>
+        <button class="collapse-btn">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="nav-main">
+        <a href="#" class="nav-item active">
+          <div class="nav-item-content">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="calendar"></i>
+            <span>Bookings</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="users"></i>
+            <span>Users</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="building-2"></i>
+            <span>Vendor Applications</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="building-2"></i>
+            <span>Business Accounts</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="car"></i>
+            <span>Vehicles</span>
+          </div>
+          <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="map-pin"></i>
+            <span>Locations</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="route"></i>
+            <span>Routes</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="star"></i>
+            <span>Reviews</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="map-pin"></i>
+            <span>Zones</span>
+          </div>
+        </a>
+      </nav>
+
+      <div class="nav-bottom">
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="mail"></i>
+            <span>Emails</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="bell"></i>
+            <span>Notifications</span>
+          </div>
+          <span class="nav-badge">9</span>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="shield"></i>
+            <span>Security</span>
+          </div>
+        </a>
+        <a href="#" class="nav-item">
+          <div class="nav-item-content">
+            <i data-lucide="settings"></i>
+            <span>Settings</span>
+          </div>
+        </a>
+      </div>
+
+      <a href="#" class="user-profile">
+        <div class="avatar">
+          <img src="https://fnrlzhrchuoiwwsugidz.supabase.co/storage/v1/object/public/user-uploads/avatars/323d626d-3e92-47af-b1ce-0beb661bfb2d-1750929624835.jpg" alt="System Administrator">
+        </div>
+        <div class="user-info">
+          <div class="user-name">System Administrator</div>
+          <div class="user-email">admin@vehicleservice.com</div>
+        </div>
+      </a>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="header">
+        <div class="search-container">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="search" class="search-input" placeholder="Search...">
+        </div>
+
+        <div class="header-actions">
+          <button class="header-btn">
+            <i data-lucide="bell"></i>
+            <span class="notification-badge">9</span>
+          </button>
+          <button class="header-btn">
+            <div class="header-avatar">
+              <img src="https://fnrlzhrchuoiwwsugidz.supabase.co/storage/v1/object/public/user-uploads/avatars/323d626d-3e92-47af-b1ce-0beb661bfb2d-1750929624835.jpg" alt="System Administrator">
+            </div>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header animate-in">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+          </div>
+          <button class="btn btn-outline">
+            <i data-lucide="refresh-cw"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="card animate-in delay-1">
+            <div class="card-header">
+              <span class="card-title">Today's Revenue</span>
+              <i data-lucide="dollar-sign" class="card-icon"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">$0</div>
+              <div class="card-change negative">
+                <i data-lucide="trending-down"></i>
+                <span>-100.0% from yesterday</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card animate-in delay-2">
+            <div class="card-header">
+              <span class="card-title">Active Bookings</span>
+              <i data-lucide="car" class="card-icon"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">0</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">In progress today</p>
+            </div>
+          </div>
+
+          <div class="card animate-in delay-3">
+            <div class="card-header">
+              <span class="card-title">Pending Actions</span>
+              <i data-lucide="alert-triangle" class="card-icon" style="color: var(--gold-light);"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">4</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Need attention</p>
+            </div>
+          </div>
+
+          <div class="card animate-in delay-4">
+            <div class="card-header">
+              <span class="card-title">Rejected</span>
+              <i data-lucide="x-circle" class="card-icon" style="color: var(--red);"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">0</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Need reassignment</p>
+            </div>
+          </div>
+
+          <div class="card animate-in delay-5">
+            <div class="card-header">
+              <span class="card-title">Completed Today</span>
+              <i data-lucide="check-circle" class="card-icon" style="color: var(--emerald);"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-value">0</div>
+              <p style="font-size: 12px; color: var(--text-secondary);">Bookings completed</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Left Column -->
+          <div class="dashboard-left">
+            <!-- Revenue Chart -->
+            <div class="card animate-in delay-6">
+              <div class="chart-header">
+                <div class="chart-title-group">
+                  <h3 class="card-title card-title-lg">Revenue Trend</h3>
+                  <p class="card-description">Last 7 days performance <span class="chart-total">(Total: $449.25)</span></p>
+                </div>
+                <div class="chart-toggle">
+                  <button class="chart-toggle-btn active">Daily</button>
+                  <button class="chart-toggle-btn">Weekly</button>
+                  <button class="chart-toggle-btn">Monthly</button>
+                </div>
+              </div>
+              <div class="chart-container">
+                <div class="chart-bars">
+                  <div class="chart-baseline"></div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 0%;"></div>
+                    <span class="chart-bar-label">Thu</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 60%;"></div>
+                    <span class="chart-bar-label">Fri</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 0%;"></div>
+                    <span class="chart-bar-label">Sat</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 0%;"></div>
+                    <span class="chart-bar-label">Sun</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 0%;"></div>
+                    <span class="chart-bar-label">Mon</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 45%;"></div>
+                    <span class="chart-bar-label">Tue</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 0%;"></div>
+                    <span class="chart-bar-label">Wed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="card animate-in delay-7">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title card-title-lg">Recent Bookings</h3>
+                  <p class="card-description">Latest booking activity</p>
+                </div>
+                <a href="#" class="btn btn-ghost">
+                  View all
+                  <i data-lucide="arrow-right"></i>
+                </a>
+              </div>
+              <div class="card-content">
+                <div class="booking-item">
+                  <div class="booking-info">
+                    <div class="booking-header">
+                      <a href="#" class="booking-id">BK1767690075174WHSKK</a>
+                      <span class="badge badge-confirmed">Confirmed</span>
+                    </div>
+                    <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
+                    <p class="booking-time">Jan 6, 10:00 AM</p>
+                  </div>
+                  <span class="booking-amount">$65</span>
+                </div>
+
+                <div class="booking-item">
+                  <div class="booking-info">
+                    <div class="booking-header">
+                      <a href="#" class="booking-id">BK1767682362945HGNCM</a>
+                      <span class="badge badge-pending">Pending</span>
+                    </div>
+                    <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
+                    <p class="booking-time">Jan 6, 10:00 AM</p>
+                  </div>
+                  <span class="booking-amount">$65</span>
+                </div>
+
+                <div class="booking-item">
+                  <div class="booking-info">
+                    <div class="booking-header">
+                      <a href="#" class="booking-id">BK1767681962229BQ8S2</a>
+                      <span class="badge badge-pending">Pending</span>
+                    </div>
+                    <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
+                    <p class="booking-time">Jan 6, 10:00 AM</p>
+                  </div>
+                  <span class="booking-amount">$65</span>
+                </div>
+
+                <div class="booking-item">
+                  <div class="booking-info">
+                    <div class="booking-header">
+                      <a href="#" class="booking-id">BK17673528189659P6SE</a>
+                      <span class="badge badge-pending">Pending</span>
+                    </div>
+                    <p class="booking-details">Anshul Kumar • Jassur → Mamoon</p>
+                    <p class="booking-time">Jan 2, 10:00 AM</p>
+                  </div>
+                  <span class="booking-amount">$54</span>
+                </div>
+
+                <div class="booking-item">
+                  <div class="booking-info">
+                    <div class="booking-header">
+                      <a href="#" class="booking-id">BK1767348041693L91AY</a>
+                      <span class="badge badge-confirmed">Confirmed</span>
+                    </div>
+                    <p class="booking-details">Anshul Kumar • Pathankot → Amritsar</p>
+                    <p class="booking-time">Jan 2, 10:00 AM</p>
+                  </div>
+                  <span class="booking-amount">$40</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="dashboard-right">
+            <!-- Operations -->
+            <div class="card animate-in delay-6">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title card-title-lg">Operations</h3>
+                  <p class="card-description">Current status</p>
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="stat-row">
+                  <div class="stat-label">
+                    <i data-lucide="users"></i>
+                    <span>Active Users</span>
+                  </div>
+                  <span class="stat-value">18</span>
+                </div>
+                <div class="stat-row">
+                  <div class="stat-label">
+                    <i data-lucide="users"></i>
+                    <span>Active Vendors</span>
+                  </div>
+                  <span class="stat-value">2</span>
+                </div>
+                <div class="stat-row">
+                  <div class="stat-label">
+                    <i data-lucide="truck"></i>
+                    <span>Available Vehicles</span>
+                  </div>
+                  <span class="stat-value">6</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card animate-in delay-7">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title card-title-lg" style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="activity" style="width: 16px; height: 16px; color: var(--gold);"></i>
+                    Recent Activities
+                  </h3>
+                  <p class="card-description">Latest system activity</p>
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="activity-feed">
+                  <div class="activity-item">
+                    <i data-lucide="file-text" class="activity-icon booking"></i>
+                    <div class="activity-content">
+                      <p class="activity-title">New booking BK1767690075174WHSKK created</p>
+                      <p class="activity-meta">Anshul Kumar • Pathankot → Sheela chownk</p>
+                      <p class="activity-time">Yesterday</p>
+                    </div>
+                  </div>
+
+                  <div class="activity-item">
+                    <i data-lucide="file-text" class="activity-icon booking"></i>
+                    <div class="activity-content">
+                      <p class="activity-title">New booking BK1767682362945HGNCM created</p>
+                      <p class="activity-meta">Anshul Kumar • Pathankot → Sheela chownk</p>
+                      <p class="activity-time">Yesterday</p>
+                    </div>
+                  </div>
+
+                  <div class="activity-item">
+                    <i data-lucide="file-text" class="activity-icon booking"></i>
+                    <div class="activity-content">
+                      <p class="activity-title">New booking BK1767681962229BQ8S2 created</p>
+                      <p class="activity-meta">Anshul Kumar • Pathankot → Sheela chownk</p>
+                      <p class="activity-time">Yesterday</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card animate-in delay-8">
+              <div class="card-header">
+                <h3 class="card-title card-title-lg">Quick Actions</h3>
+              </div>
+              <div class="card-content">
+                <div class="quick-actions">
+                  <a href="#" class="action-btn">
+                    <span>View All Bookings</span>
+                    <i data-lucide="arrow-right"></i>
+                  </a>
+                  <a href="#" class="action-btn">
+                    <span>Manage Vendors</span>
+                    <i data-lucide="arrow-right"></i>
+                  </a>
+                  <a href="#" class="action-btn">
+                    <span>Fleet Status</span>
+                    <i data-lucide="arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

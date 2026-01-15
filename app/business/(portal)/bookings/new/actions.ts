@@ -181,6 +181,84 @@ export async function getAvailableVehicleTypesForRoute(
 /**
  * Get vehicle types for a zone transfer with pricing
  */
+// Addon types for booking
+export interface AddonItem {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  price: number;
+  pricing_type: 'fixed' | 'per_unit';
+  max_quantity: number;
+  category: string;
+}
+
+export interface AddonsByCategory {
+  category: string;
+  addons: AddonItem[];
+}
+
+/**
+ * Get active addons for booking form
+ */
+export async function getActiveAddons(): Promise<{
+  addons: AddonItem[];
+  addonsByCategory: AddonsByCategory[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('addons')
+      .select('id, name, description, icon, price, pricing_type, max_quantity, category')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching addons:', error);
+      return { addons: [], addonsByCategory: [], error: error.message };
+    }
+
+    const addons = (data || []) as AddonItem[];
+
+    // Group by category
+    const categoryMap = new Map<string, AddonItem[]>();
+    addons.forEach((addon) => {
+      if (!categoryMap.has(addon.category)) {
+        categoryMap.set(addon.category, []);
+      }
+      categoryMap.get(addon.category)!.push(addon);
+    });
+
+    // Define category order
+    const categoryOrder = ['Child Safety', 'Luggage', 'Comfort'];
+    const addonsByCategory: AddonsByCategory[] = [];
+
+    categoryOrder.forEach((cat) => {
+      if (categoryMap.has(cat)) {
+        addonsByCategory.push({
+          category: cat,
+          addons: categoryMap.get(cat)!,
+        });
+      }
+    });
+
+    // Add any remaining categories
+    categoryMap.forEach((categoryAddons, category) => {
+      if (!categoryOrder.includes(category)) {
+        addonsByCategory.push({ category, addons: categoryAddons });
+      }
+    });
+
+    return { addons, addonsByCategory };
+  } catch (error) {
+    console.error('Error in getActiveAddons:', error);
+    return { addons: [], addonsByCategory: [], error: 'Failed to load addons' };
+  }
+}
+
 async function getVehicleTypesForZoneTransfer(
   fromZoneId: string,
   toZoneId: string,
@@ -206,6 +284,7 @@ async function getVehicleTypesForZoneTransfer(
       category_id,
       image_url,
       price_multiplier,
+      business_price_multiplier,
       vehicle_categories!left(
         id,
         name,
@@ -225,8 +304,9 @@ async function getVehicleTypesForZoneTransfer(
 
   // Process data into VehicleTypeResult format with zone-based pricing
   const vehicleTypes: VehicleTypeResult[] = vehicleTypesData.map((vt) => {
-    // Calculate price using zone base price and vehicle type multiplier
-    const multiplier = vt.price_multiplier || 1.0;
+    // Calculate price using zone base price and business-specific multiplier
+    // Business portal uses business_price_multiplier, falling back to price_multiplier if not set
+    const multiplier = vt.business_price_multiplier || vt.price_multiplier || 1.0;
     const calculatedPrice = basePrice * multiplier;
 
     return {

@@ -7,11 +7,13 @@
  * Design: shadcn/ui theme-aware components
  */
 
-import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-operations';
 import { BookingFormData } from './booking-wizard';
-import { VehicleTypeResult, ZoneInfo } from '../actions';
+import { VehicleTypeResult, ZoneInfo, AddonsByCategory } from '../actions';
+import { AddonSelection, SelectedAddon } from './addon-selection';
 
 interface Location {
   id: string;
@@ -25,6 +27,9 @@ interface ReviewStepProps {
   locations: Location[];
   vehicleTypes: VehicleTypeResult[];
   zoneInfo?: ZoneInfo;
+  addonsByCategory: AddonsByCategory[];
+  isLoadingAddons: boolean;
+  onUpdate: (data: Partial<BookingFormData>) => void;
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
@@ -36,6 +41,9 @@ export function ReviewStep({
   locations,
   vehicleTypes,
   zoneInfo,
+  addonsByCategory,
+  isLoadingAddons,
+  onUpdate,
   onBack,
   onSubmit,
   isSubmitting,
@@ -46,6 +54,18 @@ export function ReviewStep({
 
   const hasBalance = hasSufficientBalance(walletBalance, formData.total_price);
   const remainingBalance = walletBalance - formData.total_price;
+
+  // Handle addon selection changes
+  const handleAddonsChange = (selectedAddons: SelectedAddon[]) => {
+    const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0);
+    onUpdate({
+      selected_addons: selectedAddons,
+      total_price: formData.base_price + addonsTotal,
+    });
+  };
+
+  // Calculate addons total for display
+  const addonsTotal = (formData.selected_addons || []).reduce((sum, addon) => sum + addon.total_price, 0);
 
   return (
     <div className="space-y-6">
@@ -107,9 +127,8 @@ export function ReviewStep({
             </div>
             <h3 className="text-base font-semibold text-foreground">Passengers</h3>
           </div>
-          <div className="text-sm space-y-1">
+          <div className="text-sm">
             <p className="text-foreground">{formData.passenger_count} passenger(s)</p>
-            <p className="text-foreground">{formData.luggage_count} luggage</p>
           </div>
         </div>
       </div>
@@ -144,6 +163,30 @@ export function ReviewStep({
         </div>
       </div>
 
+      {/* Addons Selection */}
+      <div className="p-5 rounded-xl border border-border bg-muted/30">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+            <Package className="h-5 w-5 text-amber-500" />
+          </div>
+          <h3 className="text-base font-semibold text-foreground">Additional Services</h3>
+        </div>
+        {isLoadingAddons ? (
+          <div className="space-y-3">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        ) : addonsByCategory.length > 0 ? (
+          <AddonSelection
+            addonsByCategory={addonsByCategory}
+            selectedAddons={formData.selected_addons || []}
+            onAddonsChange={handleAddonsChange}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">No additional services available.</p>
+        )}
+      </div>
+
       {/* Pricing Breakdown */}
       <div className="p-5 rounded-xl border border-border bg-muted/30">
         <div className="flex items-center gap-3 mb-4">
@@ -157,10 +200,12 @@ export function ReviewStep({
             <span className="text-muted-foreground">Base Price:</span>
             <span className="text-foreground font-medium">{formatCurrency(formData.base_price)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Amenities:</span>
-            <span className="text-foreground font-medium">{formatCurrency(formData.amenities_price)}</span>
-          </div>
+          {addonsTotal > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Addons:</span>
+              <span className="text-foreground font-medium">{formatCurrency(addonsTotal)}</span>
+            </div>
+          )}
           <div className="flex justify-between pt-3 border-t border-border text-lg font-bold">
             <span className="text-foreground">Total:</span>
             <span className="text-primary">{formatCurrency(formData.total_price)}</span>

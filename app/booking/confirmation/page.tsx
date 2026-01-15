@@ -32,7 +32,13 @@ async function getBookingDetails(bookingNumber: string) {
       booking_amenities (
         amenity_type,
         quantity,
-        price
+        price,
+        addon_id,
+        addon:addons (
+          id,
+          name,
+          icon
+        )
       ),
       vehicle_type:vehicle_types (
         id,
@@ -74,6 +80,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
     a.amenity_type === 'child_seat_infant' || a.amenity_type === 'child_seat_booster'
   )
   const extraLuggage = amenities.find((a: any) => a.amenity_type === 'extra_luggage')
+  const addons = amenities.filter((a: any) => a.amenity_type === 'addon' && a.addon)
 
   return (
     <PublicLayout>
@@ -82,6 +89,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
         primaryPassenger={primaryPassenger}
         childSeats={childSeats}
         extraLuggage={extraLuggage}
+        addons={addons}
       />
     </PublicLayout>
   )

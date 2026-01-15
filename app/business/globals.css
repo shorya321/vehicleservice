@@ -272,7 +272,7 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 4%;
 
-  --primary: 36 28% 57%;             /* #B89B6A - Darker gold for light mode */
+  --primary: 36 40% 55%;             /* Vibrant gold for light mode - matches design */
   --primary-foreground: 0 0% 100%;   /* White text on gold */
 
   --secondary: 240 5% 96%;           /* #F4F4F5 - zinc-100 */
@@ -281,8 +281,8 @@
   --muted: 240 5% 96%;               /* #F4F4F5 */
   --muted-foreground: 240 4% 46%;    /* #71717A - zinc-500 */
 
-  --accent: 36 28% 57%;              /* Darker gold */
-  --accent-foreground: 0 0% 100%;
+  --accent: 36 40% 55%;              /* Vibrant gold - matches design */
+  --accent-foreground: 240 10% 4%;   /* Dark text for visibility on gold */
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
@@ -1563,6 +1563,53 @@ button.auth-input svg {
   width: 2px;
   background: linear-gradient(to bottom, hsl(142 76% 36%), hsl(var(--primary)), hsl(0 84% 60%));
   border-radius: 2px;
+}
+
+/* ============================================
+   NOTIFICATION STYLES
+   ============================================ */
+
+/* Notification item base */
+.notification-item {
+  transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+  background: hsl(var(--primary) / 0.05);
+}
+
+/* Unread notification - gold left border */
+.notification-unread {
+  background: hsl(var(--primary) / 0.05);
+  position: relative;
+}
+
+.notification-unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: hsl(var(--primary));
+  border-radius: 0 3px 3px 0;
+}
+
+/* Loading skeleton animation */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ============================================

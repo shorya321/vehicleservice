@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
@@ -28,8 +28,11 @@ import {
   VehicleTypeResult,
   VehicleTypesByCategory,
   ZoneInfo,
+  AddonsByCategory,
   getAvailableVehicleTypesForRoute,
+  getActiveAddons,
 } from '../actions';
+import { SelectedAddon } from './addon-selection';
 
 interface Location {
   id: string;
@@ -60,13 +63,14 @@ export interface BookingFormData {
   customer_email: string;
   customer_phone: string;
   passenger_count: number;
-  luggage_count: number;
   customer_notes?: string;
   reference_number?: string;
 
+  // Addons
+  selected_addons?: SelectedAddon[];
+
   // Pricing
   base_price: number;
-  amenities_price: number;
   total_price: number;
 }
 
@@ -84,8 +88,7 @@ export function BookingWizard({
 
   const [formData, setFormData] = useState<Partial<BookingFormData>>({
     passenger_count: 1,
-    luggage_count: 0,
-    amenities_price: 0,
+    selected_addons: [],
   });
 
   // Vehicle loading state
@@ -96,6 +99,28 @@ export function BookingWizard({
   const [zoneInfo, setZoneInfo] = useState<ZoneInfo | undefined>();
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [vehicleFetchError, setVehicleFetchError] = useState<string | undefined>();
+
+  // Addons state
+  const [addonsByCategory, setAddonsByCategory] = useState<AddonsByCategory[]>([]);
+  const [isLoadingAddons, setIsLoadingAddons] = useState(true);
+
+  // Fetch addons on mount
+  useEffect(() => {
+    async function fetchAddons() {
+      setIsLoadingAddons(true);
+      try {
+        const result = await getActiveAddons();
+        if (!result.error) {
+          setAddonsByCategory(result.addonsByCategory);
+        }
+      } catch (error) {
+        console.error('Failed to fetch addons:', error);
+      } finally {
+        setIsLoadingAddons(false);
+      }
+    }
+    fetchAddons();
+  }, []);
 
   function updateFormData(data: Partial<BookingFormData>) {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -241,6 +266,9 @@ export function BookingWizard({
               locations={locations}
               vehicleTypes={vehicleTypes}
               zoneInfo={zoneInfo}
+              addonsByCategory={addonsByCategory}
+              isLoadingAddons={isLoadingAddons}
+              onUpdate={updateFormData}
               onBack={previousStep}
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}

@@ -118,6 +118,12 @@ const navigation: NavItem[] = [
     badge: null,
   },
   {
+    name: "Addons",
+    href: "/admin/addons",
+    icon: Package,
+    badge: null,
+  },
+  {
     name: "Zones",
     href: "/admin/zones",
     icon: MapPin,

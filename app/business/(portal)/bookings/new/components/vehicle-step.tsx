@@ -48,7 +48,7 @@ export function VehicleStep({
     onUpdate({
       vehicle_type_id: vehicleType.id,
       base_price: vehicleType.price,
-      total_price: vehicleType.price + (formData.amenities_price || 0),
+      total_price: vehicleType.price,
     });
   }
 

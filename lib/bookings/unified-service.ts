@@ -328,7 +328,7 @@ export interface UnifiedBookingsFilters {
  * const { bookings } = await getUnifiedBookingsList({ search: 'John' });
  */
 export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const shouldFetchCustomer = !filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'customer';
   const shouldFetchBusiness = !filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'business';
@@ -345,6 +345,7 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     `, { count: 'exact' });
 
   // Build business bookings query
+  // Note: business_bookings doesn't have luggage_count column
   let businessQuery = supabase
     .from('business_bookings')
     .select(`
@@ -360,7 +361,6 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
       to_location_id,
       vehicle_type_id,
       passenger_count,
-      luggage_count,
       base_price,
       total_price,
       booking_status,
@@ -405,10 +405,13 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
 
   const [customerResult, businessResult] = results;
 
-  // Debug logging
-  console.log('🔍 Unified Bookings Query Results:');
-  console.log('Customer bookings count:', customerResult.data?.length || 0, 'Total:', customerResult.count);
-  console.log('Business bookings count:', businessResult.data?.length || 0, 'Total:', businessResult.count);
+  // Check for query errors
+  if ((customerResult as any).error) {
+    console.error('Customer bookings query error:', (customerResult as any).error);
+  }
+  if ((businessResult as any).error) {
+    console.error('Business bookings query error:', (businessResult as any).error);
+  }
 
   // Manually fetch customer profiles for customer bookings
   let customerBookings: any[] = [];

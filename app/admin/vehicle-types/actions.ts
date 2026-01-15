@@ -104,6 +104,7 @@ export interface VehicleTypeFormData {
   passenger_capacity: number
   luggage_capacity: number
   price_multiplier?: number
+  business_price_multiplier?: number
   sort_order?: number
   is_active: boolean
   imageBase64?: string | null
@@ -134,6 +135,7 @@ export async function createVehicleType(data: VehicleTypeFormData) {
       passenger_capacity: data.passenger_capacity,
       luggage_capacity: data.luggage_capacity,
       price_multiplier: data.price_multiplier || 1.0,
+      business_price_multiplier: data.business_price_multiplier || 1.0,
       sort_order: data.sort_order || null,
       is_active: data.is_active,
       image_url: imageUrl
@@ -170,6 +172,7 @@ export async function updateVehicleType(id: string, data: VehicleTypeFormData) {
       passenger_capacity: data.passenger_capacity,
       luggage_capacity: data.luggage_capacity,
       price_multiplier: data.price_multiplier || 1.0,
+      business_price_multiplier: data.business_price_multiplier || 1.0,
       sort_order: data.sort_order || null,
       is_active: data.is_active,
       image_url: imageUrl,

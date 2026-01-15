@@ -46,7 +46,7 @@ export interface ThemeConfig {
  */
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   accent: {
-    primary: '#C6AA88',   // Gold - primary accent
+    primary: '#BA955E',   // Gold - primary accent (HSL: 36 40% 55%)
     secondary: '#14B8A6', // Teal - secondary accent
     tertiary: '#06B6D4',  // Cyan - tertiary accent
   },
@@ -81,7 +81,7 @@ export const BUSINESS_THEME = {
   background: '#09090B', // business-surface-0
   surface: '#18181B', // business-surface-2
   border: '#27272A', // business-border
-  accent: '#C6AA88', // Gold accent
+  accent: '#BA955E', // Gold accent (HSL: 36 40% 55%)
   text: '#FAFAFA', // business-text-primary
   textMuted: '#A1A1AA', // business-text-secondary
 } as const;
@@ -231,7 +231,7 @@ export const FULL_COLOR_PRESETS: ColorPreset[] = [
     name: 'Gold Luxury',
     description: 'Elegant gold accents with deep dark backgrounds',
     accent: {
-      primary: '#C6AA88',
+      primary: '#BA955E',
       secondary: '#14B8A6',
       tertiary: '#06B6D4',
     },

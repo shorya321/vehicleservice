@@ -4,7 +4,7 @@ import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getRouteById, getVehicleType, getLocationDetails } from './actions'
+import { getRouteById, getVehicleType, getLocationDetails, getActiveAddons } from './actions'
 import { createClient } from '@/lib/supabase/server'
 import { AmbientBackground } from '@/components/checkout/ambient-background'
 
@@ -97,11 +97,12 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     }
   }
 
-  // Fetch location and vehicle type details
-  const [originLocation, destinationLocation, vehicleType] = await Promise.all([
+  // Fetch location, vehicle type, and addons details
+  const [originLocation, destinationLocation, vehicleType, addonsData] = await Promise.all([
     getLocationDetails(params.from!),
     getLocationDetails(params.to!),
-    getVehicleType(params.vehicleType, params.from!, params.to!)
+    getVehicleType(params.vehicleType, params.from!, params.to!),
+    getActiveAddons()
   ])
 
   if (!originLocation || !destinationLocation || !vehicleType) {
@@ -173,6 +174,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             initialLuggage={luggage}
             user={user}
             profile={profile}
+            addonsByCategory={addonsData.addonsByCategory}
           />
         </div>
       </div>

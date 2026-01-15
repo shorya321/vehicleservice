@@ -55,9 +55,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         p_pickup_datetime: body.pickup_datetime,
         p_vehicle_type_id: body.vehicle_type_id,
         p_passenger_count: body.passenger_count,
-        p_luggage_count: body.luggage_count,
         p_base_price: body.base_price,
-        p_amenities_price: body.amenities_price,
         p_total_price: body.total_price,
         p_customer_notes: body.customer_notes || null,
         p_reference_number: body.reference_number || null,
@@ -70,6 +68,11 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       // Check for insufficient balance error
       if (error.message.includes('Insufficient wallet balance')) {
         return apiError('Insufficient wallet balance. Please add credits.', 402);
+      }
+
+      // Check for account status errors
+      if (error.message.includes('not active')) {
+        return apiError('Business account is not active. Contact support.', 403);
       }
 
       // Check for spending limit exceeded errors and send notifications
@@ -146,6 +149,26 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       }
 
       return apiError(error.message || 'Failed to create booking', 500);
+    }
+
+    // Insert selected addons if any
+    if (body.selected_addons && body.selected_addons.length > 0) {
+      const addonRecords = body.selected_addons.map((addon) => ({
+        business_booking_id: bookingId,
+        addon_id: addon.addon_id,
+        quantity: addon.quantity,
+        unit_price: addon.unit_price,
+        total_price: addon.total_price,
+      }));
+
+      const { error: addonsError } = await supabaseAdmin
+        .from('business_booking_addons')
+        .insert(addonRecords);
+
+      if (addonsError) {
+        console.error('Failed to save booking addons:', addonsError);
+        // Don't fail the booking, addons are supplementary
+      }
     }
 
     // Get the created booking details with related data

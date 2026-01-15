@@ -333,8 +333,8 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                     <Briefcase className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Luggage</p>
-                    <p className="font-semibold text-foreground">{booking.luggage_count || 0} Pieces</p>
+                    <p className="text-xs text-muted-foreground">Capacity</p>
+                    <p className="font-semibold text-foreground">{booking.vehicle_types?.luggage_capacity || 0} Luggage</p>
                   </div>
                 </div>
               </div>
@@ -598,10 +598,18 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                 <span className="text-muted-foreground">Base Price</span>
                 <span className="font-medium text-foreground">{formatCurrency(booking.base_price)}</span>
               </div>
-              {booking.amenities_price > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Amenities</span>
-                  <span className="font-medium text-foreground">{formatCurrency(booking.amenities_price)}</span>
+              {booking.booking_addons && booking.booking_addons.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Add-ons</p>
+                  {booking.booking_addons.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {item.addon?.name || 'Add-on'}
+                        {item.quantity > 1 && ` (×${item.quantity})`}
+                      </span>
+                      <span className="font-medium text-foreground">{formatCurrency(item.total_price)}</span>
+                    </div>
+                  ))}
                 </div>
               )}
 

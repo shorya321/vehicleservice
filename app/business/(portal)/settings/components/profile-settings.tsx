@@ -24,6 +24,14 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { countries } from '@/lib/constants/countries';
 import { toast } from 'sonner';
 import {
   businessProfileUpdateSchema,
@@ -179,10 +187,21 @@ export function ProfileSettings({ businessAccountId, currentData }: ProfileSetti
                   name="country_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Country Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="US" maxLength={2} {...field} />
-                      </FormControl>
+                      <FormLabel>Country</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-[300px]">
+                          {countries.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

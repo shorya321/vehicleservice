@@ -63,6 +63,8 @@ import {
 } from '@/app/business/(portal)/components/ui/select';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { toast } from 'sonner';
+import { EditDateTimeModal } from './edit-datetime-modal';
+import { canModifyBookingDateTime } from '@/lib/business/booking-utils';
 
 interface Booking {
   id: string;
@@ -297,11 +299,11 @@ export function BookingsPageContent({
       >
         <div>
           <h1
-            className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--business-text-primary)] font-display"
+            className="font-business-display text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--business-text-primary)]"
           >
             Bookings
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="font-business-body text-[var(--business-text-muted)] text-sm sm:text-base mt-1">
             Manage your bookings
           </p>
         </div>
@@ -536,6 +538,7 @@ export function BookingsPageContent({
                         isSelected={selectedBookings.has(booking.id)}
                         onToggleSelect={() => toggleSelectBooking(booking.id)}
                         onDelete={() => handleDeleteSingle(booking.id)}
+                        onRefresh={() => router.refresh()}
                       />
                     ))}
                   </div>
@@ -552,6 +555,7 @@ export function BookingsPageContent({
                       isSelected={selectedBookings.has(booking.id)}
                       onToggleSelect={() => toggleSelectBooking(booking.id)}
                       onDelete={() => handleDeleteSingle(booking.id)}
+                      onRefresh={() => router.refresh()}
                     />
                   ))}
                 </div>
@@ -678,9 +682,13 @@ interface TableRowProps {
   isSelected: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
+  onRefresh: () => void;
 }
 
-function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSelect, onDelete }: TableRowProps) {
+function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSelect, onDelete, onRefresh }: TableRowProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const canEditDateTime = canModifyBookingDateTime(booking);
+
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDate = pickupDate.toLocaleDateString('en-US', {
     month: 'short',
@@ -765,8 +773,15 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
             <DropdownMenuItem asChild>
               <Link href={`/business/bookings/${booking.id}`}>
                 <Pencil className="h-4 w-4 mr-2" />
-                Edit
+                View Details
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!canEditDateTime}
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Clock className="h-4 w-4 mr-2" />
+              Edit Time
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
@@ -781,6 +796,16 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Edit DateTime Modal */}
+      <EditDateTimeModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        bookingId={booking.id}
+        bookingNumber={booking.booking_number}
+        currentDatetime={booking.pickup_datetime}
+        onSuccess={onRefresh}
+      />
     </motion.div>
   );
 }
@@ -843,6 +868,7 @@ interface MobileBookingCardProps {
   isSelected: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
+  onRefresh: () => void;
 }
 
 function MobileBookingCard({
@@ -852,7 +878,11 @@ function MobileBookingCard({
   isSelected,
   onToggleSelect,
   onDelete,
+  onRefresh,
 }: MobileBookingCardProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const canEditDateTime = canModifyBookingDateTime(booking);
+
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDateTime = pickupDate.toLocaleDateString('en-US', {
     month: 'short',
@@ -929,8 +959,15 @@ function MobileBookingCard({
                 <DropdownMenuItem asChild>
                   <Link href={`/business/bookings/${booking.id}`}>
                     <Pencil className="h-4 w-4 mr-2" />
-                    Edit
+                    View Details
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!canEditDateTime}
+                  onClick={() => setIsEditModalOpen(true)}
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  Edit Time
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
@@ -945,6 +982,16 @@ function MobileBookingCard({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Edit DateTime Modal */}
+          <EditDateTimeModal
+            open={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            bookingId={booking.id}
+            bookingNumber={booking.booking_number}
+            currentDatetime={booking.pickup_datetime}
+            onSuccess={onRefresh}
+          />
         </CardContent>
       </Card>
     </motion.div>

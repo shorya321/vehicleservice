@@ -39,6 +39,7 @@ const formSchema = z.object({
   passenger_capacity: z.coerce.number().min(1, "Passenger capacity must be at least 1"),
   luggage_capacity: z.coerce.number().min(0, "Luggage capacity cannot be negative"),
   price_multiplier: z.coerce.number().min(0.1, "Price multiplier must be at least 0.1").max(10, "Price multiplier cannot exceed 10").optional(),
+  business_price_multiplier: z.coerce.number().min(0.1, "Business price multiplier must be at least 0.1").max(10, "Business price multiplier cannot exceed 10").optional(),
   sort_order: z.coerce.number().optional(),
   is_active: z.boolean().default(true),
 })
@@ -64,6 +65,7 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
       passenger_capacity: vehicleType?.passenger_capacity || 4,
       luggage_capacity: vehicleType?.luggage_capacity || 2,
       price_multiplier: vehicleType?.price_multiplier || 1.0,
+      business_price_multiplier: vehicleType?.business_price_multiplier || 1.0,
       sort_order: vehicleType?.sort_order || undefined,
       is_active: vehicleType?.is_active ?? true,
     },
@@ -271,30 +273,81 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="price_multiplier"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price Multiplier</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0.1"
-                    max="10"
-                    step="0.1"
-                    placeholder="e.g., 1.0, 1.5, 2.0"
-                    {...field}
-                    value={field.value || ''}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Multiplier applied to zone base prices (e.g., 1.5 = 50% more expensive)
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        </div>
+
+        {/* Role-Based Pricing Section */}
+        <div className="rounded-lg border p-4 space-y-4">
+          <h3 className="font-medium">Role-Based Price Multipliers</h3>
+          <p className="text-sm text-muted-foreground">
+            Set different price multipliers for customer and business (B2B) users. These are applied to zone base prices.
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="price_multiplier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Customer Multiplier</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0.1"
+                      max="10"
+                      step="0.1"
+                      placeholder="e.g., 1.0, 1.5, 2.0"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Applied to zone base price for regular customers
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="business_price_multiplier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Business Multiplier</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0.1"
+                      max="10"
+                      step="0.1"
+                      placeholder="e.g., 0.8, 1.0, 1.5"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Applied to zone base price for B2B portal users
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Live Price Preview */}
+          <div className="p-3 bg-muted rounded-md">
+            <p className="text-sm text-muted-foreground mb-2">Price Preview (Zone Base: $50)</p>
+            <div className="flex gap-8">
+              <div>
+                <span className="text-xs text-muted-foreground">Customer:</span>
+                <span className="ml-2 font-medium">${(50 * (form.watch('price_multiplier') || 1)).toFixed(2)}</span>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Business:</span>
+                <span className="ml-2 font-medium">${(50 * (form.watch('business_price_multiplier') || 1)).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <FormField

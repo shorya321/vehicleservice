@@ -148,7 +148,7 @@ export function SettingsPageContent({
                       <Icon className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground group-hover:text-foreground transition-colors duration-200">
+                      <h3 className="text-lg font-semibold text-foreground group-hover:text-foreground transition-colors duration-200">
                         {link.title}
                       </h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">

@@ -11,6 +11,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { ArrowLeft } from 'lucide-react';
 import { BookingDetails } from './components/booking-details';
 import { CancelBookingButton } from './components/cancel-booking-button';
+import { EditDateTimeButton } from '../components/edit-datetime-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,8 +65,8 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
     notFound();
   }
 
-  // Fetch related data separately (including vendor assignment)
-  const [fromLocation, toLocation, vehicleType, assignments] = await Promise.all([
+  // Fetch related data separately (including vendor assignment and addons)
+  const [fromLocation, toLocation, vehicleType, assignments, bookingAddons] = await Promise.all([
     supabase
       .from('locations')
       .select('name, city')
@@ -95,6 +96,16 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
       `)
       .eq('business_booking_id', id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('business_booking_addons')
+      .select(`
+        id,
+        quantity,
+        unit_price,
+        total_price,
+        addon:addon_id(id, name, category, icon, description)
+      `)
+      .eq('business_booking_id', id),
   ]);
 
   // Construct the booking object with joined data (with fallbacks)
@@ -110,9 +121,11 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
       vehicle_categories: { name: 'Unknown' }
     },
     booking_assignments: assignments.data || [],
+    booking_addons: bookingAddons.data || [],
   };
 
   const canCancel = ['pending', 'confirmed'].includes(booking.booking_status);
+  const canEditDateTime = ['pending', 'confirmed', 'assigned'].includes(booking.booking_status);
 
   return (
     <div className="space-y-6">
@@ -137,9 +150,17 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
           </h1>
         </div>
         {/* Actions */}
-        {canCancel && (
+        {(canCancel || canEditDateTime) && (
           <div className="flex items-center gap-3">
-            <CancelBookingButton bookingId={id} />
+            {canEditDateTime && (
+              <EditDateTimeButton
+                bookingId={id}
+                bookingNumber={booking.booking_number}
+                bookingStatus={booking.booking_status}
+                pickupDatetime={booking.pickup_datetime}
+              />
+            )}
+            {canCancel && <CancelBookingButton bookingId={id} />}
           </div>
         )}
       </div>

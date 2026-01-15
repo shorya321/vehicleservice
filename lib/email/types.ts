@@ -126,3 +126,16 @@ export interface NewUserRegistrationNotificationEmailData {
   registrationDate: string;
   userDetailsUrl: string;
 }
+
+// Booking datetime modification notification
+export interface BookingDatetimeModifiedEmailData {
+  vendorEmail: string;
+  vendorName: string;
+  bookingNumber: string;
+  customerName: string;
+  pickupAddress: string;
+  previousDatetime: string;
+  newDatetime: string;
+  modificationReason?: string;
+  bookingUrl: string;
+}

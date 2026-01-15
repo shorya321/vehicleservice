@@ -36,10 +36,8 @@ const detailsSchema = z.object({
   customer_name: z.string().min(2, 'Customer name is required'),
   customer_email: z.string().email('Invalid email address'),
   customer_phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number'),
-  luggage_count: z.number().int().min(0).max(50),
   customer_notes: z.string().max(500).optional(),
   reference_number: z.string().max(50).optional(),
-  amenities_price: z.number().min(0).default(0),
 });
 
 type DetailsFormData = z.infer<typeof detailsSchema>;
@@ -51,21 +49,14 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
       customer_name: formData.customer_name || '',
       customer_email: formData.customer_email || '',
       customer_phone: formData.customer_phone || '',
-      luggage_count: formData.luggage_count || 0,
       customer_notes: formData.customer_notes || '',
       reference_number: formData.reference_number || '',
-      amenities_price: formData.amenities_price || 0,
     },
   });
 
   function onSubmit(values: DetailsFormData) {
-    // Calculate total price
-    const basePrice = formData.base_price || 0;
-    const totalPrice = basePrice + values.amenities_price;
-
     onUpdate({
       ...values,
-      total_price: totalPrice,
     });
     onNext();
   }
@@ -136,47 +127,6 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
             <h3 className="text-base font-semibold text-foreground">Booking Details</h3>
           </div>
 
-          <FormField
-            control={form.control}
-            name="luggage_count"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Luggage Count</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="50"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="amenities_price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Additional Amenities Price</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  />
-                </FormControl>
-                <FormDescription>Extra charges for special requests or amenities</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         {/* Optional Information */}

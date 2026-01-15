@@ -100,9 +100,81 @@ export async function getRouteById(routeId: string): Promise<RouteDetails | null
   return data as RouteDetails
 }
 
+// Addon types for checkout
+export interface CheckoutAddon {
+  id: string
+  name: string
+  description: string | null
+  icon: string
+  price: number
+  pricing_type: 'fixed' | 'per_unit'
+  max_quantity: number
+  category: string
+}
+
+export interface CheckoutAddonsByCategory {
+  category: string
+  addons: CheckoutAddon[]
+}
+
+/**
+ * Get active addons for customer checkout
+ */
+export async function getActiveAddons(): Promise<{
+  addons: CheckoutAddon[]
+  addonsByCategory: CheckoutAddonsByCategory[]
+}> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('addons')
+    .select('id, name, description, icon, price, pricing_type, max_quantity, category')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
+    .order('name', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching addons:', error)
+    return { addons: [], addonsByCategory: [] }
+  }
+
+  const addons = (data || []) as CheckoutAddon[]
+
+  // Group by category
+  const categoryMap = new Map<string, CheckoutAddon[]>()
+  addons.forEach((addon) => {
+    if (!categoryMap.has(addon.category)) {
+      categoryMap.set(addon.category, [])
+    }
+    categoryMap.get(addon.category)!.push(addon)
+  })
+
+  // Define category order
+  const categoryOrder = ['Child Safety', 'Luggage', 'Comfort']
+  const addonsByCategory: CheckoutAddonsByCategory[] = []
+
+  categoryOrder.forEach((cat) => {
+    if (categoryMap.has(cat)) {
+      addonsByCategory.push({
+        category: cat,
+        addons: categoryMap.get(cat)!,
+      })
+    }
+  })
+
+  // Add any remaining categories
+  categoryMap.forEach((categoryAddons, category) => {
+    if (!categoryOrder.includes(category)) {
+      addonsByCategory.push({ category, addons: categoryAddons })
+    }
+  })
+
+  return { addons, addonsByCategory }
+}
+
 export async function getVehicleType(
-  vehicleTypeId: string, 
-  fromLocationId?: string, 
+  vehicleTypeId: string,
+  fromLocationId?: string,
   toLocationId?: string
 ): Promise<VehicleTypeDetails | null> {
   const supabase = createAdminClient()
@@ -168,6 +240,14 @@ export async function getVehicleType(
   } as VehicleTypeDetails
 }
 
+// Selected addon schema for checkout
+const selectedAddonSchema = z.object({
+  addon_id: z.string().uuid(),
+  quantity: z.number().min(1).max(10),
+  unit_price: z.number().min(0),
+  total_price: z.number().min(0),
+})
+
 // Booking creation schema
 const bookingSchema = z.object({
   vehicleTypeId: z.string().uuid(),
@@ -193,7 +273,8 @@ const bookingSchema = z.object({
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
   }),
-  paymentMethod: z.enum(['card'])
+  paymentMethod: z.enum(['card']),
+  selectedAddons: z.array(selectedAddonSchema).optional(),
 })
 
 export type BookingFormData = z.infer<typeof bookingSchema>
@@ -236,9 +317,12 @@ export async function createBooking(formData: BookingFormData) {
   
   // Calculate prices based on actual vehicle data
   const basePrice = validatedData.basePrice
-  const childSeatPrice = (validatedData.childSeats.infant + validatedData.childSeats.booster) * 10
   const extraLuggagePrice = validatedData.extraLuggageCount * 15 // $15 per extra bag
-  const amenitiesPrice = childSeatPrice + extraLuggagePrice
+  const selectedAddonsPrice = validatedData.selectedAddons?.reduce(
+    (sum, addon) => sum + addon.total_price,
+    0
+  ) || 0
+  const amenitiesPrice = extraLuggagePrice + selectedAddonsPrice
   const totalPrice = basePrice + amenitiesPrice
   
   // Get zone IDs if location IDs are provided
@@ -324,23 +408,15 @@ export async function createBooking(formData: BookingFormData) {
   }
   
   // Add amenities if any
-  const amenities = []
-  if (validatedData.childSeats.infant > 0) {
-    amenities.push({
-      booking_id: booking.id,
-      amenity_type: 'child_seat_infant',
-      quantity: validatedData.childSeats.infant,
-      price: validatedData.childSeats.infant * 10
-    })
-  }
-  if (validatedData.childSeats.booster > 0) {
-    amenities.push({
-      booking_id: booking.id,
-      amenity_type: 'child_seat_booster',
-      quantity: validatedData.childSeats.booster,
-      price: validatedData.childSeats.booster * 10
-    })
-  }
+  const amenities: Array<{
+    booking_id: string
+    amenity_type: string
+    quantity: number
+    price: number
+    addon_id?: string
+  }> = []
+
+  // Add extra luggage if any
   if (validatedData.extraLuggageCount > 0) {
     amenities.push({
       booking_id: booking.id,
@@ -349,12 +425,25 @@ export async function createBooking(formData: BookingFormData) {
       price: validatedData.extraLuggageCount * 15
     })
   }
-  
+
+  // Add selected addons with addon_id reference
+  if (validatedData.selectedAddons && validatedData.selectedAddons.length > 0) {
+    for (const addon of validatedData.selectedAddons) {
+      amenities.push({
+        booking_id: booking.id,
+        amenity_type: 'addon', // Generic type for database addons
+        quantity: addon.quantity,
+        price: addon.total_price,
+        addon_id: addon.addon_id
+      })
+    }
+  }
+
   if (amenities.length > 0) {
     const { error: amenitiesError } = await adminClient
       .from('booking_amenities')
       .insert(amenities)
-    
+
     if (amenitiesError) {
       console.error('Error adding amenities:', amenitiesError)
       // Non-critical error, continue

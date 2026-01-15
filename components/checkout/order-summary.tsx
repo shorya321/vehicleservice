@@ -22,6 +22,7 @@ import {
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { formatCurrency } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { OrderSummaryAddon } from './checkout-wrapper'
 
 interface OrderSummaryProps {
   route: RouteDetails
@@ -36,6 +37,7 @@ interface OrderSummaryProps {
   isSubmitting?: boolean
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
+  selectedAddons?: OrderSummaryAddon[]
 }
 
 export function OrderSummary({
@@ -50,7 +52,8 @@ export function OrderSummary({
   onSubmit,
   isSubmitting = false,
   agreeToTerms = false,
-  onAgreeToTermsChange
+  onAgreeToTermsChange,
+  selectedAddons = []
 }: OrderSummaryProps) {
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
@@ -62,7 +65,8 @@ export function OrderSummary({
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
   const extraLuggageCost = extraLuggageCount * 15 // $15 per extra bag
   const childSeatsCost = (infantSeats + boosterSeats) * 10 // $10 per seat
-  const subtotal = basePrice + extraLuggageCost + childSeatsCost
+  const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
+  const subtotal = basePrice + extraLuggageCost + childSeatsCost + addonsCost
   const discount = promoDiscount
   const total = subtotal - discount
 
@@ -224,10 +228,24 @@ export function OrderSummary({
               <span className="checkout-price-value">{formatCurrency(extraLuggageCost)}</span>
             </div>
           )}
+          {selectedAddons.map((addon) => (
+            <div key={addon.id} className="checkout-price-row">
+              <span className="checkout-price-label">
+                {addon.name}{addon.quantity > 1 ? ` (×${addon.quantity})` : ''}
+              </span>
+              <span className="checkout-price-value">{formatCurrency(addon.total_price)}</span>
+            </div>
+          ))}
           {promoDiscount > 0 && (
             <div className="checkout-price-row discount">
               <span className="checkout-price-label">Promo Discount</span>
               <span className="checkout-price-value">-{formatCurrency(promoDiscount)}</span>
+            </div>
+          )}
+          {addonsCost > 0 && (
+            <div className="checkout-price-row">
+              <span className="checkout-price-label">Services Total</span>
+              <span className="checkout-price-value">{formatCurrency(addonsCost)}</span>
             </div>
           )}
         </div>

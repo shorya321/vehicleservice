@@ -205,7 +205,7 @@ export function BusinessCommandPalette({
                 key={item.href}
                 value={item.name}
                 onSelect={() => navigateTo(item.href)}
-                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-lg data-[selected=true]:bg-muted"
+                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-lg data-[selected=true]:bg-muted data-[selected=true]:text-foreground"
               >
                 <item.icon className="h-4 w-4 text-muted-foreground" />
                 <span>{item.name}</span>

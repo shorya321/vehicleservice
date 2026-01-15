@@ -7,10 +7,12 @@ import {
   type VendorApplicationReceivedEmailData,
   type VendorApplicationApprovedEmailData,
   type VendorApplicationRejectedEmailData,
+  type BookingDatetimeModifiedEmailData,
 } from '../types';
 import VendorApplicationReceivedEmail from '../templates/vendor/application-received';
 import VendorApplicationApprovedEmail from '../templates/vendor/application-approved';
 import VendorApplicationRejectedEmail from '../templates/vendor/application-rejected';
+import BookingDatetimeModifiedEmail from '../templates/vendor/booking-datetime-modified';
 
 /**
  * Send vendor application received confirmation email
@@ -136,6 +138,54 @@ export async function sendVendorApplicationRejectedEmail(
     };
   } catch (error) {
     console.error('Unexpected error sending vendor application rejected email:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while sending the email',
+    };
+  }
+}
+
+/**
+ * Send booking datetime modified notification to vendor
+ */
+export async function sendBookingDatetimeModifiedEmail(
+  data: BookingDatetimeModifiedEmailData
+): Promise<EmailResult> {
+  try {
+    const resend = getResendClient();
+    const emailConfig = getEmailConfig();
+
+    const { data: emailData, error } = await resend.emails.send({
+      from: emailConfig.from,
+      to: data.vendorEmail,
+      replyTo: emailConfig.replyTo,
+      subject: `Booking Time Changed - #${data.bookingNumber}`,
+      react: jsx(BookingDatetimeModifiedEmail, {
+        vendorName: data.vendorName,
+        bookingNumber: data.bookingNumber,
+        customerName: data.customerName,
+        pickupAddress: data.pickupAddress,
+        previousDatetime: data.previousDatetime,
+        newDatetime: data.newDatetime,
+        modificationReason: data.modificationReason,
+        bookingUrl: data.bookingUrl,
+      }),
+    });
+
+    if (error) {
+      console.error('Failed to send booking datetime modified email:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to send booking datetime modified email',
+      };
+    }
+
+    return {
+      success: true,
+      emailId: emailData?.id,
+    };
+  } catch (error) {
+    console.error('Unexpected error sending booking datetime modified email:', error);
     return {
       success: false,
       error: 'An unexpected error occurred while sending the email',

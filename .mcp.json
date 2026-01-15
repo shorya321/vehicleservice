@@ -123,6 +123,10 @@
         "shadcn@latest",
         "mcp"
       ]
-    }
+    },
+      "narsil-mcp": {
+        "command": "/Users/vikramsingh/.cargo/bin/narsil-mcp",
+        "args": ["--repos", "/Volumes/shorya/apps/vehicleservice"]
+      }
   }
 }

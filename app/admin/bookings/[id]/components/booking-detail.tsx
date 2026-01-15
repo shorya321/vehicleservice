@@ -495,10 +495,25 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                 <span className="text-sm text-muted-foreground">Base Price</span>
                 <span className="font-medium">{formatCurrency(booking.base_price)}</span>
               </div>
-              {booking.amenities_price > 0 && (
+              {booking.booking_amenities?.map((amenity: any, index: number) => (
+                <div key={index} className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {amenity.addon?.name ||
+                     (amenity.amenity_type === 'child_seat_infant' ? 'Infant Seat' :
+                      amenity.amenity_type === 'child_seat_booster' ? 'Booster Seat' :
+                      amenity.amenity_type === 'extra_luggage' ? 'Extra Luggage' :
+                      'Additional Service')}
+                    {amenity.quantity > 1 ? ` x${amenity.quantity}` : ''}
+                  </span>
+                  <span className="font-medium">{formatCurrency(amenity.price)}</span>
+                </div>
+              ))}
+              {booking.booking_amenities?.length > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Amenities</span>
-                  <span className="font-medium">{formatCurrency(booking.amenities_price)}</span>
+                  <span className="text-sm text-muted-foreground">Services Total</span>
+                  <span className="font-medium">
+                    {formatCurrency(booking.booking_amenities.reduce((sum: number, a: any) => sum + a.price, 0))}
+                  </span>
                 </div>
               )}
               <Separator />

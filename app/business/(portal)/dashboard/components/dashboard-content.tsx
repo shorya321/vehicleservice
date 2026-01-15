@@ -143,7 +143,7 @@ function DashboardHeader({ greeting, businessName, prefersReducedMotion }: Dashb
           initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight"
+          className="font-business-display text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--business-text-primary)]"
         >
           {greeting}, <span className="text-primary">{businessName}</span>
         </motion.h1>
@@ -151,7 +151,7 @@ function DashboardHeader({ greeting, businessName, prefersReducedMotion }: Dashb
           initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-muted-foreground mt-1"
+          className="font-business-body text-[var(--business-text-muted)] text-sm sm:text-base mt-1"
         >
           Here&apos;s what&apos;s happening with your business today
         </motion.p>

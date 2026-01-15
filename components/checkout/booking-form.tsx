@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { RouteDetails, VehicleTypeDetails, createBooking } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, createBooking } from '@/app/checkout/actions'
+import { OrderSummaryAddon } from './checkout-wrapper'
 import { toast } from 'sonner'
 
 // Import section components
@@ -13,6 +14,13 @@ import { TransferDetailsSection } from './form-sections/transfer-details-section
 import { PassengerInfoSection } from './form-sections/passenger-info-section'
 import { AdditionalServicesSection } from './form-sections/additional-services-section'
 import { PaymentMethodSection } from './form-sections/payment-method-section'
+
+const selectedAddonSchema = z.object({
+  addon_id: z.string().uuid(),
+  quantity: z.number().min(1).max(10),
+  unit_price: z.number().min(0),
+  total_price: z.number().min(0),
+})
 
 const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -30,7 +38,8 @@ const bookingSchema = z.object({
   paymentMethod: z.enum(['card']),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
-  })
+  }),
+  selectedAddons: z.array(selectedAddonSchema).optional(),
 })
 
 type BookingFormData = z.infer<typeof bookingSchema>
@@ -44,8 +53,10 @@ interface BookingFormProps {
   initialLuggage: number
   user: any
   profile: any
+  addonsByCategory: CheckoutAddonsByCategory[]
   onExtrasChange?: (infantSeats: number, boosterSeats: number, luggage: number) => void
   onDateTimeChange?: (date: string, time: string) => void
+  onAddonsChange?: (addons: OrderSummaryAddon[]) => void
   onFormReady?: (formMethods: {
     submit: () => void
     isSubmitting: boolean
@@ -75,8 +86,10 @@ export function BookingForm({
   initialLuggage,
   user,
   profile,
+  addonsByCategory,
   onExtrasChange,
   onDateTimeChange,
+  onAddonsChange,
   onFormReady
 }: BookingFormProps) {
   const router = useRouter()
@@ -98,7 +111,8 @@ export function BookingForm({
       luggageCount: luggage,
       extraLuggageCount: Math.max(0, luggage - vehicleType.luggage_capacity),
       paymentMethod: 'card',
-      agreeToTerms: false
+      agreeToTerms: false,
+      selectedAddons: [],
     }
   })
 
@@ -106,20 +120,40 @@ export function BookingForm({
   const agreeToTerms = watch('agreeToTerms')
   const infantSeats = watch('infantSeats')
   const boosterSeats = watch('boosterSeats')
+  const selectedAddons = watch('selectedAddons') || []
 
   // Calculate total price with all extras
   const basePrice = vehicleType.price || 50
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const childSeatsCost = (infantSeats + boosterSeats) * 10
   const extraLuggageCost = extraLuggageCount * 15
-  const totalPrice = basePrice + childSeatsCost + extraLuggageCost
+  const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
+  const totalPrice = basePrice + extraLuggageCost + addonsCost
 
-  // Notify parent of changes
+  // Notify parent of extras changes
   useEffect(() => {
     if (onExtrasChange) {
       onExtrasChange(infantSeats, boosterSeats, luggage)
     }
   }, [infantSeats, boosterSeats, luggage, onExtrasChange])
+
+  // Notify parent of addons changes (with name lookup for display)
+  useEffect(() => {
+    if (onAddonsChange) {
+      const addonsWithNames: OrderSummaryAddon[] = selectedAddons.map(addon => {
+        const addonDetails = addonsByCategory
+          .flatMap(c => c.addons)
+          .find(a => a.id === addon.addon_id)
+        return {
+          id: addon.addon_id,
+          name: addonDetails?.name || 'Service',
+          quantity: addon.quantity,
+          unit_price: addon.unit_price,
+          total_price: addon.total_price
+        }
+      })
+      onAddonsChange(addonsWithNames)
+    }
+  }, [selectedAddons, onAddonsChange, addonsByCategory])
 
   // Expose form methods to parent
   useEffect(() => {
@@ -158,7 +192,8 @@ export function BookingForm({
         extraLuggageCount: data.extraLuggageCount,
         basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,
-        paymentMethod: data.paymentMethod
+        paymentMethod: data.paymentMethod,
+        selectedAddons: data.selectedAddons,
       })
 
       if (result.success) {
@@ -191,8 +226,7 @@ export function BookingForm({
       <AdditionalServicesSection
         form={form}
         vehicleType={vehicleType}
-        luggage={luggage}
-        setLuggage={setLuggage}
+        addonsByCategory={addonsByCategory}
       />
 
       {/* Payment Method */}

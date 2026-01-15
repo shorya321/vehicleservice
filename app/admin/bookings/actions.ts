@@ -242,10 +242,17 @@ export async function getBookingDetails(bookingId: string) {
       .eq('booking_id', bookingId)
       .order('is_primary', { ascending: false })
 
-    // Get amenities separately
+    // Get amenities separately with addon details
     const { data: amenities } = await adminClient
       .from('booking_amenities')
-      .select('*')
+      .select(`
+        *,
+        addon:addons (
+          id,
+          name,
+          icon
+        )
+      `)
       .eq('booking_id', bookingId)
 
     // Handle booking_assignments - could be null, single object, or array
@@ -333,6 +340,23 @@ export async function getBookingDetails(bookingId: string) {
     businessAssignments = assignments || []
   }
 
+  // Fetch business booking addons
+  let businessAddons: any[] = []
+  if (businessBooking) {
+    const { data: addons } = await adminClient
+      .from('business_booking_addons')
+      .select(`
+        id,
+        quantity,
+        unit_price,
+        total_price,
+        addon:addon_id(id, name, category, icon, description)
+      `)
+      .eq('business_booking_id', bookingId)
+
+    businessAddons = addons || []
+  }
+
   if (businessError || !businessBooking) {
     console.error('Booking not found in either customer or business bookings:', { customerError, businessError })
     throw new Error(`Failed to fetch booking details: Booking not found`)
@@ -343,7 +367,13 @@ export async function getBookingDetails(bookingId: string) {
     bookingType: 'business' as const,
     booking_assignments: businessAssignments,
     booking_passengers: [], // Business bookings don't have passengers table
-    booking_amenities: [], // Business bookings don't have amenities
+    booking_amenities: businessAddons.map(addon => ({
+      id: addon.id,
+      amenity_type: 'addon',
+      quantity: addon.quantity,
+      price: addon.total_price,
+      addon: addon.addon,
+    })),
     // Map business_account to customer field for compatibility
     customer: businessBooking.business_account ? {
       id: businessBooking.business_account.id,

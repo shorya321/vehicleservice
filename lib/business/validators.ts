@@ -22,6 +22,18 @@ export const businessRegistrationSchema = z.object({
 export type BusinessRegistrationInput = z.infer<typeof businessRegistrationSchema>;
 
 /**
+ * Selected Addon Schema
+ */
+export const selectedAddonSchema = z.object({
+  addon_id: z.string().uuid('Invalid addon ID'),
+  quantity: z.number().int().min(1).max(10),
+  unit_price: z.number().min(0, 'Unit price cannot be negative'),
+  total_price: z.number().min(0, 'Total price cannot be negative'),
+});
+
+export type SelectedAddonInput = z.infer<typeof selectedAddonSchema>;
+
+/**
  * Booking Creation Schema
  */
 export const bookingCreationSchema = z.object({
@@ -35,12 +47,11 @@ export const bookingCreationSchema = z.object({
   pickup_datetime: z.string().datetime('Invalid datetime format'),
   vehicle_type_id: z.string().uuid('Invalid vehicle type ID'),
   passenger_count: z.number().int().min(1).max(20),
-  luggage_count: z.number().int().min(0).max(50),
   base_price: z.number().positive('Base price must be positive'),
-  amenities_price: z.number().min(0, 'Amenities price cannot be negative'),
   total_price: z.number().positive('Total price must be positive'),
   customer_notes: z.string().max(500).optional(),
   reference_number: z.string().max(50).optional(),
+  selected_addons: z.array(selectedAddonSchema).optional(),
 });
 
 export type BookingCreationInput = z.infer<typeof bookingCreationSchema>;
@@ -217,3 +228,14 @@ export const logoUploadSchema = z.object({
 });
 
 export type LogoUploadInput = z.infer<typeof logoUploadSchema>;
+
+/**
+ * Booking Datetime Modification Schema
+ * For modifying pickup_datetime of existing bookings
+ */
+export const bookingDatetimeModificationSchema = z.object({
+  pickup_datetime: z.string().datetime('Invalid datetime format'),
+  reason: z.string().max(500, 'Reason must be 500 characters or less').optional(),
+});
+
+export type BookingDatetimeModificationInput = z.infer<typeof bookingDatetimeModificationSchema>;

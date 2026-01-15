@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // Primary gold gradient button - matches auth tab styling
-        default: "bg-gradient-to-br from-[#C6AA88] to-[#A68B5B] text-[#050506] shadow-[0_4px_15px_-3px_rgba(198,170,136,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(198,170,136,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95",
+        default: "bg-gradient-to-br from-[#C6AA88] to-[#A68B5B] text-primary-foreground shadow-[0_4px_15px_-3px_rgba(198,170,136,0.4)] hover:shadow-[0_0_20px_rgba(198,170,136,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300",
         // Gold border outline button
         outline: "border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground active:scale-95",
         // Subtle muted button

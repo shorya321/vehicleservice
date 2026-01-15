@@ -1,117 +1,105 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Baby, Briefcase, Wifi, Coffee, HeadphonesIcon, HandHeart, Check } from 'lucide-react'
+import * as LucideIcons from 'lucide-react'
+import { Check, Minus, Plus, Package } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
-import { VehicleTypeDetails } from '@/app/checkout/actions'
+import { VehicleTypeDetails, CheckoutAddonsByCategory, CheckoutAddon } from '@/app/checkout/actions'
 import { cn } from '@/lib/utils'
+
+// Selected addon type for tracking
+export interface SelectedCheckoutAddon {
+  addon_id: string
+  quantity: number
+  unit_price: number
+  total_price: number
+}
 
 interface AdditionalServicesSectionProps {
   form: UseFormReturn<any>
   vehicleType: VehicleTypeDetails
-  luggage: number
-  setLuggage: (value: number) => void
+  addonsByCategory: CheckoutAddonsByCategory[]
 }
 
-interface ServiceCard {
-  id: string
-  name: string
-  description: string
-  price: number
-  icon: React.ElementType
-  isFree?: boolean
-  defaultSelected?: boolean
+// Dynamic icon component
+function AddonIcon({ iconName }: { iconName: string }) {
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName]
+  if (!IconComponent) return <Package className="h-5 w-5" />
+  return <IconComponent className="h-5 w-5" />
 }
 
 /**
  * Additional Services Section Component
  *
- * Manages optional booking add-ons:
- * - Child seats (infant and booster) with pricing
- * - Luggage management with capacity tracking and extra bag fees
- * - Meet & Greet service
- * - WiFi, Refreshments, Priority Support
+ * Database-driven addon selection:
+ * - Dynamically loads addons from database by category
+ * - Fixed-price addons: Toggle selection
+ * - Per-unit addons: Quantity controls (+/- buttons)
+ * - Real-time price calculation
  *
  * @component
  */
 export function AdditionalServicesSection({
   form,
   vehicleType,
-  luggage,
-  setLuggage
+  addonsByCategory
 }: AdditionalServicesSectionProps) {
-  const { watch, setValue } = form
+  const { setValue } = form
 
-  // Service states
-  const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set(['meet-greet', 'refreshments']))
+  // Track selected addons
+  const [selectedAddons, setSelectedAddons] = useState<Map<string, SelectedCheckoutAddon>>(new Map())
 
-  // Calculate extra luggage based on vehicle capacity
-  const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * 15 // $15 per extra bag
+  // Get selected addon helper
+  const getSelectedAddon = (addonId: string) => selectedAddons.get(addonId)
 
-  const infantSeats = watch('infantSeats')
-  const boosterSeats = watch('boosterSeats')
-
-  const services: ServiceCard[] = [
-    {
-      id: 'meet-greet',
-      name: 'Meet & Greet',
-      description: 'Driver with name board at arrival',
-      price: 0,
-      icon: HandHeart,
-      isFree: true,
-      defaultSelected: true
-    },
-    {
-      id: 'child-seat',
-      name: 'Child Seat',
-      description: 'Infant or booster seat available',
-      price: 10,
-      icon: Baby
-    },
-    {
-      id: 'extra-luggage',
-      name: 'Extra Luggage',
-      description: `${vehicleType.luggage_capacity} bags included`,
-      price: 15,
-      icon: Briefcase
-    },
-    {
-      id: 'wifi',
-      name: 'In-Car WiFi',
-      description: 'High-speed internet access',
-      price: 8,
-      icon: Wifi
-    },
-    {
-      id: 'refreshments',
-      name: 'Refreshments',
-      description: 'Complimentary water & snacks',
-      price: 0,
-      icon: Coffee,
-      isFree: true,
-      defaultSelected: true
-    },
-    {
-      id: 'priority-support',
-      name: 'Priority Support',
-      description: '24/7 dedicated assistance',
-      price: 5,
-      icon: HeadphonesIcon
-    }
-  ]
-
-  const toggleService = (id: string) => {
-    const newSelected = new Set(selectedServices)
-    if (newSelected.has(id)) {
-      newSelected.delete(id)
+  // Toggle fixed-price addon
+  const toggleAddon = (addon: CheckoutAddon) => {
+    const newSelected = new Map(selectedAddons)
+    if (newSelected.has(addon.id)) {
+      newSelected.delete(addon.id)
     } else {
-      newSelected.add(id)
+      newSelected.set(addon.id, {
+        addon_id: addon.id,
+        quantity: 1,
+        unit_price: addon.price,
+        total_price: addon.price,
+      })
     }
-    setSelectedServices(newSelected)
+    setSelectedAddons(newSelected)
+  }
+
+  // Update quantity for per-unit addon
+  const updateQuantity = (addon: CheckoutAddon, newQuantity: number) => {
+    const newSelected = new Map(selectedAddons)
+    if (newQuantity <= 0) {
+      newSelected.delete(addon.id)
+    } else if (newQuantity <= addon.max_quantity) {
+      newSelected.set(addon.id, {
+        addon_id: addon.id,
+        quantity: newQuantity,
+        unit_price: addon.price,
+        total_price: addon.price * newQuantity,
+      })
+    }
+    setSelectedAddons(newSelected)
+  }
+
+  // Calculate total addons price
+  const totalAddonsPrice = Array.from(selectedAddons.values()).reduce(
+    (sum, addon) => sum + addon.total_price,
+    0
+  )
+
+  // Sync selected addons to form
+  useEffect(() => {
+    setValue('selectedAddons', Array.from(selectedAddons.values()))
+  }, [selectedAddons, setValue])
+
+  if (addonsByCategory.length === 0) {
+    return null
   }
 
   return (
@@ -126,196 +114,108 @@ export function AdditionalServicesSection({
       <div className="checkout-section-header">
         <span className="checkout-section-number">3</span>
         <h2 className="checkout-section-title">Additional Services</h2>
-        <Briefcase className="checkout-section-icon" />
+        <Package className="checkout-section-icon" />
       </div>
 
       {/* Section Content */}
       <div className="checkout-section-content space-y-6">
-        {/* Service Cards Grid */}
-        <div className="checkout-services-grid">
-          {services.map((service) => {
-            const isSelected = selectedServices.has(service.id)
-            const Icon = service.icon
+        {/* Dynamic Addon Categories */}
+        {addonsByCategory.map((category) => (
+          <div key={category.category} className="space-y-3">
+            <h4 className="text-sm font-medium text-[#b8b4ae]">{category.category}</h4>
+            <div className="checkout-services-grid">
+              {category.addons.map((addon) => {
+                const selected = getSelectedAddon(addon.id)
+                const isSelected = !!selected
+                const quantity = selected?.quantity || 0
+                const isFree = addon.price === 0
 
-            // Special handling for child seat and luggage
-            if (service.id === 'child-seat') {
-              return (
-                <div
-                  key={service.id}
-                  className={cn(
-                    "checkout-service-card",
-                    (infantSeats > 0 || boosterSeats > 0) && "selected"
-                  )}
-                >
-                  <div className="checkout-service-checkbox">
-                    {(infantSeats > 0 || boosterSeats > 0) && (
-                      <Check className="h-3 w-3 text-[#050506]" />
-                    )}
-                  </div>
-                  <div className="checkout-service-icon">
-                    <Icon className="h-5 w-5 text-[#c6aa88]" />
-                  </div>
-                  <div className="checkout-service-content">
-                    <p className="checkout-service-name">{service.name}</p>
-                    <p className="checkout-service-description">
-                      {infantSeats + boosterSeats > 0
-                        ? `${infantSeats} infant + ${boosterSeats} booster`
-                        : service.description
-                      }
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
-                        onClick={() => {
-                          const current = infantSeats
-                          setValue('infantSeats', Math.max(0, current - 1))
-                        }}
-                      >
-                        -
-                      </Button>
-                      <span className="text-sm text-[#f8f6f3] w-5 text-center">{infantSeats + boosterSeats}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
-                        onClick={() => {
-                          const current = infantSeats
-                          setValue('infantSeats', Math.min(4, current + 1))
-                        }}
-                      >
-                        +
-                      </Button>
-                    </div>
-                    <span className="checkout-service-price">
-                      {formatCurrency(service.price)}/ea
-                    </span>
-                  </div>
-                </div>
-              )
-            }
-
-            if (service.id === 'extra-luggage') {
-              return (
-                <div
-                  key={service.id}
-                  className={cn(
-                    "checkout-service-card",
-                    extraLuggageCount > 0 && "selected"
-                  )}
-                >
-                  <div className="checkout-service-checkbox">
-                    {extraLuggageCount > 0 && (
-                      <Check className="h-3 w-3 text-[#050506]" />
-                    )}
-                  </div>
-                  <div className="checkout-service-icon">
-                    <Icon className="h-5 w-5 text-[#c6aa88]" />
-                  </div>
-                  <div className="checkout-service-content">
-                    <p className="checkout-service-name">{service.name}</p>
-                    <p className="checkout-service-description">
-                      {luggage} of {vehicleType.luggage_capacity} included
-                      {extraLuggageCount > 0 && (
-                        <span className="text-[#c6aa88]"> (+{extraLuggageCount} extra)</span>
+                if (addon.pricing_type === 'per_unit') {
+                  // Per-unit addon with quantity controls
+                  return (
+                    <div
+                      key={addon.id}
+                      className={cn(
+                        "checkout-service-card",
+                        isSelected && "selected"
                       )}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
-                        onClick={() => {
-                          const newLuggage = Math.max(0, luggage - 1)
-                          setLuggage(newLuggage)
-                          setValue('luggageCount', newLuggage)
-                          setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
-                        }}
-                      >
-                        -
-                      </Button>
-                      <span className="text-sm text-[#f8f6f3] w-5 text-center">{luggage}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
-                        onClick={() => {
-                          const newLuggage = Math.min(20, luggage + 1)
-                          setLuggage(newLuggage)
-                          setValue('luggageCount', newLuggage)
-                          setValue('extraLuggageCount', Math.max(0, newLuggage - vehicleType.luggage_capacity))
-                        }}
-                      >
-                        +
-                      </Button>
+                    >
+                      <div className="checkout-service-checkbox">
+                        {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
+                      </div>
+                      <div className="checkout-service-icon">
+                        <AddonIcon iconName={addon.icon} />
+                      </div>
+                      <div className="checkout-service-content">
+                        <p className="checkout-service-name">{addon.name}</p>
+                        <p className="checkout-service-description">
+                          {addon.description || `Up to ${addon.max_quantity} available`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                            onClick={() => updateQuantity(addon, quantity - 1)}
+                            disabled={quantity === 0}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="text-sm text-[#f8f6f3] w-5 text-center">{quantity}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                            onClick={() => updateQuantity(addon, quantity + 1)}
+                            disabled={quantity >= addon.max_quantity}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <span className="checkout-service-price">
+                          {formatCurrency(addon.price)}/ea
+                        </span>
+                      </div>
                     </div>
-                    <span className="checkout-service-price">
-                      {formatCurrency(service.price)}/ea
+                  )
+                }
+
+                // Fixed-price addon with toggle
+                return (
+                  <div
+                    key={addon.id}
+                    className={cn(
+                      "checkout-service-card",
+                      isSelected && "selected"
+                    )}
+                    onClick={() => toggleAddon(addon)}
+                  >
+                    <div className="checkout-service-checkbox">
+                      {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
+                    </div>
+                    <div className="checkout-service-icon">
+                      <AddonIcon iconName={addon.icon} />
+                    </div>
+                    <div className="checkout-service-content">
+                      <p className="checkout-service-name">{addon.name}</p>
+                      <p className="checkout-service-description">{addon.description}</p>
+                    </div>
+                    <span className={cn(
+                      "checkout-service-price",
+                      isFree && "checkout-service-price-free"
+                    )}>
+                      {isFree ? 'Free' : `+${formatCurrency(addon.price)}`}
                     </span>
                   </div>
-                </div>
-              )
-            }
-
-            return (
-              <div
-                key={service.id}
-                className={cn(
-                  "checkout-service-card",
-                  isSelected && "selected"
-                )}
-                onClick={() => toggleService(service.id)}
-              >
-                <div className="checkout-service-checkbox">
-                  {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
-                </div>
-                <div className="checkout-service-icon">
-                  <Icon className="h-5 w-5 text-[#c6aa88]" />
-                </div>
-                <div className="checkout-service-content">
-                  <p className="checkout-service-name">{service.name}</p>
-                  <p className="checkout-service-description">{service.description}</p>
-                </div>
-                <span className={cn(
-                  "checkout-service-price",
-                  service.isFree && "checkout-service-price-free"
-                )}>
-                  {service.isFree ? 'Free' : `+${formatCurrency(service.price)}`}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Cost Summary */}
-        {(infantSeats + boosterSeats > 0 || extraLuggageCount > 0) && (
-          <div className="p-4 bg-[#1f1e1c]/30 border border-[#c6aa88]/10 rounded-lg">
-            <p className="text-sm text-[#b8b4ae] mb-2">Additional Costs:</p>
-            <div className="space-y-1">
-              {(infantSeats + boosterSeats > 0) && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#b8b4ae]">Child Seats ({infantSeats + boosterSeats})</span>
-                  <span className="text-[#c6aa88]">+{formatCurrency((infantSeats + boosterSeats) * 10)}</span>
-                </div>
-              )}
-              {extraLuggageCount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#b8b4ae]">Extra Luggage ({extraLuggageCount})</span>
-                  <span className="text-[#c6aa88]">+{formatCurrency(extraLuggageCost)}</span>
-                </div>
-              )}
+                )
+              })}
             </div>
           </div>
-        )}
+        ))}
       </div>
     </motion.div>
   )

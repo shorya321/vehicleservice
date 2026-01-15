@@ -3,7 +3,16 @@
 import { useState, useCallback } from 'react'
 import { BookingForm } from './booking-form'
 import { OrderSummary } from './order-summary'
-import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory } from '@/app/checkout/actions'
+
+// Type for displaying addons in OrderSummary
+export interface OrderSummaryAddon {
+  id: string
+  name: string
+  quantity: number
+  unit_price: number
+  total_price: number
+}
 
 interface FormMethods {
   submit: () => void
@@ -21,6 +30,7 @@ interface CheckoutWrapperProps {
   initialLuggage: number
   user: any
   profile: any
+  addonsByCategory: CheckoutAddonsByCategory[]
 }
 
 export function CheckoutWrapper({
@@ -31,13 +41,15 @@ export function CheckoutWrapper({
   initialPassengers,
   initialLuggage,
   user,
-  profile
+  profile,
+  addonsByCategory
 }: CheckoutWrapperProps) {
   const [infantSeats, setInfantSeats] = useState(0)
   const [boosterSeats, setBoosterSeats] = useState(0)
   const [currentLuggage, setCurrentLuggage] = useState(initialLuggage)
   const [pickupDate, setPickupDate] = useState(initialDate)
   const [pickupTime, setPickupTime] = useState(initialTime)
+  const [selectedAddons, setSelectedAddons] = useState<OrderSummaryAddon[]>([])
 
   // Form methods state for connecting BookingForm to OrderSummary
   const [formMethods, setFormMethods] = useState<FormMethods>({
@@ -58,14 +70,18 @@ export function CheckoutWrapper({
     setPickupTime(time)
   }
 
+  const handleAddonsChange = useCallback((addons: OrderSummaryAddon[]) => {
+    setSelectedAddons(addons)
+  }, [])
+
   const handleFormReady = useCallback((methods: FormMethods) => {
     setFormMethods(methods)
   }, [])
 
   return (
-    <div className="grid lg:grid-cols-[1fr_420px] gap-8 lg:gap-12 items-start">
+    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
       {/* Main Booking Form */}
-      <div>
+      <div className="flex-1 min-w-0">
         <BookingForm
           route={route}
           vehicleType={vehicleType}
@@ -75,15 +91,18 @@ export function CheckoutWrapper({
           initialLuggage={initialLuggage}
           user={user}
           profile={profile}
+          addonsByCategory={addonsByCategory}
           onExtrasChange={handleExtrasChange}
           onDateTimeChange={handleDateTimeChange}
+          onAddonsChange={handleAddonsChange}
           onFormReady={handleFormReady}
         />
       </div>
 
       {/* Order Summary Sidebar - Sticky */}
-      <div className="lg:sticky lg:top-24">
-        <OrderSummary
+      <div className="w-full lg:w-[420px] flex-shrink-0">
+        <div className="lg:sticky lg:top-28">
+          <OrderSummary
           route={route}
           vehicleType={vehicleType}
           passengers={initialPassengers}
@@ -96,7 +115,9 @@ export function CheckoutWrapper({
           isSubmitting={formMethods.isSubmitting}
           agreeToTerms={formMethods.agreeToTerms}
           onAgreeToTermsChange={formMethods.setAgreeToTerms}
+          selectedAddons={selectedAddons}
         />
+        </div>
       </div>
     </div>
   )

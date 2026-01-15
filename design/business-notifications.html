@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - Business Portal | Infinia Transfers</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: {
+              DEFAULT: 'hsl(var(--primary))',
+              foreground: 'hsl(var(--primary-foreground))',
+            },
+            secondary: {
+              DEFAULT: 'hsl(var(--secondary))',
+              foreground: 'hsl(var(--secondary-foreground))',
+            },
+            destructive: {
+              DEFAULT: 'hsl(var(--destructive))',
+              foreground: 'hsl(var(--destructive-foreground))',
+            },
+            muted: {
+              DEFAULT: 'hsl(var(--muted))',
+              foreground: 'hsl(var(--muted-foreground))',
+            },
+            accent: {
+              DEFAULT: 'hsl(var(--accent))',
+              foreground: 'hsl(var(--accent-foreground))',
+            },
+            popover: {
+              DEFAULT: 'hsl(var(--popover))',
+              foreground: 'hsl(var(--popover-foreground))',
+            },
+            card: {
+              DEFAULT: 'hsl(var(--card))',
+              foreground: 'hsl(var(--card-foreground))',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'luxury': '0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04)',
+            'luxury-lg': '0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.06)',
+            'glow-gold': '0 0 20px rgba(198, 170, 136, 0.3)',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /* CSS Variables - Dark Mode (Default) */
+    :root {
+      --background: 240 10% 4%;
+      --foreground: 0 0% 98%;
+      --card: 240 6% 6%;
+      --card-foreground: 0 0% 98%;
+      --popover: 240 6% 6%;
+      --popover-foreground: 0 0% 98%;
+      --primary: 36 33% 66%;
+      --primary-foreground: 240 10% 4%;
+      --secondary: 240 4% 16%;
+      --secondary-foreground: 0 0% 98%;
+      --muted: 240 4% 16%;
+      --muted-foreground: 240 5% 65%;
+      --accent: 36 33% 66%;
+      --accent-foreground: 240 10% 4%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 4% 16%;
+      --input: 240 4% 16%;
+      --ring: 36 33% 66%;
+      --radius: 0.5rem;
+    }
+
+    /* Light Mode */
+    .light {
+      --background: 0 0% 100%;
+      --foreground: 240 10% 4%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 4%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 4%;
+      --primary: 36 40% 55%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 240 5% 96%;
+      --secondary-foreground: 240 6% 10%;
+      --muted: 240 5% 96%;
+      --muted-foreground: 240 4% 46%;
+      --accent: 36 40% 55%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 6% 90%;
+      --input: 240 6% 90%;
+      --ring: 36 40% 55%;
+    }
+
+    * {
+      border-color: hsl(var(--border));
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground) / 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--muted-foreground) / 0.5);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bellRing {
+      0%, 100% { transform: rotate(0deg); }
+      10%, 30%, 50%, 70%, 90% { transform: rotate(8deg); }
+      20%, 40%, 60%, 80% { transform: rotate(-8deg); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .animate-bell-ring {
+      animation: bellRing 0.8s ease-in-out;
+    }
+
+    /* Stagger children animation */
+    .stagger-children > * {
+      opacity: 0;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+    .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+    .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+    .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+    .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+    .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+    /* Dropdown animation */
+    .dropdown-content {
+      transform-origin: top right;
+      animation: dropdownOpen 0.2s ease-out forwards;
+    }
+
+    @keyframes dropdownOpen {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Sidebar transition */
+    .sidebar-transition {
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Content margin transition */
+    .content-transition {
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Mobile overlay */
+    .mobile-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Button hover glow */
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(198, 170, 136, 0.4);
+    }
+
+    /* Card hover effect */
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Active nav indicator */
+    .nav-active-indicator {
+      box-shadow: 0 0 10px hsl(var(--primary));
+    }
+
+    /* Tab styles */
+    .tab-item {
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: hsl(var(--primary));
+      border-radius: 1px;
+    }
+
+    /* Notification item hover */
+    .notification-item {
+      transition: all 0.2s ease;
+    }
+
+    .notification-item:hover {
+      background: hsl(var(--primary) / 0.05);
+      border-color: hsl(var(--primary) / 0.2);
+    }
+
+    /* Unread notification glow */
+    .notification-unread {
+      background: hsl(var(--primary) / 0.05);
+      border-color: hsl(var(--primary) / 0.2);
+    }
+
+    .notification-unread::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: hsl(var(--primary));
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        hsl(var(--muted)) 0%,
+        hsl(var(--muted) / 0.5) 50%,
+        hsl(var(--muted)) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Mobile Overlay -->
+  <div id="mobileOverlay" class="fixed inset-0 z-40 mobile-overlay hidden md:hidden" onclick="closeMobileSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed left-0 top-0 z-50 h-screen flex flex-col overflow-hidden bg-card border-r border-border shadow-lg sidebar-transition w-64">
+    <!-- Workspace Selector -->
+    <div class="relative z-10 flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
+      <div class="flex items-center gap-3 flex-1 min-w-0 p-2 rounded-xl hover:bg-primary/10 transition-all duration-200 cursor-pointer">
+        <!-- Logo/Initials -->
+        <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm ring-2 ring-primary/20">
+          AB
+        </div>
+        <!-- Business Name -->
+        <div id="workspaceName" class="flex-1 min-w-0 overflow-hidden transition-all duration-200">
+          <p class="text-sm font-semibold truncate text-foreground">Acme Business</p>
+          <p class="text-xs text-primary">Business Portal</p>
+        </div>
+      </div>
+      <!-- Collapse Toggle (Desktop) -->
+      <button id="collapseBtn" onclick="toggleSidebar()" class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hidden md:flex" aria-label="Toggle sidebar">
+        <i data-lucide="chevron-left" class="h-4 w-4 transition-transform duration-200" id="collapseIcon"></i>
+      </button>
+      <!-- Close Button (Mobile) -->
+      <button onclick="closeMobileSidebar()" class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 md:hidden" aria-label="Close menu">
+        <i data-lucide="x" class="h-5 w-5"></i>
+      </button>
+    </div>
+
+    <!-- New Booking Button -->
+    <div id="newBookingWrapper" class="relative z-10 py-2 px-3">
+      <a href="#" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium shadow-sm hover:shadow-glow-gold transition-all duration-300 btn-primary">
+        <i data-lucide="plus" class="h-4 w-4"></i>
+        <span id="newBookingText">New Booking</span>
+      </a>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto px-3 pb-4">
+      <!-- Overview Group -->
+      <div class="mt-4">
+        <div id="overviewLabel" class="px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Overview</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="layout-dashboard" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Dashboard</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Group -->
+      <div class="mt-6">
+        <div id="managementLabel" class="px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Management</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="calendar-check" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Bookings</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="wallet" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Wallet</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Settings Group -->
+      <div class="mt-6">
+        <div id="settingsLabel" class="px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Settings</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="palette" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Branding</span>
+          </a>
+          <!-- Active Notifications Nav Item -->
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(198,170,136,0.08)]">
+            <div class="absolute left-0 inset-y-2 w-1 rounded-r-full bg-primary nav-active-indicator"></div>
+            <i data-lucide="bell" class="h-4 w-4 flex-shrink-0"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Notifications</span>
+            <!-- Unread badge -->
+            <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white px-1.5">5</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="globe" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Domain</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="settings" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Settings</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Footer -->
+    <div class="border-t border-primary/10">
+      <div id="versionInfo" class="relative z-10 p-4 flex items-center justify-center gap-2 transition-all duration-200">
+        <span class="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent"></span>
+        <span class="text-[10px] text-muted-foreground/70 font-medium tracking-wider">v1.0</span>
+        <span class="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Header -->
+  <header id="header" class="fixed top-0 right-0 z-30 flex h-14 items-center justify-between bg-card/95 backdrop-blur-sm border-b border-border shadow-sm px-4 md:px-6 content-transition" style="left: 256px;">
+    <!-- Left side - Mobile menu toggle -->
+    <div class="relative z-10 flex items-center">
+      <button onclick="openMobileSidebar()" class="md:hidden h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200" aria-label="Open menu">
+        <i data-lucide="menu" class="h-5 w-5"></i>
+      </button>
+    </div>
+
+    <!-- Right side - Controls -->
+    <div class="relative z-10 flex items-center gap-1">
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" class="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200" aria-label="Toggle theme">
+        <i data-lucide="moon" class="h-4 w-4 dark:hidden"></i>
+        <i data-lucide="sun" class="h-4 w-4 hidden dark:block"></i>
+      </button>
+
+      <!-- Notifications (Active) -->
+      <div class="relative">
+        <button class="h-9 w-9 flex items-center justify-center rounded-lg bg-primary/10 text-primary transition-all duration-200 relative" aria-label="Notifications">
+          <i data-lucide="bell" class="h-4 w-4"></i>
+          <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>
+        </button>
+      </div>
+
+      <!-- User Dropdown -->
+      <div class="relative ml-1">
+        <button onclick="toggleDropdown('userDropdown')" class="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10 transition-all duration-200">
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-xs font-semibold ring-2 ring-primary/20">
+            JD
+          </div>
+          <div class="hidden sm:flex flex-col items-start">
+            <span class="text-sm font-medium text-foreground">John Doe</span>
+            <span class="text-xs text-muted-foreground">Acme Business</span>
+          </div>
+          <i data-lucide="chevron-down" class="h-4 w-4 text-primary"></i>
+        </button>
+        <!-- User Dropdown Menu -->
+        <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 rounded-xl bg-popover border border-border shadow-lg dropdown-content">
+          <div class="p-3 border-b border-border">
+            <p class="text-sm font-medium text-foreground">John Doe</p>
+            <p class="text-xs text-muted-foreground">john@acmebusiness.com</p>
+          </div>
+          <div class="p-1">
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors">
+              <i data-lucide="wallet" class="h-4 w-4 text-primary"></i>
+              Wallet
+            </a>
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors">
+              <i data-lucide="settings" class="h-4 w-4 text-primary"></i>
+              Account Settings
+            </a>
+          </div>
+          <div class="p-1 border-t border-border">
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors">
+              <i data-lucide="log-out" class="h-4 w-4"></i>
+              Log out
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="mainContent" class="pt-14 content-transition" style="margin-left: 256px;">
+    <div class="p-4 md:p-6 lg:p-8 pb-12 space-y-6 stagger-children">
+
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight font-display flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <i data-lucide="bell" class="h-5 w-5 text-primary"></i>
+            </div>
+            Notifications
+          </h1>
+          <p class="text-muted-foreground mt-1 ml-[52px]">
+            Stay updated with your bookings and account activities
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="#" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card/80 backdrop-blur-sm text-foreground/80 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+            <i data-lucide="settings-2" class="h-4 w-4 text-primary"></i>
+            Preferences
+          </a>
+          <button onclick="markAllAsRead()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/30 text-primary font-medium hover:bg-primary/20 hover:border-primary/50 transition-all duration-300">
+            <i data-lucide="check-check" class="h-4 w-4"></i>
+            Mark all as read
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid gap-4 md:grid-cols-3">
+        <!-- Total Notifications -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Total Notifications</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                <i data-lucide="bell" class="h-4 w-4 text-primary"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-3xl font-bold tracking-tight text-primary">24</span>
+            </div>
+            <p class="text-sm text-muted-foreground">All notifications</p>
+          </div>
+        </div>
+
+        <!-- Unread -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Unread</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10">
+                <i data-lucide="bell-ring" class="h-4 w-4 text-red-500"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-3xl font-bold tracking-tight text-red-500">5</span>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-red-500 bg-red-500/10">
+                Needs attention
+              </span>
+            </div>
+            <p class="text-sm text-muted-foreground">Awaiting your review</p>
+          </div>
+        </div>
+
+        <!-- Read -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Read</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10">
+                <i data-lucide="bell-off" class="h-4 w-4 text-emerald-500"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-3xl font-bold tracking-tight text-emerald-500">19</span>
+            </div>
+            <p class="text-sm text-muted-foreground">Already reviewed</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications List Card -->
+      <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm">
+        <!-- Tabs Header -->
+        <div class="flex items-center justify-between p-4 border-b border-border">
+          <div class="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+            <button onclick="setActiveTab('all')" class="tab-item active px-4 py-2 rounded-md text-sm font-medium text-primary bg-card shadow-sm transition-all">
+              All <span class="ml-1 text-xs opacity-70">(24)</span>
+            </button>
+            <button onclick="setActiveTab('bookings')" class="tab-item px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+              Bookings <span class="ml-1 text-xs opacity-70">(12)</span>
+            </button>
+            <button onclick="setActiveTab('payments')" class="tab-item px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+              Payments <span class="ml-1 text-xs opacity-70">(8)</span>
+            </button>
+            <button onclick="setActiveTab('system')" class="tab-item px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+              System <span class="ml-1 text-xs opacity-70">(4)</span>
+            </button>
+          </div>
+
+          <!-- Filter Dropdown -->
+          <div class="relative">
+            <button onclick="toggleDropdown('filterDropdown')" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all">
+              <i data-lucide="filter" class="h-4 w-4"></i>
+              <span class="hidden sm:inline">Filter</span>
+              <i data-lucide="chevron-down" class="h-3 w-3"></i>
+            </button>
+            <div id="filterDropdown" class="hidden absolute right-0 top-full mt-2 w-48 rounded-xl bg-popover border border-border shadow-lg dropdown-content z-10">
+              <div class="p-1">
+                <button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors text-left">
+                  <i data-lucide="inbox" class="h-4 w-4 text-primary"></i>
+                  All notifications
+                </button>
+                <button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors text-left">
+                  <i data-lucide="circle" class="h-4 w-4 text-red-500"></i>
+                  Unread only
+                </button>
+                <button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors text-left">
+                  <i data-lucide="check-circle-2" class="h-4 w-4 text-emerald-500"></i>
+                  Read only
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="divide-y divide-border">
+
+          <!-- Unread Notification - Booking -->
+          <div class="notification-item notification-unread relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <i data-lucide="shopping-cart" class="h-5 w-5 text-primary"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-semibold text-foreground">New booking received</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    Sarah Johnson booked a luxury sedan transfer for December 28th, 2024. Pick-up at JFK Airport.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-primary font-medium">5 min ago</span>
+                  <div class="w-2 h-2 bg-primary rounded-full"></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-sky-500/10 text-sky-500 border-sky-500/30">
+                  <i data-lucide="calendar-check" class="h-3 w-3"></i>
+                  Booking
+                </span>
+                <span class="text-xs text-muted-foreground">TRF-2024-156</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unread Notification - Payment -->
+          <div class="notification-item notification-unread relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+                <i data-lucide="credit-card" class="h-5 w-5 text-emerald-500"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-semibold text-foreground">Payment received</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    $250.00 has been credited to your wallet from booking TRF-2024-155.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-primary font-medium">15 min ago</span>
+                  <div class="w-2 h-2 bg-primary rounded-full"></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
+                  <i data-lucide="wallet" class="h-3 w-3"></i>
+                  Payment
+                </span>
+                <span class="text-xs text-muted-foreground">+$250.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unread Notification - System -->
+          <div class="notification-item notification-unread relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-violet-500/10">
+                <i data-lucide="sparkles" class="h-5 w-5 text-violet-500"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-semibold text-foreground">New feature available</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    Try our new recurring bookings feature! Set up automated transfers for your regular customers.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-primary font-medium">1 hour ago</span>
+                  <div class="w-2 h-2 bg-primary rounded-full"></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-violet-500/10 text-violet-500 border-violet-500/30">
+                  <i data-lucide="bell" class="h-3 w-3"></i>
+                  System
+                </span>
+                <a href="#" class="text-xs text-primary hover:underline">Learn more</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Read Notification - Booking Completed -->
+          <div class="notification-item relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                <i data-lucide="check-circle-2" class="h-5 w-5 text-muted-foreground"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-medium text-foreground">Booking completed</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    Transfer TRF-2024-154 for Michael Chen has been completed successfully.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-muted-foreground">3 hours ago</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-muted text-muted-foreground border-border">
+                  <i data-lucide="calendar-check" class="h-3 w-3"></i>
+                  Booking
+                </span>
+                <span class="text-xs text-muted-foreground">TRF-2024-154</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Read Notification - Booking Cancelled -->
+          <div class="notification-item relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                <i data-lucide="x-circle" class="h-5 w-5 text-muted-foreground"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-medium text-foreground">Booking cancelled</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    Emily Davis cancelled booking TRF-2024-153. Refund of $180.00 has been processed.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-muted-foreground">Yesterday</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-muted text-muted-foreground border-border">
+                  <i data-lucide="calendar-x" class="h-3 w-3"></i>
+                  Cancellation
+                </span>
+                <span class="text-xs text-muted-foreground">-$180.00 refunded</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Read Notification - Low Balance Warning -->
+          <div class="notification-item relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                <i data-lucide="alert-triangle" class="h-5 w-5 text-muted-foreground"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-medium text-foreground">Low wallet balance</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    Your wallet balance is below $500. Consider adding funds to avoid booking interruptions.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-muted-foreground">2 days ago</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-muted text-muted-foreground border-border">
+                  <i data-lucide="wallet" class="h-3 w-3"></i>
+                  Payment
+                </span>
+                <a href="#" class="text-xs text-primary hover:underline">Add funds</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Read Notification - Auto-recharge -->
+          <div class="notification-item relative flex items-start gap-4 p-4 cursor-pointer">
+            <div class="flex-shrink-0 mt-1">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                <i data-lucide="repeat" class="h-5 w-5 text-muted-foreground"></i>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-medium text-foreground">Auto-recharge successful</h4>
+                  <p class="text-sm text-muted-foreground mt-0.5">
+                    $500.00 was automatically added to your wallet via your saved payment method.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-muted-foreground">3 days ago</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-muted text-muted-foreground border-border">
+                  <i data-lucide="credit-card" class="h-3 w-3"></i>
+                  Payment
+                </span>
+                <span class="text-xs text-muted-foreground">+$500.00</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Load More -->
+        <div class="p-4 border-t border-border">
+          <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
+            <i data-lucide="chevron-down" class="h-4 w-4"></i>
+            Load more notifications
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State (Hidden by default) -->
+      <div id="emptyState" class="hidden relative overflow-hidden rounded-xl bg-card border border-border shadow-sm p-12">
+        <div class="flex flex-col items-center justify-center text-center">
+          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-muted mb-6">
+            <i data-lucide="inbox" class="h-10 w-10 text-muted-foreground"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-foreground mb-2">No notifications found</h3>
+          <p class="text-sm text-muted-foreground max-w-sm">
+            You're all caught up! New notifications about your bookings and account will appear here.
+          </p>
+          <a href="#" class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30 text-primary text-sm font-medium hover:bg-primary/20 transition-all">
+            <i data-lucide="arrow-left" class="h-4 w-4"></i>
+            Back to Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Loading State (Hidden by default) -->
+      <div id="loadingState" class="hidden relative overflow-hidden rounded-xl bg-card border border-border shadow-sm">
+        <div class="p-4 border-b border-border">
+          <div class="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+            <div class="skeleton h-9 w-20 rounded-md"></div>
+            <div class="skeleton h-9 w-24 rounded-md"></div>
+            <div class="skeleton h-9 w-24 rounded-md"></div>
+            <div class="skeleton h-9 w-20 rounded-md"></div>
+          </div>
+        </div>
+        <div class="divide-y divide-border">
+          <!-- Loading Item 1 -->
+          <div class="flex items-start gap-4 p-4">
+            <div class="skeleton h-10 w-10 rounded-full flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton h-4 w-48 rounded"></div>
+              <div class="skeleton h-3 w-full rounded"></div>
+              <div class="flex gap-2">
+                <div class="skeleton h-5 w-20 rounded-full"></div>
+                <div class="skeleton h-5 w-24 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Loading Item 2 -->
+          <div class="flex items-start gap-4 p-4">
+            <div class="skeleton h-10 w-10 rounded-full flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton h-4 w-40 rounded"></div>
+              <div class="skeleton h-3 w-3/4 rounded"></div>
+              <div class="flex gap-2">
+                <div class="skeleton h-5 w-16 rounded-full"></div>
+                <div class="skeleton h-5 w-20 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Loading Item 3 -->
+          <div class="flex items-start gap-4 p-4">
+            <div class="skeleton h-10 w-10 rounded-full flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton h-4 w-52 rounded"></div>
+              <div class="skeleton h-3 w-5/6 rounded"></div>
+              <div class="flex gap-2">
+                <div class="skeleton h-5 w-24 rounded-full"></div>
+                <div class="skeleton h-5 w-16 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-center py-8">
+          <div class="flex items-center gap-2 text-muted-foreground">
+            <i data-lucide="loader-2" class="h-5 w-5 animate-spin text-primary"></i>
+            <span class="text-sm">Loading notifications...</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // State
+    let sidebarCollapsed = false;
+    let isMobile = window.innerWidth < 768;
+    let activeTab = 'all';
+
+    // Theme Management
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('theme', 'dark');
+      }
+      lucide.createIcons();
+    }
+
+    // Tab Management
+    function setActiveTab(tab) {
+      activeTab = tab;
+      const tabs = document.querySelectorAll('.tab-item');
+      tabs.forEach(t => {
+        t.classList.remove('active', 'text-primary', 'bg-card', 'shadow-sm');
+        t.classList.add('text-muted-foreground');
+      });
+
+      const activeTabEl = document.querySelector(`[onclick="setActiveTab('${tab}')"]`);
+      if (activeTabEl) {
+        activeTabEl.classList.add('active', 'text-primary', 'bg-card', 'shadow-sm');
+        activeTabEl.classList.remove('text-muted-foreground');
+      }
+    }
+
+    // Mark All as Read
+    function markAllAsRead() {
+      const unreadItems = document.querySelectorAll('.notification-unread');
+      unreadItems.forEach(item => {
+        item.classList.remove('notification-unread');
+        // Remove unread indicator
+        const indicator = item.querySelector('.bg-primary.rounded-full.w-2.h-2');
+        if (indicator) indicator.remove();
+
+        // Update icon colors
+        const iconContainer = item.querySelector('.bg-primary\\/10, .bg-emerald-500\\/10, .bg-violet-500\\/10');
+        if (iconContainer) {
+          iconContainer.classList.remove('bg-primary/10', 'bg-emerald-500/10', 'bg-violet-500/10');
+          iconContainer.classList.add('bg-muted');
+        }
+
+        const icon = item.querySelector('.text-primary, .text-emerald-500, .text-violet-500');
+        if (icon) {
+          icon.classList.remove('text-primary', 'text-emerald-500', 'text-violet-500');
+          icon.classList.add('text-muted-foreground');
+        }
+
+        // Update title weight
+        const title = item.querySelector('h4');
+        if (title) {
+          title.classList.remove('font-semibold');
+          title.classList.add('font-medium');
+        }
+
+        // Update time color
+        const time = item.querySelector('.text-primary.font-medium');
+        if (time) {
+          time.classList.remove('text-primary', 'font-medium');
+          time.classList.add('text-muted-foreground');
+        }
+      });
+
+      // Update stats
+      const unreadCount = document.querySelector('.text-red-500.text-3xl');
+      if (unreadCount) unreadCount.textContent = '0';
+
+      const readCount = document.querySelector('.text-emerald-500.text-3xl');
+      if (readCount) readCount.textContent = '24';
+    }
+
+    // Sidebar Management
+    function toggleSidebar() {
+      sidebarCollapsed = !sidebarCollapsed;
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+      const collapseIcon = document.getElementById('collapseIcon');
+      const workspaceName = document.getElementById('workspaceName');
+      const newBookingText = document.getElementById('newBookingText');
+      const newBookingWrapper = document.getElementById('newBookingWrapper');
+      const versionInfo = document.getElementById('versionInfo');
+      const navLabels = document.querySelectorAll('#overviewLabel, #managementLabel, #settingsLabel');
+      const navItems = document.querySelectorAll('.nav-label');
+
+      if (sidebarCollapsed) {
+        sidebar.style.width = '72px';
+        header.style.left = '72px';
+        mainContent.style.marginLeft = '72px';
+        collapseIcon.style.transform = 'rotate(180deg)';
+        workspaceName.style.display = 'none';
+        newBookingText.style.display = 'none';
+        newBookingWrapper.classList.remove('px-3');
+        newBookingWrapper.classList.add('px-2');
+        versionInfo.style.display = 'none';
+        navLabels.forEach(label => label.style.display = 'none');
+        navItems.forEach(item => item.style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.add('justify-center', 'px-2');
+          item.classList.remove('px-3');
+        });
+      } else {
+        sidebar.style.width = '256px';
+        header.style.left = '256px';
+        mainContent.style.marginLeft = '256px';
+        collapseIcon.style.transform = 'rotate(0deg)';
+        workspaceName.style.display = 'block';
+        newBookingText.style.display = 'inline';
+        newBookingWrapper.classList.add('px-3');
+        newBookingWrapper.classList.remove('px-2');
+        versionInfo.style.display = 'flex';
+        navLabels.forEach(label => label.style.display = 'flex');
+        navItems.forEach(item => item.style.display = 'inline');
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('justify-center', 'px-2');
+          item.classList.add('px-3');
+        });
+      }
+    }
+
+    function openMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.add('animate-slide-in');
+      sidebar.style.transform = 'translateX(0)';
+      overlay.classList.remove('hidden');
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.style.transform = 'translateX(-100%)';
+      overlay.classList.add('hidden');
+    }
+
+    // Dropdown Management
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(id);
+      const allDropdowns = document.querySelectorAll('[id$="Dropdown"]');
+      allDropdowns.forEach(dd => {
+        if (dd.id !== id) {
+          dd.classList.add('hidden');
+        }
+      });
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdowns = document.querySelectorAll('[id$="Dropdown"]');
+      dropdowns.forEach(dropdown => {
+        const trigger = dropdown.previousElementSibling;
+        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    });
+
+    // Handle responsive behavior
+    function handleResize() {
+      const newIsMobile = window.innerWidth < 768;
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+
+      if (newIsMobile !== isMobile) {
+        isMobile = newIsMobile;
+        if (isMobile) {
+          sidebar.style.transform = 'translateX(-100%)';
+          header.style.left = '0';
+          mainContent.style.marginLeft = '0';
+        } else {
+          sidebar.style.transform = 'translateX(0)';
+          if (sidebarCollapsed) {
+            sidebar.style.width = '72px';
+            header.style.left = '72px';
+            mainContent.style.marginLeft = '72px';
+          } else {
+            sidebar.style.width = '256px';
+            header.style.left = '256px';
+            mainContent.style.marginLeft = '256px';
+          }
+        }
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      handleResize();
+    });
+
+    window.addEventListener('resize', handleResize);
+
+    // Initial mobile state
+    if (window.innerWidth < 768) {
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+      sidebar.style.transform = 'translateX(-100%)';
+      header.style.left = '0';
+      mainContent.style.marginLeft = '0';
+    }
+  </script>
+</body>
+</html>

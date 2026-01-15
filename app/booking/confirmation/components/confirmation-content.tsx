@@ -25,13 +25,15 @@ interface ConfirmationContentProps {
   primaryPassenger: any
   childSeats: any[]
   extraLuggage: any
+  addons: any[]
 }
 
 export function ConfirmationContent({
   booking,
   primaryPassenger,
   childSeats,
-  extraLuggage
+  extraLuggage,
+  addons
 }: ConfirmationContentProps) {
   return (
     <div className="relative bg-luxury-black min-h-screen py-12 md:py-16 lg:py-20">
@@ -266,6 +268,26 @@ export function ConfirmationContent({
                     </span>
                     <span className="text-luxury-pearl">{formatCurrency(extraLuggage.price)}</span>
                   </div>
+                )}
+
+                {addons.length > 0 && (
+                  <>
+                    {addons.map((addon: any, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span className="text-luxury-lightGray">
+                          {addon.addon?.name || 'Additional Service'}
+                          {addon.quantity > 1 ? ` x${addon.quantity}` : ''}
+                        </span>
+                        <span className="text-luxury-pearl">{formatCurrency(addon.price)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between text-sm pt-2">
+                      <span className="text-luxury-lightGray">Services Total</span>
+                      <span className="text-luxury-pearl">
+                        {formatCurrency(addons.reduce((sum: number, a: any) => sum + a.price, 0))}
+                      </span>
+                    </div>
+                  </>
                 )}
 
                 <Separator className="border-luxury-gold/30 my-2" />
