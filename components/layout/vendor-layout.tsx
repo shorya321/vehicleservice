@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { userLogout } from "@/lib/auth/user-actions"
 import { VendorNotificationBell } from "@/components/vendor/notifications/notification-bell"
+import { AdminThemeToggle } from "@/components/admin/ui/theme-toggle"
 import {
   LayoutDashboard,
   Package,
@@ -61,41 +62,51 @@ interface NavItem {
   }[]
 }
 
-const navigation: NavItem[] = [
-  { name: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
+interface NavGroup {
+  label: string
+  items: NavItem[]
+}
+
+const navGroups: NavGroup[] = [
   {
-    name: "Account",
-    href: "/vendor/account",
-    icon: UserCircle,
-    submenu: [
-      {
-        name: "My Account",
-        href: "/vendor/account",
-        icon: UserCircle,
-      },
-      {
-        name: "Business Profile",
-        href: "/vendor/profile",
-        icon: User,
-      },
+    label: 'Overview',
+    items: [
+      { name: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
     ]
   },
   {
-    name: "Vehicles",
-    href: "/vendor/vehicles",
-    icon: Car,
-    submenu: [
+    label: 'Account',
+    items: [
+      { name: "My Account", href: "/vendor/account", icon: UserCircle },
+      { name: "Business Profile", href: "/vendor/profile", icon: User },
+    ]
+  },
+  {
+    label: 'Management',
+    items: [
       {
-        name: "My Vehicles",
+        name: "Vehicles",
         href: "/vendor/vehicles",
         icon: Car,
+        submenu: [
+          {
+            name: "My Vehicles",
+            href: "/vendor/vehicles",
+            icon: Car,
+          },
+        ]
       },
+      { name: "Drivers", href: "/vendor/drivers", icon: Users },
+      { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
+      { name: "Availability", href: "/vendor/availability", icon: BarChart3 },
     ]
   },
-  { name: "Drivers", href: "/vendor/drivers", icon: Users },
-  { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
-  { name: "Availability", href: "/vendor/availability", icon: BarChart3 },
-  { name: "Settings", href: "/vendor/settings", icon: Settings },
+  {
+    label: 'Settings',
+    items: [
+      { name: "Settings", href: "/vendor/settings", icon: Settings },
+    ]
+  }
 ]
 
 export function VendorLayout({ children, user, vendorApplication }: VendorLayoutProps) {
@@ -109,11 +120,96 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
 
   // Auto-expand menu items that contain the current path
   useEffect(() => {
-    const itemsToExpand = navigation
+    const allItems = navGroups.flatMap(group => group.items)
+    const itemsToExpand = allItems
       .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
       .map(item => item.name)
     setExpandedItems(itemsToExpand)
   }, [pathname])
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive = pathname === item.href || item.submenu?.some(sub => pathname.startsWith(sub.href))
+    const isExpanded = expandedItems.includes(item.name)
+
+    if (item.submenu) {
+      return (
+        <div key={item.name}>
+          <button
+            onClick={() => {
+              setExpandedItems(prev =>
+                prev.includes(item.name)
+                  ? prev.filter(i => i !== item.name)
+                  : [...prev, item.name]
+              )
+            }}
+            className={cn(
+              "group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+              isActive
+                ? "bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.08)]"
+                : "text-foreground/70 hover:bg-primary/5 hover:text-foreground hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <item.icon className={cn(
+                "h-4 w-4 transition-all duration-200 group-hover:scale-110",
+                isActive ? "text-primary" : "text-foreground/60 group-hover:text-primary"
+              )} />
+              {item.name}
+            </div>
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4 transition-transform" />
+            ) : (
+              <ChevronRight className="h-4 w-4 transition-transform" />
+            )}
+          </button>
+          {isExpanded && (
+            <div className="ml-4 mt-1 space-y-1 border-l-2 border-primary/20">
+              {item.submenu.map(subItem => {
+                const isSubActive = pathname.startsWith(subItem.href)
+                return (
+                  <Link
+                    key={subItem.name}
+                    href={subItem.href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-xl px-3 py-2 ml-2 text-sm font-medium transition-all duration-200",
+                      isSubActive
+                        ? "bg-primary/10 text-primary border-l-2 border-primary -ml-[2px] shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.06)]"
+                        : "text-foreground/70 hover:bg-primary/5 hover:text-foreground hover:translate-x-1"
+                    )}
+                  >
+                    <subItem.icon className={cn(
+                      "h-4 w-4 transition-all duration-200 group-hover:scale-110",
+                      isSubActive ? "text-primary" : "text-foreground/60 group-hover:text-primary"
+                    )} />
+                    {subItem.name}
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <Link
+        key={item.name}
+        href={item.href}
+        className={cn(
+          "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          isActive
+            ? "bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.08)]"
+            : "text-foreground/70 hover:bg-primary/5 hover:text-foreground hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]"
+        )}
+      >
+        <item.icon className={cn(
+          "h-4 w-4 transition-all duration-200 group-hover:scale-110",
+          isActive ? "text-primary" : "text-foreground/60 group-hover:text-primary"
+        )} />
+        {item.name}
+      </Link>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,18 +224,18 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-card border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-6 border-b">
-            <Link href="/vendor/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+          <div className="flex h-16 items-center justify-between px-6 border-b border-border">
+            <Link href="/vendor/dashboard" className="flex items-center gap-2 group">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center transition-transform group-hover:scale-105">
                 <Package className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold">Vendor Portal</span>
+              <span className="text-lg font-semibold font-serif">Vendor Portal</span>
             </Link>
             <Button
               variant="ghost"
@@ -152,92 +248,36 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href || item.submenu?.some(sub => pathname.startsWith(sub.href))
-              const isExpanded = expandedItems.includes(item.name)
-              
-              return (
-                <div key={item.name}>
-                  {item.submenu ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          setExpandedItems(prev =>
-                            prev.includes(item.name)
-                              ? prev.filter(i => i !== item.name)
-                              : [...prev, item.name]
-                          )
-                        }}
-                        className={cn(
-                          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <item.icon className="h-5 w-5" />
-                          {item.name}
-                        </div>
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                      </button>
-                      {isExpanded && (
-                        <div className="ml-4 mt-1 space-y-1 border-l-2 border-muted">
-                          {item.submenu.map(subItem => {
-                            const isSubActive = pathname.startsWith(subItem.href)
-                            return (
-                              <Link
-                                key={subItem.name}
-                                href={subItem.href}
-                                className={cn(
-                                  "flex items-center gap-3 rounded-lg px-3 py-2 ml-2 text-sm transition-all duration-200",
-                                  isSubActive
-                                    ? "bg-primary/10 text-primary border-l-2 border-primary -ml-[2px]"
-                                    : "text-muted-foreground hover:bg-muted hover:text-foreground hover:translate-x-1"
-                                )}
-                              >
-                                <subItem.icon className="h-4 w-4" />
-                                {subItem.name}
-                              </Link>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {item.name}
-                    </Link>
-                  )}
+          <nav className="flex-1 overflow-y-auto px-3 py-4">
+            {navGroups.map((group, groupIndex) => (
+              <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
+                {/* Section Header */}
+                <div className="px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
+                    <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
+                      {group.label}
+                    </span>
+                  </div>
                 </div>
-              )
-            })}
+                {/* Navigation Items */}
+                <div className="space-y-1">
+                  {group.items.map((item) => renderNavItem(item))}
+                </div>
+              </div>
+            ))}
           </nav>
 
           {/* Business info */}
-          <div className="border-t p-4">
-            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-              <Avatar className="h-10 w-10">
+          <div className="border-t border-border p-4">
+            <div className="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]">
+              <Avatar className="h-10 w-10 ring-2 ring-primary/40">
                 <AvatarImage src="/avatar-placeholder.png" />
-                <AvatarFallback>VN</AvatarFallback>
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">VN</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.profile?.full_name || 'Vendor'}</p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-sm font-medium truncate text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
+                <p className="text-xs text-foreground/60 truncate">
                   {user?.email || ''}
                 </p>
               </div>
@@ -249,11 +289,11 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border bg-card shadow-sm px-6">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden text-primary hover:bg-primary/10"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-5 w-5" />
@@ -261,49 +301,52 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
 
           <div className="flex-1" />
 
+          {/* Theme Toggle */}
+          <AdminThemeToggle size="default" />
+
           {/* Notification Bell */}
           <VendorNotificationBell />
 
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10">
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/10">
+                <Avatar className="h-9 w-9 ring-2 ring-primary/40 transition-all duration-200 hover:ring-primary/60">
                   <AvatarImage src="/avatar-placeholder.png" />
-                  <AvatarFallback>VN</AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">VN</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.profile?.full_name || 'Vendor'}</p>
+                  <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email || ''}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
                 <Link href="/vendor/account">
                   <UserCircle className="mr-2 h-4 w-4" />
                   My Account
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
                 <Link href="/vendor/profile">
                   <User className="mr-2 h-4 w-4" />
                   Business Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
                 <Link href="/vendor/settings">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 Log out
               </DropdownMenuItem>

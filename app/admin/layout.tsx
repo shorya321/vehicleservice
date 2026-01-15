@@ -1,9 +1,11 @@
 /**
  * Admin Layout
- * Applies business-style fonts (Plus Jakarta Sans + Inter) to admin dashboard
+ * Isolated theme system - not affected by business portal customizations
+ * Uses admin-specific globals.css and AdminThemeProvider
  */
 
-import '@/app/business/globals.css';
+import '@/app/admin/globals.css';
+import { AdminThemeProvider } from '@/lib/admin/theme-provider';
 
 export default function AdminLayout({
   children,
@@ -11,8 +13,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="font-[family-name:var(--business-font-body)]">
-      {children}
-    </div>
+    <AdminThemeProvider>
+      <div className="font-[family-name:var(--admin-font-body)]">
+        {children}
+      </div>
+    </AdminThemeProvider>
   );
 }

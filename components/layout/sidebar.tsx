@@ -45,117 +45,134 @@ interface NavItem {
   }[]
 }
 
-const navigation: NavItem[] = [
+interface NavGroup {
+  label: string
+  items: NavItem[]
+}
+
+const navGroups: NavGroup[] = [
   {
-    name: "Dashboard",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-    badge: null,
-  },
-  {
-    name: "Bookings",
-    href: "/admin/bookings",
-    icon: Calendar,
-    badge: null,
-  },
-  {
-    name: "Users",
-    href: "/admin/users",
-    icon: Users,
-    badge: null,
-  },
-  {
-    name: "Vendor Applications",
-    href: "/admin/vendor-applications",
-    icon: Building2,
-    badge: null,
-  },
-  {
-    name: "Business Accounts",
-    href: "/admin/businesses",
-    icon: Building2,
-    badge: null,
-  },
-  {
-    name: "Vehicles",
-    href: "/admin/vehicles",
-    icon: Car,
-    badge: null,
-    submenu: [
+    label: 'Overview',
+    items: [
       {
-        name: "All Vehicles",
-        href: "/admin/vehicles",
-        icon: Car,
-      },
-      {
-        name: "Categories",
-        href: "/admin/vehicle-categories",
-        icon: Tag,
-      },
-      {
-        name: "Vehicle Types",
-        href: "/admin/vehicle-types",
-        icon: Layers,
+        name: "Dashboard",
+        href: "/admin/dashboard",
+        icon: LayoutDashboard,
+        badge: null,
       },
     ]
   },
   {
-    name: "Locations",
-    href: "/admin/locations",
-    icon: MapPin,
-    badge: null,
+    label: 'Management',
+    items: [
+      {
+        name: "Bookings",
+        href: "/admin/bookings",
+        icon: Calendar,
+        badge: null,
+      },
+      {
+        name: "Users",
+        href: "/admin/users",
+        icon: Users,
+        badge: null,
+      },
+      {
+        name: "Vendor Applications",
+        href: "/admin/vendor-applications",
+        icon: Building2,
+        badge: null,
+      },
+      {
+        name: "Business Accounts",
+        href: "/admin/businesses",
+        icon: Building2,
+        badge: null,
+      },
+      {
+        name: "Vehicles",
+        href: "/admin/vehicles",
+        icon: Car,
+        badge: null,
+        submenu: [
+          {
+            name: "All Vehicles",
+            href: "/admin/vehicles",
+            icon: Car,
+          },
+          {
+            name: "Categories",
+            href: "/admin/vehicle-categories",
+            icon: Tag,
+          },
+          {
+            name: "Vehicle Types",
+            href: "/admin/vehicle-types",
+            icon: Layers,
+          },
+        ]
+      },
+      {
+        name: "Locations",
+        href: "/admin/locations",
+        icon: MapPin,
+        badge: null,
+      },
+      {
+        name: "Routes",
+        href: "/admin/routes",
+        icon: Route,
+        badge: null,
+      },
+      {
+        name: "Reviews",
+        href: "/admin/reviews",
+        icon: Star,
+        badge: null,
+      },
+      {
+        name: "Addons",
+        href: "/admin/addons",
+        icon: Package,
+        badge: null,
+      },
+      {
+        name: "Zones",
+        href: "/admin/zones",
+        icon: MapPin,
+        badge: null,
+      },
+    ]
   },
   {
-    name: "Routes",
-    href: "/admin/routes",
-    icon: Route,
-    badge: null,
-  },
-  {
-    name: "Reviews",
-    href: "/admin/reviews",
-    icon: Star,
-    badge: null,
-  },
-  {
-    name: "Addons",
-    href: "/admin/addons",
-    icon: Package,
-    badge: null,
-  },
-  {
-    name: "Zones",
-    href: "/admin/zones",
-    icon: MapPin,
-    badge: null,
-  },
-]
-
-const bottomNavigation = [
-  {
-    name: "Emails",
-    href: "/admin/emails",
-    icon: Mail,
-    badge: null,
-  },
-  {
-    name: "Notifications",
-    href: "/admin/notifications",
-    icon: Bell,
-    badge: null,
-  },
-  {
-    name: "Security",
-    href: "/admin/security",
-    icon: Shield,
-    badge: null,
-  },
-  {
-    name: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-    badge: null,
-  },
+    label: 'Settings',
+    items: [
+      {
+        name: "Emails",
+        href: "/admin/emails",
+        icon: Mail,
+        badge: null,
+      },
+      {
+        name: "Notifications",
+        href: "/admin/notifications",
+        icon: Bell,
+        badge: null,
+      },
+      {
+        name: "Security",
+        href: "/admin/security",
+        icon: Shield,
+        badge: null,
+      },
+      {
+        name: "Settings",
+        href: "/admin/settings",
+        icon: Settings,
+        badge: null,
+      },
+    ]
+  }
 ]
 
 export function Sidebar() {
@@ -172,7 +189,8 @@ export function Sidebar() {
 
   useEffect(() => {
     // Auto-expand menu items that contain the current path
-    const itemsToExpand = navigation
+    const allItems = navGroups.flatMap(group => group.items)
+    const itemsToExpand = allItems
       .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
       .map(item => item.name)
     setExpandedItems(itemsToExpand)
@@ -187,7 +205,7 @@ export function Sidebar() {
           .select('full_name, email, avatar_url')
           .eq('id', user.id)
           .single()
-        
+
         if (profile) {
           setUserProfile(profile)
         }
@@ -209,27 +227,129 @@ export function Sidebar() {
     return email.slice(0, 2).toUpperCase()
   }
 
+  const renderNavItem = (item: NavItem) => {
+    const isActive = pathname === item.href || item.submenu?.some(sub => pathname.startsWith(sub.href))
+    const isExpanded = expandedItems.includes(item.name)
+    const showNotificationBadge = item.name === "Notifications" && unreadCount > 0
+    const badgeText = unreadCount > 9 ? "9+" : unreadCount.toString()
+
+    if (item.submenu && !collapsed) {
+      return (
+        <div key={item.name}>
+          <button
+            onClick={() => {
+              setExpandedItems(prev =>
+                prev.includes(item.name)
+                  ? prev.filter(name => name !== item.name)
+                  : [...prev, item.name]
+              )
+            }}
+            className={cn(
+              "group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+              isActive
+                ? "bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.08)]"
+                : "text-foreground/70 hover:bg-primary/5 hover:text-foreground hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]"
+            )}
+          >
+            <div className="flex items-center">
+              <item.icon className={cn(
+                "h-4 w-4 flex-shrink-0 mr-3 transition-all duration-200 group-hover:scale-110",
+                isActive ? "text-primary" : "text-foreground/60 group-hover:text-primary"
+              )} />
+              <span>{item.name}</span>
+            </div>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform",
+                isExpanded ? "rotate-180" : ""
+              )}
+            />
+          </button>
+          {isExpanded && (
+            <div className="mt-1 ml-4 space-y-1 border-l-2 border-primary/20">
+              {item.submenu.map((subItem) => {
+                const isSubActive = pathname.startsWith(subItem.href)
+                return (
+                  <Link
+                    key={subItem.name}
+                    href={subItem.href}
+                    className={cn(
+                      "group flex items-center rounded-xl py-2 pl-6 pr-2 text-sm font-medium transition-all duration-200",
+                      isSubActive
+                        ? "bg-primary/10 text-primary border-l-2 border-primary -ml-[2px] shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.06)]"
+                        : "text-foreground/70 hover:bg-primary/5 hover:text-foreground hover:translate-x-1"
+                    )}
+                  >
+                    <subItem.icon className={cn(
+                      "h-4 w-4 mr-3 transition-all duration-200 group-hover:scale-110",
+                      isSubActive ? "text-primary" : "text-foreground/60 group-hover:text-primary"
+                    )} />
+                    {subItem.name}
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <Link
+        key={item.name}
+        href={item.href}
+        className={cn(
+          "group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          isActive
+            ? "bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.08)]"
+            : "text-foreground/70 hover:bg-primary/5 hover:text-foreground hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]"
+        )}
+      >
+        <div className="flex items-center">
+          <item.icon
+            className={cn(
+              "h-4 w-4 flex-shrink-0 transition-all duration-200 group-hover:scale-110",
+              collapsed ? "mx-auto" : "mr-3",
+              isActive ? "text-primary" : "text-foreground/60 group-hover:text-primary"
+            )}
+          />
+          {!collapsed && <span>{item.name}</span>}
+        </div>
+        {!collapsed && (item.badge || showNotificationBadge) && (
+          <span className={cn(
+            "ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold uppercase tracking-wider",
+            showNotificationBadge
+              ? "bg-destructive/20 border border-destructive/40 text-destructive"
+              : "bg-primary/20 border border-primary/40 text-primary"
+          )}>
+            {showNotificationBadge ? badgeText : item.badge}
+          </span>
+        )}
+      </Link>
+    )
+  }
+
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col border-r bg-luxury-darkGray/95 backdrop-blur-md border-luxury-gold/20 shadow-2xl transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        "relative flex h-full flex-col border-r bg-card border-border shadow-lg transition-all duration-300",
+        collapsed ? "w-[72px]" : "w-64"
       )}
     >
-      <div className="flex h-16 items-center justify-between px-4 border-b border-luxury-gold/20">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-border">
         {!collapsed && (
           <Link href="/admin/dashboard" className="flex items-center space-x-2 group">
-            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-luxury-gold to-luxury-goldLight transition-transform group-hover:scale-105">
-              <Car className="h-5 w-5 text-luxury-black" />
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary to-primary/70 transition-transform group-hover:scale-105">
+              <Car className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold font-serif text-luxury-pearl">VehicleService</span>
+            <span className="text-lg font-bold font-serif text-foreground">VehicleService</span>
           </Link>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className={cn("h-8 w-8 text-luxury-gold hover:bg-luxury-gold/10", collapsed && "mx-auto")}
+          className={cn("h-8 w-8 text-primary hover:bg-primary/10", collapsed && "mx-auto")}
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />
@@ -239,169 +359,63 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 space-y-1 px-2 py-4">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || item.submenu?.some(sub => pathname.startsWith(sub.href))
-          const isExpanded = expandedItems.includes(item.name)
-          
-          if (item.submenu && !collapsed) {
-            return (
-              <div key={item.name}>
-                <button
-                  onClick={() => {
-                    setExpandedItems(prev =>
-                      prev.includes(item.name)
-                        ? prev.filter(name => name !== item.name)
-                        : [...prev, item.name]
-                    )
-                  }}
-                  className={cn(
-                    "group flex w-full items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 font-sans",
-                    isActive
-                      ? "bg-luxury-gold/10 text-luxury-gold"
-                      : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl"
-                  )}
-                >
-                  <div className="flex items-center">
-                    <item.icon className="h-5 w-5 flex-shrink-0 mr-3" />
-                    <span>{item.name}</span>
-                  </div>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      isExpanded ? "rotate-180" : ""
-                    )}
-                  />
-                </button>
-                {isExpanded && (
-                  <div className="mt-1 ml-4 space-y-1 border-l-2 border-luxury-gold/20">
-                    {item.submenu.map((subItem) => {
-                      const isSubActive = pathname.startsWith(subItem.href)
-                      return (
-                        <Link
-                          key={subItem.name}
-                          href={subItem.href}
-                          className={cn(
-                            "group flex items-center rounded-md py-2 pl-6 pr-2 text-sm font-medium transition-all duration-200 font-sans",
-                            isSubActive
-                              ? "bg-luxury-gold/10 text-luxury-gold border-l-2 border-luxury-gold -ml-[2px]"
-                              : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl hover:translate-x-1"
-                          )}
-                        >
-                          <subItem.icon className="h-4 w-4 mr-3" />
-                          {subItem.name}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
+      <nav className="flex-1 overflow-y-auto px-2 py-4">
+        {navGroups.map((group, groupIndex) => (
+          <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
+            {/* Section Header */}
+            {!collapsed && (
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
+                  <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
+                    {group.label}
+                  </span>
+                </div>
               </div>
-            )
-          }
-          
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 font-sans",
-                isActive
-                  ? "bg-luxury-gold/10 text-luxury-gold"
-                  : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl"
-              )}
-            >
-              <div className="flex items-center">
-                <item.icon
-                  className={cn(
-                    "h-5 w-5 flex-shrink-0",
-                    collapsed ? "mx-auto" : "mr-3"
-                  )}
-                />
-                {!collapsed && <span>{item.name}</span>}
-              </div>
-              {!collapsed && item.badge && (
-                <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-luxury-gold/20 border border-luxury-gold/40 px-1.5 text-[10px] font-semibold text-luxury-gold uppercase tracking-wider">
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          )
-        })}
+            )}
+            {/* Navigation Items */}
+            <div className="space-y-1">
+              {group.items.map((item) => renderNavItem(item))}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      <div className="border-t border-luxury-gold/20">
-        <nav className="space-y-1 px-2 py-4">
-          {bottomNavigation.map((item) => {
-            const isActive = pathname === item.href
-            const showBadge = item.name === "Notifications" && unreadCount > 0
-            const badgeText = unreadCount > 9 ? "9+" : unreadCount.toString()
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 font-sans",
-                  isActive
-                    ? "bg-luxury-gold/10 text-luxury-gold"
-                    : "text-luxury-lightGray hover:bg-luxury-gold/5 hover:text-luxury-pearl"
-                )}
-              >
-                <div className="flex items-center">
-                  <item.icon
-                    className={cn(
-                      "h-5 w-5 flex-shrink-0",
-                      collapsed ? "mx-auto" : "mr-3"
-                    )}
-                  />
-                  {!collapsed && <span>{item.name}</span>}
-                </div>
-                {!collapsed && (item.badge || showBadge) && (
-                  <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600/20 border border-red-600/40 px-1.5 text-[10px] font-semibold text-red-400 uppercase tracking-wider">
-                    {showBadge ? badgeText : item.badge}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
-
-      <div className="border-t border-luxury-gold/20 p-4">
+      <div className="border-t border-border p-4">
         <Link
           href="/admin/profile"
           className={cn(
-            "flex items-center rounded-md transition-all duration-200 hover:bg-luxury-gold/5 p-2",
+            "flex items-center rounded-xl transition-all duration-200 hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)] p-2",
             !collapsed && "space-x-3"
           )}
         >
           {!collapsed ? (
             <>
-              <Avatar className="h-8 w-8 ring-2 ring-luxury-gold/40">
+              <Avatar className="h-9 w-9 ring-2 ring-primary/40">
                 <AvatarImage
                   src={userProfile?.avatar_url || undefined}
                   alt={userProfile?.full_name || userProfile?.email || "User"}
                 />
-                <AvatarFallback className="bg-luxury-gray/60 text-luxury-gold text-xs font-semibold">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                   {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate text-luxury-pearl font-sans">
+                <p className="text-sm font-medium truncate text-foreground">
                   {userProfile?.full_name || 'Admin User'}
                 </p>
-                <p className="text-xs truncate text-luxury-lightGray/70 font-sans">
+                <p className="text-xs truncate text-foreground/60">
                   {userProfile?.email || 'admin@vehicleservice.com'}
                 </p>
               </div>
             </>
           ) : (
-            <Avatar className="h-8 w-8 mx-auto ring-2 ring-luxury-gold/40">
+            <Avatar className="h-9 w-9 mx-auto ring-2 ring-primary/40">
               <AvatarImage
                 src={userProfile?.avatar_url || undefined}
                 alt={userProfile?.full_name || userProfile?.email || "User"}
               />
-              <AvatarFallback className="bg-luxury-gray/60 text-luxury-gold text-xs font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                 {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
               </AvatarFallback>
             </Avatar>

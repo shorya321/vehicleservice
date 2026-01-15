@@ -1,0 +1,805 @@
+/**
+ * Admin & Vendor Portal Design System
+ * Isolated theme - not affected by business portal customizations
+ *
+ * SCOPE: Admin and Vendor modules ONLY
+ * - /admin/* routes
+ * - /vendor/* routes
+ *
+ * Design Philosophy:
+ * - Gold (#BA955E) as primary accent - premium and distinctive
+ * - Clean surfaces with proper light/dark mode support
+ * - Semantic CSS variables for consistent theming
+ * - Controlled by admin settings (/admin/settings/appearance)
+ * - Single theme for both admin and vendor
+ */
+
+/* ============================================
+   SHADCN-COMPATIBLE CSS VARIABLES (HSL FORMAT)
+   These enable proper Tailwind semantic classes like
+   bg-background, text-foreground, bg-primary, etc.
+   ============================================ */
+
+:root {
+  /* Core shadcn theme variables - Dark mode (default) */
+  --background: 240 10% 4%;          /* #09090B - zinc-950 */
+  --foreground: 0 0% 98%;            /* #FAFAFA - zinc-50 */
+
+  --card: 240 6% 6%;                 /* #0F0F12 */
+  --card-foreground: 0 0% 98%;       /* #FAFAFA */
+
+  --popover: 240 6% 6%;              /* Same as card */
+  --popover-foreground: 0 0% 98%;
+
+  --primary: 36 40% 55%;             /* #BA955E - Gold */
+  --primary-foreground: 240 10% 4%;  /* Dark text on gold */
+
+  --secondary: 240 4% 16%;           /* #27272A - zinc-800 */
+  --secondary-foreground: 0 0% 98%;
+
+  --muted: 240 4% 16%;               /* #27272A */
+  --muted-foreground: 240 5% 65%;    /* #A1A1AA - zinc-400 */
+
+  --accent: 36 40% 55%;              /* Gold accent */
+  --accent-foreground: 240 10% 4%;
+
+  --destructive: 0 84% 60%;          /* #EF4444 */
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 4% 16%;              /* #27272A */
+  --input: 240 4% 16%;
+  --ring: 36 40% 55%;                /* Gold ring */
+
+  --radius: 0.5rem;
+
+  /* ============================================
+     ADMIN THEME EXTENDED VARIABLES
+     ============================================ */
+
+  /* Primary (Gold) - Main accent color */
+  --admin-primary: #BA955E;
+  --admin-primary-light: #D4BC9A;
+  --admin-primary-dark: #9A7D4A;
+  --admin-primary-muted: rgba(186, 149, 94, 0.15);
+
+  /* Secondary (Teal) - Accent for data viz */
+  --admin-secondary: #14B8A6;
+  --admin-tertiary: #06B6D4;
+
+  /* Surface Layers - Dark mode */
+  --admin-surface-0: #09090B;  /* Main bg */
+  --admin-surface-1: #0F0F12;  /* Sidebar/elevated */
+  --admin-surface-2: #18181B;  /* Cards */
+  --admin-surface-3: #27272A;  /* Hover states */
+  --admin-surface-4: #3F3F46;  /* Elevated elements */
+
+  /* Text colors - Dark mode */
+  --admin-text-primary: #FAFAFA;
+  --admin-text-secondary: #A1A1AA;
+  --admin-text-muted: #71717A;
+
+  /* Semantic colors */
+  --admin-success: #22C55E;
+  --admin-warning: #F59E0B;
+  --admin-error: #EF4444;
+  --admin-info: #06B6D4;
+
+  /* Borders - Dark mode */
+  --admin-border-subtle: rgba(255, 255, 255, 0.06);
+  --admin-border-default: rgba(255, 255, 255, 0.1);
+  --admin-border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Card styling */
+  --card-bg: #18181B;
+  --card-bg-elevated: #27272A;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-border-hover: rgba(255, 255, 255, 0.15);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --card-radius: 0.75rem;
+
+  /* Gold accent - Primary theme color */
+  --accent-gold: #BA955E;
+  --accent-gold-light: #D4BC9A;
+  --accent-gold-dark: #9A7D4A;
+  --accent-gold-muted: rgba(186, 149, 94, 0.15);
+  --accent-gold-glow: rgba(186, 149, 94, 0.25);
+
+  /* Animation timing */
+  --admin-duration-instant: 80ms;
+  --admin-duration-quick: 120ms;
+  --admin-duration-base: 200ms;
+  --admin-duration-moderate: 280ms;
+  --admin-duration-slow: 400ms;
+
+  /* Easing curves */
+  --admin-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --admin-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --admin-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Shadow system */
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  --admin-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  --admin-shadow-glow: 0 0 20px rgba(186, 149, 94, 0.3);
+  --admin-shadow-hover: 0 8px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(186, 149, 94, 0.1);
+
+  /* Font families - uses next/font variables */
+  --admin-font-display: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
+  --admin-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
+
+  /* Gradients */
+  --admin-gradient-primary: linear-gradient(135deg, #BA955E 0%, #D4BC9A 50%, #BA955E 100%);
+  --admin-gradient-mesh:
+    radial-gradient(at 40% 20%, rgba(186, 149, 94, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(186, 149, 94, 0.06) 0px, transparent 50%);
+
+  /* Z-index system */
+  --admin-z-dropdown: 50;
+  --admin-z-sticky: 100;
+  --admin-z-fixed: 200;
+  --admin-z-sidebar: 250;
+  --admin-z-modal-backdrop: 300;
+  --admin-z-modal: 400;
+  --admin-z-popover: 500;
+  --admin-z-tooltip: 600;
+  --admin-z-toast: 700;
+}
+
+/* ============================================
+   LIGHT MODE OVERRIDES
+   ============================================ */
+.light {
+  /* Core shadcn theme variables - Light mode */
+  --background: 0 0% 100%;           /* #FFFFFF */
+  --foreground: 240 10% 4%;          /* #09090B */
+
+  --card: 0 0% 100%;                 /* #FFFFFF */
+  --card-foreground: 240 10% 4%;     /* #09090B */
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 4%;
+
+  --primary: 36 40% 55%;             /* #BA955E - Gold */
+  --primary-foreground: 0 0% 100%;   /* White text on gold */
+
+  --secondary: 240 5% 96%;           /* #F4F4F5 - zinc-100 */
+  --secondary-foreground: 240 6% 10%;
+
+  --muted: 240 5% 96%;               /* #F4F4F5 */
+  --muted-foreground: 240 4% 46%;    /* #71717A - zinc-500 */
+
+  --accent: 36 40% 55%;              /* Gold */
+  --accent-foreground: 240 10% 4%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 6% 90%;              /* #E4E4E7 - zinc-200 */
+  --input: 240 6% 90%;
+  --ring: 36 40% 55%;                /* Gold ring */
+
+  /* Admin theme light mode */
+  --admin-surface-0: #FFFFFF;
+  --admin-surface-1: #FAFAFA;
+  --admin-surface-2: #F4F4F5;
+  --admin-surface-3: #E4E4E7;
+  --admin-surface-4: #D4D4D8;
+  --admin-text-primary: #09090B;
+  --admin-text-secondary: #3F3F46;
+  --admin-text-muted: #71717A;
+  --admin-border-subtle: rgba(0, 0, 0, 0.05);
+  --admin-border-default: rgba(0, 0, 0, 0.1);
+  --admin-border-hover: rgba(0, 0, 0, 0.15);
+
+  /* Card styling - light mode */
+  --card-bg: #FFFFFF;
+  --card-bg-elevated: #FAFAFA;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --card-border-hover: rgba(0, 0, 0, 0.15);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* Shadows - light mode */
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --admin-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --admin-shadow-hover: 0 8px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(186, 149, 94, 0.15);
+  --admin-shadow-glow: 0 0 20px rgba(186, 149, 94, 0.2);
+
+  /* Gold accent - slightly darker for light mode contrast */
+  --accent-gold: #A68B5B;
+  --accent-gold-light: #BA955E;
+  --accent-gold-dark: #8B7349;
+  --accent-gold-muted: rgba(166, 139, 91, 0.15);
+  --accent-gold-glow: rgba(166, 139, 91, 0.2);
+}
+
+/* ============================================
+   GLOBAL BODY STYLES
+   ============================================ */
+
+body {
+  font-family: var(--admin-font-body) !important;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Font display class */
+.font-display {
+  font-family: var(--admin-font-display);
+}
+
+/* ============================================
+   TYPOGRAPHY SYSTEM
+   ============================================ */
+
+/* Display headings - Extra large */
+.admin-text-display-xl {
+  font-family: var(--admin-font-display);
+  font-size: 3rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+@media (min-width: 1024px) {
+  .admin-text-display-xl {
+    font-size: 3.75rem;
+  }
+}
+
+/* Display headings - Large */
+.admin-text-display-lg {
+  font-family: var(--admin-font-display);
+  font-size: 2.25rem;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+/* Headline */
+.admin-text-headline {
+  font-family: var(--admin-font-display);
+  font-size: 1.875rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+/* Title */
+.admin-text-title {
+  font-family: var(--admin-font-display);
+  font-size: 1.25rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+/* Body */
+.admin-text-body {
+  font-family: var(--admin-font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--admin-text-secondary);
+}
+
+/* Body small */
+.admin-text-body-sm {
+  font-family: var(--admin-font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--admin-text-secondary);
+}
+
+/* Caption */
+.admin-text-caption {
+  font-family: var(--admin-font-body);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--admin-text-muted);
+}
+
+/* Overline */
+.admin-text-overline {
+  font-family: var(--admin-font-body);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: hsl(var(--primary));
+}
+
+/* ============================================
+   GLASSMORPHISM EFFECTS
+   ============================================ */
+
+.admin-glass-subtle {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background-color: hsl(var(--card) / 0.8);
+  border: 1px solid hsl(var(--border));
+}
+
+.admin-glass-medium {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: hsl(var(--card) / 0.9);
+  border: 1px solid hsl(var(--border));
+}
+
+.admin-glass-elevated {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background-color: hsl(var(--card) / 0.95);
+  border: 1px solid hsl(var(--border));
+}
+
+/* ============================================
+   BACKGROUND SYSTEM
+   ============================================ */
+
+.admin-bg-premium {
+  background-color: hsl(var(--background));
+  min-height: 100vh;
+}
+
+.admin-sidebar-glass {
+  background-color: hsl(var(--card));
+  border-right: 1px solid hsl(var(--border));
+}
+
+.admin-header-glass {
+  background-color: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+/* ============================================
+   SHADOW SYSTEM
+   ============================================ */
+
+.admin-shadow-sm {
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.admin-shadow-md {
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-shadow-lg {
+  box-shadow: var(--admin-shadow-lg);
+}
+
+.admin-shadow-xl {
+  box-shadow: var(--admin-shadow-xl);
+}
+
+/* Glow shadows with gold tint */
+.admin-shadow-glow-sm {
+  box-shadow: 0 0 15px -3px rgba(186, 149, 94, 0.2);
+}
+
+.admin-shadow-glow {
+  box-shadow: 0 0 20px -5px rgba(186, 149, 94, 0.3);
+}
+
+.admin-shadow-glow-lg {
+  box-shadow: 0 0 40px -10px rgba(186, 149, 94, 0.4);
+}
+
+/* ============================================
+   GRADIENT BORDERS
+   ============================================ */
+
+.admin-gradient-border {
+  position: relative;
+  border-radius: 1rem;
+  background: var(--admin-surface-1);
+}
+
+.admin-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(186, 149, 94, 0.4) 0%,
+    rgba(186, 149, 94, 0.2) 50%,
+    rgba(186, 149, 94, 0.4) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+
+.admin-table-wrapper {
+  border-radius: 1rem;
+  border: 1px solid var(--admin-border-default);
+  overflow: hidden;
+}
+
+.admin-table-header {
+  position: sticky;
+  top: 0;
+  background: var(--admin-surface-1);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  border-bottom: 1px solid var(--admin-border-subtle);
+}
+
+.admin-table-header-cell {
+  font-family: var(--admin-font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+  padding: 0.875rem 1rem;
+}
+
+.admin-table-row {
+  position: relative;
+  border-bottom: 1px solid var(--admin-border-subtle);
+  transition: background-color var(--admin-duration-quick) var(--admin-ease-out);
+}
+
+.admin-table-row:last-child {
+  border-bottom: none;
+}
+
+.admin-table-row:hover {
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+.admin-table-row:hover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: hsl(var(--primary));
+  border-radius: 0 2px 2px 0;
+}
+
+.admin-table-cell {
+  font-family: var(--admin-font-body);
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary);
+  padding: 1rem;
+}
+
+/* ============================================
+   SIDEBAR STYLES
+   ============================================ */
+
+.admin-sidebar {
+  background-color: var(--admin-surface-1);
+  border-right: 1px solid var(--admin-border-subtle);
+  transition: width var(--admin-duration-moderate) var(--admin-ease-out);
+}
+
+.admin-sidebar-expanded {
+  width: 240px;
+}
+
+.admin-sidebar-collapsed {
+  width: 64px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--admin-text-secondary);
+  font-family: var(--admin-font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all var(--admin-duration-quick) var(--admin-ease-out);
+  position: relative;
+}
+
+.admin-nav-item:hover {
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--foreground));
+}
+
+.admin-nav-item-active {
+  background-color: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+}
+
+.admin-nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.375rem;
+  bottom: 0.375rem;
+  width: 3px;
+  background: hsl(var(--primary));
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px 0 hsl(var(--primary) / 0.4);
+}
+
+.admin-nav-section-title {
+  font-family: var(--admin-font-body);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--admin-text-muted);
+  padding: 1.25rem 0.75rem 0.5rem;
+  font-weight: 600;
+}
+
+/* Light mode sidebar */
+.light .admin-sidebar {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+.light .admin-nav-item:hover {
+  background-color: hsl(var(--primary) / 0.06);
+}
+
+.light .admin-nav-item-active {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+/* ============================================
+   ANIMATIONS & KEYFRAMES
+   ============================================ */
+
+@keyframes admin-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes admin-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes admin-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.admin-animate-fade-in {
+  animation: admin-fade-in var(--admin-duration-base) var(--admin-ease-out) forwards;
+}
+
+.admin-animate-fade-in-up {
+  animation: admin-fade-in-up var(--admin-duration-moderate) var(--admin-ease-out) forwards;
+}
+
+.admin-animate-scale-in {
+  animation: admin-scale-in var(--admin-duration-base) var(--admin-ease-out) forwards;
+}
+
+.admin-animate-slide-in-right {
+  animation: admin-slide-in-right var(--admin-duration-base) var(--admin-ease-out) forwards;
+}
+
+/* Stagger animation delays */
+.admin-stagger-1 { animation-delay: 50ms; }
+.admin-stagger-2 { animation-delay: 100ms; }
+.admin-stagger-3 { animation-delay: 150ms; }
+.admin-stagger-4 { animation-delay: 200ms; }
+.admin-stagger-5 { animation-delay: 250ms; }
+.admin-stagger-6 { animation-delay: 300ms; }
+
+/* Shimmer loading effect */
+.admin-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--admin-surface-2) 0%,
+    var(--admin-surface-3) 50%,
+    var(--admin-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: admin-shimmer 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Primary gradient text - Gold */
+.admin-text-gradient {
+  background: linear-gradient(135deg, #BA955E 0%, #D4BC9A 50%, #BA955E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gold accent border */
+.admin-border-primary {
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.admin-border-primary-strong {
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+/* Focus ring */
+.admin-focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary));
+}
+
+.admin-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary));
+}
+
+/* Scrollbar styling */
+.admin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-track {
+  background-color: var(--admin-surface-2);
+  border-radius: 3px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(186, 149, 94, 0.3);
+  border-radius: 3px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(186, 149, 94, 0.5);
+}
+
+/* Divider */
+.admin-divider {
+  height: 1px;
+  background: var(--admin-border-subtle);
+}
+
+/* ============================================
+   CARD & BUTTON EFFECTS
+   ============================================ */
+
+/* Button hover glow */
+.btn-primary-glow:hover {
+  box-shadow: 0 0 20px rgba(186, 149, 94, 0.4);
+}
+
+/* Dropdown animation */
+.dropdown-animate {
+  transform-origin: top right;
+  animation: dropdownOpen 0.2s ease-out forwards;
+}
+
+@keyframes dropdownOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Nav active glow */
+.nav-active-glow {
+  box-shadow: 0 0 10px hsl(var(--primary));
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Sidebar transition */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Content transition */
+.content-transition {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   SKELETON LOADING
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
