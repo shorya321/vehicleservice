@@ -54,7 +54,7 @@ export default async function BusinessWalletPage() {
   const businessAccount = businessUser.business_accounts;
   const businessAccountId = businessUser.business_account_id;
   const walletBalance = Number(businessAccount.wallet_balance) || 0;
-  const currency = (businessAccount.preferred_currency as CurrencyCode) || 'USD';
+  const currency = (businessAccount.preferred_currency as CurrencyCode) || 'AED';
   const paymentElementEnabled = businessAccount.payment_element_enabled ?? true;
 
   // Get transaction history (8 most recent + total count)

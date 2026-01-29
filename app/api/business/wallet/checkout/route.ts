@@ -61,12 +61,12 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'aed',
             product_data: {
               name: 'Wallet Recharge',
-              description: `Add ${amount.toFixed(2)} USD to your business wallet`,
+              description: `Add ${amount.toFixed(2)} AED to your business wallet`,
             },
-            unit_amount: Math.round(amount * 100), // Convert to cents
+            unit_amount: Math.round(amount * 100), // Convert to fils
           },
           quantity: 1,
         },

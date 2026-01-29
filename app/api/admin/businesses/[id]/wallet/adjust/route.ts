@@ -14,7 +14,7 @@ const adjustWalletSchema = z.object({
     message: 'Amount cannot be zero',
   }),
   reason: z.string().min(10, 'Reason must be at least 10 characters'),
-  currency: z.string().length(3).default('USD'),
+  currency: z.string().length(3).default('AED'),
 });
 
 export async function POST(

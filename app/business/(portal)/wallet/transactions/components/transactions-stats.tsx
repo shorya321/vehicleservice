@@ -9,12 +9,14 @@
  */
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, TrendingDown, DollarSign, Activity, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 interface TransactionsStatsProps {
   businessAccountId: string;
@@ -37,6 +39,7 @@ interface Statistics {
 export function TransactionsStats({ businessAccountId, filters, onClose }: TransactionsStatsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     loadStatistics();
@@ -89,9 +92,9 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
   const getDefaultCurrency = () => {
     if (statistics.by_currency) {
       const currencies = Object.keys(statistics.by_currency);
-      return currencies[0] || 'USD';
+      return currencies[0] || 'AED';
     }
-    return 'USD';
+    return 'AED';
   };
 
   const currency = filters.currency || getDefaultCurrency();
@@ -123,7 +126,11 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
         {/* Main Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Total Transactions - Gold */}
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Transactions</p>
@@ -131,14 +138,22 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   {statistics.total_transactions}
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center"
+              >
                 <Activity className="h-5 w-5 text-primary" />
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Total Credits - Green */}
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Credits</p>
@@ -146,14 +161,22 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   {formatCurrency(statistics.total_credits, currency)}
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center"
+              >
                 <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Total Debits - Red */}
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Debits</p>
@@ -161,14 +184,22 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   {formatCurrency(statistics.total_debits, currency)}
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center"
+              >
                 <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Net Amount */}
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Net Amount</p>
@@ -181,35 +212,51 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   {formatCurrency(statistics.net_amount, currency)}
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center"
+              >
                 <DollarSign className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Additional Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Average Transaction</p>
             <p className="text-xl font-bold text-foreground">
               {formatCurrency(statistics.average_transaction, currency)}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Largest Credit</p>
             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
               {formatCurrency(statistics.largest_credit, currency)}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="rounded-xl bg-muted border border-border p-4">
+          <motion.div
+            whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="rounded-xl bg-muted border border-border p-4 card-hover hover:shadow-md transition-all"
+          >
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Largest Debit</p>
             <p className="text-xl font-bold text-red-600 dark:text-red-400">
               {formatCurrency(statistics.largest_debit, currency)}
             </p>
-          </div>
+          </motion.div>
         </div>
 
         {/* Breakdown by Type */}
@@ -220,7 +267,12 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {Object.entries(statistics.by_type).map(([type, data]) => (
-                <div key={type} className="rounded-xl bg-muted border border-border p-3">
+                <motion.div
+                  key={type}
+                  whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+                  transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="rounded-xl bg-muted border border-border p-3 card-hover hover:shadow-md transition-all"
+                >
                   <p className="text-xs text-muted-foreground capitalize">
                     {type.replace(/_/g, ' ')}
                   </p>
@@ -230,7 +282,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   <p className="text-sm text-muted-foreground">
                     {formatCurrency(data.total_amount, currency)}
                   </p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -244,7 +296,12 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {Object.entries(statistics.by_currency).map(([curr, data]) => (
-                <div key={curr} className="rounded-xl bg-muted border border-border p-3">
+                <motion.div
+                  key={curr}
+                  whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+                  transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="rounded-xl bg-muted border border-border p-3 card-hover hover:shadow-md transition-all"
+                >
                   <p className="text-xs text-muted-foreground">{curr}</p>
                   <p className="text-lg font-bold text-foreground">
                     {data.count} transactions
@@ -252,7 +309,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                   <p className="text-sm text-muted-foreground">
                     {formatCurrency(data.total_amount, curr)}
                   </p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

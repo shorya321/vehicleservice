@@ -48,7 +48,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
           trigger_threshold: 100.0,
           recharge_amount: 500.0,
           max_recharge_per_month: 5000.0,
-          currency: 'USD',
+          currency: 'AED',
           use_default_payment_method: true,
           payment_method_id: null,
         },

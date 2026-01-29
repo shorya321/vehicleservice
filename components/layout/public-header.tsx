@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Phone, Menu, X, User, LogOut, Star } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
+import { userLogout } from '@/lib/auth/user-actions'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
 import {
@@ -18,18 +19,34 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { CurrencySelector } from '@/components/currency/currency-selector'
+import type { CurrencyInfo } from '@/lib/currency/types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-export function PublicHeader() {
+interface PublicHeaderProps {
+  initialUser?: SupabaseUser | null
+  initialProfile?: Profile | null
+  currencies?: CurrencyInfo[]
+  currentCurrency?: string
+}
+
+export function PublicHeader({
+  initialUser = null,
+  initialProfile = null,
+  currencies = [],
+  currentCurrency = 'AED',
+}: PublicHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const isNotHomePage = pathname !== '/'
-  const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const supabase = createClient()
+  const [user, setUser] = useState<SupabaseUser | null>(initialUser)
+  const [profile, setProfile] = useState<Profile | null>(initialProfile)
+  // No loading state needed - we have initial data from server
+  const [isAuthLoading] = useState(false)
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
@@ -48,50 +65,47 @@ export function PublicHeader() {
     }
   }, [])
 
-  const fetchProfile = async (userId: string) => {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    if (profileData) {
-      setProfile(profileData)
-    }
-  }
-
   useEffect(() => {
-    // Check authentication status
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+    let isMounted = true
 
-      if (user) {
-        await fetchProfile(user.id)
-      }
-    }
-
-    checkAuth()
-
-    // Listen for auth changes
+    // Only listen for auth CHANGES (sign out, sign in on another tab, etc.)
+    // Initial state comes from server props, no need to fetch it
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setUser(session?.user || null)
-        if (session?.user) {
-          await fetchProfile(session.user.id)
+      async (event, session) => {
+        if (!isMounted) return
+
+        const currentUser = session?.user || null
+        setUser(currentUser)
+
+        if (currentUser) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single()
+
+          if (profileData && isMounted) {
+            setProfile(profileData)
+          }
         } else {
           setProfile(null)
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [supabase])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+    // Clear client state immediately for instant UI update
+    setUser(null)
+    setProfile(null)
+
+    await userLogout()
+    router.refresh()  // Refresh server components for consistency
   }
 
   const getInitials = (profile: Profile | null) => {
@@ -147,7 +161,17 @@ export function PublicHeader() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* Currency Selector */}
+            {currencies.length > 1 && (
+              <div className="hidden sm:block">
+                <CurrencySelector
+                  currencies={currencies}
+                  currentCurrency={currentCurrency}
+                />
+              </div>
+            )}
+
             {/* Phone */}
             <a
               href="tel:+971501234567"
@@ -158,7 +182,13 @@ export function PublicHeader() {
               <span className="text-sm font-body">+971 50 123 4567</span>
             </a>
 
-            {user ? (
+            {isAuthLoading ? (
+              // Skeleton placeholder while checking auth
+              <div className="hidden lg:flex items-center gap-4">
+                <div className="h-8 w-16 bg-[var(--charcoal)] rounded animate-pulse" />
+                <div className="h-8 w-20 bg-[var(--charcoal)] rounded animate-pulse" />
+              </div>
+            ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
@@ -189,10 +219,10 @@ export function PublicHeader() {
                     <User className="mr-2 h-4 w-4" />
                     My Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/customer/bookings')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push('/account')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
                     My Bookings
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/customer/reviews')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push('/account')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
                     <Star className="mr-2 h-4 w-4" />
                     My Reviews
                   </DropdownMenuItem>
@@ -259,6 +289,16 @@ export function PublicHeader() {
                 </Link>
               ))}
               <div className="pt-4 mt-2 border-t border-[var(--gold)]/10 flex flex-col gap-3">
+                {/* Mobile Currency Selector */}
+                {currencies.length > 1 && (
+                  <div className="flex justify-center py-2">
+                    <CurrencySelector
+                      currencies={currencies}
+                      currentCurrency={currentCurrency}
+                    />
+                  </div>
+                )}
+
                 <a
                   href="tel:+971501234567"
                   className="flex items-center justify-center gap-2 text-[var(--text-primary)] hover:text-[var(--gold)] transition-colors duration-300 py-3"
@@ -268,7 +308,12 @@ export function PublicHeader() {
                   <Phone className="w-4 h-4 text-[var(--gold)]" />
                   <span className="text-sm">Call Us</span>
                 </a>
-                {user ? (
+                {isAuthLoading ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="h-12 bg-[var(--charcoal)] rounded animate-pulse" />
+                    <div className="h-12 bg-[var(--charcoal)] rounded animate-pulse" />
+                  </div>
+                ) : user ? (
                   <>
                     <div className="flex items-center gap-3 px-4 py-3 bg-[var(--charcoal)]/50 rounded-lg">
                       <Avatar className="h-10 w-10">
@@ -304,7 +349,7 @@ export function PublicHeader() {
                       variant="ghost"
                       className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
                       onClick={() => {
-                        router.push('/customer/bookings')
+                        router.push('/account')
                         setIsMenuOpen(false)
                       }}
                     >
@@ -314,7 +359,7 @@ export function PublicHeader() {
                       variant="ghost"
                       className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
                       onClick={() => {
-                        router.push('/customer/reviews')
+                        router.push('/account')
                         setIsMenuOpen(false)
                       }}
                     >

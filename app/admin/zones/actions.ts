@@ -252,7 +252,7 @@ export async function updateZonePricing(
           from_zone_id: fromZoneId,
           to_zone_id: toZoneId,
           base_price: price,
-          currency: 'USD',
+          currency: 'AED',
           is_active: true
         })
 

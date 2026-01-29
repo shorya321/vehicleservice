@@ -81,7 +81,7 @@ export const walletRechargeSchema = z.object({
     .positive('Amount must be positive')
     .min(10, 'Minimum recharge amount is $10')
     .max(10000, 'Maximum recharge amount is $10,000'),
-  currency: z.string().optional().default('usd'),
+  currency: z.string().optional().default('aed'),
 });
 
 export type WalletRechargeInput = z.infer<typeof walletRechargeSchema>;

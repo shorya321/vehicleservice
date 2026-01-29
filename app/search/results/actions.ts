@@ -222,7 +222,7 @@ export async function getSearchResults(params: {
                 description: toZone.description
               },
               basePrice: zonePricing.base_price,
-              currency: zonePricing.currency || 'USD',
+              currency: zonePricing.currency || 'AED',
               vehicleTypes,
               availableVehicles
             },
@@ -531,7 +531,7 @@ async function getVehicleTypesForZoneTransfer(
       luggageCapacity: vt.luggage_capacity,
       description: vt.description || '',
       price: calculatedPrice,
-      currency: 'USD',
+      currency: 'AED',
       availableVehicles: 10, // Show as available for aggregator model
       vendorCount: 5, // Show multiple vendors available
       features: [],
@@ -641,7 +641,7 @@ async function getVehicleTypesForRoute(
       luggageCapacity: vt.luggage_capacity,
       description: vt.description || '',
       price: calculatedPrice,
-      currency: 'USD',
+      currency: 'AED',
       availableVehicles: 10, // Show as available for aggregator model
       vendorCount: 5, // Show multiple vendors available
       features: [], // TODO: Add features if needed
@@ -746,7 +746,7 @@ async function getRouteById(
                 description: toZone.description
               },
               basePrice: zonePricing.base_price,
-              currency: zonePricing.currency || 'USD',
+              currency: zonePricing.currency || 'AED',
               vehicleTypes,
               availableVehicles: vehicleTypes.reduce((sum, vt) => sum + vt.availableVehicles, 0)
             },
@@ -839,7 +839,7 @@ async function getZoneToZoneResults(
           description: toZone.description
         },
         basePrice: 0,
-        currency: 'USD',
+        currency: 'AED',
         vehicleTypes: [],
         availableVehicles: 0
       },
@@ -877,7 +877,7 @@ async function getZoneToZoneResults(
         description: toZone.description
       },
       basePrice: zonePricing.base_price,
-      currency: zonePricing.currency || 'USD',
+      currency: zonePricing.currency || 'AED',
       vehicleTypes,
       availableVehicles
     },

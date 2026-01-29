@@ -55,7 +55,7 @@ export default async function PaymentSettingsPage() {
   const settings = {
     save_payment_methods: businessAccount.save_payment_methods ?? true,
     payment_element_enabled: businessAccount.payment_element_enabled ?? true,
-    preferred_currency: (businessAccount.preferred_currency as CurrencyCode) || 'USD',
+    preferred_currency: (businessAccount.preferred_currency as CurrencyCode) || 'AED',
   };
 
   return (

@@ -82,8 +82,8 @@ export async function createPaymentIntent(
   }
 
   const params: Stripe.PaymentIntentCreateParams = {
-    amount: Math.round(amount * 100), // Convert to cents
-    currency: 'usd',
+    amount: Math.round(amount * 100), // Convert to fils (AED smallest unit)
+    currency: 'aed',
     payment_method_types: ['card'],
     metadata: {
       bookingId,

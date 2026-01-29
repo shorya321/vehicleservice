@@ -6,11 +6,11 @@
 /**
  * Format amount as currency
  * @param amount - Amount to format
- * @param currency - Currency code (default: USD)
+ * @param currency - Currency code (default: AED)
  * @returns Formatted currency string
- * @example formatCurrency(1234.56) → "$1,234.56"
+ * @example formatCurrency(1234.56) → "1,234.56 د.إ"
  */
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
+export function formatCurrency(amount: number, currency: string = 'AED'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -85,7 +85,7 @@ export function getTransactionTypeColor(
  */
 export function formatTransactionAmount(
   amount: number,
-  currency: string = 'USD'
+  currency: string = 'AED'
 ): string {
   const sign = amount >= 0 ? '+' : '';
   return sign + formatCurrency(amount, currency);

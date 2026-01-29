@@ -45,7 +45,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
       settings: {
         save_payment_methods: settings.save_payment_methods ?? true,
         payment_element_enabled: settings.payment_element_enabled ?? true,
-        preferred_currency: settings.preferred_currency || 'USD',
+        preferred_currency: settings.preferred_currency || 'AED',
       },
     });
   } catch (error) {

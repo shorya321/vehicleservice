@@ -50,7 +50,7 @@ export default async function BusinessTransactionsPage() {
 
   const businessAccount = businessUser.business_accounts;
   const businessAccountId = businessUser.business_account_id;
-  const currency = (businessAccount.preferred_currency as CurrencyCode) || 'USD';
+  const currency = (businessAccount.preferred_currency as CurrencyCode) || 'AED';
   const businessName = businessAccount.business_name;
 
   return (

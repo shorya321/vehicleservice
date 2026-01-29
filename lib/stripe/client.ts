@@ -6,7 +6,7 @@ export const stripePromise = loadStripe(
 )
 
 // Currency configuration
-export const CURRENCY = 'usd'
+export const CURRENCY = 'aed'
 export const MIN_AMOUNT = 1.0
 export const MAX_AMOUNT = 50000.0
 

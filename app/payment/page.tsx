@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { PaymentWrapper } from './components/payment-wrapper'
@@ -8,9 +9,15 @@ import { GuaranteeCard } from './components/guarantee-card'
 import { PublicHeader } from '@/components/layout/public-header'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { formatCurrency } from '@/lib/utils'
-import { Calendar, Clock, Users, Luggage, HelpCircle } from 'lucide-react'
+import { Calendar, Clock, Users, Luggage, HelpCircle, Info } from 'lucide-react'
 import { format } from 'date-fns'
+import {
+  getEnabledCurrencies,
+  getExchangeRatesObject,
+  getDefaultCurrency,
+  formatPrice,
+} from '@/lib/currency'
+import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 
 export const metadata: Metadata = {
   title: 'Secure Payment | Infinia Transfers',
@@ -126,6 +133,7 @@ async function getOrCreatePaymentIntent(
 
 export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   const params = await searchParams
+  const cookieStore = await cookies()
 
   // Validate required parameters
   if (!params.booking) {
@@ -140,6 +148,30 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
     const returnUrl = `/payment?${new URLSearchParams(params as any).toString()}`
     redirect(`/auth/checkout-login?returnUrl=${encodeURIComponent(returnUrl)}`)
   }
+
+  // Fetch user profile for header
+  let profile = null
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+  profile = profileData
+
+  // Fetch currency data
+  const [currencies, rates, defaultCurrency] = await Promise.all([
+    getEnabledCurrencies(),
+    getExchangeRatesObject(),
+    getDefaultCurrency(),
+  ])
+
+  // Get user's currency preference from cookie
+  const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
+  const currentCurrency = currencyCookie?.value || defaultCurrency
+  const isConverted = currentCurrency !== 'AED'
+
+  // Helper function to format price in user's currency
+  const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
 
   // Get booking details
   const booking = await getBookingDetails(params.booking, user.id)
@@ -190,7 +222,12 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(198,170,136,0.04)_0%,transparent_70%)] pointer-events-none" />
 
         {/* Header */}
-        <PublicHeader />
+        <PublicHeader
+          initialUser={user}
+          initialProfile={profile}
+          currencies={currencies}
+          currentCurrency={currentCurrency}
+        />
 
         <div className="pt-24 md:pt-28 pb-16 px-6 md:px-8">
           <div className="max-w-3xl mx-auto">
@@ -220,7 +257,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   <p className="font-serif text-lg text-[#f8f6f3] mb-3">Your Booking Details:</p>
                   <div className="space-y-1 text-sm text-[#b8b4ae]">
                     <p>Booking Number: <span className="font-mono text-[#c6aa88]">{booking.booking_number}</span></p>
-                    <p>Amount: <span className="text-[#f8f6f3]">{formatCurrency(booking.total_price)}</span></p>
+                    <p>Amount: <span className="text-[#f8f6f3]">{formatUserPrice(booking.total_price)}</span></p>
                     <p>Status: <span className="text-[#fbbf24]">Payment Pending</span></p>
                   </div>
                 </div>
@@ -243,7 +280,12 @@ STRIPE_SECRET_KEY=sk_test_...`}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(198,170,136,0.04)_0%,transparent_70%)] pointer-events-none z-0" />
 
       {/* Header */}
-      <PublicHeader />
+      <PublicHeader
+        initialUser={user}
+        initialProfile={profile}
+        currencies={currencies}
+        currentCurrency={currentCurrency}
+      />
 
       {/* Progress Section */}
       <div className="pt-20 md:pt-24">
@@ -282,6 +324,8 @@ STRIPE_SECRET_KEY=sk_test_...`}
                 bookingId={booking.id}
                 amount={booking.total_price}
                 bookingNumber={booking.booking_number}
+                currentCurrency={currentCurrency}
+                exchangeRates={rates}
               />
             </div>
 
@@ -350,12 +394,12 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   <div className="space-y-2 pb-5">
                     <div className="flex justify-between text-sm">
                       <span className="text-[#b8b4ae]">Base Fare</span>
-                      <span className="text-[#f8f6f3]">{formatCurrency(booking.base_price)}</span>
+                      <span className="text-[#f8f6f3]">{formatUserPrice(booking.base_price)}</span>
                     </div>
                     {booking.amenities_price > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-[#b8b4ae]">Additional Services</span>
-                        <span className="text-[#f8f6f3]">{formatCurrency(booking.amenities_price)}</span>
+                        <span className="text-[#f8f6f3]">{formatUserPrice(booking.amenities_price)}</span>
                       </div>
                     )}
                     <div className="flex justify-between text-sm">
@@ -368,9 +412,19 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   <div className="flex justify-between items-center pt-5 border-t border-[rgba(198,170,136,0.15)]">
                     <span className="text-[0.9375rem] text-[#f8f6f3]">Total</span>
                     <span className="font-serif text-2xl font-medium bg-gradient-to-r from-[#e8d9c5] to-[#c6aa88] bg-clip-text text-transparent">
-                      {formatCurrency(booking.total_price)}
+                      {formatUserPrice(booking.total_price)}
                     </span>
                   </div>
+
+                  {/* Currency Notice */}
+                  {isConverted && (
+                    <div className="flex items-start gap-2 pt-3 text-xs text-[#7a7672]">
+                      <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                      <span>
+                        Price shown in {currentCurrency}. Payment will be processed in AED ({formatPrice(booking.total_price, 'AED', rates)}).
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Summary Footer */}

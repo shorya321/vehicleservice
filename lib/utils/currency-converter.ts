@@ -23,22 +23,23 @@ export const SUPPORTED_CURRENCIES = {
 export type CurrencyCode = keyof typeof SUPPORTED_CURRENCIES;
 
 /**
- * Exchange rates (USD as base currency)
+ * Exchange rates (AED as base currency)
  * In production, these should be fetched from a reliable API
  * and cached appropriately
+ * Values represent: 1 AED = X target currency
  */
 const EXCHANGE_RATES: Record<CurrencyCode, number> = {
-  USD: 1.0,
-  EUR: 0.92,
-  GBP: 0.79,
-  AUD: 1.52,
-  CAD: 1.36,
-  CHF: 0.88,
-  AED: 3.67,
-  SAR: 3.75,
-  SGD: 1.34,
-  INR: 83.12,
-  JPY: 149.5,
+  AED: 1.0,
+  USD: 0.27,
+  EUR: 0.25,
+  GBP: 0.22,
+  AUD: 0.41,
+  CAD: 0.37,
+  CHF: 0.24,
+  SAR: 1.02,
+  SGD: 0.37,
+  INR: 22.65,
+  JPY: 40.74,
 };
 
 /**
@@ -71,9 +72,9 @@ export function convertCurrency(
     return { convertedAmount: amount, exchangeRate: 1.0 };
   }
 
-  // Convert to USD first, then to target currency
-  const amountInUSD = amount / EXCHANGE_RATES[fromCurrency];
-  const convertedAmount = amountInUSD * EXCHANGE_RATES[toCurrency];
+  // Convert to AED first, then to target currency
+  const amountInAED = amount / EXCHANGE_RATES[fromCurrency];
+  const convertedAmount = amountInAED * EXCHANGE_RATES[toCurrency];
   const exchangeRate = EXCHANGE_RATES[toCurrency] / EXCHANGE_RATES[fromCurrency];
 
   // Round to appropriate decimal places

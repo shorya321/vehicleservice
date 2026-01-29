@@ -54,7 +54,7 @@ export default async function RoutePage({ params }: RoutePageProps) {
     luggageCapacity: vt.luggage_capacity,
     description: vt.description || '',
     price: vt.price,
-    currency: 'USD',
+    currency: 'AED',
     availableVehicles: vt.available_count,
     vendorCount: 1,
     features: [],

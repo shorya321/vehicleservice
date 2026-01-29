@@ -74,7 +74,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     }
 
     // Determine currency
-    const currency = businessAccount.preferred_currency || 'usd';
+    const currency = businessAccount.preferred_currency || 'aed';
 
     // Create and confirm PaymentIntent with saved payment method
     const paymentIntent = await stripe.paymentIntents.create({

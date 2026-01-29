@@ -17,12 +17,13 @@ import {
   ChevronUp,
   ArrowRight,
   Check,
-  Briefcase
+  Briefcase,
+  Info
 } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
-import { formatCurrency } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { OrderSummaryAddon } from './checkout-wrapper'
+import { formatPrice } from '@/lib/currency/format'
 
 interface OrderSummaryProps {
   route: RouteDetails
@@ -38,6 +39,8 @@ interface OrderSummaryProps {
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
   selectedAddons?: OrderSummaryAddon[]
+  currentCurrency?: string
+  exchangeRates?: Record<string, number>
 }
 
 export function OrderSummary({
@@ -53,8 +56,13 @@ export function OrderSummary({
   isSubmitting = false,
   agreeToTerms = false,
   onAgreeToTermsChange,
-  selectedAddons = []
+  selectedAddons = [],
+  currentCurrency = 'AED',
+  exchangeRates = {},
 }: OrderSummaryProps) {
+  // Helper function to format price in user's currency
+  const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
+  const isConverted = currentCurrency !== 'AED'
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
@@ -214,18 +222,18 @@ export function OrderSummary({
         <div className="checkout-price-breakdown">
           <div className="checkout-price-row">
             <span className="checkout-price-label">Base Fare</span>
-            <span className="checkout-price-value">{formatCurrency(basePrice)}</span>
+            <span className="checkout-price-value">{formatUserPrice(basePrice)}</span>
           </div>
           {childSeatsCost > 0 && (
             <div className="checkout-price-row">
               <span className="checkout-price-label">Child Seats ({infantSeats + boosterSeats})</span>
-              <span className="checkout-price-value">{formatCurrency(childSeatsCost)}</span>
+              <span className="checkout-price-value">{formatUserPrice(childSeatsCost)}</span>
             </div>
           )}
           {extraLuggageCost > 0 && (
             <div className="checkout-price-row">
               <span className="checkout-price-label">Extra Luggage ({extraLuggageCount})</span>
-              <span className="checkout-price-value">{formatCurrency(extraLuggageCost)}</span>
+              <span className="checkout-price-value">{formatUserPrice(extraLuggageCost)}</span>
             </div>
           )}
           {selectedAddons.map((addon) => (
@@ -233,19 +241,19 @@ export function OrderSummary({
               <span className="checkout-price-label">
                 {addon.name}{addon.quantity > 1 ? ` (×${addon.quantity})` : ''}
               </span>
-              <span className="checkout-price-value">{formatCurrency(addon.total_price)}</span>
+              <span className="checkout-price-value">{formatUserPrice(addon.total_price)}</span>
             </div>
           ))}
           {promoDiscount > 0 && (
             <div className="checkout-price-row discount">
               <span className="checkout-price-label">Promo Discount</span>
-              <span className="checkout-price-value">-{formatCurrency(promoDiscount)}</span>
+              <span className="checkout-price-value">-{formatUserPrice(promoDiscount)}</span>
             </div>
           )}
           {addonsCost > 0 && (
             <div className="checkout-price-row">
               <span className="checkout-price-label">Services Total</span>
-              <span className="checkout-price-value">{formatCurrency(addonsCost)}</span>
+              <span className="checkout-price-value">{formatUserPrice(addonsCost)}</span>
             </div>
           )}
         </div>
@@ -253,8 +261,18 @@ export function OrderSummary({
         {/* Total */}
         <div className="checkout-price-total">
           <span className="checkout-total-label">Total</span>
-          <span className="checkout-total-value">{formatCurrency(total)}</span>
+          <span className="checkout-total-value">{formatUserPrice(total)}</span>
         </div>
+
+        {/* Currency Notice */}
+        {isConverted && (
+          <div className="flex items-start gap-2 mt-3 text-xs text-[#7a7672]">
+            <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+            <span>
+              Prices shown in {currentCurrency}. Payment will be processed in AED ({formatPrice(total, 'AED', exchangeRates)}).
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Footer */}

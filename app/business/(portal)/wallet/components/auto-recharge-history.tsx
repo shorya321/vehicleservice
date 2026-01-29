@@ -153,19 +153,21 @@ export function AutoRechargeHistory() {
     );
   };
 
-  // Mini stat card for statistics row - Matching Bookings Page Pattern
+  // Mini stat card for statistics row - Matching Dashboard Pattern with hover effects
   const MiniStatCard = ({
     label,
     value,
     accentColorClass = 'border-l-primary text-primary',
     subtext,
     icon: Icon,
+    reducedMotion = false,
   }: {
     label: string;
     value: string | number;
     accentColorClass?: string;
     subtext?: string;
     icon?: React.ComponentType<{ className?: string }>;
+    reducedMotion?: boolean;
   }) => {
     const [borderClass, textClass] = accentColorClass.split(' ');
     // Derive background color from border class for icon container
@@ -186,13 +188,12 @@ export function AutoRechargeHistory() {
       .replace('-600', '-400')
       .replace('text-primary', 'text-primary');
 
-    return (
+    const cardContent = (
       <div
         className={cn(
-          'group relative overflow-hidden rounded-xl bg-card p-5',
-          'border-l-4 border border-border',
-          borderClass,
-          'shadow-sm hover:shadow-md transition-all duration-200'
+          'group relative overflow-hidden rounded-xl bg-card p-5 h-full',
+          'border border-border',
+          'shadow-sm hover:shadow-md card-hover transition-all duration-300'
         )}
       >
         <div className="flex items-start justify-between">
@@ -208,12 +209,36 @@ export function AutoRechargeHistory() {
             )}
           </div>
           {Icon && (
-            <div className={cn('flex h-11 w-11 items-center justify-center rounded-full', bgClass, darkBgClass)}>
-              <Icon className={cn('h-5 w-5', textClass, `dark:${darkTextClass}`)} />
-            </div>
+            reducedMotion ? (
+              <div className={cn('flex h-11 w-11 items-center justify-center rounded-full', bgClass, darkBgClass)}>
+                <Icon className={cn('h-5 w-5', textClass, `dark:${darkTextClass}`)} />
+              </div>
+            ) : (
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className={cn('flex h-11 w-11 items-center justify-center rounded-full', bgClass, darkBgClass)}
+              >
+                <Icon className={cn('h-5 w-5', textClass, `dark:${darkTextClass}`)} />
+              </motion.div>
+            )
           )}
         </div>
       </div>
+    );
+
+    if (reducedMotion) {
+      return cardContent;
+    }
+
+    return (
+      <motion.div
+        className="h-full"
+        whileHover={{ y: -2 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        {cardContent}
+      </motion.div>
     );
   };
 
@@ -318,28 +343,32 @@ export function AutoRechargeHistory() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MiniStatCard
             label="This Month"
-            value={formatCurrency(statistics.currentMonthTotal, 'USD')}
+            value={formatCurrency(statistics.currentMonthTotal, 'AED')}
             subtext={`${statistics.currentMonthCount} recharges`}
             accentColorClass="border-l-primary text-primary"
             icon={TrendingUp}
+            reducedMotion={prefersReducedMotion}
           />
           <MiniStatCard
             label="Succeeded"
             value={statistics.succeeded}
             accentColorClass="border-l-emerald-500 text-emerald-600"
             icon={CheckCircle2}
+            reducedMotion={prefersReducedMotion}
           />
           <MiniStatCard
             label="Failed"
             value={statistics.failed}
             accentColorClass="border-l-red-500 text-red-600"
             icon={XCircle}
+            reducedMotion={prefersReducedMotion}
           />
           <MiniStatCard
             label="Pending"
             value={statistics.pending + statistics.processing}
             icon={Clock}
             accentColorClass="border-l-muted-foreground text-muted-foreground"
+            reducedMotion={prefersReducedMotion}
           />
         </div>
       )}

@@ -44,7 +44,7 @@ interface WalletBalanceProps {
 export function WalletBalance({
   balance,
   businessAccountId,
-  currency = 'USD',
+  currency = 'AED',
   paymentElementEnabled = false,
 }: WalletBalanceProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);

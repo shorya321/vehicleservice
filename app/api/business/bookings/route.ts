@@ -99,7 +99,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
               .single();
 
             const limitAmount = isDailyLimit ? account?.max_daily_spend : account?.max_monthly_spend;
-            const currency = account?.currency || 'USD';
+            const currency = account?.currency || 'AED';
 
             // Send in-app notification
             if (ownerUser?.auth_user_id) {
@@ -227,7 +227,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           vehicleType: booking.vehicle_types?.name || 'Standard',
           passengerCount: booking.passenger_count,
           totalPrice: booking.total_price,
-          currency: businessAccount.currency || 'USD',
+          currency: businessAccount.currency || 'AED',
           walletDeducted: booking.total_price,
           newBalance: businessAccount.wallet_balance,
           bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/bookings/${booking.id}`,
@@ -270,11 +270,11 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
                 p_category: 'payment',
                 p_type: 'low_balance_alert',
                 p_title: 'Low Wallet Balance',
-                p_message: `Your wallet balance is ${account.wallet_balance} ${account.currency || 'USD'}. Consider adding funds to avoid service interruption.`,
+                p_message: `Your wallet balance is ${account.wallet_balance} ${account.currency || 'AED'}. Consider adding funds to avoid service interruption.`,
                 p_data: {
                   current_balance: account.wallet_balance,
                   threshold,
-                  currency: account.currency || 'USD',
+                  currency: account.currency || 'AED',
                 },
                 p_link: '/business/wallet',
               });

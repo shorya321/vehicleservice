@@ -131,7 +131,7 @@ export const POST = requireBusinessAuth(
             cancellationReason: body.cancellation_reason,
             refundAmount,
             newBalance,
-            currency: businessAccount.currency || 'USD',
+            currency: businessAccount.currency || 'AED',
             walletUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/wallet`,
           });
         } catch (emailError) {

@@ -31,6 +31,8 @@ interface CheckoutWrapperProps {
   user: any
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
+  currentCurrency?: string
+  exchangeRates?: Record<string, number>
 }
 
 export function CheckoutWrapper({
@@ -42,7 +44,9 @@ export function CheckoutWrapper({
   initialLuggage,
   user,
   profile,
-  addonsByCategory
+  addonsByCategory,
+  currentCurrency = 'AED',
+  exchangeRates = {},
 }: CheckoutWrapperProps) {
   const [infantSeats, setInfantSeats] = useState(0)
   const [boosterSeats, setBoosterSeats] = useState(0)
@@ -116,6 +120,8 @@ export function CheckoutWrapper({
           agreeToTerms={formMethods.agreeToTerms}
           onAgreeToTermsChange={formMethods.setAgreeToTerms}
           selectedAddons={selectedAddons}
+          currentCurrency={currentCurrency}
+          exchangeRates={exchangeRates}
         />
         </div>
       </div>

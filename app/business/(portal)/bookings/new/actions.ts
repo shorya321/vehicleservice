@@ -165,7 +165,7 @@ export async function getAvailableVehicleTypesForRoute(
           slug: toZone.slug,
         },
         basePrice: zonePricing.base_price,
-        currency: zonePricing.currency || 'USD',
+        currency: zonePricing.currency || 'AED',
       },
     };
   } catch (error) {
@@ -320,7 +320,7 @@ async function getVehicleTypesForZoneTransfer(
       luggageCapacity: vt.luggage_capacity,
       description: vt.description || '',
       price: calculatedPrice,
-      currency: 'USD',
+      currency: 'AED',
       availableVehicles: 10, // Show as available for aggregator model
       vendorCount: 5, // Show multiple vendors available
       features: [],

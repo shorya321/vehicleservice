@@ -59,7 +59,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     }
 
     // Determine currency
-    const currency = businessAccount.preferred_currency || 'usd';
+    const currency = businessAccount.preferred_currency || 'aed';
 
     // Get or create Stripe customer for this business
     // This ensures payment methods can be reused instead of creating duplicates

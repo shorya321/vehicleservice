@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { formatCurrency } from '@/lib/utils'
+import { formatPrice } from '@/lib/currency/format'
 import {
   CheckCircle,
   Calendar,
@@ -15,7 +15,8 @@ import {
   Phone,
   Printer,
   Download,
-  Shield
+  Shield,
+  Info
 } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -26,6 +27,8 @@ interface ConfirmationContentProps {
   childSeats: any[]
   extraLuggage: any
   addons: any[]
+  currentCurrency?: string
+  rates?: Record<string, number>
 }
 
 export function ConfirmationContent({
@@ -33,8 +36,14 @@ export function ConfirmationContent({
   primaryPassenger,
   childSeats,
   extraLuggage,
-  addons
+  addons,
+  currentCurrency = 'AED',
+  rates = {},
 }: ConfirmationContentProps) {
+  // Helper function to format price in user's currency
+  const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
+  const isConverted = currentCurrency !== 'AED'
+
   return (
     <div className="relative bg-luxury-black min-h-screen py-12 md:py-16 lg:py-20">
       {/* Ambient Background Animations */}
@@ -244,7 +253,7 @@ export function ConfirmationContent({
                   <span className="text-luxury-lightGray">
                     {booking.passenger_count} Passenger{booking.passenger_count > 1 ? 's' : ''}
                   </span>
-                  <span className="text-luxury-pearl">{formatCurrency(booking.base_price)}</span>
+                  <span className="text-luxury-pearl">{formatUserPrice(booking.base_price)}</span>
                 </div>
 
                 {childSeats.length > 0 && (
@@ -255,7 +264,7 @@ export function ConfirmationContent({
                           {seat.amenity_type === 'child_seat_infant' ? 'Infant Seat' : 'Booster Seat'}
                           {seat.quantity > 1 ? ` x${seat.quantity}` : ''}
                         </span>
-                        <span className="text-luxury-pearl">{formatCurrency(seat.price)}</span>
+                        <span className="text-luxury-pearl">{formatUserPrice(seat.price)}</span>
                       </div>
                     ))}
                   </>
@@ -266,7 +275,7 @@ export function ConfirmationContent({
                     <span className="text-luxury-lightGray">
                       Extra Luggage x{extraLuggage.quantity}
                     </span>
-                    <span className="text-luxury-pearl">{formatCurrency(extraLuggage.price)}</span>
+                    <span className="text-luxury-pearl">{formatUserPrice(extraLuggage.price)}</span>
                   </div>
                 )}
 
@@ -278,13 +287,13 @@ export function ConfirmationContent({
                           {addon.addon?.name || 'Additional Service'}
                           {addon.quantity > 1 ? ` x${addon.quantity}` : ''}
                         </span>
-                        <span className="text-luxury-pearl">{formatCurrency(addon.price)}</span>
+                        <span className="text-luxury-pearl">{formatUserPrice(addon.price)}</span>
                       </div>
                     ))}
                     <div className="flex justify-between text-sm pt-2">
                       <span className="text-luxury-lightGray">Services Total</span>
                       <span className="text-luxury-pearl">
-                        {formatCurrency(addons.reduce((sum: number, a: any) => sum + a.price, 0))}
+                        {formatUserPrice(addons.reduce((sum: number, a: any) => sum + a.price, 0))}
                       </span>
                     </div>
                   </>
@@ -294,13 +303,23 @@ export function ConfirmationContent({
 
                 <div className="flex justify-between font-semibold pt-2">
                   <span className="text-luxury-pearl">Total Paid</span>
-                  <span className="text-xl text-luxury-gold font-serif">{formatCurrency(booking.total_price)}</span>
+                  <span className="text-xl text-luxury-gold font-serif">{formatUserPrice(booking.total_price)}</span>
                 </div>
 
                 {booking.payment_status === 'completed' && (
                   <div className="flex items-center gap-2 text-sm text-luxury-gold mt-3">
                     <Shield className="h-4 w-4" aria-hidden="true" />
                     <span>Payment confirmed</span>
+                  </div>
+                )}
+
+                {/* Currency Notice */}
+                {isConverted && (
+                  <div className="flex items-start gap-2 mt-4 text-xs text-luxury-lightGray/70">
+                    <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-luxury-gold/60" aria-hidden="true" />
+                    <span>
+                      Prices shown in {currentCurrency}. Payment was processed in AED ({formatPrice(booking.total_price, 'AED', rates)}).
+                    </span>
                   </div>
                 )}
               </div>
@@ -361,7 +380,7 @@ export function ConfirmationContent({
               Book Another Transfer
             </Button>
           </Link>
-          <Link href="/customer/dashboard">
+          <Link href="/account">
             <Button className="w-full sm:w-auto h-14 px-8 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black uppercase tracking-wider font-semibold transition-all duration-300 active:scale-95 focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black">
               View My Bookings
             </Button>
