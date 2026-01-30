@@ -35,10 +35,17 @@ export function LocationAutocomplete({
   const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
+  const requestIdRef = useRef(0)
+  const selectedLocationRef = useRef(selectedLocation)
+
+  // Keep selectedLocationRef in sync without triggering search
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation
+  }, [selectedLocation])
 
   // Search locations with debounce
   useEffect(() => {
-    if (selectedLocation && selectedLocation.name === value) {
+    if (selectedLocationRef.current && selectedLocationRef.current.name === value) {
       setShowSuggestions(false)
       return
     }
@@ -48,6 +55,8 @@ export function LocationAutocomplete({
       setShowSuggestions(false)
       return
     }
+
+    const thisRequestId = ++requestIdRef.current
 
     const searchLocations = async () => {
       setLoading(true)
@@ -63,20 +72,26 @@ export function LocationAutocomplete({
           .limit(10)
 
         if (error) throw error
+
+        if (thisRequestId !== requestIdRef.current) return
+
         setSuggestions(data || [])
         setShowSuggestions((data || []).length > 0)
       } catch (error) {
         console.error('Error searching locations:', error)
+        if (thisRequestId !== requestIdRef.current) return
         setSuggestions([])
         setShowSuggestions(false)
       } finally {
-        setLoading(false)
+        if (thisRequestId === requestIdRef.current) {
+          setLoading(false)
+        }
       }
     }
 
     const debounce = setTimeout(searchLocations, 300)
     return () => clearTimeout(debounce)
-  }, [value, selectedLocation])
+  }, [value])
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -159,7 +174,7 @@ export function LocationAutocomplete({
         <div
           id="location-suggestions"
           role="listbox"
-          className="absolute top-full left-0 right-0 z-50 mt-1 luxury-card max-h-60 overflow-y-auto"
+          className="absolute top-full left-0 right-0 z-50 mt-1 luxury-card luxury-scrollbar max-h-60 overflow-y-auto"
         >
           {suggestions.map((location, index) => (
             <button
