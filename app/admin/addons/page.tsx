@@ -21,22 +21,23 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string
     category?: string
     isActive?: string
     page?: string
-  }
+  }>
 }
 
 export default async function AddonsPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams
   const categories = await getAddonCategories()
 
   const filters: AddonFilters = {
-    search: searchParams.search,
-    category: searchParams.category,
-    isActive: searchParams.isActive === 'true' ? true : searchParams.isActive === 'false' ? false : 'all',
-    page: searchParams.page ? parseInt(searchParams.page) : 1,
+    search: resolvedSearchParams.search,
+    category: resolvedSearchParams.category,
+    isActive: resolvedSearchParams.isActive === 'true' ? true : resolvedSearchParams.isActive === 'false' ? false : 'all',
+    page: resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1,
     limit: 10,
   }
 
@@ -143,7 +144,7 @@ export default async function AddonsPage({ searchParams }: PageProps) {
                   currentPage={page}
                   totalPages={totalPages}
                   baseUrl="/admin/addons"
-                  queryParams={searchParams}
+                  queryParams={resolvedSearchParams}
                 />
               </div>
             )}

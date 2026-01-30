@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import {
   Plus,
   CalendarCheck,
@@ -317,8 +317,12 @@ export function BookingsPageContent({
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {/* Total Bookings Card */}
-        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-primary border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <motion.div
+          variants={prefersReducedMotion ? undefined : itemVariants}
+          whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -334,16 +338,24 @@ export function BookingsPageContent({
                   </div>
                 )}
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20"
+              >
                 <CalendarCheck className="h-5 w-5 text-primary" />
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
 
         {/* Revenue Card */}
-        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-emerald-500 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <motion.div
+          variants={prefersReducedMotion ? undefined : itemVariants}
+          whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -356,16 +368,24 @@ export function BookingsPageContent({
                   This period
                 </p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-500/20">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-500/20"
+              >
                 <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
 
         {/* Pending Card */}
-        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-amber-500 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <motion.div
+          variants={prefersReducedMotion ? undefined : itemVariants}
+          whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -378,16 +398,24 @@ export function BookingsPageContent({
                   {pendingCount > 0 ? "Needs attention" : "All clear"}
                 </p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 dark:bg-amber-500/20">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 dark:bg-amber-500/20"
+              >
                 <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
 
         {/* Completed Card */}
-        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border-l-4 border-l-sky-500 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+        <motion.div
+          variants={prefersReducedMotion ? undefined : itemVariants}
+          whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -400,9 +428,13 @@ export function BookingsPageContent({
                   Successfully done
                 </p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-500/10 dark:bg-sky-500/20">
+              <motion.div
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-500/10 dark:bg-sky-500/20"
+              >
                 <CheckCircle2 className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>

@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link'
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { MapPin, Plane, Building2, Hotel, Train, ArrowRight } from "lucide-react"
 import type { PopularRoute } from '@/components/search/popular-routes'
 

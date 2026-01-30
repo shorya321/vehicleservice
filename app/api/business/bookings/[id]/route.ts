@@ -16,8 +16,9 @@ import {
  * Delete a booking permanently (with refund if applicable)
  */
 export const DELETE = requireBusinessAuth(
-  async (request: NextRequest, user, context: { params: { id: string } }) => {
-    const bookingId = context.params.id;
+  async (request: NextRequest, user, context: { params: Promise<{ id: string }> }) => {
+    const { id } = await context.params;
+    const bookingId = id;
 
     // Use admin client to call database function
     const supabaseAdmin = createClient(

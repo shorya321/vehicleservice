@@ -133,7 +133,7 @@ export function BusinessNotificationBell() {
                   e.stopPropagation();
                   markAllAsRead();
                 }}
-                className="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                className="h-7 px-2 text-xs text-primary hover:text-primary hover:bg-primary/10 whitespace-nowrap flex-shrink-0 normal-case tracking-normal"
               >
                 Mark all read
               </Button>

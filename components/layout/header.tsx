@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Menu, LogOut, User } from "lucide-react"
+import { Search, Menu, LogOut, User, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -68,7 +68,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header role="banner" className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card shadow-sm px-4 md:px-6">
+    <header role="banner" className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -83,8 +83,12 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Input
             type="search"
             placeholder="Search..."
-            className="pl-10 h-9 rounded-lg bg-muted/50 border-transparent focus:border-primary/30 focus:bg-background transition-colors"
+            className="pl-10 pr-14 h-9 rounded-lg bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
           />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs text-muted-foreground pointer-events-none">
+            <span>⌘</span>
+            <span>K</span>
+          </div>
         </div>
       </div>
 
@@ -94,8 +98,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-primary/10">
-              <Avatar className="h-8 w-8 ring-2 ring-primary/40">
+            <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
+              <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                 <AvatarImage
                   src={userProfile?.avatar_url || undefined}
                   alt={userProfile?.full_name || userProfile?.email || "User"}
@@ -104,10 +108,11 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
                 </AvatarFallback>
               </Avatar>
+              <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-56 rounded-xl">
+            <DropdownMenuLabel className="p-3 border-b border-border">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none text-foreground">
                   {userProfile?.full_name || 'Admin User'}
@@ -117,20 +122,24 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/admin/profile')}>
-              <User className="mr-2 h-4 w-4" />
-              Profile Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-400 cursor-pointer"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out
-            </DropdownMenuItem>
+            <div className="p-1">
+              <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/10 cursor-pointer">
+                <User className="h-4 w-4 text-primary" />
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/10 cursor-pointer">
+                Support
+              </DropdownMenuItem>
+            </div>
+            <div className="p-1 border-t border-border">
+              <DropdownMenuItem
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

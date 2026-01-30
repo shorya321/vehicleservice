@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowDown, ArrowUp, Receipt, RefreshCw, Settings } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';

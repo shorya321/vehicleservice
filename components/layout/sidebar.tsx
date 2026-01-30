@@ -110,19 +110,12 @@ const navGroups: NavGroup[] = [
             href: "/admin/vehicle-types",
             icon: Layers,
           },
+          {
+            name: "Addons",
+            href: "/admin/addons",
+            icon: Package,
+          },
         ]
-      },
-      {
-        name: "Locations",
-        href: "/admin/locations",
-        icon: MapPin,
-        badge: null,
-      },
-      {
-        name: "Routes",
-        href: "/admin/routes",
-        icon: Route,
-        badge: null,
       },
       {
         name: "Reviews",
@@ -130,17 +123,33 @@ const navGroups: NavGroup[] = [
         icon: Star,
         badge: null,
       },
+    ]
+  },
+  {
+    label: 'Service Areas',
+    items: [
       {
-        name: "Addons",
-        href: "/admin/addons",
-        icon: Package,
-        badge: null,
-      },
-      {
-        name: "Zones",
-        href: "/admin/zones",
+        name: "Locations",
+        href: "/admin/locations",
         icon: MapPin,
         badge: null,
+        submenu: [
+          {
+            name: "All Locations",
+            href: "/admin/locations",
+            icon: MapPin,
+          },
+          {
+            name: "Routes",
+            href: "/admin/routes",
+            icon: Route,
+          },
+          {
+            name: "Zones",
+            href: "/admin/zones",
+            icon: MapPin,
+          },
+        ]
       },
     ]
   },
@@ -154,22 +163,27 @@ const navGroups: NavGroup[] = [
         badge: null,
       },
       {
-        name: "Notifications",
-        href: "/admin/notifications",
-        icon: Bell,
-        badge: null,
-      },
-      {
-        name: "Security",
-        href: "/admin/security",
-        icon: Shield,
-        badge: null,
-      },
-      {
         name: "Settings",
         href: "/admin/settings",
         icon: Settings,
         badge: null,
+        submenu: [
+          {
+            name: "General",
+            href: "/admin/settings",
+            icon: Settings,
+          },
+          {
+            name: "Security",
+            href: "/admin/security",
+            icon: Shield,
+          },
+          {
+            name: "Notifications",
+            href: "/admin/notifications",
+            icon: Bell,
+          },
+        ]
       },
     ]
   }
@@ -359,7 +373,7 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 py-4">
+      <nav className="flex-1 overflow-y-auto admin-scrollbar px-2 py-4">
         {navGroups.map((group, groupIndex) => (
           <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
             {/* Section Header */}

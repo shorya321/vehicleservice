@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Input } from '@/components/ui/input'
 import { CalendarDays, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'

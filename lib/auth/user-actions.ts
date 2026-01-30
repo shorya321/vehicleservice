@@ -5,15 +5,15 @@ import { redirect } from "next/navigation"
 
 export async function userLogout() {
   const supabase = await createClient()
-  
+
   const { error } = await supabase.auth.signOut()
-  
+
   if (error) {
     console.error("Logout error:", error)
     throw new Error("Failed to logout")
   }
-  
-  redirect("/login")
+
+  // Navigation handled by client for proper state refresh
 }
 
 export async function getCurrentUserProfile() {

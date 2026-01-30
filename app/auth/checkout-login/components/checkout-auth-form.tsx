@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Mail, Lock, User, Phone, Car, Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { registerAndAutoVerify } from '../actions'
 

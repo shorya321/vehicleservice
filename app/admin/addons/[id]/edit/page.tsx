@@ -20,13 +20,14 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditAddonPage({ params }: PageProps) {
-  const addon = await getAddon(params.id)
+  const { id } = await params
+  const addon = await getAddon(id)
 
   if (!addon) {
     notFound()

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import {
   PaymentElement,
   useStripe,
@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Loader2, Shield, Lock, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { formatCurrency } from '@/lib/utils'
+import { formatPrice } from '@/lib/currency/format'
 import { AcceptedCards } from './accepted-cards'
 
 interface CheckoutFormProps {
@@ -19,9 +19,11 @@ interface CheckoutFormProps {
   amount: number
   bookingNumber: string
   clientSecret?: string
+  currentCurrency: string
+  exchangeRates: Record<string, number>
 }
 
-export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret }: CheckoutFormProps) {
+export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret, currentCurrency, exchangeRates }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
   const router = useRouter()
@@ -129,7 +131,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret }:
         <div className="flex flex-col items-center justify-center py-6 px-5 mb-6 bg-[rgba(198,170,136,0.05)] border border-[rgba(198,170,136,0.15)] rounded-2xl">
           <p className="text-xs font-medium tracking-[0.1em] uppercase text-[#7a7672] mb-2">Amount to Pay</p>
           <p className="font-serif text-4xl md:text-5xl font-normal bg-gradient-to-r from-[#e8d9c5] via-[#c6aa88] to-[#8b7349] bg-clip-text text-transparent">
-            {formatCurrency(amount)}
+            {formatPrice(amount, currentCurrency, exchangeRates)}
           </p>
           <span className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-[rgba(42,40,38,0.5)] rounded-md text-[0.8125rem] text-[#b8b4ae]">
             Booking: <code className="font-mono text-[#c6aa88]">{bookingNumber}</code>
@@ -179,7 +181,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret }:
             ) : (
               <>
                 <Shield className="mr-2 h-5 w-5" />
-                Pay {formatCurrency(amount)} Securely
+                Pay {formatPrice(amount, currentCurrency, exchangeRates)} Securely
               </>
             )}
           </Button>

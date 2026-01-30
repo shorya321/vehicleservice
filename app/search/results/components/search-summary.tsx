@@ -3,7 +3,7 @@
 import { format } from 'date-fns'
 import { MapPin, Calendar, Users, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 interface Location {

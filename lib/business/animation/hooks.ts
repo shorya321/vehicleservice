@@ -8,7 +8,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, MutableRefObject } from 'react';
-import { useInView as useFramerInView } from 'framer-motion';
+import { useInView as useFramerInView } from 'motion/react';
 import { viewportOptions } from './config';
 
 /**

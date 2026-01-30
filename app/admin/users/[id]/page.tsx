@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/server"
 
 interface EditUserPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditUserPage({ params }: EditUserPageProps) {
-  const user = await getUser(params.id)
+  const { id } = await params
+  const user = await getUser(id)
 
   if (!user) {
     notFound()
@@ -27,7 +28,7 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
     const { data: vendorApp } = await supabase
       .from('vendor_applications')
       .select('*')
-      .eq('user_id', params.id)
+      .eq('user_id', id)
       .single()
     
     // Convert vendor_applications fields to match business profile format

@@ -1,7 +1,7 @@
 'use client'
 
 import { UseFormReturn } from 'react-hook-form'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { CreditCard, Wallet, Banknote, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

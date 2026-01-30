@@ -13,7 +13,7 @@ import {
   type TdHTMLAttributes,
   type ThHTMLAttributes,
 } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { tableRowHover } from '@/lib/business/animation/variants';
 import { useReducedMotion } from '@/lib/business/animation/hooks';

@@ -14,14 +14,15 @@ export const metadata: Metadata = {
 }
 
 interface ZoneLocationsPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function ZoneLocationsPage({ params }: ZoneLocationsPageProps) {
+  const { id } = await params
   const [zone, locations] = await Promise.all([
-    getZone(params.id),
+    getZone(id),
     getLocationsWithZones()
   ])
 

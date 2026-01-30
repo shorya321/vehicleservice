@@ -9,7 +9,7 @@
  */
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Plus, Wallet, CalendarCheck, Settings, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';

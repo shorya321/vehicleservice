@@ -6,7 +6,7 @@ import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
@@ -17,6 +17,8 @@ interface VehicleTypeCategoryTabsProps {
     date?: string
     passengers?: string
   }
+  currentCurrency: string
+  exchangeRates: Record<string, number>
 }
 
 type SortOption = 'price-asc' | 'price-desc' | 'capacity' | 'name'
@@ -26,7 +28,9 @@ const ITEMS_PER_PAGE = 9
 export function VehicleTypeCategoryTabs({
   vehicleTypesByCategory,
   allVehicleTypes,
-  searchParams
+  searchParams,
+  currentCurrency,
+  exchangeRates
 }: VehicleTypeCategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
@@ -144,6 +148,8 @@ export function VehicleTypeCategoryTabs({
             key={vehicleType.id}
             vehicleType={vehicleType}
             searchParams={searchParams}
+            currentCurrency={currentCurrency}
+            exchangeRates={exchangeRates}
             index={index}
           />
         ))}

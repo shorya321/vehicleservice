@@ -9,13 +9,17 @@ interface PaymentWrapperProps {
   bookingId: string
   amount: number
   bookingNumber: string
+  currentCurrency: string
+  exchangeRates: Record<string, number>
 }
 
 export function PaymentWrapper({
   clientSecret,
   bookingId,
   amount,
-  bookingNumber
+  bookingNumber,
+  currentCurrency,
+  exchangeRates
 }: PaymentWrapperProps) {
   const options = {
     clientSecret,
@@ -121,6 +125,8 @@ export function PaymentWrapper({
         amount={amount}
         bookingNumber={bookingNumber}
         clientSecret={clientSecret}
+        currentCurrency={currentCurrency}
+        exchangeRates={exchangeRates}
       />
     </Elements>
   )

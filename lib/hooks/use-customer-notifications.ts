@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { Notification } from '@/lib/notifications/types';
 import { toast } from 'sonner';
 
@@ -19,7 +19,7 @@ export function useCustomerNotifications(limit: number = 5): UseCustomerNotifica
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   // Get current user
   useEffect(() => {

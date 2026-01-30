@@ -21,13 +21,14 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditVehicleTypePage({ params }: PageProps) {
-  const vehicleType = await getVehicleType(params.id)
+  const { id } = await params
+  const vehicleType = await getVehicleType(id)
 
   if (!vehicleType) {
     notFound()

@@ -1,10 +1,13 @@
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { SearchResults } from './components/search-results'
 import { SearchSummary } from './components/search-summary'
 import { getSearchResults } from './actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { AmbientBackground } from '@/components/checkout/ambient-background'
+import { getExchangeRatesObject, getDefaultCurrency } from '@/lib/currency/server'
+import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 
 export const metadata = {
   title: 'Search Results | Transfer Booking',
@@ -32,15 +35,24 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
     redirect('/')
   }
 
-  const results = await getSearchResults({
-    originId: from,
-    destinationId: to,
-    fromZoneId: fromZone,
-    toZoneId: toZone,
-    routeId: routeId,
-    date: new Date(date),
-    passengers: parseInt(passengers)
-  })
+  // Fetch currency data in parallel
+  const cookieStore = await cookies()
+  const [rates, defaultCurrency, results] = await Promise.all([
+    getExchangeRatesObject(),
+    getDefaultCurrency(),
+    getSearchResults({
+      originId: from,
+      destinationId: to,
+      fromZoneId: fromZone,
+      toZoneId: toZone,
+      routeId: routeId,
+      date: new Date(date),
+      passengers: parseInt(passengers)
+    })
+  ])
+
+  const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
+  const currentCurrency = currencyCookie?.value || defaultCurrency
 
   // Handle error case
   if (!results) {
@@ -87,7 +99,12 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
           />
 
           <div className="luxury-container py-8">
-            <SearchResults results={results} searchParams={params} />
+            <SearchResults
+              results={results}
+              searchParams={params}
+              currentCurrency={currentCurrency}
+              exchangeRates={rates}
+            />
           </div>
         </div>
       </div>

@@ -1,8 +1,11 @@
 import { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ConfirmationContent } from './components/confirmation-content'
+import { getExchangeRatesObject, getDefaultCurrency } from '@/lib/currency/server'
+import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 
 export const metadata: Metadata = {
   title: 'Booking Confirmed | Your Transfer is Booked',
@@ -60,23 +63,34 @@ async function getBookingDetails(bookingNumber: string) {
 
 export default async function ConfirmationPage({ searchParams }: ConfirmationPageProps) {
   const params = await searchParams
-  
+  const cookieStore = await cookies()
+
   if (!params.booking) {
     notFound()
   }
 
   const booking = await getBookingDetails(params.booking)
-  
+
   if (!booking) {
     notFound()
   }
+
+  // Fetch currency data
+  const [rates, defaultCurrency] = await Promise.all([
+    getExchangeRatesObject(),
+    getDefaultCurrency(),
+  ])
+
+  // Get user's currency preference from cookie
+  const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
+  const currentCurrency = currencyCookie?.value || defaultCurrency
 
   // Get primary passenger
   const primaryPassenger = booking.booking_passengers?.find((p: any) => p.is_primary)
 
   // Format amenities
   const amenities = booking.booking_amenities || []
-  const childSeats = amenities.filter((a: any) => 
+  const childSeats = amenities.filter((a: any) =>
     a.amenity_type === 'child_seat_infant' || a.amenity_type === 'child_seat_booster'
   )
   const extraLuggage = amenities.find((a: any) => a.amenity_type === 'extra_luggage')
@@ -90,6 +104,8 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
         childSeats={childSeats}
         extraLuggage={extraLuggage}
         addons={addons}
+        currentCurrency={currentCurrency}
+        rates={rates}
       />
     </PublicLayout>
   )

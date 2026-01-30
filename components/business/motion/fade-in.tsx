@@ -8,7 +8,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'motion/react';
 import { useReducedMotion, useInView } from '@/lib/business/animation/hooks';
 import { fadeInUp, fade, scaleIn, slideInLeft, slideInRight } from '@/lib/business/animation/variants';
 import { duration } from '@/lib/business/animation/config';

@@ -8,7 +8,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 interface AuthPageWrapperProps {

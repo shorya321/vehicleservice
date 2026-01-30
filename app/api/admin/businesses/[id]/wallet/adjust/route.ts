@@ -19,9 +19,10 @@ const adjustWalletSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -53,7 +54,7 @@ export async function POST(
     }
 
     const { amount, reason, currency } = validation.data;
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Verify business account exists
     const { data: businessAccount } = await supabase

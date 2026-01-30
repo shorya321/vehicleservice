@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { BarChart3, CalendarCheck, Clock, TrendingUp } from 'lucide-react';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { AnalyticsStatCard } from './analytics-chart';

@@ -15,19 +15,20 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 
 interface UserActivityPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function UserActivityPage({ params }: UserActivityPageProps) {
-  const user = await getUser(params.id)
-  
+  const { id } = await params
+  const user = await getUser(id)
+
   if (!user) {
     notFound()
   }
 
-  const activityLogs = await getUserActivityLogs(params.id)
+  const activityLogs = await getUserActivityLogs(id)
 
   return (
     <AdminLayout>

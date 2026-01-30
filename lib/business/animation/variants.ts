@@ -5,7 +5,7 @@
  * SCOPE: Business module ONLY
  */
 
-import type { Variants } from 'framer-motion';
+import type { Variants } from 'motion/react';
 import { duration, easing, stagger } from './config';
 
 // Fade in from bottom (default page content animation)

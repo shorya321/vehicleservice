@@ -8,7 +8,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Mail, HelpCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 

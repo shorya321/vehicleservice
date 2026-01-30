@@ -16,9 +16,10 @@ import { jsx } from 'react/jsx-runtime';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -45,7 +46,7 @@ export async function GET(
     const { data: transaction, error: transactionError } = await supabase
       .from('wallet_transactions')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('business_account_id', businessAccount.id)
       .single();
 

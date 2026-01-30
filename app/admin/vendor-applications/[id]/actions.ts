@@ -106,7 +106,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
 
     // Send rejection email
     const appUrl = getAppUrl();
-    const reapplyUrl = `${appUrl}/customer/apply-vendor`;
+    const reapplyUrl = `${appUrl}/become-vendor`;
 
     const emailResult = await sendVendorApplicationRejectedEmail({
       email: application.email,

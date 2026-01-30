@@ -14,13 +14,14 @@ import {
 } from "@/components/ui/card"
 
 interface PhotoUploadPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function PhotoUploadPage({ params }: PhotoUploadPageProps) {
-  const user = await getUser(params.id)
+  const { id } = await params
+  const user = await getUser(id)
   
   if (!user) {
     notFound()

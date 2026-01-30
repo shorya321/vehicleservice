@@ -22,19 +22,20 @@ export const metadata: Metadata = {
 };
 
 interface BusinessDetailsPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function AdminBusinessDetailsPage({ params }: BusinessDetailsPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
 
   // Get business account details
   const { data: businessAccount, error } = await supabase
     .from('business_accounts')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !businessAccount) {
@@ -45,13 +46,13 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
   const { data: businessUsers } = await supabase
     .from('business_users')
     .select('id, role, is_active, created_at')
-    .eq('business_account_id', params.id);
+    .eq('business_account_id', id);
 
   // Get recent bookings
   const { data: recentBookings } = await supabase
     .from('business_bookings')
     .select('id, booking_number, customer_name, booking_status, total_price, created_at')
-    .eq('business_account_id', params.id)
+    .eq('business_account_id', id)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -59,7 +60,7 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
   const { data: recentTransactions } = await supabase
     .from('wallet_transactions')
     .select('id, amount, transaction_type, description, balance_after, created_at')
-    .eq('business_account_id', params.id)
+    .eq('business_account_id', id)
     .order('created_at', { ascending: false })
     .limit(10);
 

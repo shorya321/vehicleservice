@@ -9,7 +9,7 @@
  */
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import {
   CreditCard,
   Palette,
@@ -128,25 +128,29 @@ export function SettingsPageContent({
             <motion.div
               key={link.href}
               variants={prefersReducedMotion ? undefined : staggerItem}
+              whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <Link href={link.href} className="block h-full">
                 <Card
                   className={cn(
                     'h-full group cursor-pointer rounded-xl',
                     'bg-card border border-border',
-                    'shadow-sm hover:shadow-md',
+                    'shadow-sm card-hover hover:shadow-md',
                     'transition-all duration-300'
                   )}
                 >
                   <CardContent className="flex items-center gap-4 p-6">
-                    <div
+                    <motion.div
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                       className={cn(
-                        'flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110',
+                        'flex h-12 w-12 items-center justify-center rounded-xl',
                         link.iconColorClass
                       )}
                     >
                       <Icon className="h-6 w-6" />
-                    </div>
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-foreground group-hover:text-foreground transition-colors duration-200">
                         {link.title}

@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Clock, Mail, ArrowRight, ArrowLeft } from 'lucide-react';
 import { LuxuryButton } from '@/components/business/ui/luxury-button';
 import {

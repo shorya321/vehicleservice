@@ -20,17 +20,19 @@ interface DriverPerformanceProps {
 
 export function DriverPerformance({ data }: DriverPerformanceProps) {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="admin-card-hover">
+      <CardHeader className="pb-3 border-b border-border">
         <div className="flex items-center gap-2">
-          <UserCheck className="h-5 w-5 text-purple-600" />
-          <CardTitle>Driver Performance</CardTitle>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10">
+            <UserCheck className="h-4 w-4 text-violet-500" />
+          </div>
+          <div>
+            <CardTitle className="text-base font-semibold">Driver Performance</CardTitle>
+            <CardDescription className="mt-0.5">Top performing drivers based on completed bookings</CardDescription>
+          </div>
         </div>
-        <CardDescription>
-          Top performing drivers based on completed bookings
-        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5">
         {data.length > 0 ? (
           <div className="rounded-md border">
             <Table>

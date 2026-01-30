@@ -1,6 +1,6 @@
 "use client"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 

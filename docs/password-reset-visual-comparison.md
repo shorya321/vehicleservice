@@ -554,7 +554,7 @@ Orb 2 (Bottom Right):
 
 **Added:**
 ```tsx
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { Eye, EyeOff, CheckCircle } from "lucide-react"
 ```
 

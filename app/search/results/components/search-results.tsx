@@ -13,7 +13,8 @@ import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZoneResultCard } from '@/components/search/zone-result-card'
 import { ZonesList } from '@/components/search/zones-list'
 import { Clock, MapPin } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
+import { formatPrice } from '@/lib/currency/format'
 
 interface SearchResultsProps {
   results: SearchResult | null
@@ -23,9 +24,11 @@ interface SearchResultsProps {
     date?: string
     passengers?: string
   }
+  currentCurrency: string
+  exchangeRates: Record<string, number>
 }
 
-export function SearchResults({ results, searchParams }: SearchResultsProps) {
+export function SearchResults({ results, searchParams, currentCurrency, exchangeRates }: SearchResultsProps) {
   const [filters, setFilters] = useState({
     categories: [] as string[],
     priceRange: [0, Number.MAX_VALUE] as [number, number],
@@ -196,7 +199,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             </span>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-luxury-gold/15 to-luxury-gold/5 border border-luxury-gold/30 rounded-lg">
               <span className="font-serif text-2xl md:text-3xl font-medium bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent">
-                ${results.type === 'zone' && results.zone ? results.zone.basePrice.toFixed(2) : minPrice.toFixed(2)}
+                {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
               </span>
             </div>
           </div>
@@ -210,6 +213,8 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             vehicleTypesByCategory={results.vehicleTypesByCategory}
             allVehicleTypes={results.vehicleTypes}
             searchParams={searchParams}
+            currentCurrency={currentCurrency}
+            exchangeRates={exchangeRates}
           />
         ) : (
           /* Fallback to grid if no categories */
@@ -219,6 +224,8 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                 key={vehicleType.id}
                 vehicleType={vehicleType}
                 searchParams={searchParams}
+                currentCurrency={currentCurrency}
+                exchangeRates={exchangeRates}
               />
             ))}
           </div>

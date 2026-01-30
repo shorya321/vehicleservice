@@ -8,8 +8,10 @@
  * SCOPE: Business module ONLY
  */
 
+import { motion } from 'motion/react';
 import { Car, Users, Briefcase, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { VehicleTypeResult } from '../actions';
 
@@ -24,16 +26,20 @@ export function VehicleTypeCard({
   isSelected,
   onSelect,
 }: VehicleTypeCardProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
-    <button
+    <motion.button
+      whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       onClick={() => onSelect(vehicleType)}
       className={cn(
         'relative p-5 rounded-xl text-left transition-all duration-300',
         'focus:outline-none',
-        'border-2',
+        'border-2 card-hover',
         isSelected
           ? 'border-primary bg-primary/5 shadow-[0_0_0_2px_hsl(var(--primary)/0.2)]'
-          : 'border-border bg-card hover:border-primary/40 hover:-translate-y-0.5'
+          : 'border-border bg-card hover:border-primary/40 hover:shadow-md'
       )}
     >
       {/* Selected Indicator */}
@@ -45,7 +51,9 @@ export function VehicleTypeCard({
 
       {/* Vehicle Icon */}
       <div className="flex items-center justify-between mb-4">
-        <div
+        <motion.div
+          whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           className={cn(
             'h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300',
             isSelected ? 'bg-primary/20' : 'bg-primary/10'
@@ -55,7 +63,7 @@ export function VehicleTypeCard({
             'h-6 w-6 transition-colors duration-300',
             isSelected ? 'text-primary' : 'text-primary/70'
           )} />
-        </div>
+        </motion.div>
       </div>
 
       {/* Vehicle Info */}
@@ -98,6 +106,6 @@ export function VehicleTypeCard({
           <p className="text-xs text-muted-foreground/70">per vehicle</p>
         </div>
       </div>
-    </button>
+    </motion.button>
   );
 }

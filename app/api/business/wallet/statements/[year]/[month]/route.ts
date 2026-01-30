@@ -16,9 +16,10 @@ import { jsx } from 'react/jsx-runtime';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { year: string; month: string } }
+  { params }: { params: Promise<{ year: string; month: string }> }
 ) {
   try {
+    const { year: yearParam, month: monthParam } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -31,8 +32,8 @@ export async function GET(
     }
 
     // Validate year and month parameters
-    const year = parseInt(params.year);
-    const month = parseInt(params.month);
+    const year = parseInt(yearParam);
+    const month = parseInt(monthParam);
 
     if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
       return apiError('Invalid year or month parameter', 400);

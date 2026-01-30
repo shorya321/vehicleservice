@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { CreditCard, Loader2, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

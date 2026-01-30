@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import {
   CheckCircle,
   MapPin,
@@ -33,7 +33,7 @@ import {
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { approveReview, rejectReview, toggleFeaturedReview } from '@/app/admin/reviews/actions'
-import { deleteReview } from '@/app/customer/reviews/actions'
+import { deleteReview } from '@/app/account/review-actions'
 
 export interface Review {
   id: string

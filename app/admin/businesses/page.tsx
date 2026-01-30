@@ -27,17 +27,18 @@ interface SearchParams {
 }
 
 interface AdminBusinessAccountsPageProps {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }
 
 export default async function AdminBusinessAccountsPage({ searchParams }: AdminBusinessAccountsPageProps) {
+  const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
 
   // Parse search params
-  const search = searchParams.search || '';
-  const status = searchParams.status || '';
-  const domainVerified = searchParams.domainVerified || '';
-  const page = parseInt(searchParams.page || '1', 10);
+  const search = resolvedSearchParams.search || '';
+  const status = resolvedSearchParams.status || '';
+  const domainVerified = resolvedSearchParams.domainVerified || '';
+  const page = parseInt(resolvedSearchParams.page || '1', 10);
   const limit = 10;
   const offset = (page - 1) * limit;
 

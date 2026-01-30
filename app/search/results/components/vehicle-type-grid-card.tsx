@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { VehicleTypeResult } from '../actions'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import {
   Users,
   Briefcase,
@@ -11,7 +11,7 @@ import {
   CheckCircle,
   Star
 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatPrice } from '@/lib/currency/format'
 
 interface VehicleTypeGridCardProps {
   vehicleType: VehicleTypeResult
@@ -21,6 +21,8 @@ interface VehicleTypeGridCardProps {
     date?: string
     passengers?: string
   }
+  currentCurrency: string
+  exchangeRates: Record<string, number>
   index?: number
 }
 
@@ -37,7 +39,7 @@ const vehicleModels: Record<string, string> = {
   'bus': '35-Seater Bus, 45-Seater Bus'
 }
 
-export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: VehicleTypeGridCardProps) {
+export function VehicleTypeGridCard({ vehicleType, searchParams, currentCurrency, exchangeRates, index = 0 }: VehicleTypeGridCardProps) {
   const vehicleTypeImage = vehicleType.image || `/images/vehicle-types/${vehicleType.slug}.jpg`
   const models = vehicleModels[vehicleType.slug] || vehicleType.name
 
@@ -128,7 +130,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           {/* Price */}
           <div>
             <div className="font-serif text-2xl md:text-3xl font-medium bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent leading-none">
-              {formatCurrency(vehicleType.price)}
+              {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </div>
             <p className="text-xs text-[var(--text-muted)] uppercase tracking-[0.05em] mt-0.5">per vehicle</p>
           </div>

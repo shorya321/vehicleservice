@@ -13,13 +13,14 @@ export const metadata: Metadata = {
 }
 
 interface EditZonePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditZonePage({ params }: EditZonePageProps) {
-  const zone = await getZone(params.id)
+  const { id } = await params
+  const zone = await getZone(id)
 
   if (!zone) {
     notFound()
