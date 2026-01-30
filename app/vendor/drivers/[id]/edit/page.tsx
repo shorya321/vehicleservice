@@ -62,7 +62,7 @@ export default async function EditDriverPage({ params }: EditDriverPageProps) {
         <CardHeader>
           <CardTitle>Driver Information</CardTitle>
           <CardDescription>
-            Update the driver's details. Fields marked with * are required.
+            Update the driver&apos;s details. Fields marked with * are required.
           </CardDescription>
         </CardHeader>
         <CardContent>

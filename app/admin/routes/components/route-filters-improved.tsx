@@ -37,21 +37,20 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
   const [locations, setLocations] = useState<Location[]>([])
 
   useEffect(() => {
+    const loadLocations = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('locations')
+        .select('*')
+        .eq('is_active', true)
+        .order('name')
+
+      if (data) {
+        setLocations(data)
+      }
+    }
     loadLocations()
   }, [])
-
-  const loadLocations = async () => {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('locations')
-      .select('*')
-      .eq('is_active', true)
-      .order('name')
-    
-    if (data) {
-      setLocations(data)
-    }
-  }
 
   const handleSearchSubmit = (value: string) => {
     onFiltersChange({ ...filters, search: value, page: 1 })

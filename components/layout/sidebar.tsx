@@ -202,12 +202,15 @@ export function Sidebar() {
   const { unreadCount } = useAdminNotifications(5)
 
   useEffect(() => {
-    // Auto-expand menu items that contain the current path
-    const allItems = navGroups.flatMap(group => group.items)
-    const itemsToExpand = allItems
-      .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
-      .map(item => item.name)
-    setExpandedItems(itemsToExpand)
+    const expandActiveMenuItems = () => {
+      // Auto-expand menu items that contain the current path
+      const allItems = navGroups.flatMap(group => group.items)
+      const itemsToExpand = allItems
+        .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
+        .map(item => item.name)
+      setExpandedItems(itemsToExpand)
+    }
+    expandActiveMenuItems()
   }, [pathname])
 
   useEffect(() => {
@@ -225,7 +228,6 @@ export function Sidebar() {
         }
       }
     }
-
     fetchUserProfile()
   }, [supabase])
 

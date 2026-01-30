@@ -301,7 +301,7 @@ export function NotificationsContent() {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">No notifications found</h3>
             <p className="text-sm text-muted-foreground max-w-sm">
-              You're all caught up! New notifications about your bookings and account will appear here.
+              You&apos;re all caught up! New notifications about your bookings and account will appear here.
             </p>
             <Link
               href="/business/dashboard"
@@ -349,7 +349,7 @@ export function NotificationsContent() {
             {/* End of List Message */}
             {!hasMore && notifications.length > 0 && (
               <div className="p-4 border-t border-border text-center">
-                <p className="text-sm text-muted-foreground">You've reached the end</p>
+                <p className="text-sm text-muted-foreground">You&apos;ve reached the end</p>
               </div>
             )}
           </>

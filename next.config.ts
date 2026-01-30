@@ -2,9 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  experimental: {
-    reactCompiler: true,
-  },
+  reactCompiler: true,
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

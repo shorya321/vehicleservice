@@ -93,7 +93,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
           <AnimatedCard delay={0.2}>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Bookings</CardTitle>
+                <CardTitle className="text-sm font-medium">Today&apos;s Bookings</CardTitle>
                 <Calendar className="h-4 w-4 text-luxury-gold" />
               </CardHeader>
               <CardContent>

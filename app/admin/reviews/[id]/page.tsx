@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { requireAdmin } from '@/lib/auth/actions'
 import { AdminLayout } from '@/components/layout/admin-layout'
 import { Button } from '@/components/ui/button'
@@ -144,12 +145,13 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                       {review.photos.map((photo, index) => (
                         <div
                           key={index}
-                          className="aspect-square rounded-lg overflow-hidden border hover:border-primary/50 transition-colors"
+                          className="relative aspect-square rounded-lg overflow-hidden border hover:border-primary/50 transition-colors"
                         >
-                          <img
+                          <Image
                             src={photo}
                             alt={`Review photo ${index + 1}`}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       ))}

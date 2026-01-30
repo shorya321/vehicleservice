@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Dialog,
@@ -72,11 +72,7 @@ export function AssignResourcesModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  useEffect(() => {
-    loadResources()
-  }, [])
-
-  const loadResources = async () => {
+  const loadResources = useCallback(async () => {
     setIsLoading(true)
     try {
       const availabilityData = await checkResourceAvailabilityForBooking(assignmentId)
@@ -88,7 +84,11 @@ export function AssignResourcesModal({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [assignmentId])
+
+  useEffect(() => {
+    loadResources()
+  }, [loadResources])
 
   const handleAssign = async () => {
     if (!selectedDriverId || !selectedVehicleId) {

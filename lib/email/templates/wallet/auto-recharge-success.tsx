@@ -83,7 +83,7 @@ export const AutoRechargeSuccessEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        If you'd like to modify your auto-recharge settings, you can do so from your wallet dashboard.
+        If you&apos;d like to modify your auto-recharge settings, you can do so from your wallet dashboard.
       </Text>
 
       <Text style={emailStyles.text}>

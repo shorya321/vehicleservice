@@ -16,7 +16,7 @@ export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
       heading={`Welcome to Vehicle Service, ${name}!`}
     >
       <Text style={emailStyles.text}>
-        Thank you for creating an account with Vehicle Service. We're excited to have you on
+        Thank you for creating an account with Vehicle Service. We&apos;re excited to have you on
         board!
       </Text>
 
@@ -38,7 +38,7 @@ export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
       </Text>
 
       <Text style={emailStyles.text}>
-        If you didn't create an account with Vehicle Service, please ignore this email or
+        If you didn&apos;t create an account with Vehicle Service, please ignore this email or
         contact our support team.
       </Text>
 

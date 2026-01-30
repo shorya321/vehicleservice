@@ -53,7 +53,7 @@ export default async function DriverDashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today's Trips</CardTitle>
+              <CardTitle className="text-sm font-medium">Today&apos;s Trips</CardTitle>
               <Car className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -100,7 +100,7 @@ export default async function DriverDashboard() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Today's Schedule</CardTitle>
+              <CardTitle>Today&apos;s Schedule</CardTitle>
               <CardDescription>Your trips for today</CardDescription>
             </CardHeader>
             <CardContent>

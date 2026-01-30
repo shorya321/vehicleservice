@@ -172,7 +172,7 @@ export function ForgotPasswordForm() {
                   <HelpCircle className="h-4 w-4 mt-0.5 flex-shrink-0 text-[var(--luxury-gold)]" />
                   <div className="space-y-2">
                     <p className="font-medium text-[var(--luxury-pearl)]">
-                      Didn't receive the email?
+                      Didn&apos;t receive the email?
                     </p>
                     <ul className="space-y-1 text-xs text-[var(--luxury-light-gray)]">
                       <li>Check your spam or junk folder</li>

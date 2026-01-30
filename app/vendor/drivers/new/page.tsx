@@ -47,7 +47,7 @@ export default async function NewDriverPage() {
         <CardHeader>
           <CardTitle>Driver Information</CardTitle>
           <CardDescription>
-            Enter the driver's details to add them to your team. Fields marked with * are required.
+            Enter the driver&apos;s details to add them to your team. Fields marked with * are required.
           </CardDescription>
         </CardHeader>
         <CardContent>

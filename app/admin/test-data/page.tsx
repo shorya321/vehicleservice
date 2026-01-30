@@ -64,7 +64,7 @@ export default async function TestDataPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <strong>Warning:</strong> This tool is for development and testing purposes only.
-            Generated bookings will have "TEST-" prefix in their booking numbers.
+            Generated bookings will have &quot;TEST-&quot; prefix in their booking numbers.
           </AlertDescription>
         </Alert>
 
@@ -123,7 +123,7 @@ export default async function TestDataPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This will delete all bookings with "TEST-" prefix. This action cannot be undone.
+                  This will delete all bookings with &quot;TEST-&quot; prefix. This action cannot be undone.
                 </AlertDescription>
               </Alert>
               <form action={clearData}>

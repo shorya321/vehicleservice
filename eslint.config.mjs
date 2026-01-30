@@ -1,9 +1,10 @@
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [
+const config = [
   ...nextCoreWebVitals,
   {
     ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"],
   },
 ];
+export default config;

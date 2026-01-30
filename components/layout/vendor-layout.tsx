@@ -132,11 +132,14 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
 
   // Auto-expand menu items that contain the current path
   useEffect(() => {
-    const allItems = navGroups.flatMap(group => group.items)
-    const itemsToExpand = allItems
-      .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
-      .map(item => item.name)
-    setExpandedItems(itemsToExpand)
+    const expandActiveMenuItems = () => {
+      const allItems = navGroups.flatMap(group => group.items)
+      const itemsToExpand = allItems
+        .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
+        .map(item => item.name)
+      setExpandedItems(itemsToExpand)
+    }
+    expandActiveMenuItems()
   }, [pathname])
 
   const renderNavItem = (item: NavItem) => {

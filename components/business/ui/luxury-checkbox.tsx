@@ -22,7 +22,8 @@ const LuxuryCheckbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   LuxuryCheckboxProps
 >(({ className, label, description, id, ...props }, ref) => {
-  const checkboxId = id || React.useId();
+  const generatedId = React.useId();
+  const checkboxId = id || generatedId;
 
   const checkbox = (
     <CheckboxPrimitive.Root

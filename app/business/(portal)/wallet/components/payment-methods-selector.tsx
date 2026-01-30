@@ -216,7 +216,7 @@ export function PaymentMethodsSelector({
 
       {paymentMethods.length === 0 && (
         <p className="text-center text-sm text-muted-foreground">
-          You haven't saved any payment methods yet
+          You haven&apos;t saved any payment methods yet
         </p>
       )}
     </div>

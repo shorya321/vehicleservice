@@ -16,16 +16,15 @@ import { viewportOptions } from './config';
  * Returns true if user prefers reduced motion
  */
 export function useReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 
   useEffect(() => {
     // Check if we're in the browser
     if (typeof window === 'undefined') return;
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    // Set initial value
-    setPrefersReducedMotion(mediaQuery.matches);
 
     // Listen for changes
     const handleChange = (event: MediaQueryListEvent) => {
@@ -92,14 +91,18 @@ export function useCountUp(
     }
 
     if (!enabled) {
-      setCount(startValue);
+      const resetCount = () => setCount(startValue);
+      resetCount();
       return;
     }
 
     // Skip animation if user prefers reduced motion
     if (prefersReducedMotion) {
-      setCount(endValue);
-      hasCompletedRef.current = true;
+      const finishImmediately = () => {
+        setCount(endValue);
+        hasCompletedRef.current = true;
+      };
+      finishImmediately();
       return;
     }
 
@@ -157,16 +160,19 @@ export function useAnimationState(isVisible: boolean) {
   );
 
   useEffect(() => {
-    if (isVisible) {
-      setAnimationState('visible');
-    } else {
-      setAnimationState('exit');
-      // Reset to hidden after exit animation
-      const timer = setTimeout(() => {
-        setAnimationState('hidden');
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+    const updateState = () => {
+      if (isVisible) {
+        setAnimationState('visible');
+      } else {
+        setAnimationState('exit');
+        // Reset to hidden after exit animation
+        const timer = setTimeout(() => {
+          setAnimationState('hidden');
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    };
+    return updateState();
   }, [isVisible]);
 
   return animationState;
@@ -212,16 +218,19 @@ export function useDelayedVisibility(delay: number = 0): boolean {
   const [isVisible, setIsVisible] = useState(delay === 0);
 
   useEffect(() => {
-    if (delay === 0) {
-      setIsVisible(true);
-      return;
-    }
+    const show = () => {
+      if (delay === 0) {
+        setIsVisible(true);
+        return;
+      }
 
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, delay);
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, delay);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    };
+    return show();
   }, [delay]);
 
   return isVisible;

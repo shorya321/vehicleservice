@@ -59,7 +59,8 @@ export function BookingsTab({ userId, currentCurrency, exchangeRates }: Bookings
   }, [userId, filters])
 
   useEffect(() => {
-    fetchData()
+    const loadData = () => fetchData()
+    loadData()
   }, [fetchData])
 
   const handleFilterChange = (key: keyof BookingFilters, value: string) => {

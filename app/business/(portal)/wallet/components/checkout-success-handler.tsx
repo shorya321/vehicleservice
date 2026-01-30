@@ -118,7 +118,8 @@ export function CheckoutSuccessHandler() {
     };
 
     verifyPayment();
-  }, [searchParams]); // Only depend on searchParams
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- isVerifying is read as a guard to prevent duplicate calls, not as a reactive dependency
+  }, [searchParams, router]);
 
   // Show loading indicator while verifying
   if (isVerifying) {

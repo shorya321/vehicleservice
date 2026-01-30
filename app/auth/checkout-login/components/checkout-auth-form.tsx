@@ -426,7 +426,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
             <Separator className="my-6 border-luxury-gold/20" />
             <div className="text-center">
               <p className="text-sm text-luxury-lightGray mb-3">
-                Don't want to create an account?
+                Don&apos;t want to create an account?
               </p>
               <Button
                 variant="outline"

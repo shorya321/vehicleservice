@@ -301,31 +301,32 @@ function NewBookingButton({ isCollapsed, onClick }: { isCollapsed: boolean; onCl
   );
 }
 
-export function BusinessSidebar({
-  businessName,
-  brandName,
+interface SidebarContentProps {
+  isMobileView?: boolean;
+  displayName: string;
+  initials: string;
+  logoUrl?: string | null;
+  logoError: boolean;
+  onLogoError: () => void;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  closeMobile: () => void;
+  isPathActive: (href: string) => boolean;
+}
+
+function SidebarContent({
+  isMobileView = false,
+  displayName,
+  initials,
   logoUrl,
-}: BusinessSidebarProps) {
-  const pathname = usePathname();
-  const [logoError, setLogoError] = useState(false);
-  const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebar();
-  const prefersReducedMotion = useReducedMotion();
-  const isMobile = useIsMobile();
-
-  const displayName = brandName || businessName;
-  const initials = getBusinessInitials(businessName);
-  const sidebarWidth = isCollapsed ? 72 : 256;
-
-  useEffect(() => {
-    if (isMobile) closeMobile();
-  }, [pathname, isMobile, closeMobile]);
-
-  const isPathActive = (href: string) => {
-    if (href === '/business/settings') return pathname === href;
-    return pathname === href || pathname.startsWith(href);
-  };
-
-  const SidebarContent = ({ isMobileView = false }: { isMobileView?: boolean }) => (
+  logoError,
+  onLogoError,
+  isCollapsed,
+  onToggle,
+  closeMobile,
+  isPathActive,
+}: SidebarContentProps) {
+  return (
     <LayoutGroup>
       {isMobileView ? (
         <div className="relative z-10 flex items-center justify-between p-3">
@@ -339,7 +340,7 @@ export function BusinessSidebar({
                   width={36}
                   className="h-9 w-9 object-cover"
                   unoptimized
-                  onError={() => setLogoError(true)}
+                  onError={onLogoError}
                 />
               </div>
             ) : (
@@ -363,9 +364,9 @@ export function BusinessSidebar({
           initials={initials}
           logoUrl={logoUrl}
           logoError={logoError}
-          onLogoError={() => setLogoError(true)}
+          onLogoError={onLogoError}
           isCollapsed={isCollapsed}
-          onToggle={toggle}
+          onToggle={onToggle}
         />
       )}
 
@@ -449,6 +450,31 @@ export function BusinessSidebar({
       </div>
     </LayoutGroup>
   );
+}
+
+export function BusinessSidebar({
+  businessName,
+  brandName,
+  logoUrl,
+}: BusinessSidebarProps) {
+  const pathname = usePathname();
+  const [logoError, setLogoError] = useState(false);
+  const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebar();
+  const prefersReducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+
+  const displayName = brandName || businessName;
+  const initials = getBusinessInitials(businessName);
+  const sidebarWidth = isCollapsed ? 72 : 256;
+
+  useEffect(() => {
+    if (isMobile) closeMobile();
+  }, [pathname, isMobile, closeMobile]);
+
+  const isPathActive = (href: string) => {
+    if (href === '/business/settings') return pathname === href;
+    return pathname === href || pathname.startsWith(href);
+  };
 
   if (isMobile) {
     return (
@@ -458,7 +484,18 @@ export function BusinessSidebar({
           className="w-[280px] p-0 [&>button]:hidden bg-card border-r border-border"
         >
           <div className="relative flex flex-col h-full overflow-hidden">
-            <SidebarContent isMobileView />
+            <SidebarContent
+              isMobileView
+              displayName={displayName}
+              initials={initials}
+              logoUrl={logoUrl}
+              logoError={logoError}
+              onLogoError={() => setLogoError(true)}
+              isCollapsed={isCollapsed}
+              onToggle={toggle}
+              closeMobile={closeMobile}
+              isPathActive={isPathActive}
+            />
           </div>
         </SheetContent>
       </Sheet>
@@ -479,7 +516,17 @@ export function BusinessSidebar({
           !prefersReducedMotion && 'will-change-[width]'
         )}
       >
-        <SidebarContent />
+        <SidebarContent
+          displayName={displayName}
+          initials={initials}
+          logoUrl={logoUrl}
+          logoError={logoError}
+          onLogoError={() => setLogoError(true)}
+          isCollapsed={isCollapsed}
+          onToggle={toggle}
+          closeMobile={closeMobile}
+          isPathActive={isPathActive}
+        />
       </motion.aside>
     </TooltipProvider>
   );

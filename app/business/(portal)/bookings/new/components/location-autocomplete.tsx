@@ -63,22 +63,25 @@ export function LocationAutocomplete({
 
   // Filter locations based on input
   useEffect(() => {
-    if (value.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
+    const filterLocations = () => {
+      if (value.length < 2) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
 
-    const query = value.toLowerCase();
-    const filtered = locations.filter(
-      (loc) =>
-        loc.name.toLowerCase().includes(query) ||
-        loc.city.toLowerCase().includes(query)
-    );
+      const query = value.toLowerCase();
+      const filtered = locations.filter(
+        (loc) =>
+          loc.name.toLowerCase().includes(query) ||
+          loc.city.toLowerCase().includes(query)
+      );
 
-    setSuggestions(filtered.slice(0, 10)); // Max 10 results
-    setShowSuggestions(filtered.length > 0);
-    setSelectedIndex(-1);
+      setSuggestions(filtered.slice(0, 10)); // Max 10 results
+      setShowSuggestions(filtered.length > 0);
+      setSelectedIndex(-1);
+    };
+    filterLocations();
   }, [value, locations]);
 
   // Keyboard navigation

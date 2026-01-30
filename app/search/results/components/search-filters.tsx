@@ -48,16 +48,20 @@ export function SearchFilters({
 
   // Update price range when min/max changes
   useEffect(() => {
-    setPriceRange([minPrice, maxPrice])
+    const updateRange = () => setPriceRange([minPrice, maxPrice])
+    updateRange()
   }, [minPrice, maxPrice])
 
   useEffect(() => {
-    onFiltersChange({
-      categories: selectedCategories,
-      priceRange,
-      minRating,
-      features: selectedFeatures
-    })
+    const notifyFilters = () => {
+      onFiltersChange({
+        categories: selectedCategories,
+        priceRange,
+        minRating,
+        features: selectedFeatures
+      })
+    }
+    notifyFilters()
   }, [selectedCategories, priceRange, minRating, selectedFeatures, onFiltersChange])
 
   const handleCategoryChange = (category: string, checked: boolean) => {

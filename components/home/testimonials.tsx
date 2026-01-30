@@ -55,7 +55,7 @@ export async function Testimonials() {
               <div className="testimonial-featured">
                 {/* Large decorative quote - using CSS class per HTML design */}
                 <div className="testimonial-quote-mark" aria-hidden="true">
-                  "
+                  &quot;
                 </div>
 
                 <div className="relative z-10">
@@ -67,7 +67,7 @@ export async function Testimonials() {
                   {/* Quote */}
                   <blockquote className="mt-6 mb-8 text-center">
                     <p className="font-display text-2xl lg:text-3xl text-[var(--text-primary)] italic leading-relaxed">
-                      "{featuredReview.review_text || 'Exceptional service that exceeded all expectations.'}"
+                      &quot;{featuredReview.review_text || 'Exceptional service that exceeded all expectations.'}&quot;
                     </p>
                   </blockquote>
 

@@ -56,12 +56,14 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
   }, [category, page])
 
   useEffect(() => {
-    fetchData(true)
-  }, [category])
+    const loadCategory = () => fetchData(true)
+    loadCategory()
+  }, [category, fetchData])
 
   useEffect(() => {
-    if (page > 1) fetchData()
-  }, [page])
+    const loadPage = () => { if (page > 1) fetchData() }
+    loadPage()
+  }, [page, fetchData])
 
   // Real-time subscription
   useEffect(() => {

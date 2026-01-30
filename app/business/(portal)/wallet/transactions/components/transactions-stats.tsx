@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,11 +41,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    loadStatistics();
-  }, [filters]);
-
-  const loadStatistics = async () => {
+  const loadStatistics = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -73,7 +69,11 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    loadStatistics();
+  }, [loadStatistics]);
 
   if (isLoading) {
     return (

@@ -38,7 +38,8 @@ export function VehicleTypeCategoryTabs({
 
   // Reset page when category or sort changes
   useEffect(() => {
-    setCurrentPage(1)
+    const resetPage = () => setCurrentPage(1)
+    resetPage()
   }, [activeCategory, sortBy])
 
   // Get current vehicles based on active category

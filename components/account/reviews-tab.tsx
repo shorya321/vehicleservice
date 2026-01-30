@@ -67,7 +67,8 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
   }, [filters])
 
   useEffect(() => {
-    fetchData()
+    const loadData = () => fetchData()
+    loadData()
   }, [fetchData])
 
   const handleFilterChange = (key: keyof ReviewFilters, value: string) => {

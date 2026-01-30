@@ -25,13 +25,13 @@ export const VendorApplicationRejectedEmail = ({
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for your interest in becoming a vendor partner with Vehicle Service. We've
+        Thank you for your interest in becoming a vendor partner with Vehicle Service. We&apos;ve
         completed our review of your application (Reference: {applicationReference}).
       </Text>
 
       <Section style={rejectionBox}>
         <Text style={rejectionText}>
-          After careful consideration, we're unable to approve your vendor application at this time.
+          After careful consideration, we&apos;re unable to approve your vendor application at this time.
         </Text>
       </Section>
 
@@ -44,7 +44,7 @@ export const VendorApplicationRejectedEmail = ({
       </Section>
 
       <Text style={emailStyles.text}>
-        We understand this may be disappointing. This decision doesn't necessarily reflect on the
+        We understand this may be disappointing. This decision doesn&apos;t necessarily reflect on the
         quality of your services but may be due to factors such as service area coverage, fleet
         requirements, or current vendor capacity in your region.
       </Text>
@@ -56,7 +56,7 @@ export const VendorApplicationRejectedEmail = ({
           </Text>
 
           <Text style={emailStyles.text}>
-            Yes! If you believe you can address the concerns mentioned above, you're welcome to
+            Yes! If you believe you can address the concerns mentioned above, you&apos;re welcome to
             submit a new application after 30 days. Please ensure that your resubmission addresses
             the feedback provided.
           </Text>
@@ -66,8 +66,8 @@ export const VendorApplicationRejectedEmail = ({
       )}
 
       <Text style={emailStyles.text}>
-        If you have questions about this decision or would like more detailed feedback, please don't
-        hesitate to contact our vendor support team. We're here to help and provide guidance.
+        If you have questions about this decision or would like more detailed feedback, please don&apos;t
+        hesitate to contact our vendor support team. We&apos;re here to help and provide guidance.
       </Text>
 
       <Text style={emailStyles.text}>

@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -166,13 +166,7 @@ export function PaymentElementModal({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (open && !clientSecret) {
-      createPaymentIntent()
-    }
-  }, [open])
-
-  const createPaymentIntent = async () => {
+  const createPaymentIntent = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -200,7 +194,13 @@ export function PaymentElementModal({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [amount])
+
+  useEffect(() => {
+    if (open && !clientSecret) {
+      createPaymentIntent()
+    }
+  }, [open, clientSecret, createPaymentIntent])
 
   const handleClose = () => {
     setClientSecret(null)

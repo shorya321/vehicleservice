@@ -68,15 +68,18 @@ export function BusinessThemeProvider({
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
 
     const stored = localStorage.getItem(storageKey) as Theme | null;
-    if (stored) {
-      setThemeState(stored);
-    } else {
-      // Default to dark mode for business portal
-      setThemeState(defaultTheme);
-    }
+    const initTheme = () => {
+      if (stored) {
+        setThemeState(stored);
+      } else {
+        // Default to dark mode for business portal
+        setThemeState(defaultTheme);
+      }
+    };
+    initTheme();
   }, [storageKey, defaultTheme]);
 
   // Resolve theme and apply to document
@@ -84,7 +87,8 @@ export function BusinessThemeProvider({
     if (!mounted) return;
 
     const resolved = theme === "system" ? getSystemTheme() : theme;
-    setResolvedTheme(resolved);
+    const updateResolved = () => setResolvedTheme(resolved);
+    updateResolved();
 
     // Apply theme class to the business portal root
     const root = document.documentElement;
@@ -244,7 +248,7 @@ export function useBusinessThemeSafe() {
   const context = useContext(ThemeProviderContext);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   if (!mounted || context === undefined) {

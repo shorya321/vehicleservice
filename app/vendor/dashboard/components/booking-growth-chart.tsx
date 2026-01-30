@@ -99,15 +99,7 @@ export function BookingGrowthChart({ initialData }: BookingGrowthChartProps) {
       </CardHeader>
       <CardContent className="pt-4">
         {isPending ? (
-          <div className="h-[200px] flex items-end justify-between gap-1">
-            {Array.from({ length: selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12 }).map((_, i) => (
-              <Skeleton
-                key={i}
-                className="flex-1 rounded-t"
-                style={{ height: `${Math.random() * 80 + 20}%` }}
-              />
-            ))}
-          </div>
+          <SkeletonBars count={selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12} />
         ) : (
           <div className="h-[250px] relative">
             <div className="h-[200px] flex items-end justify-between gap-1 relative">
@@ -167,5 +159,22 @@ export function BookingGrowthChart({ initialData }: BookingGrowthChartProps) {
         )}
       </CardContent>
     </Card>
+  )
+}
+
+function SkeletonBars({ count }: { count: number }) {
+  const [heights] = useState(() =>
+    Array.from({ length: count }, () => Math.random() * 80 + 20)
+  )
+  return (
+    <div className="h-[200px] flex items-end justify-between gap-1">
+      {heights.slice(0, count).map((h, i) => (
+        <Skeleton
+          key={i}
+          className="flex-1 rounded-t"
+          style={{ height: `${h}%` }}
+        />
+      ))}
+    </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Notification } from '@/lib/notifications/types';
 import { toast } from 'sonner';
@@ -35,7 +35,7 @@ export function useCustomerNotifications(limit: number = 5): UseCustomerNotifica
   }, [supabase]);
 
   // Fetch notifications
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -70,7 +70,7 @@ export function useCustomerNotifications(limit: number = 5): UseCustomerNotifica
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, limit, supabase]);
 
   // Mark notification as read
   const markAsRead = async (id: string) => {
@@ -98,7 +98,7 @@ export function useCustomerNotifications(limit: number = 5): UseCustomerNotifica
     if (userId) {
       fetchNotifications();
     }
-  }, [userId, limit]);
+  }, [userId, fetchNotifications]);
 
   // Real-time subscription
   useEffect(() => {

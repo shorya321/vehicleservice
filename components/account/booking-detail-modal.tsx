@@ -48,9 +48,10 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh, currentCurre
     }
   }
 
+  const [now] = useState(() => Date.now())
   const canCancel = booking &&
     (booking.booking_status === "confirmed" || booking.booking_status === "pending") &&
-    new Date(booking.pickup_datetime).getTime() - Date.now() > 24 * 60 * 60 * 1000
+    new Date(booking.pickup_datetime).getTime() - now > 24 * 60 * 60 * 1000
 
   if (isLoading) {
     return (

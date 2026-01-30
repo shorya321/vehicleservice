@@ -73,7 +73,7 @@ export const BookingStatusUpdateEmail = ({
       )}
 
       <Text style={emailStyles.text}>
-        If you have any questions about this status update, please don't hesitate to contact our
+        If you have any questions about this status update, please don&apos;t hesitate to contact our
         support team with your booking reference number.
       </Text>
 

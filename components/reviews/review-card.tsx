@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { motion } from 'motion/react'
 import {
   CheckCircle,
@@ -365,13 +366,14 @@ export function ReviewCard({
             {review.photos.slice(0, 4).map((photo, index) => (
               <div
                 key={index}
-                className="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setIsImageGalleryOpen(true)}
               >
-                <img
+                <Image
                   src={photo}
                   alt={`Review photo ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
             ))}

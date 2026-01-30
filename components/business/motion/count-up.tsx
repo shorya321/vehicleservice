@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useCountUp, useReducedMotion, useInView } from '@/lib/business/animation/hooks';
 
 interface CountUpProps {
@@ -59,7 +59,7 @@ export function CountUp({
   const { ref, isInView } = useInView({ once: true, margin: '0px', amount: 0 });
   const [hasAnimated, setHasAnimated] = useState(false);
   // Track if we've ever shown the final value (survives re-renders, not remounts)
-  const hasShownFinalRef = useRef(false);
+  const [hasShownFinal, setHasShownFinal] = useState(false);
 
   // Determine if animation should be enabled
   const shouldAnimate = triggerOnView ? isInView && !hasAnimated : !hasAnimated;
@@ -73,10 +73,13 @@ export function CountUp({
 
   // Mark as animated once it reaches the target
   useEffect(() => {
-    if (count === value && shouldAnimate) {
-      setHasAnimated(true);
-      hasShownFinalRef.current = true;
-    }
+    const markComplete = () => {
+      if (count === value && shouldAnimate) {
+        setHasAnimated(true);
+        setHasShownFinal(true);
+      }
+    };
+    markComplete();
   }, [count, value, shouldAnimate]);
 
   // Format values
@@ -94,7 +97,7 @@ export function CountUp({
   // 3. If animation is in progress (count > startValue or count is animating towards value), show animated count
   // 4. If count is stuck at startValue but should have animated (isInView is true for a while), show final
   const animationInProgress = count > startValue && count < value;
-  const animationComplete = hasShownFinalRef.current || hasAnimated || count === value;
+  const animationComplete = hasShownFinal || hasAnimated || count === value;
 
   // If we're supposed to animate but count is still at 0 after being in view, show final value
   // This handles the case where component remounts and animation resets

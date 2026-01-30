@@ -71,7 +71,7 @@ export const BookingConfirmationEmail = ({
       </DetailsSection>
 
       <Text style={emailStyles.text}>
-        We'll send you updates about your booking, including vendor assignment and any changes to
+        We&apos;ll send you updates about your booking, including vendor assignment and any changes to
         your reservation.
       </Text>
 

@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
             <p className="text-muted-foreground">
-              Welcome back! Here's what's happening today.
+              Welcome back! Here&apos;s what&apos;s happening today.
             </p>
           </div>
           <Button variant="outline" size="sm">
@@ -76,7 +76,7 @@ export default async function AdminDashboard() {
             <Card className="admin-card-hover">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-sm font-medium text-muted-foreground">Today's Revenue</span>
+                  <span className="text-sm font-medium text-muted-foreground">Today&apos;s Revenue</span>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
                     <DollarSign className="h-4 w-4 text-primary" />
                   </div>

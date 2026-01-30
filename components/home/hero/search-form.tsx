@@ -27,7 +27,7 @@ export function SearchForm() {
   const [toInput, setToInput] = useState('')
 
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
   }, [])
 
   const handleFromInput = (value: string) => {

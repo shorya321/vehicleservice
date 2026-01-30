@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { motion } from 'motion/react'
 import { Calendar, Users, Shield, Lock, CheckCircle, ArrowRight } from 'lucide-react'
 
@@ -44,7 +45,7 @@ export function CheckoutHeroPanel() {
             <em className="text-luxury-gold italic">Journey</em>
           </h1>
           <p className="text-luxury-textSecondary text-lg leading-relaxed">
-            You're just one step away from booking your premium transfer.
+            You&apos;re just one step away from booking your premium transfer.
             Sign in or create an account to continue.
           </p>
         </motion.div>
@@ -60,12 +61,12 @@ export function CheckoutHeroPanel() {
             <span className="text-[11px] font-semibold tracking-[0.15em] uppercase text-luxury-gold">
               Your Booking
             </span>
-            <a
+            <Link
               href="/"
               className="text-xs text-luxury-textMuted hover:text-luxury-gold transition-colors"
             >
               Edit Search
-            </a>
+            </Link>
           </div>
 
           {/* Route Display */}

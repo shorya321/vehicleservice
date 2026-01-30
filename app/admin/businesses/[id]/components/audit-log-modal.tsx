@@ -5,7 +5,7 @@
  * Displays admin wallet action history with filtering
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -66,13 +66,7 @@ export function AuditLogModal({
   const [endDate, setEndDate] = useState('');
   const [actionType, setActionType] = useState('all');
 
-  useEffect(() => {
-    if (open) {
-      loadAuditLog();
-    }
-  }, [open, pagination.offset, startDate, endDate, actionType]);
-
-  const loadAuditLog = async () => {
+  const loadAuditLog = useCallback(async () => {
     setIsLoading(true);
 
     try {
@@ -95,18 +89,24 @@ export function AuditLogModal({
       }
 
       setAuditLogs(data.data.audit_logs || []);
-      setPagination({
-        ...pagination,
+      setPagination(prev => ({
+        ...prev,
         total: data.data.pagination.total,
         has_more: data.data.pagination.has_more,
-      });
+      }));
     } catch (error) {
       console.error('Error loading audit log:', error);
       toast.error('Failed to load audit log');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [businessId, pagination.limit, pagination.offset, startDate, endDate, actionType]);
+
+  useEffect(() => {
+    if (open) {
+      loadAuditLog();
+    }
+  }, [open, pagination.offset, startDate, endDate, actionType, loadAuditLog]);
 
   const handleClearFilters = () => {
     setStartDate('');

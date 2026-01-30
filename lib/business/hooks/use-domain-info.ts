@@ -45,33 +45,36 @@ export function useDomainInfo(): DomainInfo {
   });
 
   useEffect(() => {
-    const hostname = window.location.hostname;
-    const platformDomain = new URL(
-      process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'
-    ).hostname;
+    const detectDomain = () => {
+      const hostname = window.location.hostname;
+      const platformDomain = new URL(
+        process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'
+      ).hostname;
 
-    // Main platform check (including localhost for development)
-    // This matches the logic in login/route.ts lines 122-123
-    const isMainPlatform =
-      hostname === platformDomain ||
-      hostname === 'localhost' ||
-      hostname.includes('localhost');
+      // Main platform check (including localhost for development)
+      // This matches the logic in login/route.ts lines 122-123
+      const isMainPlatform =
+        hostname === platformDomain ||
+        hostname === 'localhost' ||
+        hostname.includes('localhost');
 
-    // Subdomain check - hostname ends with .platformDomain
-    // This matches the logic in login/route.ts line 151
-    const isSubdomain =
-      !isMainPlatform && hostname.endsWith(`.${platformDomain}`);
+      // Subdomain check - hostname ends with .platformDomain
+      // This matches the logic in login/route.ts line 151
+      const isSubdomain =
+        !isMainPlatform && hostname.endsWith(`.${platformDomain}`);
 
-    // Custom domain - not main platform, not subdomain, not localhost
-    // This matches the logic in login/route.ts lines 131-150
-    const isCustomDomain = !isMainPlatform && !isSubdomain;
+      // Custom domain - not main platform, not subdomain, not localhost
+      // This matches the logic in login/route.ts lines 131-150
+      const isCustomDomain = !isMainPlatform && !isSubdomain;
 
-    setDomainInfo({
-      isMainDomain: isMainPlatform,
-      isSubdomain,
-      isCustomDomain,
-      isLoading: false,
-    });
+      setDomainInfo({
+        isMainDomain: isMainPlatform,
+        isSubdomain,
+        isCustomDomain,
+        isLoading: false,
+      });
+    };
+    detectDomain();
   }, []);
 
   return domainInfo;

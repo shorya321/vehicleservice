@@ -50,7 +50,7 @@ export const BusinessAccountRejectedEmail = ({
 
       <Text style={emailStyles.text}>
         If you believe this decision was made in error or if you have additional information
-        that might help us reconsider your application, please don't hesitate to contact our
+        that might help us reconsider your application, please don&apos;t hesitate to contact our
         support team.
       </Text>
 
