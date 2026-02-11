@@ -1,9 +1,10 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 import {
   CheckCircle,
   Calendar,
@@ -27,8 +28,6 @@ interface ConfirmationContentProps {
   childSeats: any[]
   extraLuggage: any
   addons: any[]
-  currentCurrency?: string
-  rates?: Record<string, number>
 }
 
 export function ConfirmationContent({
@@ -37,11 +36,10 @@ export function ConfirmationContent({
   childSeats,
   extraLuggage,
   addons,
-  currentCurrency = 'AED',
-  rates = {},
 }: ConfirmationContentProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   // Helper function to format price in user's currency
-  const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
+  const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
   const isConverted = currentCurrency !== 'AED'
 
   return (
@@ -318,7 +316,7 @@ export function ConfirmationContent({
                   <div className="flex items-start gap-2 mt-4 text-xs text-luxury-lightGray/70">
                     <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-luxury-gold/60" aria-hidden="true" />
                     <span>
-                      Prices shown in {currentCurrency}. Payment was processed in AED ({formatPrice(booking.total_price, 'AED', rates)}).
+                      Prices shown in {currentCurrency}. Payment was processed in AED ({formatPrice(booking.total_price, 'AED', exchangeRates)}).
                     </span>
                   </div>
                 )}

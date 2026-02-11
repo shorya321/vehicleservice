@@ -1,7 +1,7 @@
 import { getPopularRoutes } from '@/app/actions'
 import { DeparturePointsClient } from './departure-points-client'
 
-export async function DeparturePoints() {
+export async function DeparturePoints({ todayDate }: { todayDate: string }) {
   // Fetch popular routes from database (Server Component)
   const routes = await getPopularRoutes()
 
@@ -13,5 +13,5 @@ export async function DeparturePoints() {
   }
 
   // Pass data to Client Component for rendering with animations
-  return <DeparturePointsClient routes={displayedRoutes} totalRoutes={routes.length} />
+  return <DeparturePointsClient routes={displayedRoutes} totalRoutes={routes.length} todayDate={todayDate} />
 }

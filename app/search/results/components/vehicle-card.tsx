@@ -13,8 +13,9 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
-import { motion } from 'framer-motion'
+import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
+import { motion } from 'motion/react'
 
 interface VehicleCardProps {
   vehicle: SearchResultVehicle
@@ -29,6 +30,7 @@ interface VehicleCardProps {
 }
 
 export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: VehicleCardProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const vehicleImage = vehicle.images[0] || '/placeholder-vehicle.jpg'
 
   const bookingUrl = `/booking/vehicle/${vehicle.id}?${new URLSearchParams({
@@ -84,11 +86,11 @@ export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: Vehic
             <div className="text-right">
               {vehicle.originalPrice && (
                 <div className="text-sm text-luxury-lightGray/60 line-through">
-                  {formatCurrency(vehicle.originalPrice)}
+                  {formatPrice(vehicle.originalPrice, currentCurrency, exchangeRates)}
                 </div>
               )}
               <div className="font-serif text-3xl font-bold text-luxury-gold">
-                {formatCurrency(vehicle.price)}
+                {formatPrice(vehicle.price, currentCurrency, exchangeRates)}
               </div>
               <div className="text-xs text-luxury-lightGray/80 uppercase tracking-wider">
                 per vehicle

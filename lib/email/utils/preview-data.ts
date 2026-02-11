@@ -158,7 +158,7 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     applicationReference: 'VA-2024-5678',
     rejectionReason:
       'Incomplete documentation. Please submit your business license and insurance certificates.',
-    reapplyUrl: `${getAppUrl()}/customer/apply-vendor`,
+    reapplyUrl: `${getAppUrl()}/become-vendor`,
   },
 };
 

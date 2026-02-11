@@ -253,11 +253,11 @@ Successfully transformed the checkout-login authentication page from generic Sha
 ### Dependencies Added
 ```tsx
 // page.tsx
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { BookmarkCheck, History, Gift, HelpCircle } from 'lucide-react'
 
 // checkout-auth-form.tsx
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Separator } from '@/components/ui/separator'
 import { Car } from 'lucide-react'
 ```

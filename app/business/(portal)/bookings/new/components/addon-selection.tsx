@@ -6,11 +6,13 @@
  */
 
 import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Check, Minus, Plus } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { AddonItem, AddonsByCategory } from '../actions';
 
@@ -39,6 +41,8 @@ export function AddonSelection({
   selectedAddons,
   onAddonsChange,
 }: AddonSelectionProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   // Helper to get selected addon
   const getSelectedAddon = (addonId: string) => {
     return selectedAddons.find((s) => s.addon_id === addonId);
@@ -119,13 +123,15 @@ export function AddonSelection({
               const isFree = addon.price === 0;
 
               return (
-                <div
+                <motion.div
                   key={addon.id}
+                  whileHover={prefersReducedMotion ? undefined : { y: -2 }}
+                  transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                   className={cn(
-                    'relative flex flex-col rounded-xl border p-4 transition-all cursor-pointer',
+                    'relative flex flex-col rounded-xl border p-4 transition-all cursor-pointer card-hover',
                     isSelected
                       ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                      : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                      : 'border-border hover:border-primary/50 hover:bg-muted/30 hover:shadow-md'
                   )}
                   onClick={() => {
                     if (addon.pricing_type === 'fixed') {
@@ -145,12 +151,16 @@ export function AddonSelection({
 
                   {/* Icon and name */}
                   <div className="flex items-start gap-3 mb-2 pr-6">
-                    <div className={cn(
-                      'flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0',
-                      isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                    )}>
+                    <motion.div
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className={cn(
+                        'flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0',
+                        isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                      )}
+                    >
                       <AddonIcon iconName={addon.icon} />
-                    </div>
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground">{addon.name}</p>
                       {addon.description && (
@@ -202,7 +212,7 @@ export function AddonSelection({
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

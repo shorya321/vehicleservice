@@ -2,7 +2,6 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { ZoneForm } from '../components/zone-form'
 
 export const metadata: Metadata = {
@@ -12,7 +11,6 @@ export const metadata: Metadata = {
 
 export default function NewZonePage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/admin/zones">
@@ -32,6 +30,5 @@ export default function NewZonePage() {
           <ZoneForm />
         </div>
       </div>
-    </AdminLayout>
   )
 }

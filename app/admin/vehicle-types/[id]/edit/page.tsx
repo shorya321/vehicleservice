@@ -6,7 +6,6 @@ import { ChevronLeft } from "lucide-react"
 import { VehicleTypeForm } from "../../components/vehicle-type-form"
 import { getVehicleType } from "../../actions"
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -21,13 +20,14 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditVehicleTypePage({ params }: PageProps) {
-  const vehicleType = await getVehicleType(params.id)
+  const { id } = await params
+  const vehicleType = await getVehicleType(id)
 
   if (!vehicleType) {
     notFound()
@@ -42,7 +42,6 @@ export default async function EditVehicleTypePage({ params }: PageProps) {
     .order('sort_order, name')
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -73,6 +72,5 @@ export default async function EditVehicleTypePage({ params }: PageProps) {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

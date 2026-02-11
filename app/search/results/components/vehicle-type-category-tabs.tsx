@@ -6,7 +6,7 @@ import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
@@ -26,7 +26,7 @@ const ITEMS_PER_PAGE = 9
 export function VehicleTypeCategoryTabs({
   vehicleTypesByCategory,
   allVehicleTypes,
-  searchParams
+  searchParams,
 }: VehicleTypeCategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
@@ -34,7 +34,8 @@ export function VehicleTypeCategoryTabs({
 
   // Reset page when category or sort changes
   useEffect(() => {
-    setCurrentPage(1)
+    const resetPage = () => setCurrentPage(1)
+    resetPage()
   }, [activeCategory, sortBy])
 
   // Get current vehicles based on active category

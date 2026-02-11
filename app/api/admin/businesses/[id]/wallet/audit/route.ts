@@ -9,9 +9,10 @@ import { apiSuccess, apiError } from '@/lib/business/api-utils';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -35,7 +36,7 @@ export async function GET(
     }
 
     const { searchParams } = new URL(request.url);
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Parse query parameters
     const startDate = searchParams.get('start_date');

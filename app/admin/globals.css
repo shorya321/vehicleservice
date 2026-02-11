@@ -226,8 +226,13 @@ body {
   font-family: var(--admin-font-body) !important;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: unset;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override public theme heading color - use admin's foreground variable */
+h1, h2, h3, h4, h5, h6 {
+  color: hsl(var(--foreground));
 }
 
 /* Font display class */
@@ -802,4 +807,104 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================
+   DASHBOARD CARD & UI STYLES
+   ============================================ */
+
+/* Card Hover Effect */
+.admin-card-hover {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+.admin-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Timeline Styles (for Recent Bookings) */
+.admin-timeline-line {
+  position: absolute;
+  left: 18px;
+  top: 44px;
+  bottom: 0;
+  width: 2px;
+  background-color: hsl(var(--border));
+}
+
+.admin-timeline-dot {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px hsl(var(--card));
+}
+
+.admin-timeline-dot-confirmed { background-color: rgb(16 185 129); }
+.admin-timeline-dot-pending { background-color: rgb(245 158 11); }
+.admin-timeline-dot-completed { background-color: rgb(16 185 129); }
+.admin-timeline-dot-cancelled { background-color: rgb(239 68 68); }
+
+/* Period Selector Pills */
+.admin-period-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: hsl(var(--secondary) / 0.5);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.admin-period-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+}
+
+.admin-period-btn-active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.admin-period-btn-inactive {
+  color: hsl(var(--muted-foreground));
+}
+
+.admin-period-btn-inactive:hover {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--secondary));
+}
+
+/* Quick Action Links */
+.admin-quick-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.admin-quick-action:hover {
+  background-color: hsl(var(--primary) / 0.05);
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.admin-quick-action-arrow {
+  opacity: 0.5;
+  transform: translateX(0);
+  transition: all 0.2s ease;
+}
+
+.admin-quick-action:hover .admin-quick-action-arrow {
+  opacity: 1;
+  transform: translateX(4px);
 }

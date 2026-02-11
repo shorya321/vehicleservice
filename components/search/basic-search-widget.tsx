@@ -21,7 +21,7 @@ export function BasicSearchWidget() {
   const [selectedDate, setSelectedDate] = useState('2025-07-17')
 
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
   }, [])
 
   const handlePlusClick = () => {

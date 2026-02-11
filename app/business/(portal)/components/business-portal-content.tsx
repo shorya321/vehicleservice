@@ -6,7 +6,7 @@
  */
 
 import { type ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/business/sidebar-context';
 import { useReducedMotion } from '@/lib/business/animation/hooks';

@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Upload, Loader2, Save, Shield, Bell, User } from "lucide-react"
+import { Upload, Loader2, Save, Shield, Bell, User as UserIcon } from "lucide-react"
 import { toast } from "sonner"
 import { updateProfile, uploadAvatar, updatePassword, getNotificationPreferences, updateNotificationPreferences } from "./actions"
 import type { User } from "@/lib/types/user"
@@ -175,7 +175,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     <Tabs defaultValue="general" className="space-y-4">
       <TabsList>
         <TabsTrigger value="general" className="gap-2">
-          <User className="h-4 w-4" />
+          <UserIcon className="h-4 w-4" />
           General
         </TabsTrigger>
         <TabsTrigger value="security" className="gap-2">

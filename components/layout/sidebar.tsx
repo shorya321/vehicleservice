@@ -26,6 +26,9 @@ import {
   Layers,
   Mail,
   Star,
+  BookOpen,
+  FolderOpen,
+  PenLine,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -110,19 +113,12 @@ const navGroups: NavGroup[] = [
             href: "/admin/vehicle-types",
             icon: Layers,
           },
+          {
+            name: "Addons",
+            href: "/admin/addons",
+            icon: Package,
+          },
         ]
-      },
-      {
-        name: "Locations",
-        href: "/admin/locations",
-        icon: MapPin,
-        badge: null,
-      },
-      {
-        name: "Routes",
-        href: "/admin/routes",
-        icon: Route,
-        badge: null,
       },
       {
         name: "Reviews",
@@ -130,17 +126,61 @@ const navGroups: NavGroup[] = [
         icon: Star,
         badge: null,
       },
+    ]
+  },
+  {
+    label: 'Content',
+    items: [
       {
-        name: "Addons",
-        href: "/admin/addons",
-        icon: Package,
+        name: "Blog",
+        href: "/admin/blog/posts",
+        icon: BookOpen,
         badge: null,
+        submenu: [
+          {
+            name: "Blog Posts",
+            href: "/admin/blog/posts",
+            icon: PenLine,
+          },
+          {
+            name: "Categories",
+            href: "/admin/blog/categories",
+            icon: FolderOpen,
+          },
+          {
+            name: "Tags",
+            href: "/admin/blog/tags",
+            icon: Tag,
+          },
+        ]
       },
+    ]
+  },
+  {
+    label: 'Service Areas',
+    items: [
       {
-        name: "Zones",
-        href: "/admin/zones",
+        name: "Locations",
+        href: "/admin/locations",
         icon: MapPin,
         badge: null,
+        submenu: [
+          {
+            name: "All Locations",
+            href: "/admin/locations",
+            icon: MapPin,
+          },
+          {
+            name: "Routes",
+            href: "/admin/routes",
+            icon: Route,
+          },
+          {
+            name: "Zones",
+            href: "/admin/zones",
+            icon: MapPin,
+          },
+        ]
       },
     ]
   },
@@ -154,22 +194,27 @@ const navGroups: NavGroup[] = [
         badge: null,
       },
       {
-        name: "Notifications",
-        href: "/admin/notifications",
-        icon: Bell,
-        badge: null,
-      },
-      {
-        name: "Security",
-        href: "/admin/security",
-        icon: Shield,
-        badge: null,
-      },
-      {
         name: "Settings",
         href: "/admin/settings",
         icon: Settings,
         badge: null,
+        submenu: [
+          {
+            name: "General",
+            href: "/admin/settings",
+            icon: Settings,
+          },
+          {
+            name: "Security",
+            href: "/admin/security",
+            icon: Shield,
+          },
+          {
+            name: "Notifications",
+            href: "/admin/notifications",
+            icon: Bell,
+          },
+        ]
       },
     ]
   }
@@ -188,12 +233,15 @@ export function Sidebar() {
   const { unreadCount } = useAdminNotifications(5)
 
   useEffect(() => {
-    // Auto-expand menu items that contain the current path
-    const allItems = navGroups.flatMap(group => group.items)
-    const itemsToExpand = allItems
-      .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
-      .map(item => item.name)
-    setExpandedItems(itemsToExpand)
+    const expandActiveMenuItems = () => {
+      // Auto-expand menu items that contain the current path
+      const allItems = navGroups.flatMap(group => group.items)
+      const itemsToExpand = allItems
+        .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
+        .map(item => item.name)
+      setExpandedItems(itemsToExpand)
+    }
+    expandActiveMenuItems()
   }, [pathname])
 
   useEffect(() => {
@@ -211,7 +259,6 @@ export function Sidebar() {
         }
       }
     }
-
     fetchUserProfile()
   }, [supabase])
 
@@ -359,7 +406,7 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 py-4">
+      <nav className="flex-1 overflow-y-auto admin-scrollbar px-2 py-4">
         {navGroups.map((group, groupIndex) => (
           <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
             {/* Section Header */}

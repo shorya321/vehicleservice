@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { BookmarkCheck, History, Gift, HelpCircle } from 'lucide-react'
 import { CheckoutAuthForm } from './checkout-auth-form'
 import { CheckoutHeroPanel } from './checkout-hero-panel'

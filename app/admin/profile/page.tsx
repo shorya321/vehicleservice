@@ -2,8 +2,6 @@ import { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ProfileForm } from "./profile-form"
-import { AdminLayout } from "@/components/layout/admin-layout"
-
 export const metadata: Metadata = {
   title: "Profile Settings | Admin",
   description: "Manage your profile settings",
@@ -29,7 +27,6 @@ export default async function ProfilePage() {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
@@ -40,6 +37,5 @@ export default async function ProfilePage() {
 
         <ProfileForm user={profile} />
       </div>
-    </AdminLayout>
   )
 }

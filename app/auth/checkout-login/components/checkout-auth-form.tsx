@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Mail, Lock, User, Phone, Car, Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { registerAndAutoVerify } from '../actions'
 
@@ -426,7 +426,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
             <Separator className="my-6 border-luxury-gold/20" />
             <div className="text-center">
               <p className="text-sm text-luxury-lightGray mb-3">
-                Don't want to create an account?
+                Don&apos;t want to create an account?
               </p>
               <Button
                 variant="outline"

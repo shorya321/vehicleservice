@@ -14,8 +14,9 @@ import { businessStatusSchema } from '@/lib/business/validators';
  * Update business account status
  */
 export const PUT = withErrorHandling(
-  async (request: NextRequest, context: { params: { id: string } }) => {
-    const businessId = context.params.id;
+  async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+    const { id } = await context.params;
+    const businessId = id;
 
     // Verify admin authentication
     const supabase = await createClient();

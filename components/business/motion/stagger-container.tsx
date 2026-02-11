@@ -8,7 +8,7 @@
 'use client';
 
 import { ReactNode, createContext, useContext } from 'react';
-import { motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'motion/react';
 import { useReducedMotion, useInView } from '@/lib/business/animation/hooks';
 import { staggerContainer, staggerContainerFast, staggerItem } from '@/lib/business/animation/variants';
 import { stagger } from '@/lib/business/animation/config';

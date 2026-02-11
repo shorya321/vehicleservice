@@ -23,9 +23,10 @@ const unfreezeWalletSchema = z.object({
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -57,7 +58,7 @@ export async function POST(
     }
 
     const { reason } = validation.data;
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Verify business account exists
     const { data: businessAccount } = await supabase
@@ -162,9 +163,10 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -196,7 +198,7 @@ export async function DELETE(
     }
 
     const { reason } = validation.data;
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Verify business account exists
     const { data: businessAccount } = await supabase

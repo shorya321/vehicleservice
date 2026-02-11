@@ -1,22 +1,29 @@
 /**
  * Admin Layout
  * Isolated theme system - not affected by business portal customizations
- * Uses admin-specific globals.css and AdminThemeProvider
+ * Uses admin-specific globals.css and AdminThemeContextProvider
  */
 
 import '@/app/admin/globals.css';
-import { AdminThemeProvider } from '@/lib/admin/theme-provider';
+import { getAdminThemeSettings } from '@/lib/admin/theme-server';
+import { AdminThemeContextProvider } from '@/lib/admin/theme-context';
+import { AdminLayoutShell } from '@/components/layout/admin-layout-shell';
 
-export default function AdminLayout({
+export const dynamic = 'force-dynamic'
+
+export default async function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const theme = await getAdminThemeSettings();
   return (
-    <AdminThemeProvider>
-      <div className="font-[family-name:var(--admin-font-body)]">
-        {children}
-      </div>
-    </AdminThemeProvider>
+    <div className="font-[family-name:var(--admin-font-body)]">
+      <AdminThemeContextProvider theme={theme}>
+        <AdminLayoutShell>
+          {children}
+        </AdminLayoutShell>
+      </AdminThemeContextProvider>
+    </div>
   );
 }

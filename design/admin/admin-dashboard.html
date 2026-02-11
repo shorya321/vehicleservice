@@ -1,1500 +1,1236 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - VehicleService</title>
 
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: {
+              DEFAULT: 'hsl(var(--primary))',
+              foreground: 'hsl(var(--primary-foreground))',
+            },
+            secondary: {
+              DEFAULT: 'hsl(var(--secondary))',
+              foreground: 'hsl(var(--secondary-foreground))',
+            },
+            destructive: {
+              DEFAULT: 'hsl(var(--destructive))',
+              foreground: 'hsl(var(--destructive-foreground))',
+            },
+            muted: {
+              DEFAULT: 'hsl(var(--muted))',
+              foreground: 'hsl(var(--muted-foreground))',
+            },
+            accent: {
+              DEFAULT: 'hsl(var(--accent))',
+              foreground: 'hsl(var(--accent-foreground))',
+            },
+            popover: {
+              DEFAULT: 'hsl(var(--popover))',
+              foreground: 'hsl(var(--popover-foreground))',
+            },
+            card: {
+              DEFAULT: 'hsl(var(--card))',
+              foreground: 'hsl(var(--card-foreground))',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'luxury': '0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04)',
+            'luxury-lg': '0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.06)',
+            'glow-gold': '0 0 20px rgba(186, 149, 94, 0.3)',
+          },
+        },
+      },
+    }
+  </script>
 
   <style>
-    /* ============================================
-       MIDNIGHT OPULENCE - Luxury Design System
-       ============================================ */
-
+    /* CSS Variables - Dark Mode (Default) */
     :root {
-      /* Refined Color System - Deep Blacks with Warm Undertones */
-      --black-void: #050506;
-      --black-rich: #0a0a0b;
-      --black-warm: #0f0e0d;
-      --charcoal: #161514;
-      --charcoal-light: #1f1e1c;
-      --graphite: #2a2826;
-
-      /* Gold Spectrum - Graduated Luxury Accents */
-      --gold-pale: #f4ece0;
-      --gold-cream: #e8d9c5;
-      --gold-light: #d4c4a8;
-      --gold: #c6aa88;
-      --gold-medium: #b89b6a;
-      --gold-deep: #a68b5b;
-      --gold-dark: #8b7349;
-
-      /* Text Colors with Warm Undertones */
-      --text-primary: #f8f6f3;
-      --text-secondary: #b8b4ae;
-      --text-muted: #7a7672;
-
-      /* Status Colors */
-      --emerald: #34d399;
-      --emerald-dark: #059669;
-      --red: #ef4444;
-      --red-dark: #dc2626;
-      --amber: #f59e0b;
-      --blue: #3b82f6;
-      --purple: #a855f7;
-      --orange: #f97316;
-
-      /* Typography */
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body: 'Outfit', system-ui, sans-serif;
-
-      /* Animation */
-      --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
-      --duration-fast: 200ms;
-      --duration-normal: 400ms;
-      --duration-slow: 800ms;
-
-      /* Shadows */
-      --shadow-luxury: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);
-      --shadow-luxury-lg: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.06);
+      --background: 240 10% 4%;
+      --foreground: 0 0% 98%;
+      --card: 240 6% 6%;
+      --card-foreground: 0 0% 98%;
+      --popover: 240 6% 6%;
+      --popover-foreground: 0 0% 98%;
+      --primary: 36 40% 55%;
+      --primary-foreground: 240 10% 4%;
+      --secondary: 240 4% 16%;
+      --secondary-foreground: 0 0% 98%;
+      --muted: 240 4% 16%;
+      --muted-foreground: 240 5% 65%;
+      --accent: 36 40% 55%;
+      --accent-foreground: 240 10% 4%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 4% 16%;
+      --input: 240 4% 16%;
+      --ring: 36 40% 55%;
+      --radius: 0.5rem;
     }
 
-    /* Reset & Base */
-    *, *::before, *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    /* Light Mode */
+    .light {
+      --background: 0 0% 100%;
+      --foreground: 240 10% 4%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 4%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 4%;
+      --primary: 36 40% 55%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 240 5% 96%;
+      --secondary-foreground: 240 6% 10%;
+      --muted: 240 5% 96%;
+      --muted-foreground: 240 4% 46%;
+      --accent: 36 40% 55%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 6% 90%;
+      --input: 240 6% 90%;
+      --ring: 36 40% 55%;
     }
 
-    html {
-      overflow-x: hidden;
+    * {
+      border-color: hsl(var(--border));
     }
 
     body {
-      font-family: var(--font-body);
-      background-color: var(--black-void);
-      color: var(--text-primary);
-      line-height: 1.7;
-      font-weight: 300;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
     }
 
-    /* Noise Texture Overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      opacity: 0.03;
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    /* Typography */
-    h1, h2, h3, h4, h5, h6 {
-      font-weight: 400;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-    }
-
-    /* ============================================
-       LAYOUT STRUCTURE
-       ============================================ */
-
-    .app-container {
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* ============================================
-       SIDEBAR
-       ============================================ */
-
-    .sidebar {
-      width: 256px;
-      height: 100vh;
-      background: rgba(22, 21, 20, 0.95);
-      backdrop-filter: blur(12px);
-      border-right: 1px solid rgba(198, 170, 136, 0.2);
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-luxury-lg);
-      transition: width var(--duration-normal) var(--ease-luxury);
-    }
-
-    .sidebar-header {
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      border-bottom: 1px solid rgba(198, 170, 136, 0.2);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-    }
-
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform var(--duration-fast) var(--ease-luxury);
-    }
-
-    .brand:hover .brand-icon {
-      transform: scale(1.05);
-    }
-
-    .brand-icon svg {
-      width: 20px;
-      height: 20px;
-      color: var(--black-void);
-    }
-
-    .brand-name {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .collapse-btn {
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: transparent;
-      color: var(--gold);
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background var(--duration-fast) var(--ease-luxury);
-    }
-
-    .collapse-btn:hover {
-      background: rgba(198, 170, 136, 0.1);
-    }
-
-    /* Navigation */
-    .nav-main {
-      flex: 1;
-      padding: 16px 8px;
-      overflow-y: auto;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px;
-      border-radius: 6px;
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-size: 14px;
-      font-weight: 500;
-      transition: all var(--duration-fast) var(--ease-luxury);
-      margin-bottom: 2px;
-    }
-
-    .nav-item:hover {
-      background: rgba(198, 170, 136, 0.05);
-      color: var(--text-primary);
-    }
-
-    .nav-item.active {
-      background: rgba(198, 170, 136, 0.1);
-      color: var(--gold);
-    }
-
-    .nav-item-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .nav-item svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .nav-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 20px;
-      height: 20px;
-      padding: 0 6px;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      border-radius: 9999px;
-      font-size: 10px;
-      font-weight: 600;
-      color: #f87171;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Submenu */
-    .nav-submenu {
-      margin-left: 16px;
-      margin-top: 4px;
-      border-left: 2px solid rgba(198, 170, 136, 0.2);
-    }
-
-    .nav-submenu .nav-item {
-      padding-left: 24px;
-      font-size: 13px;
-    }
-
-    /* Bottom Navigation */
-    .nav-bottom {
-      border-top: 1px solid rgba(198, 170, 136, 0.2);
-      padding: 16px 8px;
-    }
-
-    /* User Profile */
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      border-top: 1px solid rgba(198, 170, 136, 0.2);
-      text-decoration: none;
-      transition: background var(--duration-fast) var(--ease-luxury);
-    }
-
-    .user-profile:hover {
-      background: rgba(198, 170, 136, 0.05);
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(198, 170, 136, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gold);
-      ring: 2px solid rgba(198, 170, 136, 0.4);
-      overflow: hidden;
-    }
-
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .user-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .user-name {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .user-email {
-      font-size: 12px;
-      color: rgba(184, 180, 174, 0.7);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* ============================================
-       MAIN CONTENT AREA
-       ============================================ */
-
-    .main-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Header */
-    .header {
-      height: 64px;
-      background: rgba(22, 21, 20, 0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(198, 170, 136, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      box-shadow: var(--shadow-luxury);
-    }
-
-    .search-container {
-      position: relative;
-      width: 384px;
-    }
-
-    .search-input {
-      width: 100%;
-      height: 40px;
-      padding: 0 16px 0 40px;
-      background: var(--charcoal-light);
-      border: 1px solid rgba(198, 170, 136, 0.2);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: var(--font-body);
-      transition: all var(--duration-fast) var(--ease-luxury);
-    }
-
-    .search-input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(198, 170, 136, 0.1);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gold);
-      width: 16px;
-      height: 16px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header-btn {
-      width: 40px;
-      height: 40px;
-      border: none;
-      background: transparent;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      transition: background var(--duration-fast) var(--ease-luxury);
-    }
-
-    .header-btn:hover {
-      background: rgba(198, 170, 136, 0.1);
-    }
-
-    .header-btn svg {
-      width: 20px;
-      height: 20px;
-      color: var(--text-secondary);
-    }
-
-    .notification-badge {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 5px;
-      background: var(--red);
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 600;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .header-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 2px solid rgba(198, 170, 136, 0.4);
-      overflow: hidden;
-    }
-
-    .header-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Main Content */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      background: var(--black-void);
-      padding: 24px 32px;
-    }
-
-    /* Page Header */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .page-title {
-      font-size: 30px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-    }
-
-    .page-subtitle {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      font-family: var(--font-body);
-      cursor: pointer;
-      transition: all var(--duration-fast) var(--ease-luxury);
-      text-decoration: none;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid rgba(198, 170, 136, 0.3);
-      color: var(--text-primary);
-    }
-
-    .btn-outline:hover {
-      background: rgba(198, 170, 136, 0.1);
-      border-color: rgba(198, 170, 136, 0.5);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(198, 170, 136, 0.1);
-      color: var(--text-primary);
-    }
-
-    .btn svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    /* ============================================
-       CARDS & COMPONENTS
-       ============================================ */
-
-    .card {
-      background: var(--charcoal);
-      border: 1px solid rgba(198, 170, 136, 0.15);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: all var(--duration-fast) var(--ease-luxury);
-    }
-
-    .card:hover {
-      border-color: rgba(198, 170, 136, 0.25);
-      box-shadow: var(--shadow-luxury);
-    }
-
-    .card-header {
-      padding: 20px 24px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .card-title-lg {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .card-description {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-
-    .card-icon {
-      width: 16px;
-      height: 16px;
-      color: var(--gold);
-    }
-
-    .card-content {
-      padding: 0 24px 20px;
-    }
-
-    .card-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-    }
-
-    .card-change {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      margin-top: 4px;
-    }
-
-    .card-change.positive {
-      color: var(--emerald);
-    }
-
-    .card-change.negative {
-      color: var(--red);
-    }
-
-    .card-change svg {
-      width: 12px;
-      height: 12px;
-    }
-
-    /* ============================================
-       STATS GRID
-       ============================================ */
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    @media (max-width: 1400px) {
-      .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (max-width: 1024px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    /* ============================================
-       MAIN DASHBOARD GRID
-       ============================================ */
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 24px;
-    }
-
-    @media (max-width: 1200px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .dashboard-left {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .dashboard-right {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    /* ============================================
-       REVENUE CHART
-       ============================================ */
-
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 20px 24px 16px;
-    }
-
-    .chart-title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .chart-total {
-      font-size: 14px;
-      color: var(--gold);
-      font-weight: 500;
-    }
-
-    .chart-toggle {
-      display: flex;
-      gap: 4px;
-    }
-
-    .chart-toggle-btn {
-      padding: 6px 12px;
-      border: 1px solid rgba(198, 170, 136, 0.2);
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 500;
-      font-family: var(--font-body);
-      cursor: pointer;
-      transition: all var(--duration-fast) var(--ease-luxury);
-    }
-
-    .chart-toggle-btn:first-child {
-      border-radius: 6px 0 0 6px;
-    }
-
-    .chart-toggle-btn:last-child {
-      border-radius: 0 6px 6px 0;
-    }
-
-    .chart-toggle-btn.active {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: var(--black-void);
-    }
-
-    .chart-toggle-btn:hover:not(.active) {
-      background: rgba(198, 170, 136, 0.1);
-      color: var(--text-primary);
-    }
-
-    .chart-container {
-      padding: 0 24px 24px;
-    }
-
-    .chart-bars {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      height: 200px;
-      padding-bottom: 32px;
-      position: relative;
-    }
-
-    .chart-bar-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100%;
-      position: relative;
-    }
-
-    .chart-bar {
-      width: 60%;
-      max-width: 60px;
-      background: var(--blue);
-      border-radius: 4px 4px 0 0;
-      transition: all var(--duration-fast) var(--ease-luxury);
-      position: absolute;
-      bottom: 32px;
-    }
-
-    .chart-bar:hover {
-      background: var(--gold);
-    }
-
-    .chart-bar-label {
-      position: absolute;
-      bottom: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .chart-baseline {
-      position: absolute;
-      bottom: 32px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: rgba(198, 170, 136, 0.15);
-    }
-
-    /* ============================================
-       BOOKINGS LIST
-       ============================================ */
-
-    .booking-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(198, 170, 136, 0.1);
-    }
-
-    .booking-item:last-child {
-      border-bottom: none;
-    }
-
-    .booking-info {
-      flex: 1;
-    }
-
-    .booking-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .booking-id {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-      text-decoration: none;
-      transition: color var(--duration-fast) var(--ease-luxury);
-    }
-
-    .booking-id:hover {
-      color: var(--gold);
-      text-decoration: underline;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-confirmed {
-      background: rgba(52, 211, 153, 0.15);
-      color: var(--emerald);
-    }
-
-    .badge-pending {
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--amber);
-    }
-
-    .badge-cancelled {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--red);
-    }
-
-    .booking-details {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    .booking-time {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .booking-amount {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    /* ============================================
-       OPERATIONS STATS
-       ============================================ */
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-    }
-
-    .stat-row:not(:last-child) {
-      border-bottom: 1px solid rgba(198, 170, 136, 0.1);
-    }
-
-    .stat-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-
-    .stat-label svg {
-      width: 16px;
-      height: 16px;
-      color: var(--gold);
-    }
-
-    .stat-value {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    /* ============================================
-       ACTIVITY FEED
-       ============================================ */
-
-    .activity-feed {
-      max-height: 320px;
-      overflow-y: auto;
-    }
-
-    .activity-item {
-      display: flex;
-      gap: 12px;
-      padding: 8px;
-      border-radius: 8px;
-      transition: background var(--duration-fast) var(--ease-luxury);
-    }
-
-    .activity-item:hover {
-      background: rgba(198, 170, 136, 0.05);
-    }
-
-    .activity-icon {
-      flex-shrink: 0;
-      width: 16px;
-      height: 16px;
-      margin-top: 2px;
-    }
-
-    .activity-icon.booking {
-      color: var(--blue);
-    }
-
-    .activity-icon.vendor {
-      color: var(--orange);
-    }
-
-    .activity-icon.vehicle {
-      color: var(--emerald);
-    }
-
-    .activity-icon.user {
-      color: var(--purple);
-    }
-
-    .activity-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .activity-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .activity-meta {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-
-    .activity-time {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    /* ============================================
-       QUICK ACTIONS
-       ============================================ */
-
-    .quick-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .action-btn {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: transparent;
-      border: 1px solid rgba(198, 170, 136, 0.2);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-weight: 500;
-      font-family: var(--font-body);
-      cursor: pointer;
-      text-decoration: none;
-      transition: all var(--duration-fast) var(--ease-luxury);
-    }
-
-    .action-btn:hover {
-      background: rgba(198, 170, 136, 0.1);
-      border-color: rgba(198, 170, 136, 0.3);
-    }
-
-    .action-btn svg {
-      width: 16px;
-      height: 16px;
-      color: var(--text-muted);
-    }
-
-    /* ============================================
-       CUSTOM SCROLLBAR
-       ============================================ */
-
+    /* Scrollbar styling */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
     }
 
     ::-webkit-scrollbar-track {
-      background: transparent;
+      background: hsl(var(--muted));
+      border-radius: 4px;
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(198, 170, 136, 0.3);
-      border-radius: 3px;
+      background: hsl(var(--muted-foreground) / 0.3);
+      border-radius: 4px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(198, 170, 136, 0.5);
+      background: hsl(var(--muted-foreground) / 0.5);
     }
 
-    /* ============================================
-       ANIMATIONS
-       ============================================ */
-
+    /* Animations */
     @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    /* Stagger children animation */
+    .stagger-children > * {
+      opacity: 0;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+    .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+    .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+    .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+
+    /* Dropdown animation */
+    .dropdown-content {
+      transform-origin: top right;
+      animation: dropdownOpen 0.2s ease-out forwards;
+    }
+
+    @keyframes dropdownOpen {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: scale(0.95) translateY(-5px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1) translateY(0);
       }
     }
 
-    .animate-in {
-      animation: fadeIn 0.4s var(--ease-luxury) forwards;
+    /* Sidebar transition */
+    .sidebar-transition {
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .delay-1 { animation-delay: 0.1s; opacity: 0; }
-    .delay-2 { animation-delay: 0.2s; opacity: 0; }
-    .delay-3 { animation-delay: 0.3s; opacity: 0; }
-    .delay-4 { animation-delay: 0.4s; opacity: 0; }
-    .delay-5 { animation-delay: 0.5s; opacity: 0; }
-    .delay-6 { animation-delay: 0.6s; opacity: 0; }
-    .delay-7 { animation-delay: 0.7s; opacity: 0; }
-    .delay-8 { animation-delay: 0.8s; opacity: 0; }
+    /* Content margin transition */
+    .content-transition {
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Mobile overlay */
+    .mobile-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Button hover glow */
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(186, 149, 94, 0.4);
+    }
+
+    /* Card hover effect */
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Active nav indicator */
+    .nav-active-indicator {
+      box-shadow: 0 0 10px hsl(var(--primary));
+    }
+
+    /* Chart bar hover */
+    .chart-bar:hover {
+      opacity: 0.8;
+    }
+
+    /* Submenu styles */
+    .submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+
+    .submenu.expanded {
+      max-height: 500px;
+    }
   </style>
 </head>
-<body>
-  <div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <a href="#" class="brand">
-          <div class="brand-icon">
-            <i data-lucide="car"></i>
+<body class="min-h-screen">
+  <!-- Mobile Overlay -->
+  <div id="mobileOverlay" class="fixed inset-0 z-40 mobile-overlay hidden md:hidden" onclick="closeMobileSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed left-0 top-0 z-50 h-screen flex flex-col overflow-hidden bg-card border-r border-border shadow-lg sidebar-transition w-64">
+    <!-- Logo Header -->
+    <div class="relative z-10 flex items-center justify-between p-3 border-b border-border">
+      <a href="#" class="flex items-center gap-3 flex-1 min-w-0 p-2 rounded-xl hover:bg-primary/10 transition-all duration-200">
+        <!-- Logo Icon -->
+        <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 transition-transform group-hover:scale-105">
+          <i data-lucide="car" class="h-5 w-5 text-primary-foreground"></i>
+        </div>
+        <!-- Logo Text (hidden when collapsed) -->
+        <span id="logoText" class="text-lg font-bold font-display text-foreground transition-all duration-200">VehicleService</span>
+      </a>
+      <!-- Collapse Toggle (Desktop) -->
+      <button id="collapseBtn" onclick="toggleSidebar()" class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-primary hover:bg-primary/10 transition-all duration-200 hidden md:flex" aria-label="Toggle sidebar">
+        <i data-lucide="chevron-left" class="h-4 w-4 transition-transform duration-200" id="collapseIcon"></i>
+      </button>
+      <!-- Close Button (Mobile) -->
+      <button onclick="closeMobileSidebar()" class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 md:hidden" aria-label="Close menu">
+        <i data-lucide="x" class="h-5 w-5"></i>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto px-3 py-4">
+      <!-- Overview Group -->
+      <div class="mt-2">
+        <div id="overviewLabel" class="nav-group-label px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Overview</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(186,149,94,0.08)]">
+            <div class="absolute left-0 inset-y-2 w-1 rounded-r-full bg-primary nav-active-indicator"></div>
+            <i data-lucide="layout-dashboard" class="h-4 w-4 flex-shrink-0"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Dashboard</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Group -->
+      <div class="mt-6">
+        <div id="managementLabel" class="nav-group-label px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Management</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="calendar" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Bookings</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="users" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Users</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="building-2" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Vendor Applications</span>
+          </a>
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="building-2" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Business Accounts</span>
+          </a>
+
+          <!-- Vehicles with submenu -->
+          <div class="nav-item-with-submenu">
+            <button onclick="toggleSubmenu('vehiclesSubmenu')" class="nav-item group relative flex items-center justify-between w-full rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+              <div class="flex items-center gap-3">
+                <i data-lucide="car" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+                <span class="nav-label whitespace-nowrap overflow-hidden">Vehicles</span>
+              </div>
+              <i data-lucide="chevron-down" class="h-4 w-4 text-foreground/50 submenu-chevron transition-transform duration-200"></i>
+            </button>
+            <div id="vehiclesSubmenu" class="submenu ml-4 mt-1 space-y-1 border-l-2 border-primary/20">
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="car" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">All Vehicles</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="tag" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Categories</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="layers" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Vehicle Types</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="package" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Addons</span>
+              </a>
+            </div>
           </div>
-          <span class="brand-name">VehicleService</span>
-        </a>
-        <button class="collapse-btn">
-          <i data-lucide="chevron-left"></i>
+
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="star" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Reviews</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Service Areas Group -->
+      <div class="mt-6">
+        <div id="serviceAreasLabel" class="nav-group-label px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Service Areas</span>
+        </div>
+        <div class="space-y-1">
+          <!-- Locations with submenu -->
+          <div class="nav-item-with-submenu">
+            <button onclick="toggleSubmenu('locationsSubmenu')" class="nav-item group relative flex items-center justify-between w-full rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+              <div class="flex items-center gap-3">
+                <i data-lucide="map-pin" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+                <span class="nav-label whitespace-nowrap overflow-hidden">Locations</span>
+              </div>
+              <i data-lucide="chevron-down" class="h-4 w-4 text-foreground/50 submenu-chevron transition-transform duration-200"></i>
+            </button>
+            <div id="locationsSubmenu" class="submenu ml-4 mt-1 space-y-1 border-l-2 border-primary/20">
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="map-pin" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">All Locations</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="route" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Routes</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="map" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Zones</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Group -->
+      <div class="mt-6">
+        <div id="settingsLabel" class="nav-group-label px-3 py-2 flex items-center gap-2 transition-all duration-200">
+          <span class="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent"></span>
+          <span class="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">Settings</span>
+        </div>
+        <div class="space-y-1">
+          <a href="#" class="nav-item group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+            <i data-lucide="mail" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+            <span class="nav-label whitespace-nowrap overflow-hidden flex-1">Emails</span>
+          </a>
+
+          <!-- Settings with submenu -->
+          <div class="nav-item-with-submenu">
+            <button onclick="toggleSubmenu('settingsSubmenu')" class="nav-item group relative flex items-center justify-between w-full rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 transition-all duration-200">
+              <div class="flex items-center gap-3">
+                <i data-lucide="settings" class="h-4 w-4 flex-shrink-0 text-foreground/60 group-hover:text-primary group-hover:scale-110 transition-all duration-200"></i>
+                <span class="nav-label whitespace-nowrap overflow-hidden">Settings</span>
+              </div>
+              <i data-lucide="chevron-down" class="h-4 w-4 text-foreground/50 submenu-chevron transition-transform duration-200"></i>
+            </button>
+            <div id="settingsSubmenu" class="submenu ml-4 mt-1 space-y-1 border-l-2 border-primary/20">
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="settings" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">General</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="shield" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Security</span>
+              </a>
+              <a href="#" class="nav-item group flex items-center gap-3 rounded-xl py-2 pl-6 pr-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:translate-x-1 transition-all duration-200">
+                <i data-lucide="bell" class="h-4 w-4 text-foreground/60 group-hover:text-primary transition-all duration-200"></i>
+                <span class="nav-label">Notifications</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- User Profile Footer -->
+    <div class="border-t border-border p-4">
+      <a href="#" class="user-profile-link flex items-center gap-3 p-2 rounded-xl transition-all duration-200 hover:bg-primary/5">
+        <div id="userAvatar" class="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-xs font-semibold ring-2 ring-primary/40">
+          SA
+        </div>
+        <div id="userInfo" class="flex-1 min-w-0 overflow-hidden transition-all duration-200">
+          <p class="text-sm font-medium truncate text-foreground">System Administrator</p>
+          <p class="text-xs truncate text-foreground/60">admin@vehicleservice.com</p>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Header -->
+  <header id="header" class="fixed top-0 right-0 z-30 flex h-14 items-center justify-between bg-card/95 backdrop-blur-sm border-b border-border shadow-sm px-4 md:px-6 content-transition" style="left: 256px;">
+    <!-- Left side - Mobile menu toggle & Search -->
+    <div class="relative z-10 flex items-center gap-4">
+      <button onclick="openMobileSidebar()" class="md:hidden h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200" aria-label="Open menu">
+        <i data-lucide="menu" class="h-5 w-5"></i>
+      </button>
+
+      <!-- Search Bar -->
+      <div class="hidden sm:flex relative">
+        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"></i>
+        <input
+          type="text"
+          placeholder="Search..."
+          class="h-9 w-64 rounded-lg bg-secondary border border-border pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+        >
+        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs text-muted-foreground">
+          <span>⌘</span>
+          <span>K</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right side - Controls -->
+    <div class="relative z-10 flex items-center gap-1">
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" class="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200" aria-label="Toggle theme">
+        <i data-lucide="moon" class="h-4 w-4 dark:hidden"></i>
+        <i data-lucide="sun" class="h-4 w-4 hidden dark:block"></i>
+      </button>
+
+      <!-- Notifications -->
+      <div class="relative">
+        <button onclick="toggleDropdown('notifDropdown')" class="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 relative" aria-label="Notifications">
+          <i data-lucide="bell" class="h-4 w-4"></i>
+          <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground">9+</span>
+        </button>
+        <!-- Notification Dropdown -->
+        <div id="notifDropdown" class="hidden absolute right-0 top-full mt-2 w-80 rounded-xl bg-popover border border-border shadow-lg dropdown-content">
+          <div class="p-4 border-b border-border">
+            <h3 class="font-semibold text-foreground">Notifications</h3>
+            <p class="text-sm text-muted-foreground">You have 9 unread messages</p>
+          </div>
+          <div class="max-h-80 overflow-y-auto">
+            <a href="#" class="flex items-start gap-3 p-4 hover:bg-muted/50 transition-colors">
+              <div class="h-10 w-10 rounded-full bg-sky-500/10 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="file-text" class="h-5 w-5 text-sky-500"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">New booking received</p>
+                <p class="text-xs text-muted-foreground mt-0.5">BK1768469417570G3OMD - Anshul Kumar</p>
+                <p class="text-xs text-primary mt-1">21h ago</p>
+              </div>
+            </a>
+            <a href="#" class="flex items-start gap-3 p-4 hover:bg-muted/50 transition-colors">
+              <div class="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="building-2" class="h-5 w-5 text-orange-500"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">New vendor application</p>
+                <p class="text-xs text-muted-foreground mt-0.5">Acme Transfers has applied</p>
+                <p class="text-xs text-primary mt-1">2 hours ago</p>
+              </div>
+            </a>
+            <a href="#" class="flex items-start gap-3 p-4 hover:bg-muted/50 transition-colors">
+              <div class="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="user-plus" class="h-5 w-5 text-emerald-500"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground">New user registered</p>
+                <p class="text-xs text-muted-foreground mt-0.5">john.doe@example.com</p>
+                <p class="text-xs text-primary mt-1">5 hours ago</p>
+              </div>
+            </a>
+          </div>
+          <div class="p-3 border-t border-border">
+            <a href="#" class="block text-center text-sm text-primary hover:underline">View all notifications</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Dropdown -->
+      <div class="relative ml-1">
+        <button onclick="toggleDropdown('userDropdown')" class="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10 transition-all duration-200">
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-xs font-semibold ring-2 ring-primary/20">
+            SA
+          </div>
+          <i data-lucide="chevron-down" class="h-4 w-4 text-primary hidden sm:block"></i>
+        </button>
+        <!-- User Dropdown Menu -->
+        <div id="userDropdown" class="hidden absolute right-0 top-full mt-2 w-56 rounded-xl bg-popover border border-border shadow-lg dropdown-content">
+          <div class="p-3 border-b border-border">
+            <p class="text-sm font-medium text-foreground">System Administrator</p>
+            <p class="text-xs text-muted-foreground">admin@vehicleservice.com</p>
+          </div>
+          <div class="p-1">
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors">
+              <i data-lucide="user" class="h-4 w-4 text-primary"></i>
+              Profile
+            </a>
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-primary/10 transition-colors">
+              <i data-lucide="settings" class="h-4 w-4 text-primary"></i>
+              Account Settings
+            </a>
+          </div>
+          <div class="p-1 border-t border-border">
+            <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors">
+              <i data-lucide="log-out" class="h-4 w-4"></i>
+              Log out
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="mainContent" class="pt-14 content-transition" style="margin-left: 256px;">
+    <div class="p-4 md:p-6 lg:p-8 pb-12 space-y-6 stagger-children">
+      <!-- Header Section -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-foreground tracking-tight font-display">
+            Dashboard
+          </h1>
+          <p class="text-muted-foreground mt-1">
+            Welcome back! Here's what's happening today.
+          </p>
+        </div>
+        <button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card/80 backdrop-blur-sm text-foreground/80 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+          <i data-lucide="refresh-cw" class="h-4 w-4 text-primary"></i>
+          <span class="text-sm font-medium">Refresh</span>
         </button>
       </div>
 
-      <nav class="nav-main">
-        <a href="#" class="nav-item active">
-          <div class="nav-item-content">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard</span>
+      <!-- KPI Cards Grid -->
+      <div class="grid gap-4 grid-cols-2 lg:grid-cols-5">
+        <!-- Today's Revenue -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-sm font-medium text-muted-foreground">Today's Revenue</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <i data-lucide="dollar-sign" class="h-4 w-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">$0</span>
+            </div>
+            <div class="flex items-center gap-1 text-xs">
+              <i data-lucide="trending-down" class="h-3 w-3 text-red-500"></i>
+              <span class="text-red-500">-100.0%</span>
+              <span class="text-muted-foreground">from yesterday</span>
+            </div>
           </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="calendar"></i>
-            <span>Bookings</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="users"></i>
-            <span>Users</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="building-2"></i>
-            <span>Vendor Applications</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="building-2"></i>
-            <span>Business Accounts</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="car"></i>
-            <span>Vehicles</span>
-          </div>
-          <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="map-pin"></i>
-            <span>Locations</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="route"></i>
-            <span>Routes</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="star"></i>
-            <span>Reviews</span>
-          </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="map-pin"></i>
-            <span>Zones</span>
-          </div>
-        </a>
-      </nav>
+        </div>
 
-      <div class="nav-bottom">
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="mail"></i>
-            <span>Emails</span>
+        <!-- Active Bookings -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-sm font-medium text-muted-foreground">Active Bookings</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-500">
+                <i data-lucide="car" class="h-4 w-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">0</span>
+            </div>
+            <p class="text-xs text-muted-foreground">In progress today</p>
           </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="bell"></i>
-            <span>Notifications</span>
+        </div>
+
+        <!-- Pending Actions -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-sm font-medium text-muted-foreground">Pending Actions</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20 text-amber-500">
+                <i data-lucide="alert-triangle" class="h-4 w-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">4</span>
+            </div>
+            <p class="text-xs text-muted-foreground">Need attention</p>
           </div>
-          <span class="nav-badge">9</span>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="shield"></i>
-            <span>Security</span>
+        </div>
+
+        <!-- Rejected -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-sm font-medium text-muted-foreground">Rejected</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20 text-red-500">
+                <i data-lucide="alert-circle" class="h-4 w-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">0</span>
+            </div>
+            <p class="text-xs text-muted-foreground">Need reassignment</p>
           </div>
-        </a>
-        <a href="#" class="nav-item">
-          <div class="nav-item-content">
-            <i data-lucide="settings"></i>
-            <span>Settings</span>
+        </div>
+
+        <!-- Completed Today -->
+        <div class="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md card-hover">
+          <div class="relative p-5">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-sm font-medium text-muted-foreground">Completed Today</span>
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/20 text-violet-500">
+                <i data-lucide="check-circle" class="h-4 w-4"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">0</span>
+            </div>
+            <p class="text-xs text-muted-foreground">Bookings completed</p>
           </div>
-        </a>
+        </div>
       </div>
 
-      <a href="#" class="user-profile">
-        <div class="avatar">
-          <img src="https://fnrlzhrchuoiwwsugidz.supabase.co/storage/v1/object/public/user-uploads/avatars/323d626d-3e92-47af-b1ce-0beb661bfb2d-1750929624835.jpg" alt="System Administrator">
-        </div>
-        <div class="user-info">
-          <div class="user-name">System Administrator</div>
-          <div class="user-email">admin@vehicleservice.com</div>
-        </div>
-      </a>
-    </aside>
-
-    <!-- Main Content Wrapper -->
-    <div class="main-wrapper">
-      <!-- Header -->
-      <header class="header">
-        <div class="search-container">
-          <i data-lucide="search" class="search-icon"></i>
-          <input type="search" class="search-input" placeholder="Search...">
-        </div>
-
-        <div class="header-actions">
-          <button class="header-btn">
-            <i data-lucide="bell"></i>
-            <span class="notification-badge">9</span>
-          </button>
-          <button class="header-btn">
-            <div class="header-avatar">
-              <img src="https://fnrlzhrchuoiwwsugidz.supabase.co/storage/v1/object/public/user-uploads/avatars/323d626d-3e92-47af-b1ce-0beb661bfb2d-1750929624835.jpg" alt="System Administrator">
+      <!-- Main Analytics Grid -->
+      <div class="grid gap-5 lg:gap-6 lg:grid-cols-12">
+        <!-- Left Column -->
+        <div class="lg:col-span-8 space-y-5">
+          <!-- Revenue Trend Chart -->
+          <div class="relative overflow-hidden group rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md">
+            <div class="flex flex-row items-center justify-between p-5 border-b border-border">
+              <div>
+                <h3 class="text-base font-semibold text-foreground">Revenue Trend</h3>
+                <p class="text-sm text-muted-foreground mt-0.5">Last 7 days performance <span class="text-primary">(Total: $60.5)</span></p>
+              </div>
+              <div class="flex items-center gap-1 bg-secondary/50 rounded-lg p-1">
+                <button class="chart-period-btn px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground transition-all duration-200" data-period="daily">Daily</button>
+                <button class="chart-period-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200" data-period="weekly">Weekly</button>
+                <button class="chart-period-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200" data-period="monthly">Monthly</button>
+              </div>
             </div>
-          </button>
-        </div>
-      </header>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <!-- Page Header -->
-        <div class="page-header animate-in">
-          <div>
-            <h1 class="page-title">Dashboard</h1>
-            <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
-          </div>
-          <button class="btn btn-outline">
-            <i data-lucide="refresh-cw"></i>
-            <span>Refresh</span>
-          </button>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <div class="card animate-in delay-1">
-            <div class="card-header">
-              <span class="card-title">Today's Revenue</span>
-              <i data-lucide="dollar-sign" class="card-icon"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-value">$0</div>
-              <div class="card-change negative">
-                <i data-lucide="trending-down"></i>
-                <span>-100.0% from yesterday</span>
+            <div class="p-5 pt-2">
+              <!-- Chart Container -->
+              <div class="h-52 flex items-end justify-between gap-4 pt-4">
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-2 rounded-t bg-primary/30 chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground">Sat</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-2 rounded-t bg-primary/30 chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground">Sun</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-2 rounded-t bg-primary/30 chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground">Mon</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-2 rounded-t bg-primary/30 chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground">Tue</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-2 rounded-t bg-primary/30 chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground">Wed</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-40 rounded-t bg-primary chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground font-medium text-primary">Thu</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-2">
+                  <div class="w-full max-w-[48px] h-2 rounded-t bg-primary/30 chart-bar transition-all duration-300"></div>
+                  <span class="text-xs text-muted-foreground">Fri</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="card animate-in delay-2">
-            <div class="card-header">
-              <span class="card-title">Active Bookings</span>
-              <i data-lucide="car" class="card-icon"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-value">0</div>
-              <p style="font-size: 12px; color: var(--text-secondary);">In progress today</p>
-            </div>
-          </div>
-
-          <div class="card animate-in delay-3">
-            <div class="card-header">
-              <span class="card-title">Pending Actions</span>
-              <i data-lucide="alert-triangle" class="card-icon" style="color: var(--gold-light);"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-value">4</div>
-              <p style="font-size: 12px; color: var(--text-secondary);">Need attention</p>
-            </div>
-          </div>
-
-          <div class="card animate-in delay-4">
-            <div class="card-header">
-              <span class="card-title">Rejected</span>
-              <i data-lucide="x-circle" class="card-icon" style="color: var(--red);"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-value">0</div>
-              <p style="font-size: 12px; color: var(--text-secondary);">Need reassignment</p>
-            </div>
-          </div>
-
-          <div class="card animate-in delay-5">
-            <div class="card-header">
-              <span class="card-title">Completed Today</span>
-              <i data-lucide="check-circle" class="card-icon" style="color: var(--emerald);"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-value">0</div>
-              <p style="font-size: 12px; color: var(--text-secondary);">Bookings completed</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main Dashboard Grid -->
-        <div class="dashboard-grid">
-          <!-- Left Column -->
-          <div class="dashboard-left">
-            <!-- Revenue Chart -->
-            <div class="card animate-in delay-6">
-              <div class="chart-header">
-                <div class="chart-title-group">
-                  <h3 class="card-title card-title-lg">Revenue Trend</h3>
-                  <p class="card-description">Last 7 days performance <span class="chart-total">(Total: $449.25)</span></p>
-                </div>
-                <div class="chart-toggle">
-                  <button class="chart-toggle-btn active">Daily</button>
-                  <button class="chart-toggle-btn">Weekly</button>
-                  <button class="chart-toggle-btn">Monthly</button>
-                </div>
+          <!-- Recent Bookings -->
+          <div class="relative overflow-hidden group rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md">
+            <!-- Header -->
+            <div class="flex flex-row items-center justify-between p-5 border-b border-border">
+              <div>
+                <h3 class="text-base font-semibold text-foreground">Recent Bookings</h3>
+                <p class="text-sm text-muted-foreground mt-0.5">Latest booking activity</p>
               </div>
-              <div class="chart-container">
-                <div class="chart-bars">
-                  <div class="chart-baseline"></div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 0%;"></div>
-                    <span class="chart-bar-label">Thu</span>
-                  </div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 60%;"></div>
-                    <span class="chart-bar-label">Fri</span>
-                  </div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 0%;"></div>
-                    <span class="chart-bar-label">Sat</span>
-                  </div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 0%;"></div>
-                    <span class="chart-bar-label">Sun</span>
-                  </div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 0%;"></div>
-                    <span class="chart-bar-label">Mon</span>
-                  </div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 45%;"></div>
-                    <span class="chart-bar-label">Tue</span>
-                  </div>
-                  <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: 0%;"></div>
-                    <span class="chart-bar-label">Wed</span>
-                  </div>
-                </div>
-              </div>
+              <a href="#" class="flex items-center gap-1.5 text-sm text-primary hover:text-foreground hover:bg-muted px-3 py-1.5 rounded-lg transition-colors">
+                View all
+                <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+              </a>
             </div>
 
-            <!-- Recent Bookings -->
-            <div class="card animate-in delay-7">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title card-title-lg">Recent Bookings</h3>
-                  <p class="card-description">Latest booking activity</p>
-                </div>
-                <a href="#" class="btn btn-ghost">
-                  View all
-                  <i data-lucide="arrow-right"></i>
+            <!-- Bookings List -->
+            <div class="relative pl-2">
+              <!-- Booking Item 1 -->
+              <div class="relative">
+                <div class="absolute left-[18px] top-[44px] bottom-0 w-0.5 bg-border"></div>
+                <a href="#" class="group flex items-start gap-4 p-4 pr-5 transition-all duration-200 hover:bg-muted/50 rounded-lg">
+                  <div class="relative flex-shrink-0 mt-1.5">
+                    <div class="h-3 w-3 rounded-full ring-4 ring-card bg-emerald-500"></div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-medium text-foreground truncate group-hover:text-primary transition-colors duration-200">BK1768469417570G3OMD</span>
+                      <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-emerald-500/10 text-emerald-500 border-emerald-500/30 uppercase tracking-wider font-semibold">
+                        Confirmed
+                      </span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                      Anshul Kumar
+                      <span class="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                      Manwal → Mamoon
+                    </p>
+                    <p class="text-xs text-muted-foreground/70 mt-1">Jan 15, 10:00 AM</p>
+                  </div>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <span class="text-sm font-bold text-primary">$60.50</span>
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"></i>
+                  </div>
                 </a>
               </div>
-              <div class="card-content">
-                <div class="booking-item">
-                  <div class="booking-info">
-                    <div class="booking-header">
-                      <a href="#" class="booking-id">BK1767690075174WHSKK</a>
-                      <span class="badge badge-confirmed">Confirmed</span>
-                    </div>
-                    <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
-                    <p class="booking-time">Jan 6, 10:00 AM</p>
-                  </div>
-                  <span class="booking-amount">$65</span>
-                </div>
 
-                <div class="booking-item">
-                  <div class="booking-info">
-                    <div class="booking-header">
-                      <a href="#" class="booking-id">BK1767682362945HGNCM</a>
-                      <span class="badge badge-pending">Pending</span>
-                    </div>
-                    <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
-                    <p class="booking-time">Jan 6, 10:00 AM</p>
+              <!-- Booking Item 2 -->
+              <div class="relative">
+                <div class="absolute left-[18px] top-[44px] bottom-0 w-0.5 bg-border"></div>
+                <a href="#" class="group flex items-start gap-4 p-4 pr-5 transition-all duration-200 hover:bg-muted/50 rounded-lg">
+                  <div class="relative flex-shrink-0 mt-1.5">
+                    <div class="h-3 w-3 rounded-full ring-4 ring-card bg-emerald-500"></div>
                   </div>
-                  <span class="booking-amount">$65</span>
-                </div>
-
-                <div class="booking-item">
-                  <div class="booking-info">
-                    <div class="booking-header">
-                      <a href="#" class="booking-id">BK1767681962229BQ8S2</a>
-                      <span class="badge badge-pending">Pending</span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-medium text-foreground truncate group-hover:text-primary transition-colors duration-200">BK1767690075174WHSKK</span>
+                      <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-emerald-500/10 text-emerald-500 border-emerald-500/30 uppercase tracking-wider font-semibold">
+                        Confirmed
+                      </span>
                     </div>
-                    <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
-                    <p class="booking-time">Jan 6, 10:00 AM</p>
+                    <p class="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                      Anshul Kumar
+                      <span class="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                      Pathankot → Sheela chownk
+                    </p>
+                    <p class="text-xs text-muted-foreground/70 mt-1">Jan 6, 10:00 AM</p>
                   </div>
-                  <span class="booking-amount">$65</span>
-                </div>
-
-                <div class="booking-item">
-                  <div class="booking-info">
-                    <div class="booking-header">
-                      <a href="#" class="booking-id">BK17673528189659P6SE</a>
-                      <span class="badge badge-pending">Pending</span>
-                    </div>
-                    <p class="booking-details">Anshul Kumar • Jassur → Mamoon</p>
-                    <p class="booking-time">Jan 2, 10:00 AM</p>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <span class="text-sm font-bold text-primary">$65.00</span>
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"></i>
                   </div>
-                  <span class="booking-amount">$54</span>
-                </div>
-
-                <div class="booking-item">
-                  <div class="booking-info">
-                    <div class="booking-header">
-                      <a href="#" class="booking-id">BK1767348041693L91AY</a>
-                      <span class="badge badge-confirmed">Confirmed</span>
-                    </div>
-                    <p class="booking-details">Anshul Kumar • Pathankot → Amritsar</p>
-                    <p class="booking-time">Jan 2, 10:00 AM</p>
-                  </div>
-                  <span class="booking-amount">$40</span>
-                </div>
+                </a>
               </div>
-            </div>
-          </div>
 
-          <!-- Right Column -->
-          <div class="dashboard-right">
-            <!-- Operations -->
-            <div class="card animate-in delay-6">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title card-title-lg">Operations</h3>
-                  <p class="card-description">Current status</p>
-                </div>
-              </div>
-              <div class="card-content">
-                <div class="stat-row">
-                  <div class="stat-label">
-                    <i data-lucide="users"></i>
-                    <span>Active Users</span>
+              <!-- Booking Item 3 -->
+              <div class="relative">
+                <div class="absolute left-[18px] top-[44px] bottom-0 w-0.5 bg-border"></div>
+                <a href="#" class="group flex items-start gap-4 p-4 pr-5 transition-all duration-200 hover:bg-muted/50 rounded-lg">
+                  <div class="relative flex-shrink-0 mt-1.5">
+                    <div class="h-3 w-3 rounded-full ring-4 ring-card bg-amber-500"></div>
                   </div>
-                  <span class="stat-value">18</span>
-                </div>
-                <div class="stat-row">
-                  <div class="stat-label">
-                    <i data-lucide="users"></i>
-                    <span>Active Vendors</span>
-                  </div>
-                  <span class="stat-value">2</span>
-                </div>
-                <div class="stat-row">
-                  <div class="stat-label">
-                    <i data-lucide="truck"></i>
-                    <span>Available Vehicles</span>
-                  </div>
-                  <span class="stat-value">6</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recent Activities -->
-            <div class="card animate-in delay-7">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title card-title-lg" style="display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="activity" style="width: 16px; height: 16px; color: var(--gold);"></i>
-                    Recent Activities
-                  </h3>
-                  <p class="card-description">Latest system activity</p>
-                </div>
-              </div>
-              <div class="card-content">
-                <div class="activity-feed">
-                  <div class="activity-item">
-                    <i data-lucide="file-text" class="activity-icon booking"></i>
-                    <div class="activity-content">
-                      <p class="activity-title">New booking BK1767690075174WHSKK created</p>
-                      <p class="activity-meta">Anshul Kumar • Pathankot → Sheela chownk</p>
-                      <p class="activity-time">Yesterday</p>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-medium text-foreground truncate group-hover:text-primary transition-colors duration-200">BK1767682362945HGNCM</span>
+                      <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-amber-500/10 text-amber-500 border-amber-500/30 uppercase tracking-wider font-semibold">
+                        Pending
+                      </span>
                     </div>
+                    <p class="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                      Anshul Kumar
+                      <span class="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                      Pathankot → Sheela chownk
+                    </p>
+                    <p class="text-xs text-muted-foreground/70 mt-1">Jan 6, 10:00 AM</p>
                   </div>
-
-                  <div class="activity-item">
-                    <i data-lucide="file-text" class="activity-icon booking"></i>
-                    <div class="activity-content">
-                      <p class="activity-title">New booking BK1767682362945HGNCM created</p>
-                      <p class="activity-meta">Anshul Kumar • Pathankot → Sheela chownk</p>
-                      <p class="activity-time">Yesterday</p>
-                    </div>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <span class="text-sm font-bold text-primary">$65.00</span>
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"></i>
                   </div>
-
-                  <div class="activity-item">
-                    <i data-lucide="file-text" class="activity-icon booking"></i>
-                    <div class="activity-content">
-                      <p class="activity-title">New booking BK1767681962229BQ8S2 created</p>
-                      <p class="activity-meta">Anshul Kumar • Pathankot → Sheela chownk</p>
-                      <p class="activity-time">Yesterday</p>
-                    </div>
-                  </div>
-                </div>
+                </a>
               </div>
-            </div>
 
-            <!-- Quick Actions -->
-            <div class="card animate-in delay-8">
-              <div class="card-header">
-                <h3 class="card-title card-title-lg">Quick Actions</h3>
+              <!-- Booking Item 4 -->
+              <div class="relative">
+                <div class="absolute left-[18px] top-[44px] bottom-0 w-0.5 bg-border"></div>
+                <a href="#" class="group flex items-start gap-4 p-4 pr-5 transition-all duration-200 hover:bg-muted/50 rounded-lg">
+                  <div class="relative flex-shrink-0 mt-1.5">
+                    <div class="h-3 w-3 rounded-full ring-4 ring-card bg-amber-500"></div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-medium text-foreground truncate group-hover:text-primary transition-colors duration-200">BK1767681962229BQ8S2</span>
+                      <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-amber-500/10 text-amber-500 border-amber-500/30 uppercase tracking-wider font-semibold">
+                        Pending
+                      </span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                      Anshul Kumar
+                      <span class="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                      Pathankot → Sheela chownk
+                    </p>
+                    <p class="text-xs text-muted-foreground/70 mt-1">Jan 6, 10:00 AM</p>
+                  </div>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <span class="text-sm font-bold text-primary">$65.00</span>
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"></i>
+                  </div>
+                </a>
               </div>
-              <div class="card-content">
-                <div class="quick-actions">
-                  <a href="#" class="action-btn">
-                    <span>View All Bookings</span>
-                    <i data-lucide="arrow-right"></i>
-                  </a>
-                  <a href="#" class="action-btn">
-                    <span>Manage Vendors</span>
-                    <i data-lucide="arrow-right"></i>
-                  </a>
-                  <a href="#" class="action-btn">
-                    <span>Fleet Status</span>
-                    <i data-lucide="arrow-right"></i>
-                  </a>
-                </div>
+
+              <!-- Booking Item 5 (last) -->
+              <div class="relative">
+                <a href="#" class="group flex items-start gap-4 p-4 pr-5 transition-all duration-200 hover:bg-muted/50 rounded-lg">
+                  <div class="relative flex-shrink-0 mt-1.5">
+                    <div class="h-3 w-3 rounded-full ring-4 ring-card bg-amber-500"></div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-medium text-foreground truncate group-hover:text-primary transition-colors duration-200">BK17673528189659P6SE</span>
+                      <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border bg-amber-500/10 text-amber-500 border-amber-500/30 uppercase tracking-wider font-semibold">
+                        Pending
+                      </span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                      Anshul Kumar
+                      <span class="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                      Jassur → Mamoon
+                    </p>
+                    <p class="text-xs text-muted-foreground/70 mt-1">Jan 2, 10:00 AM</p>
+                  </div>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <span class="text-sm font-bold text-primary">$54.00</span>
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"></i>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <!-- Right Column -->
+        <div class="lg:col-span-4 space-y-5">
+          <!-- Operations Card -->
+          <div class="relative overflow-hidden group rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="p-5 pb-3 border-b border-border">
+              <div class="flex items-center gap-2">
+                <i data-lucide="activity" class="h-4 w-4 text-primary"></i>
+                <h3 class="text-base font-semibold text-foreground">Operations</h3>
+              </div>
+              <p class="text-sm text-muted-foreground mt-0.5">Current status</p>
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <i data-lucide="users" class="h-4 w-4 text-primary"></i>
+                  </div>
+                  <span class="text-sm text-muted-foreground">Active Users</span>
+                </div>
+                <span class="text-sm font-semibold text-foreground">18</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
+                    <i data-lucide="building-2" class="h-4 w-4 text-emerald-500"></i>
+                  </div>
+                  <span class="text-sm text-muted-foreground">Active Vendors</span>
+                </div>
+                <span class="text-sm font-semibold text-foreground">2</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10">
+                    <i data-lucide="truck" class="h-4 w-4 text-sky-500"></i>
+                  </div>
+                  <span class="text-sm text-muted-foreground">Available Vehicles</span>
+                </div>
+                <span class="text-sm font-semibold text-foreground">6</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities -->
+          <div class="relative overflow-hidden group rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="p-5 pb-3 border-b border-border">
+              <div class="flex items-center gap-2">
+                <i data-lucide="activity" class="h-4 w-4 text-primary"></i>
+                <h3 class="text-base font-semibold text-foreground">Recent Activities</h3>
+              </div>
+              <p class="text-sm text-muted-foreground mt-0.5">Latest system activity</p>
+            </div>
+            <div class="p-5 space-y-3 max-h-80 overflow-y-auto">
+              <!-- Activity 1 -->
+              <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
+                <div class="flex-shrink-0 mt-0.5">
+                  <i data-lucide="file-text" class="h-4 w-4 text-sky-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">New booking BK1768469417570G3OMD created</p>
+                  <p class="text-xs text-muted-foreground mt-0.5">Anshul Kumar • Manwal → Mamoon</p>
+                  <p class="text-xs text-muted-foreground/70 mt-1">21h ago</p>
+                </div>
+              </div>
+
+              <!-- Activity 2 -->
+              <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
+                <div class="flex-shrink-0 mt-0.5">
+                  <i data-lucide="building-2" class="h-4 w-4 text-orange-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">New vendor application submitted</p>
+                  <p class="text-xs text-muted-foreground mt-0.5">Acme Transfers • Delhi</p>
+                  <p class="text-xs text-muted-foreground/70 mt-1">2 days ago</p>
+                </div>
+              </div>
+
+              <!-- Activity 3 -->
+              <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
+                <div class="flex-shrink-0 mt-0.5">
+                  <i data-lucide="truck" class="h-4 w-4 text-emerald-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">New vehicle added</p>
+                  <p class="text-xs text-muted-foreground mt-0.5">Toyota Innova • ABC-1234</p>
+                  <p class="text-xs text-muted-foreground/70 mt-1">3 days ago</p>
+                </div>
+              </div>
+
+              <!-- Activity 4 -->
+              <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
+                <div class="flex-shrink-0 mt-0.5">
+                  <i data-lucide="user-plus" class="h-4 w-4 text-violet-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground">New user registered</p>
+                  <p class="text-xs text-muted-foreground mt-0.5">john.doe@example.com</p>
+                  <p class="text-xs text-muted-foreground/70 mt-1">5 days ago</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="relative overflow-hidden group rounded-xl bg-card border border-border shadow-sm transition-all duration-300 hover:shadow-md">
+            <div class="p-5 pb-3">
+              <h3 class="text-base font-semibold text-foreground">Quick Actions</h3>
+            </div>
+            <div class="p-5 pt-0 space-y-2">
+              <a href="#" class="group flex items-center justify-between w-full p-3 rounded-lg border border-border bg-card transition-all duration-200 hover:bg-primary/5 hover:border-primary/30">
+                <span class="text-sm font-medium text-foreground">View All Bookings</span>
+                <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"></i>
+              </a>
+              <a href="#" class="group flex items-center justify-between w-full p-3 rounded-lg border border-border bg-card transition-all duration-200 hover:bg-primary/5 hover:border-primary/30">
+                <span class="text-sm font-medium text-foreground">Manage Vendors</span>
+                <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"></i>
+              </a>
+              <a href="#" class="group flex items-center justify-between w-full p-3 rounded-lg border border-border bg-card transition-all duration-200 hover:bg-primary/5 hover:border-primary/30">
+                <span class="text-sm font-medium text-foreground">Fleet Status</span>
+                <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"></i>
+              </a>
+              <a href="#" class="group flex items-center justify-between w-full p-3 rounded-lg border border-border bg-card transition-all duration-200 hover:bg-primary/5 hover:border-primary/30">
+                <span class="text-sm font-medium text-foreground">System Settings</span>
+                <i data-lucide="arrow-right" class="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </main>
 
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
+
+    // State
+    let sidebarCollapsed = false;
+    let isMobile = window.innerWidth < 768;
+
+    // Theme Management
+    function initTheme() {
+      const savedTheme = localStorage.getItem('admin-theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('admin-theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('admin-theme', 'dark');
+      }
+      // Refresh icons for theme change
+      lucide.createIcons();
+    }
+
+    // Keyboard shortcut for theme toggle
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 't' || e.key === 'T') {
+        // Only toggle if not typing in an input
+        if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          toggleTheme();
+        }
+      }
+    });
+
+    // Sidebar Management
+    function toggleSidebar() {
+      sidebarCollapsed = !sidebarCollapsed;
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+      const collapseIcon = document.getElementById('collapseIcon');
+      const logoText = document.getElementById('logoText');
+      const userInfo = document.getElementById('userInfo');
+
+      // Navigation labels
+      const navLabels = document.querySelectorAll('.nav-group-label');
+      const navItemLabels = document.querySelectorAll('.nav-label');
+      const submenus = document.querySelectorAll('.submenu');
+      const submenuChevrons = document.querySelectorAll('.submenu-chevron');
+
+      if (sidebarCollapsed) {
+        sidebar.style.width = '72px';
+        header.style.left = '72px';
+        mainContent.style.marginLeft = '72px';
+        collapseIcon.style.transform = 'rotate(180deg)';
+        logoText.style.display = 'none';
+        userInfo.style.display = 'none';
+
+        navLabels.forEach(label => label.style.display = 'none');
+        navItemLabels.forEach(item => item.style.display = 'none');
+        submenuChevrons.forEach(chevron => chevron.style.display = 'none');
+
+        // Close all submenus
+        submenus.forEach(submenu => {
+          submenu.classList.remove('expanded');
+          submenu.style.display = 'none';
+        });
+
+        // Center nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.add('justify-center');
+        });
+      } else {
+        sidebar.style.width = '256px';
+        header.style.left = '256px';
+        mainContent.style.marginLeft = '256px';
+        collapseIcon.style.transform = 'rotate(0deg)';
+        logoText.style.display = 'block';
+        userInfo.style.display = 'block';
+
+        navLabels.forEach(label => label.style.display = 'flex');
+        navItemLabels.forEach(item => item.style.display = 'inline');
+        submenuChevrons.forEach(chevron => chevron.style.display = 'block');
+
+        // Show submenus that were open
+        submenus.forEach(submenu => {
+          submenu.style.display = 'block';
+        });
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('justify-center');
+        });
+      }
+    }
+
+    function openMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.add('animate-slide-in');
+      sidebar.style.transform = 'translateX(0)';
+      overlay.classList.remove('hidden');
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.style.transform = 'translateX(-100%)';
+      overlay.classList.add('hidden');
+    }
+
+    // Submenu toggle
+    function toggleSubmenu(submenuId) {
+      if (sidebarCollapsed) return;
+
+      const submenu = document.getElementById(submenuId);
+      const button = submenu.previousElementSibling;
+      const chevron = button.querySelector('.submenu-chevron');
+
+      submenu.classList.toggle('expanded');
+
+      if (submenu.classList.contains('expanded')) {
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Dropdown Management
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(id);
+      const allDropdowns = document.querySelectorAll('[id$="Dropdown"]');
+
+      // Close all other dropdowns
+      allDropdowns.forEach(dd => {
+        if (dd.id !== id) {
+          dd.classList.add('hidden');
+        }
+      });
+
+      // Toggle current dropdown
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdowns = document.querySelectorAll('[id$="Dropdown"]');
+      dropdowns.forEach(dropdown => {
+        const trigger = dropdown.previousElementSibling;
+        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    });
+
+    // Chart period button handling
+    document.querySelectorAll('.chart-period-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.chart-period-btn').forEach(b => {
+          b.classList.remove('bg-primary', 'text-primary-foreground');
+          b.classList.add('text-muted-foreground');
+        });
+        btn.classList.add('bg-primary', 'text-primary-foreground');
+        btn.classList.remove('text-muted-foreground');
+      });
+    });
+
+    // Handle responsive behavior
+    function handleResize() {
+      const newIsMobile = window.innerWidth < 768;
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+
+      if (newIsMobile !== isMobile) {
+        isMobile = newIsMobile;
+
+        if (isMobile) {
+          // Mobile: Hide sidebar, full width content
+          sidebar.style.transform = 'translateX(-100%)';
+          header.style.left = '0';
+          mainContent.style.marginLeft = '0';
+        } else {
+          // Desktop: Show sidebar
+          sidebar.style.transform = 'translateX(0)';
+          if (sidebarCollapsed) {
+            sidebar.style.width = '72px';
+            header.style.left = '72px';
+            mainContent.style.marginLeft = '72px';
+          } else {
+            sidebar.style.width = '256px';
+            header.style.left = '256px';
+            mainContent.style.marginLeft = '256px';
+          }
+        }
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      handleResize();
+    });
+
+    window.addEventListener('resize', handleResize);
+
+    // Initial mobile state
+    if (window.innerWidth < 768) {
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('header');
+      const mainContent = document.getElementById('mainContent');
+
+      sidebar.style.transform = 'translateX(-100%)';
+      header.style.left = '0';
+      mainContent.style.marginLeft = '0';
+    }
   </script>
 </body>
 </html>

@@ -230,7 +230,7 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
                 <Check className="h-3 w-3 text-sky-600 dark:text-sky-400" />
               </div>
               <span className="text-muted-foreground">
-                Disabling automatic saving won't delete existing saved payment methods
+                Disabling automatic saving won&apos;t delete existing saved payment methods
               </span>
             </li>
             <li className="flex items-start gap-3">

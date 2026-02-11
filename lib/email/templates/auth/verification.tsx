@@ -39,7 +39,7 @@ export const VerificationEmail = ({ name, verificationUrl }: VerificationEmailPr
       </Text>
 
       <Text style={emailStyles.text}>
-        If you didn't request this verification, please ignore this email or contact our
+        If you didn&apos;t request this verification, please ignore this email or contact our
         support team if you have concerns.
       </Text>
 

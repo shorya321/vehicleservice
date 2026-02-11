@@ -526,7 +526,7 @@ export async function acceptAndAssignResources(
     // Revalidate booking detail pages (works for both customer and business)
     revalidatePath(`/admin/bookings/${booking.id}`)
     if (booking.bookingType === 'customer') {
-      revalidatePath(`/customer/bookings/${booking.id}`)
+      revalidatePath('/account')
     }
     console.log('Cache revalidation successful for assignment:', assignmentId)
   } catch (revalidationError) {
@@ -591,7 +591,7 @@ export async function rejectAssignment(
   if (booking) {
     revalidatePath(`/admin/bookings/${booking.id}`)
     if (booking.bookingType === 'customer') {
-      revalidatePath(`/customer/bookings/${booking.id}`)
+      revalidatePath('/account')
     }
   }
 
@@ -809,7 +809,7 @@ export async function completeBooking(assignmentId: string) {
   revalidatePath('/admin/bookings')
   revalidatePath(`/admin/bookings/${booking.id}`)
   if (booking.bookingType === 'customer') {
-    revalidatePath(`/customer/bookings/${booking.id}`)
+    revalidatePath('/account')
   }
 
   return { success: true }

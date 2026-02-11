@@ -22,9 +22,10 @@ const spendingLimitsSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -47,7 +48,7 @@ export async function GET(
       return apiError('Forbidden: Admin access required', 403);
     }
 
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Get business account with spending limits
     const { data: businessAccount, error } = await supabase
@@ -92,9 +93,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -132,7 +134,7 @@ export async function PUT(
       enabled,
       reason,
     } = validation.data;
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Verify business account exists
     const { data: businessAccount } = await supabase
@@ -180,9 +182,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -205,7 +208,7 @@ export async function DELETE(
       return apiError('Forbidden: Admin access required', 403);
     }
 
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Verify business account exists
     const { data: businessAccount } = await supabase

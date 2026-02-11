@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/layout/admin-layout';
 import { EmailManagementClient } from './components/email-management-client';
 
 export const metadata = {
@@ -8,8 +7,6 @@ export const metadata = {
 
 export default function EmailManagementPage() {
   return (
-    <AdminLayout>
       <EmailManagementClient />
-    </AdminLayout>
   );
 }

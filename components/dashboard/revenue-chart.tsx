@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, cn } from '@/lib/utils'
 import { getRevenueTrend, type PeriodType } from '@/app/admin/dashboard/actions'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -46,11 +45,11 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
   const hasAnyRevenue = totalRevenue > 0
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="admin-card-hover">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border">
         <div>
-          <CardTitle>Revenue Trend</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
+          <CardDescription className="mt-0.5">
             {getDateRangeLabel()}
             {hasAnyRevenue && (
               <span className="ml-2 text-primary font-medium">
@@ -59,58 +58,44 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
             )}
           </CardDescription>
         </div>
-        <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant={selectedPeriod === 'daily' ? 'default' : 'outline'}
+        <div className="admin-period-selector">
+          <button
+            className={cn(
+              "admin-period-btn",
+              selectedPeriod === 'daily' ? "admin-period-btn-active" : "admin-period-btn-inactive"
+            )}
             onClick={() => handlePeriodChange('daily')}
             disabled={isPending}
-            className="h-8"
           >
             Daily
-          </Button>
-          <Button
-            size="sm"
-            variant={selectedPeriod === 'weekly' ? 'default' : 'outline'}
+          </button>
+          <button
+            className={cn(
+              "admin-period-btn",
+              selectedPeriod === 'weekly' ? "admin-period-btn-active" : "admin-period-btn-inactive"
+            )}
             onClick={() => handlePeriodChange('weekly')}
             disabled={isPending}
-            className="h-8"
           >
             Weekly
-          </Button>
-          <Button
-            size="sm"
-            variant={selectedPeriod === 'monthly' ? 'default' : 'outline'}
+          </button>
+          <button
+            className={cn(
+              "admin-period-btn",
+              selectedPeriod === 'monthly' ? "admin-period-btn-active" : "admin-period-btn-inactive"
+            )}
             onClick={() => handlePeriodChange('monthly')}
             disabled={isPending}
-            className="h-8"
           >
             Monthly
-          </Button>
+          </button>
         </div>
       </CardHeader>
       <CardContent>
         {isPending ? (
-          <div className="h-[200px] flex items-end justify-between gap-1">
-            {Array.from({ length: selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12 }).map((_, i) => (
-              <Skeleton
-                key={i}
-                className="flex-1 rounded-t"
-                style={{ height: `${Math.random() * 80 + 20}%` }}
-              />
-            ))}
-          </div>
+          <SkeletonBars count={selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12} />
         ) : (
           <div className="h-[250px] relative">
-            {/* Grid lines for better visibility */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-t border-muted-foreground/10" />
-              <div className="border-t border-muted-foreground/10" />
-              <div className="border-t border-muted-foreground/10" />
-              <div className="border-t border-muted-foreground/10" />
-              <div className="border-t border-muted-foreground/20" />
-            </div>
-
             <div className="h-[200px] flex items-end justify-between gap-1 relative">
               {revenueTrend.map((item, index) => {
                 // Calculate height with proper scaling
@@ -134,8 +119,8 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
                       className={`
                         w-full
                         ${hasRevenue
-                          ? 'bg-blue-500 hover:bg-blue-600'
-                          : 'bg-gray-200 hover:bg-gray-300'}
+                          ? 'bg-primary hover:bg-primary/80'
+                          : 'bg-primary/30 hover:bg-primary/50'}
                         rounded-t transition-all duration-200
                         relative
                       `}
@@ -170,5 +155,22 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
         )}
       </CardContent>
     </Card>
+  )
+}
+
+function SkeletonBars({ count }: { count: number }) {
+  const [heights] = useState(() =>
+    Array.from({ length: count }, () => Math.random() * 80 + 20)
+  )
+  return (
+    <div className="h-[200px] flex items-end justify-between gap-1">
+      {heights.slice(0, count).map((h, i) => (
+        <Skeleton
+          key={i}
+          className="flex-1 rounded-t"
+          style={{ height: `${h}%` }}
+        />
+      ))}
+    </div>
   )
 }

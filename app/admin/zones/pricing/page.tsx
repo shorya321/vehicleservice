@@ -2,7 +2,6 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { PricingMatrix } from '../components/pricing-matrix'
 import { getZones, getZonePricing } from '../actions'
 
@@ -23,7 +22,6 @@ export default async function ZonePricingPage() {
   )
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/admin/zones">
@@ -41,6 +39,5 @@ export default async function ZonePricingPage() {
 
         <PricingMatrix zones={zones} pricingMap={pricingMap} />
       </div>
-    </AdminLayout>
   )
 }

@@ -8,16 +8,12 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BusinessAccountsTableWrapper } from './components/business-accounts-table-wrapper';
 import { ClientFilters } from './components/client-filters';
-import { AdminLayout } from '@/components/layout/admin-layout';
 import { AnimatedPage } from '@/components/layout/animated-page';
 
 export const metadata: Metadata = {
   title: 'Business Accounts | Admin Portal',
   description: 'Manage B2B business accounts',
 };
-
-// Force dynamic rendering for real-time data
-export const dynamic = 'force-dynamic';
 
 interface SearchParams {
   search?: string;
@@ -27,17 +23,18 @@ interface SearchParams {
 }
 
 interface AdminBusinessAccountsPageProps {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }
 
 export default async function AdminBusinessAccountsPage({ searchParams }: AdminBusinessAccountsPageProps) {
+  const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
 
   // Parse search params
-  const search = searchParams.search || '';
-  const status = searchParams.status || '';
-  const domainVerified = searchParams.domainVerified || '';
-  const page = parseInt(searchParams.page || '1', 10);
+  const search = resolvedSearchParams.search || '';
+  const status = resolvedSearchParams.status || '';
+  const domainVerified = resolvedSearchParams.domainVerified || '';
+  const page = parseInt(resolvedSearchParams.page || '1', 10);
   const limit = 10;
   const offset = (page - 1) * limit;
 
@@ -106,7 +103,6 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
   const totalPages = Math.ceil((count || 0) / limit);
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <div className="space-y-6">
           {/* Page Header */}
@@ -198,6 +194,5 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
           </Card>
         </div>
       </AnimatedPage>
-    </AdminLayout>
   );
 }

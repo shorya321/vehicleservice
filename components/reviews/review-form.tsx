@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
 import { Upload, X, Loader2, MapPin } from 'lucide-react'
 import { StarRating } from './star-rating'
 import { Card } from '@/components/ui/card'
@@ -190,10 +191,11 @@ export function ReviewForm({
             <div className="grid grid-cols-5 gap-3">
               {uploadedPhotos.map((photo, index) => (
                 <div key={index} className="relative aspect-square group">
-                  <img
+                  <Image
                     src={photo}
                     alt={`Upload ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
                   />
                   <button
                     type="button"

@@ -13,8 +13,6 @@ import { BookingDetails } from './components/booking-details';
 import { CancelBookingButton } from './components/cancel-booking-button';
 import { EditDateTimeButton } from '../components/edit-datetime-button';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Booking Details | Business Portal',
   description: 'View booking details',

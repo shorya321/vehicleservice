@@ -1,12 +1,13 @@
 "use client"
 import Link from 'next/link'
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { MapPin, Plane, Building2, Hotel, Train, ArrowRight } from "lucide-react"
 import type { PopularRoute } from '@/components/search/popular-routes'
 
 interface DeparturePointsClientProps {
   routes: PopularRoute[]
   totalRoutes: number
+  todayDate: string
 }
 
 // Get icon based on location type
@@ -25,7 +26,7 @@ const getLocationIcon = (type?: string) => {
   }
 }
 
-export function DeparturePointsClient({ routes, totalRoutes }: DeparturePointsClientProps) {
+export function DeparturePointsClient({ routes, totalRoutes, todayDate }: DeparturePointsClientProps) {
   return (
     <section className="section-padding routes-section">
       <div className="luxury-container">
@@ -55,7 +56,7 @@ export function DeparturePointsClient({ routes, totalRoutes }: DeparturePointsCl
             return (
               <Link
                 key={route.id}
-                href={`/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${new Date().toISOString().split('T')[0]}&passengers=2`}
+                href={`/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${todayDate}&passengers=2`}
                 aria-label={`Search luxury transfers from ${route.originName} to ${route.destinationName}`}
               >
                 <motion.div

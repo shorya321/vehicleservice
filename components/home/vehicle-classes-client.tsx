@@ -1,6 +1,6 @@
 "use client"
 import { useState, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "motion/react"
 import { Users, Luggage } from "lucide-react"
 import Image from "next/image"
 import { VehicleClassCategory } from "@/app/actions"

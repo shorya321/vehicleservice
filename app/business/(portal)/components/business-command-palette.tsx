@@ -121,9 +121,12 @@ export function BusinessCommandPalette({
 
   // Reset search when closing
   useEffect(() => {
-    if (!open) {
-      setSearchQuery('');
-    }
+    const resetSearch = () => {
+      if (!open) {
+        setSearchQuery('');
+      }
+    };
+    resetSearch();
   }, [open]);
 
   const runCommand = useCallback(

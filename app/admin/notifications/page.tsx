@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { AdminLayout } from '@/components/layout/admin-layout';
 import { AnimatedPage } from '@/components/layout/animated-page';
 import { NotificationsContent } from './components/notifications-content';
 
@@ -32,13 +31,11 @@ export default async function NotificationsPage() {
   }
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <Suspense fallback={<NotificationsContentSkeleton />}>
           <NotificationsContent />
         </Suspense>
       </AnimatedPage>
-    </AdminLayout>
   );
 }
 

@@ -60,13 +60,13 @@ async function getBookingDetails(bookingNumber: string) {
 
 export default async function ConfirmationPage({ searchParams }: ConfirmationPageProps) {
   const params = await searchParams
-  
+
   if (!params.booking) {
     notFound()
   }
 
   const booking = await getBookingDetails(params.booking)
-  
+
   if (!booking) {
     notFound()
   }
@@ -76,7 +76,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
 
   // Format amenities
   const amenities = booking.booking_amenities || []
-  const childSeats = amenities.filter((a: any) => 
+  const childSeats = amenities.filter((a: any) =>
     a.amenity_type === 'child_seat_infant' || a.amenity_type === 'child_seat_booster'
   )
   const extraLuggage = amenities.find((a: any) => a.amenity_type === 'extra_luggage')

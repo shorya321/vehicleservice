@@ -1377,7 +1377,7 @@ export default function PageName() {
 ### Card Component Template
 
 ```tsx
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Icon } from "lucide-react"
@@ -1533,7 +1533,7 @@ export function SearchForm() {
    ```tsx
    "use client" // If client-side interactivity needed
 
-   import { motion } from "framer-motion"
+   import { motion } from "motion/react"
    import { Icon } from "lucide-react"
    // Other imports
 

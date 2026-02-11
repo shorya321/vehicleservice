@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -51,7 +50,6 @@ export default async function TestDataPage() {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Test Data Generator</h1>
@@ -64,7 +62,7 @@ export default async function TestDataPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <strong>Warning:</strong> This tool is for development and testing purposes only.
-            Generated bookings will have "TEST-" prefix in their booking numbers.
+            Generated bookings will have &quot;TEST-&quot; prefix in their booking numbers.
           </AlertDescription>
         </Alert>
 
@@ -123,7 +121,7 @@ export default async function TestDataPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This will delete all bookings with "TEST-" prefix. This action cannot be undone.
+                  This will delete all bookings with &quot;TEST-&quot; prefix. This action cannot be undone.
                 </AlertDescription>
               </Alert>
               <form action={clearData}>
@@ -136,6 +134,5 @@ export default async function TestDataPage() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
   )
 }

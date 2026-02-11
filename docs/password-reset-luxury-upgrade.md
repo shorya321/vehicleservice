@@ -589,7 +589,7 @@ Comprehensive luxury design system upgrade for the forgot password and reset pas
 
 ### Dependencies Added
 ```tsx
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { Eye, EyeOff, CheckCircle } from "lucide-react"
 ```
 

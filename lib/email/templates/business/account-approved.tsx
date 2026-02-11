@@ -29,7 +29,7 @@ export const BusinessAccountApprovedEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        We're excited to have your business join our platform. You can now access all features
+        We&apos;re excited to have your business join our platform. You can now access all features
         and start managing your bookings.
       </Text>
 

@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TransactionFilters } from './transaction-filters';
 import { TransactionsList } from './transactions-list';
@@ -73,12 +73,7 @@ export function TransactionsContent({
 
   const [showStats, setShowStats] = useState(true);
 
-  // Load transactions
-  useEffect(() => {
-    loadTransactions();
-  }, [filters]);
-
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -112,7 +107,12 @@ export function TransactionsContent({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters]);
+
+  // Load transactions
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   const handleFilterChange = (newFilters: Partial<TransactionFiltersState>) => {
     setFilters((prev) => ({

@@ -9,7 +9,7 @@
 'use client';
 
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { CountUp, CurrencyCountUp, PercentageCountUp } from '@/components/business/motion/count-up';
 import { fadeInUp } from '@/lib/business/animation/variants';
@@ -139,7 +139,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
           'group relative overflow-hidden rounded-xl p-5 h-full',
           'bg-card',
           'border border-border',
-          'shadow-sm',
+          'shadow-sm card-hover',
           'transition-all duration-300 ease-out',
           'hover:shadow-md hover:border-border/80 dark:hover:border-white/[0.12]',
           className
@@ -195,9 +195,19 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
 
           {/* Icon */}
           {icon && (
-            <div className={cn('flex h-11 w-11 items-center justify-center rounded-full', styles.iconBg, styles.iconColor)}>
-              {icon}
-            </div>
+            prefersReducedMotion ? (
+              <div className={cn('flex h-11 w-11 items-center justify-center rounded-full', styles.iconBg, styles.iconColor)}>
+                {icon}
+              </div>
+            ) : (
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className={cn('flex h-11 w-11 items-center justify-center rounded-full', styles.iconBg, styles.iconColor)}
+              >
+                {icon}
+              </motion.div>
+            )
           )}
         </div>
       </div>
@@ -211,7 +221,8 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
-          transition={{ delay }}
+          whileHover={{ y: -2 }}
+          transition={{ delay, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         >
           {content}
         </motion.div>

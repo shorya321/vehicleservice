@@ -16,12 +16,13 @@ export const metadata: Metadata = {
 }
 
 interface EditDriverPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditDriverPage({ params }: EditDriverPageProps) {
+  const { id } = await params
   const user = await requireVendor()
   const supabase = await createClient()
 
@@ -32,7 +33,7 @@ export default async function EditDriverPage({ params }: EditDriverPageProps) {
     .eq('user_id', user.id)
     .single()
 
-  const { data: driver, error } = await getDriver(params.id)
+  const { data: driver, error } = await getDriver(id)
 
   if (error || !driver) {
     notFound()
@@ -61,7 +62,7 @@ export default async function EditDriverPage({ params }: EditDriverPageProps) {
         <CardHeader>
           <CardTitle>Driver Information</CardTitle>
           <CardDescription>
-            Update the driver's details. Fields marked with * are required.
+            Update the driver&apos;s details. Fields marked with * are required.
           </CardDescription>
         </CardHeader>
         <CardContent>

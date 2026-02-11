@@ -20,8 +20,9 @@ import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-em
  * Modify the pickup datetime of a booking
  */
 export const PATCH = requireBusinessAuth(
-  async (request: NextRequest, user, context: { params: { id: string } }) => {
-    const bookingId = context.params.id;
+  async (request: NextRequest, user, context: { params: Promise<{ id: string }> }) => {
+    const { id } = await context.params;
+    const bookingId = id;
 
     // Use admin client for database operations
     const supabaseAdmin = createClient(

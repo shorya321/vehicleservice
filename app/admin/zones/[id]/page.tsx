@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { ZoneForm } from '../components/zone-form'
 import { getZone } from '../actions'
 
@@ -13,20 +12,20 @@ export const metadata: Metadata = {
 }
 
 interface EditZonePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditZonePage({ params }: EditZonePageProps) {
-  const zone = await getZone(params.id)
+  const { id } = await params
+  const zone = await getZone(id)
 
   if (!zone) {
     notFound()
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/admin/zones">
@@ -46,6 +45,5 @@ export default async function EditZonePage({ params }: EditZonePageProps) {
           <ZoneForm zone={zone} />
         </div>
       </div>
-    </AdminLayout>
   )
 }

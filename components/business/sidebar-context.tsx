@@ -60,13 +60,16 @@ export function SidebarProvider({
 
   // Load persisted state on mount
   useEffect(() => {
-    if (persist && typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored !== null) {
-        setIsCollapsed(stored === 'true');
+    const loadPersistedState = () => {
+      if (persist && typeof window !== 'undefined') {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored !== null) {
+          setIsCollapsed(stored === 'true');
+        }
       }
-    }
-    setIsInitialized(true);
+      setIsInitialized(true);
+    };
+    loadPersistedState();
   }, [persist]);
 
   // Persist state changes

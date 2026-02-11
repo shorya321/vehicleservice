@@ -622,7 +622,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Booking Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update this booking status to "{statusToUpdate}"? 
+              Are you sure you want to update this booking status to &quot;{statusToUpdate}&quot;?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -641,7 +641,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Payment Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update the payment status to "{paymentStatusToUpdate}"? 
+              Are you sure you want to update the payment status to &quot;{paymentStatusToUpdate}&quot;?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

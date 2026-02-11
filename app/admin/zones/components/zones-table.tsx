@@ -179,7 +179,7 @@ export function ZonesTable({ zones }: ZonesTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the zone "{zoneToDelete?.name}".
+              This will permanently delete the zone &quot;{zoneToDelete?.name}&quot;.
               {zoneToDelete?.location_count && zoneToDelete.location_count > 0 && (
                 <span className="block mt-2 font-semibold text-destructive">
                   This zone has {zoneToDelete.location_count} location(s) assigned and cannot be deleted.

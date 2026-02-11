@@ -12,12 +12,13 @@ export interface CurrencySetting {
   currency_code: string
   name: string
   symbol: string
-  decimal_places: number
-  is_enabled: boolean
-  is_default: boolean
-  display_order: number
-  created_at: string
-  updated_at: string
+  decimal_places: number | null
+  is_enabled: boolean | null
+  is_default: boolean | null
+  is_featured: boolean | null
+  display_order: number | null
+  created_at: string | null
+  updated_at: string | null
 }
 
 /**
@@ -41,6 +42,7 @@ export interface CurrencyInfo {
   symbol: string
   decimalPlaces: number
   isDefault: boolean
+  isFeatured: boolean
 }
 
 /**
@@ -68,13 +70,25 @@ export interface ConvertedPrice {
 }
 
 /**
- * Currency API response
+ * Currency API response (legacy - CurrencyAPI.net)
  */
 export interface CurrencyApiResponse {
   valid: boolean
   updated: number
   base: string
   rates: Record<string, number>
+}
+
+/** Hexarate API response (single currency pair) */
+export interface HexarateApiResponse {
+  status_code: number
+  data: {
+    base: string
+    target: string
+    mid: number
+    unit: number
+    timestamp: string
+  }
 }
 
 /**

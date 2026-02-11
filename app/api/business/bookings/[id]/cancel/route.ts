@@ -20,8 +20,9 @@ import { sendBusinessBookingCancellationEmail } from '@/lib/email/services/busin
  * Cancel booking and refund to wallet atomically
  */
 export const POST = requireBusinessAuth(
-  async (request: NextRequest, user, context: { params: { id: string } }) => {
-    const bookingId = context.params.id;
+  async (request: NextRequest, user, context: { params: Promise<{ id: string }> }) => {
+    const { id } = await context.params;
+    const bookingId = id;
 
     // Parse and validate request body
     const body = await parseRequestBody(request, bookingCancellationSchema);

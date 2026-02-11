@@ -1,11 +1,11 @@
 "use client"
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import Image from 'next/image'
 import { AmbientBackground } from './ambient-background'
 import { SearchForm } from './search-form'
 import { Check } from 'lucide-react'
 
-export function Hero() {
+export function Hero({ todayDate }: { todayDate: string }) {
   const heroFeatures = [
     "Fixed Prices",
     "24/7 Service",
@@ -94,7 +94,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="lg:justify-self-end w-full max-w-md animate-float"
           >
-            <SearchForm />
+            <SearchForm todayDate={todayDate} />
           </motion.div>
         </div>
       </div>

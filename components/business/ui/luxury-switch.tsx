@@ -22,7 +22,8 @@ const LuxurySwitch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitive.Root>,
   LuxurySwitchProps
 >(({ className, label, description, id, ...props }, ref) => {
-  const switchId = id || React.useId();
+  const generatedId = React.useId();
+  const switchId = id || generatedId;
 
   const switchElement = (
     <SwitchPrimitive.Root

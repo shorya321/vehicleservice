@@ -10,7 +10,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArrowRight, CreditCard, Loader2, ExternalLink, Wallet, Activity } from 'lucide-react';
 import { FadeIn } from '@/components/business/motion/fade-in';
 import { StaggerContainer, StaggerItem } from '@/components/business/motion/stagger-container';

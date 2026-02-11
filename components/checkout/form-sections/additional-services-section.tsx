@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import * as LucideIcons from 'lucide-react'
 import { Check, Minus, Plus, Package } from 'lucide-react'

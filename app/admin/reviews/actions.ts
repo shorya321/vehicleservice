@@ -435,7 +435,7 @@ export async function deleteReview(reviewId: string) {
     }
 
     revalidatePath('/admin/reviews')
-    revalidatePath('/customer/reviews')
+    revalidatePath('/account')
     revalidatePath('/reviews')
 
     return { success: true }
@@ -481,7 +481,7 @@ export async function bulkDeleteReviews(reviewIds: string[]) {
     }
 
     revalidatePath('/admin/reviews')
-    revalidatePath('/customer/reviews')
+    revalidatePath('/account')
     revalidatePath('/reviews')
 
     return { success: true }

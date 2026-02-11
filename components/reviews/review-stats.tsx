@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Star } from 'lucide-react'
 import { StarRating } from './star-rating'
 import { Card } from '@/components/ui/card'

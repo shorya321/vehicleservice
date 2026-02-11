@@ -8,8 +8,8 @@
  * SCOPE: Business module ONLY
  */
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,11 +71,7 @@ export function AutoRechargeHistory() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadHistory();
-  }, [statusFilter]);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -102,7 +98,11 @@ export function AutoRechargeHistory() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   const handleCancel = async (attemptId: string) => {
     try {

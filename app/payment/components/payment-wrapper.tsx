@@ -15,7 +15,7 @@ export function PaymentWrapper({
   clientSecret,
   bookingId,
   amount,
-  bookingNumber
+  bookingNumber,
 }: PaymentWrapperProps) {
   const options = {
     clientSecret,

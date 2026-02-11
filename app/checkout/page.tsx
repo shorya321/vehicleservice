@@ -28,7 +28,7 @@ interface CheckoutPageProps {
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
   const params = await searchParams
-  
+
   // Validate required parameters
   if (!params.from || !params.to || !params.vehicleType) {
     redirect('/')

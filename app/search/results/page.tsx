@@ -87,7 +87,10 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
           />
 
           <div className="luxury-container py-8">
-            <SearchResults results={results} searchParams={params} />
+            <SearchResults
+              results={results}
+              searchParams={params}
+            />
           </div>
         </div>
       </div>

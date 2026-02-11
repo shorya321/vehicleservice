@@ -20,20 +20,25 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 relative">
+          <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-[380px] p-0">
+      <DropdownMenuContent align="end" className="w-80 rounded-xl p-0">
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h3 className="font-semibold">Notifications</h3>
+        <div className="flex items-center justify-between border-b border-border p-4">
+          <div>
+            <h3 className="font-semibold text-foreground">Notifications</h3>
+            {unreadCount > 0 && (
+              <p className="text-sm text-muted-foreground">You have {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}</p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <Button
@@ -79,14 +84,13 @@ export function NotificationBell() {
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="border-t p-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-center text-sm"
+          <div className="border-t border-border p-3">
+            <button
               onClick={() => router.push('/admin/notifications')}
+              className="block w-full text-center text-sm text-primary hover:underline"
             >
               View all notifications
-            </Button>
+            </button>
           </div>
         )}
       </DropdownMenuContent>

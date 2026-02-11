@@ -39,21 +39,20 @@ export function RouteFilters({ initialFilters }: RouteFiltersProps) {
   const [locations, setLocations] = useState<Location[]>([])
 
   useEffect(() => {
+    const loadLocations = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('locations')
+        .select('*')
+        .eq('is_active', true)
+        .order('name')
+
+      if (data) {
+        setLocations(data)
+      }
+    }
     loadLocations()
   }, [])
-
-  const loadLocations = async () => {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('locations')
-      .select('*')
-      .eq('is_active', true)
-      .order('name')
-    
-    if (data) {
-      setLocations(data)
-    }
-  }
 
   const handleFilter = () => {
     const params = new URLSearchParams()

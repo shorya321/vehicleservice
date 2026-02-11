@@ -8,7 +8,7 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { authAlert } from '@/lib/business/animation/variants';

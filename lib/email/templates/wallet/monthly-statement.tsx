@@ -43,7 +43,7 @@ export const MonthlyStatementEmail = ({
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <Text style={emailStyles.text}>
-        Here's your wallet statement for <strong>{statementMonth} {statementYear}</strong>.
+        Here&apos;s your wallet statement for <strong>{statementMonth} {statementYear}</strong>.
       </Text>
 
       <DetailsSection>

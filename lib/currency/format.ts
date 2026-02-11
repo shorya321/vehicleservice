@@ -12,6 +12,7 @@ import { DEFAULT_CURRENCY_CODE } from './types'
  * Currency metadata for formatting
  */
 const CURRENCY_METADATA: Record<string, { symbol: string; decimalPlaces: number; symbolPosition: 'before' | 'after' }> = {
+  // Original currencies
   USD: { symbol: '$', decimalPlaces: 2, symbolPosition: 'before' },
   EUR: { symbol: '€', decimalPlaces: 2, symbolPosition: 'after' },
   GBP: { symbol: '£', decimalPlaces: 2, symbolPosition: 'before' },
@@ -23,6 +24,49 @@ const CURRENCY_METADATA: Record<string, { symbol: string; decimalPlaces: number;
   SGD: { symbol: 'S$', decimalPlaces: 2, symbolPosition: 'before' },
   INR: { symbol: '₹', decimalPlaces: 2, symbolPosition: 'before' },
   JPY: { symbol: '¥', decimalPlaces: 0, symbolPosition: 'before' },
+  // Asian currencies
+  CNY: { symbol: '¥', decimalPlaces: 2, symbolPosition: 'before' },
+  HKD: { symbol: 'HK$', decimalPlaces: 2, symbolPosition: 'before' },
+  KRW: { symbol: '₩', decimalPlaces: 0, symbolPosition: 'before' },
+  MYR: { symbol: 'RM', decimalPlaces: 2, symbolPosition: 'before' },
+  THB: { symbol: '฿', decimalPlaces: 2, symbolPosition: 'before' },
+  IDR: { symbol: 'Rp', decimalPlaces: 0, symbolPosition: 'before' },
+  PHP: { symbol: '₱', decimalPlaces: 2, symbolPosition: 'before' },
+  TWD: { symbol: 'NT$', decimalPlaces: 2, symbolPosition: 'before' },
+  VND: { symbol: '₫', decimalPlaces: 0, symbolPosition: 'after' },
+  PKR: { symbol: '₨', decimalPlaces: 2, symbolPosition: 'before' },
+  BDT: { symbol: '৳', decimalPlaces: 2, symbolPosition: 'before' },
+  LKR: { symbol: 'Rs', decimalPlaces: 2, symbolPosition: 'before' },
+  // European currencies
+  NZD: { symbol: 'NZ$', decimalPlaces: 2, symbolPosition: 'before' },
+  SEK: { symbol: 'kr', decimalPlaces: 2, symbolPosition: 'after' },
+  NOK: { symbol: 'kr', decimalPlaces: 2, symbolPosition: 'after' },
+  DKK: { symbol: 'kr', decimalPlaces: 2, symbolPosition: 'after' },
+  PLN: { symbol: 'zł', decimalPlaces: 2, symbolPosition: 'after' },
+  CZK: { symbol: 'Kč', decimalPlaces: 2, symbolPosition: 'after' },
+  HUF: { symbol: 'Ft', decimalPlaces: 0, symbolPosition: 'after' },
+  RON: { symbol: 'lei', decimalPlaces: 2, symbolPosition: 'after' },
+  BGN: { symbol: 'лв', decimalPlaces: 2, symbolPosition: 'after' },
+  HRK: { symbol: 'kn', decimalPlaces: 2, symbolPosition: 'after' },
+  ISK: { symbol: 'kr', decimalPlaces: 0, symbolPosition: 'after' },
+  TRY: { symbol: '₺', decimalPlaces: 2, symbolPosition: 'before' },
+  RUB: { symbol: '₽', decimalPlaces: 2, symbolPosition: 'after' },
+  // Latin American currencies
+  BRL: { symbol: 'R$', decimalPlaces: 2, symbolPosition: 'before' },
+  MXN: { symbol: 'MX$', decimalPlaces: 2, symbolPosition: 'before' },
+  CLP: { symbol: 'CLP$', decimalPlaces: 0, symbolPosition: 'before' },
+  COP: { symbol: 'COL$', decimalPlaces: 0, symbolPosition: 'before' },
+  ARS: { symbol: 'AR$', decimalPlaces: 2, symbolPosition: 'before' },
+  PEN: { symbol: 'S/.', decimalPlaces: 2, symbolPosition: 'before' },
+  // African & Middle Eastern currencies
+  ZAR: { symbol: 'R', decimalPlaces: 2, symbolPosition: 'before' },
+  ILS: { symbol: '₪', decimalPlaces: 2, symbolPosition: 'before' },
+  EGP: { symbol: 'E£', decimalPlaces: 2, symbolPosition: 'before' },
+  KWD: { symbol: 'د.ك', decimalPlaces: 3, symbolPosition: 'after' },
+  BHD: { symbol: '.د.ب', decimalPlaces: 3, symbolPosition: 'after' },
+  OMR: { symbol: '﷼', decimalPlaces: 3, symbolPosition: 'after' },
+  QAR: { symbol: '﷼', decimalPlaces: 2, symbolPosition: 'after' },
+  JOD: { symbol: 'د.ا', decimalPlaces: 3, symbolPosition: 'after' },
 }
 
 /**
@@ -167,6 +211,66 @@ export function formatPriceRange(
  */
 export function getCurrencySymbol(currencyCode: string): string {
   return CURRENCY_METADATA[currencyCode]?.symbol || currencyCode
+}
+
+/**
+ * Get flag emoji for a currency code
+ */
+const CURRENCY_FLAGS: Record<string, string> = {
+  AED: '\u{1F1E6}\u{1F1EA}', // 🇦🇪
+  USD: '\u{1F1FA}\u{1F1F8}', // 🇺🇸
+  EUR: '\u{1F1EA}\u{1F1FA}', // 🇪🇺
+  GBP: '\u{1F1EC}\u{1F1E7}', // 🇬🇧
+  AUD: '\u{1F1E6}\u{1F1FA}', // 🇦🇺
+  CAD: '\u{1F1E8}\u{1F1E6}', // 🇨🇦
+  CHF: '\u{1F1E8}\u{1F1ED}', // 🇨🇭
+  SAR: '\u{1F1F8}\u{1F1E6}', // 🇸🇦
+  SGD: '\u{1F1F8}\u{1F1EC}', // 🇸🇬
+  INR: '\u{1F1EE}\u{1F1F3}', // 🇮🇳
+  JPY: '\u{1F1EF}\u{1F1F5}', // 🇯🇵
+  CNY: '\u{1F1E8}\u{1F1F3}', // 🇨🇳
+  HKD: '\u{1F1ED}\u{1F1F0}', // 🇭🇰
+  KRW: '\u{1F1F0}\u{1F1F7}', // 🇰🇷
+  MYR: '\u{1F1F2}\u{1F1FE}', // 🇲🇾
+  THB: '\u{1F1F9}\u{1F1ED}', // 🇹🇭
+  IDR: '\u{1F1EE}\u{1F1E9}', // 🇮🇩
+  PHP: '\u{1F1F5}\u{1F1ED}', // 🇵🇭
+  TWD: '\u{1F1F9}\u{1F1FC}', // 🇹🇼
+  VND: '\u{1F1FB}\u{1F1F3}', // 🇻🇳
+  PKR: '\u{1F1F5}\u{1F1F0}', // 🇵🇰
+  BDT: '\u{1F1E7}\u{1F1E9}', // 🇧🇩
+  LKR: '\u{1F1F1}\u{1F1F0}', // 🇱🇰
+  NZD: '\u{1F1F3}\u{1F1FF}', // 🇳🇿
+  SEK: '\u{1F1F8}\u{1F1EA}', // 🇸🇪
+  NOK: '\u{1F1F3}\u{1F1F4}', // 🇳🇴
+  DKK: '\u{1F1E9}\u{1F1F0}', // 🇩🇰
+  PLN: '\u{1F1F5}\u{1F1F1}', // 🇵🇱
+  CZK: '\u{1F1E8}\u{1F1FF}', // 🇨🇿
+  HUF: '\u{1F1ED}\u{1F1FA}', // 🇭🇺
+  RON: '\u{1F1F7}\u{1F1F4}', // 🇷🇴
+  BGN: '\u{1F1E7}\u{1F1EC}', // 🇧🇬
+  HRK: '\u{1F1ED}\u{1F1F7}', // 🇭🇷
+  ISK: '\u{1F1EE}\u{1F1F8}', // 🇮🇸
+  TRY: '\u{1F1F9}\u{1F1F7}', // 🇹🇷
+  RUB: '\u{1F1F7}\u{1F1FA}', // 🇷🇺
+  BRL: '\u{1F1E7}\u{1F1F7}', // 🇧🇷
+  MXN: '\u{1F1F2}\u{1F1FD}', // 🇲🇽
+  CLP: '\u{1F1E8}\u{1F1F1}', // 🇨🇱
+  COP: '\u{1F1E8}\u{1F1F4}', // 🇨🇴
+  ARS: '\u{1F1E6}\u{1F1F7}', // 🇦🇷
+  PEN: '\u{1F1F5}\u{1F1EA}', // 🇵🇪
+  ZAR: '\u{1F1FF}\u{1F1E6}', // 🇿🇦
+  ILS: '\u{1F1EE}\u{1F1F1}', // 🇮🇱
+  EGP: '\u{1F1EA}\u{1F1EC}', // 🇪🇬
+  KWD: '\u{1F1F0}\u{1F1FC}', // 🇰🇼
+  BHD: '\u{1F1E7}\u{1F1ED}', // 🇧🇭
+  OMR: '\u{1F1F4}\u{1F1F2}', // 🇴🇲
+  QAR: '\u{1F1F6}\u{1F1E6}', // 🇶🇦
+  JOD: '\u{1F1EF}\u{1F1F4}', // 🇯🇴
+}
+
+export function getCurrencyFlag(code: string): string {
+  return CURRENCY_FLAGS[code] || '\u{1F3F3}\u{FE0F}'
 }
 
 /**

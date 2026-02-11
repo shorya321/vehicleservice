@@ -5,7 +5,6 @@ import { Plus, Car, Building2 } from 'lucide-react'
 import { AdminVehicleTableWithBulk } from './components/admin-vehicle-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getAdminVehicles, getVendors, AdminVehicleFilters } from './actions'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -19,8 +18,6 @@ export const metadata: Metadata = {
   title: 'Vehicles - Admin',
   description: 'Manage all vehicles across vendors',
 }
-
-export const dynamic = 'force-dynamic'
 
 interface AdminVehiclesPageProps {
   searchParams: Promise<{
@@ -60,7 +57,6 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
   const vendorCount = new Set(vehicles.map(v => v.business_id)).size
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -161,6 +157,5 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

@@ -8,8 +8,6 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { NotificationsContent } from './components/notifications-content';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Notifications | Business Portal',
   description: 'View your business notifications',

@@ -95,15 +95,18 @@ export function AdminThemeContextProvider({
 
   // Initialize from localStorage on mount
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem(ADMIN_THEME_STORAGE_KEY) as 'dark' | 'light' | null;
-    if (stored && (stored === 'dark' || stored === 'light')) {
-      setModeState(stored);
-      applyThemeToDOM(initialTheme, stored);
-    } else {
-      // Apply initial theme even without localStorage
-      applyThemeToDOM(initialTheme, initialTheme.mode);
-    }
+    const initTheme = () => {
+      setMounted(true);
+      const stored = localStorage.getItem(ADMIN_THEME_STORAGE_KEY) as 'dark' | 'light' | null;
+      if (stored && (stored === 'dark' || stored === 'light')) {
+        setModeState(stored);
+        applyThemeToDOM(initialTheme, stored);
+      } else {
+        // Apply initial theme even without localStorage
+        applyThemeToDOM(initialTheme, initialTheme.mode);
+      }
+    };
+    initTheme();
   }, [initialTheme]);
 
   // Apply theme when mode changes

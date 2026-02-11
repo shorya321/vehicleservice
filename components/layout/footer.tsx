@@ -1,5 +1,5 @@
 "use client"
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import Link from 'next/link'
 import { Instagram, Linkedin, Facebook, Twitter, Youtube } from "lucide-react"
 
@@ -28,7 +28,7 @@ const footerLinkCategories = [
     links: [
       { name: "Corporate Clients", href: "#" },
       { name: "API Solutions", href: "#" },
-      { name: "Partner With Us", href: "/customer/apply-vendor" },
+      { name: "Partner With Us", href: "/become-vendor" },
       { name: "Business Portal", href: "/business" },
     ],
   },
@@ -105,7 +105,7 @@ export function Footer() {
             transition={{ duration: 0.5, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            <p className="text-xs text-[var(--text-muted)]">
+            <p className="text-xs text-[var(--text-muted)]" suppressHydrationWarning>
               © {new Date().getFullYear()} Infinia Transfers. All Rights Reserved.
             </p>
 

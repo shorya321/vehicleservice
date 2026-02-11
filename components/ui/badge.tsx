@@ -4,40 +4,40 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-sans uppercase tracking-wider",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 uppercase tracking-wider",
   {
     variants: {
       variant: {
-        // Primary badge (luxury gold)
+        // Primary badge (uses primary color from CSS variables)
         default:
-          "bg-luxury-gold/20 text-luxury-gold border-luxury-gold/40 shadow-sm",
+          "bg-primary/15 text-primary border-primary/30 shadow-sm",
 
-        // Secondary badge (luxury gray)
+        // Secondary badge (uses muted colors)
         secondary:
-          "bg-luxury-gray/60 text-luxury-pearl border-luxury-gold/20",
+          "bg-secondary text-secondary-foreground border-border",
 
         // Destructive badge (red for errors)
         destructive:
-          "bg-red-600/20 text-red-400 border-red-600/40",
+          "bg-red-500/15 text-red-500 border-red-500/30",
 
-        // Outline badge (gold outline)
-        outline: "border-luxury-gold/40 text-luxury-gold bg-transparent",
+        // Outline badge (primary outline)
+        outline: "border-primary/40 text-primary bg-transparent",
 
-        // Success badge (emerald for completed states)
+        // Success badge (emerald for confirmed/completed states)
         success:
-          "bg-emerald-600/20 text-emerald-400 border-emerald-600/40",
+          "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
 
-        // Warning badge (gold light for pending)
+        // Warning badge (amber for pending states)
         warning:
-          "bg-luxury-goldLight/20 text-luxury-goldLight border-luxury-goldLight/40",
+          "bg-amber-500/15 text-amber-500 border-amber-500/30",
 
         // Error badge (red variant for failures)
         error:
-          "bg-red-600/20 text-red-400 border-red-600/40",
+          "bg-red-500/15 text-red-500 border-red-500/30",
 
-        // Info badge (pearl/gray for neutral info)
+        // Info badge (cyan for neutral info)
         info:
-          "bg-luxury-lightGray/20 text-luxury-lightGray border-luxury-lightGray/40",
+          "bg-cyan-500/15 text-cyan-500 border-cyan-500/30",
       },
     },
     defaultVariants: {

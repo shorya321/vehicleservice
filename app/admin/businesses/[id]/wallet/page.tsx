@@ -14,12 +14,13 @@ export const metadata: Metadata = {
 };
 
 interface BusinessWalletPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function BusinessWalletPage({ params }: BusinessWalletPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
 
   // Get authenticated user
@@ -53,7 +54,7 @@ export default async function BusinessWalletPage({ params }: BusinessWalletPageP
       </div>
 
       {/* Client Component */}
-      <WalletManagementClient businessId={params.id} />
+      <WalletManagementClient businessId={id} />
     </div>
   );
 }

@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Vehicle Service Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* ============================================
+       CSS VARIABLES - DARK MODE (DEFAULT)
+       ============================================ */
+    :root {
+      /* Core colors */
+      --background: 240 10% 4%;
+      --foreground: 0 0% 98%;
+      --card: 240 6% 6%;
+      --card-foreground: 0 0% 98%;
+      --popover: 240 6% 6%;
+      --popover-foreground: 0 0% 98%;
+      --primary: 36 40% 55%;
+      --primary-foreground: 240 10% 4%;
+      --secondary: 240 4% 16%;
+      --secondary-foreground: 0 0% 98%;
+      --muted: 240 4% 16%;
+      --muted-foreground: 240 5% 65%;
+      --accent: 36 40% 55%;
+      --accent-foreground: 240 10% 4%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 4% 16%;
+      --input: 240 4% 16%;
+      --ring: 36 40% 55%;
+      --radius: 0.5rem;
+
+      /* Extended variables */
+      --admin-primary: #BA955E;
+      --admin-primary-light: #D4BC9A;
+      --admin-primary-dark: #9A7D4A;
+      --admin-surface-0: #09090B;
+      --admin-surface-1: #0F0F12;
+      --admin-surface-2: #18181B;
+      --admin-surface-3: #27272A;
+      --admin-surface-4: #3F3F46;
+      --admin-text-primary: #FAFAFA;
+      --admin-text-secondary: #A1A1AA;
+      --admin-text-muted: #71717A;
+      --admin-success: #22C55E;
+      --admin-warning: #F59E0B;
+      --admin-error: #EF4444;
+      --admin-info: #06B6D4;
+      --admin-border-subtle: rgba(255, 255, 255, 0.06);
+      --admin-border-default: rgba(255, 255, 255, 0.1);
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+      /* Fonts */
+      --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+    }
+
+    /* Light mode */
+    .light {
+      --background: 0 0% 100%;
+      --foreground: 240 10% 4%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 4%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 4%;
+      --primary: 36 40% 55%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 240 5% 96%;
+      --secondary-foreground: 240 6% 10%;
+      --muted: 240 5% 96%;
+      --muted-foreground: 240 4% 46%;
+      --accent: 36 40% 55%;
+      --accent-foreground: 240 10% 4%;
+      --border: 240 6% 90%;
+      --input: 240 6% 90%;
+
+      --admin-surface-0: #FFFFFF;
+      --admin-surface-1: #FAFAFA;
+      --admin-surface-2: #F4F4F5;
+      --admin-surface-3: #E4E4E7;
+      --admin-surface-4: #D4D4D8;
+      --admin-text-primary: #09090B;
+      --admin-text-secondary: #3F3F46;
+      --admin-text-muted: #71717A;
+      --admin-border-subtle: rgba(0, 0, 0, 0.05);
+      --admin-border-default: rgba(0, 0, 0, 0.1);
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ============================================
+       BASE STYLES
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================
+       LAYOUT
+       ============================================ */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 256px;
+      background-color: hsl(var(--card));
+      border-right: 1px solid hsl(var(--border));
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 50;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-header {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      color: hsl(var(--primary-foreground));
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+    }
+
+    .collapse-btn {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: hsl(var(--primary));
+      transition: background-color 0.2s;
+    }
+
+    .collapse-btn:hover {
+      background-color: hsl(var(--primary) / 0.1);
+    }
+
+    .collapse-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Navigation */
+    .nav-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 8px;
+    }
+
+    .nav-group {
+      margin-bottom: 24px;
+    }
+
+    .nav-group-label {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-group-line {
+      width: 16px;
+      height: 1px;
+      background: linear-gradient(to right, hsl(var(--primary) / 0.6), transparent);
+    }
+
+    .nav-group-text {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: hsl(var(--primary));
+    }
+
+    .nav-items {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: hsl(var(--foreground) / 0.7);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-item:hover {
+      background-color: hsl(var(--primary) / 0.05);
+      color: hsl(var(--foreground));
+    }
+
+    .nav-item.active {
+      background-color: hsl(var(--primary) / 0.1);
+      color: hsl(var(--primary));
+      box-shadow: inset 0 0 30px hsl(var(--primary) / 0.08);
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .nav-item:hover svg {
+      transform: scale(1.1);
+      color: hsl(var(--primary));
+    }
+
+    .nav-item.active svg {
+      color: hsl(var(--primary));
+    }
+
+    .nav-chevron {
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .nav-item.expanded .nav-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* User profile in sidebar */
+    .sidebar-footer {
+      border-top: 1px solid hsl(var(--border));
+      padding: 16px;
+    }
+
+    .user-profile-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .user-profile-link:hover {
+      background-color: hsl(var(--primary) / 0.05);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: hsl(var(--primary-foreground));
+      ring: 2px solid hsl(var(--primary) / 0.4);
+      box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4);
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: hsl(var(--foreground));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: hsl(var(--foreground) / 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Main content area */
+    .main-wrapper {
+      flex: 1;
+      margin-left: 256px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      height: 64px;
+      background-color: hsl(var(--card) / 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid hsl(var(--border));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .search-container {
+      position: relative;
+      width: 320px;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 40px 0 40px;
+      background-color: hsl(var(--secondary));
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      color: hsl(var(--foreground));
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input::placeholder {
+      color: hsl(var(--muted-foreground));
+    }
+
+    .search-input:focus {
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .search-shortcut {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 6px;
+      background-color: hsl(var(--muted));
+      border-radius: 4px;
+      font-size: 11px;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: hsl(var(--foreground));
+      transition: background-color 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .header-btn:hover {
+      background-color: hsl(var(--secondary));
+      border-color: hsl(var(--primary) / 0.3);
+    }
+
+    .header-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      background-color: hsl(var(--destructive));
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 600;
+      color: hsl(var(--destructive-foreground));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profile-btn {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: hsl(var(--primary-foreground));
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      padding: 24px;
+    }
+
+    /* Page header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--admin-text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--admin-text-secondary);
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--foreground));
+    }
+
+    .btn-outline:hover {
+      background-color: hsl(var(--secondary));
+      border-color: hsl(var(--primary) / 0.3);
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ============================================
+       CARDS
+       ============================================ */
+    .card {
+      background-color: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .card-header {
+      padding: 20px 24px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--admin-text-primary);
+    }
+
+    .card-description {
+      font-size: 13px;
+      color: var(--admin-text-secondary);
+      margin-top: 2px;
+    }
+
+    .card-content {
+      padding: 0 24px 24px;
+    }
+
+    .card-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .card-icon.gold { color: var(--admin-primary); }
+    .card-icon.success { color: var(--admin-success); }
+    .card-icon.warning { color: var(--admin-warning); }
+    .card-icon.error { color: var(--admin-error); }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card .card-header {
+      padding: 16px 20px 8px;
+    }
+
+    .kpi-card .card-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .kpi-card .card-content {
+      padding: 0 20px 16px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--admin-text-primary);
+    }
+
+    .kpi-change {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--admin-text-secondary);
+      margin-top: 4px;
+    }
+
+    .kpi-change svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .kpi-change.positive svg,
+    .kpi-change.positive span:first-of-type {
+      color: var(--admin-success);
+    }
+
+    .kpi-change.negative svg,
+    .kpi-change.negative span:first-of-type {
+      color: var(--admin-error);
+    }
+
+    /* Main grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Revenue Chart */
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-period {
+      display: flex;
+      gap: 4px;
+    }
+
+    .period-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--admin-text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .period-btn:hover {
+      background-color: hsl(var(--secondary));
+    }
+
+    .period-btn.active {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .chart-container {
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 20px;
+    }
+
+    .chart-bar-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-bar {
+      width: 100%;
+      max-width: 60px;
+      background-color: hsl(var(--primary) / 0.3);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease, background-color 0.2s;
+      min-height: 4px;
+    }
+
+    .chart-bar.highlight {
+      background-color: hsl(var(--primary));
+    }
+
+    .chart-bar:hover {
+      background-color: hsl(var(--primary) / 0.6);
+    }
+
+    .chart-label {
+      font-size: 12px;
+      color: var(--admin-text-muted);
+    }
+
+    /* Recent Bookings */
+    .booking-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .booking-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid hsl(var(--primary) / 0.2);
+    }
+
+    .booking-item:last-child {
+      border-bottom: none;
+    }
+
+    .booking-info {
+      flex: 1;
+    }
+
+    .booking-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .booking-id {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--admin-text-primary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .booking-id:hover {
+      color: var(--admin-primary);
+      text-decoration: underline;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-success {
+      background-color: rgba(34, 197, 94, 0.15);
+      color: var(--admin-success);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge-warning {
+      background-color: rgba(245, 158, 11, 0.15);
+      color: var(--admin-warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-default {
+      background-color: hsl(var(--secondary));
+      color: var(--admin-text-secondary);
+      border: 1px solid hsl(var(--border));
+    }
+
+    .booking-details {
+      font-size: 12px;
+      color: var(--admin-text-secondary);
+      margin-top: 4px;
+    }
+
+    .booking-time {
+      font-size: 12px;
+      color: var(--admin-text-muted);
+      margin-top: 2px;
+    }
+
+    .booking-amount {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--admin-text-primary);
+    }
+
+    /* Operations */
+    .stat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--admin-text-secondary);
+    }
+
+    .stat-label svg {
+      width: 16px;
+      height: 16px;
+      color: var(--admin-primary);
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--admin-text-primary);
+    }
+
+    /* Activities */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .activity-item:hover {
+      background-color: hsl(var(--primary) / 0.05);
+    }
+
+    .activity-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .activity-icon.blue { color: #3b82f6; }
+    .activity-icon.orange { color: #f97316; }
+    .activity-icon.green { color: var(--admin-success); }
+    .activity-icon.purple { color: #a855f7; }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--admin-text-primary);
+    }
+
+    .activity-subtitle {
+      font-size: 12px;
+      color: var(--admin-text-secondary);
+      margin-top: 2px;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: var(--admin-text-muted);
+      margin-top: 4px;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px 16px;
+      background: transparent;
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      color: hsl(var(--foreground));
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .action-btn:hover {
+      background-color: hsl(var(--secondary));
+      border-color: hsl(var(--primary) / 0.3);
+    }
+
+    .action-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Scrollbar */
+    .activity-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .activity-list::-webkit-scrollbar-track {
+      background-color: var(--admin-surface-2);
+      border-radius: 3px;
+    }
+
+    .activity-list::-webkit-scrollbar-thumb {
+      background-color: rgba(186, 149, 94, 0.3);
+      border-radius: 3px;
+    }
+
+    .activity-list::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(186, 149, 94, 0.5);
+    }
+
+    /* Responsive */
+    @media (max-width: 1280px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .main-wrapper {
+        margin-left: 0;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="logo-link">
+          <div class="logo-icon">
+            <i data-lucide="car"></i>
+          </div>
+          <span class="logo-text">VehicleService</span>
+        </a>
+        <button class="collapse-btn">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="nav-container">
+        <!-- Overview -->
+        <div class="nav-group">
+          <div class="nav-group-label">
+            <span class="nav-group-line"></span>
+            <span class="nav-group-text">Overview</span>
+          </div>
+          <div class="nav-items">
+            <a href="#" class="nav-item active">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Management -->
+        <div class="nav-group">
+          <div class="nav-group-label">
+            <span class="nav-group-line"></span>
+            <span class="nav-group-text">Management</span>
+          </div>
+          <div class="nav-items">
+            <a href="#" class="nav-item">
+              <i data-lucide="calendar"></i>
+              <span>Bookings</span>
+            </a>
+            <a href="#" class="nav-item">
+              <i data-lucide="users"></i>
+              <span>Users</span>
+            </a>
+            <a href="#" class="nav-item">
+              <i data-lucide="building-2"></i>
+              <span>Vendor Applications</span>
+            </a>
+            <a href="#" class="nav-item">
+              <i data-lucide="building-2"></i>
+              <span>Business Accounts</span>
+            </a>
+            <a href="#" class="nav-item">
+              <i data-lucide="car"></i>
+              <span>Vehicles</span>
+              <i data-lucide="chevron-down" class="nav-chevron"></i>
+            </a>
+            <a href="#" class="nav-item">
+              <i data-lucide="star"></i>
+              <span>Reviews</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Service Areas -->
+        <div class="nav-group">
+          <div class="nav-group-label">
+            <span class="nav-group-line"></span>
+            <span class="nav-group-text">Service Areas</span>
+          </div>
+          <div class="nav-items">
+            <a href="#" class="nav-item">
+              <i data-lucide="map-pin"></i>
+              <span>Locations</span>
+              <i data-lucide="chevron-down" class="nav-chevron"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="nav-group">
+          <div class="nav-group-label">
+            <span class="nav-group-line"></span>
+            <span class="nav-group-text">Settings</span>
+          </div>
+          <div class="nav-items">
+            <a href="#" class="nav-item">
+              <i data-lucide="mail"></i>
+              <span>Emails</span>
+            </a>
+            <a href="#" class="nav-item">
+              <i data-lucide="settings"></i>
+              <span>Settings</span>
+              <i data-lucide="chevron-down" class="nav-chevron"></i>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="user-profile-link">
+          <div class="user-avatar">SA</div>
+          <div class="user-info">
+            <div class="user-name">System Administrator</div>
+            <div class="user-email">admin@vehicleservice.com</div>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="header">
+        <div class="search-container">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" class="search-input" placeholder="Search...">
+          <div class="search-shortcut">
+            <span>⌘</span>
+            <span>K</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="header-btn" title="Toggle theme">
+            <i data-lucide="sun"></i>
+          </button>
+          <button class="header-btn" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="notification-badge">9+</span>
+          </button>
+          <button class="profile-btn">SA</button>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+          </div>
+          <button class="btn btn-outline">
+            <i data-lucide="refresh-cw"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="card kpi-card">
+            <div class="card-header">
+              <h3 class="card-title">Today's Revenue</h3>
+              <i data-lucide="dollar-sign" class="card-icon gold"></i>
+            </div>
+            <div class="card-content">
+              <div class="kpi-value">$0</div>
+              <div class="kpi-change negative">
+                <i data-lucide="trending-down"></i>
+                <span>-100.0%</span>
+                <span>from yesterday</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="card-header">
+              <h3 class="card-title">Active Bookings</h3>
+              <i data-lucide="car" class="card-icon gold"></i>
+            </div>
+            <div class="card-content">
+              <div class="kpi-value">0</div>
+              <div class="kpi-change">
+                <span>In progress today</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="card-header">
+              <h3 class="card-title">Pending Actions</h3>
+              <i data-lucide="alert-triangle" class="card-icon warning"></i>
+            </div>
+            <div class="card-content">
+              <div class="kpi-value">4</div>
+              <div class="kpi-change">
+                <span>Need attention</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="card-header">
+              <h3 class="card-title">Rejected</h3>
+              <i data-lucide="alert-circle" class="card-icon error"></i>
+            </div>
+            <div class="card-content">
+              <div class="kpi-value">0</div>
+              <div class="kpi-change">
+                <span>Need reassignment</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="card-header">
+              <h3 class="card-title">Completed Today</h3>
+              <i data-lucide="check-circle" class="card-icon success"></i>
+            </div>
+            <div class="card-content">
+              <div class="kpi-value">0</div>
+              <div class="kpi-change">
+                <span>Bookings completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+          <!-- Left Column -->
+          <div class="left-column">
+            <!-- Revenue Trend -->
+            <div class="card">
+              <div class="card-header chart-header">
+                <div>
+                  <h3 class="card-title">Revenue Trend</h3>
+                  <p class="card-description">Last 7 days performance <span style="color: var(--admin-primary)">(Total: $60.5)</span></p>
+                </div>
+                <div class="chart-period">
+                  <button class="period-btn active">Daily</button>
+                  <button class="period-btn">Weekly</button>
+                  <button class="period-btn">Monthly</button>
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="chart-container">
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 8px;"></div>
+                    <span class="chart-label">Sat</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 8px;"></div>
+                    <span class="chart-label">Sun</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 8px;"></div>
+                    <span class="chart-label">Mon</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 8px;"></div>
+                    <span class="chart-label">Tue</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 8px;"></div>
+                    <span class="chart-label">Wed</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar highlight" style="height: 160px;"></div>
+                    <span class="chart-label">Thu</span>
+                  </div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: 8px;"></div>
+                    <span class="chart-label">Fri</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Bookings</h3>
+                  <p class="card-description">Latest booking activity</p>
+                </div>
+                <a href="#" class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;">
+                  View all
+                  <i data-lucide="arrow-right"></i>
+                </a>
+              </div>
+              <div class="card-content">
+                <div class="booking-list">
+                  <div class="booking-item">
+                    <div class="booking-info">
+                      <div class="booking-header">
+                        <a href="#" class="booking-id">BK1768469417570G3OMD</a>
+                        <span class="badge badge-success">CONFIRMED</span>
+                      </div>
+                      <p class="booking-details">Anshul Kumar • Manwal → Mamoon</p>
+                      <p class="booking-time">Jan 15, 10:00 AM</p>
+                    </div>
+                    <div class="booking-amount">$60.5</div>
+                  </div>
+
+                  <div class="booking-item">
+                    <div class="booking-info">
+                      <div class="booking-header">
+                        <a href="#" class="booking-id">BK1767690075174WHSKK</a>
+                        <span class="badge badge-success">CONFIRMED</span>
+                      </div>
+                      <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
+                      <p class="booking-time">Jan 6, 10:00 AM</p>
+                    </div>
+                    <div class="booking-amount">$65</div>
+                  </div>
+
+                  <div class="booking-item">
+                    <div class="booking-info">
+                      <div class="booking-header">
+                        <a href="#" class="booking-id">BK1767682362945HGNCM</a>
+                        <span class="badge badge-warning">PENDING</span>
+                      </div>
+                      <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
+                      <p class="booking-time">Jan 6, 10:00 AM</p>
+                    </div>
+                    <div class="booking-amount">$65</div>
+                  </div>
+
+                  <div class="booking-item">
+                    <div class="booking-info">
+                      <div class="booking-header">
+                        <a href="#" class="booking-id">BK1767681962229BQ8S2</a>
+                        <span class="badge badge-warning">PENDING</span>
+                      </div>
+                      <p class="booking-details">Anshul Kumar • Pathankot → Sheela chownk</p>
+                      <p class="booking-time">Jan 6, 10:00 AM</p>
+                    </div>
+                    <div class="booking-amount">$65</div>
+                  </div>
+
+                  <div class="booking-item">
+                    <div class="booking-info">
+                      <div class="booking-header">
+                        <a href="#" class="booking-id">BK17673528189659P6SE</a>
+                        <span class="badge badge-warning">PENDING</span>
+                      </div>
+                      <p class="booking-details">Anshul Kumar • Jassur → Mamoon</p>
+                      <p class="booking-time">Jan 2, 10:00 AM</p>
+                    </div>
+                    <div class="booking-amount">$54</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="right-column">
+            <!-- Operations -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Operations</h3>
+                  <p class="card-description">Current status</p>
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="stat-list">
+                  <div class="stat-item">
+                    <div class="stat-label">
+                      <i data-lucide="users"></i>
+                      <span>Active Users</span>
+                    </div>
+                    <span class="stat-value">18</span>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">
+                      <i data-lucide="users"></i>
+                      <span>Active Vendors</span>
+                    </div>
+                    <span class="stat-value">2</span>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">
+                      <i data-lucide="truck"></i>
+                      <span>Available Vehicles</span>
+                    </div>
+                    <span class="stat-value">6</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="activity" class="card-icon gold"></i>
+                    Recent Activities
+                  </h3>
+                  <p class="card-description">Latest system activity</p>
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="activity-list">
+                  <div class="activity-item">
+                    <i data-lucide="file-text" class="activity-icon blue"></i>
+                    <div class="activity-content">
+                      <p class="activity-title">New booking BK1768469417570G3OMD created</p>
+                      <p class="activity-subtitle">Anshul Kumar • Manwal → Mamoon</p>
+                      <p class="activity-time">21h ago</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+              </div>
+              <div class="card-content">
+                <div class="quick-actions">
+                  <a href="#" class="action-btn">
+                    <span>View All Bookings</span>
+                    <i data-lucide="arrow-right"></i>
+                  </a>
+                  <a href="#" class="action-btn">
+                    <span>Manage Vendors</span>
+                    <i data-lucide="arrow-right"></i>
+                  </a>
+                  <a href="#" class="action-btn">
+                    <span>Fleet Status</span>
+                    <i data-lucide="arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Theme toggle functionality
+    const themeBtn = document.querySelector('.header-btn[title="Toggle theme"]');
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      const icon = themeBtn.querySelector('i');
+      if (document.body.classList.contains('light')) {
+        icon.setAttribute('data-lucide', 'moon');
+      } else {
+        icon.setAttribute('data-lucide', 'sun');
+      }
+      lucide.createIcons();
+    });
+
+    // Sidebar collapse functionality
+    const collapseBtn = document.querySelector('.collapse-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const mainWrapper = document.querySelector('.main-wrapper');
+
+    collapseBtn.addEventListener('click', () => {
+      sidebar.style.width = sidebar.style.width === '72px' ? '256px' : '72px';
+      mainWrapper.style.marginLeft = mainWrapper.style.marginLeft === '72px' ? '256px' : '72px';
+
+      const icon = collapseBtn.querySelector('i');
+      if (sidebar.style.width === '72px') {
+        icon.setAttribute('data-lucide', 'chevron-right');
+        // Hide text elements
+        document.querySelectorAll('.nav-item span, .nav-group-label, .logo-text, .user-info').forEach(el => {
+          el.style.display = 'none';
+        });
+      } else {
+        icon.setAttribute('data-lucide', 'chevron-left');
+        // Show text elements
+        document.querySelectorAll('.nav-item span, .nav-group-label, .logo-text, .user-info').forEach(el => {
+          el.style.display = '';
+        });
+      }
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

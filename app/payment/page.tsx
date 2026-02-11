@@ -13,11 +13,13 @@ import { Calendar, Clock, Users, Luggage, HelpCircle, Info } from 'lucide-react'
 import { format } from 'date-fns'
 import {
   getEnabledCurrencies,
+  getFeaturedCurrencies,
   getExchangeRatesObject,
   getDefaultCurrency,
   formatPrice,
 } from '@/lib/currency'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
+import { CurrencyProvider } from '@/lib/currency/context'
 
 export const metadata: Metadata = {
   title: 'Secure Payment | Infinia Transfers',
@@ -159,7 +161,8 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   profile = profileData
 
   // Fetch currency data
-  const [currencies, rates, defaultCurrency] = await Promise.all([
+  const [featuredCurrencies, allCurrencies, rates, defaultCurrency] = await Promise.all([
+    getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getExchangeRatesObject(),
     getDefaultCurrency(),
@@ -217,6 +220,12 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   // If Stripe is not configured, show error message
   if (stripeError || !clientSecret) {
     return (
+      <CurrencyProvider
+        initialCurrency={currentCurrency}
+        exchangeRates={rates}
+        featuredCurrencies={featuredCurrencies}
+        allCurrencies={allCurrencies}
+      >
       <div className="min-h-screen bg-[#050506]">
         {/* Ambient Glow */}
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(198,170,136,0.04)_0%,transparent_70%)] pointer-events-none" />
@@ -225,8 +234,6 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
         <PublicHeader
           initialUser={user}
           initialProfile={profile}
-          currencies={currencies}
-          currentCurrency={currentCurrency}
         />
 
         <div className="pt-24 md:pt-28 pb-16 px-6 md:px-8">
@@ -268,10 +275,17 @@ STRIPE_SECRET_KEY=sk_test_...`}
 
         <SecureFooter />
       </div>
+      </CurrencyProvider>
     )
   }
 
   return (
+    <CurrencyProvider
+      initialCurrency={currentCurrency}
+      exchangeRates={rates}
+      featuredCurrencies={featuredCurrencies}
+      allCurrencies={allCurrencies}
+    >
     <div className="min-h-screen bg-[#050506] flex flex-col">
       {/* Noise Texture Overlay */}
       <div className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20256%20256%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noise%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.9%22%20numOctaves%3D%224%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noise)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.03] pointer-events-none z-[9999]" />
@@ -283,7 +297,8 @@ STRIPE_SECRET_KEY=sk_test_...`}
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
-        currencies={currencies}
+        featuredCurrencies={featuredCurrencies}
+        allCurrencies={allCurrencies}
         currentCurrency={currentCurrency}
       />
 
@@ -324,8 +339,6 @@ STRIPE_SECRET_KEY=sk_test_...`}
                 bookingId={booking.id}
                 amount={booking.total_price}
                 bookingNumber={booking.booking_number}
-                currentCurrency={currentCurrency}
-                exchangeRates={rates}
               />
             </div>
 
@@ -449,5 +462,6 @@ STRIPE_SECRET_KEY=sk_test_...`}
       {/* Secure Footer */}
       <SecureFooter />
     </div>
+    </CurrencyProvider>
   )
 }

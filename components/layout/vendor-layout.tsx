@@ -36,7 +36,9 @@ import {
   ChevronDown,
   ChevronRight,
   Users,
+  Search,
 } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 interface VendorLayoutProps {
   children: React.ReactNode
@@ -118,13 +120,26 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
     await userLogout()
   }
 
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'VN'
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   // Auto-expand menu items that contain the current path
   useEffect(() => {
-    const allItems = navGroups.flatMap(group => group.items)
-    const itemsToExpand = allItems
-      .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
-      .map(item => item.name)
-    setExpandedItems(itemsToExpand)
+    const expandActiveMenuItems = () => {
+      const allItems = navGroups.flatMap(group => group.items)
+      const itemsToExpand = allItems
+        .filter(item => item.submenu?.some(sub => pathname.startsWith(sub.href)))
+        .map(item => item.name)
+      setExpandedItems(itemsToExpand)
+    }
+    expandActiveMenuItems()
   }, [pathname])
 
   const renderNavItem = (item: NavItem) => {
@@ -289,7 +304,7 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border bg-card shadow-sm px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -299,7 +314,20 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
             <Menu className="h-5 w-5" />
           </Button>
 
-          <div className="flex-1" />
+          {/* Search Bar */}
+          <div className="hidden sm:flex relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="pl-10 pr-14 h-9 w-full rounded-lg bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs text-muted-foreground pointer-events-none">
+              <span>⌘</span>
+              <span>K</span>
+            </div>
+          </div>
+          <div className="flex-1 sm:hidden" />
 
           {/* Theme Toggle */}
           <AdminThemeToggle size="default" />
@@ -310,15 +338,18 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/10">
-                <Avatar className="h-9 w-9 ring-2 ring-primary/40 transition-all duration-200 hover:ring-primary/60">
+              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
+                <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                   <AvatarImage src="/avatar-placeholder.png" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">VN</AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
+                    {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
+                  </AvatarFallback>
                 </Avatar>
+                <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
+            <DropdownMenuContent className="w-56 rounded-xl" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal p-3 border-b border-border">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
@@ -326,30 +357,32 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
                   </p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                <Link href="/vendor/account">
-                  <UserCircle className="mr-2 h-4 w-4" />
-                  My Account
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                <Link href="/vendor/profile">
-                  <User className="mr-2 h-4 w-4" />
-                  Business Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                <Link href="/vendor/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
-                <LogOut className="mr-2 h-4 w-4" />
-                Log out
-              </DropdownMenuItem>
+              <div className="p-1">
+                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                  <Link href="/vendor/account">
+                    <UserCircle className="h-4 w-4 text-primary" />
+                    My Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                  <Link href="/vendor/profile">
+                    <User className="h-4 w-4 text-primary" />
+                    Business Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                  <Link href="/vendor/settings">
+                    <Settings className="h-4 w-4 text-primary" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+              </div>
+              <div className="p-1 border-t border-border">
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 rounded-lg text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

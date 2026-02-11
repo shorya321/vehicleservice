@@ -1,16 +1,16 @@
 /**
  * Fetch Exchange Rates Edge Function
  *
- * Fetches latest exchange rates from CurrencyAPI.net and updates the database.
+ * Fetches latest exchange rates from Hexarate (hexarate.paikama.co) and updates the database.
+ * Hexarate is a free API with no key required that supports AED as base currency.
  *
  * Features:
  * - Daily rate refresh via CRON or manual trigger
+ * - Parallel fetch for all target currencies
  * - Fallback to cached rates on API failure
  * - Comprehensive error handling and logging
- * - Admin notification on persistent failures
  *
  * Environment Variables:
- * - CURRENCY_API_KEY: API key for CurrencyAPI.net
  * - SUPABASE_URL: Supabase project URL
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin access
  */
@@ -30,21 +30,43 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// CurrencyAPI.net configuration
-// Correct URL format: https://currencyapi.net/api/v1/rates (not api.currencyapi.net)
-const CURRENCY_API_URL = 'https://currencyapi.net/api/v1/rates'
-const CURRENCY_API_KEY = Deno.env.get('CURRENCY_API_KEY')
+// Hexarate API configuration (free, no API key required)
+const HEXARATE_BASE_URL = 'https://hexarate.paikama.co/api/rates'
 
-// Supported currencies (must match database seed)
-const SUPPORTED_CURRENCIES = [
-  'USD', 'EUR', 'GBP', 'AED', 'AUD', 'CAD', 'CHF', 'SAR', 'SGD', 'INR', 'JPY'
-]
+// Fallback currencies if DB query fails
+const FALLBACK_CURRENCIES = ['AED', 'USD', 'EUR', 'GBP']
 
-interface CurrencyApiResponse {
-  valid: boolean
-  updated: number
-  base: string
-  rates: Record<string, number>
+/**
+ * Get enabled currencies from database (dynamic list)
+ */
+async function getEnabledCurrenciesFromDb(): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('currency_settings')
+      .select('currency_code')
+      .eq('is_enabled', true)
+
+    if (error || !data || data.length === 0) {
+      console.error('[Exchange Rates] Error fetching enabled currencies from DB:', error)
+      return FALLBACK_CURRENCIES
+    }
+
+    return data.map(c => c.currency_code)
+  } catch (error) {
+    console.error('[Exchange Rates] Failed to query enabled currencies:', error)
+    return FALLBACK_CURRENCIES
+  }
+}
+
+interface HexarateResponse {
+  status_code: number
+  data: {
+    base: string
+    target: string
+    mid: number
+    unit: number
+    timestamp: string
+  }
 }
 
 interface ExchangeRateRecord {
@@ -55,51 +77,58 @@ interface ExchangeRateRecord {
 }
 
 /**
- * Fetch exchange rates from CurrencyAPI.net
+ * Fetch exchange rates from Hexarate (one request per currency pair, in parallel)
  */
-async function fetchRatesFromApi(): Promise<Record<string, number> | null> {
-  if (!CURRENCY_API_KEY) {
-    console.error('[Exchange Rates] CURRENCY_API_KEY environment variable not set')
-    return null
-  }
+async function fetchRatesFromApi(currencies: string[]): Promise<Record<string, number> | null> {
+  const targets = currencies.filter(c => c !== 'AED')
 
   try {
-    const url = new URL(CURRENCY_API_URL)
-    url.searchParams.set('key', CURRENCY_API_KEY)
-    url.searchParams.set('base', 'AED')
-    // Request only supported currencies to minimize response size
-    url.searchParams.set('currencies', SUPPORTED_CURRENCIES.join(','))
-    // Explicitly request JSON output format
-    url.searchParams.set('output', 'json')
+    console.log(`[Exchange Rates] Fetching ${targets.length} rates from Hexarate (base: AED)...`)
 
-    console.log('[Exchange Rates] Fetching rates from CurrencyAPI.net...')
+    const results = await Promise.allSettled(
+      targets.map(async (target) => {
+        const url = `${HEXARATE_BASE_URL}/AED/${target}/latest`
+        const response = await fetch(url)
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    })
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} for ${target}`)
+        }
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`[Exchange Rates] API request failed: ${response.status} - ${errorText}`)
+        const data: HexarateResponse = await response.json()
+
+        if (data.status_code !== 200 || !data.data?.mid) {
+          throw new Error(`Invalid response for ${target}: status ${data.status_code}`)
+        }
+
+        return { currency: target, rate: data.data.mid }
+      })
+    )
+
+    const rates: Record<string, number> = { AED: 1.0 }
+    let successCount = 0
+    let failCount = 0
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        rates[result.value.currency] = result.value.rate
+        successCount++
+      } else {
+        console.error(`[Exchange Rates] Failed to fetch rate:`, result.reason)
+        failCount++
+      }
+    }
+
+    console.log(`[Exchange Rates] Fetched ${successCount}/${targets.length} rates (${failCount} failed)`)
+
+    // Require at least half the rates to succeed
+    if (successCount < targets.length / 2) {
+      console.error('[Exchange Rates] Too many failures, aborting')
       return null
     }
 
-    const data: CurrencyApiResponse = await response.json()
-
-    if (!data.valid) {
-      console.error('[Exchange Rates] API returned invalid response')
-      return null
-    }
-
-    console.log(`[Exchange Rates] Successfully fetched rates for ${Object.keys(data.rates).length} currencies`)
-    console.log(`[Exchange Rates] Rates updated at: ${new Date(data.updated * 1000).toISOString()}`)
-
-    return data.rates
+    return rates
   } catch (error) {
-    console.error('[Exchange Rates] Error fetching from API:', error)
+    console.error('[Exchange Rates] Error fetching from Hexarate:', error)
     return null
   }
 }
@@ -107,13 +136,13 @@ async function fetchRatesFromApi(): Promise<Record<string, number> | null> {
 /**
  * Update exchange rates in the database
  */
-async function updateRatesInDatabase(rates: Record<string, number>): Promise<{ updated: number; failed: number }> {
+async function updateRatesInDatabase(rates: Record<string, number>, currencies: string[]): Promise<{ updated: number; failed: number }> {
   const fetchedAt = new Date().toISOString()
   let updated = 0
   let failed = 0
 
   // Prepare upsert records
-  const records: ExchangeRateRecord[] = SUPPORTED_CURRENCIES.map(currency => ({
+  const records: ExchangeRateRecord[] = currencies.map(currency => ({
     base_currency: 'AED',
     target_currency: currency,
     rate: rates[currency] || 1.0,
@@ -210,6 +239,10 @@ async function refreshExchangeRates(forceRefresh: boolean = false): Promise<{
 
   console.log(`[Exchange Rates] Last fetch: ${lastFetch?.toISOString() || 'never'}, Stale: ${stale}`)
 
+  // Get enabled currencies from database
+  const enabledCurrencies = await getEnabledCurrenciesFromDb()
+  console.log(`[Exchange Rates] Enabled currencies: ${enabledCurrencies.join(', ')}`)
+
   // If not forced and rates are fresh, return cached rates
   if (!forceRefresh && !stale && lastFetch) {
     console.log('[Exchange Rates] Rates are fresh, using cached values')
@@ -224,11 +257,11 @@ async function refreshExchangeRates(forceRefresh: boolean = false): Promise<{
   }
 
   // Fetch new rates from API
-  const apiRates = await fetchRatesFromApi()
+  const apiRates = await fetchRatesFromApi(enabledCurrencies)
 
   if (apiRates) {
     // API fetch successful - update database
-    const { updated, failed } = await updateRatesInDatabase(apiRates)
+    const { updated, failed } = await updateRatesInDatabase(apiRates, enabledCurrencies)
 
     if (updated > 0) {
       return {

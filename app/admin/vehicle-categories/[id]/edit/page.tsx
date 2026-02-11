@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { CategoryForm } from '../../components/category-form'
 import { getCategory, deleteCategory, getCategoryUsageCount } from '../../actions'
 import { ChevronLeft, Trash2 } from 'lucide-react'
@@ -48,7 +47,6 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
   const usageCount = await getCategoryUsageCount(id)
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -116,6 +114,5 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
           </Card>
         </div>
       </div>
-    </AdminLayout>
   )
 }

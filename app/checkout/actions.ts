@@ -450,11 +450,10 @@ export async function createBooking(formData: BookingFormData) {
     }
   }
 
-  // Revalidate admin and customer paths to show new booking immediately
+  // Revalidate admin and account paths to show new booking immediately
   revalidatePath('/admin/dashboard')
   revalidatePath('/admin/bookings')
-  revalidatePath('/customer/dashboard')
-  revalidatePath('/customer/bookings')
+  revalidatePath('/account')
 
   return {
     success: true,

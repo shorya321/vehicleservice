@@ -115,7 +115,7 @@ export const BusinessBookingConfirmationEmail = ({
       <Button href={bookingUrl}>View Booking Details</Button>
 
       <InfoBox type="info" title="What's Next?">
-        Our team will assign a vendor to your booking. You'll receive a notification once a driver
+        Our team will assign a vendor to your booking. You&apos;ll receive a notification once a driver
         has been assigned.
       </InfoBox>
 

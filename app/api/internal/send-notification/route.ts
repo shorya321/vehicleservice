@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/admin';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { apiSuccess, apiError } from '@/lib/business/api-utils';
 import {
   sendAutoRechargeSuccessEmail,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get business account details
-    const supabase = createClient();
+    const supabase = createAdminClient();
     const { data: businessAccount, error: accountError } = await supabase
       .from('business_accounts')
       .select('id, business_name, business_email, business_phone, business_address, currency, wallet_balance, notification_preferences')

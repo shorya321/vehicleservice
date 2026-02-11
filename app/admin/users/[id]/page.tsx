@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { UserForm } from "../components/user-form"
 import { getUser } from "../actions"
 import { ArrowLeft } from "lucide-react"
@@ -8,13 +7,14 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/server"
 
 interface EditUserPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditUserPage({ params }: EditUserPageProps) {
-  const user = await getUser(params.id)
+  const { id } = await params
+  const user = await getUser(id)
 
   if (!user) {
     notFound()
@@ -27,7 +27,7 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
     const { data: vendorApp } = await supabase
       .from('vendor_applications')
       .select('*')
-      .eq('user_id', params.id)
+      .eq('user_id', id)
       .single()
     
     // Convert vendor_applications fields to match business profile format
@@ -45,7 +45,6 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -63,6 +62,5 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
 
         <UserForm mode="edit" user={user} businessProfile={businessProfile} />
       </div>
-    </AdminLayout>
   )
 }

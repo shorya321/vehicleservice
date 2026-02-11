@@ -9,9 +9,10 @@ import { apiSuccess, apiError } from '@/lib/business/api-utils';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Get authenticated user
@@ -34,7 +35,7 @@ export async function GET(
       return apiError('Forbidden: Admin access required', 403);
     }
 
-    const businessAccountId = params.id;
+    const businessAccountId = id;
 
     // Get business account with all wallet information
     const { data: businessAccount, error } = await supabase

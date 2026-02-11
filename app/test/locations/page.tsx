@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface Location {
@@ -18,11 +18,7 @@ export default function TestLocationsPage() {
   
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchLocations()
-  }, [])
-
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -42,7 +38,11 @@ export default function TestLocationsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    fetchLocations()
+  }, [fetchLocations])
 
   const searchLocations = async (query: string) => {
     if (!query || query.length < 2) {

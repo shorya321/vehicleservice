@@ -24,7 +24,7 @@ export const VendorApplicationReceivedEmail = ({
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for submitting your vendor application to Vehicle Service! We've successfully
+        Thank you for submitting your vendor application to Vehicle Service! We&apos;ve successfully
         received your application and wanted to confirm receipt.
       </Text>
 
@@ -43,7 +43,7 @@ export const VendorApplicationReceivedEmail = ({
 
       <Text style={emailStyles.text}>
         Our team will carefully review your application, which typically takes 3-5 business days.
-        We'll assess your:
+        We&apos;ll assess your:
       </Text>
 
       <List
@@ -56,8 +56,8 @@ export const VendorApplicationReceivedEmail = ({
       />
 
       <Text style={emailStyles.text}>
-        You'll receive an email notification once we've completed our review. If we need any
-        additional information, we'll reach out to you directly.
+        You&apos;ll receive an email notification once we&apos;ve completed our review. If we need any
+        additional information, we&apos;ll reach out to you directly.
       </Text>
 
       <Text style={infoBoxStyle}>

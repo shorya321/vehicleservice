@@ -31,7 +31,7 @@ export const VendorApplicationApprovedEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        We're excited to have you join our network of trusted vehicle service providers. Your
+        We&apos;re excited to have you join our network of trusted vehicle service providers. Your
         application (Reference: {applicationReference}) has been carefully reviewed and approved.
       </Text>
 
@@ -73,7 +73,7 @@ export const VendorApplicationApprovedEmail = ({
 
       <Text style={emailStyles.text}>
         If you have any questions or need assistance getting started, our vendor support team is
-        here to help. Don't hesitate to reach out!
+        here to help. Don&apos;t hesitate to reach out!
       </Text>
 
       <Text style={emailStyles.text}>

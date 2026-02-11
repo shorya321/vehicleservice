@@ -133,7 +133,7 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
               <ol className="list-decimal list-inside space-y-1 px-4 pb-4 text-muted-foreground">
                 <li>Log in to your GoDaddy account</li>
                 <li>Go to My Products → Domains → DNS</li>
-                <li>Click "Add" and select "CNAME" from the dropdown</li>
+                <li>Click &quot;Add&quot; and select &quot;CNAME&quot; from the dropdown</li>
                 <li>Enter the Name and Value as shown above</li>
                 <li>Repeat for the TXT record</li>
               </ol>
@@ -147,7 +147,7 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
               <ol className="list-decimal list-inside space-y-1 px-4 pb-4 text-muted-foreground">
                 <li>Log in to Cloudflare and select your domain</li>
                 <li>Go to DNS → Records</li>
-                <li>Click "Add record" and select "CNAME"</li>
+                <li>Click &quot;Add record&quot; and select &quot;CNAME&quot;</li>
                 <li>Enter the Name and Target as shown above</li>
                 <li>Turn OFF the proxy (click the orange cloud to make it gray)</li>
                 <li>Repeat for the TXT record</li>
@@ -162,8 +162,8 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
               <ol className="list-decimal list-inside space-y-1 px-4 pb-4 text-muted-foreground">
                 <li>Log in to Namecheap</li>
                 <li>Go to Domain List → Manage → Advanced DNS</li>
-                <li>Click "Add New Record"</li>
-                <li>Select "CNAME Record" and enter the details</li>
+                <li>Click &quot;Add New Record&quot;</li>
+                <li>Select &quot;CNAME Record&quot; and enter the details</li>
                 <li>Repeat for the TXT record</li>
               </ol>
             </details>

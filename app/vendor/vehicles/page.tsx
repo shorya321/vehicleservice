@@ -22,8 +22,6 @@ export const metadata: Metadata = {
   description: 'Manage your vehicle fleet',
 }
 
-export const dynamic = 'force-dynamic'
-
 interface VendorVehiclesPageProps {
   searchParams: Promise<{
     search?: string

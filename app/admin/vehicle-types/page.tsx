@@ -7,7 +7,6 @@ import { VehicleTypesTable } from "./components/vehicle-types-table"
 import { VehicleTypeFilters as VehicleTypeFiltersComponent } from "./components/vehicle-type-filters"
 import { CustomPagination } from "@/components/ui/custom-pagination"
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -22,17 +21,18 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string
     categoryId?: string
     isActive?: string
     page?: string
-  }
+  }>
 }
 
 export default async function VehicleTypesPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
-  
+
   // Get categories for filters
   const { data: categories } = await supabase
     .from('vehicle_categories')
@@ -40,10 +40,10 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
     .order('sort_order, name')
 
   const filters: VehicleTypeFilters = {
-    search: searchParams.search,
-    categoryId: searchParams.categoryId,
-    isActive: searchParams.isActive === 'true' ? true : searchParams.isActive === 'false' ? false : 'all',
-    page: searchParams.page ? parseInt(searchParams.page) : 1,
+    search: resolvedSearchParams.search,
+    categoryId: resolvedSearchParams.categoryId,
+    isActive: resolvedSearchParams.isActive === 'true' ? true : resolvedSearchParams.isActive === 'false' ? false : 'all',
+    page: resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1,
     limit: 10,
   }
 
@@ -57,7 +57,6 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
     : 0
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -149,13 +148,12 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
                   currentPage={page}
                   totalPages={totalPages}
                   baseUrl="/admin/vehicle-types"
-                  searchParams={searchParams}
+                  searchParams={resolvedSearchParams}
                 />
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

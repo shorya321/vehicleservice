@@ -22,7 +22,7 @@ export function SimpleSearchWidget() {
 
   // Ensure component is mounted before rendering interactive elements
   useEffect(() => {
-    setMounted(true)
+    queueMicrotask(() => setMounted(true))
   }, [])
 
   const handleSearch = () => {

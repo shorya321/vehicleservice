@@ -1,7 +1,7 @@
 'use client'
 
 import { UseFormReturn } from 'react-hook-form'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -181,7 +181,7 @@ export function TransferDetailsSection({
             className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] placeholder:text-[#7a7672]/50 focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
             {...register('flightNumber')}
           />
-          <p className="text-xs text-[#7a7672] mt-2">We'll track your flight for delays</p>
+          <p className="text-xs text-[#7a7672] mt-2">We&apos;ll track your flight for delays</p>
         </div>
 
         {/* Passengers */}

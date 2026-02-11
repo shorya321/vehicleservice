@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Car, Calendar, MapPin, Package, LogOut } from 'lucide-react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Driver Dashboard',
   description: 'Driver dashboard and trip management',
@@ -53,7 +55,7 @@ export default async function DriverDashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today's Trips</CardTitle>
+              <CardTitle className="text-sm font-medium">Today&apos;s Trips</CardTitle>
               <Car className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -100,7 +102,7 @@ export default async function DriverDashboard() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Today's Schedule</CardTitle>
+              <CardTitle>Today&apos;s Schedule</CardTitle>
               <CardDescription>Your trips for today</CardDescription>
             </CardHeader>
             <CardContent>

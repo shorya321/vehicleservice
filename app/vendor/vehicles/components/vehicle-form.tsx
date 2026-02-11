@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -81,7 +81,7 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
         if (categoriesResult.data) {
           setCategories(categoriesResult.data)
         }
-        
+
         // If editing and has a category, load vehicle types for that category
         if (initialData?.category_id) {
           setLoadingVehicleTypes(true)
@@ -101,7 +101,7 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
       }
     }
     loadData()
-  }, [])
+  }, [initialData?.category_id])
 
   // Load vehicle types when category changes
   useEffect(() => {

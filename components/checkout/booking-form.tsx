@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -120,7 +120,8 @@ export function BookingForm({
   const agreeToTerms = watch('agreeToTerms')
   const infantSeats = watch('infantSeats')
   const boosterSeats = watch('boosterSeats')
-  const selectedAddons = watch('selectedAddons') || []
+  const watchedAddons = watch('selectedAddons')
+  const selectedAddons = useMemo(() => watchedAddons || [], [watchedAddons])
 
   // Calculate total price with all extras
   const basePrice = vehicleType.price || 50
@@ -155,19 +156,7 @@ export function BookingForm({
     }
   }, [selectedAddons, onAddonsChange, addonsByCategory])
 
-  // Expose form methods to parent
-  useEffect(() => {
-    if (onFormReady) {
-      onFormReady({
-        submit: handleSubmit(onSubmit),
-        isSubmitting: loading,
-        agreeToTerms,
-        setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value)
-      })
-    }
-  }, [loading, agreeToTerms])
-
-  const onSubmit = async (data: BookingFormData) => {
+  const onSubmit = useCallback(async (data: BookingFormData) => {
     setLoading(true)
     try {
       const result = await createBooking({
@@ -205,7 +194,19 @@ export function BookingForm({
     } finally {
       setLoading(false)
     }
-  }
+  }, [vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, basePrice, router])
+
+  // Expose form methods to parent
+  useEffect(() => {
+    if (onFormReady) {
+      onFormReady({
+        submit: handleSubmit(onSubmit),
+        isSubmitting: loading,
+        agreeToTerms,
+        setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value)
+      })
+    }
+  }, [loading, agreeToTerms, onFormReady, handleSubmit, onSubmit, setValue])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

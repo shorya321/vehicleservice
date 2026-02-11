@@ -38,8 +38,8 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
       </Text>
 
       <Text style={warningText}>
-        <strong>Important:</strong> If you didn't request a password reset, please ignore this
-        email. Your password will remain unchanged. If you're concerned about your account
+        <strong>Important:</strong> If you didn&apos;t request a password reset, please ignore this
+        email. Your password will remain unchanged. If you&apos;re concerned about your account
         security, please contact our support team immediately.
       </Text>
 
