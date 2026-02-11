@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { AdminVehicleForm } from "../../components/admin-vehicle-form"
 import { getAdminVehicle, getVendors } from "../../actions"
-import { AdminLayout } from "@/components/layout/admin-layout"
-
 export const metadata: Metadata = {
   title: "Edit Vehicle - Admin",
   description: "Edit vehicle information",
@@ -38,7 +36,6 @@ export default async function AdminEditVehiclePage({ params }: AdminEditVehicleP
   const approvedVendors = vendorsResult.vendors.filter(vendor => vendor.application_status === 'approved')
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -59,6 +56,5 @@ export default async function AdminEditVehiclePage({ params }: AdminEditVehicleP
           vendors={approvedVendors} 
         />
       </div>
-    </AdminLayout>
   )
 }

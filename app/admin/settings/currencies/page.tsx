@@ -5,21 +5,25 @@
  * Features:
  * - Enable/disable currencies for public display
  * - Set default currency
+ * - Toggle featured currencies for frontend quick selector
  * - View current exchange rates
  * - Manual rate refresh
+ * - Paginated table with search and filters
  */
 
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Coins, AlertTriangle, Clock, Info } from 'lucide-react'
-import { getAllCurrencies, getExchangeRatesObject, getLastRateUpdate, areRatesStale } from '@/lib/currency/server'
+import { Coins, AlertTriangle, Clock, Info, Star } from 'lucide-react'
+import { getPaginatedCurrencies, getExchangeRatesObject, getLastRateUpdate, areRatesStale } from '@/lib/currency/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { CurrencyTable } from './components/currency-table'
+import { CurrencyFilters } from './components/currency-filters'
+import { CurrencyPagination } from './components/currency-pagination'
 import { RefreshRatesButton } from './components/refresh-rates-button'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -28,7 +32,15 @@ export const metadata: Metadata = {
   description: 'Configure currencies and exchange rates',
 }
 
-export default async function CurrencySettingsPage() {
+interface PageProps {
+  searchParams: Promise<{
+    search?: string
+    page?: string
+    filter?: string
+  }>
+}
+
+export default async function CurrencySettingsPage({ searchParams }: PageProps) {
   const supabase = await createClient()
 
   // Check authentication
@@ -48,19 +60,42 @@ export default async function CurrencySettingsPage() {
     redirect('/unauthorized')
   }
 
-  // Fetch data
-  const [currencies, rates, lastUpdate, stale] = await Promise.all([
-    getAllCurrencies(),
+  const params = await searchParams
+  const page = parseInt(params.page || '1', 10)
+  const search = params.search || ''
+  const filter = (params.filter || 'all') as 'all' | 'enabled' | 'featured' | 'disabled'
+
+  // Fetch counts for stats cards
+  const adminClient = createAdminClient()
+  const [paginatedResult, rates, lastUpdate, stale, countResult] = await Promise.all([
+    getPaginatedCurrencies({ page, limit: 10, search: search || undefined, filter }),
     getExchangeRatesObject(),
     getLastRateUpdate(),
     areRatesStale(),
+    adminClient.from('currency_settings').select('is_enabled, is_default, is_featured'),
   ])
 
-  const enabledCount = currencies.filter(c => c.is_enabled).length
-  const defaultCurrency = currencies.find(c => c.is_default)
+  const allCurrencies = countResult.data || []
+  const totalCount = allCurrencies.length
+  const enabledCount = allCurrencies.filter(c => c.is_enabled).length
+  const featuredCount = allCurrencies.filter(c => c.is_featured).length
+  const defaultCurrency = allCurrencies.find(c => c.is_default)
+
+  // Get the default currency code from the paginated results or fallback
+  let defaultCurrencyCode = 'AED'
+  if (defaultCurrency) {
+    // We need to fetch the code separately since our count query only got flags
+    const { data: defData } = await adminClient
+      .from('currency_settings')
+      .select('currency_code, symbol')
+      .eq('is_default', true)
+      .single()
+    if (defData) {
+      defaultCurrencyCode = defData.currency_code
+    }
+  }
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <div className="space-y-6">
           {/* Page Header */}
@@ -73,7 +108,7 @@ export default async function CurrencySettingsPage() {
             </div>
             <p className="text-muted-foreground">
               Configure which currencies are available for price display on the public website.
-              All payments are processed in {defaultCurrency?.currency_code || 'AED'}.
+              All payments are processed in {defaultCurrencyCode}.
             </p>
           </div>
 
@@ -84,13 +119,24 @@ export default async function CurrencySettingsPage() {
               <AlertTitle>Exchange rates are outdated</AlertTitle>
               <AlertDescription>
                 Rates have not been updated in over 24 hours. Click &quot;Refresh Rates&quot; to update,
-                or check the CurrencyAPI.net configuration.
+                or check the Hexarate API status.
               </AlertDescription>
             </Alert>
           )}
 
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Currencies</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-foreground">{totalCount}</span>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Enabled Currencies</CardDescription>
@@ -98,21 +144,19 @@ export default async function CurrencySettingsPage() {
               <CardContent>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-foreground">{enabledCount}</span>
-                  <span className="text-sm text-muted-foreground">of {currencies.length}</span>
+                  <span className="text-sm text-muted-foreground">of {totalCount}</span>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>Default Currency</CardDescription>
+                <CardDescription>Featured Currencies</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold text-foreground">
-                    {defaultCurrency?.currency_code || 'AED'}
-                  </span>
-                  <Badge variant="outline">{defaultCurrency?.symbol || 'د.إ'}</Badge>
+                  <span className="text-3xl font-bold text-foreground">{featuredCount}</span>
+                  <Star className="h-4 w-4 text-primary" />
                 </div>
               </CardContent>
             </Card>
@@ -143,10 +187,13 @@ export default async function CurrencySettingsPage() {
             <AlertTitle>Display-Only Conversion</AlertTitle>
             <AlertDescription>
               Currency conversion is for display purposes only. Customers see prices in their
-              preferred currency, but all payments are processed in {defaultCurrency?.currency_code || 'AED'}.
-              The converted amount is shown at checkout for reference.
+              preferred currency, but all payments are processed in {defaultCurrencyCode}.
+              Featured currencies appear in the quick selector dropdown on the frontend.
             </AlertDescription>
           </Alert>
+
+          {/* Filters */}
+          <CurrencyFilters />
 
           {/* Currency Table */}
           <Card>
@@ -154,41 +201,46 @@ export default async function CurrencySettingsPage() {
               <div>
                 <CardTitle>Currencies</CardTitle>
                 <CardDescription>
-                  Enable currencies to make them available in the currency selector
+                  Enable currencies to make them available in the currency selector.
+                  Feature currencies to show them in the quick dropdown.
                 </CardDescription>
               </div>
               <RefreshRatesButton />
             </CardHeader>
             <CardContent className="p-0">
               <CurrencyTable
-                currencies={currencies}
+                currencies={paginatedResult.currencies}
                 rates={rates}
-                defaultCurrencyCode={defaultCurrency?.currency_code || 'AED'}
+                defaultCurrencyCode={defaultCurrencyCode}
               />
             </CardContent>
           </Card>
 
-          {/* API Configuration Note */}
+          {/* Pagination */}
+          <CurrencyPagination
+            currentPage={paginatedResult.page}
+            totalPages={paginatedResult.totalPages}
+            totalCount={paginatedResult.total}
+          />
+
+          {/* Exchange Rate Source */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">API Configuration</CardTitle>
+              <CardTitle className="text-base">Exchange Rate Source</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground space-y-2">
               <p>
-                Exchange rates are fetched from CurrencyAPI.net. To enable automatic updates:
+                Exchange rates are fetched from Hexarate (hexarate.paikama.co) &mdash; a free service
+                with no API key required. Rates update automatically daily at 6:00 AM UTC.
+                Only enabled currencies have their rates fetched.
               </p>
-              <ol className="list-decimal list-inside space-y-1 pl-2">
-                <li>Sign up for a CurrencyAPI.net account</li>
-                <li>Add your API key to the environment variable <code className="bg-muted px-1 py-0.5 rounded">CURRENCY_API_KEY</code></li>
-                <li>Deploy the edge function and set up a daily CRON job</li>
-              </ol>
-              <p className="text-xs mt-4">
-                Without API configuration, the system will use cached fallback rates.
+              <p>
+                Click &quot;Refresh Rates&quot; above for an immediate update, or rates will
+                refresh automatically via the scheduled CRON job.
               </p>
             </CardContent>
           </Card>
         </div>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

@@ -3,8 +3,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { LocationForm } from '../components/location-form'
-import { AdminLayout } from '@/components/layout/admin-layout'
-
 export const metadata: Metadata = {
   title: 'New Location - Admin',
   description: 'Create a new location',
@@ -12,7 +10,6 @@ export const metadata: Metadata = {
 
 export default function NewLocationPage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" asChild>
@@ -30,6 +27,5 @@ export default function NewLocationPage() {
 
         <LocationForm mode="create" />
       </div>
-    </AdminLayout>
   )
 }

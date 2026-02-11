@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { CategoryForm } from '../components/category-form'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,7 +18,6 @@ export const metadata: Metadata = {
 
 export default function NewCategoryPage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button
@@ -52,6 +50,5 @@ export default function NewCategoryPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

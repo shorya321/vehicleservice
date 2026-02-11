@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { PublicHeader } from '@/components/layout/public-header'
@@ -10,8 +12,9 @@ import { Testimonials } from '@/components/home/testimonials'
 import { JoinCommunity } from '@/components/home/join-community'
 import { FAQ } from '@/components/home/faq'
 import { Footer } from '@/components/layout/footer'
-import { getEnabledCurrencies, getDefaultCurrency } from '@/lib/currency/server'
+import { getEnabledCurrencies, getFeaturedCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
+import { CurrencyProvider } from '@/lib/currency/context'
 
 export const metadata = {
   title: 'VehicleService - Premier Luxury Transportation',
@@ -21,6 +24,7 @@ export const metadata = {
 export default async function HomePage() {
   const supabase = await createClient()
   const cookieStore = await cookies()
+  const todayStr = new Date().toISOString().split('T')[0]
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -35,9 +39,11 @@ export default async function HomePage() {
   }
 
   // Fetch currency data
-  const [currencies, defaultCurrency] = await Promise.all([
+  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates] = await Promise.all([
+    getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getDefaultCurrency(),
+    getExchangeRatesObject(),
   ])
 
   // Get user's currency preference from cookie
@@ -45,16 +51,20 @@ export default async function HomePage() {
   const currentCurrency = currencyCookie?.value || defaultCurrency
 
   return (
+    <CurrencyProvider
+      initialCurrency={currentCurrency}
+      exchangeRates={exchangeRates}
+      featuredCurrencies={featuredCurrencies}
+      allCurrencies={allEnabledCurrencies}
+    >
     <main className="bg-luxury-black">
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
-        currencies={currencies}
-        currentCurrency={currentCurrency}
       />
-      <Hero />
+      <Hero todayDate={todayStr} />
       <div className="bg-luxury-darkGray">
-        <DeparturePoints />
+        <DeparturePoints todayDate={todayStr} />
       </div>
       <div className="bg-luxury-black">
         <TransportationBenefits />
@@ -76,5 +86,6 @@ export default async function HomePage() {
       </div>
       <Footer />
     </main>
+    </CurrencyProvider>
   )
 }

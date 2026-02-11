@@ -1,8 +1,9 @@
 'use client'
+'use no memo'
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Phone, Menu, X, User, LogOut, Star } from 'lucide-react'
+import { Phone, Menu, X, User, LogOut, Star, Building2 } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { createClient } from '@/lib/supabase/client'
@@ -20,23 +21,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CurrencySelector } from '@/components/currency/currency-selector'
-import type { CurrencyInfo } from '@/lib/currency/types'
+import { useCurrency } from '@/lib/currency/context'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface PublicHeaderProps {
   initialUser?: SupabaseUser | null
   initialProfile?: Profile | null
-  currencies?: CurrencyInfo[]
-  currentCurrency?: string
 }
 
 export function PublicHeader({
   initialUser = null,
   initialProfile = null,
-  currencies = [],
-  currentCurrency = 'AED',
 }: PublicHeaderProps) {
+  const { allCurrencies } = useCurrency()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
@@ -163,12 +161,9 @@ export function PublicHeader({
 
           <div className="flex items-center gap-4 md:gap-6">
             {/* Currency Selector */}
-            {currencies.length > 1 && (
+            {allCurrencies.length > 1 && (
               <div className="hidden sm:block">
-                <CurrencySelector
-                  currencies={currencies}
-                  currentCurrency={currentCurrency}
-                />
+                <CurrencySelector />
               </div>
             )}
 
@@ -225,6 +220,10 @@ export function PublicHeader({
                   <DropdownMenuItem onClick={() => router.push('/account')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
                     <Star className="mr-2 h-4 w-4" />
                     My Reviews
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                    <Building2 className="mr-2 h-4 w-4" />
+                    Partner With Us
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
                   <DropdownMenuItem
@@ -290,10 +289,11 @@ export function PublicHeader({
               ))}
               <div className="pt-4 mt-2 border-t border-[var(--gold)]/10 flex flex-col gap-3">
                 {/* Mobile Currency Selector */}
-                {currencies.length > 1 && (
+                {allCurrencies.length > 1 && (
                   <div className="flex justify-center py-2">
                     <CurrencySelector
-                      currencies={currencies}
+                      featuredCurrencies={featuredCurrencies}
+                      allCurrencies={allCurrencies}
                       currentCurrency={currentCurrency}
                     />
                   </div>
@@ -365,6 +365,17 @@ export function PublicHeader({
                     >
                       <Star className="mr-2 h-4 w-4" />
                       My Reviews
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
+                      onClick={() => {
+                        router.push('/become-vendor')
+                        setIsMenuOpen(false)
+                      }}
+                    >
+                      <Building2 className="mr-2 h-4 w-4" />
+                      Partner With Us
                     </Button>
                     <Button
                       variant="ghost"

@@ -1,4 +1,3 @@
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { UserForm } from "../components/user-form"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -6,7 +5,6 @@ import { Button } from "@/components/ui/button"
 
 export default function NewUserPage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -24,6 +22,5 @@ export default function NewUserPage() {
 
         <UserForm mode="create" />
       </div>
-    </AdminLayout>
   )
 }

@@ -7,7 +7,6 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Palette, Bell, Shield, Settings2, ChevronRight, Coins } from 'lucide-react'
@@ -65,7 +64,6 @@ export default async function SettingsPage() {
   }
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <div className="space-y-6">
           {/* Page Header */}
@@ -108,6 +106,5 @@ export default async function SettingsPage() {
           </div>
         </div>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

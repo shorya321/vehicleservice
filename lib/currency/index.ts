@@ -50,6 +50,8 @@ export {
 // Server utilities
 export {
   getEnabledCurrencies,
+  getFeaturedCurrencies,
+  getPaginatedCurrencies,
   getAllCurrencies,
   getExchangeRates,
   getExchangeRatesObject,
@@ -82,6 +84,9 @@ export {
   isValidCurrencyCode,
   getUserCurrency,
 } from './detect'
+
+// Context (client-side currency switching)
+export { CurrencyProvider, useCurrency } from './context'
 
 // Cookie utilities
 export {

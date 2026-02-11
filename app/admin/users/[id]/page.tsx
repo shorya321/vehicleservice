@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { UserForm } from "../components/user-form"
 import { getUser } from "../actions"
 import { ArrowLeft } from "lucide-react"
@@ -46,7 +45,6 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -64,6 +62,5 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
 
         <UserForm mode="edit" user={user} businessProfile={businessProfile} />
       </div>
-    </AdminLayout>
   )
 }

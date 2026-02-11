@@ -2,7 +2,6 @@ import { Metadata } from 'next'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { ZonesTable } from './components/zones-table'
 import { getZones } from './actions'
 
@@ -15,7 +14,6 @@ export default async function ZonesPage() {
   const zones = await getZones()
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -41,6 +39,5 @@ export default async function ZonesPage() {
 
         <ZonesTable zones={zones} />
       </div>
-    </AdminLayout>
   )
 }

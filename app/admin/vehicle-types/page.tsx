@@ -7,7 +7,6 @@ import { VehicleTypesTable } from "./components/vehicle-types-table"
 import { VehicleTypeFilters as VehicleTypeFiltersComponent } from "./components/vehicle-type-filters"
 import { CustomPagination } from "@/components/ui/custom-pagination"
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -58,7 +57,6 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
     : 0
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -157,6 +155,5 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

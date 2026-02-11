@@ -52,9 +52,18 @@ export async function toggleCurrencyEnabled(
       }
     }
 
+    // When disabling, also unfeature
+    const updateData: Record<string, unknown> = {
+      is_enabled: isEnabled,
+      updated_at: new Date().toISOString(),
+    }
+    if (!isEnabled) {
+      updateData.is_featured = false
+    }
+
     const { error } = await adminClient
       .from('currency_settings')
-      .update({ is_enabled: isEnabled, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('currency_code', currencyCode)
 
     if (error) {
@@ -69,6 +78,67 @@ export async function toggleCurrencyEnabled(
     return { success: true }
   } catch (error) {
     console.error('[Currency] Error in toggleCurrencyEnabled:', error)
+    return { success: false, error: 'An unexpected error occurred' }
+  }
+}
+
+/**
+ * Toggle currency featured status
+ */
+export async function toggleCurrencyFeatured(
+  currencyCode: string,
+  isFeatured: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient()
+
+    // Verify admin role
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const adminClient = createAdminClient()
+
+    // If featuring, check currency is enabled first
+    if (isFeatured) {
+      const { data: currency } = await adminClient
+        .from('currency_settings')
+        .select('is_enabled')
+        .eq('currency_code', currencyCode)
+        .single()
+
+      if (!currency?.is_enabled) {
+        return { success: false, error: 'Currency must be enabled before featuring' }
+      }
+    }
+
+    const { error } = await adminClient
+      .from('currency_settings')
+      .update({ is_featured: isFeatured, updated_at: new Date().toISOString() })
+      .eq('currency_code', currencyCode)
+
+    if (error) {
+      console.error('[Currency] Error toggling featured:', error)
+      return { success: false, error: error.message }
+    }
+
+    revalidateTag('currencies')
+    revalidatePath('/admin/settings/currencies')
+
+    return { success: true }
+  } catch (error) {
+    console.error('[Currency] Error in toggleCurrencyFeatured:', error)
     return { success: false, error: 'An unexpected error occurred' }
   }
 }
@@ -140,6 +210,7 @@ export async function refreshExchangeRates(): Promise<{
   success: boolean
   message?: string
   error?: string
+  source?: 'api' | 'cache' | 'fallback'
   rates?: Record<string, number>
   lastUpdated?: string
 }> {
@@ -197,6 +268,8 @@ export async function refreshExchangeRates(): Promise<{
     return {
       success: result.success,
       message: result.message,
+      error: result.success ? undefined : result.message,
+      source: result.source,
       rates: result.rates,
       lastUpdated: result.lastUpdated,
     }

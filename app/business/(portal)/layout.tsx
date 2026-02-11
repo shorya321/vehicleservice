@@ -20,6 +20,8 @@ import { parseThemeConfig } from '@/lib/business/branding-utils';
 // Import business-specific design system
 import '@/app/business/globals.css';
 
+export const dynamic = 'force-dynamic'
+
 export default async function BusinessPortalLayout({
   children,
 }: {

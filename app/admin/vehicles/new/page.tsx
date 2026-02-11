@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { AdminVehicleForm } from "../components/admin-vehicle-form"
 import { getVendors } from "../actions"
-import { AdminLayout } from "@/components/layout/admin-layout"
-
 export const metadata: Metadata = {
   title: "Add Vehicle - Admin",
   description: "Add a new vehicle to the system",
@@ -24,7 +22,6 @@ export default async function AdminAddVehiclePage() {
 
   if (approvedVendors.length === 0) {
     return (
-      <AdminLayout>
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -52,12 +49,10 @@ export default async function AdminAddVehiclePage() {
             </Button>
           </div>
         </div>
-      </AdminLayout>
     )
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -75,6 +70,5 @@ export default async function AdminAddVehiclePage() {
 
         <AdminVehicleForm vendors={approvedVendors} />
       </div>
-    </AdminLayout>
   )
 }

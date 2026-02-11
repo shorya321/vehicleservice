@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Car } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 
 interface VehicleCategoryTabsProps {
   vehiclesByCategory: VehiclesByCategory[]
@@ -18,8 +19,6 @@ interface VehicleCategoryTabsProps {
     date?: string
     passengers?: string
   }
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
 export function VehicleCategoryTabs({
@@ -27,9 +26,8 @@ export function VehicleCategoryTabs({
   allVehicles,
   routeId,
   searchParams,
-  currentCurrency,
-  exchangeRates
 }: VehicleCategoryTabsProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const [activeCategory, setActiveCategory] = useState('all')
 
   // Calculate min price for all vehicles
@@ -122,8 +120,6 @@ export function VehicleCategoryTabs({
                 vehicle={vehicle}
                 routeId={routeId}
                 searchParams={searchParams}
-                currentCurrency={currentCurrency}
-                exchangeRates={exchangeRates}
               />
             ))}
           </div>

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { getUser } from "../../actions"
 import { PhotoUploadForm } from "./photo-upload-form"
 import { Button } from "@/components/ui/button"
@@ -28,7 +27,6 @@ export default async function PhotoUploadPage({ params }: PhotoUploadPageProps) 
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -60,6 +58,5 @@ export default async function PhotoUploadPage({ params }: PhotoUploadPageProps) 
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -79,7 +78,6 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
   const StatusIcon = statusConfig[status].icon
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -455,6 +453,5 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
           </div>
         </div>
       </div>
-    </AdminLayout>
   )
 }

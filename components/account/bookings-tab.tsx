@@ -5,11 +5,10 @@ import { Search, Filter, Car, Calendar, CheckCircle, XCircle, ChevronLeft, Chevr
 import { getBookings, getBookingStats, type BookingFilters } from "@/app/account/booking-actions"
 import { BookingCard } from "./booking-card"
 import { BookingDetailModal } from "./booking-detail-modal"
+import { useCurrency } from '@/lib/currency/context'
 
 interface BookingsTabProps {
   userId: string
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
 const STATUS_OPTIONS = [
@@ -28,7 +27,8 @@ const PAYMENT_OPTIONS = [
   { value: "refunded", label: "Refunded" },
 ]
 
-export function BookingsTab({ userId, currentCurrency, exchangeRates }: BookingsTabProps) {
+export function BookingsTab({ userId }: BookingsTabProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const [bookings, setBookings] = useState<any[]>([])
   const [stats, setStats] = useState({ total: 0, upcoming: 0, completed: 0, cancelled: 0 })
   const [isLoading, setIsLoading] = useState(true)
@@ -141,8 +141,6 @@ export function BookingsTab({ userId, currentCurrency, exchangeRates }: Bookings
                 key={booking.id}
                 booking={booking}
                 onClick={() => setSelectedBookingId(booking.id)}
-                currentCurrency={currentCurrency}
-                exchangeRates={exchangeRates}
               />
             ))}
           </>

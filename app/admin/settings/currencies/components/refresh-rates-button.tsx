@@ -26,12 +26,23 @@ export function RefreshRatesButton() {
       const result = await refreshExchangeRates()
 
       if (result.success) {
-        setLastResult('success')
-        toast.success(result.message || 'Exchange rates updated')
+        if (result.source === 'api') {
+          setLastResult('success')
+          toast.success(result.message || 'Exchange rates updated from live API')
+        } else if (result.source === 'fallback') {
+          setLastResult('error')
+          toast.warning('Using cached rates — live API unavailable', {
+            description: 'Rates were not updated. Try again later.',
+            duration: 6000,
+          })
+        } else {
+          setLastResult('success')
+          toast.success(result.message || 'Rates are up to date')
+        }
         router.refresh()
       } else {
         setLastResult('error')
-        toast.error(result.error || 'Failed to refresh rates')
+        toast.error(result.error || 'Failed to refresh rates', { duration: 6000 })
       }
     } catch (error) {
       setLastResult('error')

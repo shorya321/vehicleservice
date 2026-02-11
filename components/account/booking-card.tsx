@@ -2,6 +2,7 @@
 
 import { MapPin, Calendar, Clock, Car, ChevronRight } from "lucide-react"
 import { formatPrice } from "@/lib/currency/format"
+import { useCurrency } from '@/lib/currency/context'
 
 interface BookingCardProps {
   booking: {
@@ -22,8 +23,6 @@ interface BookingCardProps {
     }>
   }
   onClick: () => void
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -40,7 +39,8 @@ const PAYMENT_STYLES: Record<string, string> = {
   refunded: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 }
 
-export function BookingCard({ booking, onClick, currentCurrency, exchangeRates }: BookingCardProps) {
+export function BookingCard({ booking, onClick }: BookingCardProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const pickupDate = new Date(booking.pickup_datetime)
   const formattedDate = pickupDate.toLocaleDateString("en-US", {
     weekday: "short",

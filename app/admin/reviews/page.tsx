@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
@@ -28,8 +27,6 @@ export const metadata = {
   title: 'Review Management - Infinia Transfers Admin',
   description: 'Manage customer reviews and feedback',
 }
-
-export const dynamic = 'force-dynamic'
 
 export default async function AdminReviewsPage({ searchParams }: PageProps) {
   const supabase = await createClient()
@@ -77,7 +74,6 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
   const { data: stats } = await getAdminReviewStats()
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Reviews', href: '/admin/reviews' }]} />
 
@@ -214,6 +210,5 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
           </Card>
         </AnimatedCard>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { BookingsTable } from './components/bookings-table'
 import { ClientFilters } from './components/client-filters'
 import { getBookings, getBookingStats, BookingFilters } from './actions'
@@ -16,8 +15,6 @@ export const metadata: Metadata = {
   title: 'Bookings Management - Admin',
   description: 'Manage all customer bookings',
 }
-
-export const dynamic = 'force-dynamic'
 
 interface BookingsPageProps {
   searchParams: Promise<{
@@ -53,7 +50,6 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   const stats = await getBookingStats()
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         {/* Breadcrumb */}
         <Breadcrumb
@@ -218,6 +214,5 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
         </Card>
         </AnimatedCard>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

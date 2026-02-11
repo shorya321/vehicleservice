@@ -26,6 +26,9 @@ import {
   Layers,
   Mail,
   Star,
+  BookOpen,
+  FolderOpen,
+  PenLine,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -122,6 +125,34 @@ const navGroups: NavGroup[] = [
         href: "/admin/reviews",
         icon: Star,
         badge: null,
+      },
+    ]
+  },
+  {
+    label: 'Content',
+    items: [
+      {
+        name: "Blog",
+        href: "/admin/blog/posts",
+        icon: BookOpen,
+        badge: null,
+        submenu: [
+          {
+            name: "Blog Posts",
+            href: "/admin/blog/posts",
+            icon: PenLine,
+          },
+          {
+            name: "Categories",
+            href: "/admin/blog/categories",
+            icon: FolderOpen,
+          },
+          {
+            name: "Tags",
+            href: "/admin/blog/tags",
+            icon: Tag,
+          },
+        ]
       },
     ]
   },

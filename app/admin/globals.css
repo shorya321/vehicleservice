@@ -230,6 +230,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Override public theme heading color - use admin's foreground variable */
+h1, h2, h3, h4, h5, h6 {
+  color: hsl(var(--foreground));
+}
+
 /* Font display class */
 .font-display {
   font-family: var(--admin-font-display);

@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { requireAdmin } from "@/lib/auth/actions"
 import { RouteForm } from "../components/route-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,7 +21,6 @@ export default async function NewRoutePage() {
     .order('name')
 
   return (
-    <AdminLayout>
       <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
@@ -33,6 +31,5 @@ export default async function NewRoutePage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

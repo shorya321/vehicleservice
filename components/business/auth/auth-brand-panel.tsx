@@ -141,18 +141,6 @@ export function AuthBrandPanel({
         </MotionWrapper>
       </MotionWrapper>
 
-      {/* Mobile-only: Compact version */}
-      <style jsx>{`
-        @media (max-width: 767px) {
-          .auth-brand-panel {
-            padding: 1.5rem;
-            min-height: auto;
-          }
-          .luxury-text-display {
-            font-size: 1.75rem !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

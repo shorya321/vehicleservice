@@ -3,7 +3,7 @@
 /**
  * Currency Settings Table Component
  *
- * Displays currencies with toggle switches and default selection.
+ * Displays currencies with toggle switches, featured toggle, and default selection.
  */
 
 import { useState, useTransition } from 'react'
@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Loader2, Star, StarOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { toggleCurrencyEnabled, setDefaultCurrency } from '../actions'
+import { toggleCurrencyEnabled, toggleCurrencyFeatured, setDefaultCurrency } from '../actions'
 import type { CurrencySetting } from '@/lib/currency/types'
 
 interface CurrencyTableProps {
@@ -34,29 +34,18 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [loadingCurrency, setLoadingCurrency] = useState<string | null>(null)
+  const [loadingAction, setLoadingAction] = useState<string | null>(null)
 
-  /**
-   * Calculate display rate relative to the default currency.
-   * Stored rates are relative to USD, so we need to convert them
-   * to be relative to the default currency.
-   *
-   * Example with EUR as default:
-   * - Stored: USD=1.0, EUR=0.92, GBP=0.79
-   * - Display: EUR=1.0, USD=1.0870 (1/0.92), GBP=0.8587 (0.79/0.92)
-   */
   const getDisplayRate = (currencyCode: string): number => {
-    // If this is the default currency, it's always 1.0
     if (currencyCode === defaultCurrencyCode) return 1.0
-
     const rateFromUsd = rates[currencyCode] || 1.0
     const defaultRateFromUsd = rates[defaultCurrencyCode] || 1.0
-
-    // Convert: rate relative to default = rateFromUsd / defaultRateFromUsd
     return rateFromUsd / defaultRateFromUsd
   }
 
   const handleToggleEnabled = async (currencyCode: string, isEnabled: boolean) => {
     setLoadingCurrency(currencyCode)
+    setLoadingAction('enabled')
 
     startTransition(async () => {
       const result = await toggleCurrencyEnabled(currencyCode, isEnabled)
@@ -69,11 +58,32 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
       }
 
       setLoadingCurrency(null)
+      setLoadingAction(null)
+    })
+  }
+
+  const handleToggleFeatured = async (currencyCode: string, isFeatured: boolean) => {
+    setLoadingCurrency(currencyCode)
+    setLoadingAction('featured')
+
+    startTransition(async () => {
+      const result = await toggleCurrencyFeatured(currencyCode, isFeatured)
+
+      if (result.success) {
+        toast.success(`${currencyCode} ${isFeatured ? 'featured' : 'unfeatured'}`)
+        router.refresh()
+      } else {
+        toast.error(result.error || 'Failed to update featured status')
+      }
+
+      setLoadingCurrency(null)
+      setLoadingAction(null)
     })
   }
 
   const handleSetDefault = async (currencyCode: string) => {
     setLoadingCurrency(currencyCode)
+    setLoadingAction('default')
 
     startTransition(async () => {
       const result = await setDefaultCurrency(currencyCode)
@@ -86,6 +96,7 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
       }
 
       setLoadingCurrency(null)
+      setLoadingAction(null)
     })
   }
 
@@ -99,6 +110,7 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
             <TableHead className="w-[80px]">Symbol</TableHead>
             <TableHead className="w-[120px] text-right">Rate ({defaultCurrencyCode})</TableHead>
             <TableHead className="w-[100px] text-center">Enabled</TableHead>
+            <TableHead className="w-[100px] text-center">Featured</TableHead>
             <TableHead className="w-[100px] text-center">Default</TableHead>
           </TableRow>
         </TableHeader>
@@ -134,15 +146,15 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="flex justify-center">
-                    {isLoading ? (
+                    {isLoading && loadingAction === 'enabled' ? (
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     ) : (
                       <Switch
-                        checked={currency.is_enabled}
+                        checked={currency.is_enabled ?? false}
                         onCheckedChange={(checked) =>
                           handleToggleEnabled(currency.currency_code, checked)
                         }
-                        disabled={isPending || currency.is_default}
+                        disabled={isPending || (currency.is_default ?? false)}
                         aria-label={`${currency.is_enabled ? 'Disable' : 'Enable'} ${currency.name}`}
                       />
                     )}
@@ -150,7 +162,23 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="flex justify-center">
-                    {isLoading ? (
+                    {isLoading && loadingAction === 'featured' ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Switch
+                        checked={currency.is_featured ?? false}
+                        onCheckedChange={(checked) =>
+                          handleToggleFeatured(currency.currency_code, checked)
+                        }
+                        disabled={isPending || !currency.is_enabled}
+                        aria-label={`${currency.is_featured ? 'Unfeature' : 'Feature'} ${currency.name}`}
+                      />
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex justify-center">
+                    {isLoading && loadingAction === 'default' ? (
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     ) : currency.is_default ? (
                       <Star className="h-5 w-5 fill-primary text-primary" />

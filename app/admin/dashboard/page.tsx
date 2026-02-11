@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -54,7 +53,6 @@ export default async function AdminDashboard() {
   const metrics = await getDashboardMetrics()
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -425,6 +423,5 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

@@ -5,7 +5,6 @@ import { Plus, Tag } from 'lucide-react'
 import { CategoryTableWithBulk } from './components/category-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getCategories, getCategoryUsageCount, CategoryFilters } from './actions'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -19,8 +18,6 @@ export const metadata: Metadata = {
   title: 'Vehicle Categories - Admin',
   description: 'Manage vehicle categories',
 }
-
-export const dynamic = 'force-dynamic'
 
 interface VehicleCategoriesPageProps {
   searchParams: Promise<{
@@ -53,7 +50,6 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
   )
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -110,6 +106,5 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

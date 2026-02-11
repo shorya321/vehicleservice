@@ -1,5 +1,4 @@
 import { Suspense } from "react"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { VendorApplicationsTable } from "./components/vendor-applications-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,8 +12,6 @@ export const metadata = {
   title: "Vendor Applications | Admin",
   description: "Review and manage vendor applications",
 }
-
-export const dynamic = 'force-dynamic'
 
 interface PageProps {
   searchParams: Promise<{
@@ -39,7 +36,6 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
   }
   
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -151,7 +147,6 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }
 

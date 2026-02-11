@@ -8,16 +8,12 @@ import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BusinessAccountsTableWrapper } from './components/business-accounts-table-wrapper';
 import { ClientFilters } from './components/client-filters';
-import { AdminLayout } from '@/components/layout/admin-layout';
 import { AnimatedPage } from '@/components/layout/animated-page';
 
 export const metadata: Metadata = {
   title: 'Business Accounts | Admin Portal',
   description: 'Manage B2B business accounts',
 };
-
-// Force dynamic rendering for real-time data
-export const dynamic = 'force-dynamic';
 
 interface SearchParams {
   search?: string;
@@ -107,7 +103,6 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
   const totalPages = Math.ceil((count || 0) / limit);
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <div className="space-y-6">
           {/* Page Header */}
@@ -199,6 +194,5 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
           </Card>
         </div>
       </AnimatedPage>
-    </AdminLayout>
   );
 }

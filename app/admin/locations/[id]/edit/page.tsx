@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { LocationForm } from '../../components/location-form'
 import { createClient } from '@/lib/supabase/server'
-import { AdminLayout } from '@/components/layout/admin-layout'
-
 export const metadata: Metadata = {
   title: 'Edit Location - Admin',
   description: 'Edit location details',
@@ -32,7 +30,6 @@ export default async function EditLocationPage({
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" asChild>
@@ -50,6 +47,5 @@ export default async function EditLocationPage({
 
         <LocationForm location={location} mode="edit" />
       </div>
-    </AdminLayout>
   )
 }

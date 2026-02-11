@@ -15,6 +15,7 @@ import { ZonesList } from '@/components/search/zones-list'
 import { Clock, MapPin } from 'lucide-react'
 import { motion } from 'motion/react'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 
 interface SearchResultsProps {
   results: SearchResult | null
@@ -24,11 +25,10 @@ interface SearchResultsProps {
     date?: string
     passengers?: string
   }
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
-export function SearchResults({ results, searchParams, currentCurrency, exchangeRates }: SearchResultsProps) {
+export function SearchResults({ results, searchParams }: SearchResultsProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const [filters, setFilters] = useState({
     categories: [] as string[],
     priceRange: [0, Number.MAX_VALUE] as [number, number],
@@ -213,8 +213,6 @@ export function SearchResults({ results, searchParams, currentCurrency, exchange
             vehicleTypesByCategory={results.vehicleTypesByCategory}
             allVehicleTypes={results.vehicleTypes}
             searchParams={searchParams}
-            currentCurrency={currentCurrency}
-            exchangeRates={exchangeRates}
           />
         ) : (
           /* Fallback to grid if no categories */

@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { requireAdmin } from '@/lib/auth/actions'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,7 +59,6 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
   }
 
   return (
-    <AdminLayout user={user}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -233,6 +231,5 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
-    </AdminLayout>
   )
 }

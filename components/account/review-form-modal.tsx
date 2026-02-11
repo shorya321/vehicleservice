@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X, Star, MapPin, Calendar, Car, Loader2 } from "lucide-react"
 import { createReview, updateReview } from "@/app/account/review-actions"
@@ -43,7 +43,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
     },
   })
 
-  const currentRating = form.watch("rating")
+  const currentRating = useWatch({ control: form.control, name: "rating" })
   const selectedBookingData = eligibleBookings?.find((b) => b.id === selectedBooking)
 
   const handleSelectBooking = (bookingId: string) => {

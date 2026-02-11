@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { requireAdmin } from "@/lib/auth/actions"
 import { getRoutes } from "./actions"
 import { RoutesTableWithBulk } from "./components/routes-table-with-bulk"
@@ -12,8 +11,6 @@ export const metadata: Metadata = {
   title: 'Routes - Admin Portal',
   description: 'Manage transfer routes',
 }
-
-export const dynamic = 'force-dynamic'
 
 interface AdminRoutesPageProps {
   searchParams: Promise<{
@@ -42,7 +39,6 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
   const routesData = await getRoutes(filters)
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -64,6 +60,5 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
           <RoutesTableWithBulk routes={routesData.routes} pagination={routesData} />
         </div>
       </div>
-    </AdminLayout>
   )
 }

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Input } from '@/components/ui/input'
 import { CalendarDays, Users } from 'lucide-react'
@@ -7,28 +7,19 @@ import { useRouter } from 'next/navigation'
 import { Location } from '@/lib/types/location'
 import { LocationAutocomplete } from './location-autocomplete'
 
-export function SearchForm() {
+export function SearchForm({ todayDate }: { todayDate: string }) {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
 
   const [fromLocation, setFromLocation] = useState<Location | null>(null)
   const [toLocation, setToLocation] = useState<Location | null>(null)
   const [passengers, setPassengers] = useState(2)
-
-  // Initialize with today's date
-  const today = new Date()
-  const todayStr = today.toISOString().split('T')[0]
-  const [selectedDate, setSelectedDate] = useState(todayStr)
+  const [selectedDate, setSelectedDate] = useState(todayDate)
 
   // From autocomplete state
   const [fromInput, setFromInput] = useState('')
 
   // To autocomplete state
   const [toInput, setToInput] = useState('')
-
-  useEffect(() => {
-    queueMicrotask(() => setMounted(true))
-  }, [])
 
   const handleFromInput = (value: string) => {
     setFromInput(value)
@@ -113,7 +104,7 @@ export function SearchForm() {
                 id="travel-date"
                 type="date"
                 value={selectedDate}
-                min={todayStr}
+                min={todayDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="luxury-input pl-11 h-12"
               />
@@ -145,7 +136,7 @@ export function SearchForm() {
         {/* Search Button */}
         <button
           type="submit"
-          disabled={!fromLocation || !toLocation || !mounted}
+          disabled={!fromLocation || !toLocation}
           className="btn btn-primary btn-lg w-full mt-2 disabled:cursor-not-allowed"
         >
           Search Vehicles

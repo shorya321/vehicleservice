@@ -30,7 +30,7 @@ export const getEnabledCurrencies = unstable_cache(
 
       const { data, error } = await supabase
         .from('currency_settings')
-        .select('currency_code, name, symbol, decimal_places, is_default, display_order')
+        .select('currency_code, name, symbol, decimal_places, is_default, is_featured, display_order')
         .eq('is_enabled', true)
         .order('display_order', { ascending: true })
 
@@ -47,8 +47,9 @@ export const getEnabledCurrencies = unstable_cache(
         code: c.currency_code,
         name: c.name,
         symbol: c.symbol,
-        decimalPlaces: c.decimal_places,
-        isDefault: c.is_default,
+        decimalPlaces: c.decimal_places ?? 2,
+        isDefault: c.is_default ?? false,
+        isFeatured: c.is_featured ?? false,
       }))
     } catch (error) {
       console.error('[Currency] Error in getEnabledCurrencies:', error)
@@ -61,6 +62,136 @@ export const getEnabledCurrencies = unstable_cache(
     tags: [CACHE_TAGS.currencies],
   }
 )
+
+/**
+ * Fetch featured currencies (enabled + featured)
+ * Cached for 1 hour, revalidated on currency settings change
+ */
+export const getFeaturedCurrencies = unstable_cache(
+  async (): Promise<CurrencyInfo[]> => {
+    try {
+      const supabase = createAdminClient()
+
+      const { data, error } = await supabase
+        .from('currency_settings')
+        .select('currency_code, name, symbol, decimal_places, is_default, is_featured, display_order')
+        .eq('is_enabled', true)
+        .eq('is_featured', true)
+        .order('display_order', { ascending: true })
+
+      if (error) {
+        console.error('[Currency] Error fetching featured currencies:', error)
+        return getDefaultCurrencies()
+      }
+
+      if (!data || data.length === 0) {
+        return getDefaultCurrencies()
+      }
+
+      return data.map((c) => ({
+        code: c.currency_code,
+        name: c.name,
+        symbol: c.symbol,
+        decimalPlaces: c.decimal_places ?? 2,
+        isDefault: c.is_default ?? false,
+        isFeatured: true,
+      }))
+    } catch (error) {
+      console.error('[Currency] Error in getFeaturedCurrencies:', error)
+      return getDefaultCurrencies()
+    }
+  },
+  ['featured-currencies'],
+  {
+    revalidate: 3600,
+    tags: [CACHE_TAGS.currencies],
+  }
+)
+
+/**
+ * Paginated currencies for admin panel
+ */
+export async function getPaginatedCurrencies({
+  page = 1,
+  limit = 10,
+  search,
+  filter,
+}: {
+  page?: number
+  limit?: number
+  search?: string
+  filter?: 'all' | 'enabled' | 'featured' | 'disabled'
+}): Promise<{
+  currencies: CurrencySetting[]
+  total: number
+  page: number
+  totalPages: number
+}> {
+  try {
+    const adminClient = createAdminClient()
+
+    let query = adminClient
+      .from('currency_settings')
+      .select('*', { count: 'exact' })
+
+    // Apply filter
+    if (filter === 'enabled') {
+      query = query.eq('is_enabled', true)
+    } else if (filter === 'featured') {
+      query = query.eq('is_featured', true)
+    } else if (filter === 'disabled') {
+      query = query.eq('is_enabled', false)
+    }
+
+    // Apply search
+    if (search) {
+      query = query.or(`currency_code.ilike.%${search}%,name.ilike.%${search}%`)
+    }
+
+    // Get total count
+    const { count } = await query
+
+    const total = count || 0
+    const totalPages = Math.ceil(total / limit)
+    const offset = (page - 1) * limit
+
+    // Re-build query for data fetch (Supabase doesn't allow reusing after count)
+    let dataQuery = adminClient
+      .from('currency_settings')
+      .select('*')
+
+    if (filter === 'enabled') {
+      dataQuery = dataQuery.eq('is_enabled', true)
+    } else if (filter === 'featured') {
+      dataQuery = dataQuery.eq('is_featured', true)
+    } else if (filter === 'disabled') {
+      dataQuery = dataQuery.eq('is_enabled', false)
+    }
+
+    if (search) {
+      dataQuery = dataQuery.or(`currency_code.ilike.%${search}%,name.ilike.%${search}%`)
+    }
+
+    const { data, error } = await dataQuery
+      .order('display_order', { ascending: true })
+      .range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('[Currency] Error fetching paginated currencies:', error)
+      return { currencies: [], total: 0, page, totalPages: 0 }
+    }
+
+    return {
+      currencies: data || [],
+      total,
+      page,
+      totalPages,
+    }
+  } catch (error) {
+    console.error('[Currency] Error in getPaginatedCurrencies:', error)
+    return { currencies: [], total: 0, page, totalPages: 0 }
+  }
+}
 
 /**
  * Fetch all currencies from database (for admin)
@@ -231,10 +362,10 @@ export async function areRatesStale(): Promise<boolean> {
  */
 function getDefaultCurrencies(): CurrencyInfo[] {
   return [
-    { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', decimalPlaces: 2, isDefault: true },
-    { code: 'USD', name: 'US Dollar', symbol: '$', decimalPlaces: 2, isDefault: false },
-    { code: 'EUR', name: 'Euro', symbol: '€', decimalPlaces: 2, isDefault: false },
-    { code: 'GBP', name: 'British Pound', symbol: '£', decimalPlaces: 2, isDefault: false },
+    { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', decimalPlaces: 2, isDefault: true, isFeatured: true },
+    { code: 'USD', name: 'US Dollar', symbol: '$', decimalPlaces: 2, isDefault: false, isFeatured: true },
+    { code: 'EUR', name: 'Euro', symbol: '€', decimalPlaces: 2, isDefault: false, isFeatured: true },
+    { code: 'GBP', name: 'British Pound', symbol: '£', decimalPlaces: 2, isDefault: false, isFeatured: true },
   ]
 }
 

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { User, Shield, Settings, Car, Star, Bell } from "lucide-react"
 import { ProfileCard } from "@/components/account/profile-card"
+import { VendorCTA } from "@/components/account/vendor-cta"
 import { PersonalInfoTab } from "@/components/account/personal-info-tab"
 import { SecurityTab } from "@/components/account/security-tab"
 import { PreferencesTab } from "@/components/account/preferences-tab"
@@ -39,8 +40,12 @@ interface AccountClientProps {
     reason: string
     requested_at: string
   } | null
-  currentCurrency: string
-  exchangeRates: Record<string, number>
+  vendorApplication: {
+    id: string
+    status: string
+    business_name: string | null
+    created_at: string
+  } | null
 }
 
 const TABS = [
@@ -52,7 +57,7 @@ const TABS = [
   { id: "notifications", label: "Notifications", icon: Bell },
 ]
 
-export function AccountClient({ user, stats, notificationPrefs, deletionRequest, currentCurrency, exchangeRates }: AccountClientProps) {
+export function AccountClient({ user, stats, notificationPrefs, deletionRequest, vendorApplication }: AccountClientProps) {
   const [activeTab, setActiveTab] = useState("personal")
 
   return (
@@ -69,6 +74,9 @@ export function AccountClient({ user, stats, notificationPrefs, deletionRequest,
 
       {/* Profile Overview Card */}
       <ProfileCard user={user} stats={stats} />
+
+      {/* Vendor Application CTA */}
+      <VendorCTA vendorApplication={vendorApplication} />
 
       {/* Tabs Navigation */}
       <div className="account-tabs-card overflow-x-auto">
@@ -98,8 +106,6 @@ export function AccountClient({ user, stats, notificationPrefs, deletionRequest,
         {activeTab === "bookings" && (
           <BookingsTab
             userId={user.id}
-            currentCurrency={currentCurrency}
-            exchangeRates={exchangeRates}
           />
         )}
         {activeTab === "reviews" && <ReviewsTab userId={user.id} />}

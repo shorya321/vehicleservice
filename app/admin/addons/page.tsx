@@ -6,7 +6,6 @@ import { getAddons, getAddonCategories, AddonFilters } from "./actions"
 import { AddonsTable } from "./components/addons-table"
 import { AddonFilters as AddonFiltersComponent } from "./components/addon-filters"
 import { CustomPagination } from "@/components/ui/custom-pagination"
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -52,7 +51,6 @@ export default async function AddonsPage({ searchParams }: PageProps) {
   const freeCount = addons.filter(a => Number(a.price) === 0).length
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -151,6 +149,5 @@ export default async function AddonsPage({ searchParams }: PageProps) {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

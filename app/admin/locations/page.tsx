@@ -5,7 +5,6 @@ import { Plus, MapPin } from 'lucide-react'
 import { LocationTableWithBulk } from './components/location-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getLocations, getCountries } from './actions'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { LocationFilters } from '@/lib/types/location'
 import {
   Card,
@@ -19,8 +18,6 @@ export const metadata: Metadata = {
   title: 'Locations - Admin',
   description: 'Manage pickup and dropoff locations',
 }
-
-export const dynamic = 'force-dynamic'
 
 interface LocationsPageProps {
   searchParams: Promise<{
@@ -56,7 +53,6 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
   const countries = await getCountries()
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -151,6 +147,5 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

@@ -105,7 +105,7 @@ export function Footer() {
             transition={{ duration: 0.5, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            <p className="text-xs text-[var(--text-muted)]">
+            <p className="text-xs text-[var(--text-muted)]" suppressHydrationWarning>
               © {new Date().getFullYear()} Infinia Transfers. All Rights Reserved.
             </p>
 

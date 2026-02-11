@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 import { motion } from 'motion/react'
 
 interface VehicleCardProps {
@@ -25,12 +26,11 @@ interface VehicleCardProps {
     date?: string
     passengers?: string
   }
-  currentCurrency: string
-  exchangeRates: Record<string, number>
   index?: number
 }
 
-export function VehicleCard({ vehicle, routeId, searchParams, currentCurrency, exchangeRates, index = 0 }: VehicleCardProps) {
+export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: VehicleCardProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const vehicleImage = vehicle.images[0] || '/placeholder-vehicle.jpg'
 
   const bookingUrl = `/booking/vehicle/${vehicle.id}?${new URLSearchParams({

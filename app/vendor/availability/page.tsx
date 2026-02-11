@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   description: 'Manage vehicle and driver availability',
 }
 
-export const dynamic = 'force-dynamic'
-
 export default async function VendorAvailabilityPage() {
   const user = await requireVendor()
   const supabase = await createClient()

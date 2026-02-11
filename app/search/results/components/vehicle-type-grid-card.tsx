@@ -12,6 +12,7 @@ import {
   Star
 } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 
 interface VehicleTypeGridCardProps {
   vehicleType: VehicleTypeResult
@@ -21,8 +22,6 @@ interface VehicleTypeGridCardProps {
     date?: string
     passengers?: string
   }
-  currentCurrency: string
-  exchangeRates: Record<string, number>
   index?: number
 }
 
@@ -39,7 +38,8 @@ const vehicleModels: Record<string, string> = {
   'bus': '35-Seater Bus, 45-Seater Bus'
 }
 
-export function VehicleTypeGridCard({ vehicleType, searchParams, currentCurrency, exchangeRates, index = 0 }: VehicleTypeGridCardProps) {
+export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: VehicleTypeGridCardProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const vehicleTypeImage = vehicleType.image || `/images/vehicle-types/${vehicleType.slug}.jpg`
   const models = vehicleModels[vehicleType.slug] || vehicleType.name
 

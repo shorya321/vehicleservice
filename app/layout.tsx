@@ -74,7 +74,7 @@ export default async function RootLayout({
       style={themeStyles}
       suppressHydrationWarning
     >
-      <body className={`${outfit.className} luxury-scrollbar`}>
+      <body className={`${outfit.className} luxury-scrollbar`} suppressHydrationWarning>
         <NextThemesProvider
           attribute="class"
           defaultTheme="dark"

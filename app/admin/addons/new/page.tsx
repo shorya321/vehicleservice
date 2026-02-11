@@ -2,7 +2,6 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -19,7 +18,6 @@ export const metadata: Metadata = {
 
 export default function NewAddonPage() {
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -47,6 +45,5 @@ export default function NewAddonPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

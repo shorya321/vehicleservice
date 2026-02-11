@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { LocationAssignment } from '../../components/location-assignment'
 import { getZone } from '../../actions'
 import { getLocationsWithZones } from './actions'
@@ -31,7 +30,6 @@ export default async function ZoneLocationsPage({ params }: ZoneLocationsPagePro
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/admin/zones">
@@ -54,6 +52,5 @@ export default async function ZoneLocationsPage({ params }: ZoneLocationsPagePro
           locations={locations}
         />
       </div>
-    </AdminLayout>
   )
 }

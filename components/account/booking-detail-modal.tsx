@@ -5,16 +5,16 @@ import { X, MapPin, Calendar, Clock, Users, Briefcase, Car, Phone, Mail, Buildin
 import { getBookingDetails, cancelBooking } from "@/app/account/booking-actions"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency/format"
+import { useCurrency } from '@/lib/currency/context'
 
 interface BookingDetailModalProps {
   bookingId: string
   onClose: () => void
   onRefresh: () => void
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
-export function BookingDetailModal({ bookingId, onClose, onRefresh, currentCurrency, exchangeRates }: BookingDetailModalProps) {
+export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDetailModalProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const [booking, setBooking] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCancelling, setIsCancelling] = useState(false)

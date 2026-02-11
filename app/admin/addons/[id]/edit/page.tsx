@@ -3,7 +3,6 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AdminLayout } from '@/components/layout/admin-layout'
 import {
   Card,
   CardContent,
@@ -34,7 +33,6 @@ export default async function EditAddonPage({ params }: PageProps) {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
@@ -62,6 +60,5 @@ export default async function EditAddonPage({ params }: PageProps) {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   )
 }

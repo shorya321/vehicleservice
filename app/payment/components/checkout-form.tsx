@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2, Shield, Lock, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 import { AcceptedCards } from './accepted-cards'
 
 interface CheckoutFormProps {
@@ -19,11 +20,10 @@ interface CheckoutFormProps {
   amount: number
   bookingNumber: string
   clientSecret?: string
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
-export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret, currentCurrency, exchangeRates }: CheckoutFormProps) {
+export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret }: CheckoutFormProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const stripe = useStripe()
   const elements = useElements()
   const router = useRouter()

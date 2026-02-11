@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   description: 'Manage your assigned bookings',
 }
 
-export const dynamic = 'force-dynamic'
-
 interface VendorBookingsPageProps {
   searchParams: Promise<{
     search?: string

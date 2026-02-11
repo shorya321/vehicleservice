@@ -13,7 +13,6 @@ import { AdjustCreditsButton } from './components/adjust-credits-button';
 import { UpdateStatusButton } from './components/update-status-button';
 import { ApproveButton } from './components/approve-button';
 import { RejectButton } from './components/reject-button';
-import { AdminLayout } from '@/components/layout/admin-layout';
 import { AnimatedPage } from '@/components/layout/animated-page';
 
 export const metadata: Metadata = {
@@ -65,7 +64,6 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
     .limit(10);
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <div className="space-y-6">
           {/* Page Header */}
@@ -246,6 +244,5 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
       </Card>
         </div>
       </AnimatedPage>
-    </AdminLayout>
   );
 }

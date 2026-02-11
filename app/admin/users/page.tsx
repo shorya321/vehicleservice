@@ -1,5 +1,4 @@
 import { Suspense } from "react"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { Button } from "@/components/ui/button"
 import { UserTableWithBulk } from "./components/user-table-with-bulk"
 import { ClientFilters } from "./components/client-filters"
@@ -18,8 +17,6 @@ import {
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { AnimatedPage } from "@/components/layout/animated-page"
 import { AnimatedCard } from "@/components/ui/animated-card"
-
-export const dynamic = 'force-dynamic'
 
 interface UsersPageProps {
   searchParams: Promise<{
@@ -59,7 +56,6 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   const { users, total, page, totalPages } = await getUsers(filters)
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         {/* Breadcrumb */}
         <Breadcrumb
@@ -165,6 +161,5 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         </Card>
         </AnimatedCard>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
@@ -8,8 +7,6 @@ import { PublicLayout } from '@/components/layout/public-layout'
 import { getRouteById, getVehicleType, getLocationDetails, getActiveAddons } from './actions'
 import { createClient } from '@/lib/supabase/server'
 import { AmbientBackground } from '@/components/checkout/ambient-background'
-import { getExchangeRatesObject, getDefaultCurrency } from '@/lib/currency/server'
-import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 
 export const metadata: Metadata = {
   title: 'Checkout | Complete Your Booking',
@@ -31,22 +28,11 @@ interface CheckoutPageProps {
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
   const params = await searchParams
-  const cookieStore = await cookies()
 
   // Validate required parameters
   if (!params.from || !params.to || !params.vehicleType) {
     redirect('/')
   }
-
-  // Fetch currency data
-  const [rates, defaultCurrency] = await Promise.all([
-    getExchangeRatesObject(),
-    getDefaultCurrency(),
-  ])
-
-  // Get user's currency preference from cookie
-  const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
-  const currentCurrency = currencyCookie?.value || defaultCurrency
 
   // Check authentication
   const supabase = await createClient()
@@ -189,8 +175,6 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
-            currentCurrency={currentCurrency}
-            exchangeRates={rates}
           />
         </div>
       </div>

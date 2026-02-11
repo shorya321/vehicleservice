@@ -17,8 +17,6 @@ interface VehicleTypeCategoryTabsProps {
     date?: string
     passengers?: string
   }
-  currentCurrency: string
-  exchangeRates: Record<string, number>
 }
 
 type SortOption = 'price-asc' | 'price-desc' | 'capacity' | 'name'
@@ -29,8 +27,6 @@ export function VehicleTypeCategoryTabs({
   vehicleTypesByCategory,
   allVehicleTypes,
   searchParams,
-  currentCurrency,
-  exchangeRates
 }: VehicleTypeCategoryTabsProps) {
   const [activeCategory, setActiveCategory] = useState('all')
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
@@ -149,8 +145,6 @@ export function VehicleTypeCategoryTabs({
             key={vehicleType.id}
             vehicleType={vehicleType}
             searchParams={searchParams}
-            currentCurrency={currentCurrency}
-            exchangeRates={exchangeRates}
             index={index}
           />
         ))}

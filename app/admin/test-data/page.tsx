@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AdminLayout } from "@/components/layout/admin-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -51,7 +50,6 @@ export default async function TestDataPage() {
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Test Data Generator</h1>
@@ -136,6 +134,5 @@ export default async function TestDataPage() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
   )
 }

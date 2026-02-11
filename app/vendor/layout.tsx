@@ -1,22 +1,26 @@
 /**
  * Vendor Layout
  * Shares theme with admin portal - not affected by business portal customizations
- * Uses admin-specific globals.css and AdminThemeProvider
+ * Uses admin-specific globals.css and AdminThemeContextProvider
  */
 
 import '@/app/admin/globals.css';
-import { AdminThemeProvider } from '@/lib/admin/theme-provider';
+import { getAdminThemeSettings } from '@/lib/admin/theme-server';
+import { AdminThemeContextProvider } from '@/lib/admin/theme-context';
 
-export default function VendorLayout({
+export const dynamic = 'force-dynamic'
+
+export default async function VendorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const theme = await getAdminThemeSettings();
   return (
-    <AdminThemeProvider>
-      <div className="font-[family-name:var(--admin-font-body)]">
+    <div className="font-[family-name:var(--admin-font-body)]">
+      <AdminThemeContextProvider theme={theme}>
         {children}
-      </div>
-    </AdminThemeProvider>
+      </AdminThemeContextProvider>
+    </div>
   );
 }

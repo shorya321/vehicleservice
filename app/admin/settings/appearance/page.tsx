@@ -10,7 +10,6 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAdminThemeSettings } from '@/lib/admin/theme-server'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { AppearanceSettingsForm } from './components/appearance-form'
 import { Palette } from 'lucide-react'
@@ -44,7 +43,6 @@ export default async function AppearanceSettingsPage() {
   const currentTheme = await getAdminThemeSettings()
 
   return (
-    <AdminLayout>
       <AnimatedPage>
         <div className="space-y-6">
           {/* Page Header */}
@@ -64,6 +62,5 @@ export default async function AppearanceSettingsPage() {
           <AppearanceSettingsForm currentTheme={currentTheme} />
         </div>
       </AnimatedPage>
-    </AdminLayout>
   )
 }

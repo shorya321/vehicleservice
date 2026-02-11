@@ -1,15 +1,9 @@
 import { Metadata } from "next"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { AccountClient } from "./account-client"
-import {
-  getExchangeRatesObject,
-  getDefaultCurrency,
-  CURRENCY_COOKIE_NAME,
-} from "@/lib/currency"
 
 export const metadata: Metadata = {
   title: "My Account | Manage Your Profile & Bookings",
@@ -62,6 +56,13 @@ async function getAccountData(userId: string) {
     .eq("status", "pending")
     .single()
 
+  // Fetch vendor application status
+  const { data: vendorApplication } = await adminClient
+    .from("vendor_applications")
+    .select("id, status, business_name, created_at")
+    .eq("user_id", userId)
+    .single()
+
   return {
     profile,
     stats: {
@@ -71,6 +72,7 @@ async function getAccountData(userId: string) {
     },
     notificationPrefs,
     deletionRequest,
+    vendorApplication,
   }
 }
 
@@ -85,20 +87,11 @@ export default async function AccountPage() {
     redirect("/login?redirect=/account")
   }
 
-  const { profile, stats, notificationPrefs, deletionRequest } = await getAccountData(user.id)
+  const { profile, stats, notificationPrefs, deletionRequest, vendorApplication } = await getAccountData(user.id)
 
   if (!profile) {
     redirect("/login?redirect=/account")
   }
-
-  // Fetch currency data
-  const cookieStore = await cookies()
-  const [rates, defaultCurrency] = await Promise.all([
-    getExchangeRatesObject(),
-    getDefaultCurrency(),
-  ])
-  const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
-  const currentCurrency = currencyCookie?.value || defaultCurrency
 
   return (
     <PublicLayout>
@@ -120,8 +113,7 @@ export default async function AccountPage() {
             stats={stats}
             notificationPrefs={notificationPrefs}
             deletionRequest={deletionRequest}
-            currentCurrency={currentCurrency}
-            exchangeRates={rates}
+            vendorApplication={vendorApplication}
           />
         </div>
       </div>

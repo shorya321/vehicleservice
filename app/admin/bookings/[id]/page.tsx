@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import { AdminLayout } from '@/components/layout/admin-layout'
 import { getBookingDetails } from '../actions'
 import { BookingDetail } from './components/booking-detail'
 import { Button } from '@/components/ui/button'
@@ -34,7 +33,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -56,6 +54,5 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
         {/* Booking Details */}
         <BookingDetail booking={booking} />
       </div>
-    </AdminLayout>
   )
 }

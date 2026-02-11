@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Car, Calendar, MapPin, Package, LogOut } from 'lucide-react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Driver Dashboard',
   description: 'Driver dashboard and trip management',

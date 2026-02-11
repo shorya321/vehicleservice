@@ -24,6 +24,7 @@ import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { cn } from '@/lib/utils'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { formatPrice } from '@/lib/currency/format'
+import { useCurrency } from '@/lib/currency/context'
 
 interface OrderSummaryProps {
   route: RouteDetails
@@ -39,8 +40,6 @@ interface OrderSummaryProps {
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
   selectedAddons?: OrderSummaryAddon[]
-  currentCurrency?: string
-  exchangeRates?: Record<string, number>
 }
 
 export function OrderSummary({
@@ -57,9 +56,8 @@ export function OrderSummary({
   agreeToTerms = false,
   onAgreeToTermsChange,
   selectedAddons = [],
-  currentCurrency = 'AED',
-  exchangeRates = {},
 }: OrderSummaryProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   // Helper function to format price in user's currency
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
   const isConverted = currentCurrency !== 'AED'

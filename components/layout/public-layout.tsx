@@ -2,8 +2,9 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { PublicHeader } from './public-header'
 import { Footer } from './footer'
-import { getEnabledCurrencies, getDefaultCurrency } from '@/lib/currency/server'
+import { getFeaturedCurrencies, getEnabledCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
+import { CurrencyProvider } from '@/lib/currency/context'
 
 export async function PublicLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -22,9 +23,11 @@ export async function PublicLayout({ children }: { children: React.ReactNode }) 
   }
 
   // Fetch currency data
-  const [currencies, defaultCurrency] = await Promise.all([
+  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates] = await Promise.all([
+    getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getDefaultCurrency(),
+    getExchangeRatesObject(),
   ])
 
   // Get user's currency preference from cookie
@@ -32,17 +35,22 @@ export async function PublicLayout({ children }: { children: React.ReactNode }) 
   const currentCurrency = currencyCookie?.value || defaultCurrency
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <PublicHeader
-        initialUser={user}
-        initialProfile={profile}
-        currencies={currencies}
-        currentCurrency={currentCurrency}
-      />
-      <main className="flex-1 pt-20 md:pt-24">
-        {children}
-      </main>
-      <Footer />
-    </div>
+    <CurrencyProvider
+      initialCurrency={currentCurrency}
+      exchangeRates={exchangeRates}
+      featuredCurrencies={featuredCurrencies}
+      allCurrencies={allEnabledCurrencies}
+    >
+      <div className="min-h-screen flex flex-col bg-background">
+        <PublicHeader
+          initialUser={user}
+          initialProfile={profile}
+        />
+        <main className="flex-1 pt-20 md:pt-24">
+          {children}
+        </main>
+        <Footer />
+      </div>
+    </CurrencyProvider>
   )
 }
