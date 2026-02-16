@@ -12,13 +12,22 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  MoreHorizontal,
   Edit,
   Trash2,
   Eye,
   Star,
+  Archive,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -97,6 +106,16 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
     }
   }
 
+  const handleArchive = async (id: string) => {
+    try {
+      await toggleBlogPostStatus(id, 'archived')
+      toast.success("Post archived successfully")
+      router.refresh()
+    } catch (error) {
+      toast.error("Failed to archive post")
+    }
+  }
+
   return (
     <>
       <div className="rounded-md border">
@@ -147,10 +166,9 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Switch
-                      checked={post.is_featured || false}
-                      onCheckedChange={(checked) => handleToggleFeatured(post.id, checked)}
-                    />
+                    <span className="text-sm text-muted-foreground">
+                      {post.is_featured ? 'Yes' : 'No'}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -162,29 +180,53 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
                     <span className="text-sm">{formatDate(post.published_at)}</span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleToggleStatus(post.id, post.status)}
-                        disabled={togglingId === post.id}
-                        title={post.status === 'published' ? 'Unpublish' : 'Publish'}
-                      >
-                        <Star className={`h-4 w-4 ${post.status === 'published' ? 'fill-primary text-primary' : ''}`} />
-                      </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/blog/posts/${post.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingId(post.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/blog/posts/${post.id}/edit`}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Post
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleToggleStatus(post.id, post.status)}
+                          disabled={togglingId === post.id}
+                        >
+                          <Star className="mr-2 h-4 w-4" />
+                          {post.status === 'published' ? 'Unpublish' : 'Publish'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleToggleFeatured(post.id, !post.is_featured)}
+                        >
+                          <Star className="mr-2 h-4 w-4" />
+                          {post.is_featured ? 'Remove Featured' : 'Mark as Featured'}
+                        </DropdownMenuItem>
+                        {post.status !== 'archived' && (
+                          <DropdownMenuItem
+                            onClick={() => handleArchive(post.id)}
+                          >
+                            <Archive className="mr-2 h-4 w-4" />
+                            Archive
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeletingId(post.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))

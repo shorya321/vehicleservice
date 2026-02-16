@@ -1,11 +1,9 @@
 'use client'
-'use no memo'
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Phone, Menu, X, User, LogOut, Star, Building2 } from 'lucide-react'
+import { Phone, Menu, X, User, LogOut, Star, Building2, Car } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
@@ -35,6 +33,7 @@ export function PublicHeader({
   initialProfile = null,
 }: PublicHeaderProps) {
   const { allCurrencies } = useCurrency()
+  const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
@@ -45,6 +44,11 @@ export function PublicHeader({
   // No loading state needed - we have initial data from server
   const [isAuthLoading] = useState(false)
   const supabase = useMemo(() => createClient(), [])
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
@@ -126,15 +130,12 @@ export function PublicHeader({
     { name: "Services", href: "#services" },
     { name: "Fleet", href: "#fleet" },
     { name: "FAQ", href: "#faq" },
-    { name: "Contact", href: "#contact" },
+    { name: "Contact", href: "/contact" },
   ]
 
   return (
-    <motion.header
-      initial={{ y: -120 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 100, damping: 25 }}
-      className={`nav-luxury ${isScrolled ? "scrolled" : ""} ${isNotHomePage ? "has-border" : ""}`}
+    <header
+      className={`nav-luxury animate-header-slide-in ${isScrolled ? "scrolled" : ""} ${isNotHomePage ? "has-border" : ""}`}
     >
       <div className="luxury-container">
         <div className="flex items-center justify-between">
@@ -163,7 +164,7 @@ export function PublicHeader({
             {/* Currency Selector */}
             {allCurrencies.length > 1 && (
               <div className="hidden sm:block">
-                <CurrencySelector />
+                <CurrencySelector staticMode={!mounted} />
               </div>
             )}
 
@@ -184,57 +185,72 @@ export function PublicHeader({
                 <div className="h-8 w-20 bg-[var(--charcoal)] rounded animate-pulse" />
               </div>
             ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={profile?.avatar_url || undefined}
-                        alt={profile?.full_name || profile?.first_name || user?.email}
-                      />
-                      <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)]">
-                        {getInitials(profile)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[var(--charcoal)] border-[var(--gold)]/20">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-[var(--text-primary)]">
-                        {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
-                      </p>
-                      <p className="text-xs leading-none text-[var(--text-muted)]">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
-                  <DropdownMenuItem onClick={() => router.push('/profile')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    My Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/account')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                    My Bookings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/account')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                    <Star className="mr-2 h-4 w-4" />
-                    My Reviews
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                    <Building2 className="mr-2 h-4 w-4" />
-                    Partner With Us
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
-                  <DropdownMenuItem
-                    className="text-red-400 hover:bg-red-500/10 cursor-pointer"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              mounted ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={profile?.avatar_url || undefined}
+                          alt={profile?.full_name || profile?.first_name || user?.email}
+                        />
+                        <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)]">
+                          {getInitials(profile)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-[var(--charcoal)] border-[var(--gold)]/20">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none text-[var(--text-primary)]">
+                          {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
+                        </p>
+                        <p className="text-xs leading-none text-[var(--text-muted)]">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+                    <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      My Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <Car className="mr-2 h-4 w-4" />
+                      My Bookings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <Star className="mr-2 h-4 w-4" />
+                      My Reviews
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <Building2 className="mr-2 h-4 w-4" />
+                      Partner With Us
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+                    <DropdownMenuItem
+                      className="text-red-400 hover:bg-red-500/10 cursor-pointer"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-[var(--gold)]/20 transition-colors">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={profile?.avatar_url || undefined}
+                      alt={profile?.full_name || profile?.first_name || user?.email}
+                    />
+                    <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)]">
+                      {getInitials(profile)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              )
             ) : (
               <>
                 <Link
@@ -264,18 +280,14 @@ export function PublicHeader({
         </div>
       </div>
 
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            id="mobile-navigation"
-            role="navigation"
-            aria-label="Mobile navigation"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="lg:hidden bg-[var(--black-void)]/98 backdrop-blur-xl border-t border-[var(--gold)]/10"
-          >
+      <div
+        id="mobile-navigation"
+        role="navigation"
+        aria-label="Mobile navigation"
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-[var(--black-void)]/98 backdrop-blur-xl border-t border-[var(--gold)]/10 ${
+          isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 border-t-transparent'
+        }`}
+      >
             <div className="luxury-container py-6 flex flex-col gap-2">
               {navItems.map((item) => (
                 <Link
@@ -291,11 +303,7 @@ export function PublicHeader({
                 {/* Mobile Currency Selector */}
                 {allCurrencies.length > 1 && (
                   <div className="flex justify-center py-2">
-                    <CurrencySelector
-                      featuredCurrencies={featuredCurrencies}
-                      allCurrencies={allCurrencies}
-                      currentCurrency={currentCurrency}
-                    />
+                    <CurrencySelector staticMode={!mounted} />
                   </div>
                 )}
 
@@ -338,7 +346,7 @@ export function PublicHeader({
                       variant="ghost"
                       className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
                       onClick={() => {
-                        router.push('/profile')
+                        router.push('/account?tab=personal')
                         setIsMenuOpen(false)
                       }}
                     >
@@ -349,17 +357,18 @@ export function PublicHeader({
                       variant="ghost"
                       className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
                       onClick={() => {
-                        router.push('/account')
+                        router.push('/account?tab=bookings')
                         setIsMenuOpen(false)
                       }}
                     >
+                      <Car className="mr-2 h-4 w-4" />
                       My Bookings
                     </Button>
                     <Button
                       variant="ghost"
                       className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
                       onClick={() => {
-                        router.push('/account')
+                        router.push('/account?tab=reviews')
                         setIsMenuOpen(false)
                       }}
                     >
@@ -409,9 +418,7 @@ export function PublicHeader({
                 )}
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+      </div>
+    </header>
   )
 }

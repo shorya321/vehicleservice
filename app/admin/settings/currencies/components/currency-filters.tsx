@@ -20,16 +20,6 @@ export function CurrencyFilters() {
   const currentSearch = searchParams.get('search') || ''
   const [searchValue, setSearchValue] = useState(currentSearch)
 
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== currentSearch) {
-        updateParams({ search: searchValue, page: '1' })
-      }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchValue]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const updateParams = useCallback(
     (updates: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString())
@@ -44,6 +34,16 @@ export function CurrencyFilters() {
     },
     [router, searchParams]
   )
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchValue !== currentSearch) {
+        updateParams({ search: searchValue, page: '1' })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchValue, currentSearch, updateParams])
 
   const handleFilterChange = (filter: string) => {
     updateParams({ filter: filter === 'all' ? '' : filter, page: '1' })

@@ -1,6 +1,15 @@
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+/** Strip HTML tags from content and truncate to maxLen characters at the last word boundary */
+function stripHtmlAndTruncate(html: string, maxLen: number): string {
+  const text = html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+  if (text.length <= maxLen) return text
+  const truncated = text.slice(0, maxLen)
+  const lastSpace = truncated.lastIndexOf(' ')
+  return (lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated) + '...'
+}
+
 export interface PublicBlogPost {
   id: string
   title: string
@@ -54,7 +63,7 @@ export const getPublishedPosts = unstable_cache(
       let query = supabase
         .from('blog_posts')
         .select(`
-          id, title, slug, excerpt, featured_image_url, status,
+          id, title, slug, excerpt, content, featured_image_url, status,
           is_featured, published_at, reading_time_minutes, view_count, created_at,
           category:category_id(id, name, slug),
           author:author_id(id, full_name, avatar_url)
@@ -136,7 +145,7 @@ export const getPublishedPosts = unstable_cache(
 
       const postsWithTags: PublicBlogPost[] = posts.map(post => ({
         ...post,
-        content: null,
+        content: post.content ? stripHtmlAndTruncate(post.content, 160) : null,
         category: post.category as any,
         author: post.author as any,
         tags: tagsMap[post.id] || [],
@@ -233,7 +242,7 @@ export const getFeaturedPosts = unstable_cache(
       const { data, error } = await supabase
         .from('blog_posts')
         .select(`
-          id, title, slug, excerpt, featured_image_url, status,
+          id, title, slug, excerpt, content, featured_image_url, status,
           is_featured, published_at, reading_time_minutes, view_count, created_at,
           category:category_id(id, name, slug),
           author:author_id(id, full_name, avatar_url)
@@ -250,7 +259,7 @@ export const getFeaturedPosts = unstable_cache(
 
       return (data || []).map(post => ({
         ...post,
-        content: null,
+        content: post.content ? stripHtmlAndTruncate(post.content, 160) : null,
         meta_title: null,
         meta_description: null,
         meta_keywords: null,
@@ -308,32 +317,13 @@ export const getRelatedPosts = unstable_cache(
   async (postId: string, categoryId: string | null): Promise<PublicBlogPost[]> => {
     try {
       const supabase = createAdminClient()
-
-      let query = supabase
-        .from('blog_posts')
-        .select(`
-          id, title, slug, excerpt, featured_image_url, status,
-          is_featured, published_at, reading_time_minutes, view_count, created_at,
-          category:category_id(id, name, slug),
-          author:author_id(id, full_name, avatar_url)
-        `)
-        .eq('status', 'published')
-        .neq('id', postId)
-        .order('published_at', { ascending: false })
-        .limit(3)
-
-      if (categoryId) {
-        query = query.eq('category_id', categoryId)
-      }
-
-      const { data, error } = await query
-
-      if (error) {
-        console.error('[Blog] Error fetching related posts:', error)
-        return []
-      }
-
-      return (data || []).map(post => ({
+      const selectFields = `
+        id, title, slug, excerpt, featured_image_url, status,
+        is_featured, published_at, reading_time_minutes, view_count, created_at,
+        category:category_id(id, name, slug),
+        author:author_id(id, full_name, avatar_url)
+      `
+      const mapPost = (post: any) => ({
         ...post,
         content: null,
         meta_title: null,
@@ -342,7 +332,42 @@ export const getRelatedPosts = unstable_cache(
         category: post.category as any,
         author: post.author as any,
         tags: [],
-      }))
+      })
+
+      // 1. Try same-category posts first
+      let categoryResults: any[] = []
+      if (categoryId) {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select(selectFields)
+          .eq('status', 'published')
+          .neq('id', postId)
+          .eq('category_id', categoryId)
+          .order('published_at', { ascending: false })
+          .limit(3)
+
+        if (!error && data) {
+          categoryResults = data
+        }
+      }
+
+      // 2. If fewer than 3, fill remaining slots with other published posts
+      if (categoryResults.length < 3) {
+        const excludeIds = [postId, ...categoryResults.map(p => p.id)]
+        const { data: fillData } = await supabase
+          .from('blog_posts')
+          .select(selectFields)
+          .eq('status', 'published')
+          .not('id', 'in', `(${excludeIds.join(',')})`)
+          .order('published_at', { ascending: false })
+          .limit(3 - categoryResults.length)
+
+        if (fillData) {
+          categoryResults = [...categoryResults, ...fillData]
+        }
+      }
+
+      return categoryResults.map(mapPost)
     } catch (error) {
       console.error('[Blog] Error in getRelatedPosts:', error)
       return []

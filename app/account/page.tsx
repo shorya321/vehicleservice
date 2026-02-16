@@ -76,7 +76,12 @@ async function getAccountData(userId: string) {
   }
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
+  const { tab } = await searchParams
   const supabase = await createClient()
 
   const {
@@ -98,6 +103,7 @@ export default async function AccountPage() {
       <div className="bg-[var(--black-void)]">
         <div className="luxury-container py-8 md:py-12">
           <AccountClient
+            initialTab={tab}
             user={{
               id: profile.id,
               full_name: profile.full_name,

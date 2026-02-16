@@ -47,7 +47,7 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
         eyebrow="Blog Tag"
       />
 
-      <div className="luxury-container section-padding">
+      <div className="luxury-container py-10 md:py-16">
         {/* Breadcrumb */}
         <div className="mb-8">
           <Link

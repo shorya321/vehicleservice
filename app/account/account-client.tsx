@@ -11,7 +11,11 @@ import { BookingsTab } from "@/components/account/bookings-tab"
 import { ReviewsTab } from "@/components/account/reviews-tab"
 import { NotificationsTab } from "@/components/account/notifications-tab"
 
+const VALID_TABS = ["personal", "security", "preferences", "bookings", "reviews", "notifications"] as const
+type TabId = (typeof VALID_TABS)[number]
+
 interface AccountClientProps {
+  initialTab?: string
   user: {
     id: string
     full_name: string | null
@@ -57,8 +61,9 @@ const TABS = [
   { id: "notifications", label: "Notifications", icon: Bell },
 ]
 
-export function AccountClient({ user, stats, notificationPrefs, deletionRequest, vendorApplication }: AccountClientProps) {
-  const [activeTab, setActiveTab] = useState("personal")
+export function AccountClient({ initialTab, user, stats, notificationPrefs, deletionRequest, vendorApplication }: AccountClientProps) {
+  const validatedTab: TabId = VALID_TABS.includes(initialTab as TabId) ? (initialTab as TabId) : "personal"
+  const [activeTab, setActiveTab] = useState(validatedTab)
 
   return (
     <div className="space-y-8">

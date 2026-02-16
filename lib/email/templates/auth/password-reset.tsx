@@ -3,6 +3,9 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import Button from '../base/button';
 import { emailStyles } from '../../styles/constants';
+import InfoBox from '../../components/info-box';
+import List from '../../components/list';
+import DetailsSection from '../../components/details-section';
 
 interface PasswordResetEmailProps {
   name: string;
@@ -17,31 +20,41 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
-      <Text style={emailStyles.text}>
-        We received a request to reset your password for your Vehicle Service account.
-      </Text>
+      <InfoBox type="info" title="Password Reset Requested">
+        We received a request to reset the password for your Vehicle Service account.
+        Follow the steps below to set a new password.
+      </InfoBox>
 
       <Text style={emailStyles.text}>
-        If you made this request, click the button below to reset your password:
+        <strong>How to reset your password:</strong>
       </Text>
+
+      <List
+        ordered
+        items={[
+          'Click the reset button below',
+          'Set your new password',
+          'Log back in with your new credentials',
+        ]}
+      />
 
       <Button href={resetUrl}>Reset Password</Button>
 
-      <Text style={emailStyles.text}>
-        Or copy and paste this link into your browser:
-      </Text>
+      <DetailsSection>
+        <Text style={emailStyles.detailRow}>
+          <strong>Link expires:</strong> 1 hour from the time of this email
+        </Text>
+        <Text style={emailStyles.detailRow}>
+          <strong>Reset URL:</strong>{' '}
+          <a href={resetUrl} style={emailStyles.link}>{resetUrl}</a>
+        </Text>
+      </DetailsSection>
 
-      <Text style={emailStyles.linkWithMargin}>{resetUrl}</Text>
-
-      <Text style={emailStyles.text}>
-        This password reset link will expire in 1 hour for security reasons.
-      </Text>
-
-      <Text style={warningText}>
-        <strong>Important:</strong> If you didn&apos;t request a password reset, please ignore this
-        email. Your password will remain unchanged. If you&apos;re concerned about your account
-        security, please contact our support team immediately.
-      </Text>
+      <InfoBox type="warning" title="Security Notice">
+        If you didn&apos;t request a password reset, please ignore this email. Your password
+        will remain unchanged. If you&apos;re concerned about your account security, please
+        contact our support team immediately.
+      </InfoBox>
 
       <Text style={emailStyles.text}>
         Best regards,
@@ -50,18 +63,6 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
       </Text>
     </EmailLayout>
   );
-};
-
-// Template-specific warning style
-const warningText = {
-  color: '#e25950',
-  fontSize: '14px',
-  lineHeight: '20px',
-  margin: '16px 0',
-  padding: '12px',
-  backgroundColor: '#fff5f5',
-  borderLeft: '4px solid #e25950',
-  borderRadius: '4px',
 };
 
 export default PasswordResetEmail;

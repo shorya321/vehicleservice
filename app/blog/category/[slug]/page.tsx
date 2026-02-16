@@ -49,7 +49,7 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
         eyebrow="Blog Category"
       />
 
-      <div className="luxury-container section-padding">
+      <div className="luxury-container py-10 md:py-16">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link

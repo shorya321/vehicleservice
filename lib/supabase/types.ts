@@ -1203,6 +1203,62 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string | null
+          subject: string
+          message: string
+          status: string
+          priority: string
+          admin_notes: string | null
+          replied_at: string | null
+          replied_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string | null
+          subject: string
+          message: string
+          status?: string
+          priority?: string
+          admin_notes?: string | null
+          replied_at?: string | null
+          replied_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string | null
+          subject?: string
+          message?: string
+          status?: string
+          priority?: string
+          admin_notes?: string | null
+          replied_at?: string | null
+          replied_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_submissions_replied_by_fkey"
+            columns: ["replied_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       currency_settings: {
         Row: {
           created_at: string | null

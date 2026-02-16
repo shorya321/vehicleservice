@@ -25,11 +25,13 @@ import { CurrencyModal } from './currency-modal'
 interface CurrencySelectorProps {
   className?: string
   variant?: 'default' | 'minimal'
+  staticMode?: boolean
 }
 
 export function CurrencySelector({
   className = '',
   variant = 'default',
+  staticMode = false,
 }: CurrencySelectorProps) {
   const { currentCurrency, featuredCurrencies, allCurrencies, setCurrency } = useCurrency()
   const [isOpen, setIsOpen] = useState(false)
@@ -64,6 +66,38 @@ export function CurrencySelector({
 
   if (allCurrencies.length <= 1 && dropdownCurrencies.length <= 1) {
     return null
+  }
+
+  // During SSR / before mount, render a plain button to avoid Radix hydration mismatch
+  if (staticMode) {
+    if (variant === 'minimal') {
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 gap-1 px-2 font-mono text-sm ${className}`}
+        >
+          <span>{getCurrencyFlag(currentCurrency)}</span>
+          <span>{currentCurrency}</span>
+          <ChevronDown className="h-3 w-3 opacity-50" />
+        </Button>
+      )
+    }
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-9 gap-1.5 px-3 border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 hover:bg-[var(--gold)]/5 transition-colors ${className}`}
+      >
+        <span className="text-sm">
+          {getCurrencyFlag(currentCurrency)}
+        </span>
+        <span className="text-sm text-[var(--text-primary)]">
+          {currentCurrency}
+        </span>
+        <ChevronDown className="h-3.5 w-3.5 text-[var(--text-muted)] ml-0.5" />
+      </Button>
+    )
   }
 
   if (variant === 'minimal') {

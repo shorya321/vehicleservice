@@ -1,5 +1,5 @@
 "use client"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useState } from "react"
 import { motion } from "motion/react"
 import { Plus } from "lucide-react"
 import Link from "next/link"
@@ -33,6 +33,12 @@ const faqData = [
 ]
 
 export function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  const toggle = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index)
+  }
+
   return (
     <section className="section-padding faq-section" id="faq">
       <div className="luxury-container">
@@ -76,23 +82,50 @@ export function FAQ() {
             <h3 className="font-display text-2xl text-[var(--text-primary)] mb-8">
               Frequently Asked Questions
             </h3>
-            <Accordion type="single" collapsible className="w-full space-y-4">
-              {faqData.map((faq, index) => (
-                <AccordionItem
-                  key={index}
-                  value={`item-${index}`}
-                  className="faq-item group"
-                >
-                  <AccordionTrigger className="faq-trigger">
-                    <span className="font-body font-medium text-left pr-4">{faq.question}</span>
-                    <Plus className="faq-icon" aria-hidden="true" />
-                  </AccordionTrigger>
-                  <AccordionContent className="px-8 pb-5 pt-0">
-                    <p className="text-[var(--text-secondary)] leading-[1.7] text-sm">{faq.answer}</p>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            <div className="w-full space-y-4">
+              {faqData.map((faq, index) => {
+                const isOpen = openIndex === index
+                const state = isOpen ? "open" : "closed"
+                const triggerId = `faq-trigger-${index}`
+                const contentId = `faq-content-${index}`
+
+                return (
+                  <div
+                    key={index}
+                    data-state={state}
+                    className="faq-item group"
+                  >
+                    <h3>
+                      <button
+                        id={triggerId}
+                        type="button"
+                        aria-expanded={isOpen}
+                        aria-controls={contentId}
+                        data-state={state}
+                        className="faq-trigger w-full"
+                        onClick={() => toggle(index)}
+                      >
+                        <span className="font-body font-medium text-left pr-4">{faq.question}</span>
+                        <Plus className="faq-icon" aria-hidden="true" />
+                      </button>
+                    </h3>
+                    <div
+                      id={contentId}
+                      role="region"
+                      aria-labelledby={triggerId}
+                      data-state={state}
+                      className="faq-content-wrapper"
+                    >
+                      <div className="overflow-hidden">
+                        <div className="px-8 pb-5 pt-0">
+                          <p className="text-[var(--text-secondary)] leading-[1.7] text-sm">{faq.answer}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </motion.div>
         </div>
       </div>

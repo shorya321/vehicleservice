@@ -180,7 +180,8 @@ export interface BlogPostFormData {
 }
 
 function calculateReadingTime(content: string): number {
-  const wordCount = content.trim().split(/\s+/).length
+  const text = content.replace(/<[^>]*>/g, '').trim()
+  const wordCount = text.split(/\s+/).filter(Boolean).length
   return Math.max(1, Math.ceil(wordCount / 200))
 }
 

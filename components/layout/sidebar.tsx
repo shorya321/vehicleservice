@@ -29,6 +29,7 @@ import {
   BookOpen,
   FolderOpen,
   PenLine,
+  MessageSquare,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -153,6 +154,12 @@ const navGroups: NavGroup[] = [
             icon: Tag,
           },
         ]
+      },
+      {
+        name: "Contact",
+        href: "/admin/contact",
+        icon: MessageSquare,
+        badge: null,
       },
     ]
   },

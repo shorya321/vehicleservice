@@ -16,7 +16,7 @@ const buttonVariants = cva(
         // Subtle muted button
         subtle: "bg-muted text-muted-foreground hover:bg-muted/80",
         // Ghost button with accent hover
-        ghost: "hover:bg-accent/10 text-accent-foreground",
+        ghost: "hover:bg-accent/10 text-foreground",
         // Destructive action
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg hover:shadow-xl active:scale-95",
         // Secondary action

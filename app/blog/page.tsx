@@ -41,7 +41,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
         subtitle="Insights, travel guides, and stories from the world of luxury transportation"
       />
 
-      <div className="luxury-container section-padding">
+      <div className="luxury-container py-10 md:py-16">
         {/* Featured Posts */}
         {featuredPosts.length > 0 && currentPage === 1 && (
           <section className="mb-16">

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { TiptapEditor } from "@/components/ui/tiptap-editor"
 import { Switch } from "@/components/ui/switch"
 import {
   Select,
@@ -265,13 +266,11 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Write your blog post content here (supports Markdown)"
-                  className="min-h-[300px] font-mono text-sm"
-                  {...field}
+                <TiptapEditor
+                  value={field.value || ""}
+                  onChange={field.onChange}
                 />
               </FormControl>
-              <FormDescription>Supports Markdown formatting</FormDescription>
               <FormMessage />
             </FormItem>
           )}
