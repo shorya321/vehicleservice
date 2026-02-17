@@ -348,8 +348,8 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
                 <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 rounded-xl" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal p-3 border-b border-border">
+            <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8} forceMount>
+              <DropdownMenuLabel className="font-normal !text-primary">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
@@ -357,32 +357,30 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
                   </p>
                 </div>
               </DropdownMenuLabel>
-              <div className="p-1">
-                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                  <Link href="/vendor/account">
-                    <UserCircle className="h-4 w-4 text-primary" />
-                    My Account
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                  <Link href="/vendor/profile">
-                    <User className="h-4 w-4 text-primary" />
-                    Business Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                  <Link href="/vendor/settings">
-                    <Settings className="h-4 w-4 text-primary" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-              </div>
-              <div className="p-1 border-t border-border">
-                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 rounded-lg text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
-                  <LogOut className="h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </div>
+              <DropdownMenuSeparator className="!bg-border" />
+              <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                <Link href="/vendor/account">
+                  <UserCircle className="mr-2 h-4 w-4 text-primary" />
+                  My Account
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                <Link href="/vendor/profile">
+                  <User className="mr-2 h-4 w-4 text-primary" />
+                  Business Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                <Link href="/vendor/settings">
+                  <Settings className="mr-2 h-4 w-4 text-primary" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="!bg-border" />
+              <DropdownMenuItem onClick={handleLogout} className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

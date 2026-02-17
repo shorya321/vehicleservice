@@ -5,9 +5,12 @@
 
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { AdjustCreditsButton } from './components/adjust-credits-button';
 import { UpdateStatusButton } from './components/update-status-button';
@@ -68,9 +71,16 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
         <div className="space-y-6">
           {/* Page Header */}
           <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{businessAccount.business_name}</h1>
-          <p className="text-muted-foreground">{businessAccount.business_email}</p>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/admin/businesses">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{businessAccount.business_name}</h1>
+            <p className="text-muted-foreground">{businessAccount.business_email}</p>
+          </div>
         </div>
         <div className="flex gap-2">
           {/* Show Approve/Reject buttons for pending businesses */}

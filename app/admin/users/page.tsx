@@ -81,15 +81,18 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
         <div className="grid gap-4 md:grid-cols-4">
           <AnimatedCard delay={0.1}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Users
-                </CardTitle>
-                <Users className="h-4 w-4 text-luxury-gold" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{total}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Users</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Registered accounts</p>
               </CardContent>
             </Card>
           </AnimatedCard>

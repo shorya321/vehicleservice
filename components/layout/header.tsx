@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Menu, LogOut, User, ChevronDown } from "lucide-react"
+import { Search, Menu, LogOut, User, ChevronDown, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -111,8 +111,8 @@ export function Header({ onMenuClick }: HeaderProps) {
               <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl">
-            <DropdownMenuLabel className="p-3 border-b border-border">
+          <DropdownMenuContent align="end" className="w-56 rounded-xl !bg-popover !border-border shadow-lg" sideOffset={8}>
+            <DropdownMenuLabel className="font-normal !text-primary">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none text-foreground">
                   {userProfile?.full_name || 'Admin User'}
@@ -122,24 +122,23 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </p>
               </div>
             </DropdownMenuLabel>
-            <div className="p-1">
-              <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/10 cursor-pointer">
-                <User className="h-4 w-4 text-primary" />
-                Profile Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/10 cursor-pointer">
-                Support
-              </DropdownMenuItem>
-            </div>
-            <div className="p-1 border-t border-border">
-              <DropdownMenuItem
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </DropdownMenuItem>
-            </div>
+            <DropdownMenuSeparator className="!bg-border" />
+            <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+              <User className="mr-2 h-4 w-4 text-primary" />
+              Profile Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+              <Settings className="mr-2 h-4 w-4 text-primary" />
+              Support
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="!bg-border" />
+            <DropdownMenuItem
+              className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer"
+              onClick={handleSignOut}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

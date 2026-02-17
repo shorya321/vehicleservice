@@ -8,6 +8,7 @@ import { BookingFilters } from './components/booking-filters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Car, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { AnimatedCard } from '@/components/ui/animated-card'
 
 export const metadata: Metadata = {
   title: 'Assigned Bookings - Vendor',
@@ -73,60 +74,90 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
         
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Assigned</CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending}</div>
-              {stats.pending > 0 && (
-                <Badge variant="outline" className="mt-1 text-xs">
-                  Action required
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Accepted</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.accepted}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completed}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today&apos;s Pickups</CardTitle>
-              <Calendar className="h-4 w-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.today}</div>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Assigned</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Car className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">All bookings</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.2}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Pending</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                    <Clock className="h-4 w-4 text-amber-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.pending}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{stats.pending > 0 ? 'Action required' : 'No pending'}</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.3}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Accepted</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.accepted}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">In progress</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.4}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Completed</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                    <CheckCircle className="h-4 w-4 text-sky-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.completed}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Successfully done</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.5}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Today&apos;s Pickups</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20">
+                    <Calendar className="h-4 w-4 text-red-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.today}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Scheduled today</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
         
         {/* Filters */}

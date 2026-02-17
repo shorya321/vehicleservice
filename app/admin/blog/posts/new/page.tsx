@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { BlogPostForm } from "../components/blog-post-form"
 import { getAllBlogCategories } from "../../categories/actions"
 import { getAllBlogTags } from "../../tags/actions"
@@ -29,7 +29,7 @@ export default async function NewBlogPostPage() {
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/blog/posts">
-            <ChevronLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div>

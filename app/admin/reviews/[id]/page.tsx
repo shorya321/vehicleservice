@@ -72,12 +72,11 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
             {review.status === 'pending' && (
               <ApproveRejectButtons reviewId={id} />
             )}
-            <Link href="/admin/reviews">
-              <Button variant="outline" className="gap-2">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/admin/reviews">
                 <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 

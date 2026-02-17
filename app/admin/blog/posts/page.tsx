@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Plus, FileText, Eye, PenLine, Star } from "lucide-react"
+import { AnimatedCard } from "@/components/ui/animated-card"
 import { getBlogPosts, BlogPostFilters } from "./actions"
 import { BlogPostsTable } from "./components/blog-posts-table"
 import { BlogPostFilters as BlogPostFiltersComponent } from "./components/blog-post-filters"
@@ -66,46 +67,70 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{total}</div>
-            <p className="text-xs text-muted-foreground">All blog posts</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-            <PenLine className="h-4 w-4 text-[var(--admin-success)]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publishedCount}</div>
-            <p className="text-xs text-muted-foreground">Live posts</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-            <FileText className="h-4 w-4 text-[var(--admin-warning)]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{draftCount}</div>
-            <p className="text-xs text-muted-foreground">Unpublished posts</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalViews}</div>
-            <p className="text-xs text-muted-foreground">Across all posts</p>
-          </CardContent>
-        </Card>
+        <AnimatedCard delay={0.1}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Total Posts</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">All blog posts</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.2}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Published</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                  <PenLine className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{publishedCount}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Live posts</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.3}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Drafts</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                  <FileText className="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{draftCount}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Unpublished posts</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.4}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Total Views</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                  <Eye className="h-4 w-4 text-sky-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{totalViews}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Across all posts</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
       </div>
 
       <Card>

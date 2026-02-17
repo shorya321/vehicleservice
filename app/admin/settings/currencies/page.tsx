@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Coins, AlertTriangle, Clock, Info, Star } from 'lucide-react'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { getPaginatedCurrencies, getExchangeRatesObject, getLastRateUpdate, areRatesStale } from '@/lib/currency/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CurrencyTable } from './components/currency-table'
@@ -126,59 +127,77 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
 
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Currencies</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-foreground">{totalCount}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.1}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Total Currencies</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                      <Coins className="h-4 w-4 text-primary" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{totalCount}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Enabled Currencies</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-foreground">{enabledCount}</span>
-                  <span className="text-sm text-muted-foreground">of {totalCount}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.2}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Enabled Currencies</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                      <Coins className="h-4 w-4 text-emerald-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{enabledCount}</span>
+                    <span className="text-sm text-muted-foreground">of {totalCount}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Featured Currencies</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold text-foreground">{featuredCount}</span>
-                  <Star className="h-4 w-4 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.3}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Featured Currencies</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                      <Star className="h-4 w-4 text-amber-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{featuredCount}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Rates Last Updated</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-foreground">
-                    {lastUpdate
-                      ? formatDistanceToNow(lastUpdate, { addSuffix: true })
-                      : 'Never'}
-                  </span>
-                  {stale && (
-                    <Badge variant="destructive" className="text-xs">Stale</Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.4}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Rates Last Updated</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                      <Clock className="h-4 w-4 text-sky-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-foreground">
+                      {lastUpdate
+                        ? formatDistanceToNow(lastUpdate, { addSuffix: true })
+                        : 'Never'}
+                    </span>
+                    {stale && (
+                      <Badge variant="destructive" className="text-xs">Stale</Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
           </div>
 
           {/* Info Alert */}

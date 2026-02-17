@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BusinessAccountsTableWrapper } from './components/business-accounts-table-wrapper';
 import { ClientFilters } from './components/client-filters';
 import { AnimatedPage } from '@/components/layout/animated-page';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { Building2, Clock, CheckCircle, Car } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Business Accounts | Admin Portal',
@@ -114,55 +116,74 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-6 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Accounts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalCount}</div>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 md:grid-cols-4">
+            <AnimatedCard delay={0.1}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Total Accounts</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                      <Building2 className="h-4 w-4 text-primary" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{totalCount}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">All business accounts</p>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Pending Approval
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <div className="text-2xl font-bold text-amber-600">{pendingCount}</div>
-                  {pendingCount > 0 && (
-                    <span className="text-xs font-medium text-amber-600">Action needed</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.2}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Pending Approval</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{pendingCount}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{pendingCount > 0 ? 'Action needed' : 'No pending'}</p>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Active Accounts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{activeCount}</div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.3}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Active Accounts</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{activeCount}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Currently active</p>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Bookings
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalBookings}</div>
-              </CardContent>
-            </Card>
+            <AnimatedCard delay={0.4}>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Total Bookings</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                      <Car className="h-4 w-4 text-sky-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{totalBookings}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Across all accounts</p>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
           </div>
 
           {/* Filters */}

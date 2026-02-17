@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton"
 import { getVendorApplicationsStats } from "./actions"
 import { Building2, Clock, CheckCircle2, XCircle, Eye, AlertCircle } from "lucide-react"
+import { AnimatedCard } from "@/components/ui/animated-card"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -68,65 +69,73 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
 
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Applications
-              </CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground">
-                All time applications
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pending Review
-              </CardTitle>
-              <Clock className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending}</div>
-              <p className="text-xs text-muted-foreground">
-                Awaiting admin action
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Approved
-              </CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.approved}</div>
-              <p className="text-xs text-muted-foreground">
-                Active vendors
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Rejected
-              </CardTitle>
-              <XCircle className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.rejected}</div>
-              <p className="text-xs text-muted-foreground">
-                Declined applications
-              </p>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Applications</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Building2 className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">All time applications</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.2}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Pending Review</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                    <Clock className="h-4 w-4 text-amber-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.pending}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Awaiting admin action</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.3}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Approved</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.approved}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Active vendors</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.4}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Rejected</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20">
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.rejected}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Declined applications</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         <Card>

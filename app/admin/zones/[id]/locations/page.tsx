@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LocationAssignment } from '../../components/location-assignment'
 import { getZone } from '../../actions'
@@ -32,11 +32,11 @@ export default async function ZoneLocationsPage({ params }: ZoneLocationsPagePro
   return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/admin/zones">
-            <Button variant="ghost" size="icon">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href={`/admin/zones/${id}`}>
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
               {zone.name} - Location Assignment

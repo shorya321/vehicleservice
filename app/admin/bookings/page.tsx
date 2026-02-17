@@ -75,73 +75,103 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           <AnimatedCard delay={0.1}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-                <Car className="h-4 w-4 text-luxury-gold" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Bookings</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                    <Car className="h-4 w-4 text-sky-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">All bookings</p>
               </CardContent>
             </Card>
           </AnimatedCard>
 
           <AnimatedCard delay={0.2}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today&apos;s Bookings</CardTitle>
-                <Calendar className="h-4 w-4 text-luxury-gold" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.today}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Today&apos;s Bookings</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Calendar className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">{stats.today}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Scheduled today</p>
               </CardContent>
             </Card>
           </AnimatedCard>
 
           <AnimatedCard delay={0.3}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-                <TrendingUp className="h-4 w-4 text-blue-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.upcoming}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Upcoming</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                    <TrendingUp className="h-4 w-4 text-amber-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.upcoming}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Future bookings</p>
               </CardContent>
             </Card>
           </AnimatedCard>
 
           <AnimatedCard delay={0.4}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.completed}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Completed</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.completed}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Successfully done</p>
               </CardContent>
             </Card>
           </AnimatedCard>
 
           <AnimatedCard delay={0.5}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
-                <XCircle className="h-4 w-4 text-red-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.cancelled}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Cancelled</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20">
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.cancelled}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Cancelled bookings</p>
               </CardContent>
             </Card>
           </AnimatedCard>
 
           <AnimatedCard delay={0.6}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-emerald-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.revenue)}</div>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Revenue</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                    <DollarSign className="h-4 w-4 text-emerald-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{formatCurrency(stats.revenue)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">All time revenue</p>
               </CardContent>
             </Card>
           </AnimatedCard>

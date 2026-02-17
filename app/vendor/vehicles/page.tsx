@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { VendorLayout } from "@/components/layout/vendor-layout"
 import { Button } from "@/components/ui/button"
 import { Plus, Car } from "lucide-react"
+import { AnimatedCard } from "@/components/ui/animated-card"
 import Link from "next/link"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { VehicleTableWithBulk } from "./components/vehicle-table-with-bulk"
@@ -85,17 +86,21 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Vehicles
-              </CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Vehicles</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Car className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         <Card>

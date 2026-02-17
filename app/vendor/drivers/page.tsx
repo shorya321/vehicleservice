@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Plus, Users, UserCheck, UserX, UserMinus } from 'lucide-react'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { VendorLayout } from '@/components/layout/vendor-layout'
@@ -60,66 +61,86 @@ export default async function DriversPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Drivers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              All registered drivers
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently active
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available</CardTitle>
-            <UserCheck className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.available}</div>
-            <p className="text-xs text-muted-foreground">
-              Ready for assignments
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">On Leave</CardTitle>
-            <UserMinus className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.onLeave}</div>
-            <p className="text-xs text-muted-foreground">
-              Temporarily unavailable
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inactive</CardTitle>
-            <UserX className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.inactive}</div>
-            <p className="text-xs text-muted-foreground">
-              Not currently working
-            </p>
-          </CardContent>
-        </Card>
+        <AnimatedCard delay={0.1}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Total Drivers</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">All registered drivers</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.2}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Active</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                  <UserCheck className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.active}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Currently active</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.3}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Available</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                  <UserCheck className="h-4 w-4 text-sky-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.available}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Ready for assignments</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.4}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">On Leave</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                  <UserMinus className="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.onLeave}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Temporarily unavailable</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.5}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Inactive</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20">
+                  <UserX className="h-4 w-4 text-red-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.inactive}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Not currently working</p>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
       </div>
 
       {/* Drivers Table */}

@@ -91,61 +91,69 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
         {stats && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <AnimatedCard delay={0.1}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Reviews
-                  </CardTitle>
-                  <Star className="h-4 w-4 text-luxury-gold" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.total}</div>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Total Reviews</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                      <Star className="h-4 w-4 text-primary" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">All reviews</p>
                 </CardContent>
               </Card>
             </AnimatedCard>
 
             <AnimatedCard delay={0.2}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Pending Approval
-                  </CardTitle>
-                  <Clock className="h-4 w-4 text-yellow-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.pending}</div>
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Pending Approval</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.pending}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Need review</p>
                 </CardContent>
               </Card>
             </AnimatedCard>
 
             <AnimatedCard delay={0.3}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Average Rating
-                  </CardTitle>
-                  <Star className="h-4 w-4 text-luxury-gold fill-luxury-gold" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {stats.averageRating.toFixed(1)}
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">Average Rating</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/20">
+                      <Star className="h-4 w-4 text-violet-500 fill-violet-500" />
+                    </div>
                   </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.averageRating.toFixed(1)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Out of 5 stars</p>
                 </CardContent>
               </Card>
             </AnimatedCard>
 
             <AnimatedCard delay={0.4}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    This Page
-                  </CardTitle>
-                  <CheckCircle className="h-4 w-4 text-emerald-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {reviews?.length || 0}
+              <Card className="admin-card-hover">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-sm font-medium text-muted-foreground">This Page</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    </div>
                   </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{reviews?.length || 0}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Showing now</p>
                 </CardContent>
               </Card>
             </AnimatedCard>

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { CategoryForm } from '../components/category-form'
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -26,7 +26,7 @@ export default function NewCategoryPage() {
             asChild
           >
             <Link href="/admin/vehicle-categories">
-              <ChevronLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CategoryForm } from '../../components/category-form'
 import { getCategory, deleteCategory, getCategoryUsageCount } from '../../actions'
-import { ChevronLeft, Trash2 } from 'lucide-react'
+import { ArrowLeft, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -56,7 +56,7 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
               asChild
             >
               <Link href="/admin/vehicle-categories">
-                <ChevronLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Link>
             </Button>

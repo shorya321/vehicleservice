@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { AdminVehicleForm } from "../components/admin-vehicle-form"
 import { getVendors } from "../actions"
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default async function AdminAddVehiclePage() {
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
               <Link href="/admin/vehicles">
-                <ChevronLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
             <div>
@@ -57,7 +57,7 @@ export default async function AdminAddVehiclePage() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/admin/vehicles">
-              <ChevronLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div>

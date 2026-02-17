@@ -94,83 +94,94 @@ export function WalletOverview({ businessId, initialData, onRefresh }: WalletOve
       {/* Wallet Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Balance Card */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Wallet Balance</p>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(wallet.balance, wallet.currency)}
-                </p>
+        <Card className="admin-card-hover">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between mb-3">
+              <span className="text-sm font-medium text-muted-foreground">Wallet Balance</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                <DollarSign className="h-4 w-4 text-primary" />
               </div>
-              <DollarSign className="h-8 w-8 text-primary" />
             </div>
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">
+                {formatCurrency(wallet.balance, wallet.currency)}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Current balance</p>
           </CardContent>
         </Card>
 
         {/* Status Card */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <Badge
-                  variant={wallet.frozen ? 'destructive' : 'default'}
-                  className="mt-2"
-                >
-                  {wallet.frozen ? (
-                    <>
-                      <Lock className="mr-1 h-3 w-3" />
-                      Frozen
-                    </>
-                  ) : (
-                    <>
-                      <Unlock className="mr-1 h-3 w-3" />
-                      Active
-                    </>
-                  )}
-                </Badge>
+        <Card className="admin-card-hover">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between mb-3">
+              <span className="text-sm font-medium text-muted-foreground">Status</span>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-full ${wallet.frozen ? 'bg-red-500/20' : 'bg-emerald-500/20'}`}>
+                {wallet.frozen ? (
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-emerald-500" />
+                )}
               </div>
-              {wallet.frozen ? (
-                <AlertTriangle className="h-8 w-8 text-destructive" />
-              ) : (
-                <Unlock className="h-8 w-8 text-green-600" />
-              )}
             </div>
+            <div className="flex items-baseline gap-2 mb-1">
+              <Badge
+                variant={wallet.frozen ? 'destructive' : 'default'}
+              >
+                {wallet.frozen ? (
+                  <>
+                    <Lock className="mr-1 h-3 w-3" />
+                    Frozen
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="mr-1 h-3 w-3" />
+                    Active
+                  </>
+                )}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">{wallet.frozen ? 'Wallet is frozen' : 'Wallet is active'}</p>
           </CardContent>
         </Card>
 
         {/* 30-Day Credits */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">30-Day Credits</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {statistics_30_days
-                    ? formatCurrency(statistics_30_days.total_credits, wallet.currency)
-                    : '$0.00'}
-                </p>
+        <Card className="admin-card-hover">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between mb-3">
+              <span className="text-sm font-medium text-muted-foreground">30-Day Credits</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                <TrendingUp className="h-4 w-4 text-emerald-500" />
               </div>
-              <TrendingUp className="h-8 w-8 text-green-600" />
             </div>
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
+                {statistics_30_days
+                  ? formatCurrency(statistics_30_days.total_credits, wallet.currency)
+                  : '$0.00'}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Total incoming</p>
           </CardContent>
         </Card>
 
         {/* 30-Day Debits */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">30-Day Debits</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {statistics_30_days
-                    ? formatCurrency(statistics_30_days.total_debits, wallet.currency)
-                    : '$0.00'}
-                </p>
+        <Card className="admin-card-hover">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between mb-3">
+              <span className="text-sm font-medium text-muted-foreground">30-Day Debits</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20">
+                <TrendingDown className="h-4 w-4 text-red-500" />
               </div>
-              <TrendingDown className="h-8 w-8 text-red-600" />
             </div>
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">
+                {statistics_30_days
+                  ? formatCurrency(statistics_30_days.total_debits, wallet.currency)
+                  : '$0.00'}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Total outgoing</p>
           </CardContent>
         </Card>
       </div>

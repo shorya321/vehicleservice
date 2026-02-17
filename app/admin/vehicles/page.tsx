@@ -1,7 +1,8 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Plus, Car, Building2 } from 'lucide-react'
+import { Plus, Car, Building2, Layers } from 'lucide-react'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { AdminVehicleTableWithBulk } from './components/admin-vehicle-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getAdminVehicles, getVendors, AdminVehicleFilters } from './actions'
@@ -74,64 +75,72 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Vehicles
-              </CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-              <p className="text-xs text-muted-foreground">
-                Across all vendors
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Available
-              </CardTitle>
-              <Car className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{availableCount}</div>
-              <p className="text-xs text-muted-foreground">
-                Ready for booking
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Vendors
-              </CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{vendorCount}</div>
-              <p className="text-xs text-muted-foreground">
-                With vehicles
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Vehicle Types
-              </CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {new Set(vehicles.map(v => v.vehicle_type_id).filter(Boolean)).size}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Different vehicle types
-              </p>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Vehicles</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Car className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Across all vendors</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+          <AnimatedCard delay={0.2}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Available</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                    <Car className="h-4 w-4 text-emerald-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{availableCount}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Ready for booking</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+          <AnimatedCard delay={0.3}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Vendors</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                    <Building2 className="h-4 w-4 text-sky-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{vendorCount}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">With vehicles</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+          <AnimatedCard delay={0.4}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Vehicle Types</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                    <Layers className="h-4 w-4 text-amber-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
+                    {new Set(vehicles.map(v => v.vehicle_type_id).filter(Boolean)).size}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Different vehicle types</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         <Card>

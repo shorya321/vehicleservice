@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ZoneForm } from '../components/zone-form'
 import { getZone } from '../actions'
@@ -28,11 +28,11 @@ export default async function EditZonePage({ params }: EditZonePageProps) {
   return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/admin/zones">
-            <Button variant="ghost" size="icon">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/admin/zones">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Edit Zone</h1>
             <p className="text-muted-foreground">

@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { VehicleTypeForm } from "../../components/vehicle-type-form"
 import { getVehicleType } from "../../actions"
 import { createClient } from '@/lib/supabase/server'
@@ -46,7 +46,7 @@ export default async function EditVehicleTypePage({ params }: PageProps) {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/admin/vehicle-types">
-              <ChevronLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div>

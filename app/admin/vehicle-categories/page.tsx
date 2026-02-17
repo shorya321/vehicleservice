@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Tag } from 'lucide-react'
+import { AnimatedCard } from '@/components/ui/animated-card'
 import { CategoryTableWithBulk } from './components/category-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getCategories, getCategoryUsageCount, CategoryFilters } from './actions'
@@ -67,20 +68,22 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Categories
-              </CardTitle>
-              <Tag className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-              <p className="text-xs text-muted-foreground">
-                Active vehicle categories
-              </p>
-            </CardContent>
-          </Card>
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Categories</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Tag className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Active vehicle categories</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         <Card>

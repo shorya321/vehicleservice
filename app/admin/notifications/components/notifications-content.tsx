@@ -202,61 +202,81 @@ export function NotificationsContent() {
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         <AnimatedCard delay={0.1}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total</CardTitle>
-              <Bell className="h-4 w-4 text-luxury-gold" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.total}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Total</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                  <Bell className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
 
         <AnimatedCard delay={0.2}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unread</CardTitle>
-              <AlertCircle className="h-4 w-4 text-orange-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.unread}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Unread</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.unread}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
 
         <AnimatedCard delay={0.3}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Read</CardTitle>
-              <CheckCircle className="h-4 w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.read}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Read</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.read}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
 
         <AnimatedCard delay={0.4}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Bookings</CardTitle>
-              <Calendar className="h-4 w-4 text-blue-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.booking}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Bookings</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20">
+                  <Calendar className="h-4 w-4 text-sky-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.booking}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
 
         <AnimatedCard delay={0.5}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Users</CardTitle>
-              <Users className="h-4 w-4 text-purple-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.user}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Users</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/20">
+                  <Users className="h-4 w-4 text-violet-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.user}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
@@ -265,37 +285,49 @@ export function NotificationsContent() {
       {/* Additional Stats Row */}
       <div className="grid gap-4 md:grid-cols-3">
         <AnimatedCard delay={0.6}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Vendor Applications</CardTitle>
-              <Building2 className="h-4 w-4 text-orange-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.vendor_application}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Vendor Applications</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                  <Building2 className="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.vendor_application}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
 
         <AnimatedCard delay={0.7}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Reviews</CardTitle>
-              <Star className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.review}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Reviews</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                  <Star className="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.review}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>
 
         <AnimatedCard delay={0.8}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Payments</CardTitle>
-              <CreditCard className="h-4 w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-luxury-pearl">{stats.payment}</div>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Payments</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                  <CreditCard className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.payment}</span>
+              </div>
             </CardContent>
           </Card>
         </AnimatedCard>

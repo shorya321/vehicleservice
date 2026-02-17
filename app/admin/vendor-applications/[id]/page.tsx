@@ -86,10 +86,9 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
               Review application from {application.business_name}
             </p>
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="ghost" size="icon" asChild>
             <Link href="/admin/vendor-applications">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Applications
+              <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
         </div>

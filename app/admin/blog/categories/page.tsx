@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Plus, FolderOpen } from "lucide-react"
+import { AnimatedCard } from "@/components/ui/animated-card"
 import { getBlogCategories, BlogCategoryFilters } from "./actions"
 import { BlogCategoriesTable } from "./components/categories-table"
 import { CustomPagination } from "@/components/ui/custom-pagination"
@@ -54,26 +55,38 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Categories</CardTitle>
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <FolderOpen className="h-4 w-4 text-[var(--admin-success)]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {categories.filter(c => c.is_active).length}
-            </div>
-          </CardContent>
-        </Card>
+        <AnimatedCard delay={0.1}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Total Categories</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                  <FolderOpen className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+        <AnimatedCard delay={0.2}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Active</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                  <FolderOpen className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
+                  {categories.filter(c => c.is_active).length}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
       </div>
 
       <Card>
