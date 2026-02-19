@@ -21,8 +21,9 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Loader2, User, Car, CheckCircle, XCircle, AlertCircle, Calendar } from 'lucide-react'
+import { Loader2, User, Car, CheckCircle, XCircle, AlertCircle, Calendar, Plus } from 'lucide-react'
 import { getVendorDrivers, getVendorVehicles, acceptAndAssignResources, checkResourceAvailabilityForBooking } from '../actions'
+import { QuickAddDriverModal } from './quick-add-driver-modal'
 import Link from 'next/link'
 
 interface AssignResourcesModalProps {
@@ -71,6 +72,7 @@ export function AssignResourcesModal({
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [showQuickAddDriver, setShowQuickAddDriver] = useState(false)
 
   const loadResources = useCallback(async () => {
     setIsLoading(true)
@@ -89,6 +91,11 @@ export function AssignResourcesModal({
   useEffect(() => {
     loadResources()
   }, [loadResources])
+
+  const handleDriverCreated = async (driver: { id: string; first_name: string; last_name: string }) => {
+    await loadResources()
+    setSelectedDriverId(driver.id)
+  }
 
   const handleAssign = async () => {
     if (!selectedDriverId || !selectedVehicleId) {
@@ -132,7 +139,17 @@ export function AssignResourcesModal({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="driver">Select Driver</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="driver">Select Driver</Label>
+              <button
+                type="button"
+                onClick={() => setShowQuickAddDriver(true)}
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                <Plus className="h-3 w-3" />
+                Add Driver
+              </button>
+            </div>
             {isLoading ? (
               <div className="flex items-center justify-center h-10 border rounded-md">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -270,6 +287,12 @@ export function AssignResourcesModal({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <QuickAddDriverModal
+        open={showQuickAddDriver}
+        onClose={() => setShowQuickAddDriver(false)}
+        onDriverCreated={handleDriverCreated}
+      />
     </Dialog>
   )
 }

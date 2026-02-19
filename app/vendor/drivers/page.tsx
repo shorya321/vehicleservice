@@ -4,11 +4,9 @@ import { Plus, Users, UserCheck, UserX, UserMinus } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { VendorLayout } from '@/components/layout/vendor-layout'
 import { DriversTableWithBulk } from './components/drivers-table-with-bulk'
 import { getDrivers, getDriverStats } from './actions'
 import { requireVendor } from '@/lib/auth/user-actions'
-import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Drivers | Vendor Dashboard',
@@ -16,16 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default async function DriversPage() {
-  const user = await requireVendor()
-  const supabase = await createClient()
+  await requireVendor()
 
-  // Get vendor application for business name
-  const { data: vendorApplication } = await supabase
-    .from('vendor_applications')
-    .select('business_name')
-    .eq('user_id', user.id)
-    .single()
-  
   const [driversResult, statsResult] = await Promise.all([
     getDrivers(),
     getDriverStats()
@@ -41,8 +31,7 @@ export default async function DriversPage() {
   }
 
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -156,6 +145,5 @@ export default async function DriversPage() {
         </CardContent>
       </Card>
     </div>
-    </VendorLayout>
   )
 }

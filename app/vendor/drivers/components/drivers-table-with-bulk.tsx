@@ -165,52 +165,13 @@ export function DriversTableWithBulk({ drivers: initialDrivers }: DriversTableWi
       )}
 
       {/* Drivers Table with Selection */}
-      <div className="space-y-4">
-        <div className="rounded-md border overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="p-4 text-left">
-                  <Checkbox
-                    checked={selectedIds.length === initialDrivers.length && initialDrivers.length > 0}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </th>
-                <th className="p-4 text-left font-medium">Name</th>
-                <th className="p-4 text-left font-medium">Contact</th>
-                <th className="p-4 text-left font-medium">License</th>
-                <th className="p-4 text-left font-medium">Status</th>
-                <th className="p-4 text-left font-medium">Available</th>
-                <th className="p-4 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {initialDrivers.map((driver) => (
-                <tr key={driver.id} className="border-b">
-                  <td className="p-4">
-                    <Checkbox
-                      checked={selectedIds.includes(driver.id)}
-                      onCheckedChange={(checked) => handleSelectDriver(driver.id, checked as boolean)}
-                    />
-                  </td>
-                  <td colSpan={6} className="p-0">
-                    {/* We embed the original table row content here, but this is simplified */}
-                    {/* In practice, you'd extract row rendering logic from DriversTable */}
-                    <div className="p-4">
-                      {driver.first_name} {driver.last_name}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Use original table for full functionality */}
-        <div className={selectedIds.length > 0 ? 'hidden' : ''}>
-          <DriversTable drivers={initialDrivers} />
-        </div>
-      </div>
+      <DriversTable
+        drivers={initialDrivers}
+        selectable
+        selectedIds={selectedIds}
+        onSelectDriver={handleSelectDriver}
+        onSelectAll={handleSelectAll}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

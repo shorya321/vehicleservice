@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getRouteBySlug, getRoutesVehicles } from './actions'
+
+export const dynamic = 'force-dynamic'
 import { VehicleTypeCategoryTabs } from '@/app/search/results/components/vehicle-type-category-tabs'
 import { MapPin, Clock } from 'lucide-react'
 import { PublicLayout } from '@/components/layout/public-layout'

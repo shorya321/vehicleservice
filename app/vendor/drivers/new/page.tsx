@@ -3,10 +3,8 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { VendorLayout } from '@/components/layout/vendor-layout'
 import { DriverForm } from '../components/driver-form'
 import { requireVendor } from '@/lib/auth/user-actions'
-import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Add New Driver | Vendor Dashboard',
@@ -14,19 +12,10 @@ export const metadata: Metadata = {
 }
 
 export default async function NewDriverPage() {
-  const user = await requireVendor()
-  const supabase = await createClient()
-
-  // Get vendor application for business name
-  const { data: vendorApplication } = await supabase
-    .from('vendor_applications')
-    .select('business_name')
-    .eq('user_id', user.id)
-    .single()
+  await requireVendor()
 
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -55,6 +44,5 @@ export default async function NewDriverPage() {
         </CardContent>
       </Card>
     </div>
-    </VendorLayout>
   )
 }

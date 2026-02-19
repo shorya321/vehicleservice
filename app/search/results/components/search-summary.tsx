@@ -4,45 +4,23 @@ import { format } from 'date-fns'
 import { MapPin, Calendar, Users, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
 
 interface Location {
   id: string
   name: string
-  city: string
-  country: string
+  city: string | null
+  country_code: string
+  slug: string
 }
 
 interface SearchSummaryProps {
-  originId: string
-  destinationId: string
+  origin: Location | null
+  destination: Location | null
   date: Date
   passengers: number
 }
 
-export function SearchSummary({ originId, destinationId, date, passengers }: SearchSummaryProps) {
-  const [origin, setOrigin] = useState<Location | null>(null)
-  const [destination, setDestination] = useState<Location | null>(null)
-
-  useEffect(() => {
-    // Fetch location details client-side
-    async function fetchLocationDetails() {
-      try {
-        const { getLocationDetails } = await import('../actions')
-        const [originData, destinationData] = await Promise.all([
-          getLocationDetails(originId),
-          getLocationDetails(destinationId)
-        ])
-        setOrigin(originData)
-        setDestination(destinationData)
-      } catch (error) {
-        console.error('Error fetching location details:', error)
-      }
-    }
-
-    fetchLocationDetails()
-  }, [originId, destinationId])
-
+export function SearchSummary({ origin, destination, date, passengers }: SearchSummaryProps) {
   return (
     <motion.header
       className="relative bg-gradient-to-b from-luxury-void to-luxury-rich border-b border-luxury-gold/10"
@@ -77,9 +55,9 @@ export function SearchSummary({ originId, destinationId, date, passengers }: Sea
             <div>
               <div className="text-[0.7rem] font-medium tracking-[0.15em] uppercase text-luxury-lightGray/70">Route</div>
               <div className="flex items-center gap-2 text-luxury-pearl">
-                <span>{origin?.city || '...'}</span>
+                <span>{origin?.city || 'Unknown'}</span>
                 <span className="text-luxury-gold font-serif">&rarr;</span>
-                <span>{destination?.city || '...'}</span>
+                <span>{destination?.city || 'Unknown'}</span>
               </div>
             </div>
           </motion.div>

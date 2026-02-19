@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'

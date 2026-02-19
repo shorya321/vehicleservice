@@ -33,6 +33,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import {
@@ -58,9 +59,13 @@ import { VendorDriver, deleteDriver, toggleDriverAvailability, updateDriverStatu
 
 interface DriversTableProps {
   drivers: VendorDriver[]
+  selectable?: boolean
+  selectedIds?: string[]
+  onSelectDriver?: (id: string, checked: boolean) => void
+  onSelectAll?: (checked: boolean) => void
 }
 
-export function DriversTable({ drivers: initialDrivers }: DriversTableProps) {
+export function DriversTable({ drivers: initialDrivers, selectable, selectedIds = [], onSelectDriver, onSelectAll }: DriversTableProps) {
   const router = useRouter()
   const [drivers, setDrivers] = useState(initialDrivers)
   const [searchTerm, setSearchTerm] = useState('')
@@ -199,6 +204,14 @@ export function DriversTable({ drivers: initialDrivers }: DriversTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              {selectable && (
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={selectedIds.length === initialDrivers.length && initialDrivers.length > 0}
+                    onCheckedChange={(checked) => onSelectAll?.(checked as boolean)}
+                  />
+                </TableHead>
+              )}
               <TableHead>Name</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>License</TableHead>
@@ -210,13 +223,21 @@ export function DriversTable({ drivers: initialDrivers }: DriversTableProps) {
           <TableBody>
             {filteredDrivers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={selectable ? 7 : 6} className="text-center py-8 text-muted-foreground">
                   No drivers found
                 </TableCell>
               </TableRow>
             ) : (
               filteredDrivers.map((driver) => (
                 <TableRow key={driver.id}>
+                  {selectable && (
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.includes(driver.id)}
+                        onCheckedChange={(checked) => onSelectDriver?.(driver.id, checked as boolean)}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div>
                       <div className="font-medium">

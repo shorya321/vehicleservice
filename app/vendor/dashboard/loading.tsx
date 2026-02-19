@@ -4,7 +4,7 @@ function Skeleton({ className }: { className?: string }) {
 
 export default function VendorDashboardLoading() {
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-9 w-56" />

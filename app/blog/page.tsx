@@ -1,5 +1,7 @@
 import { Metadata } from "next"
 import Link from "next/link"
+
+export const dynamic = 'force-dynamic'
 import { getPublishedPosts, getBlogCategories, getFeaturedPosts, getPopularTags } from "@/lib/blog/queries"
 import { BlogHero } from "./components/blog-hero"
 import { BlogCard } from "./components/blog-card"

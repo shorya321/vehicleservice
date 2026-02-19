@@ -1,7 +1,6 @@
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { VendorLayout } from "@/components/layout/vendor-layout"
 import { Button } from "@/components/ui/button"
 import { Plus, Car } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
@@ -68,8 +67,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
   const { vehicles, total, page, totalPages } = await getVehicles(vendorApplication.id, filters)
 
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Fleet</h1>
@@ -190,7 +188,6 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
             )}
           </CardContent>
         </Card>
-      </div>
-    </VendorLayout>
+    </div>
   )
 }

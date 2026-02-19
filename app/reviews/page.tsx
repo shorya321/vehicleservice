@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ReviewCard } from '@/components/reviews/review-card'
 import { ReviewStats } from '@/components/reviews/review-stats'
 import { Button } from '@/components/ui/button'

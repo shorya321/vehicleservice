@@ -2,7 +2,6 @@ import { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { AccountForm } from "./account-form"
-import { VendorLayout } from "@/components/layout/vendor-layout"
 import { requireVendor } from "@/lib/auth/user-actions"
 
 export const metadata: Metadata = {
@@ -24,25 +23,16 @@ export default async function VendorAccountPage() {
     redirect('/unauthorized')
   }
 
-  // Get vendor application for business name
-  const { data: vendorApplication } = await supabase
-    .from('vendor_applications')
-    .select('business_name')
-    .eq('user_id', user.id)
-    .single()
-
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your personal account settings and preferences
-          </p>
-        </div>
-
-        <AccountForm user={profile} />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your personal account settings and preferences
+        </p>
       </div>
-    </VendorLayout>
+
+      <AccountForm user={profile} />
+    </div>
   )
 }

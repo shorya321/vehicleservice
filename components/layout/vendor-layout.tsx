@@ -23,7 +23,6 @@ import {
   Calendar,
   DollarSign,
   User,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -39,18 +38,10 @@ import {
   Search,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { useVendorData } from "@/lib/vendor/vendor-data-context"
 
 interface VendorLayoutProps {
   children: React.ReactNode
-  user?: {
-    email?: string
-    profile?: {
-      full_name?: string
-    }
-  }
-  vendorApplication?: {
-    business_name?: string
-  }
 }
 
 interface NavItem {
@@ -103,15 +94,10 @@ const navGroups: NavGroup[] = [
       { name: "Availability", href: "/vendor/availability", icon: BarChart3 },
     ]
   },
-  {
-    label: 'Settings',
-    items: [
-      { name: "Settings", href: "/vendor/settings", icon: Settings },
-    ]
-  }
 ]
 
-export function VendorLayout({ children, user, vendorApplication }: VendorLayoutProps) {
+export function VendorLayout({ children }: VendorLayoutProps) {
+  const { user, vendorApplication } = useVendorData()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -304,85 +290,82 @@ export function VendorLayout({ children, user, vendorApplication }: VendorLayout
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden text-primary hover:bg-primary/10"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden text-primary hover:bg-primary/10"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
 
-          {/* Search Bar */}
-          <div className="hidden sm:flex relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="pl-10 pr-14 h-9 w-full rounded-lg bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs text-muted-foreground pointer-events-none">
-              <span>⌘</span>
-              <span>K</span>
+            {/* Search Bar */}
+            <div className="hidden sm:flex relative max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search..."
+                className="pl-10 pr-14 h-9 w-full rounded-lg bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs text-muted-foreground pointer-events-none">
+                <span>⌘</span>
+                <span>K</span>
+              </div>
             </div>
           </div>
-          <div className="flex-1 sm:hidden" />
 
-          {/* Theme Toggle */}
-          <AdminThemeToggle size="default" />
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <AdminThemeToggle size="default" />
 
-          {/* Notification Bell */}
-          <VendorNotificationBell />
+            {/* Notification Bell */}
+            <VendorNotificationBell />
 
-          {/* User menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
-                <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                  <AvatarImage src="/avatar-placeholder.png" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
-                    {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
-                  </AvatarFallback>
-                </Avatar>
-                <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8} forceMount>
-              <DropdownMenuLabel className="font-normal !text-primary">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email || ''}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="!bg-border" />
-              <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                <Link href="/vendor/account">
-                  <UserCircle className="mr-2 h-4 w-4 text-primary" />
-                  My Account
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                <Link href="/vendor/profile">
-                  <User className="mr-2 h-4 w-4 text-primary" />
-                  Business Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                <Link href="/vendor/settings">
-                  <Settings className="mr-2 h-4 w-4 text-primary" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="!bg-border" />
-              <DropdownMenuItem onClick={handleLogout} className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
-                <LogOut className="mr-2 h-4 w-4" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            {/* User menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
+                  <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                    <AvatarImage src="/avatar-placeholder.png" />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
+                      {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8} forceMount>
+                <DropdownMenuLabel className="font-normal !text-primary">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email || ''}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="!bg-border" />
+                <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                  <Link href="/vendor/account">
+                    <UserCircle className="mr-2 h-4 w-4 text-primary" />
+                    My Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                  <Link href="/vendor/profile">
+                    <User className="mr-2 h-4 w-4 text-primary" />
+                    Business Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="!bg-border" />
+                <DropdownMenuItem onClick={handleLogout} className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
 
         {/* Page content */}

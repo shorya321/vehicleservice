@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getLocationBySlug, getRoutesFromLocation } from './actions'
+
+export const dynamic = 'force-dynamic'
 import { LocationRoutesList } from './components/location-routes-list'
 import { MapPin } from 'lucide-react'
 import { PublicLayout } from '@/components/layout/public-layout'

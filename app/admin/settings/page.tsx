@@ -9,7 +9,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Palette, Bell, Shield, Settings2, ChevronRight, Coins } from 'lucide-react'
+import { Palette, Bell, Settings2, ChevronRight, Coins } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Settings | Admin Portal',
@@ -34,12 +34,6 @@ const settingsCards = [
     description: 'Configure notification preferences and alert settings',
     href: '/admin/notifications',
     icon: Bell,
-  },
-  {
-    title: 'Security',
-    description: 'Manage security settings and access controls',
-    href: '/admin/security',
-    icon: Shield,
   },
 ]
 

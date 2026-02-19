@@ -4,7 +4,9 @@ import { getRoutes } from "./actions"
 import { RoutesTableWithBulk } from "./components/routes-table-with-bulk"
 import { ClientFilters } from "./components/client-filters"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { AnimatedCard } from "@/components/ui/animated-card"
+import { Plus, Route } from "lucide-react"
 import Link from "next/link"
 
 export const metadata: Metadata = {
@@ -53,6 +55,25 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
               Add Route
             </Link>
           </Button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-4">
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Routes</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Route className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{routesData.total}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">All routes</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         <div className="space-y-4">

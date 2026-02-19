@@ -164,7 +164,11 @@
       "Bash(gh pr view:*)",
       "Bash(gh pr merge:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "mcp__supabase-server__get_advisors",
+      "Bash(npx next:*)",
+      "Bash(claude mcp add:*)",
+      "Skill(codebase-search)"
     ]
   },
   "enableAllProjectMcpServers": true,

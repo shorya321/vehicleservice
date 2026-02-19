@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { VendorLayout } from '@/components/layout/vendor-layout';
 import { AnimatedPage } from '@/components/layout/animated-page';
 import { NotificationsContent } from './components/notifications-content';
 
@@ -31,27 +30,12 @@ export default async function VendorNotificationsPage() {
     redirect('/unauthorized');
   }
 
-  // Get vendor application
-  const { data: vendorApplication } = await supabase
-    .from('vendor_applications')
-    .select('business_name')
-    .eq('user_id', user.id)
-    .single();
-
   return (
-    <VendorLayout
-      user={{
-        email: profile.email,
-        profile: { full_name: profile.full_name }
-      }}
-      vendorApplication={vendorApplication || undefined}
-    >
-      <AnimatedPage>
-        <Suspense fallback={<NotificationsContentSkeleton />}>
-          <NotificationsContent />
-        </Suspense>
-      </AnimatedPage>
-    </VendorLayout>
+    <AnimatedPage>
+      <Suspense fallback={<NotificationsContentSkeleton />}>
+        <NotificationsContent />
+      </Suspense>
+    </AnimatedPage>
   );
 }
 

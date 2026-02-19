@@ -4,11 +4,9 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { VendorLayout } from '@/components/layout/vendor-layout'
 import { DriverForm } from '../../components/driver-form'
 import { getDriver } from '../../actions'
 import { requireVendor } from '@/lib/auth/user-actions'
-import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Edit Driver | Vendor Dashboard',
@@ -23,15 +21,7 @@ interface EditDriverPageProps {
 
 export default async function EditDriverPage({ params }: EditDriverPageProps) {
   const { id } = await params
-  const user = await requireVendor()
-  const supabase = await createClient()
-
-  // Get vendor application for business name
-  const { data: vendorApplication } = await supabase
-    .from('vendor_applications')
-    .select('business_name')
-    .eq('user_id', user.id)
-    .single()
+  await requireVendor()
 
   const { data: driver, error } = await getDriver(id)
 
@@ -40,8 +30,7 @@ export default async function EditDriverPage({ params }: EditDriverPageProps) {
   }
 
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -70,6 +59,5 @@ export default async function EditDriverPage({ params }: EditDriverPageProps) {
         </CardContent>
       </Card>
     </div>
-    </VendorLayout>
   )
 }

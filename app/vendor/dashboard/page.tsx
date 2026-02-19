@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { VendorLayout } from "@/components/layout/vendor-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { requireVendor } from "@/lib/auth/user-actions"
+import { AnimatedPage } from "@/components/layout/animated-page"
+import { AnimatedCard } from "@/components/ui/animated-card"
 import {
   Users,
   Clock,
@@ -43,7 +44,7 @@ export default async function VendorDashboard() {
   const initialBookingTrend = await getVendorBookingTrend('daily')
 
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
+    <AnimatedPage>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -81,75 +82,83 @@ export default async function VendorDashboard() {
 
         {/* Stats */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Card className="admin-card-hover">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-muted-foreground">Total Vehicles</span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
-                  <Car className="h-4 w-4 text-primary" />
+          <AnimatedCard delay={0.1}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Vehicles</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Car className="h-4 w-4 text-primary" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">
-                  {stats.totalVehicles}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">Vehicles in fleet</p>
-            </CardContent>
-          </Card>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">
+                    {stats.totalVehicles}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Vehicles in fleet</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
 
-          <Card className="admin-card-hover">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-muted-foreground">Total Drivers</span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
-                  <Users className="h-4 w-4 text-emerald-500" />
+          <AnimatedCard delay={0.2}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Total Drivers</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
+                    <Users className="h-4 w-4 text-emerald-500" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
-                  {stats.totalDrivers}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">Active drivers</p>
-            </CardContent>
-          </Card>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
+                    {stats.totalDrivers}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Active drivers</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
 
-          <Card className="admin-card-hover">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-muted-foreground">This Month Revenue</span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
-                  <DollarSign className="h-4 w-4 text-amber-500" />
+          <AnimatedCard delay={0.3}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">This Month Revenue</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
+                    <DollarSign className="h-4 w-4 text-amber-500" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
-                  ${stats.monthlyRevenue.toLocaleString()}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">Completed bookings</p>
-            </CardContent>
-          </Card>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
+                    ${stats.monthlyRevenue.toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Completed bookings</p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
 
-          <Card className="admin-card-hover">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-muted-foreground">Average Rating</span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/20">
-                  <Star className="h-4 w-4 text-violet-500" />
+          <AnimatedCard delay={0.4}>
+            <Card className="admin-card-hover">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Average Rating</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/20">
+                    <Star className="h-4 w-4 text-violet-500" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">
-                  {stats.hasRatings ? stats.averageRating.toFixed(1) : "N/A"}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.hasRatings ? "Customer satisfaction" : "No reviews yet"}
-              </p>
-            </CardContent>
-          </Card>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">
+                    {stats.hasRatings ? stats.averageRating.toFixed(1) : "N/A"}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.hasRatings ? "Customer satisfaction" : "No reviews yet"}
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
         </div>
 
         {/* Analytics Charts - 12 column grid */}
@@ -253,6 +262,6 @@ export default async function VendorDashboard() {
           </CardContent>
         </Card>
       </div>
-    </VendorLayout>
+    </AnimatedPage>
   )
 }

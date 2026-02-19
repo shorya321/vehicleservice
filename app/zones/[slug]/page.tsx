@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
 import { PublicLayout } from '@/components/layout/public-layout'
+
+export const dynamic = 'force-dynamic'
 import { ZoneHeader } from './components/zone-header'
 import { DestinationZones } from './components/destination-zones'
 import {

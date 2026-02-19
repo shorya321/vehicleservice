@@ -447,21 +447,3 @@ export const getTagBySlug = unstable_cache(
   { revalidate: 3600, tags: [CACHE_TAGS.tags] }
 )
 
-export const getAllPublishedSlugs = unstable_cache(
-  async (): Promise<string[]> => {
-    try {
-      const supabase = createAdminClient()
-
-      const { data } = await supabase
-        .from('blog_posts')
-        .select('slug')
-        .eq('status', 'published')
-
-      return data?.map(p => p.slug) || []
-    } catch {
-      return []
-    }
-  },
-  ['all-published-blog-slugs'],
-  { revalidate: 3600, tags: [CACHE_TAGS.posts] }
-)

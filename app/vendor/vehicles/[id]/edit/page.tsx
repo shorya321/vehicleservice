@@ -2,7 +2,6 @@ import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { VendorLayout } from "@/components/layout/vendor-layout"
 import { Button } from "@/components/ui/button"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { VehicleForm } from "../../components/vehicle-form"
@@ -42,8 +41,7 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
   }
 
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -61,7 +59,6 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
         </div>
 
         <VehicleForm businessId={vendorApplication.id} initialData={vehicle} />
-      </div>
-    </VendorLayout>
+    </div>
   )
 }

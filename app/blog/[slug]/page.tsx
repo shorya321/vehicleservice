@@ -3,16 +3,13 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Clock, Calendar, ChevronLeft } from "lucide-react"
-import { getPublishedPost, getRelatedPosts, getAllPublishedSlugs, incrementViewCount } from "@/lib/blog/queries"
+import { getPublishedPost, getRelatedPosts, incrementViewCount } from "@/lib/blog/queries"
 import { RelatedCard } from "../components/related-card"
+
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ slug: string }>
-}
-
-export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs()
-  return slugs.map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

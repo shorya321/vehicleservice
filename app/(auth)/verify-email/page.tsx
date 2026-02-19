@@ -1,6 +1,8 @@
 import { Metadata } from "next"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
+
+export const dynamic = 'force-dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, XCircle } from "lucide-react"

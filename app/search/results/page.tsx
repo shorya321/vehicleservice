@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 import { SearchResults } from './components/search-results'
 import { SearchSummary } from './components/search-summary'
-import { getSearchResults } from './actions'
+import { getSearchResults, getLocationDetails } from './actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { AmbientBackground } from '@/components/checkout/ambient-background'
 
@@ -32,15 +34,19 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
     redirect('/')
   }
 
-  const results = await getSearchResults({
-    originId: from,
-    destinationId: to,
-    fromZoneId: fromZone,
-    toZoneId: toZone,
-    routeId: routeId,
-    date: new Date(date),
-    passengers: parseInt(passengers)
-  })
+  const [results, origin, destination] = await Promise.all([
+    getSearchResults({
+      originId: from,
+      destinationId: to,
+      fromZoneId: fromZone,
+      toZoneId: toZone,
+      routeId: routeId,
+      date: new Date(date),
+      passengers: parseInt(passengers)
+    }),
+    from ? getLocationDetails(from) : null,
+    to ? getLocationDetails(to) : null,
+  ])
 
   // Handle error case
   if (!results) {
@@ -80,8 +86,8 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
         <AmbientBackground />
         <div className="relative z-10">
           <SearchSummary
-            originId={from}
-            destinationId={to}
+            origin={origin}
+            destination={destination}
             date={new Date(date)}
             passengers={parseInt(passengers)}
           />

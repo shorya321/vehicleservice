@@ -15,7 +15,6 @@ import {
   MapPin,
   CreditCard,
   Bell,
-  Shield,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -210,11 +209,6 @@ const navGroups: NavGroup[] = [
             name: "General",
             href: "/admin/settings",
             icon: Settings,
-          },
-          {
-            name: "Security",
-            href: "/admin/security",
-            icon: Shield,
           },
           {
             name: "Notifications",

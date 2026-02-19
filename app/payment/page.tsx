@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 import { cookies } from 'next/headers'
+
+export const dynamic = 'force-dynamic'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { PaymentWrapper } from './components/payment-wrapper'

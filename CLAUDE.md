@@ -22,33 +22,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Managing edge functions
    - Getting project configuration
 
-4. **Use Puppeteer MCP** for:
+4. **Use `agent-browser` skill** for:
    - Taking screenshots of pages for debugging
    - Debugging console.log errors
    - Testing UI interactions
    - Visual verification of implementations
 
 5. **Update Database Types**: After schema changes, run:
-bash
-   npx supabase gen types typescript --project-id <project-id> > lib/supabase/types.ts
-  
+```bash
+npx supabase gen types typescript --project-id <project-id> > lib/supabase/types.ts
+```
+
+## Mandatory Skill & Tool Workflow
+
+These 9 rules are **mandatory** for every task. Follow them in order:
+
+1. **Prompt Enhancement** — Use `prompt-engineering-patterns` skill to improve every user prompt before executing
+2. **Pre-Code Guidelines** — Use `karpathy-guidelines` skill before writing or editing any code
+3. **Next.js Code** — Load `next-best-practices`, `vercel-composition-patterns`, and `vercel-react-best-practices` skills before writing any Next.js code
+4. **Code Search** — Use Narsil MCP (LSP-based) for thorough code searching (`mcp__narsil-mcp__search_code`, `mcp__narsil-mcp__find_symbols`, etc.)
+5. **Post-Edit Error Handling** — Use `error-handling-patterns` skill after editing code
+6. **Post-Edit Type & Lint Check** — Run `npx tsc --noEmit` and `npm run lint` after editing or writing code
+7. **Supabase Work** — Use `supabase-postgres-best-practices` skill when working with Supabase MCP
+8. **Documentation & Research** — Use Ref MCP (`mcp__Ref`) AND Exa MCP (`mcp__exa`) simultaneously to gather latest information before coding
+9. **Browser Testing** — Use `agent-browser` skill after all changes for end-to-end browser testing
 
 ## Commands
 
 ### Development
-bash
+```bash
 npm run dev        # Start development server on port 3001
 npm run build      # Build for production
 npm run start      # Start production server
 npm run lint       # Run ESLint
+```
 
 ### Database Migrations
-bash
+```bash
 node scripts/run-migration.ts  # Run pending migrations
+```
 
 ### Type Generation
-bash
+```bash
 npx supabase gen types typescript --project-id <project-id> > lib/supabase/types.ts
+```
 
 ## Memories
 Development server is always running on 3001 locally
@@ -60,7 +77,7 @@ Every edge function must implement JWT and CORS for all request types
 ### Architecture Overview
 
 #### Tech Stack
-**Next.js 13.5** with App Router and Server Actions
+**Next.js 16+** with App Router, Server Actions, and **React 19**
 **TypeScript** with strict mode, path alias @/*
 **Supabase** for backend (auth, database, storage)
 **Shadcn UI** components with Tailwind CSS
@@ -94,6 +111,7 @@ Server Components for data fetching (default)
 Client Components only for interactivity ('use client')
 Compose Shadcn UI components rather than raw HTML
 TypeScript interfaces for all component props
+Page/layout `params` and `searchParams` are `Promise<>` in Next.js 16 — must be awaited
 
 #### Database Patterns
 Normalized relational structure with foreign keys
@@ -128,6 +146,7 @@ Implement loading states for async operations
 Server Components for data fetching
 Client Components for interactivity
 Form state via React Hook Form
+Use `useActionState` for form state with Server Actions (React 19 pattern)
 No global state management library
 Use React Context sparingly for cross-component state
 
@@ -139,11 +158,11 @@ Responsive design with Tailwind modifiers
 Consistent spacing and typography scale
 
 #### Performance Optimization
-Lazy load components with dynamic imports
+Use `next/dynamic` for lazy loading with proper loading UI fallbacks
 Optimize images with Next.js Image component
-Use React.memo for expensive re-renders
+Use `useCallback`/`useMemo` sparingly — React 19 compiler handles most memoization automatically
 Implement pagination for large data sets
-Cache API responses appropriately
+Project uses `unstable_cache` from `next/cache` — the modern `'use cache'` directive requires `experimental.dynamicIO` which is not yet enabled
 
 ### Security Considerations
 Environment variables for sensitive keys
@@ -178,8 +197,7 @@ Business subdomains and custom domains are completely isolated from the main pla
 - Allowed patterns: `/business/*`, `/_next/*`, `/api/business/*`, `/favicon.ico`
 
 ### Testing & Debugging
-Use Puppeteer MCP for visual debugging
-Console.log debugging with Puppeteer
+Use `agent-browser` skill for visual debugging and browser automation
 Screenshot pages to verify implementations
 Test responsive designs across viewports
 Verify dark mode compatibility
@@ -258,4 +276,3 @@ SEO metadata configuration
 4. Handle errors gracefully
 5. Return consistent response format
 
-Remember: Always use Sequential Thinking MCP for planning, Context7 for documentation, and maintain code reusability and efficiency throughout the application.

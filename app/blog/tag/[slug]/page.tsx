@@ -1,6 +1,8 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Link from "next/link"
+
+export const dynamic = 'force-dynamic'
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getPublishedPosts, getTagBySlug } from "@/lib/blog/queries"
 import { BlogHero } from "../../components/blog-hero"

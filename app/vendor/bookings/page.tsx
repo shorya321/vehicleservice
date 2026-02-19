@@ -1,7 +1,5 @@
 import { Metadata } from 'next'
-import { VendorLayout } from '@/components/layout/vendor-layout'
 import { requireVendor } from '@/lib/auth/user-actions'
-import { createClient } from '@/lib/supabase/server'
 import { getVendorAssignedBookings } from './actions'
 import { BookingsTable } from './components/bookings-table'
 import { BookingFilters } from './components/booking-filters'
@@ -26,16 +24,8 @@ interface VendorBookingsPageProps {
 }
 
 export default async function VendorBookingsPage({ searchParams }: VendorBookingsPageProps) {
-  const user = await requireVendor()
-  const supabase = await createClient()
+  await requireVendor()
   const params = await searchParams
-
-  // Get vendor application for business name
-  const { data: vendorApplication } = await supabase
-    .from('vendor_applications')
-    .select('business_name')
-    .eq('user_id', user.id)
-    .single()
 
   const filters = {
     search: params.search,
@@ -62,8 +52,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
   }
   
   return (
-    <VendorLayout user={user} vendorApplication={vendorApplication}>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Assigned Bookings</h1>
@@ -185,7 +174,6 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
             <BookingsTable bookings={bookings} />
           </CardContent>
         </Card>
-      </div>
-    </VendorLayout>
+    </div>
   )
 }
