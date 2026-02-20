@@ -95,10 +95,6 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
             router.push(redirectUrl || "/vendor/dashboard")
             router.refresh()
             break
-          case "driver":
-            router.push(redirectUrl || "/account")
-            router.refresh()
-            break
           default:
             setError("Invalid user role")
             setLoading(false)

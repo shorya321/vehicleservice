@@ -39,7 +39,7 @@ export async function userLogin(email: string, password: string) {
   }
 
   // Check if user role is allowed (not admin)
-  const allowedRoles = ['customer', 'vendor', 'driver']
+  const allowedRoles = ['customer', 'vendor']
   if (!allowedRoles.includes(profile.role)) {
     await supabase.auth.signOut()
     if (profile.role === 'admin') {

@@ -116,7 +116,7 @@ export type Database = {
       admin_wallet_audit_log: {
         Row: {
           action_type: string
-          admin_user_id: string
+          admin_user_id: string | null
           amount: number | null
           business_account_id: string
           created_at: string | null
@@ -129,7 +129,7 @@ export type Database = {
         }
         Insert: {
           action_type: string
-          admin_user_id: string
+          admin_user_id?: string | null
           amount?: number | null
           business_account_id: string
           created_at?: string | null
@@ -465,7 +465,7 @@ export type Database = {
           created_at: string | null
           id: string
           modification_reason: string | null
-          modified_by_user_id: string
+          modified_by_user_id: string | null
           new_datetime: string
           previous_datetime: string
         }
@@ -474,7 +474,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           modification_reason?: string | null
-          modified_by_user_id: string
+          modified_by_user_id?: string | null
           new_datetime: string
           previous_datetime: string
         }

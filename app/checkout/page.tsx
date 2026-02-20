@@ -63,8 +63,6 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       redirect('/vendor/dashboard?error=Vendor users cannot make bookings')
     } else if (profile.role === 'business') {
       redirect('/business/dashboard?error=Business users cannot make bookings')
-    } else if (profile.role === 'driver') {
-      redirect('/login?error=Driver users cannot make bookings')
     }
   }
 

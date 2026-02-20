@@ -168,7 +168,12 @@
       "mcp__supabase-server__get_advisors",
       "Bash(npx next:*)",
       "Bash(claude mcp add:*)",
-      "Skill(codebase-search)"
+      "Skill(codebase-search)",
+      "Skill(agent-browser)",
+      "Bash(npx playwright install:*)",
+      "Bash(npx -y playwright install:*)",
+      "Bash(npx agent-browser:*)",
+      "WebFetch(domain:infiniayachts.com)"
     ]
   },
   "enableAllProjectMcpServers": true,

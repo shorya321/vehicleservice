@@ -4,13 +4,14 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 import { logUserActivity } from "./user-activity.actions"
+import { cleanupBusinessData } from "./user-delete.actions"
 
 export async function bulkDeleteUsers(
   userIds: string[]
 ): Promise<{ error?: string }> {
   const supabaseAdmin = createAdminClient()
   const supabase = await createClient()
-  
+
   try {
     // Check if user is admin
     const { data: currentUser } = await supabase.auth.getUser()
@@ -31,6 +32,9 @@ export async function bulkDeleteUsers(
     // Delete users from auth (this will cascade to profiles)
     for (const userId of userIds) {
       if (userId !== currentUser.user.id) { // Prevent self-deletion
+        // Clean up business data before auth deletion
+        await cleanupBusinessData(supabaseAdmin, userId)
+
         const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
         if (error) {
           console.error(`Failed to delete user ${userId}:`, error)

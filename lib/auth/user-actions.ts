@@ -48,11 +48,6 @@ export async function isVendor() {
   return user?.profile?.role === 'vendor'
 }
 
-export async function isDriver() {
-  const user = await getCurrentUserProfile()
-  return user?.profile?.role === 'driver'
-}
-
 export async function requireCustomer() {
   const user = await getCurrentUserProfile()
   
@@ -67,16 +62,6 @@ export async function requireVendor() {
   const user = await getCurrentUserProfile()
   
   if (!user || user.profile?.role !== 'vendor') {
-    redirect("/login")
-  }
-  
-  return user
-}
-
-export async function requireDriver() {
-  const user = await getCurrentUserProfile()
-  
-  if (!user || user.profile?.role !== 'driver') {
     redirect("/login")
   }
   

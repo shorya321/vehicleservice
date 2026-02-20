@@ -1,10 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/actions'
+import { revalidatePath } from 'next/cache'
 
 export async function getVendorApplicationsStats() {
   try {
-    const supabase = await createClient()
+    await requireAdmin()
+    const supabase = createAdminClient()
     
     let total = 0, pending = 0, approved = 0, rejected = 0
     
@@ -101,7 +104,8 @@ export async function getVendorApplications({
   limit?: number
 }) {
   try {
-    const supabase = await createClient()
+    await requireAdmin()
+    const supabase = createAdminClient()
     const offset = (page - 1) * limit
 
     let query = supabase
@@ -155,4 +159,21 @@ export async function getVendorApplications({
       error: 'Failed to fetch vendor applications'
     }
   }
+}
+
+export async function deleteVendorApplication(id: string) {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  const { error } = await supabase
+    .from('vendor_applications')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('[Vendor Applications] Error deleting application:', error)
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/vendor-applications')
 }
