@@ -228,7 +228,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected vendor routes
-  if (request.nextUrl.pathname.startsWith('/vendor')) {
+  if (request.nextUrl.pathname.startsWith('/vendor') &&
+      !request.nextUrl.pathname.startsWith('/vendor-application')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
