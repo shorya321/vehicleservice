@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 import { ArrowLeft, Building2, FileText, CreditCard, Info } from "lucide-react"
 import Link from "next/link"
 import { VendorApplicationForm } from "@/components/vendor-application/vendor-application-form"
+import { PublicLayout } from "@/components/layout/public-layout"
 
 export const metadata: Metadata = {
   title: "Become a Vendor | Start Your Transfer Business",
@@ -40,7 +41,8 @@ export default async function BecomeVendorPage() {
     .single()
 
   return (
-    <div className="min-h-screen bg-[var(--black-void)]">
+    <PublicLayout>
+    <div className="bg-[var(--black-void)]">
       <div className="luxury-container py-8 md:py-12">
         {/* Back Link */}
         <Link
@@ -124,6 +126,7 @@ export default async function BecomeVendorPage() {
         </div>
       </div>
     </div>
+    </PublicLayout>
   )
 }
 

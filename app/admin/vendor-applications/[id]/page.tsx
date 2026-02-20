@@ -38,7 +38,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
     .from('vendor_applications')
     .select(`
       *,
-      user:user_id(
+      user:profiles!vendor_applications_user_id_fkey(
         id,
         email,
         full_name,
@@ -47,7 +47,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
         email_verified,
         status
       ),
-      reviewer:reviewed_by(full_name, email)
+      reviewer:profiles!vendor_applications_reviewed_by_fkey(full_name, email)
     `)
     .eq('id', id)
     .single()

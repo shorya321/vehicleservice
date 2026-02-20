@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
@@ -45,7 +43,7 @@ export default async function EditVendorApplicationPage() {
     .single()
 
   return (
-    <div className="min-h-screen bg-[var(--black-void)]">
+    <div className="bg-[var(--black-void)]">
       <div className="luxury-container py-8 md:py-12">
         {/* Back Link */}
         <Link
@@ -68,16 +66,14 @@ export default async function EditVendorApplicationPage() {
           </div>
 
           {/* Edit Form */}
-          <div className="luxury-card p-6 md:p-8">
-            <VendorApplicationEditForm
-              userId={user.id}
-              application={application}
-              defaultValues={{
-                businessEmail: application.business_email || profile?.email,
-                businessPhone: application.business_phone || profile?.phone,
-              }}
-            />
-          </div>
+          <VendorApplicationEditForm
+            userId={user.id}
+            application={application}
+            defaultValues={{
+              businessEmail: application.business_email || profile?.email,
+              businessPhone: application.business_phone || profile?.phone,
+            }}
+          />
         </div>
       </div>
     </div>

@@ -5,21 +5,24 @@ import Link from "next/link"
 
 const STATUS_CONFIG = {
   pending: {
-    color: "border-yellow-500/30 bg-yellow-500/10",
+    borderColor: "border-yellow-500/20",
+    iconBg: "bg-yellow-500/15 border-yellow-500/30",
     iconColor: "text-yellow-400",
     icon: Clock,
     title: "Application Under Review",
     description: "Your application is being reviewed by our team. We'll notify you within 48 hours.",
   },
   approved: {
-    color: "border-green-500/30 bg-green-500/10",
+    borderColor: "border-green-500/20",
+    iconBg: "bg-green-500/15 border-green-500/30",
     iconColor: "text-green-400",
     icon: CheckCircle2,
     title: "Application Approved!",
     description: "Congratulations! Your vendor application has been approved.",
   },
   rejected: {
-    color: "border-red-500/30 bg-red-500/10",
+    borderColor: "border-red-500/20",
+    iconBg: "bg-red-500/15 border-red-500/30",
     iconColor: "text-red-400",
     icon: XCircle,
     title: "Application Rejected",
@@ -37,15 +40,19 @@ export function ApplicationStatusAlert({ status, rejectionReason }: ApplicationS
   const StatusIcon = config.icon
 
   return (
-    <div className={`luxury-card p-6 ${config.color}`}>
-      <div className="flex gap-4">
-        <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${config.color}`}>
-          <StatusIcon className={`w-6 h-6 ${config.iconColor}`} />
+    <div className={`account-section ${config.borderColor}`}>
+      <div className="account-section-header">
+        <div className={`account-section-icon ${config.iconBg}`}>
+          <StatusIcon className={`w-5 h-5 ${config.iconColor}`} />
         </div>
-        <div className="flex-1">
-          <h2 className={`text-lg font-medium mb-1 ${config.iconColor}`}>{config.title}</h2>
-          <p className="text-[var(--text-muted)] text-sm mb-4">{config.description}</p>
+        <div>
+          <h3 className={`text-lg font-medium ${config.iconColor}`}>{config.title}</h3>
+          <p className="text-sm text-[var(--text-muted)]">{config.description}</p>
+        </div>
+      </div>
 
+      {(status === "approved" || (status === "rejected" && rejectionReason)) && (
+        <div className="account-section-content">
           {status === "approved" && (
             <Link href="/vendor/profile" className="inline-flex items-center gap-2 btn btn-primary">
               Complete Your Vendor Profile
@@ -54,13 +61,13 @@ export function ApplicationStatusAlert({ status, rejectionReason }: ApplicationS
           )}
 
           {status === "rejected" && rejectionReason && (
-            <div className="mt-4 p-4 rounded-lg bg-[var(--charcoal)] border border-red-500/20">
+            <div className="p-4 rounded-lg bg-[var(--charcoal)] border border-red-500/20">
               <p className="text-sm font-medium text-[var(--text-primary)] mb-1">Reason for rejection:</p>
               <p className="text-sm text-[var(--text-muted)]">{rejectionReason}</p>
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   )
 }
