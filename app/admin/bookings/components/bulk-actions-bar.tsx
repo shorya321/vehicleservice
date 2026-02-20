@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { X, CheckCircle, XCircle, FileDown } from 'lucide-react'
+import { X, CheckCircle, XCircle, FileDown, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { bulkUpdateBookingStatus, exportBookingsToCSV } from '../actions'
+import { bulkUpdateBookingStatus, bulkDeleteBookings, exportBookingsToCSV } from '../actions'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,7 @@ export function BulkActionsBar({
 }: BulkActionsBarProps) {
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<'confirm' | 'cancel' | null>(null)
+  const [confirmAction, setConfirmAction] = useState<'confirm' | 'cancel' | 'delete' | null>(null)
 
   const handleBulkStatusUpdate = async (status: 'confirmed' | 'cancelled') => {
     setIsUpdating(true)
@@ -65,6 +65,25 @@ export function BulkActionsBar({
       toast.success('Bookings exported successfully')
     } catch (error) {
       toast.error('Failed to export bookings')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    setIsUpdating(true)
+    try {
+      const result = await bulkDeleteBookings(selectedBookingIds)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success(`${selectedCount} booking${selectedCount !== 1 ? 's' : ''} deleted`)
+        onClearSelection()
+        router.refresh()
+      }
+    } catch (error) {
+      toast.error('Failed to delete bookings')
+    } finally {
+      setIsUpdating(false)
+      setConfirmAction(null)
     }
   }
 
@@ -112,6 +131,17 @@ export function BulkActionsBar({
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setConfirmAction('delete')}
+            disabled={isUpdating}
+            className="gap-2 text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Selected
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleExport}
             className="gap-2"
           >
@@ -125,22 +155,32 @@ export function BulkActionsBar({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction === 'confirm' ? 'Confirm Bookings' : 'Cancel Bookings'}
+              {confirmAction === 'confirm' ? 'Confirm Bookings' : confirmAction === 'delete' ? 'Delete Bookings' : 'Cancel Bookings'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to {confirmAction === 'confirm' ? 'confirm' : 'cancel'}{' '}
-              {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''}?
-              {confirmAction === 'cancel' && ' This action cannot be undone.'}
+              {confirmAction === 'delete' ? (
+                <>Are you sure you want to permanently delete {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''}? This will remove all related data and cannot be undone.</>
+              ) : (
+                <>Are you sure you want to {confirmAction === 'confirm' ? 'confirm' : 'cancel'}{' '}
+                {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''}?
+                {confirmAction === 'cancel' && ' This action cannot be undone.'}</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => handleBulkStatusUpdate(confirmAction === 'confirm' ? 'confirmed' : 'cancelled')}
+              onClick={() => {
+                if (confirmAction === 'delete') {
+                  handleBulkDelete()
+                } else {
+                  handleBulkStatusUpdate(confirmAction === 'confirm' ? 'confirmed' : 'cancelled')
+                }
+              }}
               disabled={isUpdating}
-              className={confirmAction === 'cancel' ? 'bg-destructive text-destructive-foreground' : ''}
+              className={confirmAction === 'cancel' || confirmAction === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
             >
-              {isUpdating ? 'Processing...' : confirmAction === 'confirm' ? 'Confirm All' : 'Cancel All'}
+              {isUpdating ? 'Processing...' : confirmAction === 'confirm' ? 'Confirm All' : confirmAction === 'delete' ? 'Delete All' : 'Cancel All'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -664,6 +664,97 @@ export async function bulkUpdateBookingStatus(
   return { success: true }
 }
 
+export async function deleteBooking(
+  bookingId: string,
+  bookingType: 'customer' | 'business'
+) {
+  const adminClient = createAdminClient()
+
+  try {
+    // Check for booking assignment and clean up availability
+    const fieldName = bookingType === 'customer' ? 'booking_id' : 'business_booking_id'
+    const { data: assignment } = await adminClient
+      .from('booking_assignments')
+      .select('id')
+      .eq(fieldName, bookingId)
+      .single()
+
+    if (assignment) {
+      const { AvailabilityService } = await import('@/lib/availability/service')
+      await AvailabilityService.removeSchedule(assignment.id)
+    }
+
+    // Delete related records
+    await adminClient
+      .from('booking_assignments')
+      .delete()
+      .eq(fieldName, bookingId)
+
+    if (bookingType === 'customer') {
+      await adminClient
+        .from('booking_passengers')
+        .delete()
+        .eq('booking_id', bookingId)
+
+      await adminClient
+        .from('booking_amenities')
+        .delete()
+        .eq('booking_id', bookingId)
+    } else {
+      await adminClient
+        .from('business_booking_addons')
+        .delete()
+        .eq('business_booking_id', bookingId)
+    }
+
+    // Delete the booking itself
+    const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
+    const { error } = await adminClient
+      .from(tableName)
+      .delete()
+      .eq('id', bookingId)
+
+    if (error) {
+      console.error('Error deleting booking:', error)
+      return { error: 'Failed to delete booking' }
+    }
+
+    revalidatePath('/admin/bookings')
+    return { success: true }
+  } catch (err) {
+    console.error('Error deleting booking:', err)
+    return { error: 'Failed to delete booking' }
+  }
+}
+
+export async function bulkDeleteBookings(bookingIds: string[]) {
+  const adminClient = createAdminClient()
+
+  try {
+    for (const bookingId of bookingIds) {
+      // Try customer booking first
+      const { data: customerBooking } = await adminClient
+        .from('bookings')
+        .select('id')
+        .eq('id', bookingId)
+        .single()
+
+      const bookingType: 'customer' | 'business' = customerBooking ? 'customer' : 'business'
+      const result = await deleteBooking(bookingId, bookingType)
+
+      if (result.error) {
+        console.error(`Failed to delete booking ${bookingId}:`, result.error)
+      }
+    }
+
+    revalidatePath('/admin/bookings')
+    return { success: true }
+  } catch (err) {
+    console.error('Error bulk deleting bookings:', err)
+    return { error: 'Failed to delete some bookings' }
+  }
+}
+
 export async function getAvailableVendors() {
   const adminClient = createAdminClient()
   

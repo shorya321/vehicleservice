@@ -45,12 +45,13 @@ import {
   UserPlus,
   Mail,
   Phone,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus } from '../actions'
+import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus, deleteBooking } from '../actions'
 import { BulkActionsBar } from './bulk-actions-bar'
 import { AssignVendorModal } from './assign-vendor-modal'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -67,6 +68,9 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [statusUpdateBookingType, setStatusUpdateBookingType] = useState<'customer' | 'business' | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [assignModalBookingId, setAssignModalBookingId] = useState<string | null>(null)
+  const [deleteBookingId, setDeleteBookingId] = useState<string | null>(null)
+  const [deleteBookingType, setDeleteBookingType] = useState<'customer' | 'business'>('customer')
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const getStatusBadge = (status: string) => {
     // Handle undefined/null status
@@ -194,6 +198,25 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       router.refresh()
     } catch (error) {
       toast.error('Failed to update payment status')
+    }
+  }
+
+  const handleDeleteBooking = async () => {
+    if (!deleteBookingId) return
+    setIsDeleting(true)
+    try {
+      const result = await deleteBooking(deleteBookingId, deleteBookingType)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Booking deleted successfully')
+        router.refresh()
+      }
+    } catch (error) {
+      toast.error('Failed to delete booking')
+    } finally {
+      setIsDeleting(false)
+      setDeleteBookingId(null)
     }
   }
 
@@ -464,6 +487,18 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                               Call Customer
                             </DropdownMenuItem>
                           )}
+
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setDeleteBookingId(booking.id)
+                              setDeleteBookingType(booking.bookingType || 'customer')
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Booking
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -492,6 +527,29 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               className={newStatus === 'cancelled' ? 'bg-destructive text-destructive-foreground' : ''}
             >
               {isUpdating ? 'Updating...' : 'Update Status'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteBookingId} onOpenChange={() => setDeleteBookingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Booking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete this booking? This will remove
+              the booking and all related data (assignments, passengers, amenities). This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteBooking}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Booking'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
