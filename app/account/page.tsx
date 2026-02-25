@@ -98,6 +98,16 @@ export default async function AccountPage({
     redirect("/login?redirect=/account")
   }
 
+  // Role guard: only customers can access the account page
+  if (profile.role && profile.role !== 'customer') {
+    const dashboardMap: Record<string, string> = {
+      admin: '/admin/dashboard',
+      vendor: '/vendor/dashboard',
+      business: '/business/dashboard',
+    }
+    redirect(dashboardMap[profile.role] || '/')
+  }
+
   return (
     <PublicLayout>
       <div className="bg-[var(--black-void)]">

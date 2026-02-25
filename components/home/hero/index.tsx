@@ -92,7 +92,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:justify-self-end w-full max-w-md animate-float"
+            className="lg:justify-self-end w-full max-w-md"
           >
             <SearchForm todayDate={todayDate} />
           </motion.div>

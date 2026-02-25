@@ -12,6 +12,7 @@ import { Testimonials } from '@/components/home/testimonials'
 import { JoinCommunity } from '@/components/home/join-community'
 import { FAQ } from '@/components/home/faq'
 import { Footer } from '@/components/layout/footer'
+import { StatsRibbon } from '@/components/home/stats-ribbon'
 import { getEnabledCurrencies, getFeaturedCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
@@ -63,6 +64,7 @@ export default async function HomePage() {
         initialProfile={profile}
       />
       <Hero todayDate={todayStr} />
+      <StatsRibbon />
       <div className="bg-luxury-darkGray">
         <DeparturePoints todayDate={todayStr} />
       </div>

@@ -3,10 +3,8 @@ import { VendorApplicationsTable } from "./components/vendor-applications-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getVendorApplicationsStats } from "./actions"
-import { Building2, Clock, CheckCircle2, XCircle, Eye, AlertCircle } from "lucide-react"
+import { Building2, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export const metadata = {
@@ -38,8 +36,7 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
   
   return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <Building2 className="h-8 w-8" />
               Vendor Applications
@@ -47,13 +44,6 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
             <p className="text-muted-foreground">
               Review and manage vendor applications for your platform
             </p>
-          </div>
-          <Button variant="outline" asChild>
-            <Link href="/admin/vendor-applications">
-              <Eye className="mr-2 h-4 w-4" />
-              View All
-            </Link>
-          </Button>
         </div>
 
         {/* Error Alert */}

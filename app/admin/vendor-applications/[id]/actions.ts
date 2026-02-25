@@ -25,7 +25,7 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     // Get application details first
     const { data: application, error: fetchError } = await supabase
       .from('vendor_applications')
-      .select('id, email, applicant_name, application_reference')
+      .select('id, business_email, business_name')
       .eq('id', data.applicationId)
       .single();
 
@@ -36,7 +36,7 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     // Call RPC to approve application
     const { data: rpcData, error: rpcError } = await supabase.rpc('approve_vendor_application', {
       p_application_id: data.applicationId,
-      p_admin_notes: data.adminNotes || null,
+      p_admin_notes: data.adminNotes,
     });
 
     if (rpcError) {
@@ -44,8 +44,9 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
       return { error: rpcError.message || 'Failed to approve application' };
     }
 
-    if (rpcData?.error) {
-      return { error: rpcData.error };
+    const approveResult = rpcData as Record<string, unknown> | null;
+    if (approveResult?.error) {
+      return { error: String(approveResult.error) };
     }
 
     // Send approval email
@@ -54,9 +55,9 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     const dashboardUrl = `${appUrl}/vendor`;
 
     const emailResult = await sendVendorApplicationApprovedEmail({
-      email: application.email,
-      name: application.applicant_name,
-      applicationReference: application.application_reference,
+      email: application.business_email || '',
+      name: application.business_name,
+      applicationReference: application.id,
       loginUrl,
       dashboardUrl,
     });
@@ -80,7 +81,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     // Get application details first
     const { data: application, error: fetchError } = await supabase
       .from('vendor_applications')
-      .select('id, email, applicant_name, application_reference')
+      .select('id, business_email, business_name')
       .eq('id', data.applicationId)
       .single();
 
@@ -92,7 +93,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     const { data: rpcData, error: rpcError } = await supabase.rpc('reject_vendor_application', {
       p_application_id: data.applicationId,
       p_rejection_reason: data.rejectionReason,
-      p_admin_notes: data.adminNotes || null,
+      p_admin_notes: data.adminNotes,
     });
 
     if (rpcError) {
@@ -100,8 +101,9 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
       return { error: rpcError.message || 'Failed to reject application' };
     }
 
-    if (rpcData?.error) {
-      return { error: rpcData.error };
+    const rejectResult = rpcData as Record<string, unknown> | null;
+    if (rejectResult?.error) {
+      return { error: String(rejectResult.error) };
     }
 
     // Send rejection email
@@ -109,9 +111,9 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     const reapplyUrl = `${appUrl}/become-vendor`;
 
     const emailResult = await sendVendorApplicationRejectedEmail({
-      email: application.email,
-      name: application.applicant_name,
-      applicationReference: application.application_reference,
+      email: application.business_email || '',
+      name: application.business_name,
+      applicationReference: application.id,
       rejectionReason: data.rejectionReason,
       reapplyUrl,
     });

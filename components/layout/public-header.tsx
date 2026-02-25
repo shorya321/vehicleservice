@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Phone, Menu, X, User, LogOut, Star, Building2, Car } from 'lucide-react'
+import { Phone, User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
@@ -20,6 +20,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CurrencySelector } from '@/components/currency/currency-selector'
 import { useCurrency } from '@/lib/currency/context'
+import { HamburgerButton } from '@/components/layout/mobile-menu/hamburger-button'
+import { MobileMenu } from '@/components/layout/mobile-menu'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -129,6 +131,7 @@ export function PublicHeader({
   const navItems = [
     { name: "Services", href: "#services" },
     { name: "Fleet", href: "#fleet" },
+    { name: "Blog", href: "/blog" },
     { name: "FAQ", href: "#faq" },
     { name: "Contact", href: "/contact" },
   ]
@@ -160,12 +163,10 @@ export function PublicHeader({
             ))}
           </nav>
 
-          <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
             {/* Currency Selector */}
             {allCurrencies.length > 1 && (
-              <div className="hidden sm:block">
-                <CurrencySelector staticMode={!mounted} />
-              </div>
+              <CurrencySelector staticMode={!mounted} className="scale-90 sm:scale-100 origin-right" />
             )}
 
             {/* Phone */}
@@ -212,22 +213,41 @@ export function PublicHeader({
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
-                    <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      My Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <Car className="mr-2 h-4 w-4" />
-                      My Bookings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <Star className="mr-2 h-4 w-4" />
-                      My Reviews
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <Building2 className="mr-2 h-4 w-4" />
-                      Partner With Us
-                    </DropdownMenuItem>
+                    {(!profile?.role || profile.role === 'customer') ? (
+                      <>
+                        <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          My Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                          <Car className="mr-2 h-4 w-4" />
+                          My Bookings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                          <Star className="mr-2 h-4 w-4" />
+                          My Reviews
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                          <Building2 className="mr-2 h-4 w-4" />
+                          Partner With Us
+                        </DropdownMenuItem>
+                      </>
+                    ) : profile.role === 'admin' ? (
+                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </DropdownMenuItem>
+                    ) : profile.role === 'vendor' ? (
+                      <DropdownMenuItem onClick={() => router.push('/vendor/dashboard')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </DropdownMenuItem>
+                    ) : profile.role === 'business' ? (
+                      <DropdownMenuItem onClick={() => router.push('/business/dashboard')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </DropdownMenuItem>
+                    ) : null}
                     <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
                     <DropdownMenuItem
                       className="text-red-400 hover:bg-red-500/10 cursor-pointer"
@@ -267,158 +287,22 @@ export function PublicHeader({
                 </Link>
               </>
             )}
-            <button
+            <HamburgerButton
+              isOpen={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden text-[var(--text-primary)] p-2 rounded-lg border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-all duration-300"
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-navigation"
-            >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+            />
           </div>
         </div>
       </div>
 
-      <div
-        id="mobile-navigation"
-        role="navigation"
-        aria-label="Mobile navigation"
-        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-[var(--black-void)]/98 backdrop-blur-xl border-t border-[var(--gold)]/10 ${
-          isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 border-t-transparent'
-        }`}
-      >
-            <div className="luxury-container py-6 flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-[var(--text-primary)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/5 block text-center py-3 text-sm uppercase tracking-[0.15em] rounded-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <div className="pt-4 mt-2 border-t border-[var(--gold)]/10 flex flex-col gap-3">
-                {/* Mobile Currency Selector */}
-                {allCurrencies.length > 1 && (
-                  <div className="flex justify-center py-2">
-                    <CurrencySelector staticMode={!mounted} />
-                  </div>
-                )}
-
-                <a
-                  href="tel:+971501234567"
-                  className="flex items-center justify-center gap-2 text-[var(--text-primary)] hover:text-[var(--gold)] transition-colors duration-300 py-3"
-                  onClick={() => setIsMenuOpen(false)}
-                  aria-label="Call us at +971 50 123 4567"
-                >
-                  <Phone className="w-4 h-4 text-[var(--gold)]" />
-                  <span className="text-sm">Call Us</span>
-                </a>
-                {isAuthLoading ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="h-12 bg-[var(--charcoal)] rounded animate-pulse" />
-                    <div className="h-12 bg-[var(--charcoal)] rounded animate-pulse" />
-                  </div>
-                ) : user ? (
-                  <>
-                    <div className="flex items-center gap-3 px-4 py-3 bg-[var(--charcoal)]/50 rounded-lg">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={profile?.avatar_url || undefined}
-                          alt={profile?.full_name || profile?.first_name || user?.email}
-                        />
-                        <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)] text-sm">
-                          {getInitials(profile)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <p className="text-sm font-medium text-[var(--text-primary)]">
-                          {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
-                        </p>
-                        <p className="text-xs text-[var(--text-muted)]">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
-                      onClick={() => {
-                        router.push('/account?tab=personal')
-                        setIsMenuOpen(false)
-                      }}
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      My Profile
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
-                      onClick={() => {
-                        router.push('/account?tab=bookings')
-                        setIsMenuOpen(false)
-                      }}
-                    >
-                      <Car className="mr-2 h-4 w-4" />
-                      My Bookings
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
-                      onClick={() => {
-                        router.push('/account?tab=reviews')
-                        setIsMenuOpen(false)
-                      }}
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      My Reviews
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
-                      onClick={() => {
-                        router.push('/become-vendor')
-                        setIsMenuOpen(false)
-                      }}
-                    >
-                      <Building2 className="mr-2 h-4 w-4" />
-                      Partner With Us
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-red-400 hover:bg-red-500/10"
-                      onClick={() => {
-                        handleSignOut()
-                        setIsMenuOpen(false)
-                      }}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
-                    </Button>
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <Link
-                      href="/login"
-                      className="btn btn-secondary w-full justify-center"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      href="/register"
-                      className="btn btn-primary w-full justify-center"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Sign Up
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-      </div>
+      <MobileMenu
+        isOpen={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
+        user={user}
+        profile={profile}
+        getInitials={getInitials}
+        onSignOut={handleSignOut}
+      />
     </header>
   )
 }

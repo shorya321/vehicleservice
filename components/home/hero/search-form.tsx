@@ -1,8 +1,7 @@
 "use client"
 import { useState } from 'react'
-import { motion } from 'motion/react'
 import { Input } from '@/components/ui/input'
-import { CalendarDays, Users } from 'lucide-react'
+import { ArrowRight, CalendarDays, Layers, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Location } from '@/lib/types/location'
 import { LocationAutocomplete } from './location-autocomplete'
@@ -59,8 +58,18 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
     <div className="booking-card w-full">
       {/* Card Header */}
       <div className="booking-card-header">
+        <div className="booking-card-icon">
+          <Layers className="w-4 h-4 text-[var(--gold)]" />
+        </div>
         <h2 className="booking-card-title">Book Your Transfer</h2>
         <p className="booking-card-subtitle">Enter your journey details</p>
+      </div>
+
+      {/* Divider */}
+      <div className="booking-card-divider">
+        <div className="booking-card-divider-line" />
+        <div className="booking-card-divider-diamond" />
+        <div className="booking-card-divider-line" />
       </div>
 
       <form onSubmit={handleSearch} className="booking-form">
@@ -137,9 +146,10 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
         <button
           type="submit"
           disabled={!fromLocation || !toLocation}
-          className="btn btn-primary btn-lg w-full mt-2 disabled:cursor-not-allowed"
+          className="btn-book w-full mt-2"
         >
-          Search Vehicles
+          <span>Search Vehicles</span>
+          <ArrowRight className="w-4 h-4" />
         </button>
       </form>
     </div>

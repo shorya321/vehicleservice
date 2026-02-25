@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
@@ -26,10 +26,15 @@ export function useAdminNotifications(limit: number = 5): UseAdminNotificationsR
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
+  const hasLoaded = useRef(false);
+
   // Fetch initial notifications and unread count
   const fetchNotifications = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show loading spinner on initial fetch, not refetches
+      if (!hasLoaded.current) {
+        setLoading(true);
+      }
       const [notificationsResult, countResult] = await Promise.all([
         getRecentNotificationsAction(limit),
         getUnreadCountAction(),
@@ -37,6 +42,8 @@ export function useAdminNotifications(limit: number = 5): UseAdminNotificationsR
 
       if (notificationsResult.data) {
         setNotifications(notificationsResult.data.notifications);
+      } else if ('error' in notificationsResult && notificationsResult.error) {
+        console.error('Notifications fetch error:', notificationsResult.error);
       }
 
       if (countResult.data !== undefined) {
@@ -45,6 +52,7 @@ export function useAdminNotifications(limit: number = 5): UseAdminNotificationsR
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
+      hasLoaded.current = true;
       setLoading(false);
     }
   }, [limit]);
@@ -71,18 +79,11 @@ export function useAdminNotifications(limit: number = 5): UseAdminNotificationsR
   }, []);
 
   // Get current user and set up realtime subscription
+  // onAuthStateChange fires immediately with the current session on subscribe,
+  // so we don't need a separate getUser() call (which caused double-fetch race conditions)
   useEffect(() => {
     const supabase = createClient();
 
-    // Get current user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setUserId(user.id);
-        fetchNotifications();
-      }
-    });
-
-    // Subscribe to auth changes
     const {
       data: { subscription: authSubscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -93,6 +94,7 @@ export function useAdminNotifications(limit: number = 5): UseAdminNotificationsR
         setUserId(null);
         setNotifications([]);
         setUnreadCount(0);
+        setLoading(false);
       }
     });
 
