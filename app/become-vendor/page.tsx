@@ -22,6 +22,17 @@ export default async function BecomeVendorPage() {
     redirect("/login?redirect=/become-vendor")
   }
 
+  // Check user role - only customers can access this page
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name, email, phone")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile || profile.role !== "customer") {
+    redirect("/unauthorized")
+  }
+
   // Check if user already has an application
   const { data: existingApplication } = await supabase
     .from("vendor_applications")
@@ -32,13 +43,6 @@ export default async function BecomeVendorPage() {
   if (existingApplication) {
     redirect("/vendor-application")
   }
-
-  // Get user profile data to prefill form
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, email, phone")
-    .eq("id", user.id)
-    .single()
 
   return (
     <PublicLayout>

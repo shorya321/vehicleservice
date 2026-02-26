@@ -189,7 +189,7 @@ export function PublicHeader({
               mounted ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
+                    <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
                       <Avatar className="h-8 w-8">
                         <AvatarImage
                           src={profile?.avatar_url || undefined}
@@ -259,7 +259,7 @@ export function PublicHeader({
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-[var(--gold)]/20 transition-colors">
+                <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 transition-colors">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={profile?.avatar_url || undefined}

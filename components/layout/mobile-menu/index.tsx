@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, type Variants } from 'motion/react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Sheet,
@@ -8,8 +9,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import { CurrencySelector } from '@/components/currency/currency-selector'
-import { useCurrency } from '@/lib/currency/context'
 import { useReducedMotion } from '@/lib/business/animation/hooks'
 import { MenuUserCard } from './menu-user-card'
 import { MenuSection } from './menu-section'
@@ -66,7 +65,6 @@ export function MobileMenu({
   onSignOut,
 }: MobileMenuProps) {
   const router = useRouter()
-  const { allCurrencies } = useCurrency()
   const reducedMotion = useReducedMotion()
 
   const close = () => onOpenChange(false)
@@ -88,21 +86,28 @@ export function MobileMenu({
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[85vw] sm:max-w-[380px] bg-[var(--black-void)] border-l border-[var(--gold)]/10 p-0 flex flex-col [&>button]:hidden"
+        className="w-[85vw] sm:max-w-[380px] bg-[var(--black-void)] border-l border-[var(--gold)]/10 p-0 flex flex-col [&>button]:hidden overflow-hidden"
       >
         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
         <SheetDescription className="sr-only">
           Main navigation and account options
         </SheetDescription>
 
+        {/* Ambient gold glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          aria-hidden="true"
+          style={{ background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(198,170,136,0.06) 0%, transparent 70%)' }}
+        />
+
         {/* Header row */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--gold)]/10">
-          {allCurrencies.length > 1 && (
-            <CurrencySelector staticMode={false} className="scale-90 origin-left" />
-          )}
+        <div className="relative flex items-center justify-between px-4 py-3 border-b border-[var(--gold)]/10">
+          <Link href="/" onClick={close} className="footer-logo text-xl hover:opacity-80 transition-opacity duration-300">
+            Infinia <span>Transfers</span>
+          </Link>
           <button
             onClick={close}
-            className="ml-auto p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--gold)]/5 transition-colors duration-200"
+            className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--gold)]/5 transition-colors duration-200"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />

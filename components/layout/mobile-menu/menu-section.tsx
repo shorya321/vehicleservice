@@ -25,9 +25,10 @@ export function MenuSection({ label, children, reducedMotion }: MenuSectionProps
   return (
     <div className="space-y-2">
       <motion.p
-        className="text-[10px] font-body tracking-[0.25em] uppercase text-[var(--gold)] px-3"
+        className="flex items-center gap-2 text-[10px] font-body tracking-[0.25em] uppercase text-[var(--gold)] px-3"
         variants={reducedMotion ? undefined : labelVariants}
       >
+        <span className="block w-3 h-px bg-[var(--gold)]/60 shrink-0" />
         {label}
       </motion.p>
       <motion.div

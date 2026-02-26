@@ -225,6 +225,24 @@ export async function proxy(request: NextRequest) {
       redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
       return NextResponse.redirect(redirectUrl)
     }
+
+    // Restrict /become-vendor to customers only
+    if (request.nextUrl.pathname.startsWith('/become-vendor')) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+
+        if (!profile || profile.role !== 'customer') {
+          return NextResponse.redirect(new URL('/unauthorized', request.url))
+        }
+      } catch (error) {
+        console.error('Middleware become-vendor role check error:', error)
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+      }
+    }
   }
 
   // Protected vendor routes

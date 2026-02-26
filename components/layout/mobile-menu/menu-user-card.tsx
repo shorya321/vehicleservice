@@ -25,9 +25,13 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
   if (!user) {
     return (
       <motion.div
-        className="flex gap-3 px-3"
+        className="px-3 space-y-2"
         variants={reducedMotion ? undefined : cardVariants}
       >
+        <p className="text-[10px] font-body tracking-[0.25em] uppercase text-[var(--text-muted)] text-center">
+          Member Access
+        </p>
+        <div className="flex gap-3">
         <Link
           href="/login"
           onClick={onClose}
@@ -42,16 +46,18 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
         >
           Sign Up
         </Link>
+        </div>
       </motion.div>
     )
   }
 
   return (
     <motion.div
-      className="mx-3 p-3 rounded-lg bg-[var(--charcoal)]/50 border border-[var(--gold)]/10"
+      className="mx-3 rounded-lg bg-[var(--charcoal)]/50 border border-[var(--gold)]/10 overflow-hidden"
       variants={reducedMotion ? undefined : cardVariants}
     >
-      <div className="flex items-center gap-3">
+      <div className="h-px bg-gradient-to-r from-transparent via-[var(--gold)]/40 to-transparent" />
+      <div className="p-3 flex items-center gap-3">
         <Avatar className="h-9 w-9">
           <AvatarImage
             src={profile?.avatar_url || undefined}

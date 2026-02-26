@@ -139,7 +139,7 @@ export function CurrencySelector({
                   className="flex items-center gap-2 cursor-pointer text-muted-foreground"
                 >
                   <Globe className="h-4 w-4" />
-                  <span>Show all currencies</span>
+                  <span>More currencies</span>
                 </DropdownMenuItem>
               </>
             )}
@@ -200,7 +200,7 @@ export function CurrencySelector({
                 className="flex items-center gap-2 cursor-pointer hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
               >
                 <Globe className="h-4 w-4 text-[var(--gold)]" />
-                <span>Show all currencies</span>
+                <span>More currencies</span>
               </DropdownMenuItem>
             </>
           )}

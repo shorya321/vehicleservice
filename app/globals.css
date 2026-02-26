@@ -1347,7 +1347,7 @@
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 40;
     padding: var(--space-lg) 0;
     background: linear-gradient(180deg, var(--black-void) 0%, transparent 100%);
     backdrop-filter: blur(20px);
