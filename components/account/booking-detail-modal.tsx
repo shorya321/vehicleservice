@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, MapPin, Calendar, Clock, Users, Briefcase, Car, Phone, Mail, Building2, CreditCard, Printer, Download, Loader2, AlertTriangle, FileText } from "lucide-react"
+import { X, MapPin, Calendar, Clock, Users, Briefcase, Car, Phone, Mail, Building2, CreditCard, Loader2, AlertTriangle, FileText } from "lucide-react"
 import { getBookingDetails, cancelBooking } from "@/app/account/booking-actions"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency/format"
@@ -67,7 +67,7 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
   const assignment = booking.booking_assignments?.[0]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/80" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/80 !mt-0" onClick={onClose}>
       <div
         className="w-full max-w-lg h-full bg-[var(--black-rich)] border-l border-[var(--gold)]/20 overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -136,8 +136,8 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <InfoItem icon={<Calendar className="w-4 h-4" />} label="Date" value={pickupDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })} />
                 <InfoItem icon={<Clock className="w-4 h-4" />} label="Time" value={pickupDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} />
-                <InfoItem icon={<Users className="w-4 h-4" />} label="Passengers" value={booking.passengers} />
-                <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Luggage" value={booking.luggage} />
+                <InfoItem icon={<Users className="w-4 h-4" />} label="Passengers" value={booking.passenger_count} />
+                <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Luggage" value={booking.luggage_count || "—"} />
               </div>
             </div>
           </Section>
@@ -254,17 +254,6 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-4 border-t border-[var(--gold)]/10">
-            <div className="flex gap-3">
-              <button className="flex-1 btn btn-secondary" onClick={() => window.print()}>
-                <Printer className="w-4 h-4" />
-                Print
-              </button>
-              <button className="flex-1 btn btn-secondary">
-                <Download className="w-4 h-4" />
-                Download PDF
-              </button>
-            </div>
-
             {canCancel && !showCancelConfirm && (
               <button onClick={() => setShowCancelConfirm(true)} className="btn bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
                 Cancel Booking

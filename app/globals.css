@@ -141,6 +141,7 @@
   }
 
   h1 {
+    font-family: var(--font-display);
     font-size: clamp(3rem, 8vw, 5.5rem);
   }
 
@@ -1394,6 +1395,41 @@
 
   .nav-link:hover::after {
     width: 100%;
+  }
+
+  /* Header CTA — wipe-fill hover */
+  .btn-cta-header {
+    position: relative;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 9999px;
+    color: var(--gold);
+    padding: 0.65rem 1.5rem;
+    border: 1px solid rgba(198, 170, 136, 0.3);
+    border-radius: 9999px;
+    overflow: hidden;
+    transition: color 0.4s ease, border-color 0.4s ease;
+  }
+
+  .btn-cta-header::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: var(--gold);
+    transform: translateX(-102%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: -1;
+  }
+
+  .btn-cta-header:hover {
+    color: var(--black-void, #050506);
+    border-color: var(--gold);
+  }
+
+  .btn-cta-header:hover::before {
+    transform: translateX(0);
   }
 
   /* Footer */

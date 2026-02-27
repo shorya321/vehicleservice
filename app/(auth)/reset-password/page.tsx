@@ -6,6 +6,7 @@ import { Loader2, HelpCircle } from "lucide-react"
 import Link from "next/link"
 import { AuthHeroPanel } from "@/components/auth/auth-hero-panel"
 import { ResetPasswordCard } from "@/components/auth/reset-password-card"
+import { AuthLogo } from "@/components/auth/auth-logo"
 
 /**
  * Reset Password Page
@@ -27,6 +28,11 @@ function ResetPasswordContent() {
       {/* Right Panel - Reset Password Form */}
       <section className="auth-panel">
         <div className="auth-container w-full max-w-[480px] relative z-10">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <AuthLogo />
+          </div>
+
           {/* Page Header */}
           <motion.header
             className="text-center mb-8"

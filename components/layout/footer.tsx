@@ -1,7 +1,7 @@
 "use client"
 import { motion } from "motion/react"
 import Link from 'next/link'
-import { Instagram, Linkedin, Facebook, Twitter, Youtube } from "lucide-react"
+import { Instagram, Linkedin, Facebook, Twitter, Youtube, Phone } from "lucide-react"
 
 const footerLinkCategories = [
   {
@@ -70,6 +70,13 @@ export function Footer() {
                 className="text-[var(--gold)] hover:text-[var(--gold-light)] text-sm transition-colors"
               >
                 support@infiniatransfers.com
+              </a>
+              <a
+                href="tel:+971501234567"
+                className="flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-light)] text-sm transition-colors mt-2"
+              >
+                <Phone className="w-4 h-4" />
+                +971 50 123 4567
               </a>
               <p className="text-[var(--text-muted)] text-xs mt-2">Available 24/7</p>
             </motion.div>

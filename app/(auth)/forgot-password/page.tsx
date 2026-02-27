@@ -6,6 +6,7 @@ import { Loader2, HelpCircle } from "lucide-react"
 import Link from "next/link"
 import { AuthHeroPanel } from "@/components/auth/auth-hero-panel"
 import { ForgotPasswordCard } from "@/components/auth/forgot-password-card"
+import { AuthLogo } from "@/components/auth/auth-logo"
 
 /**
  * Forgot Password Page
@@ -26,6 +27,11 @@ function ForgotPasswordContent() {
       {/* Right Panel - Forgot Password Form */}
       <section className="auth-panel">
         <div className="auth-container w-full max-w-[480px] relative z-10">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <AuthLogo />
+          </div>
+
           {/* Page Header */}
           <motion.header
             className="text-center mb-8"

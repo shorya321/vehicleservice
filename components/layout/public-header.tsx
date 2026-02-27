@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Phone, User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
+import { User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
@@ -109,7 +109,7 @@ export function PublicHeader({
     setProfile(null)
 
     await userLogout()
-    router.refresh()  // Refresh server components for consistency
+    router.push("/login")
   }
 
   const getInitials = (profile: Profile | null) => {
@@ -168,16 +168,6 @@ export function PublicHeader({
             {allCurrencies.length > 1 && (
               <CurrencySelector staticMode={!mounted} className="scale-90 sm:scale-100 origin-right" />
             )}
-
-            {/* Phone */}
-            <a
-              href="tel:+971501234567"
-              className="hidden md:flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors duration-300"
-              aria-label="Call us at +971 50 123 4567"
-            >
-              <Phone className="w-4 h-4 text-[var(--gold)]" />
-              <span className="text-sm font-body">+971 50 123 4567</span>
-            </a>
 
             {isAuthLoading ? (
               // Skeleton placeholder while checking auth
@@ -272,21 +262,21 @@ export function PublicHeader({
                 </Button>
               )
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="hidden lg:inline-flex nav-link"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/register"
-                  className="hidden lg:inline-flex btn btn-primary text-xs"
-                >
-                  Sign Up
-                </Link>
-              </>
+              <Link
+                href="/login"
+                className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-[var(--gold)] hover:opacity-80 transition-opacity"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Link>
             )}
+            {/* Book Transfer CTA — desktop only */}
+            <Link
+              href="/#services"
+              className="btn-cta-header hidden lg:block"
+            >
+              Book Transfer
+            </Link>
             <HamburgerButton
               isOpen={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}

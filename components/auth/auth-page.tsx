@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react"
 import { AuthHeroPanel } from "./auth-hero-panel"
 import { AuthFormCard } from "./auth-form-card"
 import { AuthBenefits } from "./auth-benefits"
+import { AuthLogo } from "./auth-logo"
 
 interface AuthPageProps {
   initialTab: "login" | "register"
@@ -20,6 +21,11 @@ function AuthPageContent({ initialTab }: AuthPageProps) {
       {/* Right Panel - Auth Form */}
       <section className="auth-panel">
         <div className="auth-container w-full max-w-[480px] relative z-10">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <AuthLogo />
+          </div>
+
           {/* Page Header */}
           <motion.header
             className="text-center mb-8"

@@ -89,13 +89,13 @@ export default async function AccountPage({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login?redirect=/account")
+    redirect("/login")
   }
 
   const { profile, stats, notificationPrefs, deletionRequest, vendorApplication } = await getAccountData(user.id)
 
   if (!profile) {
-    redirect("/login?redirect=/account")
+    redirect("/login")
   }
 
   // Role guard: only customers can access the account page

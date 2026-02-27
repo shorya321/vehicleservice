@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react"
 import { Save, Clock, Gift, Shield, Lock, CheckCircle } from "lucide-react"
+import { AuthLogo } from "./auth-logo"
 
 const features = [
   {
@@ -64,6 +65,7 @@ export function AuthHeroPanel() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
+          <AuthLogo className="text-3xl mb-6" />
           <div className="hero-eyebrow">Welcome to Infinia</div>
           <h1 className="hero-title">
             Your Premium<br />

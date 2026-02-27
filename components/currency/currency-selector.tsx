@@ -87,15 +87,11 @@ export function CurrencySelector({
       <Button
         variant="ghost"
         size="sm"
-        className={`h-9 gap-1.5 px-3 border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 hover:bg-[var(--gold)]/5 transition-colors ${className}`}
+        className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[var(--gold)]/[0.12] hover:border-[var(--gold)]/30 hover:text-[var(--gold-light)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-300 ${className}`}
       >
-        <span className="text-sm">
-          {getCurrencyFlag(currentCurrency)}
-        </span>
-        <span className="text-sm text-[var(--text-primary)]">
-          {currentCurrency}
-        </span>
-        <ChevronDown className="h-3.5 w-3.5 text-[var(--text-muted)] ml-0.5" />
+        <span className="text-sm leading-none">{getCurrencyFlag(currentCurrency)}</span>
+        <span>{currentCurrency}</span>
+        <ChevronDown className="h-3 w-3 text-[var(--gold)] opacity-60" />
       </Button>
     )
   }
@@ -162,15 +158,11 @@ export function CurrencySelector({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-9 gap-1.5 px-3 border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 hover:bg-[var(--gold)]/5 transition-colors ${className}`}
+            className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[var(--gold)]/[0.12] hover:border-[var(--gold)]/30 hover:bg-transparent hover:text-[var(--gold-light)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-300 ${className}`}
           >
-            <span className="text-sm">
-              {getCurrencyFlag(currentCurrency)}
-            </span>
-            <span className="text-sm text-[var(--text-primary)]">
-              {currentCurrency}
-            </span>
-            <ChevronDown className="h-3.5 w-3.5 text-[var(--text-muted)] ml-0.5" />
+            <span className="text-sm leading-none">{getCurrencyFlag(currentCurrency)}</span>
+            <span>{currentCurrency}</span>
+            <ChevronDown className="h-3 w-3 text-[var(--gold)] opacity-60" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

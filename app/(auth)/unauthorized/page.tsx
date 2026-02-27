@@ -18,14 +18,14 @@ export default function UnauthorizedPage() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-sm text-muted-foreground">
-            This page requires administrator privileges. Please contact your system administrator if you believe this is an error.
+            You don&apos;t have the required permissions to view this page. Please log in with an authorized account.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <Button variant="outline" asChild>
               <Link href="/">Go to Home</Link>
             </Button>
             <Button asChild>
-              <Link href="/admin/login">Admin Login</Link>
+              <Link href="/login">Login</Link>
             </Button>
           </div>
         </CardContent>
