@@ -16,7 +16,7 @@ import { Vehicle, VehicleType } from "@/lib/types/vehicle"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
 import { createAdminVehicle, updateAdminVehicle, AdminVehicleFormData } from "../actions"
 import { getVehicleCategories, getVehicleTypesByCategory } from "@/app/vendor/vehicles/actions"
-import { Loader2, Save, Building2 } from "lucide-react"
+import { Loader2, Building2 } from "lucide-react"
 import { ImageUpload } from "@/app/vendor/vehicles/components/image-upload"
 
 const currentYear = new Date().getFullYear()
@@ -592,23 +592,15 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => router.push('/admin/vehicles')}
             disabled={isLoading}
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {initialData ? "Update Vehicle" : "Add Vehicle"}
-              </>
-            )}
+          <Button type="submit" size="sm" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {initialData ? "Update Vehicle" : "Add Vehicle"}
           </Button>
         </div>
       </form>

@@ -13,15 +13,23 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  Edit, 
-  Trash2, 
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
   Tag,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
   Image as ImageIcon
 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
@@ -35,7 +43,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 interface CategoryWithUsage extends VehicleCategory {
@@ -55,9 +62,10 @@ export function CategoryTable({
   onSelectAll,
   onSelectCategory,
 }: CategoryTableProps) {
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteCategoryId, setDeleteCategoryId] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const allSelected = 
+  const allSelected =
     categories.length > 0 && 
     categories.every(category => selectedCategories.includes(category.id))
   
@@ -65,19 +73,21 @@ export function CategoryTable({
     categories.some(category => selectedCategories.includes(category.id)) && 
     !allSelected
 
-  const handleDelete = async (id: string, name: string) => {
-    setDeletingId(id)
+  const handleDelete = async () => {
+    if (!deleteCategoryId) return
+    setIsDeleting(true)
     try {
-      const result = await deleteCategory(id)
+      const result = await deleteCategory(deleteCategoryId.id)
       if (result.error) {
         toast.error(result.error)
       } else {
-        toast.success(`Category "${name}" deleted successfully`)
+        toast.success(`Category "${deleteCategoryId.name}" deleted successfully`)
       }
     } catch (error) {
       toast.error("An unexpected error occurred")
     } finally {
-      setDeletingId(null)
+      setIsDeleting(false)
+      setDeleteCategoryId(null)
     }
   }
 
@@ -99,6 +109,7 @@ export function CategoryTable({
   }
 
   return (
+    <>
     <div className="rounded-md border">
       <Table>
         <TableHeader>
@@ -171,52 +182,58 @@ export function CategoryTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    asChild
-                  >
-                    <Link href={`/admin/vehicle-categories/${category.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">Edit</span>
-                    </Link>
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={deletingId === category.id || (category.usage_count || 0) > 0}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete &quot;{category.name}&quot;? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(category.id, category.name)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Actions</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/admin/vehicle-categories/${category.id}/edit`}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      disabled={(category.usage_count || 0) > 0}
+                      onClick={() => setDeleteCategoryId({ id: category.id, name: category.name })}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
+
+    <AlertDialog open={!!deleteCategoryId} onOpenChange={() => setDeleteCategoryId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Category</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete &quot;{deleteCategoryId?.name}&quot;? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }

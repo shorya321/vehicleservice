@@ -42,7 +42,7 @@ export default async function NewVehicleTypePage() {
           </div>
         </div>
 
-        <Card className="max-w-3xl">
+        <Card>
           <CardHeader>
             <CardTitle>Vehicle Type Details</CardTitle>
             <CardDescription>

@@ -59,7 +59,7 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
               Manage categories for vehicle classification
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/vehicle-categories/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Category

@@ -65,7 +65,7 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
               Manage pickup and dropoff locations for your vehicle rental service
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/locations/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Location

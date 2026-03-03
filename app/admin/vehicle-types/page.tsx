@@ -66,7 +66,7 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
               Manage vehicle types and their capacities
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/vehicle-types/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Vehicle Type

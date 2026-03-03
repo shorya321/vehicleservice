@@ -27,7 +27,7 @@ const buttonVariants = cva(
         premium: "bg-gradient-to-br from-[#C6AA88] to-[#A68B5B] text-[#050506] font-semibold shadow-md hover:shadow-lg active:scale-95",
       },
       size: {
-        sm: "h-10 px-4 text-xs",
+        sm: "h-9 px-4 text-sm",
         default: "h-12 px-6",
         lg: "h-14 px-8 text-base",
         icon: "h-10 w-10",

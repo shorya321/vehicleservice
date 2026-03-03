@@ -61,7 +61,8 @@ export function NotificationItem({
       <div className="flex-1 min-w-0">
         <p className={cn(
           'text-sm font-medium text-foreground',
-          !notification.is_read && 'font-semibold'
+          !notification.is_read && 'font-semibold',
+          compact && 'text-xs truncate'
         )}>
           {notification.title}
         </p>

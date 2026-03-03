@@ -71,7 +71,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               Manage user accounts and permissions
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/users/new">
               <Plus className="mr-2 h-4 w-4" />
               Add User

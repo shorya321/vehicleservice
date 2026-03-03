@@ -38,7 +38,7 @@ export default function NewCategoryPage() {
           </div>
         </div>
 
-        <Card className="max-w-2xl">
+        <Card>
           <CardHeader>
             <CardTitle>Category Details</CardTitle>
             <CardDescription>

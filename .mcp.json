@@ -18,20 +18,6 @@
       ],
       "disabled": true
     },
-    "context7-server": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ],
-      "transportType": "stdio",
-      "timeout": 60,
-      "autoApprove": [
-        "get-library-docs",
-        "resolve-library-id"
-      ],
-      "disabled": false
-    },
     "sequential-thinking": {
       "command": "npx",
       "args": [
@@ -51,30 +37,6 @@
         "-y",
         "mcp-remote",
         "https://mcp.linear.app/sse"
-      ],
-      "transportType": "stdio",
-      "timeout": 60,
-      "autoApprove": [],
-      "disabled": false
-    },
-    "consult7": {
-      "command": "uvx",
-      "args": [
-        "consult7",
-        "openrouter",
-        "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"
-      ],
-      "transportType": "stdio",
-      "timeout": 60,
-      "autoApprove": [],
-      "disabled": false
-    },
-    "Sentry": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://mcp.sentry.dev/mcp"
       ],
       "transportType": "stdio",
       "timeout": 60,

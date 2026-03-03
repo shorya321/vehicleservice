@@ -638,22 +638,15 @@ export function UserForm({ user, mode, businessProfile }: UserFormProps) {
         <Button
           type="button"
           variant="outline"
+          size="sm"
           onClick={() => router.back()}
           disabled={loading}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {mode === "create" ? "Creating..." : "Updating..."}
-            </>
-          ) : mode === "create" ? (
-            "Create User"
-          ) : (
-            "Update User"
-          )}
+        <Button type="submit" size="sm" disabled={loading}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {mode === "create" ? "Create User" : "Update User"}
         </Button>
       </div>
     </form>

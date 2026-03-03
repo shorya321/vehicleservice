@@ -58,7 +58,7 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
             Create and manage blog content
           </p>
         </div>
-        <Button asChild>
+        <Button asChild size="sm">
           <Link href="/admin/blog/posts/new">
             <Plus className="mr-2 h-4 w-4" />
             New Post

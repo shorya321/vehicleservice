@@ -197,18 +197,19 @@ export function ZoneForm({ zone }: ZoneFormProps) {
           )}
         />
 
-        <div className="flex gap-4">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {zone ? 'Update Zone' : 'Create Zone'}
-          </Button>
+        <div className="flex justify-end gap-4">
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => router.push('/admin/zones')}
             disabled={isSubmitting}
           >
             Cancel
+          </Button>
+          <Button type="submit" size="sm" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {zone ? 'Update Zone' : 'Create Zone'}
           </Button>
         </div>
       </form>

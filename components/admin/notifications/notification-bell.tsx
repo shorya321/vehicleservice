@@ -33,7 +33,7 @@ export function NotificationBell() {
         {/* Header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">Notifications</h3>
+            <h4 className="font-semibold text-foreground">Notifications</h4>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"

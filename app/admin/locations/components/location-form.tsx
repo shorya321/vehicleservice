@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -422,17 +423,19 @@ export function LocationForm({ location, mode }: LocationFormProps) {
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end gap-4">
             <Button
               variant="outline"
+              size="sm"
               type="button"
               onClick={() => router.push('/admin/locations')}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : mode === 'create' ? 'Create Location' : 'Update Location'}
+            <Button type="submit" size="sm" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {mode === 'create' ? 'Create Location' : 'Update Location'}
             </Button>
           </div>
         </form>

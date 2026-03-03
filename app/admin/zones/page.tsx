@@ -25,17 +25,17 @@ export default async function ZonesPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/admin/zones/pricing">
-              <Button variant="outline">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/zones/pricing">
                 Pricing Matrix
-              </Button>
-            </Link>
-            <Link href="/admin/zones/new">
-              <Button>
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/admin/zones/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Zone
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 

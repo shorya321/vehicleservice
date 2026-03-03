@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
 import { createCategory, updateCategory, CategoryFormData } from "../actions"
-import { Loader2, Save } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { ImageUpload } from "./image-upload"
 
 const categorySchema = z.object({
@@ -170,23 +170,15 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => router.push('/admin/vehicle-categories')}
             disabled={isLoading}
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {initialData ? "Update Category" : "Create Category"}
-              </>
-            )}
+          <Button type="submit" size="sm" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {initialData ? "Update Category" : "Create Category"}
           </Button>
         </div>
       </form>

@@ -46,7 +46,7 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
             Organize your blog posts into categories
           </p>
         </div>
-        <Button asChild>
+        <Button asChild size="sm">
           <Link href="/admin/blog/categories/new">
             <Plus className="mr-2 h-4 w-4" />
             New Category

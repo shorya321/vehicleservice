@@ -49,7 +49,7 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
               Manage transfer routes between locations
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/routes/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Route

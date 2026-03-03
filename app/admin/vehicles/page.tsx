@@ -66,7 +66,7 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
               Manage vehicles across all vendors
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/vehicles/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Vehicle

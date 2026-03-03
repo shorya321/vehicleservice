@@ -60,7 +60,7 @@ export default async function AddonsPage({ searchParams }: PageProps) {
               Manage booking addons for customers and businesses
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/admin/addons/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Addon
