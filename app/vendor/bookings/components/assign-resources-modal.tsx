@@ -269,10 +269,11 @@ export function AssignResourcesModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button 
+          <Button
+            size="sm"
             onClick={handleAssign} 
             disabled={isSaving || !selectedDriverId || !selectedVehicleId}
           >

@@ -7,6 +7,7 @@ export interface VendorData {
     email?: string
     profile?: {
       full_name?: string
+      avatar_url?: string | null
     }
   }
   vendorApplication?: {

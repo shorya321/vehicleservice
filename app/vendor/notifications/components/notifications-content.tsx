@@ -160,7 +160,7 @@ export function NotificationsContent() {
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button onClick={handleMarkAllAsRead} variant="outline">
+          <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">
             Mark all as read
           </Button>
         )}
@@ -334,6 +334,7 @@ export function NotificationsContent() {
                         <Button
                           onClick={handleLoadMore}
                           variant="outline"
+                          size="sm"
                           disabled={loading}
                         >
                           {loading ? 'Loading...' : 'Load more'}

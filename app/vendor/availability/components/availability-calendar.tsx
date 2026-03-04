@@ -449,11 +449,11 @@ export function AvailabilityCalendar({
 
           <DialogFooter>
             {selectedEvent?.type === 'unavailable' && (
-              <Button variant="destructive" onClick={handleRemoveUnavailability}>
+              <Button variant="destructive" size="sm" onClick={handleRemoveUnavailability}>
                 Remove Unavailability
               </Button>
             )}
-            <Button variant="outline" onClick={() => setShowEventDialog(false)}>
+            <Button variant="outline" size="sm" onClick={() => setShowEventDialog(false)}>
               Close
             </Button>
           </DialogFooter>
@@ -605,10 +605,10 @@ function UnavailabilityDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>
+          <Button size="sm" onClick={handleSubmit}>
             Mark as Unavailable
           </Button>
         </DialogFooter>

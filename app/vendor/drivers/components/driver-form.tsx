@@ -6,10 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
 import {
   Form,
   FormControl,
@@ -28,11 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { FormDatePicker } from '@/components/ui/form-date-picker'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { createDriver, updateDriver, VendorDriver } from '../actions'
@@ -191,39 +185,21 @@ export function DriverForm({ driver, mode }: DriverFormProps) {
               control={form.control}
               name="date_of_birth"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Date of Birth</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <FormDatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Pick date of birth"
+                      captionLayout="dropdown"
+                      startMonth={new Date(1940, 0)}
+                      endMonth={new Date()}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -252,39 +228,19 @@ export function DriverForm({ driver, mode }: DriverFormProps) {
               control={form.control}
               name="license_expiry"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>License Expiry Date *</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date()
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <FormDatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Pick expiry date"
+                      captionLayout="dropdown"
+                      startMonth={new Date()}
+                      endMonth={new Date(new Date().getFullYear() + 20, 11)}
+                      disabled={(date) => date < new Date()}
+                    />
+                  </FormControl>
                   <FormDescription>
                     License must be valid (future date)
                   </FormDescription>
@@ -416,39 +372,19 @@ export function DriverForm({ driver, mode }: DriverFormProps) {
               control={form.control}
               name="joining_date"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Joining Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date()
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <FormDatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Pick joining date"
+                      captionLayout="dropdown"
+                      startMonth={new Date(2000, 0)}
+                      endMonth={new Date()}
+                      disabled={(date) => date > new Date()}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -525,12 +461,13 @@ export function DriverForm({ driver, mode }: DriverFormProps) {
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => router.push('/vendor/drivers')}
             disabled={isLoading}
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" size="sm" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {mode === 'create' ? 'Create Driver' : 'Update Driver'}
           </Button>

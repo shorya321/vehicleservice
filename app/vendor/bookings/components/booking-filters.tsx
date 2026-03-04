@@ -12,15 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { CalendarIcon, Search, X } from 'lucide-react'
-import { format } from 'date-fns'
-import { cn } from '@/lib/utils'
+import { FormDatePicker } from '@/components/ui/form-date-picker'
+import { Search, X } from 'lucide-react'
 
 export function BookingFilters() {
   const router = useRouter()
@@ -122,63 +115,32 @@ export function BookingFilters() {
         <div className="space-y-2">
           <Label>Pickup Date Range</Label>
           <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'flex-1 justify-start text-left font-normal',
-                    !startDate && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, 'MMM dd') : 'From'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'flex-1 justify-start text-left font-normal',
-                    !endDate && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, 'MMM dd') : 'To'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <FormDatePicker
+              value={startDate}
+              onChange={setStartDate}
+              placeholder="From"
+              dateFormat="MMM dd"
+              className="flex-1"
+            />
+            <FormDatePicker
+              value={endDate}
+              onChange={setEndDate}
+              placeholder="To"
+              dateFormat="MMM dd"
+              className="flex-1"
+            />
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="flex gap-2">
-        <Button onClick={handleApplyFilters} disabled={isPending}>
+        <Button onClick={handleApplyFilters} size="sm" disabled={isPending}>
           <Search className="mr-2 h-4 w-4" />
           Apply Filters
         </Button>
         {hasActiveFilters && (
-          <Button onClick={handleClearFilters} variant="outline" disabled={isPending}>
+          <Button onClick={handleClearFilters} variant="outline" size="sm" disabled={isPending}>
             <X className="mr-2 h-4 w-4" />
             Clear Filters
           </Button>

@@ -75,7 +75,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
               Manage your rental vehicles
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/vendor/vehicles/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Vehicle
@@ -176,7 +176,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
                 </p>
                 {!filters.search && filters.status === 'all' && filters.fuelType === 'all' && (
                   <div className="mt-6">
-                    <Button asChild>
+                    <Button asChild size="sm">
                       <Link href="/vendor/vehicles/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Add Vehicle

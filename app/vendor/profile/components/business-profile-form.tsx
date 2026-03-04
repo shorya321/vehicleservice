@@ -16,6 +16,9 @@ import { VendorProfileFormData } from "@/lib/types/vendor-application"
 import { countries } from "@/lib/constants/countries"
 import { saveBusinessProfile } from "../actions"
 import { Loader2, Save, Upload, FileText, CreditCard } from "lucide-react"
+import { FormDatePicker } from "@/components/ui/form-date-picker"
+import { parseISO } from "date-fns"
+import { format } from "date-fns"
 
 const businessSchema = z.object({
   business_name: z.string().min(2, "Business name must be at least 2 characters"),
@@ -309,7 +312,15 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
                   <FormItem>
                     <FormLabel>Trade License Expiry</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} disabled={isApproved} />
+                      <FormDatePicker
+                        value={field.value ? parseISO(field.value) : undefined}
+                        onChange={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                        placeholder="Select expiry date"
+                        isDisabled={isApproved}
+                        captionLayout="dropdown"
+                        startMonth={new Date()}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -339,7 +350,15 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
                   <FormItem>
                     <FormLabel>Insurance Expiry</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} disabled={isApproved} />
+                      <FormDatePicker
+                        value={field.value ? parseISO(field.value) : undefined}
+                        onChange={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                        placeholder="Select expiry date"
+                        isDisabled={isApproved}
+                        captionLayout="dropdown"
+                        startMonth={new Date()}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -439,11 +458,11 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
 
         <div className="flex justify-end">
           {isApproved ? (
-            <Button type="button" variant="secondary" onClick={() => window.location.href = 'mailto:support@vehicleservice.com?subject=Request to Update Business Profile'}>
+            <Button type="button" variant="outline" size="sm" onClick={() => window.location.href = 'mailto:support@vehicleservice.com?subject=Request to Update Business Profile'}>
               Contact Admin to Update Profile
             </Button>
           ) : (
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" size="sm" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

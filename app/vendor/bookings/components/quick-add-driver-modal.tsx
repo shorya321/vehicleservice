@@ -22,6 +22,8 @@ import {
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import { createDriver } from '@/app/vendor/drivers/actions'
+import { FormDatePicker } from '@/components/ui/form-date-picker'
+import { format } from 'date-fns'
 
 interface QuickAddDriverModalProps {
   open: boolean
@@ -35,7 +37,7 @@ export function QuickAddDriverModal({ open, onClose, onDriverCreated }: QuickAdd
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [licenseNumber, setLicenseNumber] = useState('')
-  const [licenseExpiry, setLicenseExpiry] = useState('')
+  const [licenseExpiry, setLicenseExpiry] = useState<Date | undefined>(undefined)
   const [licenseType, setLicenseType] = useState('regular')
 
   const resetForm = () => {
@@ -43,7 +45,7 @@ export function QuickAddDriverModal({ open, onClose, onDriverCreated }: QuickAdd
     setLastName('')
     setPhone('')
     setLicenseNumber('')
-    setLicenseExpiry('')
+    setLicenseExpiry(undefined)
     setLicenseType('regular')
   }
 
@@ -62,7 +64,7 @@ export function QuickAddDriverModal({ open, onClose, onDriverCreated }: QuickAdd
       formData.set('last_name', lastName)
       formData.set('phone', phone)
       formData.set('license_number', licenseNumber)
-      formData.set('license_expiry', licenseExpiry)
+      formData.set('license_expiry', licenseExpiry ? format(licenseExpiry, 'yyyy-MM-dd') : '')
       formData.set('license_type', licenseType)
       formData.set('is_available', 'true')
 
@@ -162,21 +164,22 @@ export function QuickAddDriverModal({ open, onClose, onDriverCreated }: QuickAdd
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="qa-license-expiry">License Expiry *</Label>
-            <Input
-              id="qa-license-expiry"
-              type="date"
+            <Label>License Expiry *</Label>
+            <FormDatePicker
               value={licenseExpiry}
-              onChange={(e) => setLicenseExpiry(e.target.value)}
-              required
+              onChange={setLicenseExpiry}
+              placeholder="Select expiry date"
+              captionLayout="dropdown"
+              startMonth={new Date()}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
             />
           </div>
 
           <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" size="sm" disabled={isSaving}>
               {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

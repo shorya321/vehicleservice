@@ -296,7 +296,7 @@ export function AccountForm({ user }: AccountFormProps) {
                   )}
                 />
 
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" size="sm" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -368,7 +368,7 @@ export function AccountForm({ user }: AccountFormProps) {
                   )}
                 />
 
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" size="sm" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -402,7 +402,7 @@ export function AccountForm({ user }: AccountFormProps) {
                     : 'Enable 2FA for enhanced security'}
                 </p>
               </div>
-              <Button variant={user.two_factor_enabled ? "destructive" : "default"}>
+              <Button size="sm" variant={user.two_factor_enabled ? "destructive" : "default"}>
                 {user.two_factor_enabled ? 'Disable 2FA' : 'Enable 2FA'}
               </Button>
             </div>

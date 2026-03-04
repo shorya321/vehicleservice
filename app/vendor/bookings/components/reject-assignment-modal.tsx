@@ -130,11 +130,12 @@ export function RejectAssignmentModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isRejecting}>
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isRejecting}>
             Cancel
           </Button>
           <Button
             variant="destructive"
+            size="sm"
             onClick={handleReject}
             disabled={isRejecting || !selectedReason}
           >

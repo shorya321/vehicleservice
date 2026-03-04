@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "ui-audit": {
+      "source": "tommygeoco/ui-audit",
+      "sourceType": "github",
+      "computedHash": "a47ac5842ee16bd2b83a248f360d56b5b63724da1496de4bd2f0d5e58721907a"
+    },
+    "ux-audit": {
+      "source": "jezweb/claude-skills",
+      "sourceType": "github",
+      "computedHash": "c698ff4ad969cd80cc48d01ceff48e10fd4e15ca01defd196631798d01cc7d3b"
+    }
+  }
+}

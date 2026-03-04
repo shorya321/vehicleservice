@@ -40,7 +40,7 @@ export default async function DriversPage() {
             Manage your drivers and their availability
           </p>
         </div>
-        <Button asChild>
+        <Button asChild size="sm">
           <Link href="/vendor/drivers/new">
             <Plus className="mr-2 h-4 w-4" />
             Add Driver

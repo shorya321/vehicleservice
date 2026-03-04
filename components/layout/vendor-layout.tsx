@@ -273,8 +273,8 @@ export function VendorLayout({ children }: VendorLayoutProps) {
           <div className="border-t border-border p-4">
             <div className="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]">
               <Avatar className="h-10 w-10 ring-2 ring-primary/40">
-                <AvatarImage src="/avatar-placeholder.png" />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">VN</AvatarFallback>
+                <AvatarImage src={user?.profile?.avatar_url || undefined} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">{user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
@@ -328,7 +328,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
                   <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                    <AvatarImage src="/avatar-placeholder.png" />
+                    <AvatarImage src={user?.profile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                       {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
                     </AvatarFallback>

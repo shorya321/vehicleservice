@@ -22,7 +22,7 @@ export default function VendorError({
       <p className="text-muted-foreground text-center max-w-md">
         An error occurred in the vendor portal. Please try again.
       </p>
-      <Button onClick={() => reset()} variant="outline">
+      <Button onClick={() => reset()} variant="outline" size="sm">
         Try Again
       </Button>
     </div>
