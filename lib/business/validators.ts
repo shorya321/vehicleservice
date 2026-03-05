@@ -52,6 +52,11 @@ export const bookingCreationSchema = z.object({
   customer_notes: z.string().max(500).optional(),
   reference_number: z.string().max(50).optional(),
   selected_addons: z.array(selectedAddonSchema).optional(),
+
+  // Price signature (HMAC verification)
+  price_signature: z.string().min(1, 'Price signature required'),
+  price_signature_timestamp: z.number().positive(),
+  price_signature_nonce: z.string().min(1, 'Signature nonce required'),
 });
 
 export type BookingCreationInput = z.infer<typeof bookingCreationSchema>;

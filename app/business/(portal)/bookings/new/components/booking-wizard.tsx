@@ -72,6 +72,11 @@ export interface BookingFormData {
   // Pricing
   base_price: number;
   total_price: number;
+
+  // Price signature (HMAC)
+  price_signature: string;
+  price_signature_timestamp: number;
+  price_signature_nonce: string;
 }
 
 const STEPS = ['Route', 'Vehicle', 'Details', 'Review'];
@@ -134,7 +139,8 @@ export function BookingWizard({
       const result = await getAvailableVehicleTypesForRoute(
         fromLocationId,
         toLocationId,
-        formData.passenger_count || 1
+        formData.passenger_count || 1,
+        businessAccountId
       );
 
       if (result.error) {

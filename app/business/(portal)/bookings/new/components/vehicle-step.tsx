@@ -49,6 +49,9 @@ export function VehicleStep({
       vehicle_type_id: vehicleType.id,
       base_price: vehicleType.price,
       total_price: vehicleType.price,
+      price_signature: vehicleType.priceSignature,
+      price_signature_timestamp: vehicleType.priceSignatureTimestamp,
+      price_signature_nonce: vehicleType.priceSignatureNonce,
     });
   }
 

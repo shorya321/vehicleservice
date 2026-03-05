@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { signBusinessQuote } from '@/lib/security/booking-hmac';
 
 export interface VehicleTypeResult {
   id: string;
@@ -23,6 +24,9 @@ export interface VehicleTypeResult {
   vendorCount: number;
   features: string[];
   image?: string;
+  priceSignature: string;
+  priceSignatureTimestamp: number;
+  priceSignatureNonce: string;
 }
 
 export interface VehicleTypesByCategory {
@@ -61,7 +65,8 @@ export interface AvailableVehiclesResult {
 export async function getAvailableVehicleTypesForRoute(
   fromLocationId: string,
   toLocationId: string,
-  passengers: number = 1
+  passengers: number = 1,
+  businessAccountId?: string
 ): Promise<AvailableVehiclesResult> {
   try {
     const supabase = await createClient();
@@ -147,7 +152,10 @@ export async function getAvailableVehicleTypesForRoute(
       fromZone.id,
       toZone.id,
       zonePricing.base_price,
-      passengers
+      passengers,
+      fromLocationId,
+      toLocationId,
+      businessAccountId
     );
 
     return {
@@ -263,7 +271,10 @@ async function getVehicleTypesForZoneTransfer(
   fromZoneId: string,
   toZoneId: string,
   basePrice: number,
-  passengers: number
+  passengers: number,
+  fromLocationId?: string,
+  toLocationId?: string,
+  businessAccountId?: string
 ): Promise<{
   vehicleTypes: VehicleTypeResult[];
   vehicleTypesByCategory: VehicleTypesByCategory[];
@@ -309,6 +320,24 @@ async function getVehicleTypesForZoneTransfer(
     const multiplier = vt.business_price_multiplier || vt.price_multiplier || 1.0;
     const calculatedPrice = basePrice * multiplier;
 
+    // Sign the price quote with HMAC (only if businessAccountId is provided)
+    let priceSignature = '';
+    let priceSignatureTimestamp = 0;
+    let priceSignatureNonce = '';
+
+    if (businessAccountId && fromLocationId && toLocationId) {
+      const sig = signBusinessQuote({
+        fromLocationId,
+        toLocationId,
+        vehicleTypeId: vt.id,
+        basePrice: calculatedPrice,
+        businessAccountId,
+      });
+      priceSignature = sig.signature;
+      priceSignatureTimestamp = sig.timestamp;
+      priceSignatureNonce = sig.nonce;
+    }
+
     return {
       id: vt.id,
       name: vt.name,
@@ -317,7 +346,7 @@ async function getVehicleTypesForZoneTransfer(
       categoryId: vt.category_id || '',
       categorySlug: vt.vehicle_categories?.slug || 'standard',
       capacity: vt.passenger_capacity,
-      luggageCapacity: vt.luggage_capacity,
+      luggageCapacity: vt.luggage_capacity || 0,
       description: vt.description || '',
       price: calculatedPrice,
       currency: 'AED',
@@ -325,6 +354,9 @@ async function getVehicleTypesForZoneTransfer(
       vendorCount: 5, // Show multiple vendors available
       features: [],
       image: vt.image_url || undefined,
+      priceSignature,
+      priceSignatureTimestamp,
+      priceSignatureNonce,
     };
   });
 

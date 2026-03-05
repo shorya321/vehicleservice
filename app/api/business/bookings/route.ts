@@ -13,6 +13,8 @@ import {
 import { bookingCreationSchema } from '@/lib/business/validators';
 import { createClient } from '@supabase/supabase-js';
 import { sendBusinessBookingConfirmationEmail } from '@/lib/email/services/business-emails';
+import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
+import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 
 /**
  * POST /api/business/bookings
@@ -38,6 +40,59 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     }
   );
 
+  // ─── HMAC Signature Verification ────────────────────────────────────────────
+  const hmacResult = verifyBusinessQuoteSignature({
+    fromLocationId: body.from_location_id,
+    toLocationId: body.to_location_id,
+    vehicleTypeId: body.vehicle_type_id,
+    basePrice: body.base_price,
+    businessAccountId: user.businessAccountId,
+    signature: body.price_signature,
+    timestamp: body.price_signature_timestamp,
+    nonce: body.price_signature_nonce,
+  });
+
+  if (!hmacResult.valid) {
+    console.error('SECURITY ALERT: Business booking HMAC failed', {
+      reason: hmacResult.reason,
+      businessAccountId: user.businessAccountId,
+      vehicleTypeId: body.vehicle_type_id,
+    });
+    return apiError('Price quote verification failed. Please restart the booking.', 403);
+  }
+
+  // ─── Server-Side Price Recalculation ────────────────────────────────────────
+  const priceResult = await calculateBusinessBookingPrice(supabaseAdmin, {
+    fromLocationId: body.from_location_id,
+    toLocationId: body.to_location_id,
+    vehicleTypeId: body.vehicle_type_id,
+    selectedAddons: body.selected_addons?.map((a) => ({
+      addon_id: a.addon_id,
+      quantity: a.quantity,
+    })),
+  });
+
+  if ('error' in priceResult) {
+    console.error('Price verification failed:', priceResult.error);
+    return apiError(priceResult.error, 403);
+  }
+
+  // Log any discrepancy between client-sent and server-calculated prices
+  if (Math.abs(body.total_price - priceResult.totalPrice) > 0.01) {
+    console.warn('SECURITY WARNING: Price discrepancy detected', {
+      clientTotal: body.total_price,
+      serverTotal: priceResult.totalPrice,
+      clientBase: body.base_price,
+      serverBase: priceResult.basePrice,
+      businessAccountId: user.businessAccountId,
+      vehicleTypeId: body.vehicle_type_id,
+    });
+  }
+
+  // Use server-calculated prices (ignore client values)
+  const verifiedBasePrice = priceResult.basePrice;
+  const verifiedTotalPrice = priceResult.totalPrice;
+
   try {
     // Call atomic function to create booking and deduct from wallet
     const { data: bookingId, error } = await supabaseAdmin.rpc(
@@ -55,8 +110,8 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         p_pickup_datetime: body.pickup_datetime,
         p_vehicle_type_id: body.vehicle_type_id,
         p_passenger_count: body.passenger_count,
-        p_base_price: body.base_price,
-        p_total_price: body.total_price,
+        p_base_price: verifiedBasePrice,
+        p_total_price: verifiedTotalPrice,
         p_customer_notes: body.customer_notes || null,
         p_reference_number: body.reference_number || null,
       }
@@ -112,7 +167,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
                 p_data: {
                   limit_type: limitType,
                   limit_amount: limitAmount,
-                  rejected_amount: body.total_price,
+                  rejected_amount: verifiedTotalPrice,
                   currency,
                 },
                 p_link: '/business/wallet/settings',
@@ -133,7 +188,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
                   limitType,
                   limitAmount,
                   currentSpend: limitAmount, // Already at limit
-                  rejectedTransactionAmount: body.total_price,
+                  rejectedTransactionAmount: verifiedTotalPrice,
                 },
               }),
             });
@@ -151,9 +206,9 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       return apiError(error.message || 'Failed to create booking', 500);
     }
 
-    // Insert selected addons if any
-    if (body.selected_addons && body.selected_addons.length > 0) {
-      const addonRecords = body.selected_addons.map((addon) => ({
+    // Insert verified addons (server-verified prices, not client-sent)
+    if (priceResult.verifiedAddons.length > 0) {
+      const addonRecords = priceResult.verifiedAddons.map((addon) => ({
         business_booking_id: bookingId,
         addon_id: addon.addon_id,
         quantity: addon.quantity,
