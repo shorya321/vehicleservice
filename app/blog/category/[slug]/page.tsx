@@ -44,7 +44,7 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
   }
 
   return (
-    <div className="bg-[var(--black-void)] min-h-screen">
+    <div className="bg-[var(--black-void)]">
       <BlogHero
         title={category.name}
         subtitle={category.description || undefined}
@@ -78,9 +78,21 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
             </div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-[var(--text-muted)] text-lg">
-                No posts in this category yet.
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
+                <span className="text-[var(--gold)]/40 text-2xl font-serif">?</span>
+              </div>
+              <h3 className="font-serif text-xl text-[var(--text-primary)] mb-2">
+                No articles in this category
+              </h3>
+              <p className="text-[var(--text-muted)] text-sm max-w-md mx-auto mb-6">
+                We haven&apos;t published any articles in &ldquo;{category.name}&rdquo; yet. Browse other categories or check back soon.
               </p>
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-[var(--black-void)] bg-[var(--gold)] rounded-full hover:bg-[var(--gold-light)] transition-colors duration-300"
+              >
+                Browse All Articles
+              </Link>
             </div>
           )}
         </section>

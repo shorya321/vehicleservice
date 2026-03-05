@@ -28,8 +28,9 @@ export function LocationAutocomplete({
   onSelect,
   placeholder,
   ariaLabel,
-  selectedLocation
-}: LocationAutocompleteProps) {
+  selectedLocation,
+  id,
+}: LocationAutocompleteProps & { id?: string }) {
   const [suggestions, setSuggestions] = useState<Location[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -146,6 +147,7 @@ export function LocationAutocomplete({
         aria-hidden="true"
       />
       <Input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}

@@ -3,17 +3,35 @@
 import { motion } from 'motion/react'
 import { Users, Car, Star, MapPin } from 'lucide-react'
 
-const stats = [
-  { icon: Users, number: '15K+', label: 'Happy Clients' },
-  { icon: Car, number: '50+', label: 'Premium Vehicles' },
-  { icon: Star, number: '4.9', label: 'Average Rating' },
-  { icon: MapPin, number: '200+', label: 'Routes Available' },
-]
+interface StatsRibbonProps {
+  totalCustomers?: number
+  totalVehicles?: number
+  averageRating?: number
+  totalRoutes?: number
+}
 
-export function StatsRibbon() {
+const formatNumber = (n: number): string => {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}K+`
+  return `${n}+`
+}
+
+export function StatsRibbon({
+  totalCustomers = 15000,
+  totalVehicles = 50,
+  averageRating = 4.9,
+  totalRoutes = 200,
+}: StatsRibbonProps) {
+  const stats = [
+    { icon: Users, number: formatNumber(totalCustomers), label: 'Happy Clients' },
+    { icon: Car, number: `${totalVehicles}+`, label: 'Premium Vehicles' },
+    { icon: Star, number: averageRating.toFixed(1), label: 'Average Rating' },
+    { icon: MapPin, number: formatNumber(totalRoutes), label: 'Routes Available' },
+  ]
+
   return (
-    <section className="stats-ribbon">
+    <section className="stats-ribbon" aria-label="Key statistics">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+        <p className="section-eyebrow text-center mb-8">By the Numbers</p>
         <motion.div
           className="stats-grid"
           initial={{ opacity: 0, y: 30 }}

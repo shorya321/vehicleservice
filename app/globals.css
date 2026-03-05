@@ -31,7 +31,7 @@
   /* Text Colors with Warm Undertones */
   --text-primary: #f8f6f3;
   --text-secondary: #b8b4ae;
-  --text-muted: #7a7672;
+  --text-muted: #9a9692;
 
   /* Typography */
   --font-display: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
@@ -161,6 +161,40 @@
     font-size: 1rem;
     color: var(--text-secondary);
     max-width: 65ch;
+  }
+
+  /* Skip Navigation Link */
+  .skip-nav {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    padding: 0.75rem 1.5rem;
+    background: var(--gold);
+    color: var(--black-void);
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: top var(--duration-fast) var(--ease-luxury);
+  }
+
+  .skip-nav:focus {
+    top: 1rem;
+  }
+
+  /* Focus Indicators for Dark Theme */
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 0;
   }
 }
 
@@ -743,6 +777,15 @@
   /* Luxury Focus Ring */
   .focus-luxury {
     @apply focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold focus:outline-none;
+  }
+
+  /* Hide scrollbar while keeping scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Luxury Scrollbar (for webkit browsers) */
@@ -1688,6 +1731,32 @@
     margin: 2rem 0 1rem;
   }
 
+  .prose-luxury h4 {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  .prose-luxury h5 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .prose-luxury h6 {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.25rem 0 0.5rem;
+  }
+
   .prose-luxury p {
     color: var(--text-secondary);
     line-height: 1.75;
@@ -1704,26 +1773,46 @@
     font-size: 1.125rem;
   }
 
-  .prose-luxury ul {
-    list-style: disc;
-    list-style-position: inside;
-    margin: 1rem 0;
-    color: var(--text-secondary);
+  .prose-luxury blockquote > p {
+    margin-bottom: 0;
   }
 
-  .prose-luxury ul li {
-    margin-bottom: 0.5rem;
+  .prose-luxury ul {
+    list-style: disc;
+    list-style-position: outside;
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+    color: var(--text-secondary);
   }
 
   .prose-luxury ol {
     list-style: decimal;
-    list-style-position: inside;
+    list-style-position: outside;
+    padding-left: 1.5rem;
     margin: 1rem 0;
     color: var(--text-secondary);
   }
 
-  .prose-luxury ol li {
+  .prose-luxury li {
     margin-bottom: 0.5rem;
+  }
+
+  .prose-luxury li > p {
+    margin-bottom: 0;
+    display: inline;
+  }
+
+  .prose-luxury li:empty,
+  .prose-luxury li:has(> p:empty:only-child) {
+    display: none;
+  }
+
+  .prose-luxury ul ul,
+  .prose-luxury ol ol,
+  .prose-luxury ul ol,
+  .prose-luxury ol ul {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
   }
 
   .prose-luxury a {
@@ -1744,6 +1833,20 @@
 
   .prose-luxury em {
     font-style: italic;
+  }
+
+  .prose-luxury u {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose-luxury s {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .prose-luxury [style*="text-align"] {
+    text-align: inherit;
   }
 
   .prose-luxury code {
@@ -2938,7 +3041,7 @@
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
   border: none;
   border-radius: 12px;

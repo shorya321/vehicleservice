@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import { signBookingPayload } from '@/lib/security/booking-hmac'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -315,14 +316,52 @@ export async function createBooking(formData: BookingFormData) {
   // Combine date and time for pickup datetime
   const pickupDateTime = new Date(`${validatedData.pickupDate}T${validatedData.pickupTime}`)
   
-  // Calculate prices based on actual vehicle data
-  const basePrice = validatedData.basePrice
+  // --- Server-side price verification ---
+
+  // 3a. Recalculate base price from zone pricing (never trust client)
+  const vehicleType = await getVehicleType(
+    validatedData.vehicleTypeId,
+    validatedData.fromLocationId,
+    validatedData.toLocationId
+  )
+  if (!vehicleType) {
+    throw new Error('Vehicle type not found or inactive')
+  }
+  const basePrice = vehicleType.price
+
+  // 3b. Verify addon prices against database
+  let verifiedAddonsPrice = 0
+  if (validatedData.selectedAddons && validatedData.selectedAddons.length > 0) {
+    const addonIds = validatedData.selectedAddons.map(a => a.addon_id)
+    const { data: dbAddons, error: addonError } = await adminClient
+      .from('addons')
+      .select('id, price')
+      .in('id', addonIds)
+
+    if (addonError || !dbAddons) {
+      throw new Error('Failed to verify addon prices')
+    }
+
+    const addonPriceMap = new Map(dbAddons.map(a => [a.id, a.price]))
+
+    for (const addon of validatedData.selectedAddons) {
+      const dbPrice = addonPriceMap.get(addon.addon_id)
+      if (dbPrice === undefined) {
+        throw new Error(`Addon ${addon.addon_id} not found`)
+      }
+      if (Math.abs(addon.unit_price - dbPrice) > 0.01) {
+        throw new Error(`Addon price mismatch for ${addon.addon_id}`)
+      }
+      const expectedTotal = dbPrice * addon.quantity
+      if (Math.abs(addon.total_price - expectedTotal) > 0.01) {
+        throw new Error(`Addon total mismatch for ${addon.addon_id}`)
+      }
+      verifiedAddonsPrice += expectedTotal
+    }
+  }
+
   const extraLuggagePrice = validatedData.extraLuggageCount * 15 // $15 per extra bag
-  const selectedAddonsPrice = validatedData.selectedAddons?.reduce(
-    (sum, addon) => sum + addon.total_price,
-    0
-  ) || 0
-  const amenitiesPrice = extraLuggagePrice + selectedAddonsPrice
+  const amenitiesPrice = extraLuggagePrice + verifiedAddonsPrice
   const totalPrice = basePrice + amenitiesPrice
   
   // Get zone IDs if location IDs are provided
@@ -389,6 +428,36 @@ export async function createBooking(formData: BookingFormData) {
     })
     throw new Error(`Failed to create booking: ${bookingError?.message || 'Unknown error'}`)
   }
+
+  // Sign booking with HMAC for payment integrity
+  try {
+    const { signature, timestamp, nonce } = signBookingPayload({
+      bookingId: booking.id,
+      totalPrice,
+      customerId: user.id,
+      vehicleTypeId: validatedData.vehicleTypeId,
+    })
+
+    const { error: sigError } = await adminClient
+      .from('bookings')
+      .update({
+        price_signature: signature,
+        price_signature_timestamp: timestamp,
+        price_signature_nonce: nonce,
+      })
+      .eq('id', booking.id)
+
+    if (sigError) {
+      // Signature storage failed — delete the booking to prevent unsigned payments
+      await adminClient.from('bookings').delete().eq('id', booking.id)
+      throw new Error('Failed to secure booking signature')
+    }
+  } catch (sigCatchError) {
+    // If signing itself fails, clean up
+    await adminClient.from('bookings').delete().eq('id', booking.id)
+    throw sigCatchError
+  }
+
   // Add passenger details
   const { error: passengerError } = await adminClient
     .from('booking_passengers')
@@ -426,14 +495,25 @@ export async function createBooking(formData: BookingFormData) {
     })
   }
 
-  // Add selected addons with addon_id reference
+  // Add selected addons with addon_id reference (use DB-verified prices)
   if (validatedData.selectedAddons && validatedData.selectedAddons.length > 0) {
+    // Re-fetch addon prices for amenity records
+    const addonIds = validatedData.selectedAddons.map(a => a.addon_id)
+    const { data: dbAddonsForAmenities } = await adminClient
+      .from('addons')
+      .select('id, price')
+      .in('id', addonIds)
+    const addonPriceMap = new Map(
+      (dbAddonsForAmenities || []).map(a => [a.id, a.price])
+    )
+
     for (const addon of validatedData.selectedAddons) {
+      const dbPrice = addonPriceMap.get(addon.addon_id) ?? addon.unit_price
       amenities.push({
         booking_id: booking.id,
-        amenity_type: 'addon', // Generic type for database addons
+        amenity_type: 'addon',
         quantity: addon.quantity,
-        price: addon.total_price,
+        price: dbPrice * addon.quantity,
         addon_id: addon.addon_id
       })
     }

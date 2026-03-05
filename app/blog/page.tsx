@@ -6,7 +6,7 @@ import { getPublishedPosts, getBlogCategories, getFeaturedPosts, getPopularTags 
 import { BlogHero } from "./components/blog-hero"
 import { BlogCard } from "./components/blog-card"
 import { CategoryTabs } from "./components/category-tabs"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Blog | VehicleService - Luxury Transportation Insights",
@@ -29,7 +29,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams
   const currentPage = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1
 
-  const [{ posts, total, totalPages }, categories, featuredPosts, popularTags] = await Promise.all([
+  const [{ posts, totalPages }, categories, featuredPosts, popularTags] = await Promise.all([
     getPublishedPosts({ page: currentPage, limit: 9, search: resolvedSearchParams.search }),
     getBlogCategories(),
     getFeaturedPosts(),
@@ -37,10 +37,12 @@ export default async function BlogPage({ searchParams }: PageProps) {
   ])
 
   return (
-    <div className="bg-[var(--black-void)] min-h-screen">
+    <div className="bg-[var(--black-void)]">
       <BlogHero
         title="Our Blog"
         subtitle="Insights, travel guides, and stories from the world of luxury transportation"
+        showSearch
+        initialSearch={resolvedSearchParams.search || ''}
       />
 
       <div className="luxury-container py-10 md:py-16">
@@ -54,8 +56,8 @@ export default async function BlogPage({ searchParams }: PageProps) {
               </h2>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredPosts.map((post) => (
-                <BlogCard key={post.id} post={post} featured />
+              {featuredPosts.map((post, index) => (
+                <BlogCard key={post.id} post={post} featured hero={index === 0} />
               ))}
             </div>
           </section>
@@ -76,8 +78,16 @@ export default async function BlogPage({ searchParams }: PageProps) {
             </div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-[var(--text-muted)] text-lg">
-                No blog posts yet. Check back soon!
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
+                <Search className="w-6 h-6 text-[var(--gold)]/40" />
+              </div>
+              <h3 className="font-serif text-xl text-[var(--text-primary)] mb-2">
+                {resolvedSearchParams.search ? 'No results found' : 'No articles yet'}
+              </h3>
+              <p className="text-[var(--text-muted)] text-sm max-w-md mx-auto">
+                {resolvedSearchParams.search
+                  ? `We couldn\u2019t find any articles matching \u201c${resolvedSearchParams.search}\u201d. Try a different search term.`
+                  : 'Check back soon for new articles and insights.'}
               </p>
             </div>
           )}
@@ -124,7 +134,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
         {/* Popular Tags */}
         {popularTags.length > 0 && (
-          <section className="py-12 border-t border-[var(--gold)]/10">
+          <section className="py-12 border-t border-[var(--gold)]/10" aria-label="Popular topics">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-6 h-px bg-[var(--gold)]" />
               <h2 className="text-sm font-medium tracking-[0.15em] uppercase text-[var(--gold)]">
@@ -136,7 +146,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
                 <Link
                   key={tag.id}
                   href={`/blog/tag/${tag.slug}`}
-                  className="px-4 py-2 text-sm text-[var(--text-secondary)] border border-[var(--gold)]/20 rounded-full hover:border-[var(--gold)]/50 hover:text-[var(--gold)] transition-all duration-300"
+                  className="px-5 py-2.5 min-h-[44px] flex items-center text-sm text-[var(--text-secondary)] border border-[var(--gold)]/20 rounded-full hover:border-[var(--gold)]/50 hover:text-[var(--gold)] transition-all duration-300"
                 >
                   {tag.name}
                   <span className="ml-1 text-[var(--text-muted)]">({tag.count})</span>

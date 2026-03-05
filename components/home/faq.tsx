@@ -95,7 +95,7 @@ export function FAQ() {
                     data-state={state}
                     className="faq-item group"
                   >
-                    <h3>
+                    <h4>
                       <button
                         id={triggerId}
                         type="button"
@@ -108,7 +108,7 @@ export function FAQ() {
                         <span className="font-body font-medium text-left pr-4">{faq.question}</span>
                         <Plus className="faq-icon" aria-hidden="true" />
                       </button>
-                    </h3>
+                    </h4>
                     <div
                       id={contentId}
                       role="region"

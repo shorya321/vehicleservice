@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { SearchX, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 interface EmptyStateProps {
   searchParams: {
@@ -15,28 +15,29 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ searchParams }: EmptyStateProps) {
+  const prefersReducedMotion = useReducedMotion()
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <motion.div
         className="text-center space-y-8 max-w-2xl backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-12"
-        initial={{ opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }}
       >
         <motion.div
           className="mx-auto w-20 h-20 rounded-full bg-luxury-gold/10 border border-luxury-gold/30 flex items-center justify-center"
-          initial={{ scale: 0 }}
+          initial={prefersReducedMotion ? false : { scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2, type: "spring", stiffness: 200 }}
         >
           <SearchX className="h-10 w-10 text-luxury-gold" aria-hidden="true" />
         </motion.div>
 
         <motion.div
           className="space-y-3"
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3 }}
         >
           <h2 className="font-serif text-3xl md:text-4xl text-luxury-pearl">
             No Vehicles Available
@@ -49,9 +50,9 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
 
         <motion.div
           className="space-y-4"
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.4 }}
         >
           <p className="text-sm text-luxury-lightGray/80 uppercase tracking-wider">
             Try one of these options:

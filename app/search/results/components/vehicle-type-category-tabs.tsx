@@ -6,7 +6,7 @@ import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
@@ -21,13 +21,14 @@ interface VehicleTypeCategoryTabsProps {
 
 type SortOption = 'price-asc' | 'price-desc' | 'capacity' | 'name'
 
-const ITEMS_PER_PAGE = 9
+const ITEMS_PER_PAGE = 6
 
 export function VehicleTypeCategoryTabs({
   vehicleTypesByCategory,
   allVehicleTypes,
   searchParams,
 }: VehicleTypeCategoryTabsProps) {
+  const prefersReducedMotion = useReducedMotion()
   const [activeCategory, setActiveCategory] = useState('all')
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -80,7 +81,11 @@ export function VehicleTypeCategoryTabs({
     <div className="w-full space-y-6">
       {/* Category Tabs - Luxury Pill Style */}
       <Tabs value={activeCategory} onValueChange={handleCategoryChange} className="w-full">
-        <TabsList className="w-fit h-auto p-1 bg-[rgba(42,40,38,0.5)] border border-[rgba(198,170,136,0.1)] rounded-xl flex gap-1 overflow-x-auto">
+        <div className="relative">
+          {/* Scroll fade indicators */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-luxury-black to-transparent z-10 pointer-events-none md:hidden" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-luxury-black to-transparent z-10 pointer-events-none md:hidden" />
+        <TabsList className="w-fit h-auto p-1 bg-[rgba(42,40,38,0.5)] border border-[rgba(198,170,136,0.1)] rounded-xl flex gap-1 overflow-x-auto scrollbar-hide">
           {/* All Vehicle Types Tab */}
           <TabsTrigger
             value="all"
@@ -110,6 +115,7 @@ export function VehicleTypeCategoryTabs({
             </TabsTrigger>
           ))}
         </TabsList>
+        </div>
       </Tabs>
 
       {/* Results Header */}
@@ -118,11 +124,12 @@ export function VehicleTypeCategoryTabs({
           Showing <strong className="text-luxury-gold font-medium">{sortedVehicles.length} vehicles</strong> available for your journey
         </p>
         <div className="flex items-center gap-3">
-          <label className="text-xs uppercase tracking-[0.1em] text-luxury-lightGray/70">Sort by:</label>
+          <label htmlFor="vehicle-sort" className="text-xs uppercase tracking-[0.1em] text-luxury-lightGray/70">Sort by:</label>
           <select
+            id="vehicle-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="px-3 py-2 bg-luxury-graphite/50 border border-luxury-gold/20 rounded-md text-sm text-luxury-pearl cursor-pointer transition-colors duration-200 hover:border-luxury-gold focus:border-luxury-gold focus:outline-none focus:ring-1 focus:ring-luxury-gold/50"
+            className="px-4 py-2.5 min-h-[44px] bg-luxury-graphite/50 border border-luxury-gold/20 rounded-md text-sm text-luxury-pearl cursor-pointer transition-colors duration-200 hover:border-luxury-gold focus:border-luxury-gold focus:outline-none focus:ring-1 focus:ring-luxury-gold/50"
           >
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
@@ -135,9 +142,9 @@ export function VehicleTypeCategoryTabs({
       {/* Vehicle Grid - 3 columns max */}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        initial={{ opacity: 0 }}
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3 }}
         key={`${activeCategory}-${sortBy}-${currentPage}`}
       >
         {paginatedVehicles.map((vehicleType, index) => (
@@ -170,7 +177,7 @@ export function VehicleTypeCategoryTabs({
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-md text-sm font-medium transition-all duration-200
+                className={`min-w-[44px] h-11 px-3 rounded-md text-sm font-medium transition-all duration-200
                   ${page === currentPage
                     ? 'bg-gradient-to-r from-luxury-gold to-luxury-goldDeep text-luxury-void shadow-gold'
                     : 'text-[var(--text-secondary)] hover:text-luxury-pearl hover:bg-luxury-gold/10'

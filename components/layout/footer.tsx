@@ -19,15 +19,15 @@ const footerLinkCategories = [
     links: [
       { name: "Airport Transfers", href: "/search" },
       { name: "City Transfers", href: "/search" },
-      { name: "Chauffeur Hire", href: "#" },
-      { name: "Corporate Travel", href: "#" },
+      { name: "Chauffeur Hire", href: "/search" },
+      { name: "Corporate Travel", href: "/search" },
     ],
   },
   {
     title: "Business",
     links: [
-      { name: "Corporate Clients", href: "#" },
-      { name: "API Solutions", href: "#" },
+      { name: "Corporate Clients", href: "/business" },
+      { name: "API Solutions", href: "/business" },
       { name: "Partner With Us", href: "/become-vendor" },
       { name: "Business Portal", href: "/business" },
     ],

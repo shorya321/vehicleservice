@@ -39,7 +39,7 @@ export function AdditionalServices() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true }}
         >
-          <span className="section-eyebrow">Extras</span>
+          <span className="section-eyebrow">Enhance Your Ride</span>
           <h2 className="section-title">Additional Services</h2>
           <div className="section-divider">
             <div className="section-divider-icon"></div>

@@ -22,6 +22,7 @@ import {
 } from '@/lib/currency'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
+import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 
 export const metadata: Metadata = {
   title: 'Secure Payment | Infinia Transfers',
@@ -102,6 +103,31 @@ async function getOrCreatePaymentIntent(
       }
     } catch (error) {
       console.log('Could not retrieve existing payment intent, creating new one')
+    }
+  }
+
+  // Verify HMAC signature before creating payment intent
+  const { data: bookingForSig } = await adminClient
+    .from('bookings')
+    .select('total_price, customer_id, vehicle_type_id, price_signature, price_signature_timestamp, price_signature_nonce')
+    .eq('id', bookingId)
+    .eq('customer_id', userId)
+    .single()
+
+  if (bookingForSig?.price_signature && bookingForSig.price_signature_timestamp && bookingForSig.price_signature_nonce) {
+    const hmacResult = verifyBookingSignature({
+      bookingId,
+      totalPrice: bookingForSig.total_price,
+      customerId: bookingForSig.customer_id!,
+      vehicleTypeId: bookingForSig.vehicle_type_id,
+      signature: bookingForSig.price_signature,
+      timestamp: Number(bookingForSig.price_signature_timestamp),
+      nonce: bookingForSig.price_signature_nonce,
+    })
+
+    if (!hmacResult.valid) {
+      console.error('SECURITY ALERT: HMAC verification failed in payment page', { bookingId, reason: hmacResult.reason })
+      throw new Error('Booking integrity verification failed')
     }
   }
 

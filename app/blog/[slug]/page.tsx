@@ -6,6 +6,7 @@ import { getPublishedPost, getRelatedPosts, getPublishedPosts, getBlogCategories
 import { RelatedCard } from "../components/related-card"
 import { BlogArticleHeader } from "../components/blog-article-header"
 import { BlogSidebar } from "../components/blog-sidebar"
+import { ShareButtons } from "../components/share-buttons"
 
 export const dynamic = 'force-dynamic'
 
@@ -67,7 +68,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const recentPosts = recentData.posts.filter(p => p.id !== post.id).slice(0, 4)
 
   return (
-    <div className="bg-[var(--black-void)] min-h-screen">
+    <div className="bg-[var(--black-void)]">
       {/* Article Header — Full-width above grid */}
       <div className="luxury-container">
         <BlogArticleHeader post={post} />
@@ -95,6 +96,14 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <p className="text-[var(--text-muted)]">No content available.</p>
               </div>
             )}
+
+            {/* Share Buttons */}
+            <div className="mb-8 pb-8 border-b border-[var(--gold)]/10">
+              <ShareButtons
+                url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
+                title={post.title}
+              />
+            </div>
 
             {/* Tags */}
             {post.tags.length > 0 && (

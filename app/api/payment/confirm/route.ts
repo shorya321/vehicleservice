@@ -5,13 +5,14 @@ import { createClient } from '@/lib/supabase/server'
 import { sendBookingConfirmationEmail } from '@/lib/email/services/booking-emails'
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails'
 import { getAdminEmail, getAppUrl } from '@/lib/email/config'
+import { verifyBookingSignature, verifyPaymentAmount } from '@/lib/security/booking-hmac'
 
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -29,6 +30,46 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Fetch booking first to get total_price and signature
+    const adminClient = createAdminClient()
+    const { data: booking, error: fetchError } = await adminClient
+      .from('bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .eq('customer_id', user.id)
+      .single()
+
+    if (fetchError || !booking) {
+      return NextResponse.json(
+        { error: 'Booking not found' },
+        { status: 404 }
+      )
+    }
+
+    // Re-verify HMAC signature to ensure booking wasn't tampered
+    if (booking.price_signature && booking.price_signature_timestamp && booking.price_signature_nonce) {
+      const hmacResult = verifyBookingSignature({
+        bookingId: booking.id,
+        totalPrice: booking.total_price,
+        customerId: booking.customer_id!,
+        vehicleTypeId: booking.vehicle_type_id,
+        signature: booking.price_signature,
+        timestamp: Number(booking.price_signature_timestamp),
+        nonce: booking.price_signature_nonce,
+      })
+
+      if (!hmacResult.valid) {
+        console.error('SECURITY ALERT: HMAC re-verification failed at payment confirmation', {
+          bookingId,
+          reason: hmacResult.reason,
+        })
+        return NextResponse.json(
+          { error: 'Booking integrity verification failed' },
+          { status: 403 }
+        )
+      }
+    }
+
     // Retrieve payment intent from Stripe
     const paymentIntent = await retrievePaymentIntent(paymentIntentId)
 
@@ -39,8 +80,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verify Stripe amount matches DB total_price
+    const amountCheck = verifyPaymentAmount(paymentIntent.amount, booking.total_price)
+    if (!amountCheck.valid) {
+      console.error('SECURITY ALERT: Payment amount mismatch', {
+        bookingId,
+        reason: amountCheck.reason,
+        stripeAmount: paymentIntent.amount,
+        dbTotalPrice: booking.total_price,
+      })
+      return NextResponse.json(
+        { error: 'Payment amount verification failed' },
+        { status: 403 }
+      )
+    }
+
     // Update booking with payment details
-    const adminClient = createAdminClient()
     const { data: updatedBooking, error: updateError } = await adminClient
       .from('bookings')
       .update({

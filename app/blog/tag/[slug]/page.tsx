@@ -42,7 +42,7 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
   }
 
   return (
-    <div className="bg-[var(--black-void)] min-h-screen">
+    <div className="bg-[var(--black-void)]">
       <BlogHero
         title={`#${tag.name}`}
         subtitle={`Articles tagged with "${tag.name}"`}

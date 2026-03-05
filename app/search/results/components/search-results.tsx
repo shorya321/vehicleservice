@@ -13,7 +13,7 @@ import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZoneResultCard } from '@/components/search/zone-result-card'
 import { ZonesList } from '@/components/search/zones-list'
 import { Clock, MapPin } from 'lucide-react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
 
@@ -29,6 +29,7 @@ interface SearchResultsProps {
 
 export function SearchResults({ results, searchParams }: SearchResultsProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
+  const prefersReducedMotion = useReducedMotion()
   const [filters, setFilters] = useState({
     categories: [] as string[],
     priceRange: [0, Number.MAX_VALUE] as [number, number],
@@ -146,9 +147,9 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       {/* Route/Zone Information Banner - Art Deco Style */}
       <motion.div
         className="relative bg-gradient-to-br from-luxury-charcoal via-luxury-charcoalLight to-luxury-charcoal border border-luxury-gold/15 rounded-2xl p-8 md:p-10 overflow-hidden"
-        initial={{ opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.2 }}
       >
         {/* Art Deco Corner - Top Left */}
         <div className="absolute top-4 left-4 w-16 h-16 md:w-20 md:h-20 border-l border-t border-luxury-gold/20 pointer-events-none" />
@@ -222,8 +223,6 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                 key={vehicleType.id}
                 vehicleType={vehicleType}
                 searchParams={searchParams}
-                currentCurrency={currentCurrency}
-                exchangeRates={exchangeRates}
               />
             ))}
           </div>

@@ -382,32 +382,6 @@ export function AccountForm({ user }: AccountFormProps) {
             </Form>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Two-Factor Authentication</CardTitle>
-            <CardDescription>
-              Add an extra layer of security to your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">
-                  Two-factor authentication is {user.two_factor_enabled ? 'enabled' : 'disabled'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {user.two_factor_enabled 
-                    ? 'Your account is protected with 2FA' 
-                    : 'Enable 2FA for enhanced security'}
-                </p>
-              </div>
-              <Button size="sm" variant={user.two_factor_enabled ? "destructive" : "default"}>
-                {user.two_factor_enabled ? 'Disable 2FA' : 'Enable 2FA'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </TabsContent>
 
       <TabsContent value="notifications" className="space-y-4">

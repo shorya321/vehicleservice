@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Search, Car, CreditCard, CheckCircle } from 'lucide-react'
+import { Check, Search, UserRound, CreditCard } from 'lucide-react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
@@ -10,7 +10,7 @@ interface ProgressBarProps {
 
 const steps = [
   { number: 1, label: 'Search', icon: Search },
-  { number: 2, label: 'Select', icon: Car },
+  { number: 2, label: 'Account', icon: UserRound },
   { number: 3, label: 'Checkout', icon: CreditCard },
   { number: 4, label: 'Payment', icon: CreditCard }
 ]

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Clock, Calendar } from "lucide-react"
+import { Clock, Calendar, Eye } from "lucide-react"
 import type { PublicBlogPost } from "@/lib/blog/queries"
 
 interface BlogArticleHeaderProps {
@@ -14,6 +14,13 @@ function formatDate(dateStr: string | null) {
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+function formatViewCount(count: number): string {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}k`
+  }
+  return count.toString()
 }
 
 export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
@@ -50,6 +57,12 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
           <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-muted)]">
             <Clock className="w-3.5 h-3.5" />
             {post.reading_time_minutes} min read
+          </span>
+        )}
+        {post.view_count != null && post.view_count > 0 && (
+          <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-muted)]">
+            <Eye className="w-3.5 h-3.5" />
+            {formatViewCount(post.view_count)} views
           </span>
         )}
       </div>

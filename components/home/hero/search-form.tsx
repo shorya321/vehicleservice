@@ -75,8 +75,9 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
       <form onSubmit={handleSearch} className="booking-form">
         {/* From Input */}
         <div className="form-group">
-          <label className="form-label">Pick-up Location</label>
+          <label htmlFor="pickup-location" className="form-label">Pick-up Location</label>
           <LocationAutocomplete
+            id="pickup-location"
             value={fromInput}
             onChange={handleFromInput}
             onSelect={selectFromLocation}
@@ -88,8 +89,9 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
 
         {/* To Input */}
         <div className="form-group">
-          <label className="form-label">Drop-off Location</label>
+          <label htmlFor="dropoff-location" className="form-label">Drop-off Location</label>
           <LocationAutocomplete
+            id="dropoff-location"
             value={toInput}
             onChange={handleToInput}
             onSelect={selectToLocation}

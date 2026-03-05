@@ -58,7 +58,13 @@ export default async function HomePage() {
       featuredCurrencies={featuredCurrencies}
       allCurrencies={allEnabledCurrencies}
     >
-    <main className="bg-luxury-black">
+    <a
+        href="#main-content"
+        className="skip-nav"
+      >
+        Skip to main content
+      </a>
+    <main id="main-content" className="bg-luxury-black">
       <PublicHeader
         initialUser={user}
         initialProfile={profile}

@@ -3,7 +3,7 @@
 import { format } from 'date-fns'
 import { MapPin, Calendar, Users, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 interface Location {
   id: string
@@ -21,12 +21,13 @@ interface SearchSummaryProps {
 }
 
 export function SearchSummary({ origin, destination, date, passengers }: SearchSummaryProps) {
+  const prefersReducedMotion = useReducedMotion()
   return (
     <motion.header
       className="relative bg-gradient-to-b from-luxury-void to-luxury-rich border-b border-luxury-gold/10"
-      initial={{ opacity: 0, y: -20 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }}
     >
       {/* Subtle bottom gradient line */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/5 h-px bg-gradient-to-r from-transparent via-luxury-gold/30 to-transparent" />
@@ -45,9 +46,9 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
         <div className="grid md:grid-cols-3 gap-6 max-w-4xl">
           <motion.div
             className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -20 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.5 }}
           >
             <div className="flex items-center justify-center w-[18px] h-[18px]">
               <MapPin className="h-[18px] w-[18px] text-luxury-gold" aria-hidden="true" />
@@ -64,9 +65,9 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
 
           <motion.div
             className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -20 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2, duration: 0.5 }}
           >
             <div className="flex items-center justify-center w-[18px] h-[18px]">
               <Calendar className="h-[18px] w-[18px] text-luxury-gold" aria-hidden="true" />
@@ -81,9 +82,9 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
 
           <motion.div
             className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -20 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3, duration: 0.5 }}
           >
             <div className="flex items-center justify-center w-[18px] h-[18px]">
               <Users className="h-[18px] w-[18px] text-luxury-gold" aria-hidden="true" />

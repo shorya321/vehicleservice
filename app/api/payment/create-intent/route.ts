@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createPaymentIntent } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -16,12 +17,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get request body
-    const { bookingId, amount } = await request.json()
+    // Only accept bookingId from client — amount comes from DB
+    const { bookingId } = await request.json()
 
-    if (!bookingId || !amount) {
+    if (!bookingId) {
       return NextResponse.json(
-        { error: 'Missing required parameters' },
+        { error: 'Missing bookingId' },
         { status: 400 }
       )
     }
@@ -42,18 +43,47 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verify HMAC signature to ensure booking integrity
+    if (!booking.price_signature || !booking.price_signature_timestamp || !booking.price_signature_nonce) {
+      console.error('SECURITY ALERT: Booking missing HMAC signature fields', { bookingId })
+      return NextResponse.json(
+        { error: 'Booking integrity verification failed' },
+        { status: 403 }
+      )
+    }
+
+    const hmacResult = verifyBookingSignature({
+      bookingId: booking.id,
+      totalPrice: booking.total_price,
+      customerId: booking.customer_id!,
+      vehicleTypeId: booking.vehicle_type_id,
+      signature: booking.price_signature,
+      timestamp: Number(booking.price_signature_timestamp),
+      nonce: booking.price_signature_nonce,
+    })
+
+    if (!hmacResult.valid) {
+      console.error('SECURITY ALERT: HMAC verification failed for booking', {
+        bookingId,
+        reason: hmacResult.reason,
+      })
+      return NextResponse.json(
+        { error: 'Booking integrity verification failed' },
+        { status: 403 }
+      )
+    }
+
     // Check if payment already exists
     if (booking.stripe_payment_intent_id) {
-      // Retrieve existing payment intent
       return NextResponse.json({
         clientSecret: booking.stripe_payment_intent_id,
         paymentIntentId: booking.stripe_payment_intent_id
       })
     }
 
-    // Create new payment intent
+    // Use DB price (not client-sent amount)
     const paymentIntent = await createPaymentIntent(
-      amount,
+      booking.total_price,
       bookingId,
       user.email
     )

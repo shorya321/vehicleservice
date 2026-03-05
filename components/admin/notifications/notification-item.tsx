@@ -62,7 +62,7 @@ export function NotificationItem({
         <p className={cn(
           'text-sm font-medium text-foreground',
           !notification.is_read && 'font-semibold',
-          compact && 'text-xs truncate'
+          compact && 'text-sm truncate'
         )}>
           {notification.title}
         </p>
