@@ -37,13 +37,17 @@ import {
   Trash2,
   Archive,
   CheckCircle,
+  Mail as MailIcon,
 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import {
   ContactSubmission,
   updateSubmissionStatus,
   deleteSubmission,
 } from '../actions'
+import { BulkActionsBar } from './bulk-actions-bar'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface ContactSubmissionsTableProps {
   submissions: ContactSubmission[]
@@ -102,6 +106,24 @@ export function ContactSubmissionsTable({
 }: ContactSubmissionsTableProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(submissions.map(s => s.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectSubmission = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) { newSelected.add(id) } else { newSelected.delete(id) }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = submissions.length > 0 && selectedIds.size === submissions.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleMarkRead = async (id: string) => {
     try {
@@ -138,10 +160,26 @@ export function ContactSubmissionsTable({
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Subject</TableHead>
@@ -154,16 +192,25 @@ export function ContactSubmissionsTable({
           <TableBody>
             {submissions.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center text-muted-foreground py-8"
-                >
-                  No contact submissions found
+                <TableCell colSpan={8} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={MailIcon}
+                    title="No Submissions Found"
+                    description="There are no contact submissions matching your current filters. Try adjusting your search criteria."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               submissions.map((sub) => (
                 <TableRow key={sub.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(sub.id)}
+                      onCheckedChange={(checked) => handleSelectSubmission(sub.id, checked as boolean)}
+                      aria-label="Select submission"
+                      className="translate-y-[2px]"
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{sub.name}</TableCell>
                   <TableCell className="text-sm">{sub.email}</TableCell>
                   <TableCell className="text-sm">
@@ -223,6 +270,7 @@ export function ContactSubmissionsTable({
             )}
           </TableBody>
         </Table>
+      </div>
       </div>
 
       <AlertDialog

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search, X } from "lucide-react"
+import { useEffect, useState, useTransition } from "react"
 
 interface BlogPostFiltersProps {
   categories: { id: string; name: string; slug: string }[]
@@ -19,6 +20,39 @@ interface BlogPostFiltersProps {
 export function BlogPostFilters({ categories }: BlogPostFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [, startTransition] = useTransition()
+
+  const urlSearch = searchParams.get('search') || ''
+  const [searchValue, setSearchValue] = useState(urlSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch)
+
+  if (urlSearch !== prevUrlSearch) {
+    setPrevUrlSearch(urlSearch)
+    setSearchValue(urlSearch)
+    setDebouncedSearch(urlSearch)
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 500)
+    return () => clearTimeout(timer)
+  }, [searchValue])
+
+  useEffect(() => {
+    const currentSearch = searchParams.get('search') || ''
+    if (debouncedSearch !== currentSearch) {
+      const params = new URLSearchParams(searchParams.toString())
+      if (debouncedSearch) {
+        params.set('search', debouncedSearch)
+      } else {
+        params.delete('search')
+      }
+      params.delete('page')
+      startTransition(() => {
+        router.push(`?${params.toString()}`)
+      })
+    }
+  }, [debouncedSearch, searchParams, router, startTransition])
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -28,7 +62,9 @@ export function BlogPostFilters({ categories }: BlogPostFiltersProps) {
       params.delete(key)
     }
     params.delete('page')
-    router.push(`?${params.toString()}`)
+    startTransition(() => {
+      router.push(`?${params.toString()}`)
+    })
   }
 
   const clearFilters = () => {
@@ -47,8 +83,8 @@ export function BlogPostFilters({ categories }: BlogPostFiltersProps) {
         <Input
           placeholder="Search blog posts..."
           className="pl-9"
-          value={searchParams.get('search') || ''}
-          onChange={(e) => updateFilter('search', e.target.value)}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
         />
       </div>
 
@@ -73,7 +109,7 @@ export function BlogPostFilters({ categories }: BlogPostFiltersProps) {
         value={searchParams.get('status') || 'all'}
         onValueChange={(value) => updateFilter('status', value)}
       >
-        <SelectTrigger className="w-full md:w-[150px]">
+        <SelectTrigger className="w-full md:w-[160px]">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>

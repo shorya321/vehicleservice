@@ -375,3 +375,69 @@ export async function toggleBlogPostFeatured(id: string, isFeatured: boolean) {
   revalidatePath('/admin/blog/posts')
   revalidateTag('blog-posts')
 }
+
+export async function bulkDeleteBlogPosts(ids: string[]) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  // Delete tag associations first
+  await supabase.from('blog_post_tags').delete().in('post_id', ids)
+
+  const { error } = await supabase
+    .from('blog_posts')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/blog/posts')
+  revalidateTag('blog-posts')
+  return { count: ids.length }
+}
+
+export async function bulkToggleBlogPostStatus(ids: string[], status: 'draft' | 'published' | 'archived') {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const updateData: Record<string, unknown> = {
+    status,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (status === 'published') {
+    updateData.published_at = new Date().toISOString()
+  }
+
+  const { error } = await supabase
+    .from('blog_posts')
+    .update(updateData)
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/blog/posts')
+  revalidateTag('blog-posts')
+  return { count: ids.length }
+}
+
+export async function bulkToggleBlogPostFeatured(ids: string[], isFeatured: boolean) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('blog_posts')
+    .update({ is_featured: isFeatured, updated_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/blog/posts')
+  revalidateTag('blog-posts')
+  return { count: ids.length }
+}

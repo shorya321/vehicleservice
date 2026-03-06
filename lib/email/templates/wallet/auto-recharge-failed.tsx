@@ -113,7 +113,7 @@ export const AutoRechargeFailedEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

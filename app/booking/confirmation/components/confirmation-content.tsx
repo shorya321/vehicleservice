@@ -1,6 +1,7 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { formatPrice } from '@/lib/currency/format'
@@ -14,13 +15,15 @@ import {
   Luggage,
   Mail,
   Phone,
-  Printer,
-  Download,
   Shield,
-  Info
+  Info,
+  Copy,
+  Check,
+  Printer,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface ConfirmationContentProps {
   booking: any
@@ -38,53 +41,76 @@ export function ConfirmationContent({
   addons,
 }: ConfirmationContentProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
+  const prefersReducedMotion = useReducedMotion()
+  const [copied, setCopied] = useState(false)
+
   // Helper function to format price in user's currency
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
   const isConverted = currentCurrency !== 'AED'
 
+  const copyBookingNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(booking.booking_number)
+      setCopied(true)
+      toast.success('Booking reference copied to clipboard')
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Failed to copy')
+    }
+  }
+
   return (
     <div className="relative bg-luxury-black min-h-screen py-12 md:py-16 lg:py-20">
       {/* Ambient Background Animations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none print:hidden">
+        {prefersReducedMotion ? (
+          <>
+            <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl opacity-30" />
+            <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl opacity-20" />
+          </>
+        ) : (
+          <>
+            <motion.div
+              className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.5, 0.3],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.div
+              className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl"
+              animate={{
+                scale: [1.2, 1, 1.2],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </>
+        )}
       </div>
 
       <div className="luxury-container max-w-4xl relative z-10">
         {/* Success Message */}
         <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, scale: 0.8 }}
+          className="text-center mb-8"
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, type: "spring" }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.6, type: "spring" }}
         >
           <motion.div
             className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-luxury-gold to-luxury-gold/80 rounded-full mb-6 shadow-luxury"
-            initial={{ scale: 0 }}
+            initial={prefersReducedMotion ? false : { scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2, type: "spring", stiffness: 200 }}
             aria-hidden="true"
           >
             <CheckCircle className="h-10 w-10 text-luxury-black" />
@@ -92,58 +118,83 @@ export function ConfirmationContent({
           <span className="sr-only">Booking successfully confirmed</span>
           <motion.h1
             className="font-serif text-4xl md:text-5xl text-luxury-pearl mb-3"
-            initial={{ opacity: 0, y: 20 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.4 }}
           >
             Booking Confirmed!
           </motion.h1>
           <motion.p
-            className="text-luxury-lightGray text-lg"
-            initial={{ opacity: 0 }}
+            className="text-luxury-pearl/70 text-lg"
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.6 }}
           >
             Your transfer has been successfully booked. Confirmation sent to{' '}
             <span className="text-luxury-gold font-medium">{primaryPassenger?.email}</span>
           </motion.p>
         </motion.div>
 
+        {/* What Happens Next */}
+        <motion.div
+          className="mb-8 text-center"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.7 }}
+        >
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-sm text-luxury-pearl/60">
+            <span className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-luxury-gold/70" aria-hidden="true" />
+              Check your email for full details
+            </span>
+            <span className="hidden sm:inline text-luxury-gold/30">|</span>
+            <span className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-luxury-gold/70" aria-hidden="true" />
+              Driver contacts you before pickup
+            </span>
+            <span className="hidden sm:inline text-luxury-gold/30">|</span>
+            <span className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-luxury-gold/70" aria-hidden="true" />
+              Reminder sent 24h before
+            </span>
+          </div>
+        </motion.div>
+
         {/* Booking Details Card */}
         <motion.div
           className="luxury-card backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg overflow-hidden"
-          initial={{ opacity: 0, y: 30 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.3 }}
         >
           <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-6 border-b border-luxury-gold/20">
             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div>
                 <h2 className="font-serif text-2xl md:text-3xl text-luxury-pearl">Booking Details</h2>
-                <p className="text-sm text-luxury-lightGray mt-2">
-                  Reference: <span className="font-mono font-semibold text-luxury-gold">{booking.booking_number}</span>
+                <p className="text-sm text-luxury-pearl/60 mt-2 flex items-center gap-2">
+                  Reference:{' '}
+                  <span className="font-mono font-semibold text-luxury-gold">{booking.booking_number}</span>
+                  <button
+                    onClick={copyBookingNumber}
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-luxury-gold/10 transition-colors focus:outline-none focus:ring-2 focus:ring-luxury-gold focus:ring-offset-1 focus:ring-offset-luxury-darkGray"
+                    aria-label="Copy booking reference"
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5 text-luxury-gold" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-luxury-pearl/60" />
+                    )}
+                  </button>
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-luxury-gold/30 text-luxury-lightGray hover:bg-luxury-gold/10 hover:text-luxury-pearl uppercase tracking-wider font-sans focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black"
-                  aria-label="Print booking confirmation"
-                >
-                  <Printer className="h-4 w-4 mr-2" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                  Print
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-luxury-gold/30 text-luxury-lightGray hover:bg-luxury-gold/10 hover:text-luxury-pearl uppercase tracking-wider font-sans focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black"
-                  aria-label="Download booking confirmation as PDF"
-                >
-                  <Download className="h-4 w-4 mr-2" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                  Download PDF
-                </Button>
-              </div>
+              <button
+                onClick={() => window.print()}
+                className="print:hidden inline-flex items-center gap-2 h-10 px-4 text-sm text-luxury-pearl/60 border border-luxury-gold/20 rounded-md hover:bg-luxury-gold/10 hover:text-luxury-pearl transition-colors focus:outline-none focus:ring-2 focus:ring-luxury-gold focus:ring-offset-1 focus:ring-offset-luxury-darkGray"
+                aria-label="Print booking confirmation"
+              >
+                <Printer className="h-4 w-4" aria-hidden="true" />
+                Print
+              </button>
             </div>
           </div>
           <div className="p-6 md:p-8 space-y-6">
@@ -155,14 +206,14 @@ export function ConfirmationContent({
                   <MapPin className="h-5 w-5 mt-0.5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <div className="flex-1">
                     <p className="font-medium text-luxury-pearl mb-1">Pickup Location</p>
-                    <p className="text-sm text-luxury-lightGray">{booking.pickup_address}</p>
+                    <p className="text-sm text-luxury-pearl/70">{booking.pickup_address}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 mt-0.5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                   <div className="flex-1">
                     <p className="font-medium text-luxury-pearl mb-1">Drop-off Location</p>
-                    <p className="text-sm text-luxury-lightGray">{booking.dropoff_address}</p>
+                    <p className="text-sm text-luxury-pearl/70">{booking.dropoff_address}</p>
                   </div>
                 </div>
               </div>
@@ -177,13 +228,13 @@ export function ConfirmationContent({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                    <span className="text-sm text-luxury-lightGray">
+                    <span className="text-sm text-luxury-pearl/70">
                       {format(new Date(booking.pickup_datetime), 'EEEE, MMMM d, yyyy')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                    <span className="text-sm text-luxury-lightGray">
+                    <span className="text-sm text-luxury-pearl/70">
                       {format(new Date(booking.pickup_datetime), 'HH:mm')} (24-hour format)
                     </span>
                   </div>
@@ -195,7 +246,7 @@ export function ConfirmationContent({
                   <h3 className="font-serif text-xl text-luxury-pearl mb-4">Vehicle Type</h3>
                   <div className="space-y-3">
                     <p className="font-medium text-luxury-pearl">{booking.vehicle_type.name}</p>
-                    <div className="flex items-center gap-4 text-sm text-luxury-lightGray">
+                    <div className="flex items-center gap-4 text-sm text-luxury-pearl/70">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
                         <span>Up to {booking.vehicle_type.passenger_capacity}</span>
@@ -219,21 +270,21 @@ export function ConfirmationContent({
                   <h3 className="font-serif text-xl text-luxury-pearl mb-4">Passenger Information</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-luxury-lightGray uppercase tracking-wider mb-1">Name</p>
+                      <p className="text-xs text-luxury-pearl/50 uppercase tracking-wider mb-1">Name</p>
                       <p className="font-medium text-luxury-pearl">
                         {primaryPassenger.first_name} {primaryPassenger.last_name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-luxury-lightGray uppercase tracking-wider mb-1">Contact</p>
+                      <p className="text-xs text-luxury-pearl/50 uppercase tracking-wider mb-1">Contact</p>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                          <span className="text-sm text-luxury-lightGray">{primaryPassenger.email}</span>
+                          <span className="text-sm text-luxury-pearl/70">{primaryPassenger.email}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="h-4 w-4" style={{ color: "#C6AA88" }} aria-hidden="true" />
-                          <span className="text-sm text-luxury-lightGray">{primaryPassenger.phone}</span>
+                          <span className="text-sm text-luxury-pearl/70">{primaryPassenger.phone}</span>
                         </div>
                       </div>
                     </div>
@@ -248,7 +299,7 @@ export function ConfirmationContent({
               <h3 className="font-serif text-xl text-luxury-pearl mb-4">Booking Summary</h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-luxury-lightGray">
+                  <span className="text-luxury-pearl/70">
                     {booking.passenger_count} Passenger{booking.passenger_count > 1 ? 's' : ''}
                   </span>
                   <span className="text-luxury-pearl">{formatUserPrice(booking.base_price)}</span>
@@ -258,7 +309,7 @@ export function ConfirmationContent({
                   <>
                     {childSeats.map((seat: any, index: number) => (
                       <div key={index} className="flex justify-between text-sm">
-                        <span className="text-luxury-lightGray">
+                        <span className="text-luxury-pearl/70">
                           {seat.amenity_type === 'child_seat_infant' ? 'Infant Seat' : 'Booster Seat'}
                           {seat.quantity > 1 ? ` x${seat.quantity}` : ''}
                         </span>
@@ -270,7 +321,7 @@ export function ConfirmationContent({
 
                 {extraLuggage && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-luxury-lightGray">
+                    <span className="text-luxury-pearl/70">
                       Extra Luggage x{extraLuggage.quantity}
                     </span>
                     <span className="text-luxury-pearl">{formatUserPrice(extraLuggage.price)}</span>
@@ -281,7 +332,7 @@ export function ConfirmationContent({
                   <>
                     {addons.map((addon: any, index: number) => (
                       <div key={index} className="flex justify-between text-sm">
-                        <span className="text-luxury-lightGray">
+                        <span className="text-luxury-pearl/70">
                           {addon.addon?.name || 'Additional Service'}
                           {addon.quantity > 1 ? ` x${addon.quantity}` : ''}
                         </span>
@@ -289,7 +340,7 @@ export function ConfirmationContent({
                       </div>
                     ))}
                     <div className="flex justify-between text-sm pt-2">
-                      <span className="text-luxury-lightGray">Services Total</span>
+                      <span className="text-luxury-pearl/70">Services Total</span>
                       <span className="text-luxury-pearl">
                         {formatUserPrice(addons.reduce((sum: number, a: any) => sum + a.price, 0))}
                       </span>
@@ -301,7 +352,7 @@ export function ConfirmationContent({
 
                 <div className="flex justify-between font-semibold pt-2">
                   <span className="text-luxury-pearl">Total Paid</span>
-                  <span className="text-xl text-luxury-gold font-serif">{formatUserPrice(booking.total_price)}</span>
+                  <span className="text-lg font-semibold text-luxury-gold">{formatUserPrice(booking.total_price)}</span>
                 </div>
 
                 {booking.payment_status === 'completed' && (
@@ -313,7 +364,7 @@ export function ConfirmationContent({
 
                 {/* Currency Notice */}
                 {isConverted && (
-                  <div className="flex items-start gap-2 mt-4 text-xs text-luxury-lightGray/70">
+                  <div className="flex items-start gap-2 mt-4 text-xs text-luxury-pearl/60">
                     <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-luxury-gold/60" aria-hidden="true" />
                     <span>
                       Prices shown in {currentCurrency}. Payment was processed in AED ({formatPrice(booking.total_price, 'AED', exchangeRates)}).
@@ -329,7 +380,7 @@ export function ConfirmationContent({
                 <Separator className="border-luxury-gold/20" />
                 <div>
                   <h3 className="font-serif text-xl text-luxury-pearl mb-3">Special Requests</h3>
-                  <p className="text-sm text-luxury-lightGray leading-relaxed">{booking.customer_notes}</p>
+                  <p className="text-sm text-luxury-pearl/70 leading-relaxed">{booking.customer_notes}</p>
                 </div>
               </>
             )}
@@ -341,23 +392,11 @@ export function ConfirmationContent({
                 <Shield className="h-5 w-5" style={{ color: "#C6AA88" }} aria-hidden="true" />
                 Important Information
               </h3>
-              <ul className="space-y-2 text-sm text-luxury-lightGray">
-                <li className="flex items-start gap-2">
-                  <span className="text-luxury-gold mt-0.5">•</span>
-                  <span>Please be ready at your pickup location 5 minutes before the scheduled time</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-luxury-gold mt-0.5">•</span>
-                  <span>Your driver will wait up to 15 minutes after the scheduled pickup time</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-luxury-gold mt-0.5">•</span>
-                  <span>Free cancellation up to 24 hours before pickup</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-luxury-gold mt-0.5">•</span>
-                  <span>For any changes or inquiries, please contact our support team</span>
-                </li>
+              <ul className="space-y-2 text-sm text-luxury-pearl/70 list-disc list-inside">
+                <li>Please be ready at your pickup location 5 minutes before the scheduled time</li>
+                <li>Your driver will wait up to 15 minutes after the scheduled pickup time</li>
+                <li>Free cancellation up to 24 hours before pickup</li>
+                <li>For any changes or inquiries, please contact our support team</li>
               </ul>
             </div>
           </div>
@@ -365,24 +404,28 @@ export function ConfirmationContent({
 
         {/* Action Buttons */}
         <motion.div
-          className="flex flex-col sm:flex-row justify-center gap-4 mt-12"
-          initial={{ opacity: 0, y: 20 }}
+          className="flex flex-col sm:flex-row justify-center gap-4 mt-12 print:hidden"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.5 }}
         >
-          <Link href="/">
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto h-14 px-8 border-luxury-gold/30 text-luxury-lightGray hover:bg-luxury-gold/10 hover:text-luxury-pearl uppercase tracking-wider font-semibold focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black"
-            >
+          <Button
+            variant="outline"
+            asChild
+            className="w-full sm:w-auto h-14 px-8 border-luxury-gold/30 text-luxury-pearl/70 hover:bg-luxury-gold/10 hover:text-luxury-pearl uppercase tracking-wider font-semibold focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black"
+          >
+            <Link href="/">
               Book Another Transfer
-            </Button>
-          </Link>
-          <Link href="/account">
-            <Button className="w-full sm:w-auto h-14 px-8 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black uppercase tracking-wider font-semibold transition-all duration-300 active:scale-95 focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black">
+            </Link>
+          </Button>
+          <Button
+            asChild
+            className="w-full sm:w-auto h-14 px-8 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black uppercase tracking-wider font-semibold transition-all duration-300 active:scale-95 focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2 focus:ring-offset-luxury-black"
+          >
+            <Link href="/account">
               View My Bookings
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </motion.div>
       </div>
     </div>

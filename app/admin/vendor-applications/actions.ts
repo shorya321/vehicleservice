@@ -177,3 +177,40 @@ export async function deleteVendorApplication(id: string) {
 
   revalidatePath('/admin/vendor-applications')
 }
+
+export async function bulkDeleteVendorApplications(ids: string[]) {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  const { error } = await supabase
+    .from('vendor_applications')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/vendor-applications')
+  return { count: ids.length }
+}
+
+export async function bulkUpdateVendorApplicationStatus(ids: string[], status: string) {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  const { error } = await supabase
+    .from('vendor_applications')
+    .update({
+      status,
+      reviewed_at: new Date().toISOString(),
+    })
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/vendor-applications')
+  return { count: ids.length }
+}

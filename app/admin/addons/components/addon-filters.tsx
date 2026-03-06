@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Search, X } from "lucide-react"
-import { useCallback, useState, useTransition } from "react"
+import { useCallback, useEffect, useState, useTransition } from "react"
 
 interface AddonFiltersProps {
   categories: string[]
@@ -21,9 +21,18 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
-  const [search, setSearch] = useState(searchParams.get('search') || '')
+  const urlSearch = searchParams.get('search') || ''
+  const [searchValue, setSearchValue] = useState(urlSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch)
+
+  if (urlSearch !== prevUrlSearch) {
+    setPrevUrlSearch(urlSearch)
+    setSearchValue(urlSearch)
+    setDebouncedSearch(urlSearch)
+  }
 
   const createQueryString = useCallback(
     (params: Record<string, string | null>) => {
@@ -47,19 +56,29 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
     [searchParams]
   )
 
+  // Debounce: update debouncedSearch 500ms after typing stops
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 500)
+    return () => clearTimeout(timer)
+  }, [searchValue])
+
+  // Push to router when debounced value changes
+  useEffect(() => {
+    const currentSearch = searchParams.get('search') || ''
+    if (debouncedSearch !== currentSearch) {
+      startTransition(() => {
+        router.push(`${pathname}?${createQueryString({ search: debouncedSearch || null })}`)
+      })
+    }
+  }, [debouncedSearch, searchParams, router, pathname, createQueryString, startTransition])
+
   const handleFilterChange = (key: string, value: string | null) => {
     startTransition(() => {
       router.push(`${pathname}?${createQueryString({ [key]: value })}`)
     })
   }
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    handleFilterChange('search', search || null)
-  }
-
   const handleClearFilters = () => {
-    setSearch('')
     startTransition(() => {
       router.push(pathname)
     })
@@ -69,20 +88,15 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
 
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <form onSubmit={handleSearchSubmit} className="flex gap-2 flex-1 max-w-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search addons..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Button type="submit" variant="secondary" disabled={isPending}>
-          Search
-        </Button>
-      </form>
+      <div className="relative flex-1 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search addons..."
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
       <div className="flex gap-2 flex-wrap">
         <Select
@@ -106,7 +120,7 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
           value={searchParams.get('isActive') || 'all'}
           onValueChange={(value) => handleFilterChange('isActive', value)}
         >
-          <SelectTrigger className="w-[130px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>

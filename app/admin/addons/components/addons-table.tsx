@@ -30,10 +30,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Pencil, Trash2, Power, PowerOff } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { MoreHorizontal, Pencil, Trash2, Power, PowerOff, Package } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { toast } from "sonner"
 import { Addon, deleteAddon, toggleAddonStatus } from "../actions"
+import { BulkActionsBar } from "./bulk-actions-bar"
+import { EmptyState } from "@/components/ui/empty-state"
 import { formatCurrency } from "@/lib/utils"
 
 interface AddonsTableProps {
@@ -51,6 +54,28 @@ export function AddonsTable({ addons }: AddonsTableProps) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(addons.map(a => a.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelect = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = addons.length > 0 && selectedIds.size === addons.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
@@ -91,20 +116,28 @@ export function AddonsTable({ addons }: AddonsTableProps) {
     }
   }
 
-  if (addons.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        No addons found. Create your first addon to get started.
-      </div>
-    )
-  }
-
   return (
     <>
-      <div className="rounded-md border">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead className="w-[50px]">Icon</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
@@ -116,8 +149,27 @@ export function AddonsTable({ addons }: AddonsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {addons.map((addon) => (
+            {addons.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={Package}
+                    title="No Addons Found"
+                    description="There are no addons matching your current filters. Try adjusting your search criteria."
+                  />
+                </TableCell>
+              </TableRow>
+            ) : (
+            addons.map((addon) => (
               <TableRow key={addon.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedIds.has(addon.id)}
+                    onCheckedChange={(checked) => handleSelect(addon.id, checked as boolean)}
+                    aria-label="Select addon"
+                    className="translate-y-[2px]"
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
                     <AddonIcon iconName={addon.icon} />
@@ -207,9 +259,11 @@ export function AddonsTable({ addons }: AddonsTableProps) {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+            )}
           </TableBody>
         </Table>
+      </div>
       </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

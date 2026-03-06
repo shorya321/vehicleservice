@@ -85,7 +85,7 @@ export async function sendBusinessWelcomePendingEmail(
 ): Promise<EmailResult> {
   return sendEmail({
     to: data.email,
-    subject: 'Welcome to Vehicle Service - Registration Received',
+    subject: 'Welcome to Infinia Transfers - Registration Received',
     template: BusinessWelcomePendingEmail,
     templateProps: {
       businessName: data.businessName,

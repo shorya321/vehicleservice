@@ -12,11 +12,11 @@ interface WelcomeEmailProps {
 export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
   return (
     <EmailLayout
-      preview="Welcome to Vehicle Service - Verify your email"
-      heading={`Welcome to Vehicle Service, ${name}!`}
+      preview="Welcome to Infinia Transfers - Verify your email"
+      heading={`Welcome to Infinia Transfers, ${name}!`}
     >
       <Text style={emailStyles.text}>
-        Thank you for creating an account with Vehicle Service. We&apos;re excited to have you on
+        Thank you for creating an account with Infinia Transfers. We&apos;re excited to have you on
         board!
       </Text>
 
@@ -38,14 +38,14 @@ export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
       </Text>
 
       <Text style={emailStyles.text}>
-        If you didn&apos;t create an account with Vehicle Service, please ignore this email or
+        If you didn&apos;t create an account with Infinia Transfers, please ignore this email or
         contact our support team.
       </Text>
 
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

@@ -108,7 +108,7 @@ export const BookingDatetimeModifiedEmail = ({
         <br />
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

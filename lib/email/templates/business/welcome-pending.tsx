@@ -16,17 +16,17 @@ export const BusinessWelcomePendingEmail = ({
   businessName,
   ownerName,
   subdomain,
-  supportEmail = 'support@vehicleservice.com',
+  supportEmail = 'support@infiniatransfers.com',
 }: BusinessWelcomePendingEmailProps) => {
   return (
     <EmailLayout
-      preview="Welcome to Vehicle Service - Registration Received"
+      preview="Welcome to Infinia Transfers - Registration Received"
       heading="Registration Received!"
     >
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for registering <strong>{businessName}</strong> with Vehicle Service!
+        Thank you for registering <strong>{businessName}</strong> with Infinia Transfers!
       </Text>
 
       <InfoBox type="info">
@@ -51,7 +51,7 @@ export const BusinessWelcomePendingEmail = ({
       </Text>
 
       <Text style={{ ...emailStyles.text, marginLeft: '16px' }}>
-        Subdomain: <strong>{subdomain}.vehicleservice.com</strong>
+        Subdomain: <strong>{subdomain}.infiniatransfers.com</strong>
       </Text>
 
       <InfoBox type="warning" title="Important">
@@ -74,7 +74,7 @@ export const BusinessWelcomePendingEmail = ({
         <br />
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

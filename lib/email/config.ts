@@ -1,5 +1,11 @@
 import { Resend } from 'resend';
 
+// Brand constants
+export const BRAND_NAME = 'Infinia Transfers';
+export const BRAND_ADDRESS = '123 Business Bay, Dubai, UAE';
+export const getBrandUrl = () => getAppUrl();
+export const getUnsubscribeUrl = () => `${getAppUrl()}/unsubscribe`;
+
 // Lazy initialization of Resend client
 let resendClient: Resend | null = null;
 

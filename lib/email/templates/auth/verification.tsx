@@ -46,7 +46,7 @@ export const VerificationEmail = ({ name, verificationUrl }: VerificationEmailPr
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

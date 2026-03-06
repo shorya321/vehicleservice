@@ -19,13 +19,13 @@ export const VendorApplicationRejectedEmail = ({
 }: VendorApplicationRejectedEmailProps) => {
   return (
     <EmailLayout
-      preview="Vendor Application Update - Vehicle Service"
+      preview="Vendor Application Update - Infinia Transfers"
       heading="Application Status Update"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for your interest in becoming a vendor partner with Vehicle Service. We&apos;ve
+        Thank you for your interest in becoming a vendor partner with Infinia Transfers. We&apos;ve
         completed our review of your application (Reference: {applicationReference}).
       </Text>
 
@@ -71,14 +71,14 @@ export const VendorApplicationRejectedEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        We appreciate your interest in partnering with Vehicle Service and wish you all the best in
+        We appreciate your interest in partnering with Infinia Transfers and wish you all the best in
         your business endeavors.
       </Text>
 
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

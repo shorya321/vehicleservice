@@ -226,10 +226,9 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
             <TableRow>
               <TableHead className="w-12">
                 <Checkbox
-                  checked={isAllSelected}
+                  checked={isAllSelected ? true : isSomeSelected ? "indeterminate" : false}
                   onCheckedChange={handleSelectAll}
                   aria-label="Select all"
-                  className={isSomeSelected ? 'data-[state=checked]:bg-muted' : ''}
                 />
               </TableHead>
               <TableHead>Business</TableHead>
@@ -249,7 +248,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
               const isLoading = actionLoading === account.id;
 
               return (
-                <TableRow key={account.id} className={isSelected ? 'bg-muted/50' : ''}>
+                <TableRow key={account.id} data-state={isSelected ? 'selected' : undefined}>
                   <TableCell>
                     <Checkbox
                       checked={isSelected}

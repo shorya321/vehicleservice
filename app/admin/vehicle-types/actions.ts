@@ -243,6 +243,40 @@ export async function toggleVehicleTypeStatus(id: string, isActive: boolean) {
   revalidatePath('/admin/vehicle-types')
 }
 
+export async function bulkDeleteVehicleTypes(ids: string[]) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('vehicle_types')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/vehicle-types')
+  return { count: ids.length }
+}
+
+export async function bulkToggleVehicleTypeStatus(ids: string[], isActive: boolean) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('vehicle_types')
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/vehicle-types')
+  return { count: ids.length }
+}
+
 // Get all active vehicle types for form selects
 export async function getActiveVehicleTypes() {
   await requireAdmin()

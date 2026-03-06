@@ -237,3 +237,39 @@ export async function toggleBlogCategoryStatus(id: string, isActive: boolean) {
   revalidatePath('/admin/blog/categories')
   revalidateTag('blog-categories')
 }
+
+export async function bulkDeleteBlogCategories(ids: string[]) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('blog_categories')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/blog/categories')
+  revalidateTag('blog-categories')
+  return { count: ids.length }
+}
+
+export async function bulkToggleBlogCategoryStatus(ids: string[], isActive: boolean) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('blog_categories')
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/blog/categories')
+  revalidateTag('blog-categories')
+  return { count: ids.length }
+}

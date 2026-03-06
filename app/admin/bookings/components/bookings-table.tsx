@@ -237,8 +237,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={isAllSelected}
-                    indeterminate={isIndeterminate || undefined}
+                    checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
                   />
@@ -270,10 +269,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 bookings.map((booking) => (
                   <TableRow
                     key={booking.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer"
                     onClick={(e) => {
                       // Prevent row click if dialog is open or clicking on interactive elements
-                      if (!(e.target as HTMLElement).closest('.no-row-click') || statusUpdateId) {
+                      if ((e.target as HTMLElement).closest('.no-row-click') || statusUpdateId) {
                         return
                       }
                       router.push(`/admin/bookings/${booking.id}`)

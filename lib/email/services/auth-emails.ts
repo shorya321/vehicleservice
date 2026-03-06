@@ -19,7 +19,7 @@ export async function sendWelcomeEmail(
 ): Promise<EmailResult> {
   return sendEmail({
     to: data.email,
-    subject: 'Welcome to Vehicle Service - Verify Your Email',
+    subject: 'Welcome to Infinia Transfers! Please confirm your email',
     template: WelcomeEmail,
     templateProps: {
       name: data.name,
@@ -53,7 +53,7 @@ export async function sendPasswordResetEmail(
 ): Promise<EmailResult> {
   return sendEmail({
     to: data.email,
-    subject: 'Reset Your Password - Vehicle Service',
+    subject: 'Reset Your Password - Infinia Transfers',
     template: PasswordResetEmail,
     templateProps: {
       name: data.name,

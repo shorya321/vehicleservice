@@ -15,7 +15,7 @@ export const BusinessAccountRejectedEmail = ({
   businessName,
   ownerName,
   reason,
-  supportEmail = 'support@vehicleservice.com',
+  supportEmail = 'support@infiniatransfers.com',
 }: BusinessAccountRejectedEmailProps) => {
   return (
     <EmailLayout
@@ -25,7 +25,7 @@ export const BusinessAccountRejectedEmail = ({
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for your interest in joining Vehicle Service with your business{' '}
+        Thank you for your interest in joining Infinia Transfers with your business{' '}
         <strong>{businessName}</strong>.
       </Text>
 
@@ -72,7 +72,7 @@ export const BusinessAccountRejectedEmail = ({
         <br />
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

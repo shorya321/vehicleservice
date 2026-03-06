@@ -186,7 +186,7 @@ export function BookingForm({
       })
 
       if (result.success) {
-        router.push(`/payment?booking=${result.bookingId}&amount=${result.totalPrice}`)
+        router.push(`/payment?booking=${result.bookingId}`)
       }
     } catch (error) {
       console.error('Booking error:', error)

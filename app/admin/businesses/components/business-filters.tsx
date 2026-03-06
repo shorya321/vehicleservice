@@ -5,7 +5,8 @@
  * Search and filter business accounts
  */
 
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Search, Filter, ChevronDown, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -22,6 +23,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export interface BusinessFilters {
   search?: string;
@@ -37,9 +39,30 @@ interface BusinessFiltersProps {
 }
 
 export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersProps) {
-  const handleSearchChange = (value: string) => {
-    onFiltersChange({ ...filters, search: value, page: 1 });
-  };
+  const parentSearch = filters.search || '';
+  const [searchValue, setSearchValue] = useState(parentSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
+  const [prevParentSearch, setPrevParentSearch] = useState(parentSearch);
+
+  if (parentSearch !== prevParentSearch) {
+    setPrevParentSearch(parentSearch);
+    setSearchValue(parentSearch);
+    setDebouncedSearch(parentSearch);
+  }
+
+  // Debounce: update debouncedSearch 500ms after typing stops
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 500);
+    return () => clearTimeout(timer);
+  }, [searchValue]);
+
+  // Call onFiltersChange when debounced value changes
+  useEffect(() => {
+    const currentSearch = filters.search || '';
+    if (debouncedSearch !== currentSearch) {
+      onFiltersChange({ ...filters, search: debouncedSearch || undefined, page: 1 });
+    }
+  }, [debouncedSearch, filters, onFiltersChange]);
 
   const handleStatusChange = (value: string) => {
     onFiltersChange({ ...filters, status: value === 'all' ? undefined : value, page: 1 });
@@ -84,15 +107,15 @@ export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersPro
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by name, email, or subdomain..."
-            value={filters.search || ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             className="pl-9"
           />
         </div>
 
         {/* Status Filter */}
         <Select value={filters.status || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -108,26 +131,27 @@ export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersPro
         {/* Advanced Filters Popover */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="relative">
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
+            <Button variant="outline" size="sm" className="h-9 px-3">
+              <Filter className="mr-2 h-4 w-4" />
               Advanced
               {hasAdvancedFilters && (
                 <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
-                  {hasAdvancedFilters ? 1 : 0}
+                  1
                 </Badge>
               )}
+              <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80" align="start">
+          <PopoverContent className="w-80" align="end">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">Advanced Filters</h4>
-                {hasAdvancedFilters && (
-                  <Button variant="ghost" size="sm" onClick={handleResetAdvanced}>
-                    Reset
-                  </Button>
-                )}
+              <div>
+                <h4 className="font-medium text-sm">Advanced Filters</h4>
+                <p className="text-xs text-muted-foreground">
+                  Refine results with additional criteria
+                </p>
               </div>
+
+              <Separator />
 
               {/* Domain Verified Filter */}
               <div className="space-y-2">
@@ -145,6 +169,14 @@ export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersPro
                     <SelectItem value="false">Not Verified</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <Separator />
+
+              <div className="flex justify-between">
+                <Button variant="ghost" size="sm" onClick={handleResetAdvanced}>
+                  Reset
+                </Button>
               </div>
             </div>
           </PopoverContent>

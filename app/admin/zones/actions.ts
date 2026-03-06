@@ -296,3 +296,35 @@ export async function toggleZoneStatus(id: string, is_active: boolean) {
   revalidatePath('/admin/zones')
   return { success: true }
 }
+
+export async function bulkDeleteZones(ids: string[]) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('zones')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/zones')
+  return { success: true, count: ids.length }
+}
+
+export async function bulkToggleZoneStatus(ids: string[], is_active: boolean) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('zones')
+    .update({ is_active, updated_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/zones')
+  return { success: true, count: ids.length }
+}

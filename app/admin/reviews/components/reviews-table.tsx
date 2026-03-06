@@ -230,7 +230,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
               return (
                 <TableRow
                   key={review.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer"
                 >
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox

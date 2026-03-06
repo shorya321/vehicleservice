@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   MoreHorizontal,
   Pencil,
@@ -21,7 +22,7 @@ import {
   Users,
   Luggage,
   Tag,
-  Hash
+  Car,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -43,6 +44,8 @@ import {
 import { toast } from "sonner"
 import { VehicleTypeWithCategory } from "@/lib/types/vehicle"
 import { deleteVehicleType, toggleVehicleTypeStatus } from "../actions"
+import { BulkActionsBar } from "./bulk-actions-bar"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface VehicleTypesTableProps {
   vehicleTypes: VehicleTypeWithCategory[]
@@ -52,6 +55,28 @@ export function VehicleTypesTable({ vehicleTypes }: VehicleTypesTableProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(vehicleTypes.map(t => t.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelect = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = vehicleTypes.length > 0 && selectedIds.size === vehicleTypes.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleDelete = async () => {
     if (!deletingId) return
@@ -82,12 +107,25 @@ export function VehicleTypesTable({ vehicleTypes }: VehicleTypesTableProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px]">
-                <Hash className="h-4 w-4" />
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
               </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
@@ -100,15 +138,24 @@ export function VehicleTypesTable({ vehicleTypes }: VehicleTypesTableProps) {
           <TableBody>
             {vehicleTypes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  No vehicle types found
+                <TableCell colSpan={7} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={Car}
+                    title="No Vehicle Types Found"
+                    description="There are no vehicle types matching your current filters. Try adjusting your search criteria."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               vehicleTypes.map((type) => (
                 <TableRow key={type.id}>
-                  <TableCell className="text-muted-foreground">
-                    {type.sort_order || '-'}
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(type.id)}
+                      onCheckedChange={(checked) => handleSelect(type.id, checked as boolean)}
+                      aria-label="Select vehicle type"
+                      className="translate-y-[2px]"
+                    />
                   </TableCell>
                   <TableCell className="font-medium">
                     <div>
@@ -176,6 +223,7 @@ export function VehicleTypesTable({ vehicleTypes }: VehicleTypesTableProps) {
             )}
           </TableBody>
         </Table>
+      </div>
       </div>
 
       <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>

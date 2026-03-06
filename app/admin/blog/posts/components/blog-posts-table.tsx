@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ import {
   Eye,
   Star,
   Archive,
+  FileText,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -41,6 +43,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { BlogPostWithRelations, deleteBlogPost, toggleBlogPostFeatured, toggleBlogPostStatus } from "../actions"
+import { BulkActionsBar } from "./bulk-actions-bar"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface BlogPostsTableProps {
   posts: BlogPostWithRelations[]
@@ -68,6 +72,28 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(posts.map(p => p.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectPost = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = posts.length > 0 && selectedIds.size === posts.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleDelete = async () => {
     if (!deletingId) return
@@ -118,10 +144,26 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Author</TableHead>
@@ -135,13 +177,25 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
           <TableBody>
             {posts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  No blog posts found
+                <TableCell colSpan={9} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={FileText}
+                    title="No Blog Posts Found"
+                    description="There are no blog posts matching your current filters. Try adjusting your search criteria."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               posts.map((post) => (
                 <TableRow key={post.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(post.id)}
+                      onCheckedChange={(checked) => handleSelectPost(post.id, checked as boolean)}
+                      aria-label="Select post"
+                      className="translate-y-[2px]"
+                    />
+                  </TableCell>
                   <TableCell className="font-medium max-w-[250px]">
                     <div>
                       <p className="truncate">{post.title}</p>
@@ -233,6 +287,7 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>

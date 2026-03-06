@@ -180,7 +180,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
         </div>
 
         {/* Tab Navigation */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-8">
+        <Tabs id="auth-tabs" value={activeTab} onValueChange={handleTabChange} className="mb-8">
           <TabsList className="auth-tabs w-full grid grid-cols-2 gap-1 p-1 bg-[rgba(42,40,38,0.5)] border border-[rgba(198,170,136,0.1)] rounded-xl h-auto">
             <TabsTrigger
               value="login"

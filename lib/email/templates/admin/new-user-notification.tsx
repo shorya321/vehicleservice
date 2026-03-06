@@ -22,13 +22,13 @@ export const NewUserNotificationEmail = ({
 }: NewUserNotificationEmailProps) => {
   return (
     <EmailLayout
-      preview="New User Registration - Vehicle Service"
+      preview="New User Registration - Infinia Transfers"
       heading="New User Registered"
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
       <Text style={emailStyles.text}>
-        A new user has registered on the Vehicle Service platform. Here are the details:
+        A new user has registered on the Infinia Transfers platform. Here are the details:
       </Text>
 
       <DetailsSection>
@@ -59,7 +59,7 @@ export const NewUserNotificationEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        Vehicle Service System
+        Infinia Transfers System
       </Text>
     </EmailLayout>
   );

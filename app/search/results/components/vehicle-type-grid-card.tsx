@@ -119,7 +119,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
         <div className="flex items-end justify-between gap-4">
           {/* Price */}
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-medium bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent leading-none">
+            <div className="text-xl md:text-2xl font-semibold bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent leading-none">
               {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </div>
             <p className="text-xs text-[var(--text-muted)] uppercase tracking-[0.05em] mt-0.5">per vehicle</p>

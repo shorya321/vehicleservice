@@ -157,7 +157,7 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
               <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={isAllSelected}
+                    checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all"
                     className="translate-y-[2px]"

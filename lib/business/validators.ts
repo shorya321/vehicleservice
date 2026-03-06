@@ -27,8 +27,8 @@ export type BusinessRegistrationInput = z.infer<typeof businessRegistrationSchem
 export const selectedAddonSchema = z.object({
   addon_id: z.string().uuid('Invalid addon ID'),
   quantity: z.number().int().min(1).max(10),
-  unit_price: z.number().min(0, 'Unit price cannot be negative'),
-  total_price: z.number().min(0, 'Total price cannot be negative'),
+  unit_price: z.number().min(0, 'Unit price cannot be negative').optional(),
+  total_price: z.number().min(0, 'Total price cannot be negative').optional(),
 });
 
 export type SelectedAddonInput = z.infer<typeof selectedAddonSchema>;

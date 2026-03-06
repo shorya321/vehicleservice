@@ -20,7 +20,7 @@ export const BusinessAccountApprovedEmail = ({
   return (
     <EmailLayout
       preview="Your Business Account Has Been Approved!"
-      heading="Welcome to Vehicle Service!"
+      heading="Welcome to Infinia Transfers!"
     >
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
 
@@ -68,7 +68,7 @@ export const BusinessAccountApprovedEmail = ({
         <br />
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

@@ -130,7 +130,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber, clientSecret }:
         {/* Payment Amount Display */}
         <div className="flex flex-col items-center justify-center py-6 px-5 mb-6 bg-[rgba(198,170,136,0.05)] border border-[rgba(198,170,136,0.15)] rounded-2xl">
           <p className="text-xs font-medium tracking-[0.1em] uppercase text-[#7a7672] mb-2">Amount to Pay</p>
-          <p className="font-serif text-4xl md:text-5xl font-normal bg-gradient-to-r from-[#e8d9c5] via-[#c6aa88] to-[#8b7349] bg-clip-text text-transparent">
+          <p className="text-3xl md:text-4xl font-semibold bg-gradient-to-r from-[#e8d9c5] via-[#c6aa88] to-[#8b7349] bg-clip-text text-transparent">
             {formatPrice(amount, currentCurrency, exchangeRates)}
           </p>
           <span className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-[rgba(42,40,38,0.5)] rounded-md text-[0.8125rem] text-[#b8b4ae]">

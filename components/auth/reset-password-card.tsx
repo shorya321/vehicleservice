@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,18 +23,13 @@ export function ResetPasswordCard() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
 
-  useEffect(() => {
-    // Check if we have a valid session from the reset link
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.push('/forgot-password')
-      }
-    }
-    checkSession()
-  }, [supabase, router])
+  if (!token) {
+    router.push("/forgot-password")
+    return null
+  }
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,23 +40,26 @@ export function ResetPasswordCard() {
       return
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long")
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long")
       return
     }
 
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password }),
       })
 
-      if (error) {
-        setError(error.message)
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || "Failed to update password")
       } else {
-        // Successfully updated password, redirect to login
-        router.push('/login?message=Password updated successfully')
+        router.push("/login?message=Password updated successfully")
       }
     } catch (err) {
       console.error("Password update error:", err)
@@ -170,7 +167,7 @@ export function ResetPasswordCard() {
           <div className="px-2 py-3 bg-[rgba(42,40,38,0.3)] border border-[rgba(198,170,136,0.1)] rounded-lg">
             <p className="text-xs text-[var(--text-muted)] mb-2">Password must:</p>
             <ul className="text-xs text-[var(--text-muted)] space-y-1 ml-4">
-              <li className="list-disc">Be at least 6 characters long</li>
+              <li className="list-disc">Be at least 8 characters long</li>
               <li className="list-disc">Match in both fields</li>
             </ul>
           </div>

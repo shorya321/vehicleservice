@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search, X } from "lucide-react"
+import { useEffect, useState, useTransition } from "react"
 
 type VehicleCategory = {
   id: string
@@ -25,6 +26,39 @@ interface VehicleTypeFiltersProps {
 export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [, startTransition] = useTransition()
+
+  const urlSearch = searchParams.get('search') || ''
+  const [searchValue, setSearchValue] = useState(urlSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch)
+
+  if (urlSearch !== prevUrlSearch) {
+    setPrevUrlSearch(urlSearch)
+    setSearchValue(urlSearch)
+    setDebouncedSearch(urlSearch)
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 500)
+    return () => clearTimeout(timer)
+  }, [searchValue])
+
+  useEffect(() => {
+    const currentSearch = searchParams.get('search') || ''
+    if (debouncedSearch !== currentSearch) {
+      const params = new URLSearchParams(searchParams.toString())
+      if (debouncedSearch) {
+        params.set('search', debouncedSearch)
+      } else {
+        params.delete('search')
+      }
+      params.delete('page')
+      startTransition(() => {
+        router.push(`?${params.toString()}`)
+      })
+    }
+  }, [debouncedSearch, searchParams, router, startTransition])
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -33,16 +67,18 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
     } else {
       params.delete(key)
     }
-    params.delete('page') // Reset to first page on filter change
-    router.push(`?${params.toString()}`)
+    params.delete('page')
+    startTransition(() => {
+      router.push(`?${params.toString()}`)
+    })
   }
 
   const clearFilters = () => {
     router.push('/admin/vehicle-types')
   }
 
-  const hasActiveFilters = 
-    searchParams.has('search') || 
+  const hasActiveFilters =
+    searchParams.has('search') ||
     searchParams.has('categoryId') ||
     searchParams.has('isActive')
 
@@ -53,8 +89,8 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
         <Input
           placeholder="Search vehicle types..."
           className="pl-9"
-          value={searchParams.get('search') || ''}
-          onChange={(e) => updateFilter('search', e.target.value)}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
         />
       </div>
       
@@ -79,7 +115,7 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
         value={searchParams.get('isActive') || 'all'}
         onValueChange={(value) => updateFilter('isActive', value)}
       >
-        <SelectTrigger className="w-full md:w-[150px]">
+        <SelectTrigger className="w-full md:w-[160px]">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>

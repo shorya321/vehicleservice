@@ -3,7 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { X, CheckCircle, XCircle, Trash2, Loader2 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { X, ChevronDown, CheckCircle, XCircle, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { bulkApproveReviews, bulkRejectReviews, bulkDeleteReviews } from '../actions'
 import {
@@ -111,16 +119,10 @@ export function BulkActionsBar({
 
   return (
     <>
-      <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-3">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearSelection}
-            className="gap-2"
-          >
+      <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-4 py-2">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onClearSelection}>
             <X className="h-4 w-4" />
-            Clear Selection
           </Button>
           <span className="text-sm font-medium">
             {selectedCount} {selectedCount === 1 ? 'review' : 'reviews'} selected
@@ -128,38 +130,34 @@ export function BulkActionsBar({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmAction('approve')}
-            disabled={isProcessing}
-            className="gap-2"
-          >
-            <CheckCircle className="h-4 w-4" />
-            Approve Selected
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmAction('reject')}
-            disabled={isProcessing}
-            className="gap-2 text-destructive hover:text-destructive"
-          >
-            <XCircle className="h-4 w-4" />
-            Reject Selected
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmAction('delete')}
-            disabled={isProcessing}
-            className="gap-2 text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Selected
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={isProcessing}>
+                Bulk Actions
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setConfirmAction('approve')}>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Approve
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setConfirmAction('reject')}>
+                <XCircle className="mr-2 h-4 w-4" />
+                Reject
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setConfirmAction('delete')}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

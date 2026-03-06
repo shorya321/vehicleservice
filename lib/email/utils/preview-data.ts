@@ -25,7 +25,7 @@ export const emailTemplates: EmailTemplate[] = [
     name: 'Welcome Email',
     category: 'auth',
     description: 'Sent when a new user registers with verification link',
-    subject: 'Welcome to Vehicle Service - Verify Your Email',
+    subject: 'Welcome to Infinia Transfers - Verify Your Email',
     variables: ['name', 'verificationUrl'],
   },
   {
@@ -41,7 +41,7 @@ export const emailTemplates: EmailTemplate[] = [
     name: 'Password Reset',
     category: 'auth',
     description: 'Sent when user requests password reset',
-    subject: 'Reset Your Password - Vehicle Service',
+    subject: 'Reset Your Password - Infinia Transfers',
     variables: ['name', 'resetUrl'],
   },
   {
@@ -85,7 +85,7 @@ export const emailTemplates: EmailTemplate[] = [
     name: 'Vendor Application Received',
     category: 'vendor',
     description: 'Confirmation that vendor application was received',
-    subject: 'Vendor Application Received - Vehicle Service',
+    subject: 'Vendor Application Received - Infinia Transfers',
     variables: ['name', 'applicationReference', 'submittedDate'],
   },
   {
@@ -101,7 +101,7 @@ export const emailTemplates: EmailTemplate[] = [
     name: 'Vendor Application Rejected',
     category: 'vendor',
     description: 'Notification that vendor application was rejected',
-    subject: 'Vendor Application Update - Vehicle Service',
+    subject: 'Vendor Application Update - Infinia Transfers',
     variables: ['name', 'applicationReference', 'rejectionReason', 'reapplyUrl'],
   },
 ];

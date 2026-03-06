@@ -1073,6 +1073,9 @@ export type Database = {
           payment_status: string | null
           pickup_address: string
           pickup_datetime: string
+          price_signature: string | null
+          price_signature_nonce: string | null
+          price_signature_timestamp: number | null
           reference_number: string | null
           to_location_id: string
           total_price: number
@@ -1101,6 +1104,9 @@ export type Database = {
           payment_status?: string | null
           pickup_address: string
           pickup_datetime: string
+          price_signature?: string | null
+          price_signature_nonce?: string | null
+          price_signature_timestamp?: number | null
           reference_number?: string | null
           to_location_id: string
           total_price: number
@@ -1129,6 +1135,9 @@ export type Database = {
           payment_status?: string | null
           pickup_address?: string
           pickup_datetime?: string
+          price_signature?: string | null
+          price_signature_nonce?: string | null
+          price_signature_timestamp?: number | null
           reference_number?: string | null
           to_location_id?: string
           total_price?: number
@@ -2822,6 +2831,9 @@ export type Database = {
           p_passenger_count: number
           p_pickup_address: string
           p_pickup_datetime: string
+          p_price_signature?: string
+          p_price_signature_nonce?: string
+          p_price_signature_timestamp?: number
           p_reference_number?: string
           p_to_location_id: string
           p_total_price: number

@@ -21,7 +21,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, Hash, ToggleLeft, ToggleRight } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, ToggleLeft, ToggleRight, FolderOpen } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { BlogCategory, deleteBlogCategory, toggleBlogCategoryStatus } from "../actions"
+import { BulkActionsBar } from "./bulk-actions-bar"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface CategoriesTableProps {
   categories: BlogCategory[]
@@ -43,6 +46,24 @@ export function BlogCategoriesTable({ categories }: CategoriesTableProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(categories.map(c => c.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectCategory = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) { newSelected.add(id) } else { newSelected.delete(id) }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = categories.length > 0 && selectedIds.size === categories.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleDelete = async () => {
     if (!deletingId) return
@@ -72,12 +93,25 @@ export function BlogCategoriesTable({ categories }: CategoriesTableProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px]">
-                <Hash className="h-4 w-4" />
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
               </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
@@ -88,15 +122,24 @@ export function BlogCategoriesTable({ categories }: CategoriesTableProps) {
           <TableBody>
             {categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No categories found
+                <TableCell colSpan={5} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={FolderOpen}
+                    title="No Categories Found"
+                    description="There are no categories matching your current filters. Try adjusting your search criteria."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((cat) => (
                 <TableRow key={cat.id}>
-                  <TableCell className="text-muted-foreground">
-                    {cat.sort_order || '-'}
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(cat.id)}
+                      onCheckedChange={(checked) => handleSelectCategory(cat.id, checked as boolean)}
+                      aria-label="Select category"
+                      className="translate-y-[2px]"
+                    />
                   </TableCell>
                   <TableCell className="font-medium">
                     <div>
@@ -160,6 +203,7 @@ export function BlogCategoriesTable({ categories }: CategoriesTableProps) {
             )}
           </TableBody>
         </Table>
+      </div>
       </div>
 
       <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>

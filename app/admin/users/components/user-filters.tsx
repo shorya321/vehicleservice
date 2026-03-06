@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { SearchInput } from "@/components/ui/search-input"
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { UserFilters, UserRole, UserStatus } from "@/lib/types/user"
-import { Filter, X, ChevronDown, Shield, Mail, Calendar } from "lucide-react"
+import { Filter, X, ChevronDown, Shield, Mail, Calendar, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
@@ -28,15 +28,35 @@ interface UserFiltersProps {
 }
 
 export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersProps) {
-  const [localSearch, setLocalSearch] = useState(filters.search || "")
+  const parentSearch = filters.search || ""
+  const [searchValue, setSearchValue] = useState(parentSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
+  const [prevParentSearch, setPrevParentSearch] = useState(parentSearch)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+
+  // Sync when parent clears/changes filters externally
+  if (parentSearch !== prevParentSearch) {
+    setPrevParentSearch(parentSearch)
+    setSearchValue(parentSearch)
+    setDebouncedSearch(parentSearch)
+  }
+
+  // Debounce 500ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 500)
+    return () => clearTimeout(timer)
+  }, [searchValue])
+
+  // Fire callback when debounced value changes
+  useEffect(() => {
+    const currentSearch = filters.search || ""
+    if (debouncedSearch !== currentSearch) {
+      onFiltersChange({ ...filters, search: debouncedSearch || undefined, page: 1 })
+    }
+  }, [debouncedSearch, filters, onFiltersChange])
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean | null>(null)
   const [hasSignedIn, setHasSignedIn] = useState<boolean | null>(null)
-
-  const handleSearchSubmit = (value: string) => {
-    onFiltersChange({ ...filters, search: value, page: 1 })
-  }
 
   const handleRoleChange = (role: string) => {
     onFiltersChange({ ...filters, role: role as UserRole | "all", page: 1 })
@@ -47,7 +67,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
   }
 
   const handleClearFilters = () => {
-    setLocalSearch("")
+    setSearchValue("")
     setEmailVerified(null)
     setTwoFactorEnabled(null)
     setHasSignedIn(null)
@@ -90,16 +110,18 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center gap-4">
-        <SearchInput
-          placeholder="Search by name, email, or phone..."
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          onSearch={handleSearchSubmit}
-          className="max-w-sm"
-        />
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, email, or phone..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="pl-9"
+          />
+        </div>
         
         <Select value={filters.role || "all"} onValueChange={handleRoleChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -111,7 +133,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
         </Select>
 
         <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

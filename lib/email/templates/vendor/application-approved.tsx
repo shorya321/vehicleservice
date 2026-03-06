@@ -22,7 +22,7 @@ export const VendorApplicationApprovedEmail = ({
   return (
     <EmailLayout
       preview="Congratulations! Your Vendor Application Approved"
-      heading="Welcome to Vehicle Service!"
+      heading="Welcome to Infinia Transfers!"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
@@ -82,7 +82,7 @@ export const VendorApplicationApprovedEmail = ({
         <br />
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

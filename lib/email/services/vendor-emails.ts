@@ -28,7 +28,7 @@ export async function sendVendorApplicationReceivedEmail(
       from: emailConfig.from,
       to: data.email,
       replyTo: emailConfig.replyTo,
-      subject: 'Vendor Application Received - Vehicle Service',
+      subject: 'Vendor Application Received - Infinia Transfers',
       react: jsx(VendorApplicationReceivedEmail, {
         name: data.name,
         applicationReference: data.applicationReference,
@@ -115,7 +115,7 @@ export async function sendVendorApplicationRejectedEmail(
       from: emailConfig.from,
       to: data.email,
       replyTo: emailConfig.replyTo,
-      subject: 'Vendor Application Update - Vehicle Service',
+      subject: 'Vendor Application Update - Infinia Transfers',
       react: jsx(VendorApplicationRejectedEmail, {
         name: data.name,
         applicationReference: data.applicationReference,

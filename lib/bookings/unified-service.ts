@@ -493,9 +493,9 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     });
   }
 
-  // Merge and sort by pickup datetime (most recent first)
+  // Merge and sort by creation date (most recently created first)
   const allBookings = [...customerBookings, ...businessBookings]
-    .sort((a, b) => new Date(b.pickup_datetime).getTime() - new Date(a.pickup_datetime).getTime());
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   // Apply pagination if specified
   const paginatedBookings = filters?.limit

@@ -1,7 +1,8 @@
 'use server';
 
 import { jsx } from 'react/jsx-runtime';
-import { getResendClient, getEmailConfig } from '../config';
+import { render } from '@react-email/render';
+import { getResendClient, getEmailConfig, getUnsubscribeUrl } from '../config';
 import type { EmailResult } from '../types';
 import type React from 'react';
 
@@ -25,13 +26,21 @@ export async function sendEmail({
   try {
     const resend = getResendClient();
     const emailConfig = getEmailConfig();
+    const unsubscribeUrl = getUnsubscribeUrl();
+
+    const reactElement = jsx(template, templateProps);
+    const plainText = await render(reactElement, { plainText: true });
 
     const { data: emailData, error } = await resend.emails.send({
       from: emailConfig.from,
       to,
       replyTo: emailConfig.replyTo,
       subject,
-      react: jsx(template, templateProps),
+      react: reactElement,
+      text: plainText,
+      headers: {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+      },
     });
 
     if (error) {

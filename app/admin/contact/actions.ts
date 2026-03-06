@@ -257,3 +257,37 @@ export async function deleteSubmission(id: string) {
 
   revalidatePath('/admin/contact')
 }
+
+export async function bulkDeleteSubmissions(ids: string[]) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('contact_submissions')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/contact')
+  return { count: ids.length }
+}
+
+export async function bulkUpdateSubmissionStatus(ids: string[], status: string) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('contact_submissions')
+    .update({ status })
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/contact')
+  return { count: ids.length }
+}

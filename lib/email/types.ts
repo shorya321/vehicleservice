@@ -30,6 +30,9 @@ export interface BookingConfirmationEmailData {
   customerName: string;
   customerEmail: string;
   vehicleCategory: string;
+  vehicleType?: string;
+  passengerCapacity?: number;
+  luggageCapacity?: number;
   pickupLocation: string;
   dropoffLocation: string;
   pickupDate: string;
@@ -39,6 +42,13 @@ export interface BookingConfirmationEmailData {
   totalAmount: number;
   currency: string;
   bookingReference: string;
+  originalAmount?: number;
+  originalCurrency?: string;
+  passengerCount?: number;
+  basePrice?: number;
+  amenitiesPrice?: number;
+  extras?: Array<{ label: string; quantity: number; price: number }>;
+  customerNotes?: string;
 }
 
 export interface BookingStatusUpdateEmailData {

@@ -3,7 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { X, CheckCircle, XCircle, FileDown, Trash2 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { X, CheckCircle, XCircle, FileDown, Trash2, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { bulkUpdateBookingStatus, bulkDeleteBookings, exportBookingsToCSV } from '../actions'
 import {
@@ -49,7 +57,7 @@ export function BulkActionsBar({
 
   const handleExport = async () => {
     try {
-      const csv = await exportBookingsToCSV({ limit: 10000 })
+      const csv = await exportBookingsToCSV(selectedBookingIds)
       
       // Create download link
       const blob = new Blob([csv], { type: 'text/csv' })
@@ -89,66 +97,53 @@ export function BulkActionsBar({
 
   return (
     <>
-      <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-3">
+      <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-4 py-2">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearSelection}
-            className="gap-2"
+            className="h-8 px-2"
           >
             <X className="h-4 w-4" />
-            Clear Selection
           </Button>
           <span className="text-sm font-medium">
             {selectedCount} {selectedCount === 1 ? 'booking' : 'bookings'} selected
           </span>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmAction('confirm')}
-            disabled={isUpdating}
-            className="gap-2"
-          >
-            <CheckCircle className="h-4 w-4" />
-            Confirm Selected
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmAction('cancel')}
-            disabled={isUpdating}
-            className="gap-2 text-destructive hover:text-destructive"
-          >
-            <XCircle className="h-4 w-4" />
-            Cancel Selected
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmAction('delete')}
-            disabled={isUpdating}
-            className="gap-2 text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Selected
-          </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            className="gap-2"
-          >
-            <FileDown className="h-4 w-4" />
-            Export All
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" disabled={isUpdating}>
+              Bulk Actions <ChevronDown className="ml-1 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setConfirmAction('confirm')}>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Confirm Selected
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setConfirmAction('cancel')}>
+              <XCircle className="mr-2 h-4 w-4" />
+              Cancel Selected
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleExport}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Export to CSV
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => setConfirmAction('delete')}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Selected
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>

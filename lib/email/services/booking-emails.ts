@@ -29,6 +29,9 @@ export async function sendBookingConfirmationEmail(
         customerName: data.customerName,
         bookingReference: data.bookingReference,
         vehicleCategory: data.vehicleCategory,
+        vehicleType: data.vehicleType,
+        passengerCapacity: data.passengerCapacity,
+        luggageCapacity: data.luggageCapacity,
         pickupLocation: data.pickupLocation,
         dropoffLocation: data.dropoffLocation,
         pickupDate: data.pickupDate,
@@ -37,6 +40,13 @@ export async function sendBookingConfirmationEmail(
         dropoffTime: data.dropoffTime,
         totalAmount: data.totalAmount,
         currency: data.currency,
+        originalAmount: data.originalAmount,
+        originalCurrency: data.originalCurrency,
+        passengerCount: data.passengerCount,
+        basePrice: data.basePrice,
+        amenitiesPrice: data.amenitiesPrice,
+        extras: data.extras,
+        customerNotes: data.customerNotes,
       }),
     });
 

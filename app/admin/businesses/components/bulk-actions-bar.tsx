@@ -6,12 +6,13 @@
  */
 
 import { useState } from 'react';
-import { Loader2, Download, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { X, ChevronDown, Download, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -115,32 +116,27 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/50 p-4">
+      <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/50 px-4 py-2">
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onClearSelection}>
+            <X className="h-4 w-4" />
+          </Button>
           <p className="text-sm font-medium">
             {selectedIds.length} business{selectedIds.length > 1 ? 'es' : ''} selected
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onClearSelection}>
-            Clear Selection
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="default" size="sm" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Bulk Actions'
-                )}
+              <Button variant="outline" size="sm" disabled={isLoading}>
+                Bulk Actions
+                <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setPendingAction('approve')}>
                 <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
                 Approve All

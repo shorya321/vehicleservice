@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { MoreHorizontal, Pencil, Trash, MapPin, Check, X } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash, MapPin, Check, X, Map } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { BulkActionsBar } from './bulk-actions-bar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -25,6 +27,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Zone, deleteZone, toggleZoneStatus } from '../actions'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +48,28 @@ export function ZonesTable({ zones }: ZonesTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [zoneToDelete, setZoneToDelete] = useState<Zone | null>(null)
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(zones.map(z => z.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelect = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = zones.length > 0 && selectedIds.size === zones.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleStatusToggle = async (zone: Zone) => {
     setLoadingStates(prev => ({ ...prev, [zone.id]: true }))
@@ -79,10 +104,26 @@ export function ZonesTable({ zones }: ZonesTableProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Description</TableHead>
@@ -95,13 +136,25 @@ export function ZonesTable({ zones }: ZonesTableProps) {
           <TableBody>
             {zones.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  No zones found. Create your first zone to get started.
+                <TableCell colSpan={8} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={Map}
+                    title="No Zones Found"
+                    description="There are no zones matching your current filters. Try adjusting your search criteria."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               zones.map((zone) => (
                 <TableRow key={zone.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(zone.id)}
+                      onCheckedChange={(checked) => handleSelect(zone.id, checked as boolean)}
+                      aria-label="Select zone"
+                      className="translate-y-[2px]"
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{zone.name}</TableCell>
                   <TableCell>
                     <code className="text-sm">{zone.slug}</code>
@@ -172,6 +225,7 @@ export function ZonesTable({ zones }: ZonesTableProps) {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

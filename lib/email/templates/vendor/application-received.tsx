@@ -18,13 +18,13 @@ export const VendorApplicationReceivedEmail = ({
 }: VendorApplicationReceivedEmailProps) => {
   return (
     <EmailLayout
-      preview="Vendor Application Received - Vehicle Service"
+      preview="Vendor Application Received - Infinia Transfers"
       heading="Application Received"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for submitting your vendor application to Vehicle Service! We&apos;ve successfully
+        Thank you for submitting your vendor application to Infinia Transfers! We&apos;ve successfully
         received your application and wanted to confirm receipt.
       </Text>
 
@@ -72,7 +72,7 @@ export const VendorApplicationReceivedEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

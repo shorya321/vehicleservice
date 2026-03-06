@@ -53,14 +53,16 @@ interface VerifyPayload extends SignPayload {
   nonce: string
 }
 
-export function verifyBookingSignature(payload: VerifyPayload): {
+export function verifyBookingSignature(payload: VerifyPayload, options?: { skipTtl?: boolean }): {
   valid: boolean
   reason?: string
 } {
-  // Check TTL
-  const age = Date.now() - payload.timestamp
-  if (age > SIGNATURE_TTL_MS) {
-    return { valid: false, reason: 'Signature expired' }
+  // Check TTL unless explicitly skipped (e.g. at payment confirmation where freshness was already validated)
+  if (!options?.skipTtl) {
+    const age = Date.now() - payload.timestamp
+    if (age > SIGNATURE_TTL_MS) {
+      return { valid: false, reason: 'Signature expired' }
+    }
   }
 
   // Recompute expected signature
@@ -137,13 +139,15 @@ interface VerifyBusinessQuotePayload extends BusinessQuotePayload {
   nonce: string;
 }
 
-export function verifyBusinessQuoteSignature(payload: VerifyBusinessQuotePayload): {
+export function verifyBusinessQuoteSignature(payload: VerifyBusinessQuotePayload, options?: { skipTtl?: boolean }): {
   valid: boolean;
   reason?: string;
 } {
-  const age = Date.now() - payload.timestamp
-  if (age > SIGNATURE_TTL_MS) {
-    return { valid: false, reason: 'Signature expired' }
+  if (!options?.skipTtl) {
+    const age = Date.now() - payload.timestamp
+    if (age > SIGNATURE_TTL_MS) {
+      return { valid: false, reason: 'Signature expired' }
+    }
   }
 
   const message = [

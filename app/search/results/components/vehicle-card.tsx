@@ -89,7 +89,7 @@ export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: Vehic
                   {formatPrice(vehicle.originalPrice, currentCurrency, exchangeRates)}
                 </div>
               )}
-              <div className="font-serif text-3xl font-bold text-luxury-gold">
+              <div className="text-2xl font-semibold text-luxury-gold">
                 {formatPrice(vehicle.price, currentCurrency, exchangeRates)}
               </div>
               <div className="text-xs text-luxury-lightGray/80 uppercase tracking-wider">

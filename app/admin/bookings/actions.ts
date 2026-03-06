@@ -579,11 +579,15 @@ export async function getBookingStats() {
   }
 }
 
-export async function exportBookingsToCSV(filters: BookingFilters = {}) {
-  const { bookings } = await getBookings({ ...filters, limit: 10000 })
-  
+export async function exportBookingsToCSV(bookingIds: string[]) {
+  const { bookings } = await getBookings({ limit: 10000 })
+
+  // Filter to only selected bookings
+  const selectedBookings = bookings.filter((b: any) => bookingIds.includes(b.id))
+
   const headers = [
     'Booking Number',
+    'Booking Type',
     'Customer Name',
     'Customer Email',
     'Customer Phone',
@@ -599,37 +603,41 @@ export async function exportBookingsToCSV(filters: BookingFilters = {}) {
     'Total Price',
     'Booking Status',
     'Payment Status',
+    'Vendor',
     'Created At'
   ]
-  
-  const rows = bookings.map(booking => {
+
+  const rows = selectedBookings.map((booking: any) => {
     const pickupDate = new Date(booking.pickup_datetime)
+    const assignment = booking.booking_assignments?.[0]
     return [
       booking.booking_number,
-      booking.customer?.full_name || '',
-      booking.customer?.email || '',
-      booking.customer?.phone || '',
+      booking.bookingType || 'customer',
+      booking.customer_name || '',
+      booking.customer_email || '',
+      booking.customer_phone || '',
       pickupDate.toLocaleDateString(),
       pickupDate.toLocaleTimeString(),
       booking.pickup_address,
       booking.dropoff_address,
-      booking.vehicle_type?.name || '',
+      booking.vehicle_types?.name || '',
       booking.passenger_count,
       booking.luggage_count || 0,
       booking.base_price,
       booking.amenities_price || 0,
       booking.total_price,
       booking.booking_status,
-      booking.payment_status,
+      booking.payment_status || '',
+      assignment?.vendor?.business_name || '',
       new Date(booking.created_at).toLocaleString()
     ]
   })
-  
+
   const csv = [
     headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
   ].join('\n')
-  
+
   return csv
 }
 

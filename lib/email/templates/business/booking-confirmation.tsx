@@ -120,12 +120,12 @@ export const BusinessBookingConfirmationEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        Thank you for using Vehicle Service!
+        Thank you for using Infinia Transfers!
         <br />
         <br />
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

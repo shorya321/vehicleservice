@@ -256,3 +256,37 @@ export async function getAddonCategories() {
   const categories = Array.from(new Set(data?.map(d => d.category) || []))
   return categories
 }
+
+export async function bulkDeleteAddons(ids: string[]) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('addons')
+    .delete()
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/addons')
+  return { count: ids.length }
+}
+
+export async function bulkToggleAddonStatus(ids: string[], isActive: boolean) {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('addons')
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/addons')
+  return { count: ids.length }
+}

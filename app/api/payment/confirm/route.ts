@@ -6,6 +6,8 @@ import { sendBookingConfirmationEmail } from '@/lib/email/services/booking-email
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails'
 import { getAdminEmail, getAppUrl } from '@/lib/email/config'
 import { verifyBookingSignature, verifyPaymentAmount } from '@/lib/security/booking-hmac'
+import { convertAmount } from '@/lib/currency/format'
+import { CURRENCY_COOKIE_NAME, type ExchangeRatesMap } from '@/lib/currency/types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
         signature: booking.price_signature,
         timestamp: Number(booking.price_signature_timestamp),
         nonce: booking.price_signature_nonce,
-      })
+      }, { skipTtl: true })
 
       if (!hmacResult.valid) {
         console.error('SECURITY ALERT: HMAC re-verification failed at payment confirmation', {
@@ -133,10 +135,10 @@ export async function POST(request: NextRequest) {
         .eq('is_primary', true)
         .single()
 
-      // Fetch vehicle type name
+      // Fetch vehicle type with category
       const { data: vehicleType } = await adminClient
         .from('vehicle_types')
-        .select('name')
+        .select('name, passenger_capacity, luggage_capacity, category:vehicle_categories!category_id(name)')
         .eq('id', updatedBooking.vehicle_type_id)
         .single()
 
@@ -161,7 +163,76 @@ export async function POST(request: NextRequest) {
       const pickupTime = pickupDatetime.toLocaleTimeString('en-US', {
         hour: '2-digit', minute: '2-digit',
       })
-      const currency = updatedBooking.currency || 'AED'
+      // Determine user's selected currency from cookie
+      const userCurrency = request.cookies.get(CURRENCY_COOKIE_NAME)?.value || 'AED'
+      const aedAmount = updatedBooking.total_price
+
+      // Fetch exchange rates for currency conversion
+      let emailTotalAmount = aedAmount
+      let emailCurrency = 'AED'
+      let emailOriginalAmount: number | undefined
+      let emailOriginalCurrency: string | undefined
+      let exchangeRates: ExchangeRatesMap | null = null
+
+      if (userCurrency !== 'AED') {
+        const { data: rateRows } = await adminClient
+          .from('exchange_rates')
+          .select('target_currency, rate')
+          .eq('base_currency', 'AED')
+
+        if (rateRows && rateRows.length > 0) {
+          const rates: ExchangeRatesMap = { AED: 1.0 }
+          for (const row of rateRows) {
+            rates[row.target_currency] = parseFloat(String(row.rate))
+          }
+          exchangeRates = rates
+
+          emailTotalAmount = convertAmount(aedAmount, 'AED', userCurrency, rates)
+          emailCurrency = userCurrency
+          emailOriginalAmount = aedAmount
+          emailOriginalCurrency = 'AED'
+        }
+      }
+
+      // Fetch booking amenities for price breakdown
+      const { data: amenities } = await adminClient
+        .from('booking_amenities')
+        .select('amenity_type, quantity, price, addon:addons(name)')
+        .eq('booking_id', bookingId)
+
+      const amenityLabels: Record<string, string> = {
+        child_seat_infant: 'Infant Seat',
+        child_seat_booster: 'Booster Seat',
+        extra_luggage: 'Extra Luggage',
+      }
+
+      const emailExtras = (amenities || []).map((a) => {
+        const addonData = a.addon as unknown as { name: string } | null
+        const label = a.amenity_type === 'addon' && addonData
+          ? addonData.name
+          : amenityLabels[a.amenity_type] || a.amenity_type
+        return {
+          label,
+          quantity: a.quantity || 1,
+          price: a.price,
+        }
+      })
+
+      // Convert base price, amenities price, and extras to user currency
+      const aedBasePrice = updatedBooking.base_price
+      const aedAmenitiesPrice = updatedBooking.amenities_price ?? 0
+      let emailBasePrice = aedBasePrice
+      let emailAmenitiesPrice = aedAmenitiesPrice
+      let convertedExtras = emailExtras
+
+      if (emailCurrency !== 'AED' && exchangeRates) {
+        emailBasePrice = convertAmount(aedBasePrice, 'AED', emailCurrency, exchangeRates)
+        emailAmenitiesPrice = convertAmount(aedAmenitiesPrice, 'AED', emailCurrency, exchangeRates)
+        convertedExtras = emailExtras.map((e) => ({
+          ...e,
+          price: convertAmount(e.price, 'AED', emailCurrency, exchangeRates!),
+        }))
+      }
 
       // Send customer confirmation email
       if (customerEmail) {
@@ -169,16 +240,26 @@ export async function POST(request: NextRequest) {
           bookingId: updatedBooking.id,
           customerName,
           customerEmail,
-          vehicleCategory: vehicleType?.name || 'Vehicle',
+          vehicleCategory: (vehicleType?.category as { name: string } | null)?.name || 'Vehicle',
+          vehicleType: vehicleType?.name || undefined,
+          passengerCapacity: vehicleType?.passenger_capacity ?? undefined,
+          luggageCapacity: vehicleType?.luggage_capacity ?? undefined,
           pickupLocation: pickupLocation?.name || updatedBooking.pickup_address,
           dropoffLocation: dropoffLocation?.name || updatedBooking.dropoff_address,
           pickupDate,
           pickupTime,
           dropoffDate: pickupDate,
           dropoffTime: pickupTime,
-          totalAmount: updatedBooking.total_price,
-          currency,
+          totalAmount: emailTotalAmount,
+          currency: emailCurrency,
           bookingReference: updatedBooking.booking_number,
+          originalAmount: emailOriginalAmount,
+          originalCurrency: emailOriginalCurrency,
+          passengerCount: updatedBooking.passenger_count,
+          basePrice: emailBasePrice,
+          amenitiesPrice: emailAmenitiesPrice,
+          extras: convertedExtras,
+          customerNotes: updatedBooking.customer_notes ?? undefined,
         }).catch((err) => console.error('Failed to send customer confirmation email:', err))
       }
 
@@ -195,7 +276,7 @@ export async function POST(request: NextRequest) {
         dropoffLocation: dropoffLocation?.name || updatedBooking.dropoff_address,
         pickupDate,
         totalAmount: updatedBooking.total_price,
-        currency,
+        currency: 'AED',
         bookingDetailsUrl: `${appUrl}/admin/bookings`,
       }).catch((err) => console.error('Failed to send admin booking notification email:', err))
     } catch (emailError) {

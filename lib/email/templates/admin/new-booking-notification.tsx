@@ -82,7 +82,7 @@ export const NewBookingNotificationEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        Vehicle Service System
+        Infinia Transfers System
       </Text>
     </EmailLayout>
   );

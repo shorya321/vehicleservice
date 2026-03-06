@@ -11,6 +11,7 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
+import { BRAND_NAME, BRAND_ADDRESS, getBrandUrl, getUnsubscribeUrl } from '../../config';
 
 interface EmailLayoutProps {
   preview: string;
@@ -20,6 +21,8 @@ interface EmailLayoutProps {
 
 export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) => {
   const currentYear = new Date().getFullYear();
+  const brandUrl = getBrandUrl();
+  const unsubscribeUrl = getUnsubscribeUrl();
 
   return (
     <Html>
@@ -29,7 +32,7 @@ export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) =>
         <Container style={container}>
           {/* Logo/Header */}
           <Section style={header}>
-            <Heading style={h1}>Vehicle Service</Heading>
+            <Heading style={h1}>{BRAND_NAME}</Heading>
           </Section>
 
           {/* Main Content */}
@@ -41,22 +44,30 @@ export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) =>
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              © {currentYear} Vehicle Service. All rights reserved.
+              © {currentYear} {BRAND_NAME}. All rights reserved.
+            </Text>
+            <Text style={footerText}>
+              {BRAND_ADDRESS}
             </Text>
             <Text style={footerText}>
               This email was sent to you as part of your account activity.
             </Text>
             <Text style={footerLinks}>
-              <Link href="#" style={footerLink}>
+              <Link href={`${brandUrl}/privacy`} style={footerLink}>
                 Privacy Policy
               </Link>
               {' | '}
-              <Link href="#" style={footerLink}>
+              <Link href={`${brandUrl}/terms`} style={footerLink}>
                 Terms of Service
               </Link>
               {' | '}
-              <Link href="#" style={footerLink}>
+              <Link href={`${brandUrl}/contact`} style={footerLink}>
                 Contact Support
+              </Link>
+            </Text>
+            <Text style={footerLinks}>
+              <Link href={unsubscribeUrl} style={footerLink}>
+                Unsubscribe
               </Link>
             </Text>
           </Section>

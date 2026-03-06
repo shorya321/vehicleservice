@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { SearchInput } from '@/components/ui/search-input'
+import { useState, useEffect } from 'react'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -19,7 +19,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Label } from '@/components/ui/label'
-import { Filter, X, ChevronDown, CalendarIcon, CreditCard, Car, User } from 'lucide-react'
+import { Filter, X, ChevronDown, CalendarIcon, CreditCard, Car, User, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { DateRange } from 'react-day-picker'
 import { cn } from '@/lib/utils'
@@ -31,8 +31,32 @@ interface BookingFiltersProps {
 }
 
 export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFiltersProps) {
-  const [localSearch, setLocalSearch] = useState(filters.search || '')
+  const parentSearch = filters.search || ''
+  const [searchValue, setSearchValue] = useState(parentSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
+  const [prevParentSearch, setPrevParentSearch] = useState(parentSearch)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+
+  // Sync when parent clears/changes filters externally
+  if (parentSearch !== prevParentSearch) {
+    setPrevParentSearch(parentSearch)
+    setSearchValue(parentSearch)
+    setDebouncedSearch(parentSearch)
+  }
+
+  // Debounce 500ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 500)
+    return () => clearTimeout(timer)
+  }, [searchValue])
+
+  // Fire callback when debounced value changes
+  useEffect(() => {
+    const currentSearch = filters.search || ''
+    if (debouncedSearch !== currentSearch) {
+      onFiltersChange({ ...filters, search: debouncedSearch || undefined, page: 1 })
+    }
+  }, [debouncedSearch, filters, onFiltersChange])
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
     to: filters.dateTo ? new Date(filters.dateTo) : undefined,
@@ -40,10 +64,6 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   const [paymentStatus, setPaymentStatus] = useState<string>(filters.paymentStatus || 'all')
   const [vehicleTypeId, setVehicleTypeId] = useState<string>(filters.vehicleTypeId || '')
   const [customerId, setCustomerId] = useState<string>(filters.customerId || '')
-
-  const handleSearchSubmit = (value: string) => {
-    onFiltersChange({ ...filters, search: value, page: 1 })
-  }
 
   const handleStatusChange = (status: string) => {
     onFiltersChange({
@@ -62,7 +82,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   }
 
   const handleClearFilters = () => {
-    setLocalSearch('')
+    setSearchValue('')
     setDateRange(undefined)
     setPaymentStatus('all')
     setVehicleTypeId('')
@@ -129,16 +149,18 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center gap-4">
-        <SearchInput
-          placeholder="Search by booking number, customer, or location..."
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          onSearch={handleSearchSubmit}
-          className="max-w-sm"
-        />
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by booking number, customer, or location..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="pl-9"
+          />
+        </div>
         
         <Select value={filters.status || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -151,7 +173,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
         </Select>
 
         <Select value={filters.bookingType || 'all'} onValueChange={handleBookingTypeChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -260,12 +282,11 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
                     <User className="h-4 w-4 text-muted-foreground" />
                     <Label>Customer Email</Label>
                   </div>
-                  <input
+                  <Input
                     type="text"
                     value={customerId}
                     onChange={(e) => setCustomerId(e.target.value)}
                     placeholder="Filter by customer email..."
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
               </div>

@@ -15,13 +15,13 @@ interface PasswordResetEmailProps {
 export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) => {
   return (
     <EmailLayout
-      preview="Reset your password - Vehicle Service"
+      preview="Reset your password - Infinia Transfers"
       heading="Reset Your Password"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <InfoBox type="info" title="Password Reset Requested">
-        We received a request to reset the password for your Vehicle Service account.
+        We received a request to reset the password for your Infinia Transfers account.
         Follow the steps below to set a new password.
       </InfoBox>
 
@@ -59,7 +59,7 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Vehicle Service Team
+        The Infinia Transfers Team
       </Text>
     </EmailLayout>
   );

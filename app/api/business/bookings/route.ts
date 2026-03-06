@@ -114,6 +114,9 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         p_total_price: verifiedTotalPrice,
         p_customer_notes: body.customer_notes || null,
         p_reference_number: body.reference_number || null,
+        p_price_signature: body.price_signature,
+        p_price_signature_timestamp: body.price_signature_timestamp,
+        p_price_signature_nonce: body.price_signature_nonce,
       }
     );
 
@@ -128,6 +131,11 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       // Check for account status errors
       if (error.message.includes('not active')) {
         return apiError('Business account is not active. Contact support.', 403);
+      }
+
+      // Check for nonce replay (duplicate signature usage)
+      if (error.message.includes('idx_business_bookings_price_signature_nonce')) {
+        return apiError('This booking quote has already been used. Please get a new quote.', 409);
       }
 
       // Check for spending limit exceeded errors and send notifications

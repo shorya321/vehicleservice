@@ -11,7 +11,8 @@ import { GuaranteeCard } from './components/guarantee-card'
 import { PublicHeader } from '@/components/layout/public-header'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { Calendar, Clock, Users, Luggage, HelpCircle, Info } from 'lucide-react'
+import { Calendar, Clock, Users, Luggage, HelpCircle } from 'lucide-react'
+import { BookingSummaryPrices } from './components/booking-summary-prices'
 import { format } from 'date-fns'
 import {
   getEnabledCurrencies,
@@ -32,7 +33,6 @@ export const metadata: Metadata = {
 interface PaymentPageProps {
   searchParams: Promise<{
     booking?: string
-    amount?: string
   }>
 }
 
@@ -199,9 +199,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   // Get user's currency preference from cookie
   const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
   const currentCurrency = currencyCookie?.value || defaultCurrency
-  const isConverted = currentCurrency !== 'AED'
-
-  // Helper function to format price in user's currency
+  // Helper function to format price in user's currency (used in error state)
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
 
   // Get booking details
@@ -315,8 +313,6 @@ STRIPE_SECRET_KEY=sk_test_...`}
       allCurrencies={allCurrencies}
     >
     <div className="min-h-screen bg-[#050506] flex flex-col">
-      {/* Noise Texture Overlay */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20256%20256%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noise%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.9%22%20numOctaves%3D%224%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noise)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.03] pointer-events-none z-[9999]" />
 
       {/* Ambient Glow */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(198,170,136,0.04)_0%,transparent_70%)] pointer-events-none z-0" />
@@ -431,41 +427,11 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     )}
                   </div>
 
-                  {/* Price Breakdown */}
-                  <div className="space-y-2 pb-5">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[#b8b4ae]">Base Fare</span>
-                      <span className="text-[#f8f6f3]">{formatUserPrice(booking.base_price)}</span>
-                    </div>
-                    {booking.amenities_price > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-[#b8b4ae]">Additional Services</span>
-                        <span className="text-[#f8f6f3]">{formatUserPrice(booking.amenities_price)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[#b8b4ae]">Meet & Greet</span>
-                      <span className="text-[#f8f6f3]">Free</span>
-                    </div>
-                  </div>
-
-                  {/* Total */}
-                  <div className="flex justify-between items-center pt-5 border-t border-[rgba(198,170,136,0.15)]">
-                    <span className="text-[0.9375rem] text-[#f8f6f3]">Total</span>
-                    <span className="font-serif text-2xl font-medium bg-gradient-to-r from-[#e8d9c5] to-[#c6aa88] bg-clip-text text-transparent">
-                      {formatUserPrice(booking.total_price)}
-                    </span>
-                  </div>
-
-                  {/* Currency Notice */}
-                  {isConverted && (
-                    <div className="flex items-start gap-2 pt-3 text-xs text-[#7a7672]">
-                      <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                      <span>
-                        Price shown in {currentCurrency}. Payment will be processed in AED ({formatPrice(booking.total_price, 'AED', rates)}).
-                      </span>
-                    </div>
-                  )}
+                  <BookingSummaryPrices
+                    basePrice={booking.base_price}
+                    amenitiesPrice={booking.amenities_price ?? 0}
+                    totalPrice={booking.total_price}
+                  />
                 </div>
 
                 {/* Summary Footer */}

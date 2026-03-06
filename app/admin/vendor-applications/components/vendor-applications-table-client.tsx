@@ -32,9 +32,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Eye, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Eye, Trash2, ClipboardList } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { deleteVendorApplication } from '../actions'
+import { BulkActionsBar } from './bulk-actions-bar'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface VendorApplicationsTableClientProps {
   applications: Array<{
@@ -62,6 +65,24 @@ export function VendorApplicationsTableClient({
 }: VendorApplicationsTableClientProps) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(applications.map(a => a.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectApplication = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds)
+    if (checked) { newSelected.add(id) } else { newSelected.delete(id) }
+    setSelectedIds(newSelected)
+  }
+
+  const isAllSelected = applications.length > 0 && selectedIds.size === applications.length
+  const isIndeterminate = selectedIds.size > 0 && !isAllSelected
 
   const handleDelete = async () => {
     if (!deletingId) return
@@ -78,10 +99,26 @@ export function VendorApplicationsTableClient({
 
   return (
     <>
-      <div className="border rounded-lg">
+      <div className="space-y-4">
+        {selectedIds.size > 0 && (
+          <BulkActionsBar
+            selectedCount={selectedIds.size}
+            selectedIds={Array.from(selectedIds)}
+            onClearSelection={() => setSelectedIds(new Set())}
+          />
+        )}
+        <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead>Business Name</TableHead>
               <TableHead>Registration No.</TableHead>
               <TableHead>Applicant</TableHead>
@@ -95,15 +132,25 @@ export function VendorApplicationsTableClient({
           <TableBody>
             {applications.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  <div className="text-muted-foreground">
-                    No vendor applications found
-                  </div>
+                <TableCell colSpan={9} className="h-[400px] p-0">
+                  <EmptyState
+                    icon={ClipboardList}
+                    title="No Applications Found"
+                    description="There are no vendor applications matching your current filters. Try adjusting your search criteria."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               applications.map((application) => (
                 <TableRow key={application.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(application.id)}
+                      onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
+                      aria-label="Select application"
+                      className="translate-y-[2px]"
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     {application.business_name}
                   </TableCell>
@@ -191,6 +238,7 @@ export function VendorApplicationsTableClient({
             )}
           </TableBody>
         </Table>
+      </div>
       </div>
 
       <AlertDialog
