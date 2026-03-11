@@ -46,6 +46,7 @@ export function CheckoutWrapper({
 }: CheckoutWrapperProps) {
   const [infantSeats, setInfantSeats] = useState(0)
   const [boosterSeats, setBoosterSeats] = useState(0)
+  const [currentPassengers, setCurrentPassengers] = useState(initialPassengers)
   const [currentLuggage, setCurrentLuggage] = useState(initialLuggage)
   const [pickupDate, setPickupDate] = useState(initialDate)
   const [pickupTime, setPickupTime] = useState(initialTime)
@@ -70,6 +71,10 @@ export function CheckoutWrapper({
     setPickupTime(time)
   }
 
+  const handlePassengersChange = useCallback((count: number) => {
+    setCurrentPassengers(count)
+  }, [])
+
   const handleAddonsChange = useCallback((addons: OrderSummaryAddon[]) => {
     setSelectedAddons(addons)
   }, [])
@@ -79,7 +84,7 @@ export function CheckoutWrapper({
   }, [])
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-12">
       {/* Main Booking Form */}
       <div className="flex-1 min-w-0">
         <BookingForm
@@ -93,6 +98,7 @@ export function CheckoutWrapper({
           profile={profile}
           addonsByCategory={addonsByCategory}
           onExtrasChange={handleExtrasChange}
+          onPassengersChange={handlePassengersChange}
           onDateTimeChange={handleDateTimeChange}
           onAddonsChange={handleAddonsChange}
           onFormReady={handleFormReady}
@@ -105,7 +111,7 @@ export function CheckoutWrapper({
           <OrderSummary
           route={route}
           vehicleType={vehicleType}
-          passengers={initialPassengers}
+          passengers={currentPassengers}
           luggage={currentLuggage}
           infantSeats={infantSeats}
           boosterSeats={boosterSeats}

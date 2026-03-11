@@ -68,11 +68,11 @@ export function JoinCommunity() {
               transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true }}
             >
-              <Link href="/register" className="btn btn-primary btn-lg">
+              <Link href="/register" className="btn btn-primary">
                 Join Now
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/how-it-works" className="btn btn-secondary btn-lg">
+              <Link href="/how-it-works" className="btn btn-secondary">
                 Learn More
               </Link>
             </motion.div>

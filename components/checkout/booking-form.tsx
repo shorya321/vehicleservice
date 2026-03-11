@@ -55,6 +55,7 @@ interface BookingFormProps {
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
   onExtrasChange?: (infantSeats: number, boosterSeats: number, luggage: number) => void
+  onPassengersChange?: (passengers: number) => void
   onDateTimeChange?: (date: string, time: string) => void
   onAddonsChange?: (addons: OrderSummaryAddon[]) => void
   onFormReady?: (formMethods: {
@@ -88,6 +89,7 @@ export function BookingForm({
   profile,
   addonsByCategory,
   onExtrasChange,
+  onPassengersChange,
   onDateTimeChange,
   onAddonsChange,
   onFormReady
@@ -129,6 +131,13 @@ export function BookingForm({
   const extraLuggageCost = extraLuggageCount * 15
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
   const totalPrice = basePrice + extraLuggageCost + addonsCost
+
+  // Notify parent of passenger count changes
+  useEffect(() => {
+    if (onPassengersChange) {
+      onPassengersChange(passengers)
+    }
+  }, [passengers, onPassengersChange])
 
   // Notify parent of extras changes
   useEffect(() => {
@@ -209,7 +218,7 @@ export function BookingForm({
   }, [loading, agreeToTerms, onFormReady, handleSubmit, onSubmit, setValue])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-8">
       {/* Transfer Details */}
       <TransferDetailsSection
         form={form}

@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { motion } from 'motion/react'
-import { Button } from '@/components/ui/button'
 import * as LucideIcons from 'lucide-react'
 import { Check, Minus, Plus, Package } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { useCurrency } from '@/lib/currency/context'
+import { formatPrice } from '@/lib/currency/format'
 import { VehicleTypeDetails, CheckoutAddonsByCategory, CheckoutAddon } from '@/app/checkout/actions'
 import { cn } from '@/lib/utils'
 
@@ -48,6 +48,8 @@ export function AdditionalServicesSection({
   addonsByCategory
 }: AdditionalServicesSectionProps) {
   const { setValue } = form
+  const { currentCurrency, exchangeRates } = useCurrency()
+  const formatAddonPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
 
   // Track selected addons
   const [selectedAddons, setSelectedAddons] = useState<Map<string, SelectedCheckoutAddon>>(new Map())
@@ -87,12 +89,6 @@ export function AdditionalServicesSection({
     setSelectedAddons(newSelected)
   }
 
-  // Calculate total addons price
-  const totalAddonsPrice = Array.from(selectedAddons.values()).reduce(
-    (sum, addon) => sum + addon.total_price,
-    0
-  )
-
   // Sync selected addons to form
   useEffect(() => {
     setValue('selectedAddons', Array.from(selectedAddons.values()))
@@ -118,11 +114,16 @@ export function AdditionalServicesSection({
       </div>
 
       {/* Section Content */}
-      <div className="checkout-section-content space-y-6">
+      <div className="checkout-section-content space-y-8">
         {/* Dynamic Addon Categories */}
         {addonsByCategory.map((category) => (
-          <div key={category.category} className="space-y-3">
-            <h4 className="text-sm font-medium text-[#b8b4ae]">{category.category}</h4>
+          <div key={category.category} className="space-y-4">
+            <div className="checkout-category-header">
+              <span className="checkout-category-title">{category.category}</span>
+              <span className="checkout-category-count">
+                {category.addons.length} {category.addons.length === 1 ? 'option' : 'options'}
+              </span>
+            </div>
             <div className="checkout-services-grid">
               {category.addons.map((addon) => {
                 const selected = getSelectedAddon(addon.id)
@@ -131,54 +132,54 @@ export function AdditionalServicesSection({
                 const isFree = addon.price === 0
 
                 if (addon.pricing_type === 'per_unit') {
-                  // Per-unit addon with quantity controls
+                  // Per-unit addon with quantity controls (no checkbox)
                   return (
                     <div
                       key={addon.id}
                       className={cn(
-                        "checkout-service-card",
+                        "checkout-service-card checkout-service-card--per-unit",
                         isSelected && "selected"
                       )}
                     >
-                      <div className="checkout-service-checkbox">
-                        {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
+                      <div className="checkout-service-card-header">
+                        <div className="checkout-service-icon">
+                          <AddonIcon iconName={addon.icon} />
+                        </div>
+                        <div className="checkout-service-content">
+                          <p className="checkout-service-name">{addon.name}</p>
+                          <p className="checkout-service-description">
+                            {addon.description || `Up to ${addon.max_quantity} available`}
+                          </p>
+                        </div>
+                        <span className="checkout-service-price">
+                          {formatAddonPrice(addon.price)}<span className="checkout-service-price-unit">/ea</span>
+                        </span>
                       </div>
-                      <div className="checkout-service-icon">
-                        <AddonIcon iconName={addon.icon} />
-                      </div>
-                      <div className="checkout-service-content">
-                        <p className="checkout-service-name">{addon.name}</p>
-                        <p className="checkout-service-description">
-                          {addon.description || `Up to ${addon.max_quantity} available`}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <Button
+                      <div className="checkout-service-card-controls">
+                        <div className="checkout-quantity-controls">
+                          <button
                             type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                            className="checkout-quantity-btn"
                             onClick={() => updateQuantity(addon, quantity - 1)}
                             disabled={quantity === 0}
                           >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="text-sm text-[#f8f6f3] w-5 text-center">{quantity}</span>
-                          <Button
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="checkout-quantity-value">{quantity}</span>
+                          <button
                             type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-[#f8f6f3] hover:bg-[#c6aa88]/20"
+                            className="checkout-quantity-btn"
                             onClick={() => updateQuantity(addon, quantity + 1)}
                             disabled={quantity >= addon.max_quantity}
                           >
-                            <Plus className="h-3 w-3" />
-                          </Button>
+                            <Plus className="h-4 w-4" />
+                          </button>
                         </div>
-                        <span className="checkout-service-price">
-                          {formatCurrency(addon.price)}/ea
-                        </span>
+                        {isSelected && (
+                          <span className="checkout-service-line-total">
+                            {formatAddonPrice(addon.price * quantity)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )
@@ -190,9 +191,19 @@ export function AdditionalServicesSection({
                     key={addon.id}
                     className={cn(
                       "checkout-service-card",
+                      isFree && "checkout-service-card--free",
                       isSelected && "selected"
                     )}
                     onClick={() => toggleAddon(addon)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggleAddon(addon)
+                      }
+                    }}
+                    aria-pressed={isSelected}
                   >
                     <div className="checkout-service-checkbox">
                       {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
@@ -204,18 +215,20 @@ export function AdditionalServicesSection({
                       <p className="checkout-service-name">{addon.name}</p>
                       <p className="checkout-service-description">{addon.description}</p>
                     </div>
-                    <span className={cn(
-                      "checkout-service-price",
-                      isFree && "checkout-service-price-free"
-                    )}>
-                      {isFree ? 'Free' : `+${formatCurrency(addon.price)}`}
-                    </span>
+                    {isFree ? (
+                      <span className="checkout-service-badge-free">Free</span>
+                    ) : (
+                      <span className="checkout-service-price">
+                        +{formatAddonPrice(addon.price)}
+                      </span>
+                    )}
                   </div>
                 )
               })}
             </div>
           </div>
         ))}
+
       </div>
     </motion.div>
   )

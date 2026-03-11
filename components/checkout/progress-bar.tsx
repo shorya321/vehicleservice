@@ -18,7 +18,7 @@ const steps = [
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
     <div
-      className="bg-[#0a0a0b]/80 backdrop-blur-md border-b border-[#c6aa88]/10"
+      className="checkout-progress-wrapper bg-[#0a0a0b]/80 backdrop-blur-md border-b border-[#c6aa88]/10"
       role="progressbar"
       aria-valuenow={currentStep}
       aria-valuemin={1}

@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { CheckoutLoginContent } from './components/checkout-login-content'
 
@@ -18,6 +20,13 @@ interface CheckoutLoginPageProps {
 export default async function CheckoutLoginPage({ searchParams }: CheckoutLoginPageProps) {
   const params = await searchParams
   const returnUrl = params.returnUrl || '/checkout'
+
+  // Redirect authenticated users to checkout
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    redirect(decodeURIComponent(returnUrl))
+  }
 
   return (
     <PublicLayout>

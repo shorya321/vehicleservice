@@ -66,7 +66,7 @@ export function FAQ() {
                 pre-booked vehicle, and fixed-price journey ensure a seamless experience from start to finish.
               </p>
             </div>
-            <Link href="#contact" className="btn btn-secondary mt-6">
+            <Link href="/contact" className="btn btn-secondary mt-6">
               Contact Support
             </Link>
           </motion.div>

@@ -173,7 +173,7 @@ export function OrderSummary({
           </div>
           <div className="checkout-summary-detail">
             <Briefcase className="h-4 w-4 text-[#c6aa88]" />
-            <span>{luggage} bags</span>
+            <span>{vehicleType.luggage_capacity} luggage</span>
           </div>
         </div>
 

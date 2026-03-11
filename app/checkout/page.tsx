@@ -162,7 +162,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         {/* Ambient Background Animations */}
         <AmbientBackground />
 
-        <div className="luxury-container py-12 md:py-16 lg:py-20 relative z-10">
+        <div className="luxury-container py-8 md:py-16 lg:py-20 relative z-10">
           <CheckoutHeading />
 
           <CheckoutWrapper

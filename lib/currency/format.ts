@@ -126,7 +126,7 @@ export function formatAmount(
   }
 ): string {
   const meta = CURRENCY_METADATA[currencyCode] || CURRENCY_METADATA.AED
-  const { showCode = false, locale = 'en-US' } = options || {}
+  const { locale = 'en-US' } = options || {}
 
   // Handle invalid amounts
   if (amount === null || amount === undefined || isNaN(amount)) {
@@ -139,18 +139,8 @@ export function formatAmount(
     maximumFractionDigits: meta.decimalPlaces,
   }).format(amount)
 
-  // Build final string
-  let result: string
-  if (meta.symbolPosition === 'after') {
-    result = `${formattedNumber} ${meta.symbol}`
-  } else {
-    result = `${meta.symbol}${formattedNumber}`
-  }
-
-  // Optionally append currency code
-  if (showCode) {
-    result = `${result} ${currencyCode}`
-  }
+  // Build final string: always use {amount} {CODE} format
+  const result = `${formattedNumber} ${currencyCode}`
 
   return result
 }

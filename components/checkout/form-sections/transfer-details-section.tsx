@@ -100,7 +100,7 @@ export function TransferDetailsSection({
         {/* Vehicle Selected Card */}
         <div className="checkout-vehicle-selected">
           {vehicleType.image_url && (
-            <div className="relative w-[140px] h-[90px] flex-shrink-0 rounded-lg overflow-hidden bg-[#161514]">
+            <div className="relative w-full h-[140px] sm:w-[140px] sm:h-[90px] flex-shrink-0 rounded-lg overflow-hidden bg-[#161514]">
               <Image
                 src={vehicleType.image_url}
                 alt={vehicleType.name}

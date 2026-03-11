@@ -1,7 +1,5 @@
 'use client'
 
-import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { motion, useReducedMotion } from 'motion/react'
 import { BookmarkCheck, History, Gift, HelpCircle, MapPin, ArrowRight, Calendar, Users } from 'lucide-react'
 import { CheckoutAuthForm } from './checkout-auth-form'
@@ -12,10 +10,7 @@ interface CheckoutLoginContentProps {
   returnUrl: string
 }
 
-function MobileBookingSummary() {
-  const searchParams = useSearchParams()
-
-  const returnUrl = searchParams.get('returnUrl') || ''
+function MobileBookingSummary({ returnUrl }: { returnUrl: string }) {
   const decoded = decodeURIComponent(returnUrl)
   const params = new URLSearchParams(decoded.split('?')[1] || '')
 
@@ -73,7 +68,9 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
   return (
     <>
       {/* Progress Bar - Step 2 (Account) */}
-      <ProgressBar currentStep={2} />
+      <div className="lg:ml-[45%]">
+        <ProgressBar currentStep={2} />
+      </div>
 
       <div className="checkout-split-screen">
         {/* Left Panel Spacer - maintains grid space for fixed hero */}
@@ -83,40 +80,38 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
         <CheckoutHeroPanel />
 
         {/* Right Panel - Auth Form */}
-        <section className="relative flex flex-col items-center px-6 py-12 md:px-12">
-          {/* Ambient Glow - disabled for reduced motion */}
-          {!prefersReducedMotion && (
-            <motion.div
-              className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl pointer-events-none"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-          )}
+        <section className="relative flex flex-col items-center justify-start lg:justify-center px-5 py-8 sm:px-8 sm:py-12 md:px-12 lg:px-16 min-h-[calc(100vh-140px)] overflow-y-auto">
+          {/* Ambient Glow - static for reduced motion */}
+          <motion.div
+            className="absolute top-1/4 right-1/4 w-96 h-96 bg-luxury-gold/5 rounded-full blur-3xl pointer-events-none"
+            animate={prefersReducedMotion ? { scale: 1, opacity: 0.3 } : {
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={prefersReducedMotion ? undefined : {
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
 
           <div className="w-full max-w-lg relative z-10">
             {/* Page Header */}
             <motion.header
-              className="text-center mb-8"
+              className="text-center mb-6 md:mb-8"
               initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
               animate={prefersReducedMotion ? false : { opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               {...motionProps}
             >
-              <h1 className="font-serif text-4xl md:text-5xl font-light mb-4 text-luxury-pearl">
+              <h1 className="font-serif text-[clamp(1.75rem,4vw,2.75rem)] font-light mb-4 text-luxury-pearl">
                 Secure <span className="gold-text">Checkout</span>
               </h1>
-              <p className="text-luxury-textSecondary text-lg max-w-md mx-auto">
+              <p className="text-luxury-textSecondary text-sm sm:text-base max-w-md mx-auto">
                 Log in to your account or create one to continue with your booking
               </p>
               {/* Decorative Divider */}
-              <div className="flex items-center justify-center gap-4 mt-6">
+              <div className="flex items-center justify-center gap-4 mt-4 md:mt-6">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent via-luxury-gold to-transparent" />
                 <div className="w-2 h-2 border border-luxury-gold rotate-45" />
                 <div className="h-px w-12 bg-gradient-to-r from-transparent via-luxury-gold to-transparent" />
@@ -124,18 +119,14 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
             </motion.header>
 
             {/* Mobile Booking Summary */}
-            <Suspense fallback={null}>
-              <MobileBookingSummary />
-            </Suspense>
+            <MobileBookingSummary returnUrl={returnUrl} />
 
             {/* Auth Form */}
-            <Suspense fallback={<div className="h-96 animate-pulse bg-luxury-charcoal/50 rounded-2xl" />}>
-              <CheckoutAuthForm returnUrl={returnUrl} />
-            </Suspense>
+            <CheckoutAuthForm returnUrl={returnUrl} />
 
             {/* Benefits Section */}
             <motion.div
-              className="mt-8"
+              className="mt-6 sm:mt-8"
               initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
               animate={prefersReducedMotion ? false : { opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -145,7 +136,7 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
                 <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-5 border-b border-luxury-gold/10">
                   <h3 className="font-serif text-xl text-luxury-pearl">Why Create an Account?</h3>
                 </div>
-                <div className="p-6 space-y-5">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                   {[
                     {
                       icon: BookmarkCheck,

@@ -199,7 +199,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
               {results.type === 'zone' && results.zone ? 'Base Price' : 'Starting from'}
             </span>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-luxury-gold/15 to-luxury-gold/5 border border-luxury-gold/30 rounded-lg">
-              <span className="text-xl md:text-2xl font-semibold bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent">
+              <span className="text-base md:text-lg font-semibold bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent">
                 {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
               </span>
             </div>

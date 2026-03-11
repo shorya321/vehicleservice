@@ -16,11 +16,10 @@ export function formatAmountForDisplay(
   currency: string = CURRENCY
 ): string {
   const numberFormat = new Intl.NumberFormat(['en-US'], {
-    style: 'currency',
-    currency: currency,
-    currencyDisplay: 'symbol',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })
-  return numberFormat.format(amount)
+  return `${numberFormat.format(amount)} ${currency.toUpperCase()}`
 }
 
 // Format amount for Stripe (convert to cents)

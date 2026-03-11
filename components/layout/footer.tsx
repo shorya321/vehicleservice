@@ -11,7 +11,7 @@ const footerLinkCategories = [
       { name: "Services", href: "#services" },
       { name: "Fleet", href: "#fleet" },
       { name: "FAQ", href: "#faq" },
-      { name: "Contact", href: "#contact" },
+      { name: "Contact", href: "/contact" },
     ],
   },
   {

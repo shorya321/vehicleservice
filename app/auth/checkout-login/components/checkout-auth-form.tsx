@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Mail, Lock, User, Phone, Car, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
@@ -162,21 +161,21 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
 
   return (
     <motion.div
-      className="luxury-card auth-card-luxury backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-2xl p-8 md:p-10"
+      className="luxury-card auth-card-luxury backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-2xl p-6 sm:p-8 md:p-10"
       {...cardMotionProps}
     >
       <div className="relative z-10">
         {/* Logo with Spring Animation */}
         <motion.div
-          className="flex items-center justify-center mb-6"
+          className="flex items-center justify-center mb-4 sm:mb-6"
           {...logoMotionProps}
         >
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-luxury-gold/20 to-luxury-gold/5 backdrop-blur-sm border border-luxury-gold/30 flex items-center justify-center">
-            <Car className="h-8 w-8 text-luxury-gold" aria-hidden="true" />
+          <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-luxury-gold/20 to-luxury-gold/5 backdrop-blur-sm border border-luxury-gold/30 flex items-center justify-center">
+            <Car className="h-6 w-6 sm:h-8 sm:w-8 text-luxury-gold" aria-hidden="true" />
           </div>
         </motion.div>
 
-        <h2 className="font-serif text-2xl md:text-3xl text-luxury-pearl mb-2 text-center">
+        <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-luxury-pearl mb-2 text-center">
           Complete Your Booking
         </h2>
         <p className="text-luxury-lightGray text-sm text-center mb-6">
@@ -230,7 +229,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     onChange={(e) => setLoginEmail(e.target.value)}
                     onBlur={(e) => handleLoginBlur('email', e.target.value)}
                     required
-                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                     disabled={loading}
                     aria-invalid={!!loginFieldErrors.email}
                     aria-describedby={loginFieldErrors.email ? 'login-email-error' : undefined}
@@ -254,7 +253,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
-                    className="h-14 pl-12 pr-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    className="h-12 sm:h-14 pl-12 pr-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                     disabled={loading}
                   />
                   <button
@@ -288,7 +287,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
 
               <Button
                 type="submit"
-                className="w-full h-14 bg-gradient-to-br from-luxury-gold to-luxury-goldDeep hover:from-luxury-goldDeep hover:to-luxury-gold text-luxury-void font-sans uppercase tracking-[0.1em] font-semibold transition-all duration-300 active:scale-[0.98] rounded-xl shadow-[0_10px_30px_-10px_rgba(198,170,136,0.4)] hover:shadow-[0_15px_40px_-10px_rgba(198,170,136,0.5)]"
+                className="w-full h-12 sm:h-14 bg-gradient-to-br from-luxury-gold to-luxury-goldDeep hover:from-luxury-goldDeep hover:to-luxury-gold text-luxury-void font-sans uppercase tracking-[0.1em] font-semibold transition-all duration-300 active:scale-[0.98] rounded-xl shadow-[0_10px_30px_-10px_rgba(198,170,136,0.4)] hover:shadow-[0_15px_40px_-10px_rgba(198,170,136,0.5)]"
                 disabled={loading}
               >
                 {loading ? (
@@ -310,7 +309,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
           {/* Register Tab */}
           <TabsContent value="register">
             <form onSubmit={handleRegister} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first-name" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
                     First Name
@@ -324,7 +323,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       required
-                      className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                      className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                       disabled={loading}
                     />
                   </div>
@@ -343,7 +342,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       required
-                      className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                      className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                       disabled={loading}
                     />
                   </div>
@@ -364,7 +363,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     onBlur={(e) => handleRegisterBlur('email', e.target.value)}
                     required
-                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                     disabled={loading}
                     aria-invalid={!!registerFieldErrors.email}
                     aria-describedby={registerFieldErrors.email ? 'register-email-error' : undefined}
@@ -387,7 +386,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     placeholder="+1 234 567 8900"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                     disabled={loading}
                   />
                 </div>
@@ -408,7 +407,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                     onChange={(e) => setRegisterPassword(e.target.value)}
                     onBlur={(e) => handleRegisterBlur('password', e.target.value)}
                     required
-                    className="h-14 pl-12 pr-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    className="h-12 sm:h-14 pl-12 pr-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
                     disabled={loading}
                     aria-invalid={!!registerFieldErrors.password}
                     aria-describedby="register-password-hint"
@@ -432,7 +431,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
 
               <Button
                 type="submit"
-                className="w-full h-14 bg-gradient-to-br from-luxury-gold to-luxury-goldDeep hover:from-luxury-goldDeep hover:to-luxury-gold text-luxury-void font-sans uppercase tracking-[0.1em] font-semibold transition-all duration-300 active:scale-[0.98] rounded-xl shadow-[0_10px_30px_-10px_rgba(198,170,136,0.4)] hover:shadow-[0_15px_40px_-10px_rgba(198,170,136,0.5)]"
+                className="w-full h-12 sm:h-14 bg-gradient-to-br from-luxury-gold to-luxury-goldDeep hover:from-luxury-goldDeep hover:to-luxury-gold text-luxury-void font-sans uppercase tracking-[0.1em] font-semibold transition-all duration-300 active:scale-[0.98] rounded-xl shadow-[0_10px_30px_-10px_rgba(198,170,136,0.4)] hover:shadow-[0_15px_40px_-10px_rgba(198,170,136,0.5)]"
                 disabled={loading}
               >
                 {loading ? (
@@ -462,21 +461,6 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
           </TabsContent>
         </Tabs>
 
-        {/* Continue as Guest - Always visible regardless of active tab */}
-        <Separator className="my-6 border-luxury-gold/20" />
-        <div className="text-center">
-          <p className="text-sm text-luxury-lightGray mb-3">
-            Don&apos;t want to create an account?
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push(decodeURIComponent(returnUrl))}
-            className="w-full h-12 border-luxury-gold/30 text-luxury-lightGray hover:bg-luxury-gold/10 hover:text-luxury-pearl uppercase tracking-[0.1em] font-sans rounded-xl"
-          >
-            Continue as Guest
-            <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-          </Button>
-        </div>
       </div>
     </motion.div>
   )
