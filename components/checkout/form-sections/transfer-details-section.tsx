@@ -202,7 +202,7 @@ export function TransferDetailsSection({
             >
               -
             </Button>
-            <span className="w-20 text-center font-serif text-2xl text-[#f8f6f3]">
+            <span className="w-20 text-center font-serif text-[22px] font-semibold text-[#f8f6f3]">
               {passengers}
             </span>
             <Button

@@ -173,7 +173,9 @@
       "Bash(npx playwright install:*)",
       "Bash(npx -y playwright install:*)",
       "Bash(npx agent-browser:*)",
-      "WebFetch(domain:infiniayachts.com)"
+      "WebFetch(domain:infiniayachts.com)",
+      "Bash(agent-browser open:*)",
+      "Bash(agent-browser click:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

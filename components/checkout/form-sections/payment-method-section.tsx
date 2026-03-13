@@ -38,7 +38,6 @@ export function PaymentMethodSection({ form }: PaymentMethodSectionProps) {
       name: 'Credit / Debit Card',
       description: 'Visa, Mastercard, Amex accepted',
       icon: CreditCard,
-      badge: 'Recommended'
     },
     {
       id: 'paypal',
