@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
+import { buildCheckoutUrl } from '@/lib/utils/url-builder'
 
 interface VehicleTypeGridCardProps {
   vehicleType: VehicleTypeResult
@@ -20,6 +21,8 @@ interface VehicleTypeGridCardProps {
     to?: string
     date?: string
     passengers?: string
+    originSlug?: string
+    destSlug?: string
   }
   index?: number
 }
@@ -43,10 +46,17 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
   const vehicleTypeImage = vehicleType.image || `/images/vehicle-types/${vehicleType.slug}.jpg`
   const models = vehicleModels[vehicleType.slug] || vehicleType.name
 
-  const selectionUrl = `/checkout?${new URLSearchParams({
-    vehicleType: vehicleType.id,
-    ...searchParams
-  }).toString()}`
+  const selectionUrl = searchParams.originSlug && searchParams.destSlug
+    ? buildCheckoutUrl(searchParams.originSlug, searchParams.destSlug, vehicleType.slug, {
+        date: searchParams.date || '',
+        time: '10:00',
+        passengers: searchParams.passengers || '1',
+        luggage: '0',
+      })
+    : `/checkout?${new URLSearchParams({
+        vehicleType: vehicleType.id,
+        ...searchParams,
+      }).toString()}`
 
   return (
     <motion.article

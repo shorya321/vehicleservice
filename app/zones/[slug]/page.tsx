@@ -52,10 +52,11 @@ export default async function ZoneDetailPage({ params }: { params: Promise<{ slu
         
         <div className="mt-8">
           {/* Main Content - Destination Zones */}
-          <DestinationZones 
-            destinations={destinations} 
+          <DestinationZones
+            destinations={destinations}
             fromZoneId={zone.id}
             fromZoneName={zone.name}
+            fromZoneSlug={zone.slug}
           />
           
           {/* Information Cards */}

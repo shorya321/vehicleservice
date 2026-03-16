@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { motion } from "motion/react"
 import { MapPin, Plane, Building2, Hotel, Train, ArrowRight } from "lucide-react"
 import type { PopularRoute } from '@/components/search/popular-routes'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 interface DeparturePointsClientProps {
   routes: PopularRoute[]
@@ -56,7 +57,10 @@ export function DeparturePointsClient({ routes, totalRoutes, todayDate }: Depart
             return (
               <Link
                 key={route.id}
-                href={`/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${todayDate}&passengers=2`}
+                href={route.originSlug && route.destinationSlug
+                  ? buildSearchUrl(route.originSlug, route.destinationSlug, { date: todayDate, passengers: 2 })
+                  : `/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${todayDate}&passengers=2`
+                }
                 aria-label={`Search luxury transfers from ${route.originName} to ${route.destinationName}`}
               >
                 <motion.div

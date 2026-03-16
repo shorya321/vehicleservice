@@ -211,7 +211,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
 
   // Check if already paid
   if (booking.payment_status === 'completed') {
-    redirect(`/booking/confirmation?booking=${booking.booking_number}`)
+    redirect(`/booking/confirmation/${booking.booking_number}`)
   }
 
   // Get primary passenger

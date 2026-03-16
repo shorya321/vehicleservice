@@ -8,25 +8,33 @@ import { useRouter } from 'next/navigation'
 import { DestinationZone } from '../actions'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 interface DestinationZonesProps {
   destinations: DestinationZone[]
   fromZoneId: string
   fromZoneName: string
+  fromZoneSlug?: string
 }
 
-export function DestinationZones({ destinations, fromZoneId, fromZoneName }: DestinationZonesProps) {
+export function DestinationZones({ destinations, fromZoneId, fromZoneName, fromZoneSlug }: DestinationZonesProps) {
   const router = useRouter()
-  
-  const handleZoneSelect = (destinationZoneId: string) => {
-    // Navigate to search results with zone parameters
-    const params = new URLSearchParams({
-      fromZone: fromZoneId,
-      toZone: destinationZoneId,
-      date: format(new Date(), 'yyyy-MM-dd'),
-      passengers: '2'
-    })
-    router.push(`/search/results?${params.toString()}`)
+
+  const handleZoneSelect = (destination: DestinationZone) => {
+    if (fromZoneSlug && destination.slug) {
+      router.push(buildSearchUrl(fromZoneSlug, destination.slug, {
+        date: format(new Date(), 'yyyy-MM-dd'),
+        passengers: 2,
+      }))
+    } else {
+      const params = new URLSearchParams({
+        fromZone: fromZoneId,
+        toZone: destination.id,
+        date: format(new Date(), 'yyyy-MM-dd'),
+        passengers: '2',
+      })
+      router.push(`/search/results?${params.toString()}`)
+    }
   }
   if (destinations.length === 0) {
     return (
@@ -55,7 +63,7 @@ export function DestinationZones({ destinations, fromZoneId, fromZoneName }: Des
           <Card 
             key={destination.id} 
             className="hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02]"
-            onClick={() => handleZoneSelect(destination.id)}
+            onClick={() => handleZoneSelect(destination)}
           >
             <CardHeader className="pb-3">
               <div className="space-y-3">

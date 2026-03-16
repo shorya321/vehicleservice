@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Location } from '@/lib/types/location'
 import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 export function WorkingSearchWidget() {
   const router = useRouter()
@@ -190,14 +191,10 @@ export function WorkingSearchWidget() {
 
   const handleSearch = () => {
     if (fromLocation && toLocation) {
-      const params = new URLSearchParams({
-        from: fromLocation.id,
-        to: toLocation.id,
+      router.push(buildSearchUrl(fromLocation.slug, toLocation.slug, {
         date: selectedDate,
-        passengers: passengers.toString()
-      })
-
-      router.push(`/search/results?${params.toString()}`)
+        passengers: passengers,
+      }))
     }
   }
 

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, createBooking } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { toast } from 'sonner'
+import { buildPaymentUrl } from '@/lib/utils/url-builder'
 
 // Import section components
 import { TransferDetailsSection } from './form-sections/transfer-details-section'
@@ -195,7 +196,7 @@ export function BookingForm({
       })
 
       if (result.success) {
-        router.push(`/payment?booking=${result.bookingId}`)
+        router.push(buildPaymentUrl(result.bookingNumber))
       }
     } catch (error) {
       console.error('Booking error:', error)

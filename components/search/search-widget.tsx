@@ -11,6 +11,7 @@ import { DatePicker } from './date-picker'
 import { cn } from '@/lib/utils'
 import { Location } from '@/lib/types/location'
 import { toast } from 'sonner'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 interface SearchWidgetProps {
   className?: string
@@ -42,25 +43,25 @@ export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestin
 
     setLoading(true)
 
-    // Build search parameters
-    const params = new URLSearchParams({
-      from: originLocation.id,
-      date: format(date, 'yyyy-MM-dd'),
-      passengers: passengers.toString()
-    })
-
-    // Add destination if selected
     if (destinationLocation) {
       if (originLocation.id === destinationLocation.id) {
         toast.error('Origin and destination must be different')
         setLoading(false)
         return
       }
-      params.append('to', destinationLocation.id)
+      router.push(buildSearchUrl(originLocation.slug, destinationLocation.slug, {
+        date: format(date, 'yyyy-MM-dd'),
+        passengers: passengers,
+      }))
+    } else {
+      // No destination - fall back to old URL pattern
+      const params = new URLSearchParams({
+        from: originLocation.id,
+        date: format(date, 'yyyy-MM-dd'),
+        passengers: passengers.toString(),
+      })
+      router.push(`/search/results?${params.toString()}`)
     }
-
-    // Navigate to unified search results page
-    router.push(`/search/results?${params.toString()}`)
     
     setLoading(false)
   }

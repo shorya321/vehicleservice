@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { MapPin, ArrowRight, DollarSign } from 'lucide-react'
 import { ZoneResult } from '@/app/search/results/actions'
 import { useRouter } from 'next/navigation'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 interface ZonesListProps {
   zones: ZoneResult[]
@@ -20,15 +21,18 @@ export function ZonesList({ zones, searchParams }: ZonesListProps) {
   const router = useRouter()
 
   const handleZoneSelect = (zone: ZoneResult) => {
-    // Navigate to the search results with the selected zone's destination
-    const params = new URLSearchParams()
-    if (searchParams.from) params.append('from', searchParams.from)
-    // For zone selection, we'd need to get a destination location ID from the zone
-    // This might require additional logic to select a primary location in the zone
-    if (searchParams.date) params.append('date', searchParams.date)
-    if (searchParams.passengers) params.append('passengers', searchParams.passengers)
-    
-    router.push(`/search/results?${params.toString()}`)
+    if (zone.fromZone.slug && zone.toZone.slug && searchParams.date && searchParams.passengers) {
+      router.push(buildSearchUrl(zone.fromZone.slug, zone.toZone.slug, {
+        date: searchParams.date,
+        passengers: searchParams.passengers,
+      }))
+    } else {
+      const params = new URLSearchParams()
+      if (searchParams.from) params.append('from', searchParams.from)
+      if (searchParams.date) params.append('date', searchParams.date)
+      if (searchParams.passengers) params.append('passengers', searchParams.passengers)
+      router.push(`/search/results?${params.toString()}`)
+    }
   }
 
   if (zones.length === 0) {

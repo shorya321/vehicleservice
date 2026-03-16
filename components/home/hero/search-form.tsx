@@ -5,6 +5,7 @@ import { ArrowRight, CalendarDays, Layers, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Location } from '@/lib/types/location'
 import { LocationAutocomplete } from './location-autocomplete'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 export function SearchForm({ todayDate }: { todayDate: string }) {
   const router = useRouter()
@@ -43,14 +44,10 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (fromLocation && toLocation) {
-      const params = new URLSearchParams({
-        from: fromLocation.id,
-        to: toLocation.id,
+      router.push(buildSearchUrl(fromLocation.slug, toLocation.slug, {
         date: selectedDate,
-        passengers: passengers.toString()
-      })
-
-      router.push(`/search/results?${params.toString()}`)
+        passengers: passengers,
+      }))
     }
   }
 

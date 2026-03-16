@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Car, Users, ArrowRight, Check, Luggage } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { VehicleTypeWithPricing, RouteDetails } from '../actions'
+import { buildCheckoutUrl } from '@/lib/utils/url-builder'
 
 interface RouteVehiclesListProps {
   vehicleTypes: VehicleTypeWithPricing[]
@@ -104,8 +105,13 @@ export function RouteVehiclesList({ vehicleTypes, route, countrySlug }: RouteVeh
                 </div>
 
                 {/* CTA Button */}
-                <Link 
-                  href={`/search/results?origin=${route.origin.id}&destination=${route.destination.id}&vehicleType=${vehicleType.slug}`}
+                <Link
+                  href={buildCheckoutUrl(route.origin.slug, route.destination.slug, vehicleType.slug, {
+                    date: new Date().toISOString().split('T')[0],
+                    time: '10:00',
+                    passengers: vehicleType.passenger_capacity.toString(),
+                    luggage: '0',
+                  })}
                   className="block"
                 >
                   <Button className="w-full">

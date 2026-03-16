@@ -24,6 +24,8 @@ interface SearchResultsProps {
     to?: string
     date?: string
     passengers?: string
+    originSlug?: string
+    destSlug?: string
   }
 }
 

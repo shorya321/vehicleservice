@@ -25,8 +25,21 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     return []
   }
 
+  if (!routes || routes.length === 0) return []
+
+  // Get slugs for all origin/destination locations
+  const locationIds = Array.from(
+    new Set(routes.flatMap(r => [r.origin_location_id, r.destination_location_id]))
+  )
+  const { data: locations } = await supabase
+    .from('locations')
+    .select('id, slug')
+    .in('id', locationIds)
+
+  const slugMap = new Map(locations?.map(l => [l.id, l.slug]) || [])
+
   // Map the RPC results to our PopularRoute format
-  const result = routes?.map(route => ({
+  const result = routes.map(route => ({
     id: route.id,
     slug: route.route_slug,
     originLocationId: route.origin_location_id,
@@ -35,11 +48,13 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     destinationName: route.destination_name,
     originCity: route.origin_city,
     destinationCity: route.destination_city,
+    originSlug: slugMap.get(route.origin_location_id) || undefined,
+    destinationSlug: slugMap.get(route.destination_location_id) || undefined,
     startingPrice: 0, // Pricing is per vehicle type, not at route level
     searchCount: 0, // No longer tracking search counts
     distance: route.distance_km,
     duration: route.estimated_duration_minutes
-  })) || []
+  }))
 
   return result
 }

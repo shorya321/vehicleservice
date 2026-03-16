@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
+import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 export interface PopularRoute {
   id: string
@@ -14,6 +15,8 @@ export interface PopularRoute {
   destinationName: string
   originCity: string
   destinationCity: string
+  originSlug?: string
+  destinationSlug?: string
   startingPrice: number
   searchCount: number
   distance: number
@@ -59,7 +62,10 @@ export function PopularRoutes({
         {routes.map((route) => (
           <Link
             key={route.id}
-            href={`/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${new Date().toISOString().split('T')[0]}&passengers=2`}
+            href={route.originSlug && route.destinationSlug
+              ? buildSearchUrl(route.originSlug, route.destinationSlug, { date: new Date().toISOString().split('T')[0], passengers: 2 })
+              : `/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${new Date().toISOString().split('T')[0]}&passengers=2`
+            }
             className="block transition-transform hover:scale-[1.02]"
           >
             <Card className="h-full hover:shadow-lg transition-shadow">
