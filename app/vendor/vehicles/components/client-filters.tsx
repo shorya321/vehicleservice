@@ -22,6 +22,12 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete("search")
     }
 
+    if (filters.categoryId && filters.categoryId !== "all") {
+      params.set("categoryId", filters.categoryId)
+    } else {
+      params.delete("categoryId")
+    }
+
     if (filters.status && filters.status !== "all") {
       params.set("status", filters.status)
     } else {

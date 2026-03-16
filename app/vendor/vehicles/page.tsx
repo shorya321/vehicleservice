@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 interface VendorVehiclesPageProps {
   searchParams: Promise<{
     search?: string
+    categoryId?: string
     status?: string
     fuelType?: string
     transmission?: string
@@ -54,6 +55,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
 
   const filters: VehicleFilters = {
     search: params.search,
+    categoryId: params.categoryId || 'all',
     status: (params.status as any) || 'all',
     fuelType: (params.fuelType as any) || 'all',
     transmission: (params.transmission as any) || 'all',
@@ -68,7 +70,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Fleet</h1>
             <p className="text-muted-foreground">
@@ -119,7 +121,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
                 />
 
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm text-muted-foreground">
                       Showing {((page - 1) * filters.limit!) + 1} to{" "}
                       {Math.min(page * filters.limit!, total)} of {total} vehicles

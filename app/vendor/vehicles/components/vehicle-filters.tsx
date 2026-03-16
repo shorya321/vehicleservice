@@ -125,18 +125,18 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
   const hasActiveFilters = activeFilterCount > 0
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-1 items-center gap-4">
-        <SearchInput
-          placeholder="Search by make, model, or registration..."
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          onSearch={handleSearchSubmit}
-          className="max-w-sm"
-        />
-        
+    <div className="flex flex-col gap-3">
+      <SearchInput
+        placeholder="Search by make, model, or registration..."
+        value={localSearch}
+        onChange={(e) => setLocalSearch(e.target.value)}
+        onSearch={handleSearchSubmit}
+        className="w-full sm:max-w-sm"
+      />
+
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-4">
         <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -147,7 +147,7 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
         </Select>
 
         <Select value={filters.categoryId || "all"} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -161,7 +161,7 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
         </Select>
 
         <Select value={filters.fuelType || "all"} onValueChange={handleFuelTypeChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -174,7 +174,7 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
         </Select>
 
         <Select value={filters.transmission || "all"} onValueChange={handleTransmissionChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -183,7 +183,9 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
             <SelectItem value="automatic">Automatic</SelectItem>
           </SelectContent>
         </Select>
+      </div>
 
+      <div className="flex items-center gap-2">
         <Popover open={advancedOpen} onOpenChange={setAdvancedOpen}>
           <PopoverTrigger asChild>
             <Button
