@@ -83,7 +83,7 @@ export function VehicleTypeCategoryTabs({
   ]
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-10">
       <LayoutGroup id="vehicleTypeTabs">
         <div
           role="tablist"
@@ -99,17 +99,17 @@ export function VehicleTypeCategoryTabs({
                 aria-selected={selected}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveCategory(tab.id)}
-                className={`relative -mb-px rounded px-3 py-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--text-primary)] bg-[rgba(var(--gold-rgb),0.08)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+                className={`relative -mb-px rounded px-3 py-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--gold-text)] bg-[rgba(var(--gold-rgb),0.12)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
               >
                 <span>{tab.name}</span>
-                <span className="ml-2 numeric text-[0.6875rem] text-[var(--text-muted)]">
+                <span className={`ml-2 numeric text-[0.6875rem] ${selected ? 'text-[var(--gold-text)]' : 'text-[var(--text-muted)]'}`}>
                   {String(tab.count).padStart(2, '0')}
                 </span>
                 {selected && (
                   <motion.span
                     layoutId="vehicleTypeTabIndicator"
                     aria-hidden
-                    className="absolute -bottom-px left-0 right-0 h-px bg-[var(--gold)]"
+                    className="absolute -bottom-px left-0 right-0 h-[2px] bg-[var(--gold)]"
                     transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                   />
                 )}
@@ -120,12 +120,12 @@ export function VehicleTypeCategoryTabs({
       </LayoutGroup>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[0.875rem] text-[var(--text-secondary)]">
-          <span className="numeric text-[var(--text-primary)]">{sortedVehicles.length}</span>{" "}
+        <div className="flex items-baseline gap-3">
+          <span className="numeric text-[1.5rem] font-semibold text-[var(--gold-text)]">{sortedVehicles.length}</span>
           <span className="uppercase tracking-[0.16em] text-[0.6875rem] text-[var(--text-muted)]">
             vehicles available
           </span>
-        </p>
+        </div>
         <div className="flex items-center gap-3">
           <label htmlFor="vehicle-sort" className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
             Sort
@@ -145,7 +145,7 @@ export function VehicleTypeCategoryTabs({
 
       <AnimatePresence mode="wait">
         <motion.div
-          className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3"
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={reduceMotion ? undefined : { opacity: 1 }}
           exit={reduceMotion ? undefined : { opacity: 0 }}

@@ -89,7 +89,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
-        <h3 className="font-display text-[1.375rem] font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
+        <h3 className="font-display text-[1.5rem] font-semibold leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
           {vehicleType.name}
         </h3>
 
@@ -104,18 +104,18 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
         <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4">
           <div className="flex items-baseline gap-2">
             <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Passengers</dt>
-            <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.capacity}</dd>
+            <dd className="numeric text-[1rem] font-semibold text-[var(--text-primary)]">{vehicleType.capacity}</dd>
           </div>
           <div className="flex items-baseline gap-2">
             <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Luggage</dt>
-            <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.luggageCapacity}</dd>
+            <dd className="numeric text-[1rem] font-semibold text-[var(--text-primary)]">{vehicleType.luggageCapacity}</dd>
           </div>
         </dl>
 
         <div className="mt-auto flex items-end justify-between gap-4 pt-6">
           <div>
             <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">From</div>
-            <div className="numeric mt-1 text-[1.75rem] font-medium text-[var(--gold-text)]">
+            <div className="numeric mt-1 text-[2rem] font-semibold text-[var(--gold-text)]">
               {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </div>
             <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
@@ -130,7 +130,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           ) : (
             <Link
               href={selectionUrl}
-              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold)] px-5 py-3 text-[0.75rem] font-medium uppercase tracking-[0.08em] text-[var(--black-void)] shadow-[0_10px_30px_-10px_rgba(var(--gold-rgb),0.4)] transition-all duration-300 hover:bg-[var(--gold-deep)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
+              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold)] px-5 py-3 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[var(--black-void)] shadow-[0_10px_30px_-10px_rgba(var(--gold-rgb),0.4)] transition-all duration-300 hover:bg-[var(--gold-deep)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
               aria-label={`Select ${vehicleType.name}`}
             >
               Select

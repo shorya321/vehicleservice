@@ -141,7 +141,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return (
     <div className="space-y-12 lg:space-y-16">
       <motion.section
-        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] py-10 lg:py-12 px-8 lg:px-10"
+        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] py-12 lg:py-16 px-8 lg:px-12"
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -151,7 +151,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--gold-text)]">
               {results.type === 'zone' && results.zone ? 'Zone transfer' : 'Route'}
             </div>
-            <h1 className="mt-3 font-display text-[clamp(1.75rem,3vw,2.5rem)] font-medium leading-tight tracking-[-0.015em] text-[var(--text-primary)]">
+            <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
               {results.type === 'zone' && results.zone ? (
                 <>
                   {results.zone.fromZone.name}
@@ -183,10 +183,10 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
           </div>
 
           <div className="md:text-right">
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)] mb-2">
               {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
             </div>
-            <div className="numeric mt-1.5 text-[2rem] font-medium text-[var(--gold-text)]">
+            <div className="numeric text-[clamp(2.5rem,5vw,3.5rem)] font-semibold text-[var(--gold-text)]">
               {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
             </div>
             <div className="mt-1 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
@@ -201,7 +201,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
         <div className="space-y-4">
           <button
             onClick={() => setFiltersOpen(prev => !prev)}
-            className="inline-flex items-center gap-2 rounded-[4px] border border-[var(--graphite)] px-4 py-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:border-[var(--text-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            className={`inline-flex items-center gap-2 rounded-[4px] border px-4 py-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${hasActiveFilters ? 'border-[rgba(var(--gold-rgb),0.4)] text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-secondary)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
             aria-expanded={filtersOpen}
             aria-controls="vehicle-filters"
             aria-label={hasActiveFilters ? `Filters (${(capacityFilter !== 'any' ? 1 : 0) + selectedFeatures.length} active)` : 'Filters'}
@@ -237,7 +237,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                         <button
                           key={opt}
                           onClick={() => setCapacityFilter(opt)}
-                          className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] uppercase tracking-[0.08em] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${capacityFilter === opt ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.1)] text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
+                          className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] uppercase tracking-[0.08em] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${capacityFilter === opt ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
                         >
                           {opt === 'any' ? 'Any' : opt}
                         </button>
@@ -255,7 +255,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                             <button
                               key={feature}
                               onClick={() => toggleFeature(feature)}
-                              className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${active ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.1)] text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
+                              className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${active ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
                             >
                               {feature}
                             </button>
