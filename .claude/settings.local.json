@@ -175,7 +175,22 @@
       "Bash(npx agent-browser:*)",
       "WebFetch(domain:infiniayachts.com)",
       "Bash(agent-browser open:*)",
-      "Bash(agent-browser click:*)"
+      "Bash(agent-browser click:*)",
+      "mcp__claude_ai_Firecrawl__firecrawl_scrape",
+      "Bash(npx playwright *)",
+      "Bash(agent-browser wait *)",
+      "Bash(agent-browser screenshot *)",
+      "Bash(agent-browser --version)",
+      "Bash(agent-browser close *)",
+      "Bash(PLAYWRIGHT_BROWSERS_PATH=/Users/vikramsingh/Library/Caches/ms-playwright agent-browser open \"http://localhost:3001/search/jassur-to-mamoon?date=2026-05-14&passengers=2\")",
+      "Read(//opt/homebrew/lib/node_modules/agent-browser/**)",
+      "Bash(npm -g list agent-browser)",
+      "Bash(npx playwright@1.58.2 install chromium)",
+      "Bash(agent-browser eval *)",
+      "Bash(agent-browser --viewport 390x844 open \"http://localhost:3001/search/jassur-to-mamoon?date=2026-05-14&passengers=2\")",
+      "Bash(agent-browser snapshot *)",
+      "Bash(agent-browser scroll *)",
+      "Bash(agent-browser --width 390 --height 844 open \"http://localhost:3001/search/jassur-to-mamoon?date=2026-05-14&passengers=2\")"
     ]
   },
   "enableAllProjectMcpServers": true,

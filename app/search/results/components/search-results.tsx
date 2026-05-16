@@ -3,7 +3,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { SearchResult } from '../actions'
 import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
-import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { EmptyState } from './empty-state'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
@@ -282,51 +281,28 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
         </div>
       )}
 
-      {/* Vehicle Type Category Tabs */}
-      <div>
-        {(() => {
-          const cats = hasActiveFilters ? filteredByCategory : vehicleTypesByCategory
-          const vts = hasActiveFilters ? filteredVehicleTypes : vehicleTypes
-          if (cats.length > 0) {
-            return (
-              <VehicleTypeCategoryTabs
-                vehicleTypesByCategory={cats}
-                allVehicleTypes={vts}
-                searchParams={searchParams}
-              />
-            )
-          }
-          if (hasActiveFilters) {
-            return (
-              <motion.div
-                className="py-12 text-center"
-                initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <p className="text-[0.875rem] text-[var(--text-secondary)]">No vehicles match your filters.</p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] transition-colors hover:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
-                >
-                  Clear all filters
-                </button>
-              </motion.div>
-            )
-          }
-          return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {vehicleTypes.map(vehicleType => (
-                <VehicleTypeGridCard
-                  key={vehicleType.id}
-                  vehicleType={vehicleType}
-                  searchParams={searchParams}
-                />
-              ))}
-            </div>
-          )
-        })()}
-      </div>
+      {hasActiveFilters && filteredByCategory.length === 0 ? (
+        <motion.div
+          className="py-12 text-center"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="text-[0.875rem] text-[var(--text-secondary)]">No vehicles match your filters.</p>
+          <button
+            onClick={clearFilters}
+            className="mt-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] transition-colors hover:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+          >
+            Clear all filters
+          </button>
+        </motion.div>
+      ) : (
+        <VehicleTypeCategoryTabs
+          vehicleTypesByCategory={hasActiveFilters ? filteredByCategory : vehicleTypesByCategory}
+          allVehicleTypes={hasActiveFilters ? filteredVehicleTypes : vehicleTypes}
+          searchParams={searchParams}
+        />
+      )}
     </div>
     )
   }

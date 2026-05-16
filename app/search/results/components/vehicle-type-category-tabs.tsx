@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { VehicleTypeResult, VehicleTypesByCategory } from '../actions'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
+import { Pagination } from './pagination'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
@@ -163,75 +163,13 @@ export function VehicleTypeCategoryTabs({
         </motion.div>
       </AnimatePresence>
 
-      {totalPages > 1 && (
-        <nav
-          aria-label="Pagination"
-          className="flex flex-col items-center gap-4 border-t border-[var(--graphite)] pt-8 sm:flex-row sm:justify-between"
-        >
-          <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            <span className="numeric text-[var(--text-secondary)]">
-              {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, sortedVehicles.length)}
-            </span>{" "}
-            of{" "}
-            <span className="numeric text-[var(--text-secondary)]">{sortedVehicles.length}</span>
-          </p>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              aria-label="Previous page"
-              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-              Prev
-            </button>
-
-            <div className="flex items-center">
-              {(() => {
-                const pages: (number | '...')[] = [1]
-                if (currentPage > 3) pages.push('...')
-                for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-                  pages.push(i)
-                }
-                if (currentPage < totalPages - 2) pages.push('...')
-                if (totalPages > 1) pages.push(totalPages)
-                return pages.map((page, idx) => {
-                  if (page === '...') {
-                    return (
-                      <span key={`ellipsis-${idx}`} className="inline-flex h-10 min-w-6 items-center justify-center text-[var(--text-muted)]">
-                        <span className="numeric">&hellip;</span>
-                      </span>
-                    )
-                  }
-                  const active = page === currentPage
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      aria-label={`Page ${page}`}
-                      aria-current={active ? 'page' : undefined}
-                      className={`inline-flex h-10 min-w-10 items-center justify-center px-2 text-[0.875rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${active ? "numeric text-[var(--gold)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
-                    >
-                      <span className="numeric">{page}</span>
-                    </button>
-                  )
-                })
-              })()}
-            </div>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              aria-label="Next page"
-              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
-            >
-              Next
-              <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        </nav>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={sortedVehicles.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

@@ -86,65 +86,21 @@ export function VehicleTypeGridSkeleton({ count = 8 }: { count?: number }) {
   )
 }
 
-export function SearchFiltersSkeleton() {
-  return (
-    <div className="space-y-6">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <motion.div
-          key={i}
-          className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
-          initial={{ opacity: 0.5 }}
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{
-            duration: 1.5,
-            delay: i * 0.1,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          {/* Label */}
-          <div className="h-5 w-32 bg-[var(--gold)]/20 rounded mb-3 animate-pulse" />
-
-          {/* Content */}
-          <div className="space-y-2">
-            <div className="h-4 w-full bg-[var(--gold)]/10 rounded animate-pulse" />
-            <div className="h-4 w-3/4 bg-[var(--gold)]/10 rounded animate-pulse" />
-            <div className="h-4 w-5/6 bg-[var(--gold)]/10 rounded animate-pulse" />
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  )
-}
-
 export function SearchPageSkeleton() {
   return (
     <div className="bg-[var(--black-void)] min-h-screen">
-      {/* Summary Skeleton */}
       <SearchSummarySkeleton />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          {/* Filters Skeleton */}
-          <div className="hidden lg:block w-64 flex-shrink-0">
-            <SearchFiltersSkeleton />
-          </div>
-
-          {/* Results Skeleton */}
-          <div className="flex-1 space-y-8">
-            {/* Banner Skeleton */}
-            <div className="backdrop-blur-lg bg-[var(--charcoal)]/70 border border-[var(--gold)]/20 rounded-lg p-6">
-              <div className="h-10 w-2/3 bg-[var(--gold)]/20 rounded mb-4 animate-pulse" />
-              <div className="flex gap-6">
-                <div className="h-5 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
-                <div className="h-5 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
-              </div>
-            </div>
-
-            {/* Grid Skeleton */}
-            <VehicleTypeGridSkeleton />
+      <div className="luxury-container py-12 lg:py-16 space-y-8">
+        <div className="rounded-[8px] border border-[var(--graphite)] bg-[var(--black-warm)] p-6">
+          <div className="h-10 w-2/3 bg-[var(--gold)]/20 rounded mb-4 animate-pulse" />
+          <div className="flex gap-6">
+            <div className="h-5 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
+            <div className="h-5 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
           </div>
         </div>
+
+        <VehicleTypeGridSkeleton />
       </div>
     </div>
   )
