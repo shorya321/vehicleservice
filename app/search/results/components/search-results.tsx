@@ -9,10 +9,20 @@ import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZoneResultCard } from '@/components/search/zone-result-card'
 import { ZonesList } from '@/components/search/zones-list'
-import { Clock, MapPin } from 'lucide-react'
-import { motion, useReducedMotion } from 'motion/react'
+import { Clock, MapPin, SlidersHorizontal, X } from 'lucide-react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
+
+const filterStaggerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } },
+}
+
+const filterGroupVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const } },
+}
 
 interface SearchResultsProps {
   results: SearchResult | null
@@ -26,70 +36,58 @@ interface SearchResultsProps {
   }
 }
 
+type CapacityFilter = 'any' | '1-4' | '5-8' | '9+'
+
 export function SearchResults({ results, searchParams }: SearchResultsProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const prefersReducedMotion = useReducedMotion()
-  const [filters, setFilters] = useState({
-    categories: [] as string[],
-    priceRange: [0, Number.MAX_VALUE] as [number, number],
-    minRating: 0,
-    features: [] as string[]
-  })
-  const [sortBy, setSortBy] = useState<'price' | 'rating' | 'capacity'>('price')
-  // Show vehicles immediately for zone transfers since user already selected the route
   const [showVehicles, setShowVehicles] = useState(results?.type === 'zone')
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [capacityFilter, setCapacityFilter] = useState<CapacityFilter>('any')
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
-  // Memoize filtered and sorted vehicles to prevent unnecessary recalculations
-  const filteredVehicles = useMemo(() => {
-    if (results?.type !== 'route' || !results.vehicles) {
-      return []
+  const vehicleTypes = useMemo(() => results?.vehicleTypes ?? [], [results?.vehicleTypes])
+  const vehicleTypesByCategory = useMemo(() => results?.vehicleTypesByCategory ?? [], [results?.vehicleTypesByCategory])
+
+  const allFeatures = useMemo(() => {
+    const set = new Set<string>()
+    for (const vt of vehicleTypes) {
+      for (const f of vt.features) set.add(f)
     }
-      let filtered = results.vehicles!.filter(vehicle => {
-      // Category filter
-      if (filters.categories.length > 0 && !filters.categories.includes(vehicle.category)) {
-        return false
-      }
+    return Array.from(set).sort()
+  }, [vehicleTypes])
 
-      // Price filter
-      if (vehicle.price < filters.priceRange[0] || vehicle.price > filters.priceRange[1]) {
-        return false
-      }
+  const hasActiveFilters = capacityFilter !== 'any' || selectedFeatures.length > 0
 
-      // Rating filter
-      if (vehicle.vendorRating < filters.minRating) {
-        return false
-      }
-
-      // Features filter
-      if (filters.features.length > 0) {
-        const hasAllFeatures = filters.features.every(feature =>
-          vehicle.features.includes(feature)
-        )
-        if (!hasAllFeatures) return false
-      }
-
+  const filteredVehicleTypes = useMemo(() => {
+    return vehicleTypes.filter(vt => {
+      if (capacityFilter === '1-4' && (vt.capacity < 1 || vt.capacity > 4)) return false
+      if (capacityFilter === '5-8' && (vt.capacity < 5 || vt.capacity > 8)) return false
+      if (capacityFilter === '9+' && vt.capacity < 9) return false
+      if (selectedFeatures.length > 0 && !selectedFeatures.every(f => vt.features.includes(f))) return false
       return true
     })
+  }, [vehicleTypes, capacityFilter, selectedFeatures])
 
-    // Apply sorting
-    const sorted = [...filtered]
-    switch (sortBy) {
-      case 'price':
-        sorted.sort((a, b) => a.price - b.price)
-        break
-      case 'rating':
-        sorted.sort((a, b) => b.vendorRating - a.vendorRating)
-        break
-      case 'capacity':
-        sorted.sort((a, b) => b.capacity - a.capacity)
-        break
-    }
+  const filteredByCategory = useMemo(() => {
+    if (!hasActiveFilters) return vehicleTypesByCategory
+    return vehicleTypesByCategory
+      .map(cat => ({
+        ...cat,
+        vehicleTypes: cat.vehicleTypes.filter(vt => filteredVehicleTypes.some(fv => fv.id === vt.id)),
+      }))
+      .filter(cat => cat.vehicleTypes.length > 0)
+  }, [vehicleTypesByCategory, filteredVehicleTypes, hasActiveFilters])
 
-      return sorted
-    }, [results, filters, sortBy])
+  const toggleFeature = useCallback((feature: string) => {
+    setSelectedFeatures(prev =>
+      prev.includes(feature) ? prev.filter(f => f !== feature) : [...prev, feature]
+    )
+  }, [])
 
-  const handleFiltersChange = useCallback((newFilters: typeof filters) => {
-    setFilters(newFilters)
+  const clearFilters = useCallback(() => {
+    setCapacityFilter('any')
+    setSelectedFeatures([])
   }, [])
 
   if (!results) {
@@ -144,8 +142,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return (
     <div className="space-y-12 lg:space-y-16">
       <motion.section
-        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.1)] py-10 lg:py-12 px-8 lg:px-10"
-        style={{ background: 'linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.6) 0%, rgba(var(--warm-rgb), 0.4) 100%)' }}
+        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] py-10 lg:py-12 px-8 lg:px-10"
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -200,26 +197,135 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
         </div>
       </motion.section>
 
+      {/* Filter bar */}
+      {allFeatures.length > 0 && (
+        <div className="space-y-4">
+          <button
+            onClick={() => setFiltersOpen(prev => !prev)}
+            className="inline-flex items-center gap-2 rounded-[4px] border border-[var(--graphite)] px-4 py-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:border-[var(--text-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            aria-expanded={filtersOpen}
+            aria-controls="vehicle-filters"
+            aria-label={hasActiveFilters ? `Filters (${(capacityFilter !== 'any' ? 1 : 0) + selectedFeatures.length} active)` : 'Filters'}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+            Filters
+            {hasActiveFilters && (
+              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--graphite)] text-[0.625rem] font-semibold text-[var(--text-primary)]">
+                {(capacityFilter !== 'any' ? 1 : 0) + selectedFeatures.length}
+              </span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {filtersOpen && (
+              <motion.div
+                id="vehicle-filters"
+                initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
+                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <motion.div
+                  className="flex flex-wrap items-start gap-8 rounded-[8px] border border-[var(--graphite)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] px-6 py-5"
+                  initial={prefersReducedMotion ? false : "hidden"}
+                  animate={prefersReducedMotion ? undefined : "visible"}
+                  variants={filterStaggerVariants}
+                >
+                  <motion.div variants={prefersReducedMotion ? undefined : filterGroupVariants}>
+                    <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Capacity</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(['any', '1-4', '5-8', '9+'] as CapacityFilter[]).map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => setCapacityFilter(opt)}
+                          className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] uppercase tracking-[0.08em] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${capacityFilter === opt ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.1)] text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
+                        >
+                          {opt === 'any' ? 'Any' : opt}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {allFeatures.length > 0 && (
+                    <motion.div variants={prefersReducedMotion ? undefined : filterGroupVariants}>
+                      <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Features</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {allFeatures.map(feature => {
+                          const active = selectedFeatures.includes(feature)
+                          return (
+                            <button
+                              key={feature}
+                              onClick={() => toggleFeature(feature)}
+                              className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${active ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.1)] text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
+                            >
+                              {feature}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="mt-auto inline-flex items-center gap-1.5 text-[0.75rem] uppercase tracking-[0.08em] text-[var(--text-muted)] transition-colors hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+                    >
+                      <X className="h-3 w-3" aria-hidden="true" />
+                      Clear filters
+                    </button>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
       {/* Vehicle Type Category Tabs */}
       <div>
-        {results.vehicleTypesByCategory && results.vehicleTypesByCategory.length > 0 ? (
-          <VehicleTypeCategoryTabs
-            vehicleTypesByCategory={results.vehicleTypesByCategory}
-            allVehicleTypes={results.vehicleTypes}
-            searchParams={searchParams}
-          />
-        ) : (
-          /* Fallback to grid if no categories */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {results.vehicleTypes.map(vehicleType => (
-              <VehicleTypeGridCard
-                key={vehicleType.id}
-                vehicleType={vehicleType}
+        {(() => {
+          const cats = hasActiveFilters ? filteredByCategory : vehicleTypesByCategory
+          const vts = hasActiveFilters ? filteredVehicleTypes : vehicleTypes
+          if (cats.length > 0) {
+            return (
+              <VehicleTypeCategoryTabs
+                vehicleTypesByCategory={cats}
+                allVehicleTypes={vts}
                 searchParams={searchParams}
               />
-            ))}
-          </div>
-        )}
+            )
+          }
+          if (hasActiveFilters) {
+            return (
+              <motion.div
+                className="py-12 text-center"
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <p className="text-[0.875rem] text-[var(--text-secondary)]">No vehicles match your filters.</p>
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] transition-colors hover:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]"
+                >
+                  Clear all filters
+                </button>
+              </motion.div>
+            )
+          }
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {vehicleTypes.map(vehicleType => (
+                <VehicleTypeGridCard
+                  key={vehicleType.id}
+                  vehicleType={vehicleType}
+                  searchParams={searchParams}
+                />
+              ))}
+            </div>
+          )
+        })()}
       </div>
     </div>
     )

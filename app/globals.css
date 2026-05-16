@@ -372,7 +372,7 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
       0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
       0 0 100px -20px rgba(var(--gold-rgb), 0.1);
     transition: transform var(--duration-normal) var(--ease-luxury),
@@ -386,9 +386,16 @@
     transform: translateY(-8px);
     border-color: rgba(var(--gold-rgb), 0.3);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
       0 0 0 1px rgba(var(--gold-rgb), 0.1) inset,
       0 0 120px -20px rgba(var(--gold-rgb), 0.15);
+  }
+
+  :root .vehicle-card-surface {
+    box-shadow: 0 1px 3px rgba(var(--charcoal-rgb), 0.06), 0 1px 2px rgba(var(--charcoal-rgb), 0.04);
+  }
+  .dark .vehicle-card-surface {
+    box-shadow: none;
   }
 
   /* Route Card with Top Border Accent */
@@ -422,7 +429,7 @@
     transform: translateY(-8px);
     border-color: rgba(var(--gold-rgb), 0.3);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
       0 0 30px -10px rgba(var(--gold-rgb), 0.2);
   }
 
@@ -470,7 +477,7 @@
     transform: translateY(-8px);
     border-color: rgba(var(--gold-rgb), 0.3);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
       0 0 30px -10px rgba(var(--gold-rgb), 0.2);
   }
 
@@ -530,7 +537,7 @@
     transform: translateY(-8px);
     border-color: rgba(var(--gold-rgb), 0.3);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
       0 0 30px -10px rgba(var(--gold-rgb), 0.2);
   }
 
@@ -727,7 +734,7 @@
     transform: translateY(-8px);
     border-color: rgba(var(--gold-rgb), 0.3);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
       0 0 30px -10px rgba(var(--gold-rgb), 0.2);
   }
 
@@ -3396,7 +3403,7 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
     0 0 0 1px rgba(var(--gold-rgb), 0.05) inset;
 }
 
@@ -4116,7 +4123,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
     0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
     0 0 100px -30px rgba(var(--gold-rgb), 0.1);
   position: relative;

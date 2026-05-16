@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { VehicleTypeResult, VehicleTypesByCategory } from '../actions'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
@@ -53,12 +53,18 @@ export function VehicleTypeCategoryTabs({
   const sortedVehicles = useMemo(() => {
     const vehicles = [...currentVehicles]
     switch (sortBy) {
-      case 'price-asc': return vehicles.sort((a, b) => a.price - b.price)
-      case 'price-desc': return vehicles.sort((a, b) => b.price - a.price)
-      case 'capacity': return vehicles.sort((a, b) => b.capacity - a.capacity)
-      case 'name': return vehicles.sort((a, b) => a.name.localeCompare(b.name))
-      default: return vehicles
+      case 'price-asc': vehicles.sort((a, b) => a.price - b.price); break
+      case 'price-desc': vehicles.sort((a, b) => b.price - a.price); break
+      case 'capacity': vehicles.sort((a, b) => b.capacity - a.capacity); break
+      case 'name': vehicles.sort((a, b) => a.name.localeCompare(b.name)); break
     }
+    // Available vehicles first, sold-out last
+    vehicles.sort((a, b) => {
+      const aOut = a.availableVehicles === 0 ? 1 : 0
+      const bOut = b.availableVehicles === 0 ? 1 : 0
+      return aOut - bOut
+    })
+    return vehicles
   }, [currentVehicles, sortBy])
 
   const totalPages = Math.ceil(sortedVehicles.length / ITEMS_PER_PAGE)
@@ -78,33 +84,40 @@ export function VehicleTypeCategoryTabs({
 
   return (
     <div className="w-full space-y-8">
-      <div
-        role="tablist"
-        aria-label="Vehicle categories"
-        className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[rgba(var(--gold-rgb),0.12)] pb-1"
-      >
-        {tabs.map((tab) => {
-          const selected = activeCategory === tab.id
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={selected}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => setActiveCategory(tab.id)}
-              className={`relative -mb-px py-3 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
-            >
-              <span>{tab.name}</span>
-              <span className="ml-2 numeric text-[0.6875rem] text-[var(--gold)]">
-                {String(tab.count).padStart(2, '0')}
-              </span>
-              {selected && (
-                <span aria-hidden className="absolute -bottom-px left-0 right-0 h-px bg-[var(--gold)]" />
-              )}
-            </button>
-          )
-        })}
-      </div>
+      <LayoutGroup id="vehicleTypeTabs">
+        <div
+          role="tablist"
+          aria-label="Vehicle categories"
+          className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[var(--graphite)] pb-1"
+        >
+          {tabs.map((tab) => {
+            const selected = activeCategory === tab.id
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={selected}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setActiveCategory(tab.id)}
+                className={`relative -mb-px rounded px-3 py-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--text-primary)] bg-[rgba(var(--gold-rgb),0.08)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+              >
+                <span>{tab.name}</span>
+                <span className="ml-2 numeric text-[0.6875rem] text-[var(--text-muted)]">
+                  {String(tab.count).padStart(2, '0')}
+                </span>
+                {selected && (
+                  <motion.span
+                    layoutId="vehicleTypeTabIndicator"
+                    aria-hidden
+                    className="absolute -bottom-px left-0 right-0 h-px bg-[var(--gold)]"
+                    transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </LayoutGroup>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[0.875rem] text-[var(--text-secondary)]">
@@ -121,7 +134,7 @@ export function VehicleTypeCategoryTabs({
             id="vehicle-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="h-11 min-w-[10rem] cursor-pointer rounded-[4px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--black-warm)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25"
+            className="h-11 min-w-[10rem] cursor-pointer rounded-[4px] border border-[var(--graphite)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25"
           >
             {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
               <option key={opt} value={opt}>{SORT_LABELS[opt]}</option>
@@ -130,27 +143,30 @@ export function VehicleTypeCategoryTabs({
         </div>
       </div>
 
-      <motion.div
-        className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3"
-        initial={reduceMotion ? false : { opacity: 0 }}
-        animate={reduceMotion ? undefined : { opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        key={`${activeCategory}-${sortBy}-${currentPage}`}
-      >
-        {paginatedVehicles.map((vehicleType, index) => (
-          <VehicleTypeGridCard
-            key={vehicleType.id}
-            vehicleType={vehicleType}
-            searchParams={searchParams}
-            index={index}
-          />
-        ))}
-      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3"
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={reduceMotion ? undefined : { opacity: 1 }}
+          exit={reduceMotion ? undefined : { opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          key={`${activeCategory}-${sortBy}-${currentPage}`}
+        >
+          {paginatedVehicles.map((vehicleType, index) => (
+            <VehicleTypeGridCard
+              key={vehicleType.id}
+              vehicleType={vehicleType}
+              searchParams={searchParams}
+              index={index}
+            />
+          ))}
+        </motion.div>
+      </AnimatePresence>
 
       {totalPages > 1 && (
         <nav
           aria-label="Pagination"
-          className="flex flex-col items-center gap-4 border-t border-[rgba(var(--gold-rgb),0.1)] pt-8 sm:flex-row sm:justify-between"
+          className="flex flex-col items-center gap-4 border-t border-[var(--graphite)] pt-8 sm:flex-row sm:justify-between"
         >
           <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
             <span className="numeric text-[var(--text-secondary)]">
@@ -165,34 +181,50 @@ export function VehicleTypeCategoryTabs({
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               aria-label="Previous page"
-              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               Prev
             </button>
 
             <div className="flex items-center">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                const active = page === currentPage
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    aria-label={`Page ${page}`}
-                    aria-current={active ? 'page' : undefined}
-                    className={`inline-flex h-10 min-w-10 items-center justify-center px-2 text-[0.875rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${active ? "numeric text-[var(--gold)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
-                  >
-                    <span className="numeric">{page}</span>
-                  </button>
-                )
-              })}
+              {(() => {
+                const pages: (number | '...')[] = [1]
+                if (currentPage > 3) pages.push('...')
+                for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+                  pages.push(i)
+                }
+                if (currentPage < totalPages - 2) pages.push('...')
+                if (totalPages > 1) pages.push(totalPages)
+                return pages.map((page, idx) => {
+                  if (page === '...') {
+                    return (
+                      <span key={`ellipsis-${idx}`} className="inline-flex h-10 min-w-6 items-center justify-center text-[var(--text-muted)]">
+                        <span className="numeric">&hellip;</span>
+                      </span>
+                    )
+                  }
+                  const active = page === currentPage
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      aria-label={`Page ${page}`}
+                      aria-current={active ? 'page' : undefined}
+                      className={`inline-flex h-10 min-w-10 items-center justify-center px-2 text-[0.875rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${active ? "numeric text-[var(--gold)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+                    >
+                      <span className="numeric">{page}</span>
+                    </button>
+                  )
+                })
+              })()}
             </div>
 
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               aria-label="Next page"
-              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
             >
               Next
               <ChevronRight className="h-4 w-4" aria-hidden="true" />

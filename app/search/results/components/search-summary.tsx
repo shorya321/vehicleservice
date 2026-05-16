@@ -25,7 +25,7 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
 
   return (
     <motion.header
-      className="relative border-b border-[rgba(var(--gold-rgb),0.12)]"
+      className="relative border-b border-[var(--graphite)]"
       style={{ background: 'linear-gradient(180deg, var(--black-rich) 0%, var(--black-void) 100%)' }}
       initial={reduceMotion ? false : { opacity: 0, y: -8 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -34,7 +34,7 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
       <div className="luxury-container py-10 lg:py-14">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)] transition-colors hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+          className="inline-flex items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)] transition-colors hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           New search
@@ -70,7 +70,7 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
               Passengers
             </div>
             <div className="numeric mt-2 text-[1.125rem] text-[var(--text-primary)]">
-              {passengers} <span className="ml-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">pax</span>
+              {passengers} <span className="ml-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">passengers</span>
             </div>
           </div>
         </div>

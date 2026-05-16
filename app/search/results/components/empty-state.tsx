@@ -22,18 +22,22 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="editorial-eyebrow">Nothing for these dates</div>
+      <div className="editorial-eyebrow">No results</div>
       <h2 className="editorial-section-title mt-5">
-        We don&rsquo;t service this route yet.
+        No vehicles available for this route
       </h2>
-      <p className="t-body mt-5 text-[var(--text-secondary)]">
-        Either the corridor isn&rsquo;t in the network for the date you picked, or every vehicle on it is held for another booking. Try a different time, a different origin, or talk to us about a custom transfer.
+      <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+        This corridor may not be in the network for your selected date, or all vehicles are reserved. Try a different date or adjust your search. Routes often have more availability on weekdays.
       </p>
 
       <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
         <Link href="/" className="btn btn-primary">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           New search
+        </Link>
+        <Link href="/search" className="editorial-action">
+          Explore popular routes
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         <Link href="/contact" className="editorial-action">
           Talk to support

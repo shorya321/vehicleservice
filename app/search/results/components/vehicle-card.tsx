@@ -3,8 +3,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { SearchResultVehicle } from '../actions'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Users,
   Briefcase,
@@ -15,7 +13,7 @@ import {
 } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 interface VehicleCardProps {
   vehicle: SearchResultVehicle
@@ -31,6 +29,7 @@ interface VehicleCardProps {
 
 export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: VehicleCardProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
+  const reduceMotion = useReducedMotion()
   const vehicleImage = vehicle.images[0] || '/placeholder-vehicle.jpg'
 
   const bookingUrl = `/booking/vehicle/${vehicle.id}?${new URLSearchParams({
@@ -39,136 +38,120 @@ export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: Vehic
   }).toString()}`
 
   return (
-    <motion.div
-      className="luxury-card luxury-card-hover overflow-hidden group"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.05,
-        ease: "easeOut"
-      }}
-      whileHover={{ y: -4 }}
+    <motion.article
+      aria-label={vehicle.name}
+      className="vehicle-card-surface group overflow-hidden rounded-[8px] border border-[var(--graphite)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(var(--gold-rgb),0.25)] hover:shadow-[0_12px_24px_-6px_rgba(var(--gold-rgb),0.15),0_4px_10px_-4px_rgba(var(--gold-rgb),0.1)]"
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="grid md:grid-cols-[300px,1fr] gap-0">
-        {/* Vehicle Image */}
-        <div className="relative h-48 md:h-full bg-gradient-to-br from-luxury-gray to-luxury-darkGray overflow-hidden">
+        <div className="relative h-48 md:h-full overflow-hidden bg-[var(--black-warm)] dark:bg-[var(--charcoal)]">
           <Image
             src={vehicleImage}
             alt={vehicle.name}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
             sizes="(max-width: 768px) 100vw, 300px"
           />
-          <Badge
-            className={`absolute top-4 left-4 ${vehicle.category === 'Premium'
-              ? 'bg-luxury-gold text-luxury-black'
-              : 'bg-luxury-darkGray/80 text-luxury-pearl border-luxury-gold/30'
-              }`}
-          >
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--black-warm)] dark:from-[var(--charcoal)] to-transparent" aria-hidden="true" />
+          <span className={`absolute top-4 left-4 rounded-[4px] px-2.5 py-1 text-[0.6875rem] font-medium uppercase tracking-[0.16em] ${vehicle.category === 'Premium' ? 'bg-[var(--gold)] text-[var(--black-void)]' : 'bg-[rgba(var(--gold-rgb),0.08)] text-[var(--text-secondary)] border border-[var(--graphite)]'}`}>
             {vehicle.category}
-          </Badge>
+          </span>
         </div>
 
-        {/* Vehicle Details */}
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="flex flex-col gap-5 p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
             <div className="flex-1">
-              <h3 className="t-headline mb-2">
+              <h3 className="font-display text-[1.375rem] font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
                 {vehicle.name}
               </h3>
-              <p className="t-meta">
-                Provided by <span className="text-luxury-gold">{vehicle.vendorName}</span>
+              <p className="mt-1.5 text-[0.8125rem] text-[var(--text-muted)]">
+                Provided by <span className="text-[var(--gold-text)]">{vehicle.vendorName}</span>
               </p>
             </div>
 
-            <div className="text-right">
+            <div className="md:text-right">
               {vehicle.originalPrice && (
-                <div className="t-numeric text-sm text-luxury-lightGray/60 line-through">
+                <div className="numeric text-[0.8125rem] text-[var(--text-muted)] line-through">
                   {formatPrice(vehicle.originalPrice, currentCurrency, exchangeRates)}
                 </div>
               )}
-              <div className="t-numeric text-2xl text-luxury-gold">
+              <div className="numeric text-[1.75rem] font-medium text-[var(--gold-text)]">
                 {formatPrice(vehicle.price, currentCurrency, exchangeRates)}
               </div>
-              <div className="t-label mt-1">
+              <div className="mt-1 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
                 per vehicle
               </div>
             </div>
           </div>
 
-          {/* Key Features */}
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-luxury-gold" aria-hidden="true" />
-              <span className="text-luxury-lightGray">Up to {vehicle.capacity} passengers</span>
+          <dl className="flex flex-wrap gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4">
+            <div className="flex items-baseline gap-2">
+              <Users className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+              <dt className="sr-only">Passengers</dt>
+              <dd className="text-[0.8125rem] text-[var(--text-secondary)]">Up to {vehicle.capacity}</dd>
             </div>
-            <div className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-luxury-gold" aria-hidden="true" />
-              <span className="text-luxury-lightGray">{vehicle.luggageCapacity} suitcases</span>
+            <div className="flex items-baseline gap-2">
+              <Briefcase className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+              <dt className="sr-only">Luggage</dt>
+              <dd className="text-[0.8125rem] text-[var(--text-secondary)]">{vehicle.luggageCapacity} suitcases</dd>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-luxury-gold" aria-hidden="true" />
-              <span className="text-luxury-lightGray">{vehicle.duration} journey</span>
+            <div className="flex items-baseline gap-2">
+              <Clock className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+              <dt className="sr-only">Duration</dt>
+              <dd className="text-[0.8125rem] text-[var(--text-secondary)]">{vehicle.duration}</dd>
             </div>
             {vehicle.vendorRating > 0 && (
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 fill-luxury-gold text-luxury-gold" aria-hidden="true" />
-                <span className="text-luxury-lightGray">{vehicle.vendorRating.toFixed(1)} rating</span>
+              <div className="flex items-baseline gap-2">
+                <Star className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                <dt className="sr-only">Rating</dt>
+                <dd className="numeric text-[0.8125rem] text-[var(--text-secondary)]">{vehicle.vendorRating.toFixed(1)}</dd>
               </div>
             )}
-          </div>
+          </dl>
 
-          {/* Features */}
           {vehicle.features.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {vehicle.features.slice(0, 4).map(feature => (
-                <Badge
+                <span
                   key={feature}
-                  variant="outline"
-                  className="text-xs border-luxury-gold/30 text-luxury-lightGray bg-luxury-gold/5 hover:bg-luxury-gold/10 transition-colors"
+                  className="rounded-[4px] border border-[var(--graphite)] bg-[rgba(var(--gold-rgb),0.05)] px-2.5 py-1 text-[0.6875rem] text-[var(--text-secondary)]"
                 >
                   {feature}
-                </Badge>
+                </span>
               ))}
               {vehicle.features.length > 4 && (
-                <Badge
-                  variant="outline"
-                  className="text-xs border-luxury-gold/30 text-luxury-gold bg-luxury-gold/10"
-                >
+                <span className="rounded-[4px] border border-[rgba(var(--gold-rgb),0.15)] bg-[rgba(var(--gold-rgb),0.1)] px-2.5 py-1 text-[0.6875rem] text-[var(--gold-text)]">
                   +{vehicle.features.length - 4} more
-                </Badge>
+                </span>
               )}
             </div>
           )}
 
-          {/* Benefits */}
-          <div className="flex flex-wrap items-center gap-6 text-sm">
+          <div className="flex flex-wrap items-center gap-6 text-[0.8125rem]">
             {vehicle.instantConfirmation && (
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" aria-hidden="true" />
-                <span className="text-luxury-lightGray">Instant confirmation</span>
+                <CheckCircle className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                <span className="text-[var(--text-secondary)]">Instant confirmation</span>
               </div>
             )}
-            <div className="text-luxury-lightGray/80">{vehicle.cancellationPolicy}</div>
+            <span className="text-[var(--text-muted)]">{vehicle.cancellationPolicy}</span>
           </div>
 
-          {/* Action Button */}
           <div className="flex justify-end pt-2">
-            <Button
-              asChild
-              size="lg"
-              className="h-14 px-8 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans font-semibold uppercase tracking-wider transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-luxury-darkGray"
+            <Link
+              href={bookingUrl}
+              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold)] px-6 py-3.5 text-[0.75rem] font-medium uppercase tracking-[0.08em] text-[var(--black-void)] shadow-[0_10px_30px_-10px_rgba(var(--gold-rgb),0.4)] transition-all duration-300 hover:bg-[var(--gold-deep)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
+              aria-label={`Select ${vehicle.name}`}
             >
-              <Link href={bookingUrl}>
-                Select Vehicle
-                <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-              </Link>
-            </Button>
+              Select Vehicle
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   )
 }

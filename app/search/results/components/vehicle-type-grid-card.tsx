@@ -58,7 +58,8 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
 
   return (
     <motion.article
-      className="group flex h-full flex-col rounded-[8px] border border-[rgba(var(--gold-rgb),0.18)] bg-gradient-to-br from-[var(--charcoal)] to-[var(--black-warm)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(var(--gold-rgb),0.3)] hover:shadow-[0_12px_24px_-6px_rgba(198,170,136,0.15),0_4px_10px_-4px_rgba(198,170,136,0.1)]"
+      aria-label={unavailable ? `${vehicleType.name} — sold out` : vehicleType.name}
+      className={`vehicle-card-surface group flex h-full flex-col rounded-[8px] border border-[var(--graphite)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${unavailable ? 'opacity-50' : 'hover:-translate-y-1 hover:border-[rgba(var(--gold-rgb),0.25)] hover:shadow-[0_12px_24px_-6px_rgba(var(--gold-rgb),0.15),0_4px_10px_-4px_rgba(var(--gold-rgb),0.1)]'}`}
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -66,7 +67,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-[8px] bg-[var(--black-warm)]">
         {imageError ? (
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--charcoal)] to-[var(--black-warm)] flex items-center justify-center">
+          <div className="absolute inset-0 bg-[var(--black-warm)] dark:bg-[var(--charcoal)] flex items-center justify-center">
             <div className="text-center px-4">
               <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">{vehicleType.category}</div>
               <div className="mt-2 font-display text-xl font-medium text-[var(--text-primary)]">{vehicleType.name}</div>
@@ -82,48 +83,43 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setImageError(true)}
             />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--charcoal)] via-[var(--charcoal)]/60 to-transparent" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--black-warm)] via-[var(--black-warm)]/60 dark:from-[var(--charcoal)] dark:via-[var(--charcoal)]/60 to-transparent" aria-hidden="true" />
           </>
         )}
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
-        <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-4">
-          <h3 className="font-display text-[1.375rem] font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
-            {vehicleType.name}
-          </h3>
-          <span className="numeric text-[0.6875rem] font-medium tracking-[0.16em] text-[var(--gold-text)]">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-        </div>
+        <h3 className="font-display text-[1.375rem] font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
+          {vehicleType.name}
+        </h3>
 
         <p className="mt-1.5 line-clamp-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
           {models}
         </p>
 
-        <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[rgba(var(--gold-rgb),0.1)] pt-4">
+        <p className="mt-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)]">
+          Free cancellation
+        </p>
+
+        <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4">
           <div className="flex items-baseline gap-2">
-            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Pax</dt>
+            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Passengers</dt>
             <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.capacity}</dd>
           </div>
           <div className="flex items-baseline gap-2">
-            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Bags</dt>
+            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Luggage</dt>
             <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.luggageCapacity}</dd>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Wait</dt>
-            <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">15 min</dd>
           </div>
         </dl>
 
         <div className="mt-auto flex items-end justify-between gap-4 pt-6">
           <div>
             <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">From</div>
-            <div className="numeric mt-1 text-[1.5rem] font-medium text-[var(--gold-text)]">
+            <div className="numeric mt-1 text-[1.75rem] font-medium text-[var(--gold-text)]">
               {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </div>
             <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              per vehicle · free cancellation
+              per vehicle · 15 min wait
             </p>
           </div>
 
@@ -134,11 +130,11 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           ) : (
             <Link
               href={selectionUrl}
-              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold-text)] px-5 py-3 text-[0.75rem] font-medium uppercase tracking-[0.08em] text-[var(--black-void)] transition-all duration-300 hover:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
+              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold)] px-5 py-3 text-[0.75rem] font-medium uppercase tracking-[0.08em] text-[var(--black-void)] shadow-[0_10px_30px_-10px_rgba(var(--gold-rgb),0.4)] transition-all duration-300 hover:bg-[var(--gold-deep)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
               aria-label={`Select ${vehicleType.name}`}
             >
               Select
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
             </Link>
           )}
         </div>

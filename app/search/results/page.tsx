@@ -51,22 +51,21 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
   if (!results) {
     return (
       <PublicLayout>
-        <div
-          className="min-h-screen"
-          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(var(--gold-rgb), 0.04) 0%, transparent 70%), var(--black-void)' }}
-        >
-          <div className="luxury-container py-24">
-            <div className="mx-auto max-w-xl">
-              <div className="editorial-eyebrow">Search failed</div>
-              <h2 className="editorial-section-title mt-5">
-                Couldn&rsquo;t load results.
-              </h2>
-              <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
-                A network or system issue interrupted the search. Try again, or start a new one from the home page.
-              </p>
-              <Link href="/" className="btn btn-primary mt-8 inline-flex">
-                Return to home
-              </Link>
+        <div className="min-h-screen bg-[var(--black-void)]">
+          <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+            <div className="luxury-container py-24">
+              <div className="mx-auto max-w-xl">
+                <div className="editorial-eyebrow">Search failed</div>
+                <h2 className="editorial-section-title mt-5">
+                  Couldn&rsquo;t load results.
+                </h2>
+                <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+                  A network or system issue interrupted the search. Try again, or start a new one from the home page.
+                </p>
+                <Link href="/" className="btn btn-primary mt-8 inline-flex">
+                  Return to home
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -81,21 +80,20 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
 
   return (
     <PublicLayout>
-      <div
-        className="min-h-screen"
-        style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(var(--gold-rgb), 0.04) 0%, transparent 70%), var(--black-void)' }}
-      >
+      <div className="min-h-screen bg-[var(--black-void)]">
         <SearchSummary
           origin={origin}
           destination={destination}
           date={new Date(date)}
           passengers={parseInt(passengers)}
         />
-        <div className="luxury-container py-12 lg:py-16">
-          <SearchResults
-            results={results}
-            searchParams={params}
-          />
+        <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+          <div className="luxury-container py-12 lg:py-16">
+            <SearchResults
+              results={results}
+              searchParams={params}
+            />
+          </div>
         </div>
       </div>
     </PublicLayout>
