@@ -46,7 +46,7 @@ export async function PublicLayout({ children }: { children: React.ReactNode }) 
           initialUser={user}
           initialProfile={profile}
         />
-        <main className="flex-1 pt-20 md:pt-24">
+        <main className="flex-1 pt-20">
           {children}
         </main>
         <Footer />
