@@ -34,7 +34,7 @@ export function AuthBenefits() {
       >
         {/* Benefits Header */}
         <div className="px-6 py-4 bg-gradient-to-r from-[rgba(198,170,136,0.08)] to-transparent border-b border-[rgba(198,170,136,0.1)]">
-          <h3 className="font-serif text-xl font-normal text-[var(--text-primary)]">
+          <h3 className="t-subhead">
             Why Create an Account?
           </h3>
         </div>

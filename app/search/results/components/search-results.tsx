@@ -1,12 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { SearchResult, SearchResultVehicle, VehicleTypeResult } from '../actions'
-import { VehicleCard } from './vehicle-card'
-import { VehicleCategoryTabs } from './vehicle-category-tabs'
+import { useState, useMemo, useCallback } from 'react'
+import { SearchResult } from '../actions'
 import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
-import { SearchFilters } from './search-filters'
 import { EmptyState } from './empty-state'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
@@ -145,69 +142,62 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       : 0
 
     return (
-    <div className="space-y-6">
-      {/* Route/Zone Information Banner - Art Deco Style */}
-      <motion.div
-        className="relative bg-gradient-to-br from-luxury-charcoal via-luxury-charcoalLight to-luxury-charcoal border border-luxury-gold/15 rounded-2xl p-8 md:p-10 overflow-hidden"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.2 }}
+    <div className="space-y-12 lg:space-y-16">
+      <motion.section
+        className="border-y border-[var(--graphite)] py-8 lg:py-10"
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
-        {/* Art Deco Corner - Top Left */}
-        <div className="absolute top-4 left-4 w-16 h-16 md:w-20 md:h-20 border-l border-t border-luxury-gold/20 pointer-events-none" />
-        {/* Art Deco Corner - Bottom Right */}
-        <div className="absolute bottom-4 right-4 w-16 h-16 md:w-20 md:h-20 border-r border-b border-luxury-gold/20 pointer-events-none" />
-
-        {/* Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[200px] bg-[radial-gradient(ellipse,rgba(198,170,136,0.08)_0%,transparent_70%)] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          {/* Route Info */}
-          <div className="space-y-3">
-            {results.type === 'zone' && results.zone ? (
-              <>
-                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl text-luxury-pearl">
-                  Zone Transfer: {results.zone.fromZone.name} <span className="text-luxury-gold italic">&rarr;</span> {results.zone.toZone.name}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-luxury-lightGray">
-                  <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
-                  <span>{results.originName} to {results.destinationName}</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl text-luxury-pearl">
-                  {results.routeName || `${results.originName} to ${results.destinationName}`}
-                </h1>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-luxury-lightGray">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
-                    <span>{results.originName} to {results.destinationName}</span>
-                  </div>
-                  {results.distance && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-luxury-gold" aria-hidden="true" />
-                      <span>{results.distance} km journey</span>
-                    </div>
-                  )}
-                </div>
-              </>
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="editorial-eyebrow">
+              {results.type === 'zone' && results.zone ? 'Zone transfer' : 'Route'}
+            </div>
+            <h1 className="editorial-section-title mt-3">
+              {results.type === 'zone' && results.zone ? (
+                <>
+                  {results.zone.fromZone.name}
+                  <span className="text-[var(--gold)] mx-3" aria-hidden="true">→</span>
+                  {results.zone.toZone.name}
+                </>
+              ) : (
+                results.routeName || (
+                  <>
+                    {results.originName}
+                    <span className="text-[var(--gold)] mx-3" aria-hidden="true">→</span>
+                    {results.destinationName}
+                  </>
+                )
+              )}
+            </h1>
+            {results.type !== 'zone' && results.distance && (
+              <p className="mt-3 flex items-baseline gap-4 text-[0.875rem] text-[var(--text-secondary)]">
+                <span className="flex items-baseline gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-[var(--gold)]" aria-hidden="true" />
+                  <span className="numeric">{results.distance} km</span>
+                </span>
+                <span className="flex items-baseline gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-[var(--gold)]" aria-hidden="true" />
+                  <span>{results.originName} → {results.destinationName}</span>
+                </span>
+              </p>
             )}
           </div>
 
-          {/* Price Badge */}
-          <div className="flex flex-col items-start md:items-end gap-1">
-            <span className="text-[0.7rem] font-medium tracking-[0.1em] uppercase text-luxury-lightGray/70">
-              {results.type === 'zone' && results.zone ? 'Base Price' : 'Starting from'}
-            </span>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-luxury-gold/15 to-luxury-gold/5 border border-luxury-gold/30 rounded-lg">
-              <span className="text-base md:text-lg font-semibold bg-gradient-to-br from-luxury-goldCream via-luxury-gold to-luxury-goldDark bg-clip-text text-transparent">
-                {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
-              </span>
+          <div className="md:text-right">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
+            </div>
+            <div className="numeric mt-1 text-3xl text-[var(--gold-text)]">
+              {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
+            </div>
+            <div className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              per vehicle
             </div>
           </div>
         </div>
-      </motion.div>
+      </motion.section>
 
       {/* Vehicle Type Category Tabs */}
       <div>

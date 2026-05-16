@@ -82,7 +82,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             {/* Pullquote / Excerpt */}
             {post.excerpt && (
               <div className="border-l-2 border-[var(--gold)] pl-6 mb-8">
-                <p className="font-serif text-xl italic leading-[1.7] text-[var(--text-secondary)]">
+                <p className="font-body text-xl italic leading-[1.6] text-[var(--text-secondary)]">
                   {post.excerpt}
                 </p>
               </div>
@@ -144,16 +144,16 @@ export default async function BlogPostPage({ params }: PageProps) {
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="text-[0.6875rem] font-semibold tracking-[0.15em] uppercase text-[var(--gold)] mb-1">
+                  <div className="t-label-accent mb-1">
                     Written by
                   </div>
-                  <h3 className="font-serif text-2xl font-normal text-[var(--text-primary)] mb-1">
+                  <h3 className="t-subhead mb-1">
                     {post.author?.full_name || 'Editorial Team'}
                   </h3>
-                  <div className="text-[0.8125rem] text-[var(--text-muted)] mb-3">
+                  <div className="t-meta mb-3">
                     Senior Travel Editor
                   </div>
-                  <p className="text-[0.9375rem] text-[var(--text-secondary)] leading-[1.7]">
+                  <p className="t-body">
                     Bringing you the finest insights on luxury travel, premium transfers, and the art of seamless journeys across the Middle East.
                   </p>
                 </div>

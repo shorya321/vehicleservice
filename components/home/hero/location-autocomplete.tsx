@@ -1,13 +1,12 @@
 "use client"
-import { useState, useEffect, useRef } from 'react'
-import { Input } from '@/components/ui/input'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Location } from '@/lib/types/location'
 import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react'
 import type { LocationAutocompleteProps } from './types'
 
 function getLocationIcon(type?: string) {
-  const iconClass = "h-4 w-4 text-luxury-gold"
+  const iconClass = "h-4 w-4 text-[var(--gold-text)]"
   switch(type) {
     case 'airport':
       return <Plane className={iconClass} aria-hidden="true" />
@@ -22,7 +21,7 @@ function getLocationIcon(type?: string) {
   }
 }
 
-export function LocationAutocomplete({
+function LocationAutocompleteBase({
   value,
   onChange,
   onSelect,
@@ -35,16 +34,17 @@ export function LocationAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [hasSearched, setHasSearched] = useState(false)
+  const [searchError, setSearchError] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const requestIdRef = useRef(0)
   const selectedLocationRef = useRef(selectedLocation)
+  const supabase = useMemo(() => createClient(), [])
 
-  // Keep selectedLocationRef in sync without triggering search
   useEffect(() => {
     selectedLocationRef.current = selectedLocation
   }, [selectedLocation])
 
-  // Search locations with debounce
   useEffect(() => {
     if (selectedLocationRef.current && selectedLocationRef.current.name === value) {
       setShowSuggestions(false)
@@ -54,6 +54,8 @@ export function LocationAutocomplete({
     if (value.length < 2) {
       setSuggestions([])
       setShowSuggestions(false)
+      setHasSearched(false)
+      setSearchError(false)
       return
     }
 
@@ -61,8 +63,8 @@ export function LocationAutocomplete({
 
     const searchLocations = async () => {
       setLoading(true)
+      setSearchError(false)
       try {
-        const supabase = createClient()
         const { data, error } = await supabase
           .from('locations')
           .select('*')
@@ -77,12 +79,14 @@ export function LocationAutocomplete({
         if (thisRequestId !== requestIdRef.current) return
 
         setSuggestions(data || [])
-        setShowSuggestions((data || []).length > 0)
+        setHasSearched(true)
+        setShowSuggestions(true)
       } catch (error) {
-        console.error('Error searching locations:', error)
         if (thisRequestId !== requestIdRef.current) return
         setSuggestions([])
-        setShowSuggestions(false)
+        setHasSearched(true)
+        setSearchError(true)
+        setShowSuggestions(true)
       } finally {
         if (thisRequestId === requestIdRef.current) {
           setLoading(false)
@@ -92,10 +96,15 @@ export function LocationAutocomplete({
 
     const debounce = setTimeout(searchLocations, 300)
     return () => clearTimeout(debounce)
-  }, [value])
+  }, [supabase, value])
 
-  // Keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleSelect = useCallback((location: Location) => {
+    onSelect(location)
+    setShowSuggestions(false)
+    setSelectedIndex(-1)
+  }, [onSelect])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!showSuggestions) return
 
     switch(e.key) {
@@ -119,16 +128,11 @@ export function LocationAutocomplete({
         setSelectedIndex(-1)
         break
     }
-  }
+  }, [handleSelect, selectedIndex, showSuggestions, suggestions])
 
-  const handleSelect = (location: Location) => {
-    onSelect(location)
-    setShowSuggestions(false)
-    setSelectedIndex(-1)
-  }
-
-  // Click outside to close
   useEffect(() => {
+    if (!showSuggestions) return
+
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setShowSuggestions(false)
@@ -138,15 +142,17 @@ export function LocationAutocomplete({
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [showSuggestions])
 
   return (
     <div ref={containerRef} className="relative w-full flex-grow">
       <MapPin
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none z-10 text-luxury-gold"
+        className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10 ${
+          selectedLocation ? 'text-[var(--gold-text)]' : 'text-[var(--text-muted)]'
+        }`}
         aria-hidden="true"
       />
-      <Input
+      <input
         id={id}
         type="text"
         value={value}
@@ -154,16 +160,17 @@ export function LocationAutocomplete({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         aria-label={ariaLabel}
+        role="combobox"
         aria-autocomplete="list"
-        aria-controls={showSuggestions ? "location-suggestions" : undefined}
+        aria-controls={showSuggestions ? `${id}-suggestions` : undefined}
         aria-expanded={showSuggestions}
-        className="luxury-input w-full h-14 pl-12 text-base text-luxury-pearl placeholder:text-luxury-gold/70"
+        className="search-bar-input search-bar-input--location pl-9"
       />
 
       {loading && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <div
-            className="animate-spin h-4 w-4 border-2 border-luxury-gold/30 border-t-luxury-gold rounded-full"
+            className="animate-spin h-4 w-4 border-2 border-[var(--graphite)] border-t-[var(--gold)] rounded-full"
             role="status"
             aria-label="Loading suggestions"
           >
@@ -172,11 +179,11 @@ export function LocationAutocomplete({
         </div>
       )}
 
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && (
         <div
-          id="location-suggestions"
+          id={`${id}-suggestions`}
           role="listbox"
-          className="absolute top-full left-0 right-0 z-50 mt-1 luxury-card luxury-scrollbar max-h-60 overflow-y-auto"
+          className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-[var(--graphite)] bg-[var(--charcoal)] shadow-lg max-h-60 overflow-y-auto"
         >
           {suggestions.map((location, index) => (
             <button
@@ -185,25 +192,40 @@ export function LocationAutocomplete({
               role="option"
               aria-selected={index === selectedIndex}
               onClick={() => handleSelect(location)}
-              className={`w-full px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-inset ${
+              className={`w-full px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-inset ${
                 index === selectedIndex
-                  ? 'bg-luxury-gold/20'
-                  : 'hover:bg-luxury-gold/10'
+                  ? 'bg-[var(--charcoal-light)]'
+                  : 'hover:bg-[var(--charcoal-light)]'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">{getLocationIcon(location.type)}</div>
                 <div className="flex-1">
-                  <div className="font-medium text-luxury-pearl">{location.name}</div>
-                  <div className="text-sm text-luxury-lightGray">
+                  <div className="text-sm font-medium text-[var(--text-primary)]">{location.name}</div>
+                  <div className="text-xs text-[var(--text-muted)]">
                     {location.city ? `${location.city}, ` : ''}{location.country_code}
                   </div>
                 </div>
               </div>
             </button>
           ))}
+          <div role="status" aria-live="polite">
+            {!loading && hasSearched && suggestions.length === 0 && !searchError && (
+              <div className="px-4 py-3 text-sm text-[var(--text-muted)]">
+                No locations found for &ldquo;{value}&rdquo;
+              </div>
+            )}
+            {!loading && searchError && (
+              <div className="px-4 py-3 text-sm text-[hsl(var(--destructive))]">
+                Unable to search locations. Try again.
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
   )
 }
+
+export const LocationAutocomplete = memo(LocationAutocompleteBase)
+LocationAutocomplete.displayName = 'LocationAutocomplete'

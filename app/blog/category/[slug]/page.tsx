@@ -81,10 +81,10 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
               <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
                 <span className="text-[var(--gold)]/40 text-2xl font-serif">?</span>
               </div>
-              <h3 className="font-serif text-xl text-[var(--text-primary)] mb-2">
+              <h3 className="t-subhead mb-2">
                 No articles in this category
               </h3>
-              <p className="text-[var(--text-muted)] text-sm max-w-md mx-auto mb-6">
+              <p className="t-meta max-w-md mx-auto mb-6">
                 We haven&apos;t published any articles in &ldquo;{category.name}&rdquo; yet. Browse other categories or check back soon.
               </p>
               <Link

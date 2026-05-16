@@ -43,20 +43,16 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-3 mb-6">
           <span className="w-8 h-px bg-gradient-to-r from-transparent to-[var(--gold)]" />
-          <span className="text-xs font-medium tracking-[0.2em] uppercase text-[var(--gold)]">
-            {eyebrow}
-          </span>
+          <span className="t-label-accent">{eyebrow}</span>
           <span className="w-8 h-px bg-gradient-to-l from-transparent to-[var(--gold)]" />
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[var(--text-primary)] mb-4">
-          {title}
-        </h1>
+        <h1 className="t-display mb-4">{title}</h1>
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
+          <p className="t-body max-w-2xl mx-auto">
             {subtitle}
           </p>
         )}

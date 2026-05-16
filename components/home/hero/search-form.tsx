@@ -1,7 +1,7 @@
 "use client"
-import { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { ArrowRight, CalendarDays, Layers, Users } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import type { FormEvent } from 'react'
+import { ArrowRight, CalendarDays, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Location } from '@/lib/types/location'
 import { LocationAutocomplete } from './location-autocomplete'
@@ -15,33 +15,30 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
   const [passengers, setPassengers] = useState(2)
   const [selectedDate, setSelectedDate] = useState(todayDate)
 
-  // From autocomplete state
   const [fromInput, setFromInput] = useState('')
-
-  // To autocomplete state
   const [toInput, setToInput] = useState('')
 
-  const handleFromInput = (value: string) => {
+  const handleFromInput = useCallback((value: string) => {
     setFromInput(value)
     setFromLocation(null)
-  }
+  }, [])
 
-  const handleToInput = (value: string) => {
+  const handleToInput = useCallback((value: string) => {
     setToInput(value)
     setToLocation(null)
-  }
+  }, [])
 
-  const selectFromLocation = (location: Location) => {
+  const selectFromLocation = useCallback((location: Location) => {
     setFromLocation(location)
     setFromInput(location.name)
-  }
+  }, [])
 
-  const selectToLocation = (location: Location) => {
+  const selectToLocation = useCallback((location: Location) => {
     setToLocation(location)
     setToInput(location.name)
-  }
+  }, [])
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (fromLocation && toLocation) {
       router.push(buildSearchUrl(fromLocation.slug, toLocation.slug, {
@@ -49,108 +46,97 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
         passengers: passengers,
       }))
     }
-  }
+  }, [fromLocation, passengers, router, selectedDate, toLocation])
 
   return (
-    <div className="booking-card w-full">
-      {/* Card Header */}
-      <div className="booking-card-header">
-        <div className="booking-card-icon">
-          <Layers className="w-4 h-4 text-[var(--gold)]" />
-        </div>
-        <h2 className="booking-card-title">Book Your Transfer</h2>
-        <p className="booking-card-subtitle">Enter your journey details</p>
+    <form
+      onSubmit={handleSearch}
+      className="search-bar"
+      aria-labelledby="hero-headline"
+    >
+      {/* From */}
+      <div className="search-bar-field search-bar-field--location">
+        <label htmlFor="pickup-location" className="search-bar-label">From</label>
+        <LocationAutocomplete
+          id="pickup-location"
+          value={fromInput}
+          onChange={handleFromInput}
+          onSelect={selectFromLocation}
+          placeholder="Airport, hotel, or address"
+          ariaLabel="Pick-up location"
+          selectedLocation={fromLocation}
+        />
       </div>
 
-      {/* Divider */}
-      <div className="booking-card-divider">
-        <div className="booking-card-divider-line" />
-        <div className="booking-card-divider-diamond" />
-        <div className="booking-card-divider-line" />
+      <div className="search-bar-divider" aria-hidden />
+
+      {/* To */}
+      <div className="search-bar-field search-bar-field--location">
+        <label htmlFor="dropoff-location" className="search-bar-label">To</label>
+        <LocationAutocomplete
+          id="dropoff-location"
+          value={toInput}
+          onChange={handleToInput}
+          onSelect={selectToLocation}
+          placeholder="Airport, hotel, or address"
+          ariaLabel="Drop-off location"
+          selectedLocation={toLocation}
+        />
       </div>
 
-      <form onSubmit={handleSearch} className="booking-form">
-        {/* From Input */}
-        <div className="form-group">
-          <label htmlFor="pickup-location" className="form-label">Pick-up Location</label>
-          <LocationAutocomplete
-            id="pickup-location"
-            value={fromInput}
-            onChange={handleFromInput}
-            onSelect={selectFromLocation}
-            placeholder="Airport, hotel, or address"
-            ariaLabel="Pick-up location"
-            selectedLocation={fromLocation}
+      <div className="search-bar-divider" aria-hidden />
+
+      {/* Date */}
+      <div className="search-bar-field search-bar-field--compact">
+        <label htmlFor="travel-date" className="search-bar-label">Date</label>
+        <div className="relative">
+          <CalendarDays
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-muted)]"
+            aria-hidden
+          />
+          <input
+            id="travel-date"
+            type="date"
+            value={selectedDate}
+            min={todayDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="search-bar-input pl-9"
           />
         </div>
+      </div>
 
-        {/* To Input */}
-        <div className="form-group">
-          <label htmlFor="dropoff-location" className="form-label">Drop-off Location</label>
-          <LocationAutocomplete
-            id="dropoff-location"
-            value={toInput}
-            onChange={handleToInput}
-            onSelect={selectToLocation}
-            placeholder="Airport, hotel, or address"
-            ariaLabel="Drop-off location"
-            selectedLocation={toLocation}
+      <div className="search-bar-divider" aria-hidden />
+
+      {/* Passengers */}
+      <div className="search-bar-field search-bar-field--narrow">
+        <label htmlFor="passengers" className="search-bar-label">Passengers</label>
+        <div className="relative">
+          <Users
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-muted)]"
+            aria-hidden
+          />
+          <input
+            id="passengers"
+            type="number"
+            min={1}
+            max={20}
+            value={passengers}
+            onChange={(e) => setPassengers(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))}
+            className="search-bar-input pl-9"
           />
         </div>
+      </div>
 
-        {/* Date & Passengers Row */}
-        <div className="form-row">
-          {/* Date Input */}
-          <div className="form-group">
-            <label htmlFor="travel-date" className="form-label">Date</label>
-            <div className="relative">
-              <CalendarDays
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--gold)]"
-                aria-hidden="true"
-              />
-              <Input
-                id="travel-date"
-                type="date"
-                value={selectedDate}
-                min={todayDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="luxury-input pl-11 h-12"
-              />
-            </div>
-          </div>
-
-          {/* Passengers Input */}
-          <div className="form-group">
-            <label htmlFor="passengers" className="form-label">Passengers</label>
-            <div className="relative">
-              <Users
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--gold)]"
-                aria-hidden="true"
-              />
-              <Input
-                id="passengers"
-                type="number"
-                placeholder="2"
-                min="1"
-                max="20"
-                value={passengers}
-                onChange={(e) => setPassengers(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))}
-                className="luxury-input pl-11 h-12"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Search Button */}
-        <button
-          type="submit"
-          disabled={!fromLocation || !toLocation}
-          className="btn-book w-full mt-2"
-        >
-          <span>Search Vehicles</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </form>
-    </div>
+      {/* Search button */}
+      <button
+        type="submit"
+        disabled={!fromLocation || !toLocation}
+        className="search-bar-submit"
+        aria-label="Search transfers"
+      >
+        <span className="hidden sm:inline">Search</span>
+        <ArrowRight className="w-4 h-4" aria-hidden="true" />
+      </button>
+    </form>
   )
 }

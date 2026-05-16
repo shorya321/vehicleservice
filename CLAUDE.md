@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Codex CLI instructions live in `AGENTS.md`. Keep shared project facts aligned, but keep tool-specific workflows in their own files.
+
 ## 🚀 Development Workflow Rules
 
 ### IMPORTANT: When developing new functionality or fixing bugs
@@ -275,4 +277,3 @@ SEO metadata configuration
 3. Use appropriate Supabase client
 4. Handle errors gracefully
 5. Return consistent response format
-

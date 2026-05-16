@@ -208,11 +208,10 @@ export default {
         "pulse-gold": "pulse-gold 2s ease-in-out infinite",
       },
       fontFamily: {
-        // Midnight Opulence - Luxury Fonts
-        serif: ["var(--font-cormorant)", "'Cormorant Garamond'", "Georgia", "serif"],
-        sans: ["var(--font-outfit)", "'Outfit'", "system-ui", "sans-serif"],
-        display: ["var(--font-cormorant)", "'Cormorant Garamond'", "Georgia", "serif"],
-        body: ["var(--font-outfit)", "'Outfit'", "system-ui", "sans-serif"],
+        serif: ["var(--font-dm-serif)", "'DM Serif Display'", "Georgia", "serif"],
+        sans: ["var(--font-dm-sans)", "'DM Sans'", "system-ui", "sans-serif"],
+        display: ["var(--font-dm-serif)", "'DM Serif Display'", "Georgia", "serif"],
+        body: ["var(--font-dm-sans)", "'DM Sans'", "system-ui", "sans-serif"],
         // Business portal fonts
         "business-display": ["var(--font-jakarta)", "'Plus Jakarta Sans'", "system-ui", "sans-serif"],
         "business-body": ["var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],

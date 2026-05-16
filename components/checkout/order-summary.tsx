@@ -2,26 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { motion } from 'motion/react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Calendar,
-  Clock,
-  Users,
-  Tag,
-  Shield,
-  Lock,
-  ChevronDown,
-  ChevronUp,
-  ArrowRight,
-  Check,
-  Briefcase,
-  Info
-} from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
+import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Info, Lock } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
-import { cn } from '@/lib/utils'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
@@ -42,6 +25,9 @@ interface OrderSummaryProps {
   selectedAddons?: OrderSummaryAddon[]
 }
 
+const inputClass =
+  'w-full h-11 bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-3 text-[0.875rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200'
+
 export function OrderSummary({
   route,
   vehicleType,
@@ -58,39 +44,29 @@ export function OrderSummary({
   selectedAddons = [],
 }: OrderSummaryProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
-  // Helper function to format price in user's currency
+  const reduceMotion = useReducedMotion()
+
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
   const isConverted = currentCurrency !== 'AED'
+
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
   const [showPromo, setShowPromo] = useState(false)
 
-  // Calculate prices including all extras
   const basePrice = vehicleType.price || 50
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * 15 // $15 per extra bag
-  const childSeatsCost = (infantSeats + boosterSeats) * 10 // $10 per seat
+  const extraLuggageCost = extraLuggageCount * 15
+  const childSeatsCost = (infantSeats + boosterSeats) * 10
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
   const subtotal = basePrice + extraLuggageCost + childSeatsCost + addonsCost
-  const discount = promoDiscount
-  const total = subtotal - discount
+  const total = subtotal - promoDiscount
 
-  // Format date and time
   const formattedDate = pickupDate
-    ? new Date(pickupDate).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      })
-    : ''
-
-  const formattedTime = pickupTime
-    ? pickupTime
+    ? new Date(pickupDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     : ''
 
   const applyPromoCode = () => {
-    // Simplified promo code logic
     if (promoCode.toUpperCase() === 'SAVE10') {
       setPromoDiscount(basePrice * 0.1)
       setPromoApplied(true)
@@ -100,226 +76,217 @@ export function OrderSummary({
     }
   }
 
+  const itinerary: { label: string; value: React.ReactNode }[] = [
+    { label: 'From', value: route.origin.name },
+    { label: 'To', value: route.destination.name },
+    formattedDate ? { label: 'Date', value: <span className="numeric">{formattedDate}</span> } : null,
+    pickupTime ? { label: 'Time', value: <span className="numeric">{pickupTime}</span> } : null,
+    { label: 'Pax', value: <span className="numeric">{passengers}</span> },
+    { label: 'Bags', value: <span className="numeric">{vehicleType.luggage_capacity}</span> },
+  ].filter(Boolean) as { label: string; value: React.ReactNode }[]
+
   return (
-    <motion.div
-      className="checkout-summary-card"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+    <motion.aside
+      aria-label="Order summary"
+      className="bg-[var(--black-rich)] border border-[var(--graphite)]"
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Header */}
-      <div className="checkout-summary-header">
-        <h2 className="checkout-summary-title">Order Summary</h2>
-      </div>
+      <header className="border-b border-[var(--graphite)] px-6 py-5">
+        <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+          Itinerary · summary
+        </div>
+        <h2 className="mt-1 font-display text-xl text-[var(--text-primary)]">
+          {vehicleType.name}
+        </h2>
+      </header>
 
-      {/* Content */}
-      <div className="checkout-summary-content">
-        {/* Vehicle Info */}
-        <div className="checkout-summary-vehicle">
-          {vehicleType.image_url && (
-            <div className="relative w-20 h-[55px] rounded-lg overflow-hidden bg-[#161514] flex-shrink-0">
-              <Image
-                src={vehicleType.image_url}
-                alt={vehicleType.name}
-                fill
-                className="object-contain p-1"
-              />
-            </div>
-          )}
-          <div className="checkout-summary-vehicle-info">
-            <span className="checkout-summary-vehicle-category">
-              {vehicleType.category || 'Premium'}
-            </span>
-            <p className="checkout-summary-vehicle-name">{vehicleType.name}</p>
+      {vehicleType.image_url && (
+        <div className="border-b border-[var(--graphite)]">
+          <div className="relative h-32 w-full overflow-hidden bg-[var(--black-warm)]">
+            <Image
+              src={vehicleType.image_url}
+              alt={vehicleType.name}
+              fill
+              className="object-cover"
+              sizes="420px"
+            />
           </div>
         </div>
+      )}
 
-        {/* Route Info */}
-        <div className="checkout-summary-route">
-          <div className="checkout-summary-route-item">
-            <div className="checkout-summary-route-dot pickup" />
-            <div className="checkout-summary-route-text">
-              <span className="checkout-summary-route-label">Pickup</span>
-              <p className="checkout-summary-route-name">{route.origin.name}</p>
-            </div>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-[var(--graphite)] px-6 py-5 text-[0.875rem]">
+        {itinerary.map((item) => (
+          <div key={item.label}>
+            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              {item.label}
+            </dt>
+            <dd className="mt-1 text-[var(--text-primary)]">{item.value}</dd>
           </div>
-          <div className="checkout-summary-route-item">
-            <div className="checkout-summary-route-dot dropoff" />
-            <div className="checkout-summary-route-text">
-              <span className="checkout-summary-route-label">Drop-off</span>
-              <p className="checkout-summary-route-name">{route.destination.name}</p>
-            </div>
-          </div>
-        </div>
+        ))}
+      </dl>
 
-        {/* Trip Details */}
-        <div className="checkout-summary-details">
-          {formattedDate && (
-            <div className="checkout-summary-detail">
-              <Calendar className="h-4 w-4 text-[#c6aa88]" />
-              <span>{formattedDate}</span>
-            </div>
-          )}
-          {formattedTime && (
-            <div className="checkout-summary-detail">
-              <Clock className="h-4 w-4 text-[#c6aa88]" />
-              <span>{formattedTime}</span>
-            </div>
-          )}
-          <div className="checkout-summary-detail">
-            <Users className="h-4 w-4 text-[#c6aa88]" />
-            <span>{passengers} passengers</span>
-          </div>
-          <div className="checkout-summary-detail">
-            <Briefcase className="h-4 w-4 text-[#c6aa88]" />
-            <span>{vehicleType.luggage_capacity} luggage</span>
-          </div>
-        </div>
+      <div className="border-b border-[var(--graphite)] px-6 py-5">
+        <button
+          type="button"
+          onClick={() => setShowPromo(!showPromo)}
+          aria-expanded={showPromo}
+          className="flex items-center gap-2 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+        >
+          <Tag className="h-4 w-4" aria-hidden="true" />
+          Have a promo code?
+          {showPromo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
 
-        {/* Promo Code */}
-        <div className="checkout-promo-section">
-          <button
-            type="button"
-            className="checkout-promo-toggle"
-            onClick={() => setShowPromo(!showPromo)}
-          >
-            <Tag className="h-4 w-4" />
-            Have a promo code?
-            {showPromo ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
-          <div className={cn("checkout-promo-form", showPromo && "visible")}>
-            <Input
+        {showPromo && (
+          <div className="mt-3 flex gap-2">
+            <input
               placeholder="Enter code"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
-              className="flex-1 h-12 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] placeholder:text-[#7a7672]/50"
+              className={inputClass + ' flex-1'}
             />
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={applyPromoCode}
-              className="h-12 px-4 border-[#c6aa88]/30 text-[#c6aa88] hover:bg-[#c6aa88] hover:text-[#050506]"
+              className="btn btn-secondary h-11 px-4 text-[0.75rem]"
             >
               Apply
-            </Button>
+            </button>
           </div>
-          {promoApplied && (
-            <p className="text-sm text-green-400 mt-2 flex items-center gap-1">
-              <Check className="h-4 w-4" />
-              Promo code applied!
-            </p>
-          )}
-        </div>
+        )}
 
-        {/* Price Breakdown */}
-        <div className="checkout-price-breakdown">
-          <div className="checkout-price-row">
-            <span className="checkout-price-label">Base Fare</span>
-            <span className="checkout-price-value">{formatUserPrice(basePrice)}</span>
-          </div>
-          {childSeatsCost > 0 && (
-            <div className="checkout-price-row">
-              <span className="checkout-price-label">Child Seats ({infantSeats + boosterSeats})</span>
-              <span className="checkout-price-value">{formatUserPrice(childSeatsCost)}</span>
-            </div>
-          )}
-          {extraLuggageCost > 0 && (
-            <div className="checkout-price-row">
-              <span className="checkout-price-label">Extra Luggage ({extraLuggageCount})</span>
-              <span className="checkout-price-value">{formatUserPrice(extraLuggageCost)}</span>
-            </div>
-          )}
-          {selectedAddons.map((addon) => (
-            <div key={addon.id} className="checkout-price-row">
-              <span className="checkout-price-label">
-                {addon.name}{addon.quantity > 1 ? ` (×${addon.quantity})` : ''}
-              </span>
-              <span className="checkout-price-value">{formatUserPrice(addon.total_price)}</span>
-            </div>
-          ))}
-          {promoDiscount > 0 && (
-            <div className="checkout-price-row discount">
-              <span className="checkout-price-label">Promo Discount</span>
-              <span className="checkout-price-value">-{formatUserPrice(promoDiscount)}</span>
-            </div>
-          )}
-          {addonsCost > 0 && (
-            <div className="checkout-price-row">
-              <span className="checkout-price-label">Services Total</span>
-              <span className="checkout-price-value">{formatUserPrice(addonsCost)}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Total */}
-        <div className="checkout-price-total">
-          <span className="checkout-total-label">Total</span>
-          <span className="checkout-total-value">{formatUserPrice(total)}</span>
-        </div>
-
-        {/* Currency Notice */}
-        {isConverted && (
-          <div className="flex items-start gap-2 mt-3 text-xs text-[#7a7672]">
-            <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-            <span>
-              Prices shown in {currentCurrency}. Payment will be processed in AED ({formatPrice(total, 'AED', exchangeRates)}).
-            </span>
-          </div>
+        {promoApplied && (
+          <p className="mt-2 flex items-center gap-1 text-[0.75rem] text-[var(--gold)]">
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            Promo applied.
+          </p>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="checkout-summary-footer">
-        {/* Terms Checkbox - if onAgreeToTermsChange is provided */}
+      <div className="border-b border-[var(--graphite)] px-6 py-5 space-y-2.5 text-[0.875rem]">
+        <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
+        {childSeatsCost > 0 && (
+          <PriceRow
+            label={`Child seats (${infantSeats + boosterSeats})`}
+            value={formatUserPrice(childSeatsCost)}
+          />
+        )}
+        {extraLuggageCost > 0 && (
+          <PriceRow
+            label={`Extra luggage (${extraLuggageCount})`}
+            value={formatUserPrice(extraLuggageCost)}
+          />
+        )}
+        {selectedAddons.map((addon) => (
+          <PriceRow
+            key={addon.id}
+            label={`${addon.name}${addon.quantity > 1 ? ` × ${addon.quantity}` : ''}`}
+            value={formatUserPrice(addon.total_price)}
+          />
+        ))}
+        {promoDiscount > 0 && (
+          <PriceRow
+            label="Promo discount"
+            value={`−${formatUserPrice(promoDiscount)}`}
+            tone="positive"
+          />
+        )}
+      </div>
+
+      <div className="px-6 py-5">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            Total
+          </span>
+          <span className="numeric text-3xl text-[var(--text-primary)]">
+            {formatUserPrice(total)}
+          </span>
+        </div>
+        {isConverted && (
+          <p className="mt-3 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>
+              Shown in {currentCurrency}. Charged in AED ({formatPrice(total, 'AED', exchangeRates)}).
+            </span>
+          </p>
+        )}
+      </div>
+
+      <footer className="border-t border-[var(--graphite)] px-6 py-5 space-y-4">
         {onAgreeToTermsChange && (
-          <label className="checkout-terms-checkbox">
-            <Checkbox
+          <label htmlFor="agree-terms" className="flex cursor-pointer items-start gap-3">
+            <input
+              id="agree-terms"
+              type="checkbox"
               checked={agreeToTerms}
-              onCheckedChange={onAgreeToTermsChange}
-              className="border-[#c6aa88]/30 data-[state=checked]:bg-[#c6aa88] data-[state=checked]:border-[#c6aa88]"
+              onChange={(e) => onAgreeToTermsChange(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 appearance-none border border-[var(--graphite)] bg-[var(--black-warm)] checked:border-[var(--gold)] checked:bg-[var(--gold)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
             />
-            <span className="checkout-terms-checkbox-label">
-              I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+            <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+              I agree to the{' '}
+              <a href="/terms" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+                Terms
+              </a>{' '}
+              and{' '}
+              <a href="/privacy" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+                Privacy Policy
+              </a>
+              .
             </span>
           </label>
         )}
 
-        {/* Book Button - if onSubmit is provided */}
         {onSubmit && (
           <button
             type="submit"
-            className="checkout-btn-book"
             disabled={isSubmitting || !agreeToTerms}
             onClick={onSubmit}
+            className="btn btn-primary h-12 w-full disabled:opacity-50"
           >
             {isSubmitting ? (
-              'Processing...'
+              'Processing'
             ) : (
               <>
-                Confirm Booking
-                <ArrowRight className="h-5 w-5" />
+                Confirm booking
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </>
             )}
           </button>
         )}
 
-        {/* Trust Badges */}
-        <div className="checkout-trust-badges">
-          <div className="checkout-trust-badge">
-            <Shield className="h-4 w-4 text-[#c6aa88]" />
-            <span>SSL Secure</span>
-          </div>
-          <div className="checkout-trust-badge">
-            <Lock className="h-4 w-4 text-[#c6aa88]" />
-            <span>Encrypted</span>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+        <p className="flex items-center justify-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+          <Lock className="h-3.5 w-3.5 text-[var(--gold)]" aria-hidden="true" />
+          Encrypted · SSL secure
+        </p>
+      </footer>
+    </motion.aside>
+  )
+}
+
+function PriceRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: string
+  tone?: 'positive'
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <span className="text-[var(--text-secondary)]">{label}</span>
+      <span
+        className={
+          tone === 'positive'
+            ? 'numeric text-[var(--gold)]'
+            : 'numeric text-[var(--text-primary)]'
+        }
+      >
+        {value}
+      </span>
+    </div>
   )
 }

@@ -75,6 +75,7 @@ export function CurrencySelector({
         <Button
           variant="ghost"
           size="sm"
+          aria-label={`Select currency, currently ${currentCurrency}`}
           className={`h-8 gap-1 px-2 font-mono text-sm ${className}`}
         >
           <span>{getCurrencyFlag(currentCurrency)}</span>
@@ -87,11 +88,12 @@ export function CurrencySelector({
       <Button
         variant="ghost"
         size="sm"
-        className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[var(--gold)]/[0.12] hover:border-[var(--gold)]/30 hover:text-[var(--gold-light)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-300 ${className}`}
+        aria-label={`Select currency, currently ${currentCurrency}`}
+        className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[color-mix(in_oklch,var(--graphite)_70%,var(--gold)_30%)] hover:border-[rgba(var(--gold-text-rgb),0.4)] hover:text-[var(--gold-text-hover)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-200 ${className}`}
       >
         <span className="text-sm leading-none">{getCurrencyFlag(currentCurrency)}</span>
         <span>{currentCurrency}</span>
-        <ChevronDown className="h-3 w-3 text-[var(--gold)] opacity-60" />
+        <ChevronDown className="h-3 w-3 text-[var(--gold-text)] opacity-60" />
       </Button>
     )
   }
@@ -104,6 +106,7 @@ export function CurrencySelector({
             <Button
               variant="ghost"
               size="sm"
+              aria-label={`Select currency, currently ${currentCurrency}`}
               className={`h-8 gap-1 px-2 font-mono text-sm ${className}`}
             >
               <span>{getCurrencyFlag(currentCurrency)}</span>
@@ -158,41 +161,42 @@ export function CurrencySelector({
           <Button
             variant="ghost"
             size="sm"
-            className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[var(--gold)]/[0.12] hover:border-[var(--gold)]/30 hover:bg-transparent hover:text-[var(--gold-light)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-300 ${className}`}
+            aria-label={`Select currency, currently ${currentCurrency}`}
+            className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[color-mix(in_oklch,var(--graphite)_70%,var(--gold)_30%)] hover:border-[rgba(var(--gold-text-rgb),0.4)] hover:bg-transparent hover:text-[var(--gold-text-hover)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-200 ${className}`}
           >
             <span className="text-sm leading-none">{getCurrencyFlag(currentCurrency)}</span>
             <span>{currentCurrency}</span>
-            <ChevronDown className="h-3 w-3 text-[var(--gold)] opacity-60" />
+            <ChevronDown className="h-3 w-3 text-[var(--gold-text)] opacity-60" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="min-w-[180px] bg-[var(--charcoal)] border-[var(--gold)]/20"
+          className="min-w-[200px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-lg"
         >
           {dropdownCurrencies.map((currency) => (
             <DropdownMenuItem
               key={currency.code}
               onClick={() => handleSelectCurrency(currency.code)}
-              className="flex items-center justify-between gap-3 cursor-pointer hover:bg-[var(--gold)]/10"
+              className={`flex items-center justify-between gap-3 min-h-[44px] cursor-pointer hover:bg-[rgba(var(--gold-rgb),0.06)] focus:bg-[rgba(var(--gold-rgb),0.06)] ${currency.code === currentCurrency ? 'bg-[rgba(var(--gold-rgb),0.06)]' : ''}`}
             >
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2.5">
                 <span className="text-sm">{getCurrencyFlag(currency.code)}</span>
-                <span className="text-[var(--text-primary)]">{currency.code}</span>
+                <span className={`font-medium tabular-nums ${currency.code === currentCurrency ? 'text-[var(--gold-text)]' : 'text-[var(--text-primary)]'}`}>{currency.code}</span>
+                <span className="text-xs text-[var(--text-muted)]">{currency.name}</span>
               </span>
               {currency.code === currentCurrency && (
-                <Check className="h-4 w-4 text-[var(--gold)]" />
+                <Check className="h-3.5 w-3.5 text-[var(--gold-text)]" />
               )}
             </DropdownMenuItem>
           ))}
           {allCurrencies.length > dropdownCurrencies.length && (
             <>
-              <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+              <DropdownMenuSeparator className="bg-[var(--graphite)]" />
               <DropdownMenuItem
                 onClick={handleShowAll}
-                className="flex items-center gap-2 cursor-pointer hover:bg-[var(--gold)]/10 text-[var(--text-secondary)]"
+                className="flex items-center justify-center min-h-[44px] cursor-pointer hover:bg-[rgba(var(--gold-rgb),0.06)] focus:bg-[rgba(var(--gold-rgb),0.06)] hover:text-[var(--gold-text)] focus:text-[var(--gold-text)] text-[var(--text-muted)] text-[0.6875rem] uppercase tracking-[0.12em] font-medium"
               >
-                <Globe className="h-4 w-4 text-[var(--gold)]" />
-                <span>More currencies</span>
+                All currencies
               </DropdownMenuItem>
             </>
           )}

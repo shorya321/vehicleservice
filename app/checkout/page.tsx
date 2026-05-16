@@ -6,9 +6,8 @@ import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getRouteById, getVehicleType, getLocationDetails, getActiveAddons } from './actions'
+import { getVehicleType, getLocationDetails, getActiveAddons } from './actions'
 import { createClient } from '@/lib/supabase/server'
-import { AmbientBackground } from '@/components/checkout/ambient-background'
 
 export const metadata: Metadata = {
   title: 'Checkout | Complete Your Booking',
@@ -155,14 +154,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   return (
     <PublicLayout>
-      <div className="relative bg-luxury-black min-h-screen">
-        {/* Progress Bar */}
+      <div className="min-h-screen bg-[var(--black-void)]">
         <ProgressBar currentStep={3} />
 
-        {/* Ambient Background Animations */}
-        <AmbientBackground />
-
-        <div className="luxury-container py-8 md:py-16 lg:py-20 relative z-10">
+        <div className="luxury-container py-10 md:py-14">
           <CheckoutHeading />
 
           <CheckoutWrapper

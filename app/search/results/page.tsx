@@ -6,7 +6,6 @@ import { SearchResults } from './components/search-results'
 import { SearchSummary } from './components/search-summary'
 import { getSearchResults, getLocationDetails } from './actions'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { AmbientBackground } from '@/components/checkout/ambient-background'
 
 export const metadata = {
   title: 'Search Results | Transfer Booking',
@@ -52,21 +51,18 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
   if (!results) {
     return (
       <PublicLayout>
-        <div className="bg-luxury-black min-h-screen relative">
-          <AmbientBackground />
-          <div className="luxury-container py-20 relative z-10">
-            <div className="text-center backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-12 max-w-2xl mx-auto">
-              <h2 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-4">
-                Unable to Load Search Results
+        <div className="min-h-screen bg-[var(--black-void)]">
+          <div className="luxury-container py-24">
+            <div className="mx-auto max-w-xl">
+              <div className="editorial-eyebrow">Search failed</div>
+              <h2 className="editorial-section-title mt-5">
+                Couldn&rsquo;t load results.
               </h2>
-              <p className="text-luxury-lightGray mb-8">
-                We&apos;re experiencing some issues. Please try again.
+              <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+                A network or system issue interrupted the search. Try again, or start a new one from the home page.
               </p>
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center h-14 px-8 rounded-md bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans font-semibold uppercase tracking-wider transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-luxury-black"
-              >
-                Return to Home
+              <Link href="/" className="btn btn-primary mt-8 inline-flex">
+                Return to home
               </Link>
             </div>
           </div>
@@ -82,22 +78,18 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
 
   return (
     <PublicLayout>
-      <div className="bg-luxury-black relative min-h-screen">
-        <AmbientBackground />
-        <div className="relative z-10">
-          <SearchSummary
-            origin={origin}
-            destination={destination}
-            date={new Date(date)}
-            passengers={parseInt(passengers)}
+      <div className="min-h-screen bg-[var(--black-void)]">
+        <SearchSummary
+          origin={origin}
+          destination={destination}
+          date={new Date(date)}
+          passengers={parseInt(passengers)}
+        />
+        <div className="luxury-container py-12">
+          <SearchResults
+            results={results}
+            searchParams={params}
           />
-
-          <div className="luxury-container py-8">
-            <SearchResults
-              results={results}
-              searchParams={params}
-            />
-          </div>
         </div>
       </div>
     </PublicLayout>

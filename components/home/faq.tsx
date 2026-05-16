@@ -1,132 +1,130 @@
 "use client"
 import { useState } from "react"
-import { motion } from "motion/react"
-import { Plus } from "lucide-react"
+import { motion, AnimatePresence, useReducedMotion } from "motion/react"
+import { Plus, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
-const faqData = [
+interface FaqItem {
+  question: string
+  answer: string
+}
+
+const faqData: FaqItem[] = [
   {
-    question: "How do I book a transfer?",
+    question: "How does pricing work?",
     answer:
-      "Enter the departure and destination in the booking form. Specify the exact address. Select your transfer class and click 'Search' to see available options and prices. Finalize your booking in a few simple steps.",
+      "Every transfer is fixed-price at the moment of booking. The number you see at checkout is the number on your card. No surge, no waiting-time surcharge, no driver-tip prompt. Prices are quoted in your selected currency; payment is processed in AED.",
   },
   {
     question: "How far in advance should I book?",
     answer:
-      "We recommend booking at least 24 hours in advance to ensure availability. However, we strive to accommodate last-minute requests whenever possible.",
+      "24 hours is comfortable. Last-minute bookings under 3 hours are accepted on most routes and confirmed against live chauffeur availability. Same-day airport pickups are usually fine.",
   },
   {
-    question: "What if my flight is delayed?",
+    question: "What happens if my flight is delayed?",
     answer:
-      "We monitor flight statuses. Your chauffeur will adjust the pickup time accordingly. Please provide your flight number during booking for this complimentary service.",
+      "We track the flight number you provided and shift the pickup time automatically. The chauffeur waits up to 60 minutes past the rescheduled arrival at no extra charge. Extended waiting can be added at checkout.",
   },
   {
-    question: "How do I find my driver?",
+    question: "How do I find my driver at the airport?",
     answer:
-      "Your driver will meet you in the arrivals hall with a sign bearing your name. Detailed meeting instructions will be in your booking confirmation email.",
+      "Meet-and-greet is default. The chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. The driver's name and phone number appear on the confirmation page and again 30 minutes before pickup.",
   },
   {
     question: "Is the price per person or per vehicle?",
     answer:
-      "The price is always per vehicle, not per person. The final price you see is the total for the selected vehicle and route, inclusive of all taxes and fees.",
+      "Per vehicle. Up to the listed passenger and luggage capacity. Taxes, tolls, and meet-and-greet are included in the quoted total.",
   },
 ]
 
 export function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const reduceMotion = useReducedMotion()
+  const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   const toggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
   }
 
   return (
-    <section className="section-padding faq-section" id="faq">
+    <section
+      aria-labelledby="faq-heading"
+      className="editorial-section editorial-section--ground editorial-section--compact"
+      id="faq"
+    >
       <div className="luxury-container">
-        <div className="grid lg:grid-cols-[1fr_1.5fr] gap-12 lg:gap-16">
-          {/* Left Column - Intro */}
+        <div className="grid gap-12 md:grid-cols-[1fr_1.2fr] lg:grid-cols-[0.9fr_1.4fr] lg:gap-20">
           <motion.div
-            className=""
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, amount: 0.3 }}
           >
-            <span className="section-eyebrow mb-4 block">Need Help?</span>
-            <h2 className="font-display text-3xl md:text-4xl text-[var(--text-primary)] mb-6">
-              Your Premium Transfer Experience
+            <div className="editorial-eyebrow">Asked</div>
+            <h2 id="faq-heading" className="editorial-section-title mt-5">
+              The five questions travellers actually ask.
             </h2>
-            <div className="w-16 h-px bg-[var(--gold)] mb-6"></div>
-            <div className="space-y-4 text-[var(--text-secondary)] leading-relaxed">
-              <p>
-                From the dazzling heights of Dubai to the cultural heart of Abu Dhabi, navigating the UAE requires
-                comfort, reliability, and a touch of class.
-              </p>
-              <p>
-                With our premier service, you bypass the uncertainties of local transport. Your professional chauffeur,
-                pre-booked vehicle, and fixed-price journey ensure a seamless experience from start to finish.
-              </p>
-            </div>
-            <Link href="/contact" className="btn btn-secondary mt-6">
-              Contact Support
+            <p className="editorial-body mt-6">
+              If yours isn&rsquo;t here, our team replies within an hour during local business hours.
+            </p>
+            <Link href="/contact" className="editorial-action mt-8">
+              Write to support
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
           </motion.div>
 
-          {/* Right Column - FAQ */}
-          <motion.div
-            className=""
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <h3 className="font-display text-2xl text-[var(--text-primary)] mb-8">
-              Frequently Asked Questions
-            </h3>
-            <div className="w-full space-y-4">
-              {faqData.map((faq, index) => {
-                const isOpen = openIndex === index
-                const state = isOpen ? "open" : "closed"
-                const triggerId = `faq-trigger-${index}`
-                const contentId = `faq-content-${index}`
+          <div className="border-t border-[var(--graphite)]">
+            {faqData.map((faq, index) => {
+              const isOpen = openIndex === index
+              const triggerId = `faq-trigger-${index}`
+              const contentId = `faq-content-${index}`
 
-                return (
-                  <div
-                    key={index}
-                    data-state={state}
-                    className="faq-item group"
-                  >
-                    <h4>
-                      <button
-                        id={triggerId}
-                        type="button"
-                        aria-expanded={isOpen}
-                        aria-controls={contentId}
-                        data-state={state}
-                        className="faq-trigger w-full"
-                        onClick={() => toggle(index)}
-                      >
-                        <span className="font-body font-medium text-left pr-4">{faq.question}</span>
-                        <Plus className="faq-icon" aria-hidden="true" />
-                      </button>
-                    </h4>
-                    <div
-                      id={contentId}
-                      role="region"
-                      aria-labelledby={triggerId}
-                      data-state={state}
-                      className="faq-content-wrapper"
+              return (
+                <div
+                  key={faq.question}
+                  className="border-b border-[var(--graphite)]"
+                >
+                  <h3>
+                    <button
+                      id={triggerId}
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={contentId}
+                      onClick={() => toggle(index)}
+                      className="group flex w-full items-center justify-between gap-6 py-6 text-left transition-colors hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
                     >
-                      <div className="overflow-hidden">
-                        <div className="px-8 pb-5 pt-0">
-                          <p className="text-[var(--text-secondary)] leading-[1.7] text-sm">{faq.answer}</p>
+                      <span className="text-[1.0625rem] font-medium text-[var(--text-primary)] group-hover:text-[var(--gold-text)]">
+                        {faq.question}
+                      </span>
+                      <Plus
+                        className={`h-4 w-4 shrink-0 text-[var(--gold)] transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </h3>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        id={contentId}
+                        role="region"
+                        aria-labelledby={triggerId}
+                        initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+                        animate={reduceMotion ? undefined : { height: "auto", opacity: 1 }}
+                        exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        style={{ overflow: "hidden" }}
+                      >
+                        <div className="pb-6 pr-10 pl-4 rounded-b bg-[rgba(var(--gold-rgb),0.02)]">
+                          <p className="text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-2xl">
+                            {faq.answer}
+                          </p>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>

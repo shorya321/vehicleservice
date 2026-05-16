@@ -4,8 +4,13 @@ import { detectCurrencyFromAcceptLanguage, isValidCurrencyCode } from '@/lib/cur
 import { CURRENCY_COOKIE_NAME, CURRENCY_COOKIE_MAX_AGE } from '@/lib/currency/types'
 
 export async function proxy(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
   const response = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   })
 
   // Currency preference handling
@@ -309,7 +314,11 @@ export async function proxy(request: NextRequest) {
       }
 
       // Check if business account is active
-      if (businessUser.business_accounts?.status !== 'active') {
+      const businessAccount = Array.isArray(businessUser.business_accounts)
+        ? businessUser.business_accounts[0]
+        : businessUser.business_accounts
+
+      if (businessAccount?.status !== 'active') {
         return NextResponse.redirect(new URL('/unauthorized', request.url))
       }
 

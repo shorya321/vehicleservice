@@ -3,8 +3,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { VehicleTypeResult, VehicleTypesByCategory } from '../actions'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 
@@ -25,128 +23,118 @@ type SortOption = 'price-asc' | 'price-desc' | 'capacity' | 'name'
 
 const ITEMS_PER_PAGE = 6
 
+const SORT_LABELS: Record<SortOption, string> = {
+  'price-asc': 'Price · low to high',
+  'price-desc': 'Price · high to low',
+  'capacity': 'Capacity',
+  'name': 'Name',
+}
+
 export function VehicleTypeCategoryTabs({
   vehicleTypesByCategory,
   allVehicleTypes,
   searchParams,
 }: VehicleTypeCategoryTabsProps) {
-  const prefersReducedMotion = useReducedMotion()
+  const reduceMotion = useReducedMotion()
   const [activeCategory, setActiveCategory] = useState('all')
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Reset page when category or sort changes
   useEffect(() => {
-    const resetPage = () => setCurrentPage(1)
-    resetPage()
+    setCurrentPage(1)
   }, [activeCategory, sortBy])
 
-  // Get current vehicles based on active category
   const currentVehicles = useMemo(() => {
-    if (activeCategory === 'all') {
-      return allVehicleTypes
-    }
+    if (activeCategory === 'all') return allVehicleTypes
     const category = vehicleTypesByCategory.find(c => c.categoryId === activeCategory)
     return category?.vehicleTypes || []
   }, [activeCategory, allVehicleTypes, vehicleTypesByCategory])
 
-  // Sort vehicles
   const sortedVehicles = useMemo(() => {
     const vehicles = [...currentVehicles]
     switch (sortBy) {
-      case 'price-asc':
-        return vehicles.sort((a, b) => a.price - b.price)
-      case 'price-desc':
-        return vehicles.sort((a, b) => b.price - a.price)
-      case 'capacity':
-        return vehicles.sort((a, b) => b.capacity - a.capacity)
-      case 'name':
-        return vehicles.sort((a, b) => a.name.localeCompare(b.name))
-      default:
-        return vehicles
+      case 'price-asc': return vehicles.sort((a, b) => a.price - b.price)
+      case 'price-desc': return vehicles.sort((a, b) => b.price - a.price)
+      case 'capacity': return vehicles.sort((a, b) => b.capacity - a.capacity)
+      case 'name': return vehicles.sort((a, b) => a.name.localeCompare(b.name))
+      default: return vehicles
     }
   }, [currentVehicles, sortBy])
 
-  // Pagination
   const totalPages = Math.ceil(sortedVehicles.length / ITEMS_PER_PAGE)
   const paginatedVehicles = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE
     return sortedVehicles.slice(start, start + ITEMS_PER_PAGE)
   }, [sortedVehicles, currentPage])
 
-  // Handle category change
-  const handleCategoryChange = (value: string) => {
-    setActiveCategory(value)
-  }
+  const tabs = [
+    { id: 'all', name: 'All', count: allVehicleTypes.length },
+    ...vehicleTypesByCategory.map((c) => ({
+      id: c.categoryId,
+      name: c.categoryName,
+      count: c.vehicleTypes.length,
+    })),
+  ]
 
   return (
-    <div className="w-full space-y-6">
-      {/* Category Tabs - Luxury Pill Style */}
-      <Tabs value={activeCategory} onValueChange={handleCategoryChange} className="w-full">
-        <div className="relative">
-          {/* Scroll fade indicators */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-luxury-black to-transparent z-10 pointer-events-none md:hidden" />
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-luxury-black to-transparent z-10 pointer-events-none md:hidden" />
-        <TabsList className="w-fit h-auto p-1 bg-[rgba(42,40,38,0.5)] border border-[rgba(198,170,136,0.1)] rounded-xl flex gap-1 overflow-x-auto scrollbar-hide">
-          {/* All Vehicle Types Tab */}
-          <TabsTrigger
-            value="all"
-            className="group flex items-center gap-2 whitespace-nowrap rounded-lg px-8 py-4 text-[0.75rem] font-medium tracking-[0.1em] uppercase transition-all duration-200
-              data-[state=active]:bg-gradient-to-br data-[state=active]:from-luxury-gold data-[state=active]:to-luxury-goldDeep data-[state=active]:text-luxury-void data-[state=active]:shadow-[0_4px_15px_-5px_rgba(198,170,136,0.4)]
-              data-[state=inactive]:text-luxury-textMuted data-[state=inactive]:hover:text-luxury-pearl data-[state=inactive]:hover:bg-[rgba(198,170,136,0.1)]"
-          >
-            <span>All</span>
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[0.625rem] font-semibold rounded bg-[rgba(198,170,136,0.2)] text-luxury-gold group-data-[state=active]:bg-[rgba(5,5,6,0.3)] group-data-[state=active]:text-luxury-void">
-              {allVehicleTypes.length}
-            </span>
-          </TabsTrigger>
-
-          {/* Category Tabs */}
-          {vehicleTypesByCategory.map((category) => (
-            <TabsTrigger
-              key={category.categoryId}
-              value={category.categoryId}
-              className="group flex items-center gap-2 whitespace-nowrap rounded-lg px-8 py-4 text-[0.75rem] font-medium tracking-[0.1em] uppercase transition-all duration-200
-                data-[state=active]:bg-gradient-to-br data-[state=active]:from-luxury-gold data-[state=active]:to-luxury-goldDeep data-[state=active]:text-luxury-void data-[state=active]:shadow-[0_4px_15px_-5px_rgba(198,170,136,0.4)]
-                data-[state=inactive]:text-luxury-textMuted data-[state=inactive]:hover:text-luxury-pearl data-[state=inactive]:hover:bg-[rgba(198,170,136,0.1)]"
+    <div className="w-full space-y-8">
+      <div
+        role="tablist"
+        aria-label="Vehicle categories"
+        className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[var(--graphite)] pb-1"
+      >
+        {tabs.map((tab) => {
+          const selected = activeCategory === tab.id
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={selected}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setActiveCategory(tab.id)}
+              className={`relative -mb-px py-3 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
             >
-              <span>{category.categoryName}</span>
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[0.625rem] font-semibold rounded bg-[rgba(198,170,136,0.2)] text-luxury-gold group-data-[state=active]:bg-[rgba(5,5,6,0.3)] group-data-[state=active]:text-luxury-void">
-                {category.vehicleTypes.length}
+              <span>{tab.name}</span>
+              <span className="ml-2 numeric text-[0.6875rem] text-[var(--gold)]">
+                {String(tab.count).padStart(2, '0')}
               </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        </div>
-      </Tabs>
+              {selected && (
+                <span aria-hidden className="absolute -bottom-px left-0 right-0 h-px bg-[var(--gold)]" />
+              )}
+            </button>
+          )
+        })}
+      </div>
 
-      {/* Results Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-sm text-luxury-lightGray">
-          Showing <strong className="text-luxury-gold font-medium">{sortedVehicles.length} vehicles</strong> available for your journey
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[0.875rem] text-[var(--text-secondary)]">
+          <span className="numeric text-[var(--text-primary)]">{sortedVehicles.length}</span>{" "}
+          <span className="uppercase tracking-[0.16em] text-[0.6875rem] text-[var(--text-muted)]">
+            vehicles available
+          </span>
         </p>
         <div className="flex items-center gap-3">
-          <label htmlFor="vehicle-sort" className="text-xs uppercase tracking-[0.1em] text-luxury-lightGray/70">Sort by:</label>
+          <label htmlFor="vehicle-sort" className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            Sort
+          </label>
           <select
             id="vehicle-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="px-4 py-2.5 min-h-[44px] bg-luxury-graphite/50 border border-luxury-gold/20 rounded-md text-sm text-luxury-pearl cursor-pointer transition-colors duration-200 hover:border-luxury-gold focus:border-luxury-gold focus:outline-none focus:ring-1 focus:ring-luxury-gold/50"
+            className="h-10 min-w-[10rem] cursor-pointer rounded-[4px] border border-[var(--graphite)] bg-[var(--black-warm)] px-3 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25"
           >
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="capacity">Capacity</option>
-            <option value="name">Name</option>
+            {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
+              <option key={opt} value={opt}>{SORT_LABELS[opt]}</option>
+            ))}
           </select>
         </div>
       </div>
 
-      {/* Vehicle Grid - 3 columns max */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        initial={prefersReducedMotion ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3 }}
+        className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3"
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={reduceMotion ? undefined : { opacity: 1 }}
+        transition={{ duration: 0.3 }}
         key={`${activeCategory}-${sortBy}-${currentPage}`}
       >
         {paginatedVehicles.map((vehicleType, index) => (
@@ -159,55 +147,58 @@ export function VehicleTypeCategoryTabs({
         ))}
       </motion.div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-8">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="border-luxury-gold/30 text-[var(--text-secondary)] hover:bg-luxury-gold/10 hover:text-luxury-pearl hover:border-luxury-gold/50 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
+        <nav
+          aria-label="Pagination"
+          className="flex flex-col items-center gap-4 border-t border-[var(--graphite)] pt-8 sm:flex-row sm:justify-between"
+        >
+          <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            <span className="numeric text-[var(--text-secondary)]">
+              {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, sortedVehicles.length)}
+            </span>{" "}
+            of{" "}
+            <span className="numeric text-[var(--text-secondary)]">{sortedVehicles.length}</span>
+          </p>
 
-          {/* Page Numbers */}
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`min-w-[44px] h-11 px-3 rounded-md text-sm font-medium transition-all duration-200
-                  ${page === currentPage
-                    ? 'bg-gradient-to-r from-luxury-gold to-luxury-goldDeep text-luxury-void shadow-gold'
-                    : 'text-[var(--text-secondary)] hover:text-luxury-pearl hover:bg-luxury-gold/10'
-                  }`}
-              >
-                {page}
-              </button>
-            ))}
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              aria-label="Previous page"
+              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              Prev
+            </button>
+
+            <div className="flex items-center">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                const active = page === currentPage
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    aria-label={`Page ${page}`}
+                    aria-current={active ? 'page' : undefined}
+                    className={`inline-flex h-10 min-w-10 items-center justify-center px-2 text-[0.875rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${active ? "numeric text-[var(--gold)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+                  >
+                    <span className="numeric">{page}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              aria-label="Next page"
+              className="inline-flex h-10 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-3 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="border-luxury-gold/30 text-[var(--text-secondary)] hover:bg-luxury-gold/10 hover:text-luxury-pearl hover:border-luxury-gold/50 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      )}
-
-      {/* Results info */}
-      {totalPages > 1 && (
-        <p className="text-center text-sm text-[var(--text-muted)]">
-          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, sortedVehicles.length)} of {sortedVehicles.length} vehicles
-        </p>
+        </nav>
       )}
     </div>
   )

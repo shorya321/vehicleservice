@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CurrencySelector } from '@/components/currency/currency-selector'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useCurrency } from '@/lib/currency/context'
 import { HamburgerButton } from '@/components/layout/mobile-menu/hamburger-button'
 import { MobileMenu } from '@/components/layout/mobile-menu'
@@ -43,8 +44,6 @@ export function PublicHeader({
   const isNotHomePage = pathname !== '/'
   const [user, setUser] = useState<SupabaseUser | null>(initialUser)
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
-  // No loading state needed - we have initial data from server
-  const [isAuthLoading] = useState(false)
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
@@ -145,13 +144,14 @@ export function PublicHeader({
           {/* Logo with Cormorant Garamond */}
           <Link
             href="/"
-            className="footer-logo text-2xl hover:opacity-80 transition-opacity duration-300"
+            aria-label="Infinia Transfers, go to homepage"
+            className="footer-logo text-2xl hover:opacity-80 transition-opacity duration-200"
           >
             Infinia <span>Transfers</span>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-12">
+          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-12">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -164,18 +164,15 @@ export function PublicHeader({
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Currency Selector */}
             {allCurrencies.length > 1 && (
               <CurrencySelector staticMode={!mounted} className="scale-90 sm:scale-100 origin-right" />
             )}
 
-            {isAuthLoading ? (
-              // Skeleton placeholder while checking auth
-              <div className="hidden lg:flex items-center gap-4">
-                <div className="h-8 w-16 bg-[var(--charcoal)] rounded animate-pulse" />
-                <div className="h-8 w-20 bg-[var(--charcoal)] rounded animate-pulse" />
-              </div>
-            ) : user ? (
+            {user ? (
               mounted ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -185,7 +182,7 @@ export function PublicHeader({
                           src={profile?.avatar_url || undefined}
                           alt={profile?.full_name || profile?.first_name || user?.email}
                         />
-                        <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)]">
+                        <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)]">
                           {getInitials(profile)}
                         </AvatarFallback>
                       </Avatar>
@@ -255,7 +252,7 @@ export function PublicHeader({
                       src={profile?.avatar_url || undefined}
                       alt={profile?.full_name || profile?.first_name || user?.email}
                     />
-                    <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)]">
+                    <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)]">
                       {getInitials(profile)}
                     </AvatarFallback>
                   </Avatar>
@@ -264,7 +261,7 @@ export function PublicHeader({
             ) : (
               <Link
                 href="/login"
-                className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-[var(--gold)] hover:opacity-80 transition-opacity"
+                className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors duration-200"
               >
                 <User className="w-4 h-4" />
                 Sign In

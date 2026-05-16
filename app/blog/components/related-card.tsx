@@ -42,14 +42,14 @@ export function RelatedCard({ post }: RelatedCardProps) {
       {/* Body */}
       <div className="p-5">
         {post.category && (
-          <div className="text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-[var(--gold)] mb-2">
+          <div className="t-label-accent mb-2">
             {post.category.name}
           </div>
         )}
-        <div className="font-serif text-[1.125rem] leading-[1.3] text-[var(--text-primary)] mb-2">
+        <div className="t-subhead text-[1.125rem] leading-[1.3] mb-2">
           {post.title}
         </div>
-        <div className="text-xs text-[var(--text-muted)]">
+        <div className="t-meta">
           {formatDate(post.published_at)}
         </div>
       </div>

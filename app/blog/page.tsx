@@ -51,9 +51,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
           <section className="mb-16">
             <div className="flex items-center gap-3 mb-8">
               <span className="w-6 h-px bg-[var(--gold)]" />
-              <h2 className="text-sm font-medium tracking-[0.15em] uppercase text-[var(--gold)]">
-                Featured
-              </h2>
+              <h2 className="t-label-accent">Featured</h2>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredPosts.map((post, index) => (
@@ -81,10 +79,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
               <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
                 <Search className="w-6 h-6 text-[var(--gold)]/40" />
               </div>
-              <h3 className="font-serif text-xl text-[var(--text-primary)] mb-2">
+              <h3 className="t-subhead mb-2">
                 {resolvedSearchParams.search ? 'No results found' : 'No articles yet'}
               </h3>
-              <p className="text-[var(--text-muted)] text-sm max-w-md mx-auto">
+              <p className="t-meta max-w-md mx-auto">
                 {resolvedSearchParams.search
                   ? `We couldn\u2019t find any articles matching \u201c${resolvedSearchParams.search}\u201d. Try a different search term.`
                   : 'Check back soon for new articles and insights.'}
@@ -111,8 +109,8 @@ export default async function BlogPage({ searchParams }: PageProps) {
               </span>
             )}
 
-            <span className="text-sm text-[var(--text-muted)]">
-              Page {currentPage} of {totalPages}
+            <span className="t-meta text-[var(--text-muted)]">
+              Page <span className="t-numeric">{currentPage}</span> of <span className="t-numeric">{totalPages}</span>
             </span>
 
             {currentPage < totalPages ? (
@@ -137,9 +135,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
           <section className="py-12 border-t border-[var(--gold)]/10" aria-label="Popular topics">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-6 h-px bg-[var(--gold)]" />
-              <h2 className="text-sm font-medium tracking-[0.15em] uppercase text-[var(--gold)]">
-                Popular Topics
-              </h2>
+              <h2 className="t-label-accent">Popular Topics</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               {popularTags.map((tag) => (

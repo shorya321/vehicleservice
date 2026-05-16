@@ -1,62 +1,28 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 interface CheckoutHeadingProps {
   title?: string
   subtitle?: string
 }
 
-/**
- * Checkout Heading Component
- *
- * Animated heading section for checkout page with:
- * - Gold gradient text effect
- * - Decorative diamond divider
- * - Staggered entrance animation
- *
- * @component
- */
 export function CheckoutHeading({
-  title = 'Complete Your Booking',
-  subtitle = 'Secure your premium transfer in just a few steps'
+  title = 'Complete your booking',
+  subtitle = 'Confirm passenger details and add any extras. We hold the vehicle while you check out.',
 }: CheckoutHeadingProps) {
+  const reduceMotion = useReducedMotion()
+
   return (
     <motion.div
-      className="flex flex-col items-center text-center mb-12 md:mb-16"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="mb-10"
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Gold Gradient Title */}
-      <motion.h1
-        className="font-serif text-4xl md:text-5xl lg:text-6xl gold-text mb-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-      >
-        {title}
-      </motion.h1>
-
-      {/* Subtitle */}
-      <motion.p
-        className="text-[#b8b4ae] text-lg mb-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-      >
-        {subtitle}
-      </motion.p>
-
-      {/* Decorative Divider */}
-      <motion.div
-        className="section-divider"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-      >
-        <div className="section-divider-icon" />
-      </motion.div>
+      <div className="t-label-accent">Step 03 · Details</div>
+      <h1 className="t-headline mt-5">{title}</h1>
+      <p className="t-body mt-5 max-w-2xl">{subtitle}</p>
     </motion.div>
   )
 }

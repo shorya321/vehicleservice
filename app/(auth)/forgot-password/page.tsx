@@ -39,10 +39,10 @@ function ForgotPasswordContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="font-serif text-[clamp(2rem,4vw,2.75rem)] font-light text-[var(--text-primary)] mb-4">
-              Password <span className="gold-text">Recovery</span>
+            <h1 className="t-headline mb-4">
+              Password <span className="text-[var(--gold)]">Recovery</span>
             </h1>
-            <p className="text-base text-[var(--text-secondary)]">
+            <p className="t-body">
               We&apos;ll help you get back into your account
             </p>
             <div className="section-divider mt-6">

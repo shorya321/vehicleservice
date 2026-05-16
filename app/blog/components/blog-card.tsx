@@ -46,7 +46,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--black-void)] via-transparent to-transparent opacity-40 md:bg-gradient-to-r" />
             {post.category && (
               <div className="absolute top-4 left-4">
-                <span className="inline-block px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--black-void)] rounded-full shadow-md">
+                <span className="t-label inline-block px-3.5 py-1.5 bg-[var(--gold)] text-[var(--black-void)] rounded-full shadow-md">
                   {post.category.name}
                 </span>
               </div>
@@ -57,9 +57,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
           <div className="p-8 md:p-10 flex flex-col justify-center space-y-4">
             <div className="flex items-center gap-1.5 mb-1">
               <span className="w-5 h-px bg-[var(--gold)]" />
-              <span className="text-[0.6875rem] font-semibold tracking-[0.12em] uppercase text-[var(--gold)]">
-                Featured
-              </span>
+              <span className="t-label-accent">Featured</span>
             </div>
             <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
               <span>{formatDate(post.published_at)}</span>
@@ -70,15 +68,15 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
                 </span>
               )}
             </div>
-            <h3 className="font-serif text-2xl md:text-3xl leading-tight text-[var(--text-primary)] group-hover:text-[var(--gold)] transition-colors duration-300">
+            <h3 className="t-headline group-hover:text-[var(--gold)] transition-colors duration-300">
               {post.title}
             </h3>
             {(post.excerpt || post.content) && (
-              <p className="text-sm text-[var(--text-secondary)] line-clamp-3 leading-relaxed">
+              <p className="t-meta line-clamp-3">
                 {post.excerpt || post.content}
               </p>
             )}
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-[var(--gold)] mt-2">
+            <span className="inline-flex items-center gap-2 t-meta font-medium text-[var(--gold)] mt-2">
               Read Article
               <span className="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
             </span>
@@ -123,7 +121,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
         {/* Featured badge */}
         {featured && (
           <div className="absolute top-4 right-4">
-            <span className="inline-block px-2.5 py-1 text-[0.625rem] font-semibold tracking-[0.1em] uppercase bg-[var(--black-void)]/70 text-[var(--gold)] border border-[var(--gold)]/30 rounded-full backdrop-blur-sm">
+            <span className="t-label-accent inline-block px-2.5 py-1 bg-[var(--black-void)]/70 border border-[var(--gold)]/30 rounded-full backdrop-blur-sm">
               Featured
             </span>
           </div>
@@ -144,13 +142,13 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
         </div>
 
         {/* Title */}
-        <h3 className={`font-serif leading-tight text-[var(--text-primary)] group-hover:text-[var(--gold)] transition-colors duration-300 ${featured ? 'text-2xl' : 'text-xl'}`}>
+        <h3 className={`group-hover:text-[var(--gold)] transition-colors duration-300 ${featured ? 't-headline' : 't-subhead'}`}>
           {post.title}
         </h3>
 
         {/* Excerpt — falls back to truncated content */}
         {(post.excerpt || post.content) && (
-          <p className="text-sm text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+          <p className="t-meta line-clamp-2">
             {post.excerpt || post.content}
           </p>
         )}

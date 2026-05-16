@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinia Transfers — Hero Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    /* ───────────────────────────────────────────
+       RESET
+    ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ───────────────────────────────────────────
+       DESIGN TOKENS — LIGHT MODE (default)
+    ─────────────────────────────────────────── */
+    :root {
+      --bg-page: #faf9f7;
+      --bg-surface: #f3f1ee;
+      --bg-input: #e8e4de;
+      --bg-input-hover: #ddd9d3;
+      --border: #c4c0b9;
+      --border-subtle: #d8d4cd;
+
+      --gold: #c6aa88;
+      --gold-rgb: 198, 170, 136;
+      --gold-deep: #b89b6a;
+      --gold-dark: #a68b5b;
+      --gold-shadow: #8b7349;
+
+      --text-primary: #1a1917;
+      --text-secondary: #5c5955;
+      --text-muted: #8a8683;
+
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration: 200ms;
+      --duration-slow: 500ms;
+    }
+
+    /* ───────────────────────────────────────────
+       DESIGN TOKENS — DARK MODE
+    ─────────────────────────────────────────── */
+    .dark {
+      --bg-page: #050506;
+      --bg-surface: #0a0a0b;
+      --bg-input: #0f0e0d;
+      --bg-input-hover: #161514;
+      --border: #2a2826;
+      --border-subtle: #1f1e1c;
+
+      --text-primary: #f8f6f3;
+      --text-secondary: #b8b4ae;
+      --text-muted: #9a9692;
+    }
+
+    /* ───────────────────────────────────────────
+       BASE
+    ─────────────────────────────────────────── */
+    html {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-primary);
+      background: var(--bg-page);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body {
+      transition: background-color var(--duration-slow) var(--ease-out),
+                  color var(--duration-slow) var(--ease-out);
+    }
+
+    /* ───────────────────────────────────────────
+       HERO SECTION
+    ─────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-page);
+    }
+
+    .hero__glow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 45% at 30% 10%, rgba(var(--gold-rgb), 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 75% 80%, rgba(var(--gold-rgb), 0.03) 0%, transparent 60%);
+    }
+
+    .hero__inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: clamp(6rem, 12vw, 10rem) clamp(1.25rem, 4vw, 3rem) clamp(3rem, 6vw, 5rem);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ───────────────────────────────────────────
+       CONTENT GRID — editorial split
+    ─────────────────────────────────────────── */
+    .hero__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(2.5rem, 5vw, 4rem);
+      align-items: start;
+    }
+
+    @media (min-width: 1024px) {
+      .hero__grid {
+        grid-template-columns: 7fr 3fr;
+        gap: clamp(3rem, 5vw, 5rem);
+      }
+    }
+
+    /* ── Left column: editorial text ── */
+    .hero__editorial {}
+
+    .hero__eyebrow {
+      font-family: var(--font-body);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero__headline {
+      font-family: var(--font-display);
+      font-size: clamp(2.75rem, 6vw, 5rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero__description {
+      font-size: 1.0625rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 42ch;
+    }
+
+    /* ── Right column: numbers as display ── */
+    .hero__numbers {
+      display: flex;
+      flex-direction: row;
+      gap: 2rem;
+      padding-top: 0.25rem;
+    }
+
+    @media (min-width: 1024px) {
+      .hero__numbers {
+        flex-direction: column;
+        gap: 0;
+        border-left: 1px solid var(--border);
+        padding-left: clamp(1.5rem, 3vw, 2.5rem);
+      }
+    }
+
+    .hero__stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 1024px) {
+      .hero__stat {
+        padding: 1.25rem 0;
+      }
+
+      .hero__stat + .hero__stat {
+        border-top: 1px solid var(--border);
+      }
+    }
+
+    .hero__stat-number {
+      font-family: var(--font-body);
+      font-size: clamp(1.75rem, 3vw, 2.75rem);
+      font-weight: 500;
+      line-height: 1.1;
+      color: var(--gold);
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .hero__stat-label {
+      font-family: var(--font-body);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* ───────────────────────────────────────────
+       SEARCH FORM
+    ─────────────────────────────────────────── */
+    .search {
+      margin-top: clamp(2.5rem, 5vw, 3.5rem);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 900px) {
+      .search {
+        flex-direction: row;
+        align-items: stretch;
+      }
+
+      .search__field {
+        min-width: 0;
+      }
+
+      .search__field--narrow {
+        min-width: 80px;
+      }
+    }
+
+    .search__field {
+      flex: 1;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+
+    .search__field--location {
+      flex: 1.4;
+    }
+
+    .search__field--compact {
+      flex: 0.85;
+    }
+
+    .search__field--narrow {
+      flex: 0.65;
+    }
+
+    .search__field + .search__field {
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    @media (min-width: 900px) {
+      .search__field + .search__field {
+        border-top: none;
+        border-left: 1px solid var(--border-subtle);
+      }
+    }
+
+    .search__label {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      line-height: 1;
+    }
+
+    .search__input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search__icon {
+      position: absolute;
+      left: 0;
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+      flex-shrink: 0;
+    }
+
+    .search__input {
+      width: 100%;
+      height: 32px;
+      background: transparent;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 400;
+      color: var(--text-primary);
+      outline: none;
+      transition: box-shadow var(--duration) var(--ease-out),
+                  outline-color var(--duration) var(--ease-out);
+      padding: 0;
+    }
+
+    .search__input--has-icon {
+      padding-left: 24px;
+    }
+
+    .search__input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search__input:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 1px;
+      border-radius: 4px;
+    }
+
+    /* Date input styling */
+    .search__input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .search__input[type="date"]::-webkit-calendar-picker-indicator {
+      opacity: 0.5;
+      cursor: pointer;
+      filter: invert(0);
+    }
+
+    .dark .search__input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      opacity: 0.4;
+    }
+
+    /* Number input hide spinners */
+    .search__input[type="number"]::-webkit-inner-spin-button,
+    .search__input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .search__input[type="number"] {
+      -moz-appearance: textfield;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Submit button */
+    .search__submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--gold);
+      color: var(--bg-page);
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      padding: 16px 32px;
+      transition:
+        background-color var(--duration) var(--ease-out),
+        transform var(--duration) var(--ease-out),
+        box-shadow var(--duration) var(--ease-out);
+      border-radius: 0 0 7px 7px;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 900px) {
+      .search__submit {
+        border-radius: 0 7px 7px 0;
+        padding: 16px 36px;
+      }
+    }
+
+    .search__submit:hover {
+      background: var(--gold-deep);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(var(--gold-rgb), 0.15),
+                  0 4px 8px -4px rgba(var(--gold-rgb), 0.1);
+    }
+
+    .search__submit:active {
+      background: var(--gold-dark);
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .search__submit:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    .search__submit-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ───────────────────────────────────────────
+       ITINERARY BLOCK — signature pattern
+    ─────────────────────────────────────────── */
+    .itinerary {
+      margin-top: clamp(1.75rem, 3vw, 2.5rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      padding: 0 0.5rem;
+    }
+
+    .itinerary__segment {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .itinerary__code {
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .itinerary__arrow {
+      color: var(--gold);
+      font-size: 0.75rem;
+      margin: 0 0.125rem;
+    }
+
+    .itinerary__divider {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--border);
+      margin: 0 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .itinerary__value {
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .itinerary__price {
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gold);
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .itinerary__label {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* ───────────────────────────────────────────
+       THEME TOGGLE
+    ─────────────────────────────────────────── */
+    .theme-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 100;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background-color var(--duration) var(--ease-out),
+        border-color var(--duration) var(--ease-out),
+        color var(--duration) var(--ease-out);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    .theme-toggle svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+
+    .dark .theme-toggle .icon-sun { display: block; }
+    .dark .theme-toggle .icon-moon { display: none; }
+
+    /* ───────────────────────────────────────────
+       HAIRLINE ACCENT
+    ─────────────────────────────────────────── */
+    .hero__hairline {
+      width: 48px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.4;
+      margin-top: 2rem;
+    }
+
+    /* ───────────────────────────────────────────
+       ENTRANCE ANIMATIONS
+    ─────────────────────────────────────────── */
+    @media (prefers-reduced-motion: no-preference) {
+      .fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeUp 0.8s var(--ease-out) forwards;
+      }
+
+      .fade-up--d1 { animation-delay: 0ms; }
+      .fade-up--d2 { animation-delay: 100ms; }
+      .fade-up--d3 { animation-delay: 180ms; }
+      .fade-up--d4 { animation-delay: 260ms; }
+      .fade-up--d5 { animation-delay: 360ms; }
+      .fade-up--d6 { animation-delay: 440ms; }
+
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up { opacity: 1; transform: none; }
+    }
+
+    /* ───────────────────────────────────────────
+       RESPONSIVE FINE-TUNING
+    ─────────────────────────────────────────── */
+    @media (max-width: 767px) {
+      .hero__numbers {
+        gap: 0;
+        justify-content: flex-start;
+        border-top: 1px solid var(--border);
+        padding-top: 1.25rem;
+      }
+
+      .hero__stat {
+        flex: 1;
+        text-align: center;
+      }
+
+      .hero__stat + .hero__stat {
+        border-left: 1px solid var(--border);
+        padding-left: 1rem;
+      }
+
+      .itinerary {
+        gap: 0;
+      }
+
+      .itinerary__divider {
+        margin: 0 0.5rem;
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .hero__grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .hero__numbers {
+        flex-direction: row;
+        gap: 0;
+        border-top: 1px solid var(--border);
+        padding-top: 1.5rem;
+        border-left: none;
+        padding-left: 0;
+      }
+
+      .hero__stat {
+        flex: 1;
+      }
+
+      .hero__stat + .hero__stat {
+        border-top: none;
+        border-left: 1px solid var(--border);
+        padding-left: 1.5rem;
+      }
+    }
+
+    /* ───────────────────────────────────────────
+       BOTTOM EDGE
+    ─────────────────────────────────────────── */
+    .hero__bottom-edge {
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--border) 20%,
+        rgba(var(--gold-rgb), 0.3) 50%,
+        var(--border) 80%,
+        transparent 100%
+      );
+    }
+
+    /* ───────────────────────────────────────────
+       LABEL BADGE
+    ─────────────────────────────────────────── */
+    .prototype-label {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      font-family: var(--font-body);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 767px) {
+      .prototype-label {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Theme Toggle -->
+  <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" aria-pressed="true" onclick="toggleTheme()">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+
+  <!-- Hero Section -->
+  <section class="hero" aria-labelledby="hero-headline">
+    <div class="hero__glow" aria-hidden="true"></div>
+
+    <div class="hero__inner">
+      <!-- Content Grid -->
+      <div class="hero__grid">
+        <!-- Left: Editorial -->
+        <div class="hero__editorial">
+          <p class="hero__eyebrow fade-up fade-up--d1">
+            Premium ground transportation
+          </p>
+
+          <h1 id="hero-headline" class="hero__headline fade-up fade-up--d2">
+            Airport transfers,<br>simpler than ever.
+          </h1>
+
+          <p class="hero__description fade-up fade-up--d3">
+            Fixed prices in your currency, confirmed in seconds. Door-to-door service across 47 cities worldwide.
+          </p>
+
+          <div class="hero__hairline fade-up fade-up--d3" aria-hidden="true"></div>
+        </div>
+
+        <!-- Right: Numbers as Display -->
+        <div class="hero__numbers fade-up fade-up--d4">
+          <div class="hero__stat">
+            <span class="hero__stat-number">47</span>
+            <span class="hero__stat-label">Cities</span>
+          </div>
+          <div class="hero__stat">
+            <span class="hero__stat-number">120+</span>
+            <span class="hero__stat-label">Vehicles</span>
+          </div>
+          <div class="hero__stat">
+            <span class="hero__stat-number">4.9<span style="font-family: var(--font-body); font-size: 0.6em; vertical-align: 0.15em; margin-left: 2px;">&#9733;</span></span>
+            <span class="hero__stat-label">Rating</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Form -->
+      <form class="search fade-up fade-up--d5" aria-label="Search transfers" onsubmit="event.preventDefault()">
+        <!-- From -->
+        <div class="search__field search__field--location">
+          <label for="pickup" class="search__label">From</label>
+          <div class="search__input-wrap">
+            <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 7 11.5 7.35 11.76a1 1 0 0 0 1.3 0C13 21.5 20 15.4 20 10a8 8 0 0 0-8-8z"/>
+            </svg>
+            <input id="pickup" type="text" class="search__input search__input--has-icon" placeholder="Airport, hotel, or address" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- To -->
+        <div class="search__field search__field--location">
+          <label for="dropoff" class="search__label">To</label>
+          <div class="search__input-wrap">
+            <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 7 11.5 7.35 11.76a1 1 0 0 0 1.3 0C13 21.5 20 15.4 20 10a8 8 0 0 0-8-8z"/>
+            </svg>
+            <input id="dropoff" type="text" class="search__input search__input--has-icon" placeholder="Airport, hotel, or address" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div class="search__field search__field--compact">
+          <label for="travel-date" class="search__label">Date</label>
+          <div class="search__input-wrap">
+            <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <input id="travel-date" type="date" class="search__input search__input--has-icon" value="2026-05-14">
+          </div>
+        </div>
+
+        <!-- Passengers -->
+        <div class="search__field search__field--narrow">
+          <label for="passengers" class="search__label">Passengers</label>
+          <div class="search__input-wrap">
+            <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <input id="passengers" type="number" class="search__input search__input--has-icon" value="2" min="1" max="20">
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="search__submit">
+          <span>Search</span>
+          <svg class="search__submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Itinerary Block -->
+      <div class="fade-up fade-up--d6">
+        <p class="itinerary__label">Recent booking</p>
+        <div class="itinerary">
+          <div class="itinerary__segment">
+            <span class="itinerary__code">DXB</span>
+            <span class="itinerary__arrow" aria-hidden="true">&#8594;</span>
+            <span class="itinerary__code">JBR</span>
+          </div>
+          <div class="itinerary__divider" aria-hidden="true"></div>
+          <div class="itinerary__segment">
+            <span class="itinerary__value">14 May 2026</span>
+          </div>
+          <div class="itinerary__divider" aria-hidden="true"></div>
+          <div class="itinerary__segment">
+            <span class="itinerary__value">Mercedes E-Class</span>
+          </div>
+          <div class="itinerary__divider" aria-hidden="true"></div>
+          <div class="itinerary__segment">
+            <span class="itinerary__value">3 pax</span>
+          </div>
+          <div class="itinerary__divider" aria-hidden="true"></div>
+          <div class="itinerary__segment">
+            <span class="itinerary__price">$85</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__bottom-edge" aria-hidden="true"></div>
+  </section>
+
+  <!-- Prototype Label -->
+  <div class="prototype-label" aria-hidden="true">Hero Redesign Prototype</div>
+
+  <script>
+    function toggleTheme() {
+      var isDark = document.documentElement.classList.toggle('dark');
+      var btn = document.getElementById('theme-toggle');
+      btn.setAttribute('aria-pressed', String(isDark));
+      btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+  </script>
+</body>
+</html>

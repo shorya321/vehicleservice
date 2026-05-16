@@ -11,7 +11,7 @@ import { GuaranteeCard } from './components/guarantee-card'
 import { PublicHeader } from '@/components/layout/public-header'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { Calendar, Clock, Users, Luggage, HelpCircle } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { BookingSummaryPrices } from './components/booking-summary-prices'
 import { format } from 'date-fns'
 import {
@@ -252,49 +252,38 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
         featuredCurrencies={featuredCurrencies}
         allCurrencies={allCurrencies}
       >
-      <div className="min-h-screen bg-[#050506]">
-        {/* Ambient Glow */}
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(198,170,136,0.04)_0%,transparent_70%)] pointer-events-none" />
+      <div className="min-h-screen bg-[var(--black-void)]">
+        <PublicHeader initialUser={user} initialProfile={profile} />
 
-        {/* Header */}
-        <PublicHeader
-          initialUser={user}
-          initialProfile={profile}
-        />
+        <div className="pt-24 md:pt-28 pb-16">
+          <div className="luxury-container">
+            <div className="mx-auto max-w-2xl">
+              <div className="editorial-eyebrow">Payment unavailable</div>
+              <h2 className="editorial-section-title mt-5">
+                Can&rsquo;t reach the payment processor.
+              </h2>
+              <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+                {stripeError || 'Payment processing is currently unavailable. Your booking is held; complete payment from the link below or try again shortly.'}
+              </p>
 
-        <div className="pt-24 md:pt-28 pb-16 px-6 md:px-8">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-gradient-to-br from-[rgba(22,21,20,0.95)] to-[rgba(15,14,13,0.98)] border border-[rgba(198,170,136,0.15)] rounded-[20px] overflow-hidden">
-              <div className="bg-gradient-to-r from-[rgba(198,170,136,0.1)] to-transparent px-6 py-5 border-b border-[rgba(198,170,136,0.1)]">
-                <h2 className="font-serif text-2xl text-[#f8f6f3]">Payment System Not Available</h2>
-              </div>
-              <div className="p-6 md:p-8 space-y-6">
-                <p className="text-[#b8b4ae]">
-                  {stripeError || 'Payment processing is currently unavailable.'}
-                </p>
-                <div className="bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.2)] p-6 rounded-xl">
-                  <p className="text-sm font-semibold text-[#fbbf24] mb-3">
-                    For Testing/Development:
-                  </p>
-                  <ol className="text-sm text-[#fbbf24]/80 space-y-2 list-decimal list-inside">
-                    <li>Sign up for a Stripe account at stripe.com</li>
-                    <li>Get your test API keys from the Stripe Dashboard</li>
-                    <li>Add to your .env.local file:</li>
-                  </ol>
-                  <pre className="mt-3 p-3 bg-[rgba(251,191,36,0.1)] rounded text-xs overflow-x-auto text-[#fbbf24]">
-{`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...`}
-                  </pre>
+              <dl className="mt-10 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-[var(--graphite)] pt-6 sm:grid-cols-3 text-[0.875rem]">
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Booking</dt>
+                  <dd className="numeric mt-1 text-[var(--gold)]">{booking.booking_number}</dd>
                 </div>
-                <div className="pt-4 border-t border-[rgba(198,170,136,0.1)]">
-                  <p className="font-serif text-lg text-[#f8f6f3] mb-3">Your Booking Details:</p>
-                  <div className="space-y-1 text-sm text-[#b8b4ae]">
-                    <p>Booking Number: <span className="font-mono text-[#c6aa88]">{booking.booking_number}</span></p>
-                    <p>Amount: <span className="text-[#f8f6f3]">{formatUserPrice(booking.total_price)}</span></p>
-                    <p>Status: <span className="text-[#fbbf24]">Payment Pending</span></p>
-                  </div>
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Amount</dt>
+                  <dd className="numeric mt-1 text-[var(--text-primary)]">{formatUserPrice(booking.total_price)}</dd>
                 </div>
-              </div>
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Status</dt>
+                  <dd className="mt-1 text-[var(--text-primary)]">Pending</dd>
+                </div>
+              </dl>
+
+              <Link href="/contact" className="btn btn-primary mt-10 inline-flex">
+                Contact support
+              </Link>
             </div>
           </div>
         </div>
@@ -312,12 +301,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
       featuredCurrencies={featuredCurrencies}
       allCurrencies={allCurrencies}
     >
-    <div className="min-h-screen bg-[#050506] flex flex-col">
-
-      {/* Ambient Glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(198,170,136,0.04)_0%,transparent_70%)] pointer-events-none z-0" />
-
-      {/* Header */}
+    <div className="flex min-h-screen flex-col bg-[var(--black-void)]">
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
@@ -326,37 +310,23 @@ STRIPE_SECRET_KEY=sk_test_...`}
         currentCurrency={currentCurrency}
       />
 
-      {/* Progress Section */}
       <div className="pt-20 md:pt-24">
         <ProgressBar currentStep={4} />
       </div>
 
-      {/* Page Header */}
-      <header className="text-center py-8 md:py-10 relative z-10">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-8">
-          <h1 className="font-serif text-3xl md:text-4xl lg:text-[2.75rem] font-light mb-4 text-[#f8f6f3]">
-            Secure{' '}
-            <span className="bg-gradient-to-r from-[#e8d9c5] via-[#c6aa88] to-[#8b7349] bg-clip-text text-transparent">
-              Payment
-            </span>
-          </h1>
-          <p className="text-base text-[#b8b4ae] max-w-[500px] mx-auto">
-            Complete your booking with our encrypted payment system
-          </p>
-          {/* Decorative Divider */}
-          <div className="flex items-center justify-center gap-4 mt-6">
-            <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#c6aa88] to-transparent" />
-            <span className="w-2 h-2 border border-[#c6aa88] rotate-45" />
-            <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#c6aa88] to-transparent" />
-          </div>
-        </div>
-      </header>
+      <main className="flex-1 pb-16">
+        <div className="luxury-container py-10 md:py-14">
+          <header className="mb-10 max-w-2xl">
+            <div className="editorial-eyebrow">Step 04 · Payment</div>
+            <h1 className="editorial-headline mt-5 text-[clamp(2rem,4vw,3rem)]">
+              Confirm and pay.
+            </h1>
+            <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+              We hold the vehicle for the next 15 minutes while you complete payment. Card details are processed by Stripe; we never see them.
+            </p>
+          </header>
 
-      {/* Main Content */}
-      <main className="flex-1 pb-16 relative z-10">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 lg:gap-12 items-start">
-            {/* Payment Form */}
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_420px] lg:gap-12">
             <div>
               <PaymentWrapper
                 clientSecret={clientSecret}
@@ -366,94 +336,78 @@ STRIPE_SECRET_KEY=sk_test_...`}
               />
             </div>
 
-            {/* Order Summary Sidebar */}
-            <aside className="lg:sticky lg:top-24">
-              <div className="bg-gradient-to-br from-[rgba(22,21,20,0.95)] to-[rgba(15,14,13,0.98)] border border-[rgba(198,170,136,0.15)] rounded-[20px] overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_0_1px_rgba(198,170,136,0.05)_inset]">
-                {/* Summary Header */}
-                <div className="px-6 py-5 bg-gradient-to-r from-[rgba(198,170,136,0.1)] to-transparent border-b border-[rgba(198,170,136,0.1)]">
-                  <h3 className="font-serif text-xl text-[#f8f6f3]">Booking Summary</h3>
+            <aside aria-label="Booking summary" className="lg:sticky lg:top-24 border border-[var(--graphite)] bg-[var(--black-rich)]">
+              <header className="border-b border-[var(--graphite)] px-6 py-5">
+                <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                  Booking
                 </div>
+                <div className="numeric mt-1 text-[var(--gold)]">{booking.booking_number}</div>
+                {booking.vehicle_type && (
+                  <h3 className="mt-3 font-display text-xl text-[var(--text-primary)]">
+                    {booking.vehicle_type.name}
+                  </h3>
+                )}
+              </header>
 
-                <div className="p-6 space-y-5">
-                  {/* Vehicle */}
-                  {booking.vehicle_type && (
-                    <div className="pb-5 border-b border-[rgba(198,170,136,0.1)]">
-                      <span className="text-[0.5625rem] font-semibold tracking-[0.1em] uppercase text-[#c6aa88]">
-                        Luxury Transfer
-                      </span>
-                      <h4 className="font-serif text-base text-[#f8f6f3]">{booking.vehicle_type.name}</h4>
-                    </div>
-                  )}
+              <dl className="grid grid-cols-1 gap-4 border-b border-[var(--graphite)] px-6 py-5 text-[0.875rem]">
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Pick-up</dt>
+                  <dd className="mt-1 text-[var(--text-primary)]">{booking.pickup_address}</dd>
+                </div>
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Drop-off</dt>
+                  <dd className="mt-1 text-[var(--text-primary)]">{booking.dropoff_address}</dd>
+                </div>
+              </dl>
 
-                  {/* Route */}
-                  <div className="space-y-3 pb-5 border-b border-[rgba(198,170,136,0.1)]">
-                    {/* Pickup */}
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 mt-0 rounded-full bg-[#c6aa88] flex-shrink-0" />
-                      <div>
-                        <span className="text-[0.625rem] font-medium tracking-[0.1em] uppercase text-[#7a7672] block leading-none">Pick-up</span>
-                        <p className="text-[0.9375rem] text-[#f8f6f3] leading-tight mt-1">{booking.pickup_address}</p>
-                      </div>
-                    </div>
-                    {/* Dropoff */}
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 mt-0 rounded-full bg-[#a68b5b] flex-shrink-0" />
-                      <div>
-                        <span className="text-[0.625rem] font-medium tracking-[0.1em] uppercase text-[#7a7672] block leading-none">Drop-off</span>
-                        <p className="text-[0.9375rem] text-[#f8f6f3] leading-tight mt-1">{booking.dropoff_address}</p>
-                      </div>
-                    </div>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-[var(--graphite)] px-6 py-5 text-[0.875rem]">
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Date</dt>
+                  <dd className="numeric mt-1 text-[var(--text-primary)]">
+                    {format(new Date(booking.pickup_datetime), 'EEE · d MMM')}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Time</dt>
+                  <dd className="numeric mt-1 text-[var(--text-primary)]">
+                    {format(new Date(booking.pickup_datetime), 'HH:mm')}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Pax</dt>
+                  <dd className="numeric mt-1 text-[var(--text-primary)]">{booking.passenger_count}</dd>
+                </div>
+                {booking.luggage_count && booking.luggage_count > 0 && (
+                  <div>
+                    <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Bags</dt>
+                    <dd className="numeric mt-1 text-[var(--text-primary)]">{booking.luggage_count}</dd>
                   </div>
+                )}
+              </dl>
 
-                  {/* Details */}
-                  <div className="flex flex-wrap gap-4 pb-5 border-b border-[rgba(198,170,136,0.1)]">
-                    <span className="flex items-center gap-1.5 text-[0.8125rem] text-[#b8b4ae]">
-                      <Calendar className="w-3.5 h-3.5 stroke-[#c6aa88]" />
-                      {format(new Date(booking.pickup_datetime), 'MMM dd, yyyy')}
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[0.8125rem] text-[#b8b4ae]">
-                      <Clock className="w-3.5 h-3.5 stroke-[#c6aa88]" />
-                      {format(new Date(booking.pickup_datetime), 'HH:mm')}
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[0.8125rem] text-[#b8b4ae]">
-                      <Users className="w-3.5 h-3.5 stroke-[#c6aa88]" />
-                      {booking.passenger_count} passengers
-                    </span>
-                    {booking.luggage_count > 0 && (
-                      <span className="flex items-center gap-1.5 text-[0.8125rem] text-[#b8b4ae]">
-                        <Luggage className="w-3.5 h-3.5 stroke-[#c6aa88]" />
-                        {booking.luggage_count} luggage
-                      </span>
-                    )}
-                  </div>
-
-                  <BookingSummaryPrices
-                    basePrice={booking.base_price}
-                    amenitiesPrice={booking.amenities_price ?? 0}
-                    totalPrice={booking.total_price}
-                  />
-                </div>
-
-                {/* Summary Footer */}
-                <div className="p-6 bg-[rgba(42,40,38,0.3)] border-t border-[rgba(198,170,136,0.1)]">
-                  <GuaranteeCard />
-
-                  {/* Help Link */}
-                  <Link
-                    href="/contact"
-                    className="flex items-center justify-center gap-2 mt-5 text-[0.8125rem] text-[#c6aa88] hover:text-[#d4c4a8] transition-colors"
-                  >
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    Need help with your booking?
-                  </Link>
-                </div>
+              <div className="px-6 py-5">
+                <BookingSummaryPrices
+                  basePrice={booking.base_price}
+                  amenitiesPrice={booking.amenities_price ?? 0}
+                  totalPrice={booking.total_price}
+                />
               </div>
+
+              <footer className="border-t border-[var(--graphite)] px-6 py-5">
+                <GuaranteeCard />
+                <Link
+                  href="/contact"
+                  className="mt-5 flex items-center justify-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
+                  Need help?
+                </Link>
+              </footer>
             </aside>
           </div>
         </div>
       </main>
 
-      {/* Secure Footer */}
       <SecureFooter />
     </div>
     </CurrencyProvider>

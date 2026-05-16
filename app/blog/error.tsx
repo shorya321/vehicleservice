@@ -12,10 +12,10 @@ export default function BlogError({
   return (
     <div className="bg-[var(--black-void)] min-h-screen flex items-center justify-center">
       <div className="text-center px-4">
-        <h2 className="text-2xl font-serif text-[var(--text-primary)] mb-4">
+        <h2 className="t-headline mb-4">
           Something went wrong
         </h2>
-        <p className="text-[var(--text-muted)] mb-8">
+        <p className="t-body mb-8">
           We couldn&apos;t load the blog. Please try again.
         </p>
         <div className="flex items-center justify-center gap-4">

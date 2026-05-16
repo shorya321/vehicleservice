@@ -27,7 +27,7 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
   return (
     <div className="blog-article-header">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
+      <nav className="t-meta flex items-center gap-2 text-[var(--text-muted)] mb-6">
         <Link href="/" className="hover:text-[var(--gold)] transition-colors duration-200">
           Home
         </Link>
@@ -48,7 +48,7 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
         {post.category && (
           <Link
             href={`/blog/category/${post.category.slug}`}
-            className="inline-block px-3.5 py-1 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--black-void)] rounded-full"
+            className="t-label inline-block px-3.5 py-1 bg-[var(--gold)] text-[var(--black-void)] rounded-full"
           >
             {post.category.name}
           </Link>
@@ -68,7 +68,7 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
       </div>
 
       {/* Title */}
-      <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] font-normal leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)] mb-8">
+      <h1 className="t-display mb-8">
         {post.title}
       </h1>
 

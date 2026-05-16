@@ -175,10 +175,10 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
           </div>
         </motion.div>
 
-        <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-luxury-pearl mb-2 text-center">
+        <h2 className="t-headline mb-2 text-center">
           Complete Your Booking
         </h2>
-        <p className="text-luxury-lightGray text-sm text-center mb-6">
+        <p className="t-meta text-center mb-6">
           Sign in or create an account to continue
         </p>
 

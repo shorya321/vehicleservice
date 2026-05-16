@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import { useReducedMotion } from '@/lib/business/animation/hooks'
+import { useReducedMotion } from 'motion/react'
 import { MenuUserCard } from './menu-user-card'
 import { MenuSection } from './menu-section'
 import { MenuNavItem, MenuButtonItem } from './menu-nav-item'
@@ -48,7 +48,7 @@ const contentVariants: Variants = {
     opacity: 1,
     transition: {
       duration: 0.25,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.16, 1, 0.3, 1],
       delay: 0.15,
       staggerChildren: 0.08,
       delayChildren: 0.2,
@@ -65,7 +65,7 @@ export function MobileMenu({
   onSignOut,
 }: MobileMenuProps) {
   const router = useRouter()
-  const reducedMotion = useReducedMotion()
+  const reducedMotion = useReducedMotion() ?? false
 
   const close = () => onOpenChange(false)
 

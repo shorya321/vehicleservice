@@ -1,7 +1,6 @@
 'use client'
 
-import { Check, Search, UserRound, CreditCard } from 'lucide-react'
-import { motion } from 'motion/react'
+import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ProgressBarProps {
@@ -9,67 +8,79 @@ interface ProgressBarProps {
 }
 
 const steps = [
-  { number: 1, label: 'Search', icon: Search },
-  { number: 2, label: 'Account', icon: UserRound },
-  { number: 3, label: 'Checkout', icon: CreditCard },
-  { number: 4, label: 'Payment', icon: CreditCard }
+  { number: 1, label: 'Search' },
+  { number: 2, label: 'Account' },
+  { number: 3, label: 'Details' },
+  { number: 4, label: 'Payment' },
 ]
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
     <div
-      className="checkout-progress-wrapper bg-[#0a0a0b]/80 backdrop-blur-md border-b border-[#c6aa88]/10"
+      className="border-b border-[var(--graphite)] bg-[var(--black-void)]"
       role="progressbar"
       aria-valuenow={currentStep}
       aria-valuemin={1}
-      aria-valuemax={4}
-      aria-label={`Booking progress: Step ${currentStep} of 4`}
+      aria-valuemax={steps.length}
+      aria-label={`Booking progress: Step ${currentStep} of ${steps.length}`}
     >
       <span className="sr-only">
-        Step {currentStep} of 4: {steps[currentStep - 1]?.label || 'Complete'}
+        Step {currentStep} of {steps.length}: {steps[currentStep - 1]?.label || 'Complete'}
       </span>
-      <div className="luxury-container py-6">
-        <div className="checkout-progress-bar">
+      <div className="luxury-container py-5">
+        <ol className="grid grid-cols-4 gap-x-4">
           {steps.map((step) => {
-            const Icon = step.icon
             const isCompleted = step.number < currentStep
             const isActive = step.number === currentStep
 
             return (
-              <div
+              <li
                 key={step.number}
-                className={cn(
-                  'checkout-progress-step',
-                  isCompleted && 'completed',
-                  isActive && 'active'
-                )}
+                aria-current={isActive ? 'step' : undefined}
+                className="flex flex-col gap-2"
               >
-                <motion.div
-                  className="checkout-progress-icon"
-                  initial={{ scale: 1 }}
-                  animate={{ scale: isActive ? 1.1 : 1 }}
-                  transition={{ duration: 0.3 }}
-                  aria-label={`Step ${step.number}: ${step.label}${isActive ? ' (current)' : ''}`}
-                >
-                  {isCompleted ? (
-                    <Check className="h-4 w-4 text-[#050506]" aria-hidden="true" />
-                  ) : (
-                    <Icon
-                      className={cn(
-                        "h-4 w-4",
-                        isActive ? "text-[#c6aa88]" : "text-[#7a7672]"
-                      )}
+                <div className="flex items-center gap-2 border-t border-[var(--graphite)] pt-2">
+                  <span
+                    className={cn(
+                      'numeric text-[0.6875rem] uppercase tracking-[0.16em]',
+                      isActive
+                        ? 'text-[var(--gold)]'
+                        : isCompleted
+                          ? 'text-[var(--text-primary)]'
+                          : 'text-[var(--text-muted)]'
+                    )}
+                  >
+                    {String(step.number).padStart(2, '0')}
+                  </span>
+                  {isCompleted && (
+                    <Check
+                      className="h-3.5 w-3.5 text-[var(--gold)]"
                       aria-hidden="true"
                     />
                   )}
-                </motion.div>
-                <span className="checkout-progress-label hidden sm:block">
+                </div>
+                <span
+                  className={cn(
+                    'text-[0.75rem] uppercase tracking-[0.16em]',
+                    isActive
+                      ? 'text-[var(--text-primary)]'
+                      : isCompleted
+                        ? 'text-[var(--text-secondary)]'
+                        : 'text-[var(--text-muted)]'
+                  )}
+                >
                   {step.label}
                 </span>
-              </div>
+                {isActive && (
+                  <span
+                    aria-hidden
+                    className="h-px w-full bg-[var(--gold)]"
+                  />
+                )}
+              </li>
             )
           })}
-        </div>
+        </ol>
       </div>
     </div>
   )

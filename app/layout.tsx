@@ -1,24 +1,23 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Outfit, Inter, Plus_Jakarta_Sans } from 'next/font/google'
+import { DM_Sans, DM_Serif_Display, Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
 import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
 
-// Infinia Luxury fonts - "Midnight Opulence" theme
-const cormorant = Cormorant_Garamond({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-cormorant',
-  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-dm-sans',
+  weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
   display: 'swap',
 })
 
-const outfit = Outfit({
+const dmSerifDisplay = DM_Serif_Display({
   subsets: ['latin'],
-  variable: '--font-outfit',
-  weight: ['200', '300', '400', '500', '600', '700'],
+  variable: '--font-dm-serif',
+  weight: '400',
   display: 'swap',
 })
 
@@ -54,6 +53,13 @@ export default async function RootLayout({
   const accentColor = headersList.get('x-accent-color')
   const brandName = headersList.get('x-brand-name')
   const logoUrl = headersList.get('x-logo-url')
+  const pathname = headersList.get('x-pathname') || ''
+  const isPortalRoute =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/vendor') ||
+    pathname.startsWith('/become-vendor') ||
+    pathname.startsWith('/business')
+  const customerFontClass = isPortalRoute ? '' : 'site-font'
 
   // Create dynamic CSS custom properties for white-label theming
   // Convert hex colors to HSL format for Tailwind compatibility
@@ -70,15 +76,15 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${outfit.variable} ${inter.variable} ${plusJakartaSans.variable}`}
+      className={`${dmSans.variable} ${dmSerifDisplay.variable} ${inter.variable} ${plusJakartaSans.variable}`}
       style={themeStyles}
       suppressHydrationWarning
     >
-      <body className={`${outfit.className} luxury-scrollbar`} suppressHydrationWarning>
+      <body className={`${inter.className} ${customerFontClass} luxury-scrollbar`} suppressHydrationWarning>
         <NextThemesProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem={true}
           disableTransitionOnChange
         >
           {children}

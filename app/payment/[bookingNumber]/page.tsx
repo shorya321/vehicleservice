@@ -283,13 +283,10 @@ STRIPE_SECRET_KEY=sk_test_...`}
         </div>
         <header className="text-center py-8 md:py-10 relative z-10">
           <div className="max-w-[1400px] mx-auto px-6 md:px-8">
-            <h1 className="font-serif text-3xl md:text-4xl lg:text-[2.75rem] font-light mb-4 text-[#f8f6f3]">
-              Secure{' '}
-              <span className="bg-gradient-to-r from-[#e8d9c5] via-[#c6aa88] to-[#8b7349] bg-clip-text text-transparent">
-                Payment
-              </span>
+            <h1 className="t-headline mb-4">
+              Secure <span className="text-[var(--gold)]">Payment</span>
             </h1>
-            <p className="text-base text-[#b8b4ae] max-w-[500px] mx-auto">
+            <p className="t-body max-w-[500px] mx-auto">
               Complete your booking with our encrypted payment system
             </p>
             <div className="flex items-center justify-center gap-4 mt-6">

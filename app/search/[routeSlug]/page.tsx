@@ -7,7 +7,6 @@ import { SearchResults } from '../results/components/search-results'
 import { SearchSummary } from '../results/components/search-summary'
 import { getSearchResults, getLocationDetails } from '../results/actions'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { AmbientBackground } from '@/components/checkout/ambient-background'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { resolveRouteSlugs } from '@/lib/utils/slug-resolver'
 
@@ -77,14 +76,13 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
   if (!results) {
     return (
       <PublicLayout>
-        <div className="bg-luxury-black min-h-screen relative">
-          <AmbientBackground />
+        <div className="bg-[var(--black-void)] min-h-screen relative">
           <div className="luxury-container py-20 relative z-10">
-            <div className="text-center backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-12 max-w-2xl mx-auto">
-              <h2 className="font-serif text-3xl md:text-4xl text-luxury-pearl mb-4">
+            <div className="text-center bg-[var(--charcoal)] border border-[var(--graphite)] rounded-lg p-12 max-w-2xl mx-auto">
+              <h2 className="t-headline mb-4">
                 Unable to Load Search Results
               </h2>
-              <p className="text-luxury-lightGray mb-8">
+              <p className="t-body mb-8">
                 We&apos;re experiencing some issues. Please try again.
               </p>
               <Link
@@ -116,8 +114,7 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
 
   return (
     <PublicLayout>
-      <div className="bg-luxury-black relative min-h-screen">
-        <AmbientBackground />
+      <div className="bg-[var(--black-void)] relative min-h-screen">
         <div className="relative z-10">
           <SearchSummary
             origin={origin}
@@ -126,7 +123,7 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
             passengers={parseInt(passengers)}
           />
 
-          <div className="luxury-container py-8">
+          <div className="luxury-container py-12 lg:py-16">
             <SearchResults results={results} searchParams={enrichedSearchParams} />
           </div>
         </div>

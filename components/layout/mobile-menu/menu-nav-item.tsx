@@ -15,17 +15,16 @@ interface MenuNavItemProps {
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, x: 20 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
 }
 
 export function MenuNavItem({ href, label, icon: Icon, onClick, reducedMotion, variant = 'default' }: MenuNavItemProps) {
   const className = variant === 'danger'
-    ? 'group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200 text-sm font-body'
-    : 'group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body'
+    ? 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200 text-sm font-body'
+    : 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body'
 
   const content = (
     <>
-      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[var(--gold)] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
       <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
       <span>{label}</span>
     </>
@@ -63,8 +62,8 @@ interface MenuButtonItemProps {
 
 export function MenuButtonItem({ label, icon: Icon, onClick, reducedMotion, variant = 'default' }: MenuButtonItemProps) {
   const className = variant === 'danger'
-    ? 'group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200 text-sm font-body w-full text-left'
-    : 'group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body w-full text-left'
+    ? 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200 text-sm font-body w-full text-left'
+    : 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body w-full text-left'
 
   return (
     <motion.button
@@ -72,7 +71,6 @@ export function MenuButtonItem({ label, icon: Icon, onClick, reducedMotion, vari
       onClick={onClick}
       variants={reducedMotion ? undefined : itemVariants}
     >
-      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[var(--gold)] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
       <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
       <span>{label}</span>
     </motion.button>

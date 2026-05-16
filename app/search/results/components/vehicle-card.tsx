@@ -75,24 +75,24 @@ export function VehicleCard({ vehicle, routeId, searchParams, index = 0 }: Vehic
         <div className="p-6 md:p-8 space-y-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
             <div className="flex-1">
-              <h3 className="font-serif text-2xl md:text-3xl text-luxury-pearl mb-2">
+              <h3 className="t-headline mb-2">
                 {vehicle.name}
               </h3>
-              <p className="text-sm text-luxury-lightGray/80">
+              <p className="t-meta">
                 Provided by <span className="text-luxury-gold">{vehicle.vendorName}</span>
               </p>
             </div>
 
             <div className="text-right">
               {vehicle.originalPrice && (
-                <div className="text-sm text-luxury-lightGray/60 line-through">
+                <div className="t-numeric text-sm text-luxury-lightGray/60 line-through">
                   {formatPrice(vehicle.originalPrice, currentCurrency, exchangeRates)}
                 </div>
               )}
-              <div className="text-2xl font-semibold text-luxury-gold">
+              <div className="t-numeric text-2xl text-luxury-gold">
                 {formatPrice(vehicle.price, currentCurrency, exchangeRates)}
               </div>
-              <div className="text-xs text-luxury-lightGray/80 uppercase tracking-wider">
+              <div className="t-label mt-1">
                 per vehicle
               </div>
             </div>

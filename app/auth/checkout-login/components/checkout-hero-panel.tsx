@@ -36,15 +36,13 @@ export function CheckoutHeroPanel() {
         >
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px w-8 bg-luxury-gold" />
-            <span className="text-[11px] font-semibold tracking-[0.25em] uppercase text-luxury-gold">
-              Secure Checkout
-            </span>
+            <span className="t-label-accent">Secure Checkout</span>
           </div>
-          <h1 className="font-serif text-4xl lg:text-5xl font-light leading-[1.1] mb-6 text-luxury-pearl">
+          <h1 className="t-display mb-6">
             Complete Your<br />
             <em className="text-luxury-gold italic">Journey</em>
           </h1>
-          <p className="text-luxury-textSecondary text-lg leading-relaxed">
+          <p className="t-body text-lg">
             You&apos;re just one step away from booking your premium transfer.
             Sign in or create an account to continue.
           </p>
@@ -75,7 +73,7 @@ export function CheckoutHeroPanel() {
               <div className="text-[10px] font-medium tracking-[0.1em] uppercase text-luxury-textMuted mb-1">
                 Pick-up
               </div>
-              <div className="font-serif text-lg text-luxury-pearl">Airport Terminal</div>
+              <div className="t-title text-luxury-pearl">Airport Terminal</div>
             </div>
             <div className="w-10 h-10 rounded-full border border-luxury-gold/20 bg-luxury-gold/10 flex items-center justify-center flex-shrink-0">
               <ArrowRight className="w-4 h-4 text-luxury-gold" />
@@ -84,7 +82,7 @@ export function CheckoutHeroPanel() {
               <div className="text-[10px] font-medium tracking-[0.1em] uppercase text-luxury-textMuted mb-1">
                 Drop-off
               </div>
-              <div className="font-serif text-lg text-luxury-pearl">Hotel Downtown</div>
+              <div className="t-title text-luxury-pearl">Hotel Downtown</div>
             </div>
           </div>
 

@@ -12,7 +12,6 @@ import { Testimonials } from '@/components/home/testimonials'
 import { JoinCommunity } from '@/components/home/join-community'
 import { FAQ } from '@/components/home/faq'
 import { Footer } from '@/components/layout/footer'
-import { StatsRibbon } from '@/components/home/stats-ribbon'
 import { getEnabledCurrencies, getFeaturedCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
@@ -64,32 +63,31 @@ export default async function HomePage() {
       >
         Skip to main content
       </a>
-    <main id="main-content" className="bg-luxury-black">
+    <main id="main-content" className="bg-[var(--black-void)]">
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
       />
       <Hero todayDate={todayStr} />
-      <StatsRibbon />
-      <div className="bg-luxury-darkGray">
+      <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <DeparturePoints todayDate={todayStr} />
       </div>
-      <div className="bg-luxury-black">
+      <div className="bg-[var(--black-void)]">
         <TransportationBenefits />
       </div>
-      <div className="bg-luxury-darkGray" id="fleet">
+      <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]" id="fleet">
         <VehicleClasses />
       </div>
-      <div className="bg-luxury-black" id="services">
+      <div className="bg-[var(--black-void)]" id="services">
         <AdditionalServices />
       </div>
-      <div className="bg-luxury-darkGray">
+      <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <Testimonials />
       </div>
-            <div className="bg-luxury-darkGray">
+      <div className="bg-[var(--black-void)]">
         <JoinCommunity />
       </div>
-      <div className="bg-luxury-black" id="faq">
+      <div className="bg-[var(--black-rich)]" id="faq">
         <FAQ />
       </div>
       <Footer />

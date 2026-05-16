@@ -18,7 +18,7 @@ interface MenuUserCardProps {
 
 const cardVariants: Variants = {
   hidden: { opacity: 0, y: 10, scale: 0.98 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 }
 
 export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotion }: MenuUserCardProps) {
@@ -35,7 +35,7 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
         <Link
           href="/login"
           onClick={onClose}
-          className="flex-1 py-2.5 text-center text-sm font-body rounded-lg border border-[var(--gold)]/30 text-[var(--gold)] hover:bg-[var(--gold)]/10 transition-colors duration-200"
+          className="flex-1 py-2.5 text-center text-sm font-body rounded-lg border border-[var(--gold)]/30 text-[var(--gold-text)] hover:bg-[var(--gold)]/10 transition-colors duration-200"
         >
           Sign In
         </Link>
@@ -63,7 +63,7 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
             src={profile?.avatar_url || undefined}
             alt={profile?.full_name || profile?.first_name || user.email}
           />
-          <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold)] text-sm">
+          <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)] text-sm">
             {getInitials(profile)}
           </AvatarFallback>
         </Avatar>

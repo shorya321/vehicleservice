@@ -40,10 +40,10 @@ function ResetPasswordContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="font-serif text-[clamp(2rem,4vw,2.75rem)] font-light text-[var(--text-primary)] mb-4">
-              Set New <span className="gold-text">Password</span>
+            <h1 className="t-headline mb-4">
+              Set New <span className="text-[var(--gold)]">Password</span>
             </h1>
-            <p className="text-base text-[var(--text-secondary)]">
+            <p className="t-body">
               Create a strong password for your account
             </p>
             <div className="section-divider mt-6">

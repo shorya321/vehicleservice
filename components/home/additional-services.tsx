@@ -1,89 +1,81 @@
 "use client"
-import { motion } from "motion/react"
-import Image from "next/image"
-import { Clock, Baby, Wifi } from "lucide-react"
+import { motion, useReducedMotion } from "motion/react"
 
-const additionalServicesData = [
+interface Extra {
+  index: string
+  title: string
+  body: string
+  meta: string
+}
+
+const extras: Extra[] = [
   {
-    title: "Child Seats",
-    description:
-      "Safety first. We provide age-appropriate child seats: Infant (up to 10kg), Toddler (9-18kg), and Booster (15-36kg).",
-    image: "/services/child-seat.jpg",
-    icon: Baby,
+    index: "01",
+    title: "Child seats",
+    body: "Age-appropriate seating provided on request: infant (up to 10kg), toddler (9-18kg), or booster (15-36kg). Installed before pickup.",
+    meta: "+ added at checkout",
   },
   {
-    title: "Extra Hour of Waiting",
-    description:
-      "No rush. Your chauffeur will wait for you at the airport or your pickup point for an extended period if needed.",
-    image: "/services/driver-waiting.jpg",
-    icon: Clock,
+    index: "02",
+    title: "Extended waiting",
+    body: "Hold the vehicle for an additional hour beyond the included grace period. Useful for delayed bag drop, customs, or unscheduled stops.",
+    meta: "+1 hour included free",
   },
   {
-    title: "In-Car Wi-Fi & Refreshments",
-    description:
-      "Stay connected and refreshed. Enjoy complimentary Wi-Fi and bottled water or soft drinks during your journey.",
-    image: "/services/in-car-refreshments.jpg",
-    icon: Wifi,
+    index: "03",
+    title: "Wi-Fi and refreshments",
+    body: "Complimentary on every transfer. Onboard router with international roaming, bottled water, and a selection of soft drinks.",
+    meta: "Included",
+  },
+  {
+    index: "04",
+    title: "Meet-and-greet escort",
+    body: "Chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. Default on every airport transfer.",
+    meta: "Included",
   },
 ]
 
 export function AdditionalServices() {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <section className="section-padding relative bg-[var(--black-void)]" id="services">
+    <section
+      aria-labelledby="extras-heading"
+      className="editorial-section editorial-section--ground editorial-section--compact"
+      id="services"
+    >
       <div className="luxury-container">
-        {/* Section Header */}
-        <motion.div
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+        <motion.header
+          className="max-w-2xl"
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.4 }}
         >
-          <span className="section-eyebrow">Enhance Your Ride</span>
-          <h2 className="section-title">Additional Services</h2>
-          <div className="section-divider">
-            <div className="section-divider-icon"></div>
-          </div>
-          <p className="section-subtitle">
-            Customize your ride to suit all your needs with our range of optional extras.
+          <div className="editorial-eyebrow">Onboard</div>
+          <h2 id="extras-heading" className="editorial-section-title mt-5">
+            Quietly included.
+          </h2>
+          <p className="editorial-body mt-6">
+            The things travellers actually ask for, added at checkout or fitted before pickup. No upsell sequence.
           </p>
-        </motion.div>
+        </motion.header>
 
-        {/* Services Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {additionalServicesData.map((service, index) => (
-            <motion.div
-              key={service.title}
-              className="service-card group"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-              viewport={{ once: true, amount: 0.3 }}
+        <ul className="editorial-feature-grid mt-12">
+          {extras.map((extra, index) => (
+            <motion.li
+              key={extra.index}
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.2 }}
             >
-              {/* Image */}
-              <div className="relative w-full h-48 overflow-hidden">
-                <Image
-                  src={service.image || "/placeholder.svg"}
-                  alt={service.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--charcoal)] via-transparent to-transparent"></div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                {/* Icon above title */}
-                <div className="benefit-icon">
-                  <service.icon className="w-5 h-5 text-[var(--gold)]" aria-hidden="true" />
-                </div>
-                <h3 className="font-display text-lg text-[var(--text-primary)] mb-2">{service.title}</h3>
-                <p className="text-sm text-[var(--text-muted)] leading-relaxed">{service.description}</p>
-              </div>
-            </motion.div>
+              <h3 className="editorial-list-title">{extra.title}</h3>
+              <p className="editorial-list-body mt-2">{extra.body}</p>
+              <span className="editorial-list-meta mt-3 inline-block">{extra.meta}</span>
+            </motion.li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   )

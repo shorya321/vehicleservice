@@ -84,12 +84,12 @@ export function SearchFilters({
     <div className="space-y-6">
       {/* Sort By */}
       <motion.div
-        className="backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
+        className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
-        <Label className="text-base font-sans text-luxury-pearl mb-3 block">Sort By</Label>
+        <Label className="text-base font-sans text-[var(--text-primary)] mb-3 block">Sort By</Label>
         <Select value={sortBy} onValueChange={(value: any) => onSortChange(value)}>
           <SelectTrigger>
             <SelectValue />
@@ -102,16 +102,16 @@ export function SearchFilters({
         </Select>
       </motion.div>
 
-      <Separator className="border-luxury-gold/10" />
+      <Separator className="border-[var(--gold)]/10" />
 
       {/* Vehicle Categories */}
       <motion.div
-        className="backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
+        className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <Label className="text-base font-sans text-luxury-pearl mb-3 block">Vehicle Category</Label>
+        <Label className="text-base font-sans text-[var(--text-primary)] mb-3 block">Vehicle Category</Label>
         <div className="space-y-2">
           {categories.map(category => (
             <div
@@ -122,11 +122,11 @@ export function SearchFilters({
                 id={`category-${category}`}
                 checked={selectedCategories.includes(category)}
                 onCheckedChange={(checked) => handleCategoryChange(category, checked as boolean)}
-                className="transition-all duration-200 data-[state=checked]:bg-luxury-gold data-[state=checked]:border-luxury-gold"
+                className="transition-all duration-200 data-[state=checked]:bg-[var(--gold)] data-[state=checked]:border-[var(--gold)]"
               />
               <Label
                 htmlFor={`category-${category}`}
-                className="text-sm font-normal cursor-pointer text-luxury-lightGray group-hover:text-luxury-pearl transition-colors"
+                className="text-sm font-normal cursor-pointer text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors"
               >
                 {category}
               </Label>
@@ -135,16 +135,16 @@ export function SearchFilters({
         </div>
       </motion.div>
 
-      <Separator className="border-luxury-gold/10" />
+      <Separator className="border-[var(--gold)]/10" />
 
       {/* Price Range */}
       <motion.div
-        className="backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
+        className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
       >
-        <Label className="text-base font-sans text-luxury-pearl mb-3 block">Price Range</Label>
+        <Label className="text-base font-sans text-[var(--text-primary)] mb-3 block">Price Range</Label>
         <div className="space-y-4">
           <Slider
             min={minPrice}
@@ -161,39 +161,39 @@ export function SearchFilters({
         </div>
       </motion.div>
 
-      <Separator className="border-luxury-gold/10" />
+      <Separator className="border-[var(--gold)]/10" />
 
       {/* Minimum Rating */}
       <motion.div
-        className="backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
+        className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
       >
-        <Label className="text-base font-sans text-luxury-pearl mb-3 block">Minimum Rating</Label>
+        <Label className="text-base font-sans text-[var(--text-primary)] mb-3 block">Minimum Rating</Label>
         <RadioGroup value={minRating.toString()} onValueChange={(value) => setMinRating(Number(value))}>
           <div className="space-y-2">
             <div className="flex items-center space-x-2 group hover:scale-105 active:scale-95 transition-all cursor-pointer">
-              <RadioGroupItem value="0" id="rating-0" className="transition-colors data-[state=checked]:border-luxury-gold data-[state=checked]:text-luxury-gold" />
-              <Label htmlFor="rating-0" className="text-sm font-normal cursor-pointer text-luxury-lightGray group-hover:text-luxury-pearl transition-colors">
+              <RadioGroupItem value="0" id="rating-0" className="transition-colors data-[state=checked]:border-[var(--gold)] data-[state=checked]:text-[var(--gold)]" />
+              <Label htmlFor="rating-0" className="text-sm font-normal cursor-pointer text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                 All ratings
               </Label>
             </div>
             <div className="flex items-center space-x-2 group hover:scale-105 active:scale-95 transition-all cursor-pointer">
-              <RadioGroupItem value="3" id="rating-3" className="transition-colors data-[state=checked]:border-luxury-gold data-[state=checked]:text-luxury-gold" />
-              <Label htmlFor="rating-3" className="text-sm font-normal cursor-pointer text-luxury-lightGray group-hover:text-luxury-pearl transition-colors">
+              <RadioGroupItem value="3" id="rating-3" className="transition-colors data-[state=checked]:border-[var(--gold)] data-[state=checked]:text-[var(--gold)]" />
+              <Label htmlFor="rating-3" className="text-sm font-normal cursor-pointer text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                 3+ stars
               </Label>
             </div>
             <div className="flex items-center space-x-2 group hover:scale-105 active:scale-95 transition-all cursor-pointer">
-              <RadioGroupItem value="4" id="rating-4" className="transition-colors data-[state=checked]:border-luxury-gold data-[state=checked]:text-luxury-gold" />
-              <Label htmlFor="rating-4" className="text-sm font-normal cursor-pointer text-luxury-lightGray group-hover:text-luxury-pearl transition-colors">
+              <RadioGroupItem value="4" id="rating-4" className="transition-colors data-[state=checked]:border-[var(--gold)] data-[state=checked]:text-[var(--gold)]" />
+              <Label htmlFor="rating-4" className="text-sm font-normal cursor-pointer text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                 4+ stars
               </Label>
             </div>
             <div className="flex items-center space-x-2 group hover:scale-105 active:scale-95 transition-all cursor-pointer">
-              <RadioGroupItem value="4.5" id="rating-4.5" className="transition-colors data-[state=checked]:border-luxury-gold data-[state=checked]:text-luxury-gold" />
-              <Label htmlFor="rating-4.5" className="text-sm font-normal cursor-pointer text-luxury-lightGray group-hover:text-luxury-pearl transition-colors">
+              <RadioGroupItem value="4.5" id="rating-4.5" className="transition-colors data-[state=checked]:border-[var(--gold)] data-[state=checked]:text-[var(--gold)]" />
+              <Label htmlFor="rating-4.5" className="text-sm font-normal cursor-pointer text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                 4.5+ stars
               </Label>
             </div>
@@ -201,17 +201,17 @@ export function SearchFilters({
         </RadioGroup>
       </motion.div>
 
-      <Separator className="border-luxury-gold/10" />
+      <Separator className="border-[var(--gold)]/10" />
 
       {/* Features */}
       {allFeatures.length > 0 && (
         <motion.div
-          className="backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
+          className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.5 }}
         >
-          <Label className="text-base font-sans text-luxury-pearl mb-3 block">Features</Label>
+          <Label className="text-base font-sans text-[var(--text-primary)] mb-3 block">Features</Label>
           <div className="space-y-2">
             {allFeatures.slice(0, 5).map(feature => (
               <div
@@ -222,11 +222,11 @@ export function SearchFilters({
                   id={`feature-${feature}`}
                   checked={selectedFeatures.includes(feature)}
                   onCheckedChange={(checked) => handleFeatureChange(feature, checked as boolean)}
-                  className="transition-all duration-200 data-[state=checked]:bg-luxury-gold data-[state=checked]:border-luxury-gold"
+                  className="transition-all duration-200 data-[state=checked]:bg-[var(--gold)] data-[state=checked]:border-[var(--gold)]"
                 />
                 <Label
                   htmlFor={`feature-${feature}`}
-                  className="text-sm font-normal cursor-pointer text-luxury-lightGray group-hover:text-luxury-pearl transition-colors"
+                  className="text-sm font-normal cursor-pointer text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors"
                 >
                   {feature}
                 </Label>

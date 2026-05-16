@@ -1,20 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "motion/react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Mail, Loader2, CheckCircle, ArrowLeft } from "lucide-react"
+import { motion, useReducedMotion } from "motion/react"
+import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-/**
- * ForgotPasswordCard Component
- *
- * Luxury-themed password reset request card following the Infinia design system.
- * Matches the styling of AuthFormCard for visual consistency.
- */
+const inputClass =
+  "w-full h-12 bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200 disabled:opacity-60"
+
+const fieldLabelClass =
+  "block text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--text-muted)] mb-2"
+
 export function ForgotPasswordCard() {
+  const reduceMotion = useReducedMotion()
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +36,7 @@ export function ForgotPasswordCard() {
       if (!res.ok) {
         setError(data.error || "Failed to send reset link")
       } else {
-        setMessage("Check your email for the password reset link!")
+        setMessage("Check your inbox for the reset link.")
       }
     } catch (err) {
       console.error("Password reset error:", err)
@@ -50,99 +48,79 @@ export function ForgotPasswordCard() {
 
   return (
     <motion.div
-      className="auth-card auth-card-luxury"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="auth-card-inner relative z-10">
-        {/* Card Header */}
-        <div className="text-center mb-8">
-          <div className="auth-icon w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-gradient-to-br from-[rgba(198,170,136,0.15)] to-[rgba(198,170,136,0.05)] border border-[rgba(198,170,136,0.25)] rounded-2xl">
-            <Mail className="w-7 h-7 stroke-[var(--gold)]" strokeWidth={1.5} />
-          </div>
-          <h2 className="font-serif text-2xl font-normal text-[var(--text-primary)] mb-2">
-            Password Recovery
-          </h2>
-          <p className="text-sm text-[var(--text-muted)]">
-            Enter your email and we&apos;ll send you a reset link
-          </p>
+      <div className="editorial-eyebrow">Password recovery</div>
+      <h1 className="editorial-headline mt-5 text-[clamp(2rem,4vw,2.75rem)]">
+        Send me a <em>reset link.</em>
+      </h1>
+      <p className="mt-5 max-w-md text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+        Enter the email you booked with. We&rsquo;ll send a one-time link valid for one hour.
+      </p>
+
+      {message && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mt-8 flex items-start gap-3 border border-[rgba(198,170,136,0.3)] bg-[rgba(198,170,136,0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+        >
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden />
+          <p>{message}</p>
+        </div>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="mt-8 flex items-start gap-3 border border-[#ef4444]/40 bg-[#ef4444]/10 p-4 text-[0.875rem] text-[#fca5a5]"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <p>{error}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleResetPassword} className="mt-8 flex flex-col gap-5">
+        <div>
+          <label htmlFor="fp-email" className={fieldLabelClass}>Email</label>
+          <input
+            id="fp-email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading || !!message}
+            placeholder="you@email.com"
+            className={inputClass}
+          />
         </div>
 
-        {/* Success Message */}
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <Alert className="border-[var(--gold)]/30 bg-[var(--gold)]/10 backdrop-blur-sm">
-              <CheckCircle className="h-4 w-4 text-[var(--gold)]" />
-              <AlertDescription className="text-[var(--text-primary)]">
-                {message}
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
+        <button
+          type="submit"
+          disabled={loading || !!message}
+          className="btn btn-primary mt-2 h-12 w-full disabled:opacity-60"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Sending
+            </>
+          ) : (
+            "Send reset link"
+          )}
+        </button>
 
-        {/* Error Message */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <Alert variant="destructive" className="bg-red-950/50 border-red-900/50">
-              <AlertDescription className="text-red-200">{error}</AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleResetPassword} className="flex flex-col gap-6">
-          <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <div className="form-input-wrapper">
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="john@example.com"
-                required
-                disabled={loading || !!message}
-                className="luxury-input has-icon h-14"
-              />
-              <Mail className="form-input-icon" />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={loading || !!message}
-            className="btn btn-primary w-full h-14 text-[0.8125rem] font-semibold tracking-wider uppercase"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Sending reset link...
-              </>
-            ) : (
-              "Send Reset Link"
-            )}
-          </Button>
-
-          {/* Back to Login Link */}
-          <div className="text-center">
-            <Link
-              href="/login"
-              className="inline-flex items-center text-[0.8125rem] text-[var(--gold)] hover:text-[var(--gold-light)] font-medium transition-colors"
-            >
-              <ArrowLeft className="mr-1.5 h-4 w-4" />
-              Back to login
-            </Link>
-          </div>
-        </form>
-      </div>
+        <Link
+          href="/login"
+          className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+          Back to sign in
+        </Link>
+      </form>
     </motion.div>
   )
 }

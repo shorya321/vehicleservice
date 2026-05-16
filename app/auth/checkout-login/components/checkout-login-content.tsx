@@ -104,10 +104,10 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
               transition={{ duration: 0.6 }}
               {...motionProps}
             >
-              <h1 className="font-serif text-[clamp(1.75rem,4vw,2.75rem)] font-light mb-4 text-luxury-pearl">
-                Secure <span className="gold-text">Checkout</span>
+              <h1 className="t-headline mb-4">
+                Secure <span className="text-[var(--gold)]">Checkout</span>
               </h1>
-              <p className="text-luxury-textSecondary text-sm sm:text-base max-w-md mx-auto">
+              <p className="t-body max-w-md mx-auto">
                 Log in to your account or create one to continue with your booking
               </p>
               {/* Decorative Divider */}
@@ -134,7 +134,7 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
             >
               <div className="luxury-card rounded-2xl overflow-hidden">
                 <div className="bg-gradient-to-br from-luxury-gold/10 to-transparent p-5 border-b border-luxury-gold/10">
-                  <h3 className="font-serif text-xl text-luxury-pearl">Why Create an Account?</h3>
+                  <h3 className="t-subhead">Why Create an Account?</h3>
                 </div>
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                   {[

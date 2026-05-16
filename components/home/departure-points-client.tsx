@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link'
-import { motion } from "motion/react"
-import { MapPin, Plane, Building2, Hotel, Train, ArrowRight } from "lucide-react"
+import { motion, useReducedMotion } from "motion/react"
+import { ArrowRight } from "lucide-react"
 import type { PopularRoute } from '@/components/search/popular-routes'
 import { buildSearchUrl } from '@/lib/utils/url-builder'
 
@@ -11,116 +11,82 @@ interface DeparturePointsClientProps {
   todayDate: string
 }
 
-// Get icon based on location type
-const getLocationIcon = (type?: string) => {
-  switch(type) {
-    case 'airport':
-      return Plane
-    case 'city':
-      return Building2
-    case 'hotel':
-      return Hotel
-    case 'station':
-      return Train
-    default:
-      return MapPin
-  }
-}
-
 export function DeparturePointsClient({ routes, totalRoutes, todayDate }: DeparturePointsClientProps) {
-  return (
-    <section className="section-padding routes-section">
-      <div className="luxury-container">
-        {/* Section Header */}
-        <motion.div
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          viewport={{ once: true }}
-        >
-          <span className="section-eyebrow">Discover</span>
-          <h2 className="section-title">Popular Routes</h2>
-          <div className="section-divider">
-            <div className="section-divider-icon"></div>
-          </div>
-          <p className="section-subtitle">
-            Explore our most requested transfer routes, handpicked for seamless travel experiences.
-          </p>
-        </motion.div>
+  const reduceMotion = useReducedMotion()
 
-        {/* Routes Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  return (
+    <section
+      aria-labelledby="routes-heading"
+      className="editorial-section editorial-section--raised editorial-section--spacious"
+    >
+      <div className="luxury-container">
+        <motion.header
+          className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end"
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 0.4 }}
+        >
+          <div className="max-w-2xl">
+            <div className="editorial-eyebrow">Routes</div>
+            <h2 id="routes-heading" className="editorial-section-title mt-5">
+              The routes travellers book most often.
+            </h2>
+            <p className="editorial-body mt-6">
+              Quoted in your selected currency. Tap a route to see vehicles, capacity, and final pricing for your date.
+            </p>
+          </div>
+          {totalRoutes > routes.length && (
+            <Link href="/routes" className="editorial-action shrink-0">
+              All routes
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          )}
+        </motion.header>
+
+        <ul className="mt-12 border-t border-[var(--graphite)]">
           {routes.map((route, index) => {
-            const RouteIcon = getLocationIcon(route.originCity ? 'city' : undefined)
+            const href = route.originSlug && route.destinationSlug
+              ? buildSearchUrl(route.originSlug, route.destinationSlug, { date: todayDate, passengers: 2 })
+              : `/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${todayDate}&passengers=2`
 
             return (
-              <Link
+              <motion.li
                 key={route.id}
-                href={route.originSlug && route.destinationSlug
-                  ? buildSearchUrl(route.originSlug, route.destinationSlug, { date: todayDate, passengers: 2 })
-                  : `/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${todayDate}&passengers=2`
-                }
-                aria-label={`Search luxury transfers from ${route.originName} to ${route.destinationName}`}
+                className="border-b border-[var(--graphite)]"
+                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, amount: 0.2 }}
               >
-                <motion.div
-                  className="route-card group h-full"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                  viewport={{ once: true, amount: 0.2 }}
+                <Link
+                  href={href}
+                  aria-label={`Search transfers from ${route.originName} to ${route.destinationName}`}
+                  className="group grid grid-cols-1 items-baseline gap-y-2 py-6 transition-colors hover:bg-[rgba(var(--gold-rgb),0.06)] active:bg-[rgba(var(--gold-rgb),0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] md:grid-cols-[4rem_1fr_auto_auto_auto] md:gap-x-8 md:px-2"
                 >
-                  {/* Header with Badge */}
-                  <div className="flex items-start justify-between mb-4">
-                    <span className="luxury-badge">Popular</span>
-                    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[var(--gold)]/10 border border-[var(--gold)]/20">
-                      <RouteIcon className="w-5 h-5 text-[var(--gold)]" aria-hidden="true" />
-                    </div>
-                  </div>
-
-                  {/* Route Names */}
-                  <div className="mb-4">
-                    <h3 className="font-display text-xl text-[var(--text-primary)] mb-1">
-                      {route.originName}
-                    </h3>
-                    <div className="flex items-center gap-2 text-[var(--text-muted)]">
-                      <ArrowRight className="w-4 h-4 text-[var(--gold)]" />
-                      <span className="text-sm">{route.destinationName}</span>
-                    </div>
-                  </div>
-
-                  {/* Meta Info */}
-                  <div className="flex items-center gap-4 text-sm text-[var(--text-muted)] mb-6">
-                    <span>{route.distance} km</span>
-                    <span className="w-1 h-1 rounded-full bg-[var(--gold)]/50"></span>
-                    <span>~{route.duration} min</span>
-                  </div>
-
-                  {/* CTA */}
-                  <div className="route-btn text-center">
-                    Book Now
-                  </div>
-                </motion.div>
-              </Link>
+                  <span className="numeric text-[0.75rem] tracking-[0.16em] text-[var(--gold-text)]">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[var(--text-primary)]">
+                    <span className="font-display text-2xl leading-tight">{route.originName}</span>
+                    <span className="text-[var(--text-muted)]" aria-hidden="true">→</span>
+                    <span className="font-display text-2xl leading-tight">{route.destinationName}</span>
+                  </span>
+                  <span className="numeric text-sm text-[var(--text-secondary)]">
+                    {route.distance} km
+                  </span>
+                  <span className="numeric text-sm text-[var(--text-secondary)]">
+                    {route.duration} min
+                  </span>
+                  <span className="editorial-action text-[var(--gold-text)] group-hover:text-[var(--gold)]">
+                    Search
+                    <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  </span>
+                </Link>
+              </motion.li>
             )
           })}
-        </div>
-
-        {/* View All Routes CTA */}
-        {totalRoutes > 6 && (
-          <motion.div
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            viewport={{ once: true }}
-          >
-            <Link href="/routes" className="btn btn-secondary">
-              View All Routes
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </motion.div>
-        )}
+        </ul>
       </div>
     </section>
   )

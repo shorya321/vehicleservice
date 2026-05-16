@@ -4,19 +4,19 @@ import { motion } from 'motion/react'
 
 export function SearchSummarySkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-luxury-darkGray/80 border-b border-luxury-gold/20">
+    <div className="backdrop-blur-lg bg-[var(--charcoal)]/80 border-b border-[var(--gold)]/20">
       <div className="luxury-container py-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="h-8 w-32 bg-luxury-gold/10 rounded animate-pulse" />
+          <div className="h-8 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="h-5 w-5 bg-luxury-gold/20 rounded-full animate-pulse" />
+              <div className="h-5 w-5 bg-[var(--gold)]/20 rounded-full animate-pulse" />
               <div className="space-y-2">
-                <div className="h-3 w-16 bg-luxury-gold/10 rounded animate-pulse" />
-                <div className="h-5 w-32 bg-luxury-gold/20 rounded animate-pulse" />
+                <div className="h-3 w-16 bg-[var(--gold)]/10 rounded animate-pulse" />
+                <div className="h-5 w-32 bg-[var(--gold)]/20 rounded animate-pulse" />
               </div>
             </div>
           ))}
@@ -39,38 +39,38 @@ export function VehicleTypeSkeleton() {
       }}
     >
       {/* Image Skeleton */}
-      <div className="relative h-48 w-full bg-gradient-to-br from-luxury-gold/5 to-luxury-darkGray/50">
+      <div className="relative h-48 w-full bg-gradient-to-br from-[var(--gold)]/5 to-[var(--charcoal)]/50">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 rounded-lg bg-luxury-gold/10 animate-pulse" />
+          <div className="w-24 h-24 rounded-lg bg-[var(--gold)]/10 animate-pulse" />
         </div>
       </div>
 
       {/* Details Skeleton */}
       <div className="p-6 flex-1 flex flex-col">
         {/* Title */}
-        <div className="h-6 w-3/4 bg-luxury-gold/20 rounded mb-2 animate-pulse" />
-        <div className="h-4 w-1/2 bg-luxury-gold/10 rounded mb-4 animate-pulse" />
+        <div className="h-6 w-3/4 bg-[var(--gold)]/20 rounded mb-2 animate-pulse" />
+        <div className="h-4 w-1/2 bg-[var(--gold)]/10 rounded mb-4 animate-pulse" />
 
         {/* Capacity */}
         <div className="flex items-center gap-4 mb-4">
-          <div className="h-4 w-16 bg-luxury-gold/10 rounded animate-pulse" />
-          <div className="h-4 w-16 bg-luxury-gold/10 rounded animate-pulse" />
+          <div className="h-4 w-16 bg-[var(--gold)]/10 rounded animate-pulse" />
+          <div className="h-4 w-16 bg-[var(--gold)]/10 rounded animate-pulse" />
         </div>
 
         {/* Features */}
         <div className="flex gap-2 mb-4">
-          <div className="h-5 w-20 bg-luxury-gold/10 rounded animate-pulse" />
-          <div className="h-5 w-24 bg-luxury-gold/10 rounded animate-pulse" />
+          <div className="h-5 w-20 bg-[var(--gold)]/10 rounded animate-pulse" />
+          <div className="h-5 w-24 bg-[var(--gold)]/10 rounded animate-pulse" />
         </div>
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Price */}
-        <div className="h-8 w-24 bg-luxury-gold/20 rounded mb-4 animate-pulse" />
+        <div className="h-8 w-24 bg-[var(--gold)]/20 rounded mb-4 animate-pulse" />
 
         {/* Button */}
-        <div className="h-14 w-full bg-luxury-gold/20 rounded animate-pulse" />
+        <div className="h-14 w-full bg-[var(--gold)]/20 rounded animate-pulse" />
       </div>
     </motion.div>
   )
@@ -92,7 +92,7 @@ export function SearchFiltersSkeleton() {
       {[1, 2, 3, 4, 5].map((i) => (
         <motion.div
           key={i}
-          className="backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-lg p-6"
+          className="backdrop-blur-md bg-[var(--charcoal)]/80 border border-[var(--gold)]/20 rounded-lg p-6"
           initial={{ opacity: 0.5 }}
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{
@@ -103,13 +103,13 @@ export function SearchFiltersSkeleton() {
           }}
         >
           {/* Label */}
-          <div className="h-5 w-32 bg-luxury-gold/20 rounded mb-3 animate-pulse" />
+          <div className="h-5 w-32 bg-[var(--gold)]/20 rounded mb-3 animate-pulse" />
 
           {/* Content */}
           <div className="space-y-2">
-            <div className="h-4 w-full bg-luxury-gold/10 rounded animate-pulse" />
-            <div className="h-4 w-3/4 bg-luxury-gold/10 rounded animate-pulse" />
-            <div className="h-4 w-5/6 bg-luxury-gold/10 rounded animate-pulse" />
+            <div className="h-4 w-full bg-[var(--gold)]/10 rounded animate-pulse" />
+            <div className="h-4 w-3/4 bg-[var(--gold)]/10 rounded animate-pulse" />
+            <div className="h-4 w-5/6 bg-[var(--gold)]/10 rounded animate-pulse" />
           </div>
         </motion.div>
       ))}
@@ -119,7 +119,7 @@ export function SearchFiltersSkeleton() {
 
 export function SearchPageSkeleton() {
   return (
-    <div className="bg-luxury-black min-h-screen">
+    <div className="bg-[var(--black-void)] min-h-screen">
       {/* Summary Skeleton */}
       <SearchSummarySkeleton />
 
@@ -133,11 +133,11 @@ export function SearchPageSkeleton() {
           {/* Results Skeleton */}
           <div className="flex-1 space-y-8">
             {/* Banner Skeleton */}
-            <div className="backdrop-blur-lg bg-luxury-darkGray/70 border border-luxury-gold/20 rounded-lg p-6">
-              <div className="h-10 w-2/3 bg-luxury-gold/20 rounded mb-4 animate-pulse" />
+            <div className="backdrop-blur-lg bg-[var(--charcoal)]/70 border border-[var(--gold)]/20 rounded-lg p-6">
+              <div className="h-10 w-2/3 bg-[var(--gold)]/20 rounded mb-4 animate-pulse" />
               <div className="flex gap-6">
-                <div className="h-5 w-32 bg-luxury-gold/10 rounded animate-pulse" />
-                <div className="h-5 w-32 bg-luxury-gold/10 rounded animate-pulse" />
+                <div className="h-5 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
+                <div className="h-5 w-32 bg-[var(--gold)]/10 rounded animate-pulse" />
               </div>
             </div>
 

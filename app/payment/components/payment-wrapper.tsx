@@ -28,7 +28,7 @@ export function PaymentWrapper({
         colorTextSecondary: '#b8b4ae',
         colorTextPlaceholder: '#7a7672',
         colorDanger: '#f87171',
-        fontFamily: '"Outfit", system-ui, sans-serif',
+        fontFamily: '"DM Sans", system-ui, sans-serif',
         fontSizeBase: '15px',
         spacingUnit: '4px',
         borderRadius: '8px',

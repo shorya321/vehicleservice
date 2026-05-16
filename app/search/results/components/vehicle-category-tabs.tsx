@@ -76,8 +76,8 @@ export function VehicleCategoryTabs({
       {/* All Vehicles Content */}
       <TabsContent value="all" className="mt-6 space-y-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-serif text-2xl text-luxury-pearl">All Available Vehicles</h3>
-          <p className="text-sm text-luxury-lightGray">
+          <h3 className="t-subhead text-luxury-pearl">All Available Vehicles</h3>
+          <p className="t-meta">
             {allVehicles.length} vehicles available
           </p>
         </div>
@@ -104,12 +104,12 @@ export function VehicleCategoryTabs({
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-serif text-2xl text-luxury-pearl">{category.categoryName} Vehicles</h3>
-              <p className="text-sm text-luxury-lightGray">
+              <h3 className="t-subhead text-luxury-pearl">{category.categoryName} Vehicles</h3>
+              <p className="t-meta">
                 Comfortable and reliable {category.categoryName.toLowerCase()} class vehicles
               </p>
             </div>
-            <p className="text-sm text-luxury-lightGray">
+            <p className="t-meta">
               {category.vehicles.length} vehicles available
             </p>
           </div>

@@ -9,7 +9,7 @@ interface MenuFooterProps {
 
 const footerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.4, ease: 'easeOut', delay: 0.5 } },
+  visible: { opacity: 1, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.5 } },
 }
 
 const socialLinks = [
@@ -39,7 +39,7 @@ export function MenuFooter({ reducedMotion }: MenuFooterProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
-            className="footer-social p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/5 transition-colors duration-200"
+            className="footer-social p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
           >
             <Icon className="w-4 h-4" />
           </a>

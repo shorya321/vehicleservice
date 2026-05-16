@@ -17,40 +17,39 @@ export function BookingSummaryPrices({ basePrice, amenitiesPrice, totalPrice }: 
 
   return (
     <>
-      {/* Price Breakdown */}
-      <div className="space-y-2 pb-5">
-        <div className="flex justify-between text-sm">
-          <span className="text-[#b8b4ae]">Base Fare</span>
-          <span className="text-[#f8f6f3]">{formatUserPrice(basePrice)}</span>
+      <dl className="space-y-2.5 text-[0.875rem]">
+        <div className="flex items-baseline justify-between">
+          <dt className="text-[var(--text-secondary)]">Base fare</dt>
+          <dd className="numeric text-[var(--text-primary)]">{formatUserPrice(basePrice)}</dd>
         </div>
         {amenitiesPrice > 0 && (
-          <div className="flex justify-between text-sm">
-            <span className="text-[#b8b4ae]">Additional Services</span>
-            <span className="text-[#f8f6f3]">{formatUserPrice(amenitiesPrice)}</span>
+          <div className="flex items-baseline justify-between">
+            <dt className="text-[var(--text-secondary)]">Additional services</dt>
+            <dd className="numeric text-[var(--text-primary)]">{formatUserPrice(amenitiesPrice)}</dd>
           </div>
         )}
-        <div className="flex justify-between text-sm">
-          <span className="text-[#b8b4ae]">Meet & Greet</span>
-          <span className="text-[#f8f6f3]">Free</span>
+        <div className="flex items-baseline justify-between">
+          <dt className="text-[var(--text-secondary)]">Meet &amp; greet</dt>
+          <dd className="text-[var(--text-muted)] uppercase tracking-[0.16em] text-[0.6875rem]">Included</dd>
         </div>
-      </div>
+      </dl>
 
-      {/* Total */}
-      <div className="flex justify-between items-center pt-5 border-t border-[rgba(198,170,136,0.15)]">
-        <span className="text-[0.9375rem] text-[#f8f6f3]">Total</span>
-        <span className="text-xl font-semibold bg-gradient-to-r from-[#e8d9c5] to-[#c6aa88] bg-clip-text text-transparent">
+      <div className="mt-5 flex items-baseline justify-between border-t border-[var(--graphite)] pt-5">
+        <span className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+          Total
+        </span>
+        <span className="numeric text-3xl text-[var(--text-primary)]">
           {formatUserPrice(totalPrice)}
         </span>
       </div>
 
-      {/* Currency Notice */}
       {isConverted && (
-        <div className="flex items-start gap-2 pt-3 text-xs text-[#7a7672]">
-          <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+        <p className="mt-3 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>
-            Price shown in {currentCurrency}. Payment will be processed in AED ({formatPrice(totalPrice, 'AED', exchangeRates)}).
+            Shown in {currentCurrency}. Charged in AED ({formatPrice(totalPrice, 'AED', exchangeRates)}).
           </span>
-        </div>
+        </p>
       )}
     </>
   )
