@@ -144,41 +144,41 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return (
     <div className="space-y-12 lg:space-y-16">
       <motion.section
-        className="border-y border-[var(--graphite)] py-8 lg:py-10"
+        className="border-y border-[var(--graphite)] py-10 lg:py-12"
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <div className="editorial-eyebrow">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--gold-text)]">
               {results.type === 'zone' && results.zone ? 'Zone transfer' : 'Route'}
             </div>
-            <h1 className="editorial-section-title mt-3">
+            <h1 className="mt-3 font-display text-[clamp(1.75rem,3vw,2.5rem)] font-medium leading-tight tracking-[-0.015em] text-[var(--text-primary)]">
               {results.type === 'zone' && results.zone ? (
                 <>
                   {results.zone.fromZone.name}
-                  <span className="text-[var(--gold)] mx-3" aria-hidden="true">→</span>
+                  <span className="mx-3 text-[var(--gold-text)]" aria-hidden="true">→</span>
                   {results.zone.toZone.name}
                 </>
               ) : (
                 results.routeName || (
                   <>
                     {results.originName}
-                    <span className="text-[var(--gold)] mx-3" aria-hidden="true">→</span>
+                    <span className="mx-3 text-[var(--gold-text)]" aria-hidden="true">→</span>
                     {results.destinationName}
                   </>
                 )
               )}
             </h1>
             {results.type !== 'zone' && results.distance && (
-              <p className="mt-3 flex items-baseline gap-4 text-[0.875rem] text-[var(--text-secondary)]">
+              <p className="mt-4 flex items-baseline gap-5 text-[0.875rem] text-[var(--text-secondary)]">
                 <span className="flex items-baseline gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-[var(--gold)]" aria-hidden="true" />
-                  <span className="numeric">{results.distance} km</span>
+                  <Clock className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                  <span className="numeric font-medium">{results.distance} km</span>
                 </span>
                 <span className="flex items-baseline gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-[var(--gold)]" aria-hidden="true" />
+                  <MapPin className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                   <span>{results.originName} → {results.destinationName}</span>
                 </span>
               </p>
@@ -186,13 +186,13 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
           </div>
 
           <div className="md:text-right">
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
               {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
             </div>
-            <div className="numeric mt-1 text-3xl text-[var(--gold-text)]">
+            <div className="numeric mt-1.5 text-[2rem] font-medium text-[var(--gold-text)]">
               {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
             </div>
-            <div className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            <div className="mt-1 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
               per vehicle
             </div>
           </div>

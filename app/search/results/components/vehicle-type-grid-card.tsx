@@ -58,85 +58,90 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
 
   return (
     <motion.article
-      className="group flex h-full flex-col transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1"
+      className="group flex h-full flex-col rounded-[8px] border border-[var(--graphite)] bg-[var(--charcoal)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_10px_20px_-5px_rgba(198,170,136,0.12),0_4px_8px_-4px_rgba(198,170,136,0.08)]"
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[4px] bg-[var(--charcoal)] border border-[var(--graphite)]">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-[8px] bg-[var(--black-warm)]">
         {imageError ? (
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--charcoal)] to-[var(--black-warm)] flex items-center justify-center">
             <div className="text-center px-4">
               <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">{vehicleType.category}</div>
-              <div className="mt-2 text-xl font-medium text-[var(--text-primary)]">{vehicleType.name}</div>
+              <div className="mt-2 font-display text-xl font-medium text-[var(--text-primary)]">{vehicleType.name}</div>
             </div>
           </div>
         ) : (
-          <Image
-            src={vehicleTypeImage}
-            alt={vehicleType.name}
-            fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onError={() => setImageError(true)}
-          />
+          <>
+            <Image
+              src={vehicleTypeImage}
+              alt={vehicleType.name}
+              fill
+              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImageError(true)}
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--charcoal)] to-transparent" aria-hidden="true" />
+          </>
         )}
       </div>
 
-      <div className="mt-5 grid grid-cols-[1fr_auto] items-baseline gap-x-4">
-        <h3 className="font-display text-2xl leading-tight text-[var(--text-primary)]">
-          {vehicleType.name}
-        </h3>
-        <span className="numeric text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--gold)]">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-      </div>
-
-      <p className="mt-1 text-[0.875rem] leading-snug text-[var(--text-muted)]">
-        {models}
-      </p>
-
-      <dl className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4 text-[0.875rem] text-[var(--text-secondary)]">
-        <div className="flex items-baseline gap-2">
-          <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Pax</dt>
-          <dd className="numeric text-[var(--text-primary)]">{vehicleType.capacity}</dd>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Bags</dt>
-          <dd className="numeric text-[var(--text-primary)]">{vehicleType.luggageCapacity}</dd>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Wait</dt>
-          <dd className="numeric text-[var(--text-primary)]">15 min</dd>
-        </div>
-      </dl>
-
-      <div className="mt-auto flex items-end justify-between gap-4 pt-6">
-        <div>
-          <div className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">From</div>
-          <div className="numeric mt-1 text-2xl text-[var(--gold-text)]">
-            {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
-          </div>
-          <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            per vehicle · free cancellation
-          </p>
-        </div>
-
-        {unavailable ? (
-          <span className="border border-[var(--graphite)] px-4 py-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            Sold out
+      <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
+        <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-4">
+          <h3 className="font-display text-[1.375rem] font-medium leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
+            {vehicleType.name}
+          </h3>
+          <span className="numeric text-[0.6875rem] font-medium tracking-[0.16em] text-[var(--gold-text)]">
+            {String(index + 1).padStart(2, '0')}
           </span>
-        ) : (
-          <Link
-            href={selectionUrl}
-            className="btn btn-primary h-11 px-5 text-[0.75rem]"
-            aria-label={`Select ${vehicleType.name}`}
-          >
-            Select
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        )}
+        </div>
+
+        <p className="mt-1.5 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
+          {models}
+        </p>
+
+        <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4">
+          <div className="flex items-baseline gap-2">
+            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Pax</dt>
+            <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.capacity}</dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Bags</dt>
+            <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.luggageCapacity}</dd>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Wait</dt>
+            <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">15 min</dd>
+          </div>
+        </dl>
+
+        <div className="mt-auto flex items-end justify-between gap-4 pt-6">
+          <div>
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">From</div>
+            <div className="numeric mt-1 text-[1.5rem] font-medium text-[var(--gold-text)]">
+              {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
+            </div>
+            <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              per vehicle · free cancellation
+            </p>
+          </div>
+
+          {unavailable ? (
+            <span className="rounded-[4px] border border-[var(--graphite)] px-4 py-2.5 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              Sold out
+            </span>
+          ) : (
+            <Link
+              href={selectionUrl}
+              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold-text)] px-5 py-3 text-[0.75rem] font-medium uppercase tracking-[0.08em] text-[var(--black-void)] transition-all duration-300 hover:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
+              aria-label={`Select ${vehicleType.name}`}
+            >
+              Select
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          )}
+        </div>
       </div>
     </motion.article>
   )
