@@ -51,7 +51,10 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
   if (!results) {
     return (
       <PublicLayout>
-        <div className="min-h-screen bg-[var(--black-void)]">
+        <div
+          className="min-h-screen"
+          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(var(--gold-rgb), 0.04) 0%, transparent 70%), var(--black-void)' }}
+        >
           <div className="luxury-container py-24">
             <div className="mx-auto max-w-xl">
               <div className="editorial-eyebrow">Search failed</div>
@@ -78,14 +81,17 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-[var(--black-void)]">
+      <div
+        className="min-h-screen"
+        style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(var(--gold-rgb), 0.04) 0%, transparent 70%), var(--black-void)' }}
+      >
         <SearchSummary
           origin={origin}
           destination={destination}
           date={new Date(date)}
           passengers={parseInt(passengers)}
         />
-        <div className="luxury-container py-12">
+        <div className="luxury-container py-12 lg:py-16">
           <SearchResults
             results={results}
             searchParams={params}

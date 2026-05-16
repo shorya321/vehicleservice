@@ -42,7 +42,9 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
       </div>
 
       {(searchParams.from || searchParams.to || searchParams.date) && (
-        <dl className="mt-12 grid grid-cols-2 gap-x-8 gap-y-2 border-t border-[var(--graphite)] pt-6 text-[0.8125rem] text-[var(--text-secondary)] sm:grid-cols-4">
+        <>
+          <hr className="hairline-gold mt-12" />
+          <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-2 pt-0 text-[0.8125rem] text-[var(--text-secondary)] sm:grid-cols-4">
           {searchParams.from && (
             <div>
               <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">From</dt>
@@ -67,7 +69,8 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
               <dd className="numeric mt-1">{searchParams.passengers}</dd>
             </div>
           )}
-        </dl>
+          </dl>
+        </>
       )}
     </motion.div>
   )

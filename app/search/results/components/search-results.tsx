@@ -144,7 +144,8 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return (
     <div className="space-y-12 lg:space-y-16">
       <motion.section
-        className="border-y border-[var(--graphite)] py-10 lg:py-12"
+        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.1)] py-10 lg:py-12 px-8 lg:px-10"
+        style={{ background: 'linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.6) 0%, rgba(var(--warm-rgb), 0.4) 100%)' }}
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}

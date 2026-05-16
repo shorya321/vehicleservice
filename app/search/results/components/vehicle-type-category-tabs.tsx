@@ -81,7 +81,7 @@ export function VehicleTypeCategoryTabs({
       <div
         role="tablist"
         aria-label="Vehicle categories"
-        className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[var(--graphite)] pb-1"
+        className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[rgba(var(--gold-rgb),0.12)] pb-1"
       >
         {tabs.map((tab) => {
           const selected = activeCategory === tab.id
@@ -121,7 +121,7 @@ export function VehicleTypeCategoryTabs({
             id="vehicle-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="h-10 min-w-[10rem] cursor-pointer rounded-[4px] border border-[var(--graphite)] bg-[var(--black-warm)] px-3 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25"
+            className="h-11 min-w-[10rem] cursor-pointer rounded-[4px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--black-warm)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25"
           >
             {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
               <option key={opt} value={opt}>{SORT_LABELS[opt]}</option>
@@ -150,7 +150,7 @@ export function VehicleTypeCategoryTabs({
       {totalPages > 1 && (
         <nav
           aria-label="Pagination"
-          className="flex flex-col items-center gap-4 border-t border-[var(--graphite)] pt-8 sm:flex-row sm:justify-between"
+          className="flex flex-col items-center gap-4 border-t border-[rgba(var(--gold-rgb),0.1)] pt-8 sm:flex-row sm:justify-between"
         >
           <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
             <span className="numeric text-[var(--text-secondary)]">

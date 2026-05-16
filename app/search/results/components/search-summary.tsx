@@ -25,7 +25,8 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
 
   return (
     <motion.header
-      className="relative border-b border-[var(--graphite)] bg-[var(--black-rich)]"
+      className="relative border-b border-[rgba(var(--gold-rgb),0.12)]"
+      style={{ background: 'linear-gradient(180deg, var(--black-rich) 0%, var(--black-void) 100%)' }}
       initial={reduceMotion ? false : { opacity: 0, y: -8 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}

@@ -58,7 +58,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
 
   return (
     <motion.article
-      className="group flex h-full flex-col rounded-[8px] border border-[var(--graphite)] bg-[var(--charcoal)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_10px_20px_-5px_rgba(198,170,136,0.12),0_4px_8px_-4px_rgba(198,170,136,0.08)]"
+      className="group flex h-full flex-col rounded-[8px] border border-[rgba(var(--gold-rgb),0.18)] bg-gradient-to-br from-[var(--charcoal)] to-[var(--black-warm)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(var(--gold-rgb),0.3)] hover:shadow-[0_12px_24px_-6px_rgba(198,170,136,0.15),0_4px_10px_-4px_rgba(198,170,136,0.1)]"
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -82,7 +82,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setImageError(true)}
             />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--charcoal)] to-transparent" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--charcoal)] via-[var(--charcoal)]/60 to-transparent" aria-hidden="true" />
           </>
         )}
       </div>
@@ -97,11 +97,11 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           </span>
         </div>
 
-        <p className="mt-1.5 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
+        <p className="mt-1.5 line-clamp-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
           {models}
         </p>
 
-        <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4">
+        <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[rgba(var(--gold-rgb),0.1)] pt-4">
           <div className="flex items-baseline gap-2">
             <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Pax</dt>
             <dd className="numeric text-[0.9375rem] text-[var(--text-primary)]">{vehicleType.capacity}</dd>
