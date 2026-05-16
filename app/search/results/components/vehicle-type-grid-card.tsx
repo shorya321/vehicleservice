@@ -130,7 +130,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           ) : (
             <Link
               href={selectionUrl}
-              className="inline-flex items-center gap-2 rounded-[4px] bg-[var(--gold)] px-5 py-3 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[var(--black-void)] shadow-[0_10px_30px_-10px_rgba(var(--gold-rgb),0.4)] transition-all duration-300 hover:bg-[var(--gold-deep)] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
+              className="inline-flex items-center gap-2 rounded-[4px] bg-[linear-gradient(180deg,var(--gold)_0%,var(--gold-medium)_100%)] px-5 py-3 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-[#f8f6f3] shadow-[inset_0_0_0_1px_rgba(var(--gold-rgb),0.3),0_10px_24px_-10px_rgba(var(--gold-rgb),0.45)] transition-all duration-300 hover:bg-[linear-gradient(180deg,var(--gold-medium)_0%,var(--gold-deep)_100%)] hover:-translate-y-px hover:shadow-[inset_0_0_0_1px_rgba(var(--gold-rgb),0.3),0_14px_28px_-10px_rgba(var(--gold-rgb),0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
               aria-label={`Select ${vehicleType.name}`}
             >
               Select

@@ -46,6 +46,7 @@
   --charcoal-rgb: 221, 217, 211;
   --graphite-rgb: 196, 192, 185;
   --gold-rgb: 198, 170, 136;
+  --gold-ink: oklch(0.18 0.016 70);
   --text-primary-rgb: 26, 25, 23;
 
   /* Typography */
@@ -119,6 +120,7 @@
   --charcoal-rgb: 22, 21, 20;
   --graphite-rgb: 42, 40, 38;
   --gold-rgb: 198, 170, 136;
+  --gold-ink: oklch(0.18 0.016 70);
   --text-primary-rgb: 248, 246, 243;
 
   --background: 240 10% 2%;
