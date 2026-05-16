@@ -24,8 +24,8 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
   const reduceMotion = useReducedMotion()
 
   return (
-    <motion.header
-      className="relative border-b border-[var(--graphite)]"
+    <motion.div
+      className="relative"
       style={{ background: 'linear-gradient(180deg, var(--black-rich) 0%, var(--black-void) 100%)' }}
       initial={reduceMotion ? false : { opacity: 0, y: -8 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -75,6 +75,6 @@ export function SearchSummary({ origin, destination, date, passengers }: SearchS
           </div>
         </div>
       </div>
-    </motion.header>
+    </motion.div>
   )
 }

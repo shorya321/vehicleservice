@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
@@ -40,8 +40,6 @@ export function PublicHeader({
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
-  const pathname = usePathname()
-  const isNotHomePage = pathname !== '/'
   const [user, setUser] = useState<SupabaseUser | null>(initialUser)
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const supabase = useMemo(() => createClient(), [])
@@ -137,7 +135,7 @@ export function PublicHeader({
 
   return (
     <header
-      className={`nav-luxury animate-header-slide-in ${isScrolled ? "scrolled" : ""} ${isNotHomePage ? "has-border" : ""}`}
+      className={`nav-luxury animate-header-slide-in ${isScrolled ? "scrolled" : ""}`}
     >
       <div className="luxury-container">
         <div className="flex items-center justify-between">
