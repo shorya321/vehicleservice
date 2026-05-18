@@ -77,7 +77,7 @@ export function OrderSummary({
   return (
     <motion.aside
       aria-label="Order summary"
-      className="border border-[var(--graphite)] rounded-[8px] overflow-hidden"
+      className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden"
       initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -110,7 +110,7 @@ export function OrderSummary({
       </div>
 
       {/* Price Breakdown */}
-      <div className="border-t border-[var(--graphite)] px-6 xl:px-8 py-5 space-y-2.5 text-[0.875rem]">
+      <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-2.5 text-[0.875rem]">
         <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
         {childSeatsCost > 0 && (
           <PriceRow
@@ -141,14 +141,20 @@ export function OrderSummary({
       </div>
 
       {/* Total */}
-      <div className="border-t border-[var(--graphite)] px-6 xl:px-8 py-5">
+      <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5">
         <div className="flex items-baseline justify-between">
           <span className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
             Total
           </span>
-          <span className="text-[1.75rem] font-medium tabular-nums tracking-tight text-[var(--text-primary)]">
+          <motion.span
+            key={total}
+            className="text-[1.75rem] font-medium tabular-nums tracking-tight text-[var(--text-primary)] inline-block"
+            initial={reduceMotion ? false : { scale: 1.04, color: 'var(--gold-text)' }}
+            animate={reduceMotion ? undefined : { scale: 1, color: 'var(--text-primary)' }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          >
             {formatUserPrice(total)}
-          </span>
+          </motion.span>
         </div>
         {isConverted && (
           <p className="mt-2 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
@@ -161,12 +167,12 @@ export function OrderSummary({
       </div>
 
       {/* Promo Code — compact toggle */}
-      <div className="border-t border-[var(--graphite)] px-6 xl:px-8 py-4">
+      <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-4">
         <button
           type="button"
           onClick={() => setShowPromo(!showPromo)}
           aria-expanded={showPromo}
-          className="flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+          className="flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
         >
           <Tag className="h-3 w-3" aria-hidden="true" />
           Have a code?
@@ -185,7 +191,7 @@ export function OrderSummary({
             <button
               type="button"
               onClick={applyPromoCode}
-              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
             >
               Apply
             </button>
@@ -203,7 +209,7 @@ export function OrderSummary({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-[var(--graphite)] px-6 xl:px-8 py-5 space-y-4">
+      <footer className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-4">
         {(currentStep === undefined || currentStep === 1) ? (
           <>
             {onAgreeToTermsChange && (

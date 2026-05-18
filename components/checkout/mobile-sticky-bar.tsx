@@ -63,7 +63,7 @@ export function MobileStickyBar({
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-[var(--graphite)] bg-[var(--charcoal)]"
+      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-[rgba(var(--gold-rgb),0.12)] bg-[var(--charcoal)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       initial={reduceMotion ? false : { y: 60, opacity: 0 }}
       animate={reduceMotion ? undefined : { y: 0, opacity: 1 }}
@@ -107,7 +107,7 @@ export function MobileStickyBar({
               className="grid"
             >
               <div className="overflow-hidden min-h-0">
-                <div className="border-t border-[var(--graphite)] pt-3 space-y-2">
+                <div className="border-t border-[rgba(var(--gold-rgb),0.1)] pt-3 space-y-2">
                   {/* Itinerary Details */}
                   <dl className="space-y-0 text-[0.8125rem]">
                     {[
@@ -119,7 +119,7 @@ export function MobileStickyBar({
                     ].map((item, index) => (
                       <div
                         key={item.label}
-                        className={`flex items-baseline justify-between ${index > 0 ? 'mt-1.5 pt-1.5 border-t border-[var(--graphite)]/50' : ''}`}
+                        className={`flex items-baseline justify-between ${index > 0 ? 'mt-1.5 pt-1.5 border-t border-[rgba(var(--gold-rgb),0.06)]' : ''}`}
                       >
                         <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
                           {item.label}
@@ -132,7 +132,7 @@ export function MobileStickyBar({
                   </dl>
 
                   {/* Price Breakdown */}
-                  <div className="border-t border-[var(--graphite)] pt-2 space-y-1.5 text-[0.8125rem]">
+                  <div className="border-t border-[rgba(var(--gold-rgb),0.1)] pt-2 space-y-1.5 text-[0.8125rem]">
                     <div className="flex justify-between">
                       <span className="text-[var(--text-secondary)]">Base fare</span>
                       <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(basePrice)}</span>

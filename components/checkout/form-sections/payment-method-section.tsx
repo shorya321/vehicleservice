@@ -32,7 +32,7 @@ export function PaymentMethodSection({ form: _form }: PaymentMethodSectionProps)
           Additional payment methods coming soon.
         </p>
 
-        <div className="mt-5 flex gap-3 p-3.5 bg-[var(--black-warm)] border border-[var(--graphite)] rounded">
+        <div className="mt-5 flex gap-3 p-3.5 bg-[var(--black-warm)] border border-[rgba(var(--gold-rgb),0.1)] rounded">
           <Shield className="h-4 w-4 mt-0.5 text-[var(--gold-text)] shrink-0" aria-hidden="true" />
           <div className="text-sm">
             <p className="text-[var(--text-secondary)]">

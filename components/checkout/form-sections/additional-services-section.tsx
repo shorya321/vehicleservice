@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { motion, useReducedMotion } from 'motion/react'
 import * as LucideIcons from 'lucide-react'
 import { Check, Minus, Plus, Package } from 'lucide-react'
 import { useCurrency } from '@/lib/currency/context'
@@ -34,6 +35,7 @@ export function AdditionalServicesSection({
   addonsByCategory
 }: AdditionalServicesSectionProps) {
   const { setValue } = form
+  const reduceMotion = useReducedMotion()
   const { currentCurrency, exchangeRates } = useCurrency()
   const formatAddonPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
 
@@ -142,7 +144,15 @@ export function AdditionalServicesSection({
                           >
                             <Minus className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
-                          <span className="checkout-quantity-value">{quantity}</span>
+                          <motion.span
+                            key={quantity}
+                            className="checkout-quantity-value"
+                            initial={reduceMotion ? false : { opacity: 0.4 }}
+                            animate={reduceMotion ? undefined : { opacity: 1 }}
+                            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          >
+                            {quantity}
+                          </motion.span>
                           <button
                             type="button"
                             className="checkout-quantity-btn"
