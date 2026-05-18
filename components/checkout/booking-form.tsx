@@ -1,20 +1,22 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, createBooking } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { toast } from 'sonner'
 import { buildPaymentUrl } from '@/lib/utils/url-builder'
 
-// Import section components
 import { TransferDetailsSection } from './form-sections/transfer-details-section'
 import { PassengerInfoSection } from './form-sections/passenger-info-section'
 import { AdditionalServicesSection } from './form-sections/additional-services-section'
 import { PaymentMethodSection } from './form-sections/payment-method-section'
+import { WizardNavigation } from './wizard-navigation'
+import { StepErrorSummary } from './step-error-summary'
 
 const selectedAddonSchema = z.object({
   addon_id: z.string().uuid(),
@@ -45,6 +47,13 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>
 
+const STEP_FIELDS: Record<number, (keyof BookingFormData)[]> = {
+  0: ['pickupDate', 'pickupTime', 'firstName', 'lastName', 'email', 'phone'],
+  1: ['paymentMethod'],
+}
+
+const TOTAL_STEPS = 2
+
 interface BookingFormProps {
   route: RouteDetails
   vehicleType: VehicleTypeDetails
@@ -55,6 +64,10 @@ interface BookingFormProps {
   user: any
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
+  currentStep: number
+  direction: 1 | -1
+  onGoNext: () => void
+  onGoBack: () => void
   onExtrasChange?: (infantSeats: number, boosterSeats: number, luggage: number) => void
   onPassengersChange?: (passengers: number) => void
   onDateTimeChange?: (date: string, time: string) => void
@@ -64,21 +77,11 @@ interface BookingFormProps {
     isSubmitting: boolean
     agreeToTerms: boolean
     setAgreeToTerms: (value: boolean) => void
+    trigger: (fields: string[]) => Promise<boolean>
+    handleContinue: () => void
   }) => void
 }
 
-/**
- * Booking Form Orchestrator Component
- *
- * Manages the complete booking flow by:
- * - Initializing form state with user data
- * - Coordinating section components
- * - Handling form submission and booking creation
- * - Managing shared state (passengers, luggage)
- * - Calculating pricing with extras
- *
- * @component
- */
 export function BookingForm({
   route,
   vehicleType,
@@ -89,6 +92,10 @@ export function BookingForm({
   user,
   profile,
   addonsByCategory,
+  currentStep,
+  direction,
+  onGoNext,
+  onGoBack,
   onExtrasChange,
   onPassengersChange,
   onDateTimeChange,
@@ -96,12 +103,15 @@ export function BookingForm({
   onFormReady
 }: BookingFormProps) {
   const router = useRouter()
+  const reduceMotion = useReducedMotion()
   const [loading, setLoading] = useState(false)
   const [passengers, setPassengers] = useState(initialPassengers)
-  const [luggage, setLuggage] = useState(initialLuggage)
+  const [luggage] = useState(initialLuggage)
+  const [stepValidationAttempted, setStepValidationAttempted] = useState(false)
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
+    mode: 'onTouched',
     defaultValues: {
       firstName: profile?.first_name || user?.user_metadata?.first_name || profile?.full_name?.split(' ')[0] || '',
       lastName: profile?.last_name || user?.user_metadata?.last_name || profile?.full_name?.split(' ').slice(1).join(' ') || '',
@@ -119,35 +129,31 @@ export function BookingForm({
     }
   })
 
-  const { handleSubmit, watch, setValue } = form
+  const { handleSubmit, watch, setValue, trigger, formState: { errors } } = form
   const agreeToTerms = watch('agreeToTerms')
   const infantSeats = watch('infantSeats')
   const boosterSeats = watch('boosterSeats')
   const watchedAddons = watch('selectedAddons')
   const selectedAddons = useMemo(() => watchedAddons || [], [watchedAddons])
 
-  // Calculate total price with all extras
   const basePrice = vehicleType.price || 50
-  const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * 15
-  const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const totalPrice = basePrice + extraLuggageCost + addonsCost
 
-  // Notify parent of passenger count changes
+  useEffect(() => {
+    setStepValidationAttempted(false)
+  }, [currentStep])
+
   useEffect(() => {
     if (onPassengersChange) {
       onPassengersChange(passengers)
     }
   }, [passengers, onPassengersChange])
 
-  // Notify parent of extras changes
   useEffect(() => {
     if (onExtrasChange) {
       onExtrasChange(infantSeats, boosterSeats, luggage)
     }
   }, [infantSeats, boosterSeats, luggage, onExtrasChange])
 
-  // Notify parent of addons changes (with name lookup for display)
   useEffect(() => {
     if (onAddonsChange) {
       const addonsWithNames: OrderSummaryAddon[] = selectedAddons.map(addon => {
@@ -206,21 +212,48 @@ export function BookingForm({
     }
   }, [vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, basePrice, router])
 
-  // Expose form methods to parent
+  const handleContinue = useCallback(async () => {
+    const fields = STEP_FIELDS[currentStep] || []
+    if (fields.length > 0) {
+      setStepValidationAttempted(true)
+      const isValid = await trigger(fields)
+      if (!isValid) return
+    }
+    onGoNext()
+  }, [currentStep, trigger, onGoNext])
+
+  const formMethodsRef = useRef({
+    submit: handleSubmit(onSubmit),
+    isSubmitting: loading,
+    agreeToTerms,
+    setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value),
+    trigger: async (fields: string[]) => trigger(fields as (keyof BookingFormData)[]),
+    handleContinue,
+  })
+  formMethodsRef.current = {
+    submit: handleSubmit(onSubmit),
+    isSubmitting: loading,
+    agreeToTerms,
+    setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value),
+    trigger: async (fields: string[]) => trigger(fields as (keyof BookingFormData)[]),
+    handleContinue,
+  }
+
   useEffect(() => {
     if (onFormReady) {
       onFormReady({
-        submit: handleSubmit(onSubmit),
+        submit: (...args: []) => formMethodsRef.current.submit(...args),
         isSubmitting: loading,
         agreeToTerms,
-        setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value)
+        setAgreeToTerms: (value: boolean) => formMethodsRef.current.setAgreeToTerms(value),
+        trigger: (fields: string[]) => formMethodsRef.current.trigger(fields),
+        handleContinue: () => formMethodsRef.current.handleContinue(),
       })
     }
-  }, [loading, agreeToTerms, onFormReady, handleSubmit, onSubmit, setValue])
+  }, [loading, agreeToTerms, onFormReady])
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-8">
-      {/* Transfer Details */}
+  const stepSections = [
+    <div key="booking-details" className="space-y-0">
       <TransferDetailsSection
         form={form}
         route={route}
@@ -229,22 +262,45 @@ export function BookingForm({
         setPassengers={setPassengers}
         onDateTimeChange={onDateTimeChange}
       />
-
-      {/* Passenger Information */}
       <PassengerInfoSection form={form} />
-
-      {/* Additional Services */}
+    </div>,
+    <div key="services-pay" className="space-y-0">
       <AdditionalServicesSection
         form={form}
         vehicleType={vehicleType}
         addonsByCategory={addonsByCategory}
       />
-
-      {/* Payment Method */}
       <PaymentMethodSection form={form} />
+    </div>,
+  ]
 
-      {/* Hidden submit - actual submit is in OrderSummary on desktop */}
-      <input type="submit" className="hidden" />
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-0">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={currentStep}
+          initial={reduceMotion ? false : { opacity: 0, y: direction * 16 }}
+          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          exit={reduceMotion ? undefined : { opacity: 0, y: direction * -8 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {stepValidationAttempted && (
+            <StepErrorSummary
+              errors={errors}
+              fieldNames={STEP_FIELDS[currentStep]?.map(String) || []}
+            />
+          )}
+
+          {stepSections[currentStep]}
+
+          <WizardNavigation
+            currentStep={currentStep}
+            totalSteps={TOTAL_STEPS}
+            onBack={onGoBack}
+            onContinue={handleContinue}
+          />
+        </motion.div>
+      </AnimatePresence>
     </form>
   )
 }

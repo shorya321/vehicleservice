@@ -18,15 +18,13 @@ interface OrderSummaryProps {
   boosterSeats?: number
   pickupDate?: string
   pickupTime?: string
+  currentStep?: number
   onSubmit?: () => void
   isSubmitting?: boolean
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
   selectedAddons?: OrderSummaryAddon[]
 }
-
-const inputClass =
-  'w-full h-11 bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-3 text-[0.875rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200'
 
 export function OrderSummary({
   route,
@@ -37,6 +35,7 @@ export function OrderSummary({
   boosterSeats = 0,
   pickupDate,
   pickupTime,
+  currentStep,
   onSubmit,
   isSubmitting = false,
   agreeToTerms = false,
@@ -63,7 +62,7 @@ export function OrderSummary({
   const total = subtotal - promoDiscount
 
   const formattedDate = pickupDate
-    ? new Date(pickupDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     : ''
 
   const applyPromoCode = () => {
@@ -76,36 +75,29 @@ export function OrderSummary({
     }
   }
 
-  const itinerary: { label: string; value: React.ReactNode }[] = [
-    { label: 'From', value: route.origin.name },
-    { label: 'To', value: route.destination.name },
-    formattedDate ? { label: 'Date', value: <span className="numeric">{formattedDate}</span> } : null,
-    pickupTime ? { label: 'Time', value: <span className="numeric">{pickupTime}</span> } : null,
-    { label: 'Pax', value: <span className="numeric">{passengers}</span> },
-    { label: 'Bags', value: <span className="numeric">{vehicleType.luggage_capacity}</span> },
-  ].filter(Boolean) as { label: string; value: React.ReactNode }[]
-
   return (
     <motion.aside
       aria-label="Order summary"
-      className="bg-[var(--black-rich)] border border-[var(--graphite)]"
+      className="bg-[var(--charcoal)] border border-[var(--graphite)] rounded-lg overflow-hidden"
       initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <header className="border-b border-[var(--graphite)] px-6 py-5">
-        <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+      {/* Header */}
+      <header className="border-b border-[var(--graphite)] px-5 py-4">
+        <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
           Itinerary · summary
         </div>
-        <h2 className="mt-1 font-display text-xl text-[var(--text-primary)]">
+        <h2 className="mt-1.5 text-lg font-medium text-[var(--text-primary)]">
           {vehicleType.name}
         </h2>
       </header>
 
+      {/* Vehicle Image */}
       {vehicleType.image_url && (
         <div className="border-b border-[var(--graphite)]">
-          <div className="relative h-32 w-full overflow-hidden bg-[var(--black-warm)]">
+          <div className="relative h-28 w-full overflow-hidden bg-[var(--black-warm)]">
             <Image
               src={vehicleType.image_url}
               alt={vehicleType.name}
@@ -117,27 +109,43 @@ export function OrderSummary({
         </div>
       )}
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-[var(--graphite)] px-6 py-5 text-[0.875rem]">
-        {itinerary.map((item) => (
-          <div key={item.label}>
-            <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              {item.label}
-            </dt>
-            <dd className="mt-1 text-[var(--text-primary)]">{item.value}</dd>
-          </div>
-        ))}
-      </dl>
+      {/* Itinerary Block */}
+      <div className="border-b border-[var(--graphite)] px-5 py-4">
+        <dl className="space-y-0">
+          {[
+            { label: 'From', value: route.origin.name },
+            { label: 'To', value: route.destination.name },
+            ...(formattedDate ? [{ label: 'Date', value: formattedDate, numeric: true }] : []),
+            ...(pickupTime ? [{ label: 'Time', value: pickupTime, numeric: true }] : []),
+            { label: 'Passengers', value: String(passengers), numeric: true },
+            { label: 'Luggage', value: String(vehicleType.luggage_capacity), numeric: true },
+          ].map((item, index) => (
+            <div
+              key={item.label}
+              className={`flex items-baseline gap-3 ${index > 0 ? 'mt-3 pt-3 border-t border-[var(--graphite)]' : ''}`}
+            >
+              <dt className="flex-[0_0_5.5rem] text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                {item.label}
+              </dt>
+              <dd className={`text-[0.9375rem] font-medium text-[var(--text-primary)] ${'numeric' in item && item.numeric ? 'tabular-nums' : ''}`}>
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
 
-      <div className="border-b border-[var(--graphite)] px-6 py-5">
+      {/* Promo Code */}
+      <div className="border-b border-[var(--graphite)] px-5 py-4">
         <button
           type="button"
           onClick={() => setShowPromo(!showPromo)}
           aria-expanded={showPromo}
-          className="flex items-center gap-2 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+          className="flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.12em] text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
         >
-          <Tag className="h-4 w-4" aria-hidden="true" />
-          Have a promo code?
-          {showPromo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+          Promo code
+          {showPromo ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
         </button>
 
         {showPromo && (
@@ -146,12 +154,13 @@ export function OrderSummary({
               placeholder="Enter code"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
-              className={inputClass + ' flex-1'}
+              aria-label="Promo code"
+              className="flex-1 h-10 bg-[var(--black-warm)] border border-[var(--graphite)] rounded px-3 text-[0.875rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)]/15 transition-[border,box-shadow] duration-200"
             />
             <button
               type="button"
               onClick={applyPromoCode}
-              className="btn btn-secondary h-11 px-4 text-[0.75rem]"
+              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal-light)] transition-colors"
             >
               Apply
             </button>
@@ -159,14 +168,15 @@ export function OrderSummary({
         )}
 
         {promoApplied && (
-          <p className="mt-2 flex items-center gap-1 text-[0.75rem] text-[var(--gold)]">
-            <Check className="h-3.5 w-3.5" aria-hidden="true" />
-            Promo applied.
+          <p className="mt-2.5 flex items-center gap-1.5 text-[0.75rem] text-[var(--gold-text)]">
+            <Check className="h-3 w-3" aria-hidden="true" />
+            Promo applied
           </p>
         )}
       </div>
 
-      <div className="border-b border-[var(--graphite)] px-6 py-5 space-y-2.5 text-[0.875rem]">
+      {/* Price Breakdown */}
+      <div className="border-b border-[var(--graphite)] px-5 py-4 space-y-2.5 text-[0.875rem]">
         <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
         {childSeatsCost > 0 && (
           <PriceRow
@@ -196,18 +206,19 @@ export function OrderSummary({
         )}
       </div>
 
-      <div className="px-6 py-5">
+      {/* Total */}
+      <div className="px-5 py-4">
         <div className="flex items-baseline justify-between">
-          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
             Total
           </span>
-          <span className="numeric text-3xl text-[var(--text-primary)]">
+          <span className="text-2xl font-medium tabular-nums text-[var(--text-primary)]">
             {formatUserPrice(total)}
           </span>
         </div>
         {isConverted && (
-          <p className="mt-3 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <p className="mt-2.5 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
+            <Info className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
             <span>
               Shown in {currentCurrency}. Charged in AED ({formatPrice(total, 'AED', exchangeRates)}).
             </span>
@@ -215,50 +226,63 @@ export function OrderSummary({
         )}
       </div>
 
-      <footer className="border-t border-[var(--graphite)] px-6 py-5 space-y-4">
-        {onAgreeToTermsChange && (
-          <label htmlFor="agree-terms" className="flex cursor-pointer items-start gap-3">
-            <input
-              id="agree-terms"
-              type="checkbox"
-              checked={agreeToTerms}
-              onChange={(e) => onAgreeToTermsChange(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 appearance-none border border-[var(--graphite)] bg-[var(--black-warm)] checked:border-[var(--gold)] checked:bg-[var(--gold)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
-            />
-            <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
-              I agree to the{' '}
-              <a href="/terms" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
-                Terms
-              </a>{' '}
-              and{' '}
-              <a href="/privacy" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
-                Privacy Policy
-              </a>
-              .
-            </span>
-          </label>
-        )}
-
-        {onSubmit && (
-          <button
-            type="submit"
-            disabled={isSubmitting || !agreeToTerms}
-            onClick={onSubmit}
-            className="btn btn-primary h-12 w-full disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              'Processing'
-            ) : (
-              <>
-                Confirm booking
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </>
+      {/* Footer */}
+      <footer className="border-t border-[var(--graphite)] px-5 py-4 space-y-3.5">
+        {(currentStep === undefined || currentStep === 1) ? (
+          <>
+            {onAgreeToTermsChange && (
+              <label htmlFor="agree-terms" className="flex cursor-pointer items-start gap-3">
+                <input
+                  id="agree-terms"
+                  type="checkbox"
+                  checked={agreeToTerms}
+                  onChange={(e) => onAgreeToTermsChange(e.target.checked)}
+                  className="checkout-checkbox mt-0.5"
+                />
+                <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+                  I agree to the{' '}
+                  <a href="/terms" className="text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors">
+                    Terms
+                  </a>{' '}
+                  and{' '}
+                  <a href="/privacy" className="text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors">
+                    Privacy Policy
+                  </a>
+                  .
+                </span>
+              </label>
             )}
-          </button>
+
+            {onSubmit && (
+              <button
+                type="submit"
+                disabled={isSubmitting || !agreeToTerms}
+                onClick={onSubmit}
+                className="checkout-btn-primary w-full"
+              >
+                {isSubmitting ? (
+                  'Processing'
+                ) : (
+                  <>
+                    Proceed to payment
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            )}
+
+            <p className="text-center text-[0.75rem] text-[var(--text-muted)]">
+              You won&apos;t be charged yet
+            </p>
+          </>
+        ) : (
+          <p className="text-center text-[0.8125rem] text-[var(--text-muted)]">
+            Complete all steps to proceed
+          </p>
         )}
 
         <p className="flex items-center justify-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-          <Lock className="h-3.5 w-3.5 text-[var(--gold)]" aria-hidden="true" />
+          <Lock className="h-3 w-3 text-[var(--gold-text)]" aria-hidden="true" />
           Encrypted · SSL secure
         </p>
       </footer>
@@ -281,8 +305,8 @@ function PriceRow({
       <span
         className={
           tone === 'positive'
-            ? 'numeric text-[var(--gold)]'
-            : 'numeric text-[var(--text-primary)]'
+            ? 'font-medium tabular-nums text-[var(--gold-text)]'
+            : 'font-medium tabular-nums text-[var(--text-primary)]'
         }
       >
         {value}

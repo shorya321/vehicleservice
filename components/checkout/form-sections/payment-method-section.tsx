@@ -1,133 +1,49 @@
 'use client'
 
 import { UseFormReturn } from 'react-hook-form'
-import { motion } from 'motion/react'
-import { CreditCard, Wallet, Banknote, Shield } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { CreditCard, Shield } from 'lucide-react'
 
 interface PaymentMethodSectionProps {
   form: UseFormReturn<any>
 }
 
-interface PaymentMethod {
-  id: 'card' | 'paypal' | 'cash'
-  name: string
-  description: string
-  icon: React.ElementType
-  badge?: string
-  disabled?: boolean
-}
-
-/**
- * Payment Method Section Component
- *
- * Displays available payment options:
- * - Credit/Debit Card (primary, secure online payment)
- * - PayPal (visual only, disabled)
- * - Cash (visual only, disabled)
- *
- * @component
- */
-export function PaymentMethodSection({ form }: PaymentMethodSectionProps) {
-  const { watch, setValue } = form
-  const paymentMethod = watch('paymentMethod')
-
-  const paymentMethods: PaymentMethod[] = [
-    {
-      id: 'card',
-      name: 'Credit / Debit Card',
-      description: 'Visa, Mastercard, Amex accepted',
-      icon: CreditCard,
-    },
-    {
-      id: 'paypal',
-      name: 'PayPal',
-      description: 'Pay with your PayPal account',
-      icon: Wallet,
-      disabled: true
-    },
-    {
-      id: 'cash',
-      name: 'Cash on Arrival',
-      description: 'Pay driver directly',
-      icon: Banknote,
-      disabled: true
-    }
-  ]
-
+export function PaymentMethodSection({ form: _form }: PaymentMethodSectionProps) {
   return (
-    <motion.div
-      className="checkout-form-section"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.3 }}
-    >
-      {/* Section Header */}
+    <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <span className="checkout-section-number">4</span>
         <h2 className="checkout-section-title">Payment Method</h2>
-        <CreditCard className="checkout-section-icon" />
+        <CreditCard className="checkout-section-icon" aria-hidden="true" />
       </div>
 
-      {/* Section Content */}
       <div className="checkout-section-content">
-        <div className="checkout-payment-methods">
-          {paymentMethods.map((method) => {
-            const Icon = method.icon
-            const isSelected = paymentMethod === method.id
-
-            return (
-              <div
-                key={method.id}
-                className={cn(
-                  "checkout-payment-method",
-                  isSelected && "selected",
-                  method.disabled && "opacity-50 cursor-not-allowed"
-                )}
-                onClick={() => {
-                  if (!method.disabled) {
-                    setValue('paymentMethod', method.id)
-                  }
-                }}
-              >
-                <div className="checkout-payment-radio">
-                  <div className="checkout-payment-radio-inner" />
-                </div>
-                <div className="checkout-payment-icon">
-                  <Icon className="h-5 w-5 text-[var(--gold-text)]" />
-                </div>
-                <div className="checkout-payment-info">
-                  <p className="checkout-payment-name">{method.name}</p>
-                  <p className="checkout-payment-description">
-                    {method.disabled ? 'Coming soon' : method.description}
-                  </p>
-                </div>
-                {method.badge && (
-                  <span className="checkout-payment-badge">{method.badge}</span>
-                )}
-              </div>
-            )
-          })}
+        <div className="checkout-payment-method selected">
+          <div className="checkout-payment-radio" aria-hidden="true">
+            <div className="checkout-payment-radio-inner" />
+          </div>
+          <div className="checkout-payment-icon">
+            <CreditCard className="h-5 w-5" />
+          </div>
+          <div className="checkout-payment-info">
+            <p className="checkout-payment-name">Credit / Debit Card</p>
+            <p className="checkout-payment-description">Visa, Mastercard, Amex accepted</p>
+          </div>
         </div>
 
-        {/* Security Notice */}
-        <div className="mt-6 p-4 bg-[var(--black-warm)]/30 border border-[var(--gold)]/10 rounded-lg">
-          <div className="flex gap-3">
-            <Shield className="h-5 w-5 mt-0.5 text-[var(--gold-text)]" />
-            <div className="text-sm">
-              <p className="font-medium text-[var(--text-primary)] mb-1">
-                Secure Payment
-              </p>
-              <p className="text-[var(--text-muted)]">
-                All transactions are encrypted and processed securely via Stripe.
-                Your card details are never stored on our servers.
-              </p>
-            </div>
+        <p className="mt-3 text-[0.75rem] text-[var(--text-muted)]">
+          Additional payment methods coming soon.
+        </p>
+
+        <div className="mt-5 flex gap-3 p-3.5 bg-[var(--black-warm)] border border-[var(--graphite)] rounded">
+          <Shield className="h-4 w-4 mt-0.5 text-[var(--gold-text)] shrink-0" aria-hidden="true" />
+          <div className="text-sm">
+            <p className="text-[var(--text-secondary)]">
+              All transactions are encrypted and processed securely via Stripe.
+              Your card details are never stored on our servers.
+            </p>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 

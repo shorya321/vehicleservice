@@ -1,146 +1,175 @@
 'use client'
 
 import { UseFormReturn } from 'react-hook-form'
-import { motion, useReducedMotion } from 'motion/react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { User, Mail, Phone, MessageSquare } from 'lucide-react'
+import { FieldValidationIcon } from '../field-validation-icon'
 
 interface PassengerInfoSectionProps {
   form: UseFormReturn<any>
 }
 
-/**
- * Passenger Information Section Component
- *
- * Collects primary passenger details:
- * - First name and last name
- * - Email address
- * - Phone number
- * - Special requests
- *
- * All fields are required and validated through the form schema.
- *
- * @component
- */
 export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
-  const { register, formState: { errors } } = form
+  const { register, formState: { errors, touchedFields } } = form
+
+  const fieldState = (name: string) => ({
+    isTouched: !!touchedFields[name],
+    hasError: !!errors[name],
+    isValid: !!touchedFields[name] && !errors[name],
+  })
 
   return (
-    <motion.div
-      className="checkout-form-section"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-    >
-      {/* Section Header */}
+    <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <span className="checkout-section-number">2</span>
         <h2 className="checkout-section-title">Passenger Information</h2>
-        <User className="checkout-section-icon" />
+        <User className="checkout-section-icon" aria-hidden="true" />
       </div>
 
-      {/* Section Content */}
       <div className="checkout-section-content">
-        {/* Lead Passenger Card */}
         <div className="checkout-passenger-card">
           <div className="checkout-passenger-header">
             <div className="checkout-passenger-title">
-              <User className="h-4 w-4 text-[var(--gold-text)]" />
+              <User className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
               Primary Passenger
             </div>
             <span className="checkout-passenger-badge">Lead</span>
           </div>
 
           <div className="space-y-4">
-            {/* Name Fields */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName" className="mb-3 block text-[var(--text-secondary)] text-sm">
-                  First Name *
+                <Label htmlFor="firstName" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
+                  First Name
                 </Label>
-                <Input
-                  id="firstName"
-                  className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
-                  {...register('firstName')}
-                  placeholder="John"
-                />
+                <div className="relative">
+                  <Input
+                    id="firstName"
+                    className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                    {...register('firstName')}
+                    placeholder="John"
+                    aria-required="true"
+                    aria-invalid={!!errors.firstName}
+                    aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <FieldValidationIcon {...fieldState('firstName')} />
+                  </div>
+                </div>
                 {errors.firstName && (
-                  <p className="text-sm text-red-500 mt-1">{errors.firstName.message as string}</p>
+                  <p id="firstName-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+                    {errors.firstName.message as string}
+                  </p>
                 )}
               </div>
               <div>
-                <Label htmlFor="lastName" className="mb-3 block text-[var(--text-secondary)] text-sm">
-                  Last Name *
+                <Label htmlFor="lastName" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
+                  Last Name
                 </Label>
-                <Input
-                  id="lastName"
-                  className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
-                  {...register('lastName')}
-                  placeholder="Doe"
-                />
+                <div className="relative">
+                  <Input
+                    id="lastName"
+                    className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                    {...register('lastName')}
+                    placeholder="Doe"
+                    aria-required="true"
+                    aria-invalid={!!errors.lastName}
+                    aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <FieldValidationIcon {...fieldState('lastName')} />
+                  </div>
+                </div>
                 {errors.lastName && (
-                  <p className="text-sm text-red-500 mt-1">{errors.lastName.message as string}</p>
+                  <p id="lastName-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+                    {errors.lastName.message as string}
+                  </p>
                 )}
               </div>
             </div>
 
-            {/* Contact Fields */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="email" className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
-                  <Mail className="h-4 w-4 text-[var(--gold-text)]" />
-                  Email *
+                <Label htmlFor="email" className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
+                  <Mail className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                  Email
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
-                  {...register('email')}
-                  placeholder="john@example.com"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500 mt-1">{errors.email.message as string}</p>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                    {...register('email')}
+                    placeholder="john@example.com"
+                    aria-required="true"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? 'email-error' : 'email-hint'}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <FieldValidationIcon {...fieldState('email')} />
+                  </div>
+                </div>
+                {errors.email ? (
+                  <p id="email-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+                    {errors.email.message as string}
+                  </p>
+                ) : (
+                  <p id="email-hint" className="text-xs text-[var(--text-muted)] mt-1.5">
+                    Booking confirmation sent here
+                  </p>
                 )}
               </div>
               <div>
-                <Label htmlFor="phone" className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
-                  <Phone className="h-4 w-4 text-[var(--gold-text)]" />
-                  Phone *
+                <Label htmlFor="phone" className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
+                  <Phone className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                  Phone
                 </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
-                  {...register('phone')}
-                  placeholder="+1 234 567 8900"
-                />
-                {errors.phone && (
-                  <p className="text-sm text-red-500 mt-1">{errors.phone.message as string}</p>
+                <div className="relative">
+                  <Input
+                    id="phone"
+                    type="tel"
+                    className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                    {...register('phone')}
+                    placeholder="+971 50 123 4567"
+                    aria-required="true"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? 'phone-error' : 'phone-hint'}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <FieldValidationIcon {...fieldState('phone')} />
+                  </div>
+                </div>
+                {errors.phone ? (
+                  <p id="phone-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+                    {errors.phone.message as string}
+                  </p>
+                ) : (
+                  <p id="phone-hint" className="text-xs text-[var(--text-muted)] mt-1.5">
+                    Include country code, e.g. +971 50 123 4567
+                  </p>
                 )}
               </div>
             </div>
 
-            {/* Special Requests */}
             <div>
-              <Label htmlFor="specialRequests" className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
-                <MessageSquare className="h-4 w-4 text-[var(--gold-text)]" />
-                Special Requests (Optional)
+              <Label htmlFor="specialRequests" className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
+                <MessageSquare className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                Special Requests
+                <span className="text-[var(--text-muted)]">(optional)</span>
               </Label>
               <Textarea
                 id="specialRequests"
-                className="min-h-[100px] bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
+                className="min-h-[100px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
                 {...register('specialRequests')}
-                placeholder="Any special requirements or requests..."
+                placeholder="Any special requirements or requests"
                 rows={3}
               />
             </div>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 

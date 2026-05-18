@@ -16,20 +16,14 @@ const steps = [
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
   return (
-    <div
+    <nav
       className="border-b border-[var(--graphite)] bg-[var(--black-void)]"
-      role="progressbar"
-      aria-valuenow={currentStep}
-      aria-valuemin={1}
-      aria-valuemax={steps.length}
+      role="navigation"
       aria-label={`Booking progress: Step ${currentStep} of ${steps.length}`}
     >
-      <span className="sr-only">
-        Step {currentStep} of {steps.length}: {steps[currentStep - 1]?.label || 'Complete'}
-      </span>
-      <div className="luxury-container py-5">
-        <ol className="grid grid-cols-4 gap-x-4">
-          {steps.map((step) => {
+      <div className="luxury-container py-4">
+        <ol className="flex items-center gap-0">
+          {steps.map((step, index) => {
             const isCompleted = step.number < currentStep
             const isActive = step.number === currentStep
 
@@ -37,51 +31,64 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
               <li
                 key={step.number}
                 aria-current={isActive ? 'step' : undefined}
-                className="flex flex-col gap-2"
+                className="flex flex-1 flex-col"
               >
-                <div className="flex items-center gap-2 border-t border-[var(--graphite)] pt-2">
-                  <span
+                <div className="flex items-center gap-3">
+                  <div
                     className={cn(
-                      'numeric text-[0.6875rem] uppercase tracking-[0.16em]',
-                      isActive
-                        ? 'text-[var(--gold)]'
-                        : isCompleted
-                          ? 'text-[var(--text-primary)]'
-                          : 'text-[var(--text-muted)]'
+                      'flex items-center gap-2',
+                      isActive && 'pb-3 border-b border-[var(--gold)]',
+                      !isActive && 'pb-3 border-b border-transparent'
                     )}
                   >
-                    {String(step.number).padStart(2, '0')}
-                  </span>
-                  {isCompleted && (
-                    <Check
-                      className="h-3.5 w-3.5 text-[var(--gold)]"
-                      aria-hidden="true"
+                    <span
+                      className={cn(
+                        'text-[0.6875rem] font-medium tracking-[0.16em] tabular-nums',
+                        isActive
+                          ? 'text-[var(--gold-text)]'
+                          : isCompleted
+                            ? 'text-[var(--text-secondary)]'
+                            : 'text-[var(--text-muted)]'
+                      )}
+                    >
+                      {String(step.number).padStart(2, '0')}
+                    </span>
+                    {isCompleted && (
+                      <Check
+                        className="h-3 w-3 text-[var(--gold-text)]"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        'hidden sm:inline text-[0.75rem] font-medium tracking-[0.12em] uppercase',
+                        isActive
+                          ? 'text-[var(--text-primary)]'
+                          : isCompleted
+                            ? 'text-[var(--text-secondary)]'
+                            : 'text-[var(--text-muted)]'
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      aria-hidden
+                      className={cn(
+                        'hidden sm:block flex-1 h-px mx-3',
+                        isCompleted
+                          ? 'bg-[var(--graphite)]'
+                          : 'bg-[var(--graphite)]'
+                      )}
                     />
                   )}
                 </div>
-                <span
-                  className={cn(
-                    'text-[0.75rem] uppercase tracking-[0.16em]',
-                    isActive
-                      ? 'text-[var(--text-primary)]'
-                      : isCompleted
-                        ? 'text-[var(--text-secondary)]'
-                        : 'text-[var(--text-muted)]'
-                  )}
-                >
-                  {step.label}
-                </span>
-                {isActive && (
-                  <span
-                    aria-hidden
-                    className="h-px w-full bg-[var(--gold)]"
-                  />
-                )}
               </li>
             )
           })}
         </ol>
       </div>
-    </div>
+    </nav>
   )
 }
