@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Info, Lock } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
@@ -25,7 +25,32 @@ interface OrderSummaryProps {
   selectedAddons?: OrderSummaryAddon[]
 }
 
-export function OrderSummary({
+function PriceRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: string
+  tone?: 'positive'
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <span className="text-[var(--text-secondary)]">{label}</span>
+      <span
+        className={
+          tone === 'positive'
+            ? 'font-medium tabular-nums text-[var(--gold-text)]'
+            : 'font-medium tabular-nums text-[var(--text-primary)]'
+        }
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
+
+export const OrderSummary = memo(function OrderSummary({
   route,
   vehicleType,
   passengers,
@@ -277,29 +302,4 @@ export function OrderSummary({
       </footer>
     </motion.aside>
   )
-}
-
-function PriceRow({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: string
-  tone?: 'positive'
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <span className="text-[var(--text-secondary)]">{label}</span>
-      <span
-        className={
-          tone === 'positive'
-            ? 'font-medium tabular-nums text-[var(--gold-text)]'
-            : 'font-medium tabular-nums text-[var(--text-primary)]'
-        }
-      >
-        {value}
-      </span>
-    </div>
-  )
-}
+})

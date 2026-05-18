@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { motion, useReducedMotion } from 'motion/react'
-import * as LucideIcons from 'lucide-react'
+import { DynamicIcon } from 'lucide-react/dynamic'
 import { Check, Minus, Plus, Package } from 'lucide-react'
 import { useCurrency } from '@/lib/currency/context'
 import { formatPrice } from '@/lib/currency/format'
@@ -23,10 +23,21 @@ interface AdditionalServicesSectionProps {
   addonsByCategory: CheckoutAddonsByCategory[]
 }
 
+function toKebabCase(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+const addonIconFallback = () => <Package className="h-4 w-4" aria-hidden="true" />
+
 function AddonIcon({ iconName }: { iconName: string }) {
-  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>>)[iconName]
-  if (!IconComponent) return <Package className="h-4 w-4" aria-hidden="true" />
-  return <IconComponent className="h-4 w-4" aria-hidden="true" />
+  return (
+    <DynamicIcon
+      name={toKebabCase(iconName) as any}
+      className="h-4 w-4"
+      aria-hidden="true"
+      fallback={addonIconFallback}
+    />
+  )
 }
 
 export function AdditionalServicesSection({

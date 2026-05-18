@@ -2724,6 +2724,7 @@
   border: none;
   border-radius: 0;
   overflow: visible;
+  contain: content;
 }
 
 .checkout-form-section + .checkout-form-section {
@@ -2952,6 +2953,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 0.75rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
 }
 
 .checkout-service-card {

@@ -251,7 +251,7 @@ export function BookingForm({
     }
   }, [loading, agreeToTerms, onFormReady])
 
-  const stepSections = [
+  const stepSections = useMemo(() => [
     <div key="booking-details">
       <TransferDetailsSection
         form={form}
@@ -271,7 +271,7 @@ export function BookingForm({
       />
       <PaymentMethodSection form={form} />
     </div>,
-  ]
+  ], [form, route, vehicleType, passengers, setPassengers, onDateTimeChange, addonsByCategory])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-0" aria-label="Booking form">

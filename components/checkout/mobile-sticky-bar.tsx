@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import { ArrowRight, Lock, ChevronUp, ChevronDown } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
@@ -28,7 +28,7 @@ interface MobileStickyBarProps {
   onAgreeToTermsChange: (checked: boolean) => void
 }
 
-export function MobileStickyBar({
+export const MobileStickyBar = memo(function MobileStickyBar({
   route,
   vehicleType,
   totalPrice,
@@ -221,4 +221,4 @@ export function MobileStickyBar({
       </div>
     </motion.div>
   )
-}
+})
