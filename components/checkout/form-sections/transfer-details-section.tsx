@@ -1,7 +1,7 @@
 'use client'
 
 import { UseFormReturn } from 'react-hook-form'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -81,7 +81,7 @@ export function TransferDetailsSection({
 
           <div className="checkout-route-connector">
             <div className="checkout-route-connector-icon">
-              <ArrowRight className="h-4 w-4 text-[#c6aa88]" />
+              <ArrowRight className="h-4 w-4 text-[var(--gold-text)]" />
             </div>
             {route.distance_km && (
               <span className="checkout-route-distance">{route.distance_km} km</span>
@@ -100,7 +100,7 @@ export function TransferDetailsSection({
         {/* Vehicle Selected Card */}
         <div className="checkout-vehicle-selected">
           {vehicleType.image_url && (
-            <div className="relative w-full h-[140px] sm:w-[140px] sm:h-[90px] flex-shrink-0 rounded-lg overflow-hidden bg-[#161514]">
+            <div className="relative w-full h-[140px] sm:w-[140px] sm:h-[90px] flex-shrink-0 rounded-lg overflow-hidden bg-[var(--charcoal)]">
               <Image
                 src={vehicleType.image_url}
                 alt={vehicleType.name}
@@ -114,11 +114,11 @@ export function TransferDetailsSection({
             <h3 className="checkout-vehicle-name">{vehicleType.name}</h3>
             <div className="checkout-vehicle-specs">
               <span className="checkout-vehicle-spec">
-                <Users className="h-4 w-4 text-[#c6aa88]" />
+                <Users className="h-4 w-4 text-[var(--gold-text)]" />
                 {vehicleType.passenger_capacity} seats
               </span>
               <span className="checkout-vehicle-spec">
-                <Briefcase className="h-4 w-4 text-[#c6aa88]" />
+                <Briefcase className="h-4 w-4 text-[var(--gold-text)]" />
                 {vehicleType.luggage_capacity} bags
               </span>
             </div>
@@ -135,14 +135,14 @@ export function TransferDetailsSection({
         {/* Date and Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="pickupDate" className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
-              <Calendar className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
+            <Label htmlFor="pickupDate" className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
+              <Calendar className="h-4 w-4 text-[var(--gold-text)]" aria-hidden="true" />
               Pickup Date
             </Label>
             <Input
               id="pickupDate"
               type="date"
-              className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
+              className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
               {...register('pickupDate')}
               min={new Date().toISOString().split('T')[0]}
               onChange={handleDateChange}
@@ -152,14 +152,14 @@ export function TransferDetailsSection({
             )}
           </div>
           <div>
-            <Label htmlFor="pickupTime" className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
-              <Clock className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
+            <Label htmlFor="pickupTime" className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
+              <Clock className="h-4 w-4 text-[var(--gold-text)]" aria-hidden="true" />
               Pickup Time
             </Label>
             <Input
               id="pickupTime"
               type="time"
-              className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
+              className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
               {...register('pickupTime')}
               onChange={handleTimeChange}
             />
@@ -171,52 +171,52 @@ export function TransferDetailsSection({
 
         {/* Flight Number (Optional) */}
         <div>
-          <Label htmlFor="flightNumber" className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
-            <Plane className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
+          <Label htmlFor="flightNumber" className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
+            <Plane className="h-4 w-4 text-[var(--gold-text)]" aria-hidden="true" />
             Flight Number (Optional)
           </Label>
           <Input
             id="flightNumber"
             placeholder="e.g., EK 123"
-            className="h-14 bg-[#1f1e1c]/50 border-[#c6aa88]/20 text-[#f8f6f3] placeholder:text-[#7a7672]/50 focus:ring-2 focus:ring-[#c6aa88] focus:border-[#c6aa88]"
+            className="h-14 bg-[var(--black-warm)]/50 border-[var(--gold)]/20 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)]"
             {...register('flightNumber')}
           />
-          <p className="text-xs text-[#7a7672] mt-2">We&apos;ll track your flight for delays</p>
+          <p className="text-xs text-[var(--text-muted)] mt-2">We&apos;ll track your flight for delays</p>
         </div>
 
         {/* Passengers */}
         <div>
-          <Label className="flex items-center gap-2 mb-3 text-[#b8b4ae] text-sm">
-            <Users className="h-4 w-4 text-[#c6aa88]" aria-hidden="true" />
+          <Label className="flex items-center gap-2 mb-3 text-[var(--text-secondary)] text-sm">
+            <Users className="h-4 w-4 text-[var(--gold-text)]" aria-hidden="true" />
             Number of Passengers
           </Label>
-          <div className="flex items-center gap-4 p-4 bg-[#1f1e1c]/30 border border-[#c6aa88]/10 rounded-lg">
+          <div className="flex items-center gap-4 p-4 bg-[var(--black-warm)]/30 border border-[var(--gold)]/10 rounded-lg">
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-12 w-12 border-[#c6aa88]/30 hover:bg-[#c6aa88] hover:text-[#050506] hover:border-[#c6aa88] text-[#f8f6f3]"
+              className="h-12 w-12 border-[var(--gold)]/30 hover:bg-[var(--gold)] hover:text-[var(--black-void)] hover:border-[var(--gold)] text-[var(--text-primary)]"
               onClick={() => setPassengers(Math.max(1, passengers - 1))}
               disabled={passengers <= 1}
               aria-label="Decrease passenger count"
             >
               -
             </Button>
-            <span className="w-20 text-center font-serif text-[22px] font-semibold text-[#f8f6f3]">
+            <span className="w-20 text-center text-[22px] font-semibold text-[var(--text-primary)] tabular-nums">
               {passengers}
             </span>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-12 w-12 border-[#c6aa88]/30 hover:bg-[#c6aa88] hover:text-[#050506] hover:border-[#c6aa88] text-[#f8f6f3]"
+              className="h-12 w-12 border-[var(--gold)]/30 hover:bg-[var(--gold)] hover:text-[var(--black-void)] hover:border-[var(--gold)] text-[var(--text-primary)]"
               onClick={() => setPassengers(Math.min(vehicleType.passenger_capacity, passengers + 1))}
               disabled={passengers >= vehicleType.passenger_capacity}
               aria-label="Increase passenger count"
             >
               +
             </Button>
-            <span className="text-sm text-[#7a7672] ml-2">
+            <span className="text-sm text-[var(--text-muted)] ml-2">
               Max: {vehicleType.passenger_capacity}
             </span>
           </div>

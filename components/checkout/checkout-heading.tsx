@@ -21,7 +21,7 @@ export function CheckoutHeading({
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="t-label-accent">Step 03 · Details</div>
-      <h1 className="t-headline mt-5">{title}</h1>
+      <h1 className="t-headline mt-5 font-semibold">{title}</h1>
       <p className="t-body mt-5 max-w-2xl">{subtitle}</p>
     </motion.div>
   )

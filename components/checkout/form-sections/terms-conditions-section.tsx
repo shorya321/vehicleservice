@@ -57,7 +57,7 @@ export function TermsConditionsSection({ form }: TermsConditionsSectionProps) {
         {/* Cancellation Policy Info */}
         <div className="backdrop-blur-sm bg-luxury-gold/10 border border-luxury-gold/30 rounded-lg p-4">
           <div className="flex gap-3">
-            <Info className="h-5 w-5 mt-0.5" style={{ color: "#C6AA88" }} aria-hidden="true" />
+            <Info className="h-5 w-5 mt-0.5" style={{ color: "var(--gold-text)" }} aria-hidden="true" />
             <div className="text-sm">
               <p className="font-medium text-luxury-pearl mb-1">
                 Free Cancellation

@@ -206,7 +206,7 @@ export function AdditionalServicesSection({
                     aria-pressed={isSelected}
                   >
                     <div className="checkout-service-checkbox">
-                      {isSelected && <Check className="h-3 w-3 text-[#050506]" />}
+                      {isSelected && <Check className="h-3 w-3 text-[var(--black-void)]" />}
                     </div>
                     <div className="checkout-service-icon">
                       <AddonIcon iconName={addon.icon} />

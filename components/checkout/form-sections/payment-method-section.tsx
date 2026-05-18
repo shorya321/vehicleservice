@@ -95,7 +95,7 @@ export function PaymentMethodSection({ form }: PaymentMethodSectionProps) {
                   <div className="checkout-payment-radio-inner" />
                 </div>
                 <div className="checkout-payment-icon">
-                  <Icon className="h-5 w-5 text-[#c6aa88]" />
+                  <Icon className="h-5 w-5 text-[var(--gold-text)]" />
                 </div>
                 <div className="checkout-payment-info">
                   <p className="checkout-payment-name">{method.name}</p>
@@ -112,14 +112,14 @@ export function PaymentMethodSection({ form }: PaymentMethodSectionProps) {
         </div>
 
         {/* Security Notice */}
-        <div className="mt-6 p-4 bg-[#1f1e1c]/30 border border-[#c6aa88]/10 rounded-lg">
+        <div className="mt-6 p-4 bg-[var(--black-warm)]/30 border border-[var(--gold)]/10 rounded-lg">
           <div className="flex gap-3">
-            <Shield className="h-5 w-5 mt-0.5 text-[#c6aa88]" />
+            <Shield className="h-5 w-5 mt-0.5 text-[var(--gold-text)]" />
             <div className="text-sm">
-              <p className="font-medium text-[#f8f6f3] mb-1">
+              <p className="font-medium text-[var(--text-primary)] mb-1">
                 Secure Payment
               </p>
-              <p className="text-[#7a7672]">
+              <p className="text-[var(--text-muted)]">
                 All transactions are encrypted and processed securely via Stripe.
                 Your card details are never stored on our servers.
               </p>

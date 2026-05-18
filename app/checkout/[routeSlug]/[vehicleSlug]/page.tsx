@@ -8,7 +8,6 @@ import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { getVehicleType, getLocationDetails, getActiveAddons } from '../../actions'
 import { createClient } from '@/lib/supabase/server'
-import { AmbientBackground } from '@/components/checkout/ambient-background'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { resolveRouteSlugs, resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
 
@@ -176,10 +175,9 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
 
   return (
     <PublicLayout>
-      <div className="relative bg-luxury-black min-h-screen">
+      <div className="bg-[var(--black-void)] min-h-screen">
         <ProgressBar currentStep={3} />
-        <AmbientBackground />
-        <div className="luxury-container py-8 md:py-16 lg:py-20 relative z-10">
+        <div className="luxury-container py-8 md:py-16 lg:py-20">
           <CheckoutHeading />
           <CheckoutWrapper
             route={routeDetails}
