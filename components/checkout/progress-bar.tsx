@@ -78,7 +78,7 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
                       className={cn(
                         'hidden sm:block flex-1 h-px mx-3',
                         isCompleted
-                          ? 'bg-[var(--graphite)]'
+                          ? 'bg-[var(--gold)]/30'
                           : 'bg-[var(--graphite)]'
                       )}
                     />

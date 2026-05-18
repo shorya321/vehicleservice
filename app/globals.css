@@ -38,6 +38,7 @@
   --text-primary: #1a1917;
   --text-secondary: #5c5955;
   --text-muted: #706c69;
+  --success: #3d7a4a;
 
   /* RGB companions for rgba() usage */
   --void-rgb: 250, 249, 247;
@@ -113,6 +114,7 @@
   --text-primary: #f8f6f3;
   --text-secondary: #b8b4ae;
   --text-muted: #9a9692;
+  --success: #6b8f71;
 
   --void-rgb: 5, 5, 6;
   --rich-rgb: 16, 15, 14;
@@ -2818,17 +2820,19 @@
 
 /* Checkout Form Section Card */
 .checkout-form-section {
-  background: var(--charcoal);
+  background: var(--black-rich);
   border: 1px solid var(--graphite);
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 0;
+  overflow: visible;
+  transition: border-color var(--duration-fast) var(--ease-luxury);
 }
 
 .checkout-section-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
+  background: transparent;
   border-bottom: 1px solid var(--graphite);
 }
 
@@ -2837,23 +2841,29 @@
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.16em;
-  color: var(--gold-text);
+  color: var(--gold);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums lining-nums;
+  text-transform: uppercase;
+}
+
+.checkout-section-number::before {
+  content: 'No. ';
+  color: var(--text-muted);
 }
 
 .checkout-section-title {
   font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
   flex: 1;
   color: var(--text-primary);
 }
 
 .checkout-section-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--text-muted);
+  display: none;
 }
 
 .checkout-section-content {
@@ -2867,7 +2877,7 @@
   padding: 1.25rem;
   background: var(--black-warm);
   border: 1px solid var(--graphite);
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .checkout-route-point {
@@ -3007,7 +3017,7 @@
   padding: 1.25rem;
   background: var(--black-warm);
   border: 1px solid var(--graphite);
-  border-radius: 4px;
+  border-radius: 0;
   margin-bottom: 1.25rem;
 }
 
@@ -3019,30 +3029,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--graphite);
 }
 
 .checkout-passenger-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
   font-weight: 500;
-  color: var(--text-primary);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .checkout-passenger-badge {
-  padding: 0.25rem 0.625rem;
-  background: var(--black-warm);
+  padding: 0.125rem 0.5rem;
+  background: transparent;
   border: 1px solid var(--graphite);
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 0.625rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--gold-text);
+  color: var(--gold);
 }
 
 .checkout-category-header {
@@ -4688,112 +4698,9 @@
 }
 
 /* ============================================
-   Checkout — Editorial overrides.
-   Re-skin legacy .checkout-* utility classes to
-   match The Composed Itinerary direction without
-   rewriting every form-section component.
+   Editorial overrides — non-checkout classes.
    ============================================ */
 @layer components {
-  .checkout-form-section {
-    background: var(--black-rich) !important;
-    border: 1px solid var(--graphite) !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-    transition: border-color var(--duration-fast) var(--ease-luxury);
-  }
-
-  .checkout-form-section:hover {
-    border-color: var(--graphite) !important;
-  }
-
-  .checkout-section-header {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    padding: 1.25rem 1.5rem;
-    background: transparent !important;
-    border-bottom: 1px solid var(--graphite) !important;
-  }
-
-  .checkout-section-number {
-    width: auto !important;
-    height: auto !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-    color: var(--gold) !important;
-    font-family: var(--font-body);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    font-variant-numeric: tabular-nums lining-nums;
-    text-transform: uppercase;
-  }
-
-  .checkout-section-number::before {
-    content: 'No. ';
-    color: var(--text-muted);
-  }
-
-  .checkout-section-title {
-    font-family: var(--font-body) !important;
-    font-size: 1.5rem !important;
-    font-weight: 600 !important;
-    line-height: 1.15 !important;
-    letter-spacing: -0.005em !important;
-    color: var(--text-primary) !important;
-    flex: 1;
-  }
-
-  .checkout-section-icon {
-    display: none !important;
-  }
-
-  .checkout-section-content {
-    padding: 1.5rem !important;
-  }
-
-  /* Transfer route inset card — flatten. */
-  .checkout-transfer-route {
-    background: var(--black-warm) !important;
-    border: 1px solid var(--graphite) !important;
-    border-radius: 0 !important;
-    padding: 1.25rem !important;
-  }
-
-  /* Passenger card — flatten, no nested-card feel. */
-  .checkout-passenger-card {
-    background: var(--black-warm) !important;
-    border: 1px solid var(--graphite) !important;
-    border-radius: 0 !important;
-    padding: 1.25rem !important;
-  }
-
-  .checkout-passenger-header {
-    border-bottom: 1px solid var(--graphite) !important;
-    padding-bottom: 0.75rem !important;
-    margin-bottom: 1rem !important;
-  }
-
-  .checkout-passenger-title {
-    font-family: var(--font-body) !important;
-    font-size: 0.6875rem !important;
-    font-weight: 500 !important;
-    letter-spacing: 0.16em !important;
-    text-transform: uppercase !important;
-    color: var(--text-muted) !important;
-  }
-
-  .checkout-passenger-badge {
-    background: transparent !important;
-    border: 1px solid var(--graphite) !important;
-    color: var(--gold) !important;
-    border-radius: 0 !important;
-    padding: 0.125rem 0.5rem !important;
-    font-size: 0.625rem !important;
-    letter-spacing: 0.16em !important;
-    text-transform: uppercase !important;
-  }
-
   /* Auth tab (legacy) override for editorial alignment. */
   .auth-tab,
   .auth-tab.active,

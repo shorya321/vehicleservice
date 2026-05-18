@@ -27,7 +27,7 @@ export function FieldValidationIcon({
   if (isValid) {
     return (
       <Check
-        className="h-4 w-4 text-emerald-500 shrink-0"
+        className="h-4 w-4 text-[var(--success)] shrink-0"
         aria-hidden="true"
       />
     )

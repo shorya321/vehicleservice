@@ -204,8 +204,7 @@ export function BookingForm({
       if (result.success) {
         router.push(buildPaymentUrl(result.bookingNumber))
       }
-    } catch (error) {
-      console.error('Booking error:', error)
+    } catch {
       toast.error('Failed to create booking. Please try again.')
     } finally {
       setLoading(false)
@@ -253,7 +252,7 @@ export function BookingForm({
   }, [loading, agreeToTerms, onFormReady])
 
   const stepSections = [
-    <div key="booking-details" className="space-y-0">
+    <div key="booking-details" className="[&>*+*]:-mt-px">
       <TransferDetailsSection
         form={form}
         route={route}
@@ -264,7 +263,7 @@ export function BookingForm({
       />
       <PassengerInfoSection form={form} />
     </div>,
-    <div key="services-pay" className="space-y-0">
+    <div key="services-pay" className="[&>*+*]:-mt-px">
       <AdditionalServicesSection
         form={form}
         vehicleType={vehicleType}
