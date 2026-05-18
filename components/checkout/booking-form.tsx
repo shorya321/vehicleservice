@@ -252,7 +252,7 @@ export function BookingForm({
   }, [loading, agreeToTerms, onFormReady])
 
   const stepSections = [
-    <div key="booking-details" className="[&>*+*]:-mt-px">
+    <div key="booking-details">
       <TransferDetailsSection
         form={form}
         route={route}
@@ -263,7 +263,7 @@ export function BookingForm({
       />
       <PassengerInfoSection form={form} />
     </div>,
-    <div key="services-pay" className="[&>*+*]:-mt-px">
+    <div key="services-pay">
       <AdditionalServicesSection
         form={form}
         vehicleType={vehicleType}
@@ -274,7 +274,7 @@ export function BookingForm({
   ]
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-0">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-0" aria-label="Booking form">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={currentStep}

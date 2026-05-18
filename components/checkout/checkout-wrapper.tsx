@@ -115,9 +115,9 @@ export function CheckoutWrapper({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-12">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         {/* Main Booking Form */}
-        <div className="flex-1 min-w-0 pb-28 lg:pb-0">
+        <div className="flex-1 min-w-0 pb-[var(--sticky-bar-h,7rem)] lg:pb-0">
           <BookingForm
             route={route}
             vehicleType={vehicleType}
@@ -141,7 +141,7 @@ export function CheckoutWrapper({
         </div>
 
         {/* Order Summary Sidebar - Desktop only */}
-        <div className="hidden lg:block w-[420px] flex-shrink-0">
+        <div className="hidden lg:block w-[380px] xl:w-[420px] flex-shrink-0">
           <div className="lg:sticky lg:top-28">
             <OrderSummary
               route={route}

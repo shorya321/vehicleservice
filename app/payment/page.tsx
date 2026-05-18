@@ -310,15 +310,11 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
         currentCurrency={currentCurrency}
       />
 
-      <div className="pt-20 md:pt-24">
-        <ProgressBar currentStep={4} />
-      </div>
-
-      <main className="flex-1 pb-16">
+      <main className="flex-1 pb-16 pt-20 md:pt-24">
         <div className="luxury-container py-10 md:py-14">
           <header className="mb-10 max-w-2xl">
-            <div className="editorial-eyebrow">Step 04 · Payment</div>
-            <h1 className="editorial-headline mt-5 text-[clamp(2rem,4vw,3rem)]">
+            <ProgressBar currentStep={4} />
+            <h1 className="editorial-headline text-[clamp(2rem,4vw,3rem)]">
               Confirm and pay.
             </h1>
             <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">

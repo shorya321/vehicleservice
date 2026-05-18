@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { motion, useReducedMotion } from 'motion/react'
 import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Info, Lock } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
@@ -78,105 +77,40 @@ export function OrderSummary({
   return (
     <motion.aside
       aria-label="Order summary"
-      className="bg-[var(--charcoal)] border border-[var(--graphite)] rounded-lg overflow-hidden"
+      className="border border-[var(--graphite)] rounded-[8px] overflow-hidden"
       initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Header */}
-      <header className="border-b border-[var(--graphite)] px-5 py-4">
+      {/* Vehicle + Route Header */}
+      <div className="px-6 xl:px-8 py-5">
         <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          Itinerary · summary
+          {vehicleType.category}
         </div>
-        <h2 className="mt-1.5 text-lg font-medium text-[var(--text-primary)]">
+        <h2 className="mt-1 text-xl font-medium text-[var(--text-primary)]">
           {vehicleType.name}
         </h2>
-      </header>
 
-      {/* Vehicle Image */}
-      {vehicleType.image_url && (
-        <div className="border-b border-[var(--graphite)]">
-          <div className="relative h-28 w-full overflow-hidden bg-[var(--black-warm)]">
-            <Image
-              src={vehicleType.image_url}
-              alt={vehicleType.name}
-              fill
-              className="object-cover"
-              sizes="420px"
-            />
-          </div>
+        <div className="mt-4 flex items-center gap-1.5 text-[0.875rem] text-[var(--text-secondary)]">
+          <span>{route.origin.name}</span>
+          <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
+          <span>{route.destination.name}</span>
         </div>
-      )}
 
-      {/* Itinerary Block */}
-      <div className="border-b border-[var(--graphite)] px-5 py-4">
-        <dl className="space-y-0">
-          {[
-            { label: 'From', value: route.origin.name },
-            { label: 'To', value: route.destination.name },
-            ...(formattedDate ? [{ label: 'Date', value: formattedDate, numeric: true }] : []),
-            ...(pickupTime ? [{ label: 'Time', value: pickupTime, numeric: true }] : []),
-            { label: 'Passengers', value: String(passengers), numeric: true },
-            { label: 'Luggage', value: String(vehicleType.luggage_capacity), numeric: true },
-          ].map((item, index) => (
-            <div
-              key={item.label}
-              className={`flex items-baseline gap-3 ${index > 0 ? 'mt-3 pt-3 border-t border-[var(--graphite)]' : ''}`}
-            >
-              <dt className="flex-[0_0_5.5rem] text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                {item.label}
-              </dt>
-              <dd className={`text-[0.9375rem] font-medium text-[var(--text-primary)] ${'numeric' in item && item.numeric ? 'tabular-nums' : ''}`}>
-                {item.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
-      {/* Promo Code */}
-      <div className="border-b border-[var(--graphite)] px-5 py-4">
-        <button
-          type="button"
-          onClick={() => setShowPromo(!showPromo)}
-          aria-expanded={showPromo}
-          className="flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.12em] text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)]"
-        >
-          <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-          Promo code
-          {showPromo ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-        </button>
-
-        {showPromo && (
-          <div className="mt-3 flex gap-2">
-            <input
-              placeholder="Enter code"
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
-              aria-label="Promo code"
-              className="flex-1 h-10 bg-[var(--black-warm)] border border-[var(--graphite)] rounded px-3 text-[0.875rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)]/15 transition-[border,box-shadow] duration-200"
-            />
-            <button
-              type="button"
-              onClick={applyPromoCode}
-              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal-light)] transition-colors"
-            >
-              Apply
-            </button>
+        {(formattedDate || pickupTime) && (
+          <div className="mt-1.5 text-[0.875rem] tabular-nums text-[var(--text-muted)]">
+            {formattedDate}{formattedDate && pickupTime ? ' · ' : ''}{pickupTime}
           </div>
         )}
 
-        {promoApplied && (
-          <p className="mt-2.5 flex items-center gap-1.5 text-[0.75rem] text-[var(--gold-text)]">
-            <Check className="h-3 w-3" aria-hidden="true" />
-            Promo applied
-          </p>
-        )}
+        <div className="mt-1 text-[0.8125rem] text-[var(--text-muted)]">
+          {passengers} pax · {vehicleType.luggage_capacity} bags
+        </div>
       </div>
 
       {/* Price Breakdown */}
-      <div className="border-b border-[var(--graphite)] px-5 py-4 space-y-2.5 text-[0.875rem]">
+      <div className="border-t border-[var(--graphite)] px-6 xl:px-8 py-5 space-y-2.5 text-[0.875rem]">
         <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
         {childSeatsCost > 0 && (
           <PriceRow
@@ -207,17 +141,17 @@ export function OrderSummary({
       </div>
 
       {/* Total */}
-      <div className="px-5 py-4">
+      <div className="border-t border-[var(--graphite)] px-6 xl:px-8 py-5">
         <div className="flex items-baseline justify-between">
           <span className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
             Total
           </span>
-          <span className="text-2xl font-medium tabular-nums text-[var(--text-primary)]">
+          <span className="text-[1.75rem] font-medium tabular-nums tracking-tight text-[var(--text-primary)]">
             {formatUserPrice(total)}
           </span>
         </div>
         {isConverted && (
-          <p className="mt-2.5 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
+          <p className="mt-2 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
             <Info className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
             <span>
               Shown in {currentCurrency}. Charged in AED ({formatPrice(total, 'AED', exchangeRates)}).
@@ -226,8 +160,50 @@ export function OrderSummary({
         )}
       </div>
 
+      {/* Promo Code — compact toggle */}
+      <div className="border-t border-[var(--graphite)] px-6 xl:px-8 py-4">
+        <button
+          type="button"
+          onClick={() => setShowPromo(!showPromo)}
+          aria-expanded={showPromo}
+          className="flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+        >
+          <Tag className="h-3 w-3" aria-hidden="true" />
+          Have a code?
+          {showPromo ? <ChevronUp className="h-3 w-3" aria-hidden="true" /> : <ChevronDown className="h-3 w-3" aria-hidden="true" />}
+        </button>
+
+        {showPromo && (
+          <div className="mt-3 flex gap-2">
+            <input
+              placeholder="Enter code"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              aria-label="Promo code"
+              className="flex-1 h-10 bg-[var(--black-warm)] border border-[var(--graphite)] rounded px-3 text-[0.875rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)]/15 transition-[border,box-shadow] duration-200"
+            />
+            <button
+              type="button"
+              onClick={applyPromoCode}
+              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            >
+              Apply
+            </button>
+          </div>
+        )}
+
+        <div aria-live="polite" aria-atomic="true">
+          {promoApplied && (
+            <p className="mt-2.5 flex items-center gap-1.5 text-[0.75rem] text-[var(--gold-text)]">
+              <Check className="h-3 w-3" aria-hidden="true" />
+              Promo applied
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Footer */}
-      <footer className="border-t border-[var(--graphite)] px-5 py-4 space-y-3.5">
+      <footer className="border-t border-[var(--graphite)] px-6 xl:px-8 py-5 space-y-4">
         {(currentStep === undefined || currentStep === 1) ? (
           <>
             {onAgreeToTermsChange && (
@@ -259,6 +235,7 @@ export function OrderSummary({
                 disabled={isSubmitting || !agreeToTerms}
                 onClick={onSubmit}
                 className="checkout-btn-primary w-full"
+                aria-describedby={!agreeToTerms ? 'submit-disabled-reason' : undefined}
               >
                 {isSubmitting ? (
                   'Processing'
@@ -269,6 +246,12 @@ export function OrderSummary({
                   </>
                 )}
               </button>
+            )}
+
+            {!agreeToTerms && (
+              <p id="submit-disabled-reason" className="sr-only">
+                Accept the terms and privacy policy to continue
+              </p>
             )}
 
             <p className="text-center text-[0.75rem] text-[var(--text-muted)]">

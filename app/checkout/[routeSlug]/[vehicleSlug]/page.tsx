@@ -176,8 +176,8 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   return (
     <PublicLayout>
       <div className="bg-[var(--black-void)] min-h-screen">
-        <ProgressBar currentStep={3} />
         <div className="luxury-container py-8 md:py-16 lg:py-20">
+          <ProgressBar currentStep={3} />
           <CheckoutHeading />
           <CheckoutWrapper
             route={routeDetails}

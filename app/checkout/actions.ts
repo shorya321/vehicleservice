@@ -63,6 +63,7 @@ export interface VehicleTypeDetails {
   luggage_capacity: number
   image_url: string | null
   price: number
+  category: string
 }
 
 export async function getRouteById(routeId: string): Promise<RouteDetails | null> {
@@ -191,7 +192,8 @@ export async function getVehicleType(
       passenger_capacity,
       luggage_capacity,
       image_url,
-      price_multiplier
+      price_multiplier,
+      vehicle_categories(name)
     `)
     .eq('id', vehicleTypeId)
     .eq('is_active', true)
@@ -236,9 +238,16 @@ export async function getVehicleType(
   }
 
   return {
-    ...vehicleType,
-    price
-  } as VehicleTypeDetails
+    id: vehicleType.id,
+    name: vehicleType.name,
+    slug: vehicleType.slug,
+    description: vehicleType.description,
+    passenger_capacity: vehicleType.passenger_capacity,
+    luggage_capacity: vehicleType.luggage_capacity ?? 0,
+    image_url: vehicleType.image_url,
+    price,
+    category: vehicleType.vehicle_categories?.name || 'Premium',
+  }
 }
 
 // Selected addon schema for checkout

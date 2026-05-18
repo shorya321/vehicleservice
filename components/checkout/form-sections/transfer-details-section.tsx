@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, MapPin, Users, Plane, ArrowRight, Briefcase } from 'lucide-react'
+import { ArrowRight, Briefcase, Users } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 
 interface TransferDetailsSectionProps {
@@ -43,10 +43,9 @@ export function TransferDetailsSection({
     <div className="checkout-form-section">
       <div className="checkout-section-header">
         <h2 className="checkout-section-title">Transfer Details</h2>
-        <MapPin className="checkout-section-icon" aria-hidden="true" />
       </div>
 
-      <div className="checkout-section-content space-y-5">
+      <div className="checkout-section-content space-y-6">
         {/* Route */}
         <div className="checkout-transfer-route">
           <div className="checkout-route-point">
@@ -81,6 +80,7 @@ export function TransferDetailsSection({
                 src={vehicleType.image_url}
                 alt={vehicleType.name}
                 fill
+                sizes="(max-width: 640px) 100vw, 140px"
                 className="object-contain p-2"
               />
             </div>
@@ -111,8 +111,7 @@ export function TransferDetailsSection({
         {/* Date and Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="pickupDate" className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
-              <Calendar className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+            <Label htmlFor="pickupDate" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
               Pickup Date
             </Label>
             <Input
@@ -122,14 +121,16 @@ export function TransferDetailsSection({
               {...register('pickupDate')}
               min={new Date().toISOString().split('T')[0]}
               onChange={handleDateChange}
+              aria-required="true"
+              aria-invalid={!!errors.pickupDate}
+              aria-describedby={errors.pickupDate ? 'pickupDate-error' : undefined}
             />
             {errors.pickupDate && (
-              <p role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupDate.message as string}</p>
+              <p id="pickupDate-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupDate.message as string}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="pickupTime" className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
-              <Clock className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+            <Label htmlFor="pickupTime" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
               Pickup Time
             </Label>
             <Input
@@ -138,62 +139,64 @@ export function TransferDetailsSection({
               className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
               {...register('pickupTime')}
               onChange={handleTimeChange}
+              aria-required="true"
+              aria-invalid={!!errors.pickupTime}
+              aria-describedby={errors.pickupTime ? 'pickupTime-error' : undefined}
             />
             {errors.pickupTime && (
-              <p role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupTime.message as string}</p>
+              <p id="pickupTime-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupTime.message as string}</p>
             )}
           </div>
         </div>
 
         {/* Flight Number */}
         <div>
-          <Label htmlFor="flightNumber" className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
-            <Plane className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+          <Label htmlFor="flightNumber" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
             Flight Number
-            <span className="text-[var(--text-muted)]">(optional)</span>
+            <span className="text-[var(--text-muted)] ml-1.5">(optional)</span>
           </Label>
           <Input
             id="flightNumber"
             placeholder="e.g., EK 123"
             className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
             {...register('flightNumber')}
+            aria-describedby="flightNumber-hint"
           />
-          <p className="text-xs text-[var(--text-muted)] mt-1.5">We track your flight for delays</p>
+          <p id="flightNumber-hint" className="text-xs text-[var(--text-muted)] mt-1.5">We track your flight for delays</p>
         </div>
 
         {/* Passengers */}
         <div>
-          <Label className="flex items-center gap-2 mb-2.5 text-[var(--text-secondary)] text-sm">
-            <Users className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+          <Label className="mb-2.5 block text-[var(--text-secondary)] text-sm">
             Passengers
           </Label>
-          <div className="flex items-center gap-3 p-3 bg-[var(--black-warm)] border border-[var(--graphite)] rounded">
+          <div className="flex items-center gap-3" role="group" aria-label="Passenger count">
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-10 w-10 border-[var(--graphite)] hover:bg-[var(--charcoal-light)] hover:border-[var(--gold)] text-[var(--text-primary)]"
+              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)]"
               onClick={() => setPassengers(Math.max(1, passengers - 1))}
               disabled={passengers <= 1}
               aria-label="Decrease passenger count"
             >
               -
             </Button>
-            <span className="w-16 text-center text-lg font-medium text-[var(--text-primary)] tabular-nums">
+            <span className="w-12 text-center text-lg font-medium text-[var(--text-primary)] tabular-nums" aria-live="polite" aria-atomic="true">
               {passengers}
             </span>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-10 w-10 border-[var(--graphite)] hover:bg-[var(--charcoal-light)] hover:border-[var(--gold)] text-[var(--text-primary)]"
+              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)]"
               onClick={() => setPassengers(Math.min(vehicleType.passenger_capacity, passengers + 1))}
               disabled={passengers >= vehicleType.passenger_capacity}
               aria-label="Increase passenger count"
             >
               +
             </Button>
-            <span className="text-xs text-[var(--text-muted)] ml-auto">
+            <span className="text-xs text-[var(--text-muted)] ml-2">
               Max {vehicleType.passenger_capacity}
             </span>
           </div>

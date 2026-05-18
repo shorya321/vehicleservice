@@ -23,9 +23,9 @@ interface AdditionalServicesSectionProps {
 }
 
 function AddonIcon({ iconName }: { iconName: string }) {
-  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName]
-  if (!IconComponent) return <Package className="h-4 w-4" />
-  return <IconComponent className="h-4 w-4" />
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>>)[iconName]
+  if (!IconComponent) return <Package className="h-4 w-4" aria-hidden="true" />
+  return <IconComponent className="h-4 w-4" aria-hidden="true" />
 }
 
 export function AdditionalServicesSection({
@@ -85,7 +85,6 @@ export function AdditionalServicesSection({
     <div className="checkout-form-section">
       <div className="checkout-section-header">
         <h2 className="checkout-section-title">Additional Services</h2>
-        <Package className="checkout-section-icon" aria-hidden="true" />
       </div>
 
       <div className="checkout-section-content space-y-6">
@@ -141,7 +140,7 @@ export function AdditionalServicesSection({
                             disabled={quantity === 0}
                             aria-label={`Decrease ${addon.name} quantity`}
                           >
-                            <Minus className="h-3.5 w-3.5" />
+                            <Minus className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
                           <span className="checkout-quantity-value">{quantity}</span>
                           <button
@@ -151,7 +150,7 @@ export function AdditionalServicesSection({
                             disabled={quantity >= addon.max_quantity}
                             aria-label={`Increase ${addon.name} quantity`}
                           >
-                            <Plus className="h-3.5 w-3.5" />
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
                         </div>
                         {isSelected && (
@@ -185,7 +184,7 @@ export function AdditionalServicesSection({
                     aria-label={`${addon.name}${isFree ? ' (free)' : `, ${formatAddonPrice(addon.price)}`}`}
                   >
                     <div className="checkout-service-checkbox">
-                      {isSelected && <Check className="h-3 w-3 text-[var(--black-void)]" />}
+                      {isSelected && <Check className="h-3 w-3 text-[var(--black-void)]" aria-hidden="true" />}
                     </div>
                     <div className="checkout-service-icon">
                       <AddonIcon iconName={addon.icon} />

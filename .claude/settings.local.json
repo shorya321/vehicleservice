@@ -190,7 +190,11 @@
       "Bash(agent-browser --viewport 390x844 open \"http://localhost:3001/search/jassur-to-mamoon?date=2026-05-14&passengers=2\")",
       "Bash(agent-browser snapshot *)",
       "Bash(agent-browser scroll *)",
-      "Bash(agent-browser --width 390 --height 844 open \"http://localhost:3001/search/jassur-to-mamoon?date=2026-05-14&passengers=2\")"
+      "Bash(agent-browser --width 390 --height 844 open \"http://localhost:3001/search/jassur-to-mamoon?date=2026-05-14&passengers=2\")",
+      "Bash(agent-browser fill *)",
+      "Bash(agent-browser get *)",
+      "Bash(awk -F: 'prev+1==$1{print $1} {prev=$1}')",
+      "Skill(caveman:caveman)"
     ]
   },
   "enableAllProjectMcpServers": true,

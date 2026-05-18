@@ -100,62 +100,64 @@ export function MobileStickyBar({
           {detailsOpen && (
             <motion.div
               id="mobile-itinerary-drawer"
-              initial={reduceMotion ? false : { height: 0, opacity: 0 }}
-              animate={reduceMotion ? undefined : { height: 'auto', opacity: 1 }}
-              exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
+              initial={reduceMotion ? false : { opacity: 0, gridTemplateRows: '0fr' }}
+              animate={reduceMotion ? undefined : { opacity: 1, gridTemplateRows: '1fr' }}
+              exit={reduceMotion ? undefined : { opacity: 0, gridTemplateRows: '0fr' }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden"
+              className="grid"
             >
-              <div className="border-t border-[var(--graphite)] pt-3 space-y-2">
-                {/* Itinerary Details */}
-                <dl className="space-y-0 text-[0.8125rem]">
-                  {[
-                    { label: 'Vehicle', value: vehicleType.name },
-                    ...(formattedDate ? [{ label: 'Date', value: formattedDate }] : []),
-                    ...(pickupTime ? [{ label: 'Time', value: pickupTime }] : []),
-                    { label: 'Passengers', value: String(passengers) },
-                    { label: 'Luggage', value: String(luggage) },
-                  ].map((item, index) => (
-                    <div
-                      key={item.label}
-                      className={`flex items-baseline justify-between ${index > 0 ? 'mt-1.5 pt-1.5 border-t border-[var(--graphite)]/50' : ''}`}
-                    >
-                      <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                        {item.label}
-                      </dt>
-                      <dd className="font-medium tabular-nums text-[var(--text-primary)]">
-                        {item.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+              <div className="overflow-hidden min-h-0">
+                <div className="border-t border-[var(--graphite)] pt-3 space-y-2">
+                  {/* Itinerary Details */}
+                  <dl className="space-y-0 text-[0.8125rem]">
+                    {[
+                      { label: 'Vehicle', value: vehicleType.name },
+                      ...(formattedDate ? [{ label: 'Date', value: formattedDate }] : []),
+                      ...(pickupTime ? [{ label: 'Time', value: pickupTime }] : []),
+                      { label: 'Passengers', value: String(passengers) },
+                      { label: 'Luggage', value: String(luggage) },
+                    ].map((item, index) => (
+                      <div
+                        key={item.label}
+                        className={`flex items-baseline justify-between ${index > 0 ? 'mt-1.5 pt-1.5 border-t border-[var(--graphite)]/50' : ''}`}
+                      >
+                        <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                          {item.label}
+                        </dt>
+                        <dd className="font-medium tabular-nums text-[var(--text-primary)]">
+                          {item.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
 
-                {/* Price Breakdown */}
-                <div className="border-t border-[var(--graphite)] pt-2 space-y-1.5 text-[0.8125rem]">
-                  <div className="flex justify-between">
-                    <span className="text-[var(--text-secondary)]">Base fare</span>
-                    <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(basePrice)}</span>
+                  {/* Price Breakdown */}
+                  <div className="border-t border-[var(--graphite)] pt-2 space-y-1.5 text-[0.8125rem]">
+                    <div className="flex justify-between">
+                      <span className="text-[var(--text-secondary)]">Base fare</span>
+                      <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(basePrice)}</span>
+                    </div>
+                    {childSeatsCost > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-[var(--text-secondary)]">Child seats ({infantSeats + boosterSeats})</span>
+                        <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(childSeatsCost)}</span>
+                      </div>
+                    )}
+                    {extraLuggageCost > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-[var(--text-secondary)]">Extra luggage ({extraLuggageCount})</span>
+                        <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(extraLuggageCost)}</span>
+                      </div>
+                    )}
+                    {selectedAddons.map((addon) => (
+                      <div key={addon.id} className="flex justify-between">
+                        <span className="text-[var(--text-secondary)]">
+                          {addon.name}{addon.quantity > 1 ? ` × ${addon.quantity}` : ''}
+                        </span>
+                        <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(addon.total_price)}</span>
+                      </div>
+                    ))}
                   </div>
-                  {childSeatsCost > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-[var(--text-secondary)]">Child seats ({infantSeats + boosterSeats})</span>
-                      <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(childSeatsCost)}</span>
-                    </div>
-                  )}
-                  {extraLuggageCost > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-[var(--text-secondary)]">Extra luggage ({extraLuggageCount})</span>
-                      <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(extraLuggageCost)}</span>
-                    </div>
-                  )}
-                  {selectedAddons.map((addon) => (
-                    <div key={addon.id} className="flex justify-between">
-                      <span className="text-[var(--text-secondary)]">
-                        {addon.name}{addon.quantity > 1 ? ` × ${addon.quantity}` : ''}
-                      </span>
-                      <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(addon.total_price)}</span>
-                    </div>
-                  ))}
                 </div>
               </div>
             </motion.div>
@@ -174,9 +176,9 @@ export function MobileStickyBar({
             />
             <span className="text-[0.75rem] leading-relaxed text-[var(--text-secondary)]">
               I agree to the{' '}
-              <a href="/terms" className="text-[var(--gold-text)]">Terms</a>
+              <a href="/terms" className="text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors">Terms</a>
               {' '}and{' '}
-              <a href="/privacy" className="text-[var(--gold-text)]">Privacy Policy</a>
+              <a href="/privacy" className="text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors">Privacy Policy</a>.
             </span>
           </label>
         )}

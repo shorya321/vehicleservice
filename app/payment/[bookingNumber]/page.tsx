@@ -278,11 +278,9 @@ STRIPE_SECRET_KEY=sk_test_...`}
           allCurrencies={allCurrencies}
           currentCurrency={currentCurrency}
         />
-        <div className="pt-20 md:pt-24">
-          <ProgressBar currentStep={4} />
-        </div>
-        <header className="text-center py-8 md:py-10 relative z-10">
+        <header className="text-center pt-20 md:pt-24 pb-8 md:pb-10 relative z-10">
           <div className="max-w-[1400px] mx-auto px-6 md:px-8">
+            <ProgressBar currentStep={4} />
             <h1 className="t-headline mb-4">
               Secure <span className="text-[var(--gold)]">Payment</span>
             </h1>

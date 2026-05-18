@@ -155,9 +155,8 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   return (
     <PublicLayout>
       <div className="min-h-screen bg-[var(--black-void)]">
-        <ProgressBar currentStep={3} />
-
-        <div className="luxury-container py-8 md:py-14 lg:py-16">
+        <div className="luxury-container py-8 md:py-16 lg:py-20">
+          <ProgressBar currentStep={3} />
           <CheckoutHeading />
 
           <CheckoutWrapper

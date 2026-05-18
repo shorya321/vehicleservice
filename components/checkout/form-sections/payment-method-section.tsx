@@ -12,7 +12,6 @@ export function PaymentMethodSection({ form: _form }: PaymentMethodSectionProps)
     <div className="checkout-form-section">
       <div className="checkout-section-header">
         <h2 className="checkout-section-title">Payment Method</h2>
-        <CreditCard className="checkout-section-icon" aria-hidden="true" />
       </div>
 
       <div className="checkout-section-content">
