@@ -51,24 +51,24 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
                 )}
                 <span
                   className={cn(
-                    'text-[0.6875rem] font-medium tracking-[0.14em] tabular-nums',
+                    'tracking-[0.14em] tabular-nums',
                     isActive
-                      ? 'text-[var(--gold-text)]'
+                      ? 'text-[0.8125rem] font-semibold text-[var(--gold-text)]'
                       : isCompleted
-                        ? 'text-[var(--text-secondary)]'
-                        : 'text-[var(--text-muted)]'
+                        ? 'text-[0.6875rem] font-medium text-[var(--text-secondary)]'
+                        : 'text-[0.6875rem] font-medium text-[var(--text-muted)]'
                   )}
                 >
                   {String(step.number).padStart(2, '0')}
                 </span>
                 <span
                   className={cn(
-                    'hidden sm:inline text-[0.75rem] font-medium tracking-[0.12em] uppercase',
+                    'hidden sm:inline tracking-[0.12em] uppercase',
                     isActive
-                      ? 'text-[var(--text-primary)]'
+                      ? 'text-[0.8125rem] font-semibold text-[var(--text-primary)]'
                       : isCompleted
-                        ? 'text-[var(--text-secondary)]'
-                        : 'text-[var(--text-muted)]'
+                        ? 'text-[0.75rem] font-medium text-[var(--text-secondary)]'
+                        : 'text-[0.75rem] font-medium text-[var(--text-muted)]'
                   )}
                 >
                   {step.label}
@@ -79,9 +79,9 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
                 <div
                   aria-hidden="true"
                   className={cn(
-                    'w-8 sm:w-12 h-px mx-2 sm:mx-3',
+                    'w-8 sm:w-12 h-[1.5px] mx-2 sm:mx-3',
                     isCompleted
-                      ? 'bg-[rgba(var(--gold-rgb),0.3)]'
+                      ? 'bg-[rgba(var(--gold-rgb),0.4)]'
                       : 'bg-[var(--graphite)]'
                   )}
                 />

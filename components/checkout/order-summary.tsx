@@ -88,7 +88,7 @@ export function OrderSummary({
         <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
           {vehicleType.category}
         </div>
-        <h2 className="mt-1 text-xl font-medium text-[var(--text-primary)]">
+        <h2 className="mt-1 text-[1.375rem] font-semibold text-[var(--text-primary)]">
           {vehicleType.name}
         </h2>
 
@@ -141,9 +141,9 @@ export function OrderSummary({
       </div>
 
       {/* Total */}
-      <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5">
+      <div className="border-t border-[rgba(var(--gold-rgb),0.15)] bg-[rgba(var(--gold-rgb),0.03)] px-6 xl:px-8 py-5">
         <div className="flex items-baseline justify-between">
-          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
             Total
           </span>
           <motion.span
