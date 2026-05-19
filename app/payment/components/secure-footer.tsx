@@ -15,7 +15,7 @@ export function SecureFooter() {
           {badges.map((badge) => (
             <li
               key={badge.label}
-              className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]"
+              className="t-label"
             >
               {badge.label}
             </li>

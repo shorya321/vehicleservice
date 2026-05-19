@@ -8,11 +8,48 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
-import { Loader2, Lock } from 'lucide-react'
+import type { StripeError } from '@stripe/stripe-js'
+import { Loader2, Lock, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
 import { buildConfirmationUrl } from '@/lib/utils/url-builder'
+
+function getUserFriendlyError(error: StripeError): string {
+  switch (error.code) {
+    case 'card_declined': return 'Your card was declined. Please try another card.'
+    case 'expired_card': return 'This card has expired. Please use a different card.'
+    case 'insufficient_funds': return 'Insufficient funds. Please try another card.'
+    case 'incorrect_cvc': return 'Incorrect security code. Please check and try again.'
+    case 'processing_error': return 'A processing error occurred. Please try again.'
+    default: return error.message || 'Payment could not be completed. Please try again.'
+  }
+}
+
+function PaymentSkeleton() {
+  return (
+    <div className="space-y-4 animate-pulse" aria-hidden="true">
+      <div className="space-y-2">
+        <div className="h-3 w-24 rounded bg-[rgba(var(--gold-rgb),0.06)]" />
+        <div className="h-12 w-full rounded-[4px] bg-[rgba(var(--gold-rgb),0.06)]" />
+      </div>
+      <div className="flex gap-4">
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-20 rounded bg-[rgba(var(--gold-rgb),0.06)]" />
+          <div className="h-12 rounded-[4px] bg-[rgba(var(--gold-rgb),0.06)]" />
+        </div>
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-16 rounded bg-[rgba(var(--gold-rgb),0.06)]" />
+          <div className="h-12 rounded-[4px] bg-[rgba(var(--gold-rgb),0.06)]" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-3 w-20 rounded bg-[rgba(var(--gold-rgb),0.06)]" />
+        <div className="h-12 w-full rounded-[4px] bg-[rgba(var(--gold-rgb),0.06)]" />
+      </div>
+    </div>
+  )
+}
 
 interface CheckoutFormProps {
   bookingId: string
@@ -48,7 +85,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
     })
 
     if (submitError) {
-      setErrorMessage(submitError.message || 'Payment failed')
+      setErrorMessage(getUserFriendlyError(submitError))
       setIsLoading(false)
       return
     }
@@ -94,7 +131,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-6 xl:px-8 py-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-        <Lock className="w-4 h-4 text-[var(--gold-text)] flex-shrink-0" />
+        <Lock className="w-4 h-4 text-[var(--gold-text)] flex-shrink-0" aria-hidden="true" />
         <h2 className="text-[1.125rem] font-medium text-[var(--text-primary)]">Payment Details</h2>
       </div>
 
@@ -110,24 +147,32 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
           </span>
         </div>
 
+        <p className="flex items-center justify-center gap-1.5 text-[0.75rem] text-[var(--text-muted)] mb-6">
+          <ShieldCheck className="w-3.5 h-3.5 text-[var(--success)]" aria-hidden="true" />
+          Processed securely by Stripe · SSL encrypted
+        </p>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <PaymentElement
-            options={{
-              layout: {
-                type: 'accordion',
-                defaultCollapsed: false,
-                radios: false,
-                spacedAccordionItems: true,
-              },
-              paymentMethodOrder: ['card'],
-            }}
-          />
+          {(!stripe || !elements) && <PaymentSkeleton />}
+          <div className={!stripe || !elements ? 'sr-only' : undefined}>
+            <PaymentElement
+              options={{
+                layout: {
+                  type: 'accordion',
+                  defaultCollapsed: false,
+                  radios: false,
+                  spacedAccordionItems: true,
+                },
+                paymentMethodOrder: ['card'],
+              }}
+            />
+          </div>
 
           {errorMessage && (
             <motion.div
               className="p-4 bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] text-destructive rounded-[4px] text-sm flex items-start gap-2"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+              animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               role="alert"
               aria-live="polite"
             >
@@ -139,6 +184,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
           <button
             type="submit"
             disabled={!stripe || !elements || isLoading}
+            aria-busy={isLoading}
             className="checkout-btn-primary w-full"
           >
             {isLoading ? (

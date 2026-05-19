@@ -20,7 +20,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ]
 
 const inputClass =
-  "w-full h-12 bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200"
+  "w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200"
 
 const fieldLabelClass =
   "block text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--text-muted)] mb-2"
@@ -171,38 +171,36 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           : "Used only for booking confirmations, receipts, and chauffeur contact details."}
       </p>
 
-      <div
-        role="tablist"
-        aria-label="Authentication"
-        className="mt-10 flex items-center gap-x-8 border-b border-[var(--graphite)]"
-      >
-        {TABS.map((tab) => {
-          const selected = activeTab === tab.key
-          return (
-            <button
-              key={tab.key}
-              role="tab"
-              aria-selected={selected}
-              aria-controls={`auth-panel-${tab.key}`}
-              id={`auth-tab-${tab.key}`}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => handleTabChange(tab.key)}
-              className={`relative -mb-px py-3 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
-            >
-              {tab.label}
-              {selected && (
-                <span aria-hidden className="absolute -bottom-px left-0 right-0 h-px bg-[var(--gold)]" />
-              )}
-            </button>
-          )
-        })}
-      </div>
+      <div className="mt-10 rounded-[8px] border border-[rgba(var(--gold-rgb),0.12)] bg-[var(--black-rich)] p-5 sm:p-7">
+        <div
+          role="tablist"
+          aria-label="Authentication"
+          className="auth-tabs"
+        >
+          {TABS.map((tab) => {
+            const selected = activeTab === tab.key
+            return (
+              <button
+                key={tab.key}
+                role="tab"
+                aria-selected={selected}
+                aria-controls={`auth-panel-${tab.key}`}
+                id={`auth-tab-${tab.key}`}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => handleTabChange(tab.key)}
+                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] ${selected ? "active" : ""}`}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
 
       {successMessage && (
         <div
           role="status"
           aria-live="polite"
-          className="mt-6 flex items-start gap-3 border border-[rgba(198,170,136,0.3)] bg-[rgba(198,170,136,0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+          className="mt-6 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
         >
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden />
           <p>{successMessage}</p>
@@ -213,7 +211,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-6 flex items-start gap-3 border border-[#ef4444]/40 bg-[#ef4444]/10 p-4 text-[0.875rem] text-[#fca5a5]"
+          className="mt-6 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>
@@ -226,7 +224,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           role="tabpanel"
           aria-labelledby="auth-tab-login"
           onSubmit={handleLogin}
-          className="mt-8 flex flex-col gap-5"
+          className="flex flex-col gap-4"
         >
           <div>
             <label htmlFor="login-email" className={fieldLabelClass}>Email</label>
@@ -278,7 +276,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary mt-2 h-12 w-full disabled:opacity-60"
+            className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px] disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -306,7 +304,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           role="tabpanel"
           aria-labelledby="auth-tab-register"
           onSubmit={handleRegister}
-          className="mt-8 flex flex-col gap-5"
+          className="flex flex-col gap-4"
         >
           <div>
             <label htmlFor="reg-name" className={fieldLabelClass}>Full name</label>
@@ -412,7 +410,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 appearance-none border border-[var(--graphite)] bg-[var(--black-warm)] checked:border-[var(--gold)] checked:bg-[var(--gold)] checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22%23050506%22 d=%22M6 11.4 2.6 8 4 6.6l2 2 6-6L13.4 4z%22/></svg>')] bg-center bg-no-repeat focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+              className="mt-0.5 h-4 w-4 shrink-0 appearance-none border border-[var(--graphite)] bg-[var(--black-warm)] checked:border-[var(--gold)] checked:bg-[var(--gold)] checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22%23050506%22 d=%22M6 11.4 2.6 8 4 6.6l2 2 6-6L13.4 4z%22/></svg>')] bg-center bg-no-repeat focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
             />
             <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
               I agree to the{" "}
@@ -430,7 +428,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary mt-2 h-12 w-full disabled:opacity-60"
+            className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px] disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -453,6 +451,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           </p>
         </form>
       )}
+      </div>
     </motion.div>
   )
 }

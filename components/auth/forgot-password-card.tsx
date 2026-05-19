@@ -6,7 +6,7 @@ import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 const inputClass =
-  "w-full h-12 bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200 disabled:opacity-60"
+  "w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200 disabled:opacity-60"
 
 const fieldLabelClass =
   "block text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--text-muted)] mb-2"
@@ -64,7 +64,7 @@ export function ForgotPasswordCard() {
         <div
           role="status"
           aria-live="polite"
-          className="mt-8 flex items-start gap-3 border border-[rgba(198,170,136,0.3)] bg-[rgba(198,170,136,0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
         >
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden />
           <p>{message}</p>
@@ -75,7 +75,7 @@ export function ForgotPasswordCard() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-8 flex items-start gap-3 border border-[#ef4444]/40 bg-[#ef4444]/10 p-4 text-[0.875rem] text-[#fca5a5]"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>
@@ -101,7 +101,7 @@ export function ForgotPasswordCard() {
         <button
           type="submit"
           disabled={loading || !!message}
-          className="btn btn-primary mt-2 h-12 w-full disabled:opacity-60"
+          className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px] disabled:opacity-60"
         >
           {loading ? (
             <>

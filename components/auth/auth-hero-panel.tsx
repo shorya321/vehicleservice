@@ -37,8 +37,9 @@ export function AuthHeroPanel() {
         className="pointer-events-none absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 70% 50% at 15% 25%, rgba(198, 170, 136, 0.06) 0%, transparent 60%),
-            radial-gradient(ellipse 60% 40% at 85% 85%, rgba(198, 170, 136, 0.04) 0%, transparent 65%)
+            radial-gradient(ellipse 64% 46% at 50% 0%, rgba(var(--gold-rgb), 0.12) 0%, transparent 68%),
+            radial-gradient(ellipse 70% 50% at 15% 35%, rgba(var(--gold-rgb), 0.10) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 85% 85%, rgba(var(--gold-rgb), 0.07) 0%, transparent 65%)
           `,
         }}
       />
@@ -67,6 +68,11 @@ export function AuthHeroPanel() {
           </p>
         </motion.div>
 
+        <div
+          aria-hidden
+          className="h-px w-full max-w-[200px] bg-gradient-to-r from-transparent via-[rgba(var(--gold-rgb),0.18)] to-transparent"
+        />
+
         <motion.ol
           className="max-w-md space-y-6"
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
@@ -79,7 +85,7 @@ export function AuthHeroPanel() {
                 {beat.index}
               </span>
               <div>
-                <p className="text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
+                <p className="text-[1.0625rem] font-medium leading-snug text-[var(--text-primary)]">
                   {beat.title}
                 </p>
                 <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-secondary)]">

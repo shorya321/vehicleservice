@@ -231,14 +231,14 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
                   <p className="text-[var(--text-secondary)]">
                     {stripeError || 'Payment processing is currently unavailable.'}
                   </p>
-                  <div className="bg-[rgba(251,191,36,0.08)] border border-[rgba(251,191,36,0.15)] p-6 rounded-[4px]">
-                    <p className="text-sm font-semibold text-[#fbbf24] mb-3">For Testing/Development:</p>
-                    <ol className="text-sm text-[#fbbf24]/80 space-y-2 list-decimal list-inside">
+                  <div className="bg-[rgba(var(--gold-rgb),0.06)] border border-[rgba(var(--gold-rgb),0.15)] p-6 rounded-[4px]">
+                    <p className="text-sm font-semibold text-[var(--gold-text)] mb-3">For Testing/Development:</p>
+                    <ol className="text-sm text-[var(--text-secondary)] space-y-2 list-decimal list-inside">
                       <li>Sign up for a Stripe account at stripe.com</li>
                       <li>Get your test API keys from the Stripe Dashboard</li>
                       <li>Add to your .env.local file:</li>
                     </ol>
-                    <pre className="mt-3 p-3 bg-[rgba(251,191,36,0.08)] rounded-[4px] text-xs overflow-x-auto text-[#fbbf24]">
+                    <pre className="mt-3 p-3 bg-[rgba(var(--gold-rgb),0.06)] rounded-[4px] text-xs overflow-x-auto text-[var(--gold-text)]">
 {`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...`}
                     </pre>
@@ -248,7 +248,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     <div className="space-y-1 text-sm text-[var(--text-secondary)]">
                       <p>Booking Number: <span className="font-mono text-[var(--gold-text)]">{booking.booking_number}</span></p>
                       <p>Amount: <span className="text-[var(--text-primary)]">{formatUserPrice(booking.total_price)}</span></p>
-                      <p>Status: <span className="text-[#fbbf24]">Payment Pending</span></p>
+                      <p>Status: <span className="text-[var(--gold-text)]">Payment Pending</span></p>
                     </div>
                   </div>
                 </div>
@@ -295,52 +295,52 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   bookingNumber={booking.booking_number}
                 />
               </div>
-              <aside className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24">
+              <aside className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24" aria-label="Booking summary">
                 <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden">
                   <div className="px-6 xl:px-8 py-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-                    <h3 className="text-[1.375rem] font-semibold text-[var(--text-primary)]">Booking Summary</h3>
+                    <h2 className="text-[1.375rem] font-semibold text-[var(--text-primary)]">Booking Summary</h2>
                   </div>
                   <div className="px-6 xl:px-8 py-6 space-y-5">
                     {booking.vehicle_type && (
                       <div className="pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-                        <span className="text-[0.6875rem] font-medium tracking-[0.18em] uppercase text-[var(--text-muted)]">
+                        <span className="t-label">
                           Luxury Transfer
                         </span>
-                        <h4 className="text-base font-medium text-[var(--text-primary)] mt-1">{booking.vehicle_type.name}</h4>
+                        <h3 className="text-base font-medium text-[var(--text-primary)] mt-1">{booking.vehicle_type.name}</h3>
                       </div>
                     )}
                     <div className="space-y-3 pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
                       <div className="flex items-start gap-3">
                         <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--gold)] flex-shrink-0" />
                         <div>
-                          <span className="text-[0.6875rem] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] block leading-none">Pick-up</span>
-                          <p className="text-[0.9375rem] text-[var(--text-primary)] leading-tight mt-1">{booking.pickup_address}</p>
+                          <span className="t-label block leading-none">Pick-up</span>
+                          <p className="text-[0.9375rem] text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.pickup_address}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--gold-deep)] flex-shrink-0" />
                         <div>
-                          <span className="text-[0.6875rem] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] block leading-none">Drop-off</span>
-                          <p className="text-[0.9375rem] text-[var(--text-primary)] leading-tight mt-1">{booking.dropoff_address}</p>
+                          <span className="t-label block leading-none">Drop-off</span>
+                          <p className="text-[0.9375rem] text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.dropoff_address}</p>
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-4 pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
                       <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                        <Calendar className="w-3.5 h-3.5 text-[var(--gold-text)]" />
+                        <Calendar className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                         {format(new Date(booking.pickup_datetime), 'MMM dd, yyyy')}
                       </span>
                       <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                        <Clock className="w-3.5 h-3.5 text-[var(--gold-text)]" />
+                        <Clock className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                         {format(new Date(booking.pickup_datetime), 'HH:mm')}
                       </span>
                       <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                        <Users className="w-3.5 h-3.5 text-[var(--gold-text)]" />
+                        <Users className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                         {booking.passenger_count} passengers
                       </span>
                       {(booking.luggage_count ?? 0) > 0 && (
                         <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                          <Luggage className="w-3.5 h-3.5 text-[var(--gold-text)]" />
+                          <Luggage className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                           {booking.luggage_count} luggage
                         </span>
                       )}
@@ -355,9 +355,9 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     <GuaranteeCard />
                     <Link
                       href="/contact"
-                      className="flex items-center justify-center gap-2 mt-5 text-[0.8125rem] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
+                      className="inline-flex items-center justify-center gap-2 mt-5 min-h-[44px] text-[0.8125rem] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] rounded-[4px]"
                     >
-                      <HelpCircle className="w-3.5 h-3.5" />
+                      <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       Need help with your booking?
                     </Link>
                   </div>

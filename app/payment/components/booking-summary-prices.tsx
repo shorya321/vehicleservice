@@ -35,10 +35,10 @@ export function BookingSummaryPrices({ basePrice, amenitiesPrice, totalPrice }: 
       </dl>
 
       <div className="mt-5 flex items-baseline justify-between border-t border-[var(--graphite)] pt-5">
-        <span className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        <span className="t-label">
           Total
         </span>
-        <span className="numeric text-3xl text-[var(--text-primary)]">
+        <span className="numeric text-2xl sm:text-3xl text-[var(--text-primary)]">
           {formatUserPrice(totalPrice)}
         </span>
       </div>

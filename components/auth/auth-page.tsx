@@ -12,11 +12,11 @@ interface AuthPageProps {
 
 function AuthPageContent({ initialTab }: AuthPageProps) {
   return (
-    <main className="min-h-screen bg-[var(--black-void)] lg:grid lg:grid-cols-[1.05fr_minmax(0,0.95fr)]">
+    <main className="auth-page min-h-screen bg-[var(--black-void)]">
       <AuthHeroPanel />
 
-      <section className="flex min-h-screen items-center justify-center px-6 py-16 lg:min-h-0 lg:py-24">
-        <div className="w-full max-w-[460px]">
+      <section className="auth-panel">
+        <div className="auth-container">
           <div className="mb-10 lg:hidden">
             <AuthLogo className="text-2xl" />
           </div>
