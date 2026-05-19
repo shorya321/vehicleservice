@@ -7,6 +7,7 @@ import { RelatedCard } from "../components/related-card"
 import { BlogArticleHeader } from "../components/blog-article-header"
 import { ShareButtons } from "../components/share-buttons"
 import { BlogNewsletterCta } from "../components/blog-newsletter-cta"
+import { BlogMotionCard, BlogMotionSection } from "../components/blog-motion-wrapper"
 
 export const dynamic = 'force-dynamic'
 
@@ -151,15 +152,17 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       {/* Related Posts — raised section */}
       {relatedPosts.length > 0 && (
-        <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-          <div className="luxury-container py-10 md:py-16">
-            <div className="flex items-center gap-3 mb-8">
+        <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+          <div className="luxury-container">
+            <BlogMotionSection className="flex items-center gap-3 mb-8">
               <span className="w-6 h-px bg-[var(--gold)]" />
               <h2 className="t-label-accent">Related Articles</h2>
-            </div>
+            </BlogMotionSection>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedPosts.map((relPost) => (
-                <RelatedCard key={relPost.id} post={relPost} />
+              {relatedPosts.map((relPost, index) => (
+                <BlogMotionCard key={relPost.id} index={index}>
+                  <RelatedCard post={relPost} />
+                </BlogMotionCard>
               ))}
             </div>
           </div>

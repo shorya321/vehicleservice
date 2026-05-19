@@ -21,7 +21,7 @@ export default function BlogLoading() {
   return (
     <div className="bg-[var(--black-void)]">
       {/* Hero skeleton */}
-      <section className="py-14 md:py-20 bg-[var(--black-void)] border-b border-[var(--graphite)]">
+      <section className="pt-[clamp(4rem,10vw,6rem)] pb-[clamp(3.5rem,8vw,5rem)] bg-[var(--black-void)] border-b border-[var(--graphite)]">
         <div className="luxury-container text-center">
           <div className="h-3 w-20 mx-auto mb-6 rounded bg-[var(--charcoal-light)] animate-pulse" />
           <div className="h-12 w-64 mx-auto mb-4 rounded bg-[var(--charcoal-light)] animate-pulse" />
@@ -30,8 +30,8 @@ export default function BlogLoading() {
       </section>
 
       {/* Posts skeleton — raised */}
-      <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-        <div className="luxury-container py-10 md:py-16">
+      <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+        <div className="luxury-container">
           {/* Category tabs skeleton */}
           <div className="flex gap-2 mb-8">
             {Array.from({ length: 5 }).map((_, i) => (

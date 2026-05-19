@@ -44,7 +44,7 @@ export function AuthHeroPanel() {
         }}
       />
 
-      <div className="relative z-10 flex h-full flex-col justify-between gap-16 p-12 lg:p-16">
+      <div className="relative z-10 flex flex-col gap-12 lg:gap-16 p-12 lg:p-16">
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}

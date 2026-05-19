@@ -6,6 +6,7 @@ import { getPublishedPosts, getBlogCategories, getFeaturedPosts, getPopularTags 
 import { BlogHero } from "./components/blog-hero"
 import { BlogCard } from "./components/blog-card"
 import { CategoryTabs } from "./components/category-tabs"
+import { BlogMotionCard, BlogMotionSection } from "./components/blog-motion-wrapper"
 import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -47,15 +48,17 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
       {/* Featured Posts — ground */}
       {featuredPosts.length > 0 && currentPage === 1 && (
-        <section className="bg-[var(--black-void)]">
-          <div className="luxury-container py-10 md:py-16">
-            <div className="flex items-center gap-3 mb-8">
+        <section className="editorial-section editorial-section--spacious bg-[var(--black-void)]">
+          <div className="luxury-container">
+            <BlogMotionSection className="flex items-center gap-3 mb-8">
               <span className="w-6 h-px bg-[var(--gold)]" />
               <h2 className="t-label-accent">Featured</h2>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </BlogMotionSection>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredPosts.map((post, index) => (
-                <BlogCard key={post.id} post={post} featured hero={index === 0} />
+                <BlogMotionCard key={post.id} index={index}>
+                  <BlogCard post={post} featured hero={index === 0} />
+                </BlogMotionCard>
               ))}
             </div>
           </div>
@@ -63,8 +66,8 @@ export default async function BlogPage({ searchParams }: PageProps) {
       )}
 
       {/* Posts Grid — raised */}
-      <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-        <div className="luxury-container py-10 md:py-16">
+      <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+        <div className="luxury-container">
           {/* Category Tabs */}
           <div className="mb-8">
             <CategoryTabs categories={categories} />
@@ -74,8 +77,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
           <div className="mb-12">
             {posts.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.map((post) => (
-                  <BlogCard key={post.id} post={post} />
+                {posts.map((post, index) => (
+                  <BlogMotionCard key={post.id} index={index}>
+                    <BlogCard post={post} />
+                  </BlogMotionCard>
                 ))}
               </div>
             ) : (
@@ -97,7 +102,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <nav className="flex items-center justify-center gap-4 pb-4">
+            <nav className="flex items-center justify-center gap-4">
               {currentPage > 1 ? (
                 <Link
                   href={`/blog?page=${currentPage - 1}`}
@@ -138,12 +143,12 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
       {/* Popular Tags — ground */}
       {popularTags.length > 0 && (
-        <section className="bg-[var(--black-void)]" aria-label="Popular topics">
-          <div className="luxury-container py-10 md:py-16">
-            <div className="flex items-center gap-3 mb-6">
+        <section className="editorial-section editorial-section--ground bg-[var(--black-void)]" aria-label="Popular topics">
+          <div className="luxury-container">
+            <BlogMotionSection className="flex items-center gap-3 mb-8">
               <span className="w-6 h-px bg-[var(--gold)]" />
               <h2 className="t-label-accent">Popular Topics</h2>
-            </div>
+            </BlogMotionSection>
             <div className="flex flex-wrap gap-2">
               {popularTags.map((tag) => (
                 <Link

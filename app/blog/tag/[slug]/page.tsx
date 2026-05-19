@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getPublishedPosts, getTagBySlug } from "@/lib/blog/queries"
 import { BlogHero } from "../../components/blog-hero"
 import { BlogCard } from "../../components/blog-card"
+import { BlogMotionCard } from "../../components/blog-motion-wrapper"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -50,8 +51,8 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
       />
 
       {/* Posts — raised */}
-      <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-        <div className="luxury-container py-10 md:py-16">
+      <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+        <div className="luxury-container">
           {/* Breadcrumb */}
           <div className="mb-8">
             <Link
@@ -67,8 +68,10 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
           <div className="mb-12">
             {posts.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.map((post) => (
-                  <BlogCard key={post.id} post={post} />
+                {posts.map((post, index) => (
+                  <BlogMotionCard key={post.id} index={index}>
+                    <BlogCard post={post} />
+                  </BlogMotionCard>
                 ))}
               </div>
             ) : (
@@ -82,7 +85,7 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <nav className="flex items-center justify-center gap-4 pb-4">
+            <nav className="flex items-center justify-center gap-4">
               {currentPage > 1 ? (
                 <Link
                   href={`/blog/tag/${slug}?page=${currentPage - 1}`}

@@ -36,7 +36,7 @@ export function ForgotPasswordCard() {
       if (!res.ok) {
         setError(data.error || "Failed to send reset link")
       } else {
-        setMessage("Check your inbox for the reset link.")
+        setMessage("Check your inbox. Link valid for one hour.")
       }
     } catch (err) {
       console.error("Password reset error:", err)

@@ -27,28 +27,28 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
   }
 
   return (
-    <section className="py-14 md:py-20 bg-[var(--black-void)] border-b border-[var(--graphite)]">
+    <section className="pt-[clamp(4rem,10vw,6rem)] pb-[clamp(3.5rem,8vw,5rem)] bg-[var(--black-void)] border-b border-[var(--graphite)] blog-hero-glow blog-hero-animate">
       <div className="luxury-container text-center">
         {/* Eyebrow */}
-        <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="blog-hero__eyebrow flex items-center justify-center gap-3 mb-6">
           <span className="w-6 h-px bg-[var(--gold)]" />
           <span className="t-label-accent">{eyebrow}</span>
           <span className="w-6 h-px bg-[var(--gold)]" />
         </div>
 
         {/* Title */}
-        <h1 className="t-display mb-4">{title}</h1>
+        <h1 className="blog-hero__title t-display mb-4">{title}</h1>
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="t-body max-w-2xl mx-auto">
+          <p className="blog-hero__subtitle t-body max-w-2xl mx-auto">
             {subtitle}
           </p>
         )}
 
         {/* Search */}
         {showSearch && (
-          <form onSubmit={handleSearch} className="mt-8 max-w-md mx-auto">
+          <form onSubmit={handleSearch} className="blog-hero__search mt-8 max-w-md mx-auto">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
               <input
@@ -64,7 +64,7 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
 
         {/* Decorative hairline */}
         {!showSearch && (
-          <div className="mt-8 flex justify-center">
+          <div className="blog-hero__rule mt-8 flex justify-center">
             <div className="w-20 h-px bg-[var(--gold)]" />
           </div>
         )}
