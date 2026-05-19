@@ -11,7 +11,7 @@ export default function BlogNotFound() {
         </p>
         <Link
           href="/blog"
-          className="inline-flex px-6 py-2 text-sm font-medium bg-[var(--gold)] text-[var(--onyx)] rounded-full hover:opacity-90 transition-opacity"
+          className="inline-flex px-6 py-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--onyx)] rounded-[4px] hover:bg-[var(--gold-deep)] transition-colors duration-300"
         >
           Back to Blog
         </Link>

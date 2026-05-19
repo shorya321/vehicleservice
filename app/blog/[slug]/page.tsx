@@ -2,11 +2,11 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { getPublishedPost, getRelatedPosts, getPublishedPosts, getBlogCategories, getPopularTags, incrementViewCount } from "@/lib/blog/queries"
+import { getPublishedPost, getRelatedPosts, incrementViewCount } from "@/lib/blog/queries"
 import { RelatedCard } from "../components/related-card"
 import { BlogArticleHeader } from "../components/blog-article-header"
-import { BlogSidebar } from "../components/blog-sidebar"
 import { ShareButtons } from "../components/share-buttons"
+import { BlogNewsletterCta } from "../components/blog-newsletter-cta"
 
 export const dynamic = 'force-dynamic'
 
@@ -54,140 +54,120 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound()
   }
 
-  // Increment view count (fire-and-forget)
   incrementViewCount(post.id)
 
-  // Parallel data fetching for sidebar + related posts
-  const [relatedPosts, categories, recentData, popularTags] = await Promise.all([
-    getRelatedPosts(post.id, post.category?.id || null),
-    getBlogCategories(),
-    getPublishedPosts({ limit: 5 }),
-    getPopularTags(),
-  ])
-
-  const recentPosts = recentData.posts.filter(p => p.id !== post.id).slice(0, 4)
+  const relatedPosts = await getRelatedPosts(post.id, post.category?.id || null)
 
   return (
     <div className="bg-[var(--black-void)]">
-      {/* Article Header — Full-width above grid */}
+      {/* Article Header */}
       <div className="luxury-container">
         <BlogArticleHeader post={post} />
       </div>
 
-      {/* Two-column grid — content + sidebar */}
+      {/* Article Content — centered, capped at 75ch */}
       <div className="luxury-container">
         <div className="blog-article-layout">
-          {/* Main Content */}
-          <main>
-            {/* Pullquote / Excerpt */}
-            {post.excerpt && (
-              <div className="border-l-2 border-[var(--gold)] pl-6 mb-8">
-                <p className="font-body text-xl italic leading-[1.6] text-[var(--text-secondary)]">
-                  {post.excerpt}
+          {/* Pullquote / Excerpt */}
+          {post.excerpt && (
+            <div className="border-t border-b border-[var(--graphite)] py-6 mb-8">
+              <p className="font-body text-xl italic leading-[1.6] text-[var(--text-primary)]">
+                {post.excerpt}
+              </p>
+            </div>
+          )}
+
+          {/* Article Content */}
+          {post.content ? (
+            <div className="prose-luxury mb-8" dangerouslySetInnerHTML={{ __html: post.content }} />
+          ) : (
+            <div className="prose-luxury mb-8">
+              <p className="text-[var(--text-muted)]">No content available.</p>
+            </div>
+          )}
+
+          {/* Share Buttons */}
+          <div className="mb-8 pb-8 border-b border-[var(--graphite)]">
+            <ShareButtons
+              url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
+              title={post.title}
+            />
+          </div>
+
+          {/* Tags */}
+          {post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {post.tags.map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/blog/tag/${tag.slug}`}
+                  className="inline-block px-3.5 py-1.5 text-xs font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-[4px] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="blog-diamond-divider" />
+
+          {/* Author Bio Card */}
+          <div className="author-bio-card">
+            <div className="flex gap-6 items-start max-sm:flex-col max-sm:items-center max-sm:text-center">
+              {post.author?.avatar_url ? (
+                <Image
+                  src={post.author.avatar_url}
+                  alt={post.author.full_name || 'Author'}
+                  width={80}
+                  height={80}
+                  className="w-20 h-20 rounded-full object-cover border border-[var(--gold)]/15 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-[var(--charcoal-light)] border border-[var(--gold)]/15 flex-shrink-0 flex items-center justify-center">
+                  <span className="text-[var(--gold)] text-2xl font-serif">
+                    {(post.author?.full_name || 'A').charAt(0)}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1">
+                <div className="t-label-accent mb-1">
+                  Written by
+                </div>
+                <h3 className="t-subhead mb-1">
+                  {post.author?.full_name || 'Editorial Team'}
+                </h3>
+                <div className="t-meta mb-3">
+                  Senior Travel Editor
+                </div>
+                <p className="t-body">
+                  Bringing you the finest insights on luxury travel, premium transfers, and the art of seamless journeys across the Middle East.
                 </p>
               </div>
-            )}
-
-            {/* Article Content */}
-            {post.content ? (
-              <div className="prose-luxury mb-8" dangerouslySetInnerHTML={{ __html: post.content }} />
-            ) : (
-              <div className="prose-luxury mb-8">
-                <p className="text-[var(--text-muted)]">No content available.</p>
-              </div>
-            )}
-
-            {/* Share Buttons */}
-            <div className="mb-8 pb-8 border-b border-[var(--gold)]/10">
-              <ShareButtons
-                url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
-                title={post.title}
-              />
             </div>
-
-            {/* Tags */}
-            {post.tags.length > 0 && (
-              <div className="blog-tags-section">
-                {post.tags.map((tag) => (
-                  <Link
-                    key={tag.id}
-                    href={`/blog/tag/${tag.slug}`}
-                    className="inline-block px-3.5 py-1.5 text-xs font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-full hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
-                  >
-                    {tag.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* Diamond Divider */}
-            <div className="blog-diamond-divider">
-              <div className="blog-diamond-icon" />
-            </div>
-
-            {/* Author Bio Card */}
-            <div className="author-bio-card">
-              <div className="flex gap-6 items-start max-sm:flex-col max-sm:items-center max-sm:text-center">
-                {post.author?.avatar_url ? (
-                  <Image
-                    src={post.author.avatar_url}
-                    alt={post.author.full_name || 'Author'}
-                    width={80}
-                    height={80}
-                    className="w-20 h-20 rounded-full object-cover border-2 border-[var(--gold)]/25 flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-[var(--charcoal)] border-2 border-[var(--gold)]/25 flex-shrink-0 flex items-center justify-center">
-                    <span className="text-[var(--gold)] text-2xl font-serif">
-                      {(post.author?.full_name || 'A').charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div className="flex-1">
-                  <div className="t-label-accent mb-1">
-                    Written by
-                  </div>
-                  <h3 className="t-subhead mb-1">
-                    {post.author?.full_name || 'Editorial Team'}
-                  </h3>
-                  <div className="t-meta mb-3">
-                    Senior Travel Editor
-                  </div>
-                  <p className="t-body">
-                    Bringing you the finest insights on luxury travel, premium transfers, and the art of seamless journeys across the Middle East.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </main>
-
-          {/* Sidebar */}
-          <aside>
-            <BlogSidebar
-              categories={categories}
-              recentPosts={recentPosts}
-              popularTags={popularTags}
-            />
-          </aside>
+          </div>
         </div>
       </div>
 
-      {/* Related Posts — Full Width */}
+      {/* Related Posts — raised section */}
       {relatedPosts.length > 0 && (
-        <section className="luxury-container pt-10 pb-16 border-t border-[var(--gold)]/10">
-          <div className="flex items-center gap-3 mb-8">
-            <span className="w-6 h-px bg-[var(--gold)]" />
-            <h2 className="text-[0.8125rem] font-medium tracking-[0.15em] uppercase text-[var(--gold)]">
-              Related Articles
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedPosts.map((relPost) => (
-              <RelatedCard key={relPost.id} post={relPost} />
-            ))}
+        <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+          <div className="luxury-container py-10 md:py-16">
+            <div className="flex items-center gap-3 mb-8">
+              <span className="w-6 h-px bg-[var(--gold)]" />
+              <h2 className="t-label-accent">Related Articles</h2>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedPosts.map((relPost) => (
+                <RelatedCard key={relPost.id} post={relPost} />
+              ))}
+            </div>
           </div>
         </section>
       )}
+
+      {/* Newsletter CTA */}
+      <BlogNewsletterCta />
     </div>
   )
 }

@@ -27,24 +27,13 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
   }
 
   return (
-    <section className="relative py-14 md:py-20 bg-[var(--black-void)] overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, var(--gold) 1px, transparent 0)`,
-          backgroundSize: '40px 40px',
-        }} />
-      </div>
-
-      {/* Gradient glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[var(--gold)]/5 blur-[100px] rounded-full" />
-
-      <div className="relative z-10 luxury-container text-center">
+    <section className="py-14 md:py-20 bg-[var(--black-void)] border-b border-[var(--graphite)]">
+      <div className="luxury-container text-center">
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="w-8 h-px bg-gradient-to-r from-transparent to-[var(--gold)]" />
+          <span className="w-6 h-px bg-[var(--gold)]" />
           <span className="t-label-accent">{eyebrow}</span>
-          <span className="w-8 h-px bg-gradient-to-l from-transparent to-[var(--gold)]" />
+          <span className="w-6 h-px bg-[var(--gold)]" />
         </div>
 
         {/* Title */}
@@ -67,16 +56,16 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
                 placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-[var(--charcoal)] border border-[var(--gold)]/20 rounded-full text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)]/50 transition-colors duration-300"
+                className="w-full pl-11 pr-4 py-3 bg-[var(--black-warm)] border border-[var(--gold)]/20 rounded-[4px] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-[3px] focus:ring-[var(--gold)]/10 transition-all duration-200"
               />
             </div>
           </form>
         )}
 
-        {/* Decorative line */}
+        {/* Decorative hairline */}
         {!showSearch && (
           <div className="mt-8 flex justify-center">
-            <div className="w-20 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent" />
+            <div className="w-20 h-px bg-[var(--gold)]" />
           </div>
         )}
       </div>

@@ -48,7 +48,7 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
         {post.category && (
           <Link
             href={`/blog/category/${post.category.slug}`}
-            className="t-label inline-block px-3.5 py-1 bg-[var(--gold)] text-[var(--onyx)] rounded-full"
+            className="t-label inline-block px-3.5 py-1 bg-[var(--gold)] text-[var(--onyx)] rounded-[4px]"
           >
             {post.category.name}
           </Link>
@@ -73,17 +73,17 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
       </h1>
 
       {/* Author row */}
-      <div className="flex items-center gap-4 py-5 border-t border-b border-[var(--gold)]/[0.12] mb-8">
+      <div className="flex items-center gap-4 py-5 border-t border-b border-[var(--graphite)] mb-8">
         {post.author?.avatar_url ? (
           <Image
             src={post.author.avatar_url}
             alt={post.author.full_name || 'Author'}
             width={48}
             height={48}
-            className="w-12 h-12 rounded-full object-cover border-2 border-[var(--gold)]/20"
+            className="w-12 h-12 rounded-full object-cover border border-[var(--gold)]/15"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-[var(--charcoal)] border-2 border-[var(--gold)]/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-[var(--charcoal)] border border-[var(--gold)]/15 flex items-center justify-center">
             <span className="text-[var(--gold)] text-lg font-serif">
               {(post.author?.full_name || 'A').charAt(0)}
             </span>
@@ -102,7 +102,7 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
 
       {/* Featured image */}
       {post.featured_image_url && (
-        <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-[var(--gold)]/[0.15] group">
+        <div className="relative aspect-[16/9] rounded-lg overflow-hidden border border-[var(--gold)]/[0.08] group">
           <Image
             src={post.featured_image_url}
             alt={post.title}

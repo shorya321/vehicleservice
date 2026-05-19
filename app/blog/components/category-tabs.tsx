@@ -24,7 +24,7 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
         href="/blog"
         role="tab"
         aria-selected={isAllActive}
-        className={`shrink-0 px-5 py-2.5 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border ${
+        className={`shrink-0 px-5 py-2.5 min-h-[44px] flex items-center text-sm font-medium rounded-[4px] transition-all duration-300 border ${
           isAllActive
             ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)]'
             : 'text-[var(--text-secondary)] border-[var(--gold)]/20 hover:border-[var(--gold)]/50 hover:text-[var(--text-primary)]'
@@ -40,7 +40,7 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
             href={`/blog/category/${cat.slug}`}
             role="tab"
             aria-selected={isActive}
-            className={`shrink-0 px-5 py-2.5 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border ${
+            className={`shrink-0 px-5 py-2.5 min-h-[44px] flex items-center text-sm font-medium rounded-[4px] transition-all duration-300 border ${
               isActive
                 ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)]'
                 : 'text-[var(--text-secondary)] border-[var(--gold)]/20 hover:border-[var(--gold)]/50 hover:text-[var(--text-primary)]'
