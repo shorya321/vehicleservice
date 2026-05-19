@@ -20,12 +20,12 @@ export function BookingSummaryPrices({ basePrice, amenitiesPrice, totalPrice }: 
       <dl className="space-y-2.5 text-[0.875rem]">
         <div className="flex items-baseline justify-between">
           <dt className="text-[var(--text-secondary)]">Base fare</dt>
-          <dd className="numeric text-[var(--text-primary)]">{formatUserPrice(basePrice)}</dd>
+          <dd className="numeric font-medium text-[var(--text-primary)]">{formatUserPrice(basePrice)}</dd>
         </div>
         {amenitiesPrice > 0 && (
           <div className="flex items-baseline justify-between">
             <dt className="text-[var(--text-secondary)]">Additional services</dt>
-            <dd className="numeric text-[var(--text-primary)]">{formatUserPrice(amenitiesPrice)}</dd>
+            <dd className="numeric font-medium text-[var(--text-primary)]">{formatUserPrice(amenitiesPrice)}</dd>
           </div>
         )}
         <div className="flex items-baseline justify-between">
@@ -38,7 +38,7 @@ export function BookingSummaryPrices({ basePrice, amenitiesPrice, totalPrice }: 
         <span className="t-label">
           Total
         </span>
-        <span className="numeric text-2xl sm:text-3xl text-[var(--text-primary)]">
+        <span className="numeric text-[1.75rem] sm:text-[2.25rem] font-semibold text-[var(--text-primary)]">
           {formatUserPrice(totalPrice)}
         </span>
       </div>

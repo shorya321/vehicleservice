@@ -308,7 +308,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                         <span className="t-label">
                           Luxury Transfer
                         </span>
-                        <h3 className="text-base font-medium text-[var(--text-primary)] mt-1">{booking.vehicle_type.name}</h3>
+                        <h3 className="text-[1.125rem] font-semibold text-[var(--text-primary)] mt-1">{booking.vehicle_type.name}</h3>
                       </div>
                     )}
                     <div className="space-y-3 pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
@@ -316,14 +316,14 @@ STRIPE_SECRET_KEY=sk_test_...`}
                         <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--gold)] flex-shrink-0" />
                         <div>
                           <span className="t-label block leading-none">Pick-up</span>
-                          <p className="text-[0.9375rem] text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.pickup_address}</p>
+                          <p className="text-[1rem] font-medium text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.pickup_address}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--gold-deep)] flex-shrink-0" />
                         <div>
                           <span className="t-label block leading-none">Drop-off</span>
-                          <p className="text-[0.9375rem] text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.dropoff_address}</p>
+                          <p className="text-[1rem] font-medium text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.dropoff_address}</p>
                         </div>
                       </div>
                     </div>

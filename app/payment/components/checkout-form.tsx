@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, useReducedMotion } from 'motion/react'
 import {
@@ -65,6 +65,13 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
   const reduceMotion = useReducedMotion()
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const errorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (errorMessage && errorRef.current) {
+      errorRef.current.focus()
+    }
+  }, [errorMessage])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -132,14 +139,14 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
       {/* Header */}
       <div className="flex items-center gap-3 px-6 xl:px-8 py-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
         <Lock className="w-4 h-4 text-[var(--gold-text)] flex-shrink-0" aria-hidden="true" />
-        <h2 className="text-[1.125rem] font-medium text-[var(--text-primary)]">Payment Details</h2>
+        <h2 className="text-[1.25rem] font-semibold text-[var(--text-primary)]">Payment Details</h2>
       </div>
 
       <div className="px-6 xl:px-8 py-6">
         {/* Amount Display */}
-        <div className="flex flex-col items-center justify-center py-5 px-5 mb-6 bg-[rgba(var(--gold-rgb),0.03)] border border-[rgba(var(--gold-rgb),0.1)] rounded-[4px]">
+        <div className="flex flex-col items-center justify-center py-6 px-5 mb-6 bg-[rgba(var(--gold-rgb),0.04)]">
           <p className="t-label mb-2">Amount to Pay</p>
-          <p className="t-price text-[var(--gold)]">
+          <p className="text-[2.25rem] sm:text-[2.75rem] font-semibold tabular-nums tracking-tight text-[var(--gold-text)]">
             {formatPrice(amount, currentCurrency, exchangeRates)}
           </p>
           <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-[var(--black-warm)] rounded-[4px] text-[0.8125rem] text-[var(--text-secondary)] max-w-full">
@@ -170,7 +177,9 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
 
           {errorMessage && (
             <motion.div
-              className="p-4 bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] text-destructive rounded-[4px] text-sm flex items-start gap-2"
+              ref={errorRef}
+              tabIndex={-1}
+              className="p-4 bg-[rgba(var(--destructive-rgb),0.08)] border border-[rgba(var(--destructive-rgb),0.2)] text-destructive rounded-[4px] text-sm flex items-start gap-2 outline-none"
               initial={reduceMotion ? false : { opacity: 0, y: -8 }}
               animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               role="alert"
