@@ -205,7 +205,7 @@ export function AdditionalServicesSection({
                     aria-label={`${addon.name}${isFree ? ' (free)' : `, ${formatAddonPrice(addon.price)}`}`}
                   >
                     <div className="checkout-service-checkbox">
-                      {isSelected && <Check className="h-3 w-3 text-[var(--black-void)]" aria-hidden="true" />}
+                      {isSelected && <Check className="h-3 w-3 text-[var(--onyx)]" aria-hidden="true" />}
                     </div>
                     <div className="checkout-service-icon">
                       <AddonIcon iconName={addon.icon} />

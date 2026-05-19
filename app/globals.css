@@ -16,6 +16,9 @@
   --charcoal-light: #d0ccc5;
   --graphite: #c4c0b9;
 
+  /* Theme-invariant — always near-black, for text/icons on gold backgrounds (DESIGN.md: Onyx) */
+  --onyx: #050506;
+
   /* Gold Spectrum — Brand constant, identical both themes */
   --gold-pale: #f4ece0;
   --gold-cream: #e8d9c5;
@@ -166,10 +169,23 @@
     --charcoal-rgb: 22, 21, 20;
     --graphite-rgb: 42, 40, 38;
     --text-primary-rgb: 248, 246, 243;
+    --gold-text-rgb: 198, 170, 136;
+    --rose-subtle: rgba(198, 156, 136, 0.1);
+    --rose-glow: rgba(198, 156, 136, 0.3);
+    --success: #6b8f71;
     --background: 240 10% 2%;
     --foreground: 30 20% 96%;
     --card: 30 4% 8%;
     --card-foreground: 30 20% 96%;
+    --popover: 30 4% 8%;
+    --popover-foreground: 30 20% 96%;
+    --primary-foreground: 240 10% 2%;
+    --secondary: 30 4% 12%;
+    --secondary-foreground: 30 20% 96%;
+    --muted: 30 4% 12%;
+    --muted-foreground: 30 5% 50%;
+    --accent: 30 4% 12%;
+    --accent-foreground: 30 20% 96%;
     --border: 35 20% 20%;
     --input: 30 4% 12%;
   }
@@ -253,7 +269,7 @@
     z-index: 10000;
     padding: 0.75rem 1.5rem;
     background: var(--gold);
-    color: var(--black-void);
+    color: var(--onyx);
     font-weight: 500;
     font-size: 0.875rem;
     border-radius: var(--radius);
@@ -460,7 +476,7 @@
   .route-btn:hover {
     background: var(--gold);
     border-color: var(--gold);
-    color: var(--black-void);
+    color: var(--onyx);
   }
 
   /* Benefit Card - Image Card with Overlay */
@@ -521,7 +537,7 @@
 
   .fleet-tab.active {
     background: var(--gold);
-    color: var(--black-void);
+    color: var(--onyx);
   }
 
   /* Fleet Card */
@@ -691,7 +707,7 @@
   }
 
   .faq-trigger[data-state="open"] .faq-icon svg {
-    color: var(--black-void);
+    color: var(--onyx);
   }
 
   .faq-content-wrapper {
@@ -795,7 +811,7 @@
 
   .btn-primary {
     background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
-    color: var(--black-void);
+    color: var(--onyx);
     box-shadow: 0 10px 30px -10px rgba(var(--gold-rgb), 0.4);
   }
 
@@ -1225,7 +1241,7 @@
     background: linear-gradient(135deg, var(--gold-deep) 0%, var(--gold-dark) 100%);
     border: 1px solid rgba(var(--gold-rgb), 0.3);
     border-radius: 12px;
-    color: var(--black-void);
+    color: var(--onyx);
     font-family: var(--font-body);
     font-size: 0.82rem;
     font-weight: 600;
@@ -1272,7 +1288,7 @@
   .btn-book:disabled {
     background: linear-gradient(135deg, var(--gold-deep) 0%, var(--gold-dark) 100%);
     border-color: rgba(var(--gold-rgb), 0.3);
-    color: var(--black-void);
+    color: var(--onyx);
     cursor: not-allowed;
     opacity: 1;
   }
@@ -1939,7 +1955,7 @@
   }
 
   .btn-cta-header:hover {
-    color: var(--black-void, #050506);
+    color: var(--onyx);
     border-color: var(--gold);
   }
 
@@ -2494,7 +2510,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   background: linear-gradient(135deg, var(--gold) 0%, #a68b5b 100%);
-  color: var(--black-void, #050506);
+  color: var(--onyx);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -3344,7 +3360,7 @@
   height: 3.25rem;
   padding: 0 2rem;
   background: var(--gold);
-  color: var(--black-void);
+  color: var(--onyx);
   font-family: var(--font-body);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -3547,7 +3563,7 @@
 
 .account-tab.active {
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
-  color: var(--black-void);
+  color: var(--onyx);
   box-shadow: 0 4px 15px -5px rgba(var(--gold-rgb), 0.4);
 }
 
@@ -3819,7 +3835,7 @@
 
 .auth-tab.active {
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
-  color: var(--black-void);
+  color: var(--onyx);
   box-shadow: 0 4px 15px -5px rgba(var(--gold-rgb), 0.4);
 }
 

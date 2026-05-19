@@ -89,7 +89,7 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
               </p>
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-[var(--black-void)] bg-[var(--gold)] rounded-full hover:bg-[var(--gold-light)] transition-colors duration-300"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-[var(--onyx)] bg-[var(--gold)] rounded-full hover:bg-[var(--gold-light)] transition-colors duration-300"
               >
                 Browse All Articles
               </Link>

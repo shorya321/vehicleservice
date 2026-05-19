@@ -48,7 +48,7 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
         {post.category && (
           <Link
             href={`/blog/category/${post.category.slug}`}
-            className="t-label inline-block px-3.5 py-1 bg-[var(--gold)] text-[var(--black-void)] rounded-full"
+            className="t-label inline-block px-3.5 py-1 bg-[var(--gold)] text-[var(--onyx)] rounded-full"
           >
             {post.category.name}
           </Link>

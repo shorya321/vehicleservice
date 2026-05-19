@@ -42,7 +42,7 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
         <Link
           href="/register"
           onClick={onClose}
-          className="flex-1 py-2.5 text-center text-sm font-body rounded-lg bg-[var(--gold)] text-[var(--black-void)] hover:bg-[var(--gold)]/90 transition-colors duration-200 font-medium"
+          className="flex-1 py-2.5 text-center text-sm font-body rounded-lg bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold)]/90 transition-colors duration-200 font-medium"
         >
           Sign Up
         </Link>

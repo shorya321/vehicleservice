@@ -21,7 +21,7 @@ export default function BlogError({
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={reset}
-            className="px-6 py-2 text-sm font-medium bg-[var(--gold)] text-[var(--black-void)] rounded-full hover:opacity-90 transition-opacity"
+            className="px-6 py-2 text-sm font-medium bg-[var(--gold)] text-[var(--onyx)] rounded-full hover:opacity-90 transition-opacity"
           >
             Try Again
           </button>

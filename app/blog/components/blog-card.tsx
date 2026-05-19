@@ -46,7 +46,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--black-void)] via-transparent to-transparent opacity-40 md:bg-gradient-to-r" />
             {post.category && (
               <div className="absolute top-4 left-4">
-                <span className="t-label inline-block px-3.5 py-1.5 bg-[var(--gold)] text-[var(--black-void)] rounded-full shadow-md">
+                <span className="t-label inline-block px-3.5 py-1.5 bg-[var(--gold)] text-[var(--onyx)] rounded-full shadow-md">
                   {post.category.name}
                 </span>
               </div>
@@ -112,7 +112,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
         {/* Category badge */}
         {post.category && (
           <div className="absolute top-4 left-4">
-            <span className="inline-block px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--black-void)] rounded-full shadow-md">
+            <span className="inline-block px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--onyx)] rounded-full shadow-md">
               {post.category.name}
             </span>
           </div>
