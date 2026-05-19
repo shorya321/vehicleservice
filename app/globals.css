@@ -2201,13 +2201,15 @@
   }
 
   .prose-luxury blockquote {
-    border-left: 2px solid var(--gold);
-    padding-left: 1.5rem;
-    margin: 1.5rem 0;
-    color: var(--text-secondary);
+    border-top: 1px solid rgba(var(--gold-rgb), 0.2);
+    border-bottom: 1px solid rgba(var(--gold-rgb), 0.2);
+    padding: 1.5rem 0;
+    margin: 2rem 0;
+    color: var(--text-primary);
     font-family: var(--font-body);
     font-style: italic;
     font-size: 1.125rem;
+    font-weight: 500;
   }
 
   .prose-luxury blockquote > p {
@@ -2298,7 +2300,7 @@
   .prose-luxury pre {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0.75rem;
+    border-radius: 8px;
     padding: 1.25rem;
     margin: 1.5rem 0;
     overflow-x: auto;
@@ -2320,9 +2322,42 @@
   .prose-luxury img {
     max-width: 100%;
     height: auto;
-    border-radius: 0.75rem;
+    border-radius: 8px;
     margin: 1.5rem 0;
   }
+}
+
+/* ============================================
+   BLOG CARD SURFACE — Flat-by-tone
+   ============================================ */
+.blog-card-surface {
+  background-color: var(--charcoal);
+  border: 1px solid rgba(var(--gold-rgb), 0.08);
+  transition: border-color var(--duration-normal) var(--ease-luxury),
+              transform var(--duration-normal) var(--ease-luxury),
+              box-shadow var(--duration-normal) var(--ease-luxury);
+}
+
+.blog-card-surface:hover {
+  border-color: rgba(var(--gold-rgb), 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px -5px rgba(var(--gold-rgb), 0.15),
+              0 4px 8px -4px rgba(var(--gold-rgb), 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-card-surface:hover {
+    transform: none;
+  }
+}
+
+/* ============================================
+   BLOG NEWSLETTER SECTION — Full-width CTA
+   ============================================ */
+.blog-newsletter-section {
+  border-top: 1px solid var(--graphite);
+  padding-top: clamp(3rem, 6vw, 5rem);
+  padding-bottom: clamp(3rem, 6vw, 5rem);
 }
 
 /* ============================================
@@ -2339,55 +2374,16 @@
    BLOG ARTICLE LAYOUT — 65/35 Split
    ============================================ */
 .blog-article-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 3rem;
+  max-width: 75ch;
+  margin: 0 auto;
   padding-bottom: 4rem;
 }
 
-@media (min-width: 1024px) {
-  .blog-article-layout {
-    grid-template-columns: 1fr 380px;
-    gap: 80px;
-  }
-}
-
-/* ============================================
-   BLOG SIDEBAR — Sticky on desktop
-   ============================================ */
-.blog-sidebar {
-  position: relative;
-}
-
-@media (min-width: 1024px) {
-  .blog-sidebar {
-    position: sticky;
-    top: 100px;
-    align-self: start;
-  }
-}
-
-@media (min-width: 640px) and (max-width: 1023px) {
-  .blog-sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-
-  .blog-sidebar .sidebar-widget {
-    margin-bottom: 0;
-  }
-
-  .blog-sidebar .sidebar-widget:last-child {
-    grid-column: 1 / -1;
-  }
-}
-
-/* Sidebar Widget Card */
+/* Sidebar Widget Card (legacy — kept for loading states) */
 .sidebar-widget {
-  background: linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.95) 0%, rgba(var(--warm-rgb), 0.98) 100%);
-  border: 1px solid rgba(var(--gold-rgb), 0.1);
-  border-radius: 16px;
+  background-color: var(--charcoal);
+  border: 1px solid rgba(var(--gold-rgb), 0.08);
+  border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -2424,9 +2420,9 @@
   font-family: inherit;
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--black-warm);
   border: 1px solid rgba(var(--gold-rgb), 0.15);
-  border-radius: 10px;
+  border-radius: 4px;
   outline: none;
   transition: border-color 200ms ease;
 }
@@ -2500,8 +2496,8 @@
 
 /* Newsletter widget */
 .sidebar-newsletter-widget {
-  background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.08) 0%, rgba(var(--charcoal-rgb), 0.95) 100%);
-  border: 1px solid rgba(var(--gold-rgb), 0.15);
+  background-color: var(--charcoal);
+  border: 1px solid rgba(var(--gold-rgb), 0.1);
 }
 
 .newsletter-btn {
@@ -2512,17 +2508,18 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, var(--gold) 0%, #a68b5b 100%);
+  background: var(--gold);
   color: var(--onyx);
   border: none;
-  border-radius: 10px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color var(--duration-normal) var(--ease-luxury),
+              transform var(--duration-normal) var(--ease-luxury);
 }
 
 .newsletter-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 30px -10px rgba(var(--gold-rgb), 0.4);
+  background: var(--gold-deep);
+  transform: translateY(-2px);
 }
 
 /* ============================================
@@ -2536,65 +2533,21 @@
   margin-bottom: 2rem;
 }
 
-/* Diamond section divider */
+/* Section divider */
 .blog-diamond-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.blog-diamond-divider::before,
-.blog-diamond-divider::after {
-  content: '';
   height: 1px;
-  width: 60px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-}
-
-.blog-diamond-icon {
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--gold);
-  transform: rotate(45deg);
+  background-color: var(--graphite);
+  margin: 2.5rem 0;
 }
 
 /* ============================================
    AUTHOR BIO CARD
    ============================================ */
 .author-bio-card {
-  position: relative;
-  background: linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.95) 0%, rgba(var(--warm-rgb), 0.98) 100%);
-  border: 1px solid rgba(var(--gold-rgb), 0.15);
-  border-radius: 16px;
+  background-color: var(--charcoal);
+  border: 1px solid rgba(var(--gold-rgb), 0.08);
+  border-radius: 8px;
   padding: 2rem;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.author-bio-card::before,
-.author-bio-card::after {
-  content: '';
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  border-color: var(--gold);
-  opacity: 0.3;
-}
-
-.author-bio-card::before {
-  top: 12px;
-  left: 12px;
-  border-top: 1px solid;
-  border-left: 1px solid;
-}
-
-.author-bio-card::after {
-  bottom: 12px;
-  right: 12px;
-  border-bottom: 1px solid;
-  border-right: 1px solid;
 }
 
 /* Tiptap editor */
@@ -3404,6 +3357,42 @@
   outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .checkout-btn-primary {
+    transition: background-color 200ms ease;
+  }
+  .checkout-btn-primary:hover:not(:disabled) {
+    transform: none;
+  }
+  .checkout-btn-primary::after {
+    display: none;
+  }
+}
+
+/* Product-layer entrance — CSS equivalent of Framer Motion [0.16,1,0.3,1] / 0.5s.
+   Static server-rendered elements needing entrance parity with animated siblings.
+   Interactive/reactive animation → Framer Motion. Static entrance → this class. */
+@keyframes productEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(var(--entrance-y, 12px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .product-entrance {
+    animation: productEntrance 0.5s var(--ease-luxury) both;
+  }
+  .product-entrance--sidebar {
+    --entrance-y: 16px;
+    animation: productEntrance 0.5s var(--ease-luxury) both;
+  }
+}
+
 .checkout-btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -3774,41 +3763,6 @@
   z-index: 1;
 }
 
-/* Auth Card */
-.auth-card {
-  background: linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.95) 0%, rgba(var(--warm-rgb), 0.98) 100%);
-  border: 1px solid rgba(var(--gold-rgb), 0.15);
-  border-radius: 20px;
-  padding: var(--space-2xl);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
-    0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
-    0 0 100px -30px rgba(var(--gold-rgb), 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Auth Card Inner */
-.auth-card-inner {
-  position: relative;
-  z-index: 1;
-}
-
-/* Auth Icon */
-.auth-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto var(--space-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.15) 0%, rgba(var(--gold-rgb), 0.05) 100%);
-  border: 1px solid rgba(var(--gold-rgb), 0.25);
-  border-radius: 16px;
-}
-
 /* Auth Tabs */
 .auth-tabs {
   display: flex;
@@ -3837,14 +3791,19 @@
 }
 
 .auth-tab.active {
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+  background: var(--gold);
   color: var(--onyx);
-  box-shadow: 0 4px 15px -5px rgba(var(--gold-rgb), 0.4);
 }
 
 .auth-tab:hover:not(.active) {
   color: var(--text-primary);
   background: rgba(var(--gold-rgb), 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-tab {
+    transition: none;
+  }
 }
 
 /* Responsive Auth Page */
@@ -3857,10 +3816,6 @@
 @media (max-width: 768px) {
   .auth-panel {
     padding: var(--space-xl) var(--space-md);
-  }
-
-  .auth-card {
-    padding: var(--space-xl);
   }
 }
 

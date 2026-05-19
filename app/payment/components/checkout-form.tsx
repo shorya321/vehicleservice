@@ -142,8 +142,8 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
           <p className="t-price text-[var(--gold)]">
             {formatPrice(amount, currentCurrency, exchangeRates)}
           </p>
-          <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-[var(--black-warm)] rounded-[4px] text-[0.8125rem] text-[var(--text-secondary)]">
-            Booking: <code className="font-mono text-[var(--gold-text)]">{bookingNumber}</code>
+          <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-[var(--black-warm)] rounded-[4px] text-[0.8125rem] text-[var(--text-secondary)] max-w-full">
+            Booking: <code className="font-mono text-[var(--gold-text)] truncate">{bookingNumber}</code>
           </span>
         </div>
 

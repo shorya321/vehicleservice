@@ -96,7 +96,7 @@ async function getOrCreatePaymentIntent(
       const existingIntent = await retrievePaymentIntent(bookingRecord.stripe_payment_intent_id)
       return { clientSecret: existingIntent.client_secret }
     } catch {
-      console.log('Could not retrieve existing payment intent, creating new one')
+      // Fall through to create a new payment intent
     }
   }
 
@@ -187,7 +187,9 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     redirect(buildConfirmationUrl(booking.booking_number))
   }
 
-  const primaryPassenger = booking.booking_passengers?.find((p: any) => p.is_primary)
+  const primaryPassenger = booking.booking_passengers?.find(
+    (p: { first_name: string; last_name: string; email: string | null; phone: string | null; is_primary: boolean | null }) => p.is_primary
+  )
   const userName = primaryPassenger
     ? `${primaryPassenger.first_name} ${primaryPassenger.last_name}`
     : user.user_metadata?.full_name || ''
@@ -273,13 +275,13 @@ STRIPE_SECRET_KEY=sk_test_...`}
           initialUser={user}
           initialProfile={profile}
         />
-        <header className="text-center pt-20 md:pt-24 pb-8 md:pb-10">
+        <header className="text-center pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
           <div className="luxury-container">
             <ProgressBar currentStep={4} />
             <h1 className="editorial-section-title mt-8">
               Secure Payment
             </h1>
-            <p className="editorial-body mt-4 mx-auto" style={{ maxWidth: '500px' }}>
+            <p className="editorial-body mt-4 mx-auto max-w-[500px]">
               Complete your booking with our encrypted payment system
             </p>
           </div>
@@ -295,7 +297,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   bookingNumber={booking.booking_number}
                 />
               </div>
-              <aside className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24" aria-label="Booking summary">
+              <aside className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24 product-entrance--sidebar" aria-label="Booking summary">
                 <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden">
                   <div className="px-6 xl:px-8 py-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
                     <h2 className="text-[1.375rem] font-semibold text-[var(--text-primary)]">Booking Summary</h2>
