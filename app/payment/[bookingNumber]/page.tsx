@@ -276,7 +276,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
           initialProfile={profile}
         />
         <header className="text-center pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
-          <div className="luxury-container">
+          <div className="luxury-container pt-8 md:pt-12 lg:pt-16">
             <ProgressBar currentStep={4} />
             <h1 className="editorial-section-title mt-8">
               Secure Payment

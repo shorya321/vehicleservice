@@ -1,8 +1,8 @@
-function CardSkeleton() {
+function CardSkeleton({ large = false }: { large?: boolean }) {
   return (
-    <div className="rounded-lg overflow-hidden border border-[var(--gold)]/10 bg-[var(--charcoal)]">
-      <div className="aspect-[16/10] bg-[var(--charcoal-light)] animate-pulse" />
-      <div className="p-6 space-y-3">
+    <div className="rounded-lg overflow-hidden blog-card-surface">
+      <div className={`${large ? 'aspect-[4/3]' : 'aspect-[16/10]'} bg-[var(--charcoal-light)] animate-pulse`} />
+      <div className="p-5 space-y-3">
         <div className="flex gap-4">
           <div className="h-3 w-24 rounded bg-[var(--charcoal-light)] animate-pulse" />
           <div className="h-3 w-16 rounded bg-[var(--charcoal-light)] animate-pulse" />
@@ -20,28 +20,35 @@ function CardSkeleton() {
 export default function BlogLoading() {
   return (
     <div className="bg-[var(--black-void)]">
-      {/* Hero skeleton */}
-      <section className="pt-[clamp(4rem,10vw,6rem)] pb-[clamp(3.5rem,8vw,5rem)] bg-[var(--black-void)] border-b border-[var(--graphite)]">
-        <div className="luxury-container text-center">
-          <div className="h-3 w-20 mx-auto mb-6 rounded bg-[var(--charcoal-light)] animate-pulse" />
-          <div className="h-12 w-64 mx-auto mb-4 rounded bg-[var(--charcoal-light)] animate-pulse" />
-          <div className="h-5 w-96 max-w-full mx-auto rounded bg-[var(--charcoal-light)] animate-pulse" />
+      {/* Hero skeleton — warm-tinted text hero */}
+      <div className="blog-category-hero">
+        <div className="luxury-container space-y-4">
+          <div className="h-12 w-64 rounded bg-[var(--charcoal-light)] animate-pulse" />
+          <div className="space-y-2 max-w-[600px]">
+            <div className="h-4 w-full rounded bg-[var(--charcoal-light)] animate-pulse" />
+            <div className="h-4 w-72 rounded bg-[var(--charcoal-light)] animate-pulse" />
+          </div>
+          <div className="h-8 w-24 rounded-full bg-[var(--charcoal-light)] animate-pulse" />
+        </div>
+      </div>
+
+      {/* Tabs skeleton — bg-rich */}
+      <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)] py-6">
+        <div className="luxury-container">
+          <div className="flex gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-10 w-20 rounded-full bg-[var(--charcoal-light)] animate-pulse shrink-0" />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Posts skeleton — raised */}
-      <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+      {/* Posts skeleton — bg-void */}
+      <section className="bg-[var(--black-void)] py-[clamp(2rem,5vw,3.5rem)]">
         <div className="luxury-container">
-          {/* Category tabs skeleton */}
-          <div className="flex gap-2 mb-8">
+          <div className="blog-magazine-grid">
+            <CardSkeleton large />
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 w-20 rounded-[4px] bg-[var(--charcoal-light)] animate-pulse shrink-0" />
-            ))}
-          </div>
-
-          {/* Grid skeleton */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
               <CardSkeleton key={i} />
             ))}
           </div>

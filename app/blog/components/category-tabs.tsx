@@ -19,15 +19,14 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
   const isAllActive = !activeSlug
 
   return (
-    <nav role="tablist" aria-label="Blog categories" className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <nav aria-label="Blog categories" className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
       <Link
         href="/blog"
-        role="tab"
-        aria-selected={isAllActive}
-        className={`shrink-0 px-5 py-2.5 min-h-[44px] flex items-center text-sm font-medium rounded-[4px] transition-all duration-300 border ${
+        aria-current={isAllActive ? 'page' : undefined}
+        className={`shrink-0 px-5 py-2 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border ${
           isAllActive
-            ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)]'
-            : 'text-[var(--text-secondary)] border-[var(--gold)]/20 hover:border-[var(--gold)]/50 hover:text-[var(--text-primary)]'
+            ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)] font-semibold'
+            : 'text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold)]'
         }`}
       >
         All
@@ -38,12 +37,11 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
           <Link
             key={cat.id}
             href={`/blog/category/${cat.slug}`}
-            role="tab"
-            aria-selected={isActive}
-            className={`shrink-0 px-5 py-2.5 min-h-[44px] flex items-center text-sm font-medium rounded-[4px] transition-all duration-300 border ${
+            aria-current={isActive ? 'page' : undefined}
+            className={`shrink-0 px-5 py-2 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border ${
               isActive
-                ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)]'
-                : 'text-[var(--text-secondary)] border-[var(--gold)]/20 hover:border-[var(--gold)]/50 hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)] font-semibold'
+                : 'text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold)]'
             }`}
           >
             {cat.name}

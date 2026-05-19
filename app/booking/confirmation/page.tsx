@@ -47,7 +47,8 @@ async function getBookingDetails(bookingNumber: string) {
         name,
         passenger_capacity,
         luggage_capacity,
-        description
+        description,
+        image_url
       )
     `)
     .eq('booking_number', bookingNumber)

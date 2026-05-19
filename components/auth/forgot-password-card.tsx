@@ -1,15 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { motion, useReducedMotion } from "motion/react"
 import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-
-const inputClass =
-  "w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200 disabled:opacity-60"
-
-const fieldLabelClass =
-  "block text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--text-muted)] mb-2"
+import { inputClass, fieldLabelClass } from "@/components/auth/auth-styles"
 
 export function ForgotPasswordCard() {
   const reduceMotion = useReducedMotion()
@@ -18,7 +13,7 @@ export function ForgotPasswordCard() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
@@ -38,8 +33,7 @@ export function ForgotPasswordCard() {
       } else {
         setMessage("Check your inbox. Link valid for one hour.")
       }
-    } catch (err) {
-      console.error("Password reset error:", err)
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
@@ -75,7 +69,7 @@ export function ForgotPasswordCard() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>
@@ -105,7 +99,7 @@ export function ForgotPasswordCard() {
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Sending
             </>
           ) : (
@@ -115,7 +109,7 @@ export function ForgotPasswordCard() {
 
         <Link
           href="/login"
-          className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
+          className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Back to sign in

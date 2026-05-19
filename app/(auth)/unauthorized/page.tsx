@@ -1,35 +1,40 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ShieldAlert } from "lucide-react"
 import Link from "next/link"
 
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <ShieldAlert className="h-12 w-12 text-destructive" />
-          </div>
-          <CardTitle className="text-2xl">Access Denied</CardTitle>
-          <CardDescription>
-            You don&apos;t have permission to access this page
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-sm text-muted-foreground">
-            You don&apos;t have the required permissions to view this page. Please log in with an authorized account.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Button variant="outline" asChild>
-              <Link href="/">Go to Home</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/login">Login</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <main className="flex min-h-screen items-center justify-center bg-[var(--black-void)] px-6">
+      <div className="w-full max-w-[480px] text-center">
+        <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(var(--destructive-rgb),0.1)] text-[rgba(var(--destructive-rgb),1)]">
+          <ShieldAlert className="h-8 w-8" aria-hidden="true" />
+        </div>
+
+        <div className="editorial-eyebrow">Restricted</div>
+
+        <h1 className="mt-5 text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)]">
+          Access denied.
+        </h1>
+
+        <p className="mx-auto mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+          You don&rsquo;t have the required permissions to view this page. Please
+          sign in with an authorised account.
+        </p>
+
+        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/login"
+            className="btn btn-primary inline-flex h-[52px] items-center justify-center rounded-[4px] px-8"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-[52px] items-center justify-center rounded-[4px] border border-[var(--graphite)] px-8 text-[0.875rem] font-medium text-[var(--text-secondary)] transition-colors duration-200 hover:border-[var(--gold)] hover:bg-[var(--charcoal)] hover:text-[var(--text-primary)]"
+          >
+            Go to home
+          </Link>
+        </div>
+      </div>
+    </main>
   )
 }

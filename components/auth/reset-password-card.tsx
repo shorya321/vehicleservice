@@ -1,15 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, useReducedMotion } from "motion/react"
 import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
-
-const inputClass =
-  "w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200 disabled:opacity-60"
-
-const fieldLabelClass =
-  "block text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--text-muted)] mb-2"
+import { inputClass, fieldLabelClass } from "@/components/auth/auth-styles"
 
 export function ResetPasswordCard() {
   const reduceMotion = useReducedMotion()
@@ -29,7 +24,7 @@ export function ResetPasswordCard() {
     return null
   }
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
 
@@ -59,8 +54,7 @@ export function ResetPasswordCard() {
       } else {
         router.push("/login?message=Password updated successfully")
       }
-    } catch (err) {
-      console.error("Password update error:", err)
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
@@ -85,7 +79,7 @@ export function ResetPasswordCard() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>
@@ -107,6 +101,7 @@ export function ResetPasswordCard() {
               disabled={loading}
               placeholder="At least 8 characters"
               className={inputClass + " pr-12"}
+              aria-describedby="rp-password-hint"
             />
             <button
               type="button"
@@ -117,6 +112,9 @@ export function ResetPasswordCard() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          <p id="rp-password-hint" className="text-[0.6875rem] text-[var(--text-muted)] mt-1.5">
+            Minimum 8 characters
+          </p>
         </div>
 
         <div>
@@ -133,6 +131,7 @@ export function ResetPasswordCard() {
               disabled={loading}
               placeholder="Repeat your password"
               className={inputClass + " pr-12"}
+              aria-invalid={!!error && password !== confirmPassword}
             />
             <button
               type="button"
@@ -152,7 +151,7 @@ export function ResetPasswordCard() {
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Updating
             </>
           ) : (

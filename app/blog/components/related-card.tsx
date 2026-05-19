@@ -34,7 +34,7 @@ export function RelatedCard({ post }: RelatedCardProps) {
           />
         ) : (
           <div className="w-full h-full bg-[var(--charcoal-light)] flex items-center justify-center">
-            <span className="text-[var(--gold)]/30 text-5xl font-serif">B</span>
+            <span className="text-[var(--gold)]/30 text-5xl font-sans font-medium">B</span>
           </div>
         )}
       </div>
@@ -46,7 +46,7 @@ export function RelatedCard({ post }: RelatedCardProps) {
             {post.category.name}
           </div>
         )}
-        <div className="t-subhead text-[1.125rem] leading-[1.3] mb-2">
+        <div className="t-subhead mb-2">
           {post.title}
         </div>
         <div className="t-meta">

@@ -1,12 +1,9 @@
 import { Metadata } from "next"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { redirect } from "next/navigation"
-
-export const dynamic = 'force-dynamic'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
+
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: "Verify Email",
@@ -19,86 +16,101 @@ interface VerifyEmailPageProps {
   }>
 }
 
-export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
+function VerifyLayout({
+  icon,
+  iconClass,
+  eyebrow,
+  headline,
+  body,
+  cta,
+}: {
+  icon: React.ReactNode
+  iconClass: string
+  eyebrow: string
+  headline: string
+  body: string
+  cta: { label: string; href: string }
+}) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[var(--black-void)] px-6">
+      <div className="w-full max-w-[480px] text-center">
+        <div
+          className={`mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full ${iconClass}`}
+        >
+          {icon}
+        </div>
+
+        <div className="editorial-eyebrow">{eyebrow}</div>
+
+        <h1 className="mt-5 text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)]">
+          {headline}
+        </h1>
+
+        <p className="mx-auto mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+          {body}
+        </p>
+
+        <Link
+          href={cta.href}
+          className="btn btn-primary mt-10 inline-flex h-[52px] items-center justify-center rounded-[4px] px-8"
+        >
+          {cta.label}
+        </Link>
+      </div>
+    </main>
+  )
+}
+
+export default async function VerifyEmailPage({
+  searchParams,
+}: VerifyEmailPageProps) {
   const params = await searchParams
   const { token } = params
-  
+
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 text-destructive">
-              <XCircle className="h-full w-full" />
-            </div>
-            <CardTitle>Invalid Verification Link</CardTitle>
-            <CardDescription>
-              The verification link is invalid or missing.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button asChild>
-              <Link href="/login">Go to Login</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <VerifyLayout
+        icon={<XCircle className="h-8 w-8" aria-hidden="true" />}
+        iconClass="bg-[rgba(var(--destructive-rgb),0.1)] text-[rgba(var(--destructive-rgb),1)]"
+        eyebrow="Verification"
+        headline="Invalid link."
+        body="The verification link is invalid or missing. Request a new one from sign-in."
+        cta={{ label: "Go to sign in", href: "/login" }}
+      />
     )
   }
 
-  // Verify the token
   const supabase = await createAdminClient()
-  
-  const { data: result, error } = await supabase
-    .rpc('verify_email_with_token', { p_token: token })
-  
+
+  const { data: result, error } = await supabase.rpc(
+    "verify_email_with_token",
+    { p_token: token }
+  )
+
   if (error || !result?.success) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 text-destructive">
-              <XCircle className="h-full w-full" />
-            </div>
-            <CardTitle>Verification Failed</CardTitle>
-            <CardDescription>
-              {result?.error || "The verification link is invalid or has expired."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4 text-sm text-muted-foreground">
-              Please contact support if you need assistance.
-            </p>
-            <Button asChild>
-              <Link href="/login">Go to Login</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <VerifyLayout
+        icon={<XCircle className="h-8 w-8" aria-hidden="true" />}
+        iconClass="bg-[rgba(var(--destructive-rgb),0.1)] text-[rgba(var(--destructive-rgb),1)]"
+        eyebrow="Verification"
+        headline="Verification failed."
+        body={
+          result?.error ||
+          "The verification link is invalid or has expired. Please contact support if you need assistance."
+        }
+        cta={{ label: "Go to sign in", href: "/login" }}
+      />
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 text-green-600">
-            <CheckCircle2 className="h-full w-full" />
-          </div>
-          <CardTitle>Email Verified!</CardTitle>
-          <CardDescription>
-            Your email address has been successfully verified.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-          <p className="mb-6 text-sm text-muted-foreground">
-            You can now log in to your account with full access.
-          </p>
-          <Button asChild className="w-full">
-            <Link href="/login">Continue to Login</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <VerifyLayout
+      icon={<CheckCircle2 className="h-8 w-8" aria-hidden="true" />}
+      iconClass="bg-[rgba(var(--gold-rgb),0.1)] text-[var(--gold)]"
+      eyebrow="Verified"
+      headline="Email confirmed."
+      body="Your email address has been verified. You can now sign in to your account with full access."
+      cta={{ label: "Continue to sign in", href: "/login" }}
+    />
   )
 }

@@ -7,6 +7,7 @@ interface BlogCardProps {
   post: PublicBlogPost
   featured?: boolean
   hero?: boolean
+  magazine?: boolean
 }
 
 function formatDate(dateStr: string | null) {
@@ -18,7 +19,7 @@ function formatDate(dateStr: string | null) {
   })
 }
 
-export function BlogCard({ post, featured = false, hero = false }: BlogCardProps) {
+export function BlogCard({ post, featured = false, hero = false, magazine = false }: BlogCardProps) {
   if (hero) {
     return (
       <Link
@@ -39,7 +40,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
               />
             ) : (
               <div className="absolute inset-0 bg-[var(--charcoal-light)] flex items-center justify-center">
-                <span className="text-[var(--gold)]/30 text-7xl font-serif">B</span>
+                <span className="text-[var(--gold)]/30 text-7xl font-sans font-medium">B</span>
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--black-void)] via-transparent to-transparent opacity-40 md:bg-gradient-to-r" />
@@ -53,7 +54,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
           </div>
 
           {/* Content */}
-          <div className="p-8 md:p-10 flex flex-col justify-center space-y-4">
+          <div className="p-5 flex flex-col justify-center space-y-4">
             <div className="flex items-center gap-1.5 mb-1">
               <span className="w-5 h-px bg-[var(--gold)]" />
               <span className="t-label-accent">Featured</span>
@@ -88,10 +89,10 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group block blog-card-surface rounded-lg overflow-hidden"
+      className={`group block blog-card-surface rounded-lg overflow-hidden ${magazine ? 'h-full flex flex-col' : ''}`}
     >
       {/* Image */}
-      <div className={`relative overflow-hidden ${featured ? 'aspect-[16/9]' : 'aspect-[16/10]'}`}>
+      <div className={`relative overflow-hidden ${magazine ? 'aspect-[4/3]' : featured ? 'aspect-[16/9]' : 'aspect-[16/10]'}`}>
         {post.featured_image_url ? (
           <Image
             src={post.featured_image_url}
@@ -102,7 +103,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
           />
         ) : (
           <div className="absolute inset-0 bg-[var(--charcoal-light)] flex items-center justify-center">
-            <span className="text-[var(--gold)]/30 text-6xl font-serif">B</span>
+            <span className="text-[var(--gold)]/30 text-6xl font-sans font-medium">B</span>
           </div>
         )}
         {/* Overlay */}
@@ -111,7 +112,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
         {/* Category badge */}
         {post.category && (
           <div className="absolute top-4 left-4">
-            <span className="inline-block px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--onyx)] rounded-[4px]">
+            <span className="t-label inline-block px-3.5 py-1.5 bg-[var(--gold)] text-[var(--onyx)] rounded-[4px]">
               {post.category.name}
             </span>
           </div>
@@ -128,7 +129,7 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
       </div>
 
       {/* Content */}
-      <div className="p-6 space-y-3">
+      <div className={`p-5 space-y-3 ${magazine ? 'flex-1 flex flex-col' : ''}`}>
         {/* Meta */}
         <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
           <span>{formatDate(post.published_at)}</span>
@@ -141,13 +142,13 @@ export function BlogCard({ post, featured = false, hero = false }: BlogCardProps
         </div>
 
         {/* Title */}
-        <h3 className={`group-hover:text-[var(--gold)] transition-colors duration-300 ${featured ? 't-headline' : 't-subhead'}`}>
+        <h3 className={`group-hover:text-[var(--gold)] transition-colors duration-300 ${featured || magazine ? 't-headline' : 't-subhead'}`}>
           {post.title}
         </h3>
 
         {/* Excerpt */}
         {(post.excerpt || post.content) && (
-          <p className="t-meta line-clamp-2">
+          <p className={`t-meta ${magazine ? 'line-clamp-3' : 'line-clamp-2'}`}>
             {post.excerpt || post.content}
           </p>
         )}

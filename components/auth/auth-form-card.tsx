@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, type FormEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, useReducedMotion } from "motion/react"
 import { Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { userLogin } from "@/app/(auth)/login/actions"
 import { registerUser } from "@/app/(auth)/register/actions"
+import { inputClass, fieldLabelClass, checkboxClass } from "@/components/auth/auth-styles"
 
 interface AuthFormCardProps {
   initialTab: "login" | "register"
@@ -18,12 +19,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "login", label: "Sign in" },
   { key: "register", label: "Create account" },
 ]
-
-const inputClass =
-  "w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[var(--gold)]/25 transition-[border,box-shadow] duration-200"
-
-const fieldLabelClass =
-  "block text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--text-muted)] mb-2"
 
 export function AuthFormCard({ initialTab }: AuthFormCardProps) {
   const reduceMotion = useReducedMotion()
@@ -37,17 +32,50 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
   const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [loginFieldErrors, setLoginFieldErrors] = useState<Record<string, string>>({})
 
   const [registerData, setRegisterData] = useState({
     full_name: "",
     email: "",
     phone: "",
     password: "",
-    confirmPassword: "",
   })
   const [showRegisterPassword, setShowRegisterPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [registerFieldErrors, setRegisterFieldErrors] = useState<Record<string, string>>({})
   const [termsAccepted, setTermsAccepted] = useState(false)
+
+  const validateEmail = useCallback((email: string): string | null => {
+    if (!email) return null
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email) ? null : "Please enter a valid email address"
+  }, [])
+
+  const validatePassword = useCallback((password: string): string | null => {
+    if (!password) return null
+    return password.length < 8 ? "Password must be at least 8 characters" : null
+  }, [])
+
+  const handleLoginBlur = useCallback((field: string, value: string) => {
+    let fieldError: string | null = null
+    if (field === "email") fieldError = validateEmail(value)
+    if (field === "password") fieldError = validatePassword(value)
+    setLoginFieldErrors(prev => {
+      if (fieldError) return { ...prev, [field]: fieldError }
+      const { [field]: _, ...rest } = prev
+      return rest
+    })
+  }, [validateEmail, validatePassword])
+
+  const handleRegisterBlur = useCallback((field: string, value: string) => {
+    let fieldError: string | null = null
+    if (field === "email") fieldError = validateEmail(value)
+    if (field === "password") fieldError = validatePassword(value)
+    setRegisterFieldErrors(prev => {
+      if (fieldError) return { ...prev, [field]: fieldError }
+      const { [field]: _, ...rest } = prev
+      return rest
+    })
+  }, [validateEmail, validatePassword])
 
   useEffect(() => {
     if (searchParams.get("registered") === "true") {
@@ -70,9 +98,14 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
     setError(null)
     setSuccessMessage(null)
     router.replace(`/${tab}`, { scroll: false })
+    requestAnimationFrame(() => {
+      const panel = document.getElementById(`auth-panel-${tab}`)
+      const firstInput = panel?.querySelector<HTMLInputElement>("input:not([type=hidden])")
+      firstInput?.focus()
+    })
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
@@ -99,21 +132,16 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
             setLoading(false)
         }
       }
-    } catch (err) {
-      console.error("Login error:", err)
+    } catch {
       setError("An unexpected error occurred")
       setLoading(false)
     }
   }
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
 
-    if (registerData.password !== registerData.confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
     if (registerData.password.length < 8) {
       setError("Password must be at least 8 characters long")
       return
@@ -139,8 +167,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
       } else if (result?.success) {
         router.push("/login?registered=true")
       }
-    } catch (err) {
-      console.error("Registration error:", err)
+    } catch {
       setError("An unexpected error occurred")
       setLoading(false)
     }
@@ -215,7 +242,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-6 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+          className="mt-6 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>
@@ -238,18 +265,24 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               autoComplete="email"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
+              onBlur={(e) => handleLoginBlur("email", e.target.value)}
               required
               disabled={loading}
               placeholder="you@email.com"
               className={inputClass}
+              aria-invalid={!!loginFieldErrors.email}
+              aria-describedby={loginFieldErrors.email ? "login-email-error" : undefined}
             />
+            {loginFieldErrors.email && (
+              <p id="login-email-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{loginFieldErrors.email}</p>
+            )}
           </div>
           <div>
             <div className="flex items-baseline justify-between mb-2">
               <label htmlFor="login-password" className={fieldLabelClass + " mb-0"}>Password</label>
               <Link
                 href="/forgot-password"
-                className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
+                className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
               >
                 Forgot
               </Link>
@@ -261,10 +294,13 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 autoComplete="current-password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
+                onBlur={(e) => handleLoginBlur("password", e.target.value)}
                 required
                 disabled={loading}
                 placeholder="••••••••"
                 className={inputClass + " pr-12"}
+                aria-invalid={!!loginFieldErrors.password}
+                aria-describedby={`login-password-hint${loginFieldErrors.password ? ' login-password-error' : ''}`}
               />
               <button
                 type="button"
@@ -275,6 +311,12 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            <p id="login-password-hint" className="text-[0.6875rem] text-[var(--text-muted)] mt-1.5">
+              Minimum 8 characters
+            </p>
+            {loginFieldErrors.password && (
+              <p id="login-password-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{loginFieldErrors.password}</p>
+            )}
           </div>
 
           <button
@@ -284,20 +326,20 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Signing in
               </>
             ) : (
               <>
                 Sign in
-                <ArrowRight className="h-4 w-4" aria-hidden />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </>
             )}
           </button>
 
           <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
             Need help signing in?{" "}
-            <Link href="/contact" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
+            <Link href="/contact" className="text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
               Contact support
             </Link>
           </p>
@@ -334,11 +376,17 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               autoComplete="email"
               value={registerData.email}
               onChange={handleRegisterInputChange}
+              onBlur={(e) => handleRegisterBlur("email", e.target.value)}
               required
               disabled={loading}
               placeholder="you@email.com"
               className={inputClass}
+              aria-invalid={!!registerFieldErrors.email}
+              aria-describedby={registerFieldErrors.email ? "reg-email-error" : undefined}
             />
+            {registerFieldErrors.email && (
+              <p id="reg-email-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{registerFieldErrors.email}</p>
+            )}
           </div>
           <div>
             <label htmlFor="reg-phone" className={fieldLabelClass}>Phone</label>
@@ -365,11 +413,14 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 autoComplete="new-password"
                 value={registerData.password}
                 onChange={handleRegisterInputChange}
+                onBlur={(e) => handleRegisterBlur("password", e.target.value)}
                 required
                 minLength={8}
                 disabled={loading}
                 placeholder="At least 8 characters"
                 className={inputClass + " pr-12"}
+                aria-invalid={!!registerFieldErrors.password}
+                aria-describedby={`reg-password-hint${registerFieldErrors.password ? ' reg-password-error' : ''}`}
               />
               <button
                 type="button"
@@ -380,32 +431,12 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-          </div>
-          <div>
-            <label htmlFor="reg-confirm" className={fieldLabelClass}>Confirm password</label>
-            <div className="relative">
-              <input
-                id="reg-confirm"
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                autoComplete="new-password"
-                value={registerData.confirmPassword}
-                onChange={handleRegisterInputChange}
-                required
-                minLength={8}
-                disabled={loading}
-                placeholder="Repeat your password"
-                className={inputClass + " pr-12"}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+            <p id="reg-password-hint" className="text-[0.6875rem] text-[var(--text-muted)] mt-1.5">
+              Minimum 8 characters
+            </p>
+            {registerFieldErrors.password && (
+              <p id="reg-password-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{registerFieldErrors.password}</p>
+            )}
           </div>
 
           <label htmlFor="reg-terms" className="mt-1 flex items-start gap-3 cursor-pointer">
@@ -414,15 +445,15 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 appearance-none border border-[var(--graphite)] bg-[var(--black-warm)] checked:border-[var(--gold)] checked:bg-[var(--gold)] checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22%23050506%22 d=%22M6 11.4 2.6 8 4 6.6l2 2 6-6L13.4 4z%22/></svg>')] bg-center bg-no-repeat focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+              className={checkboxClass}
             />
             <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
               I agree to the{" "}
-              <Link href="/terms" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
+              <Link href="/terms" className="text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
                 Terms
               </Link>
               {" "}and{" "}
-              <Link href="/privacy" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
+              <Link href="/privacy" className="text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
                 Privacy Policy
               </Link>
               .
@@ -436,20 +467,20 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Creating account
               </>
             ) : (
               <>
                 Create account
-                <ArrowRight className="h-4 w-4" aria-hidden />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </>
             )}
           </button>
 
           <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
             You can also book without an account.{" "}
-            <Link href="/" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
+            <Link href="/" className="text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
               Start a booking
             </Link>
           </p>

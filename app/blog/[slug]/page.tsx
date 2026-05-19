@@ -2,12 +2,14 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import DOMPurify from "isomorphic-dompurify"
 import { getPublishedPost, getRelatedPosts, incrementViewCount } from "@/lib/blog/queries"
-import { RelatedCard } from "../components/related-card"
-import { BlogArticleHeader } from "../components/blog-article-header"
+import { ArticleHero } from "../components/article-hero"
+import { FloatingShare } from "../components/floating-share"
+import { RelatedScroll } from "../components/related-scroll"
 import { ShareButtons } from "../components/share-buttons"
 import { BlogNewsletterCta } from "../components/blog-newsletter-cta"
-import { BlogMotionCard, BlogMotionSection } from "../components/blog-motion-wrapper"
+import { BlogMotionSection } from "../components/blog-motion-wrapper"
 
 export const dynamic = 'force-dynamic'
 
@@ -61,17 +63,21 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="bg-[var(--black-void)]">
-      {/* Article Header */}
-      <div className="luxury-container">
-        <BlogArticleHeader post={post} />
-      </div>
+      {/* Article Hero — full-bleed image with overlaid text */}
+      <ArticleHero post={post} />
 
-      {/* Article Content — centered, capped at 75ch */}
-      <div className="luxury-container">
-        <div className="blog-article-layout">
-          {/* Pullquote / Excerpt */}
+      {/* Floating Share — desktop sidebar + mobile bottom bar */}
+      <FloatingShare
+        url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
+        title={post.title}
+      />
+
+      {/* Article Content — reading column with distinct background */}
+      <div className="blog-reading-column">
+        <div className="blog-reading-column__inner">
+          {/* Pull Quote / Excerpt */}
           {post.excerpt && (
-            <div className="border-t border-b border-[var(--graphite)] py-6 mb-8">
+            <div className="blog-pull-quote mb-8">
               <p className="font-body text-xl italic leading-[1.6] text-[var(--text-primary)]">
                 {post.excerpt}
               </p>
@@ -80,14 +86,14 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Article Content */}
           {post.content ? (
-            <div className="prose-luxury mb-8" dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div className="prose-luxury mb-8" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
           ) : (
             <div className="prose-luxury mb-8">
               <p className="text-[var(--text-muted)]">No content available.</p>
             </div>
           )}
 
-          {/* Share Buttons */}
+          {/* Share Buttons (inline fallback) */}
           <div className="mb-8 pb-8 border-b border-[var(--graphite)]">
             <ShareButtons
               url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
@@ -102,7 +108,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <Link
                   key={tag.id}
                   href={`/blog/tag/${tag.slug}`}
-                  className="inline-block px-3.5 py-1.5 text-xs font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-[4px] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
+                  className="inline-flex items-center min-h-[44px] px-3.5 py-1.5 text-sm font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--graphite)] rounded-[4px] hover:text-[var(--gold)] hover:border-[var(--gold)] hover:bg-[var(--gold)]/5 transition-all duration-200"
                 >
                   {tag.name}
                 </Link>
@@ -126,21 +132,15 @@ export default async function BlogPostPage({ params }: PageProps) {
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-[var(--charcoal-light)] border border-[var(--gold)]/15 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-[var(--gold)] text-2xl font-serif">
+                  <span className="text-[var(--gold)] text-2xl font-sans font-medium">
                     {(post.author?.full_name || 'A').charAt(0)}
                   </span>
                 </div>
               )}
               <div className="flex-1">
-                <div className="t-label-accent mb-1">
-                  Written by
-                </div>
-                <h3 className="t-subhead mb-1">
-                  {post.author?.full_name || 'Editorial Team'}
-                </h3>
-                <div className="t-meta mb-3">
-                  Senior Travel Editor
-                </div>
+                <div className="t-label-accent mb-1">Written by</div>
+                <h3 className="t-subhead mb-1">{post.author?.full_name || 'Editorial Team'}</h3>
+                <div className="t-meta mb-3">Senior Travel Editor</div>
                 <p className="t-body">
                   Bringing you the finest insights on luxury travel, premium transfers, and the art of seamless journeys across the Middle East.
                 </p>
@@ -150,7 +150,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Related Posts — raised section */}
+      {/* Related Posts — horizontal scroll */}
       {relatedPosts.length > 0 && (
         <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
           <div className="luxury-container">
@@ -158,13 +158,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               <span className="w-6 h-px bg-[var(--gold)]" />
               <h2 className="t-label-accent">Related Articles</h2>
             </BlogMotionSection>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedPosts.map((relPost, index) => (
-                <BlogMotionCard key={relPost.id} index={index}>
-                  <RelatedCard post={relPost} />
-                </BlogMotionCard>
-              ))}
-            </div>
+            <RelatedScroll posts={relatedPosts} />
           </div>
         </section>
       )}

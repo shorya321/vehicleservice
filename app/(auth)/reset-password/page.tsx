@@ -1,8 +1,7 @@
 "use client"
 
 import { Suspense } from "react"
-import { motion } from "motion/react"
-import { Loader2, HelpCircle } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { AuthHeroPanel } from "@/components/auth/auth-hero-panel"
 import { ResetPasswordCard } from "@/components/auth/reset-password-card"
@@ -33,49 +32,19 @@ function ResetPasswordContent() {
             <AuthLogo />
           </div>
 
-          {/* Page Header */}
-          <motion.header
-            className="text-center mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <h1 className="t-headline mb-4">
-              Set New <span className="text-[var(--gold)]">Password</span>
-            </h1>
-            <p className="t-body">
-              Create a strong password for your account
-            </p>
-            <div className="section-divider mt-6">
-              <span className="section-divider-icon" />
-            </div>
-          </motion.header>
-
           {/* Reset Password Card */}
           <ResetPasswordCard />
 
-          {/* Help Section */}
-          <motion.div
-            className="mt-8 p-4 bg-[rgba(42,40,38,0.3)] border border-[rgba(198,170,136,0.1)] rounded-xl flex items-center gap-4"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="w-9 h-9 flex items-center justify-center bg-[rgba(198,170,136,0.1)] rounded-full flex-shrink-0">
-              <HelpCircle className="w-[18px] h-[18px] stroke-[var(--gold)]" />
-            </div>
-            <div>
-              <p className="text-[0.8125rem] text-[var(--text-muted)] mb-0.5">
-                Need assistance with your account?
-              </p>
-              <Link
-                href="/contact"
-                className="text-[0.8125rem] text-[var(--gold)] font-medium hover:text-[var(--gold-light)] transition-colors"
-              >
-                Contact Support &rarr;
-              </Link>
-            </div>
-          </motion.div>
+          {/* Help link */}
+          <p className="mt-8 text-center text-[0.8125rem] text-[var(--text-muted)]">
+            Need assistance?{" "}
+            <Link
+              href="/contact"
+              className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] font-medium transition-colors"
+            >
+              Contact support
+            </Link>
+          </p>
         </div>
       </section>
     </main>

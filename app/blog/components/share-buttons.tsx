@@ -56,7 +56,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[0.6875rem] font-medium tracking-[0.1em] uppercase text-[var(--text-muted)] mr-1">
+      <span className="t-label text-[var(--text-muted)] mr-1">
         Share
       </span>
       {SHARE_TARGETS.map((target) => (
@@ -66,7 +66,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Share on ${target.name}`}
-          className="w-9 h-9 flex items-center justify-center rounded-[4px] border border-[var(--gold)]/20 text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
+          className="w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
         >
           <target.icon />
         </a>
@@ -74,7 +74,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
       <button
         onClick={copyLink}
         aria-label="Copy link"
-        className="w-9 h-9 flex items-center justify-center rounded-[4px] border border-[var(--gold)]/20 text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
+        className="w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
       >
         {copied ? <Check className="w-4 h-4 text-[var(--gold)]" /> : <Link2 className="w-4 h-4" />}
       </button>

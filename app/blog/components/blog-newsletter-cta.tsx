@@ -34,17 +34,19 @@ export function BlogNewsletterCta() {
           <div>
             {!submitted ? (
               <form onSubmit={handleSubmit} className="flex gap-3">
+                <label htmlFor="newsletter-email" className="sr-only">Email address</label>
                 <input
+                  id="newsletter-email"
                   type="email"
                   required
                   placeholder="Your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-[var(--black-warm)] border border-[var(--gold)]/20 rounded-[4px] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-[3px] focus:ring-[var(--gold)]/10 transition-all duration-200"
+                  className="flex-1 px-4 py-3 bg-[var(--black-warm)] border border-[var(--graphite)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[rgba(var(--gold-rgb),0.15)] transition-all duration-200"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--onyx)] rounded-[4px] hover:bg-[var(--gold-deep)] transition-colors duration-300 whitespace-nowrap"
+                  className="t-label px-6 py-3 bg-[var(--gold)] text-[var(--onyx)] rounded-[4px] hover:bg-[var(--gold-deep)] transition-colors duration-300 whitespace-nowrap"
                 >
                   Subscribe
                 </button>
