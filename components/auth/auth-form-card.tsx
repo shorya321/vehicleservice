@@ -55,6 +55,10 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
         "Account created. Check your inbox to verify your email, then sign in."
       )
     }
+    const msg = searchParams.get("message")
+    if (msg) {
+      setSuccessMessage(msg)
+    }
   }, [searchParams])
 
   useEffect(() => {
@@ -110,8 +114,8 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
       setError("Passwords do not match")
       return
     }
-    if (registerData.password.length < 6) {
-      setError("Password must be at least 6 characters long")
+    if (registerData.password.length < 8) {
+      setError("Password must be at least 8 characters long")
       return
     }
     if (!termsAccepted) {
@@ -245,7 +249,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               <label htmlFor="login-password" className={fieldLabelClass + " mb-0"}>Password</label>
               <Link
                 href="/forgot-password"
-                className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+                className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
               >
                 Forgot
               </Link>
@@ -266,7 +270,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 type="button"
                 onClick={() => setShowLoginPassword(!showLoginPassword)}
                 aria-label={showLoginPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
               >
                 {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -293,7 +297,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
 
           <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
             Need help signing in?{" "}
-            <Link href="/contact" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+            <Link href="/contact" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
               Contact support
             </Link>
           </p>
@@ -362,16 +366,16 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 value={registerData.password}
                 onChange={handleRegisterInputChange}
                 required
-                minLength={6}
+                minLength={8}
                 disabled={loading}
-                placeholder="At least 6 characters"
+                placeholder="At least 8 characters"
                 className={inputClass + " pr-12"}
               />
               <button
                 type="button"
                 onClick={() => setShowRegisterPassword(!showRegisterPassword)}
                 aria-label={showRegisterPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
               >
                 {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -388,7 +392,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 value={registerData.confirmPassword}
                 onChange={handleRegisterInputChange}
                 required
-                minLength={6}
+                minLength={8}
                 disabled={loading}
                 placeholder="Repeat your password"
                 className={inputClass + " pr-12"}
@@ -397,7 +401,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -414,11 +418,11 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
             />
             <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
               I agree to the{" "}
-              <Link href="/terms" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+              <Link href="/terms" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
                 Terms
               </Link>
               {" "}and{" "}
-              <Link href="/privacy" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+              <Link href="/privacy" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
                 Privacy Policy
               </Link>
               .
@@ -445,7 +449,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
 
           <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
             You can also book without an account.{" "}
-            <Link href="/" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+            <Link href="/" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
               Start a booking
             </Link>
           </p>

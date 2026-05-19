@@ -115,7 +115,7 @@ export function ForgotPasswordCard() {
 
         <Link
           href="/login"
-          className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+          className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Back to sign in
