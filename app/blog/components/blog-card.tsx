@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Clock } from "lucide-react"
 import type { PublicBlogPost } from "@/lib/blog/queries"
-import { formatDate } from "../utils"
+import { formatDate, getCategoryClass } from "../utils"
 
 interface BlogCardProps {
   post: PublicBlogPost
@@ -36,7 +36,7 @@ export function BlogCard({ post }: BlogCardProps) {
         {/* Category badge */}
         {post.category && (
           <div className="absolute top-4 left-4">
-            <span className="t-label inline-block px-3.5 py-1.5 bg-[var(--gold)] text-[var(--onyx)] rounded-[4px]">
+            <span className={`t-label inline-block px-3.5 py-1.5 rounded-[4px] blog-cat-overlay ${getCategoryClass(post.category.slug)}`}>
               {post.category.name}
             </span>
           </div>
