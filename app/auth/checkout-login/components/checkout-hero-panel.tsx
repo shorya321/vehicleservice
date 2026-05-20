@@ -15,18 +15,8 @@ export function CheckoutHeroPanel() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <aside className="auth-hero-panel relative overflow-hidden bg-[var(--black-rich)] border-r border-[var(--graphite)]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `
-            radial-gradient(ellipse 64% 46% at 50% 0%, rgba(var(--gold-rgb), 0.12) 0%, transparent 68%),
-            radial-gradient(ellipse 70% 50% at 15% 35%, rgba(var(--gold-rgb), 0.10) 0%, transparent 60%),
-            radial-gradient(ellipse 60% 40% at 85% 85%, rgba(var(--gold-rgb), 0.07) 0%, transparent 65%)
-          `,
-        }}
-      />
+    <aside className="auth-hero-panel relative overflow-hidden border-r border-[var(--graphite)]">
+      <div aria-hidden className="pointer-events-none absolute inset-0 auth-hero-glow" />
 
       <motion.div
         className="absolute left-10 top-10 z-10 lg:left-12 lg:top-12"
@@ -56,10 +46,7 @@ export function CheckoutHeroPanel() {
             </p>
           </motion.div>
 
-          <div
-            aria-hidden
-            className="h-px w-full max-w-[200px] bg-gradient-to-r from-transparent via-[rgba(var(--gold-rgb),0.18)] to-transparent"
-          />
+          <div aria-hidden className="auth-hero-divider" />
 
           <motion.div
             className="max-w-md"

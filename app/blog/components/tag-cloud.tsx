@@ -23,7 +23,7 @@ export function TagCloud({ tags, currentSlug }: TagCloudProps) {
               <Link
                 key={tag.id}
                 href={`/blog/tag/${tag.slug}`}
-                className="px-5 py-2.5 min-h-[44px] flex items-center text-sm rounded-lg border text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all duration-300"
+                className="px-5 py-2.5 min-h-[44px] flex items-center text-sm rounded-lg border text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold-text)] transition-all duration-300"
               >
                 {tag.name}
                 <span className="ml-1.5 text-[var(--text-muted)]">

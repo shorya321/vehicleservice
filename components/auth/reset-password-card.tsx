@@ -79,7 +79,7 @@ export function ResetPasswordCard() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[var(--auth-error-border)] bg-[var(--auth-error-bg)] p-4 text-[0.875rem] text-[var(--auth-error-text)]"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>

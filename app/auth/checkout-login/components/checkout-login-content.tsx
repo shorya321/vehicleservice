@@ -33,7 +33,7 @@ function MobileBookingSummary({ returnUrl }: { returnUrl: string }) {
     : null
 
   return (
-    <div className="lg:hidden mb-6 rounded-[8px] border border-[rgba(var(--gold-rgb),0.12)] bg-[var(--black-rich)] p-4">
+    <div className="lg:hidden mb-6 rounded-[8px] border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] p-4">
       <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-[var(--gold)] mb-3">
         Your Booking
       </div>

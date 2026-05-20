@@ -33,7 +33,7 @@ export function RelatedScroll({ posts }: RelatedScrollProps) {
       <button
         onClick={scrollLeft}
         aria-label="Scroll left"
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-11 h-11 rounded-full bg-[var(--black-void)] border border-[var(--graphite)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 transition-all duration-200 hidden md:flex"
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-11 h-11 rounded-full bg-[var(--black-void)] border border-[var(--graphite)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 transition-all duration-200 hidden md:flex"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -41,7 +41,7 @@ export function RelatedScroll({ posts }: RelatedScrollProps) {
       <button
         onClick={scrollRight}
         aria-label="Scroll right"
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-11 h-11 rounded-full bg-[var(--black-void)] border border-[var(--graphite)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 transition-all duration-200 hidden md:flex"
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-11 h-11 rounded-full bg-[var(--black-void)] border border-[var(--graphite)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 transition-all duration-200 hidden md:flex"
       >
         <ChevronRight className="w-4 h-4" />
       </button>

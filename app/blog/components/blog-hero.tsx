@@ -30,7 +30,7 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
     <section className="pt-[clamp(4rem,10vw,6rem)] pb-[clamp(3.5rem,8vw,5rem)] bg-[var(--black-void)] border-b border-[var(--graphite)] blog-hero-glow blog-hero-animate">
       <div className="luxury-container text-center">
         {/* Eyebrow */}
-        <div className="blog-hero__eyebrow flex items-center justify-center gap-3 mb-6">
+        <div className="blog-hero__eyebrow flex items-center justify-center gap-3 mb-6" aria-hidden="true">
           <span className="w-6 h-px bg-[var(--gold)]" />
           <span className="t-label-accent">{eyebrow}</span>
           <span className="w-6 h-px bg-[var(--gold)]" />
@@ -50,9 +50,10 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
         {showSearch && (
           <form onSubmit={handleSearch} className="blog-hero__search mt-8 max-w-md mx-auto">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" aria-hidden="true" />
               <input
                 type="text"
+                aria-label="Search articles"
                 placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -64,7 +65,7 @@ export function BlogHero({ title, subtitle, eyebrow = "Our Blog", showSearch = f
 
         {/* Decorative hairline */}
         {!showSearch && (
-          <div className="blog-hero__rule mt-8 flex justify-center">
+          <div className="blog-hero__rule mt-8 flex justify-center" aria-hidden="true">
             <div className="w-20 h-px bg-[var(--gold)]" />
           </div>
         )}

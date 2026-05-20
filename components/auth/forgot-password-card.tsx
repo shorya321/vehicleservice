@@ -58,7 +58,7 @@ export function ForgotPasswordCard() {
         <div
           role="status"
           aria-live="polite"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[var(--auth-success-border)] bg-[var(--auth-success-bg)] p-4 text-[0.875rem] text-[var(--auth-success-text)]"
         >
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden />
           <p>{message}</p>
@@ -69,7 +69,7 @@ export function ForgotPasswordCard() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[var(--auth-error-border)] bg-[var(--auth-error-bg)] p-4 text-[0.875rem] text-[var(--auth-error-text)]"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>

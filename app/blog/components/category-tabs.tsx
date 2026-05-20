@@ -23,10 +23,10 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
       <Link
         href="/blog"
         aria-current={isAllActive ? 'page' : undefined}
-        className={`shrink-0 px-5 py-2 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border ${
+        className={`shrink-0 px-5 py-2 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] ${
           isAllActive
             ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)] font-semibold'
-            : 'text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold)]'
+            : 'text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold-text)]'
         }`}
       >
         All
@@ -38,10 +38,10 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
             key={cat.id}
             href={`/blog/category/${cat.slug}`}
             aria-current={isActive ? 'page' : undefined}
-            className={`shrink-0 px-5 py-2 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border ${
+            className={`shrink-0 px-5 py-2 min-h-[44px] flex items-center text-sm font-medium rounded-full transition-all duration-300 border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] ${
               isActive
                 ? 'bg-[var(--gold)] text-[var(--onyx)] border-[var(--gold)] font-semibold'
-                : 'text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold)]'
+                : 'text-[var(--text-secondary)] border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold-text)]'
             }`}
           >
             {cat.name}

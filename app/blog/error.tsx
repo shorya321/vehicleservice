@@ -21,13 +21,13 @@ export default function BlogError({
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={reset}
-            className="px-6 py-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--onyx)] rounded-[4px] hover:bg-[var(--gold-deep)] transition-colors duration-300"
+            className="min-h-[44px] px-6 py-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase bg-[var(--gold)] text-[var(--onyx)] rounded-[4px] hover:bg-[var(--gold-deep)] transition-colors duration-300"
           >
             Try Again
           </button>
           <Link
             href="/"
-            className="px-6 py-2.5 text-[0.8125rem] font-medium text-[var(--text-secondary)] border border-[var(--gold)]/20 rounded-[4px] hover:border-[var(--gold)]/50 hover:text-[var(--gold)] transition-all duration-300"
+            className="min-h-[44px] px-6 py-2.5 text-[0.8125rem] font-medium text-[var(--text-secondary)] border border-[var(--gold)]/20 rounded-[4px] hover:border-[var(--gold)]/50 hover:text-[var(--gold-text)] transition-all duration-300"
           >
             Go Home
           </Link>

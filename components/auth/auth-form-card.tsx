@@ -202,7 +202,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
           : "Used only for booking confirmations, receipts, and chauffeur contact details."}
       </p>
 
-      <div className="mt-10 rounded-[8px] border border-[rgba(var(--gold-rgb),0.12)] bg-[var(--black-rich)] p-5 sm:p-7">
+      <div className="mt-10 rounded-[8px] border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] p-5 sm:p-7">
         <div
           role="tablist"
           aria-label="Authentication"
@@ -219,7 +219,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 id={`auth-tab-${tab.key}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => handleTabChange(tab.key)}
-                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] ${selected ? "active" : ""}`}
+                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--auth-card-bg)] ${selected ? "active" : ""}`}
               >
                 {tab.label}
               </button>
@@ -231,7 +231,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
         <div
           role="status"
           aria-live="polite"
-          className="mt-6 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+          className="mt-6 flex items-start gap-3 rounded-[4px] border border-[var(--auth-success-border)] bg-[var(--auth-success-bg)] p-4 text-[0.875rem] text-[var(--auth-success-text)]"
         >
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden />
           <p>{successMessage}</p>
@@ -242,7 +242,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-6 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
+          className="mt-6 flex items-start gap-3 rounded-[4px] border border-[var(--auth-error-border)] bg-[var(--auth-error-bg)] p-4 text-[0.875rem] text-[var(--auth-error-text)]"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p>{error}</p>
@@ -274,7 +274,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               aria-describedby={loginFieldErrors.email ? "login-email-error" : undefined}
             />
             {loginFieldErrors.email && (
-              <p id="login-email-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{loginFieldErrors.email}</p>
+              <p id="login-email-error" className="text-xs text-[var(--auth-error-text)] mt-1">{loginFieldErrors.email}</p>
             )}
           </div>
           <div>
@@ -315,7 +315,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               Minimum 8 characters
             </p>
             {loginFieldErrors.password && (
-              <p id="login-password-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{loginFieldErrors.password}</p>
+              <p id="login-password-error" className="text-xs text-[var(--auth-error-text)] mt-1">{loginFieldErrors.password}</p>
             )}
           </div>
 
@@ -385,7 +385,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               aria-describedby={registerFieldErrors.email ? "reg-email-error" : undefined}
             />
             {registerFieldErrors.email && (
-              <p id="reg-email-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{registerFieldErrors.email}</p>
+              <p id="reg-email-error" className="text-xs text-[var(--auth-error-text)] mt-1">{registerFieldErrors.email}</p>
             )}
           </div>
           <div>
@@ -435,7 +435,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
               Minimum 8 characters
             </p>
             {registerFieldErrors.password && (
-              <p id="reg-password-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{registerFieldErrors.password}</p>
+              <p id="reg-password-error" className="text-xs text-[var(--auth-error-text)] mt-1">{registerFieldErrors.password}</p>
             )}
           </div>
 

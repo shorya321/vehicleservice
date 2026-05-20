@@ -32,7 +32,7 @@ function VerifyLayout({
   cta: { label: string; href: string }
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--black-void)] px-6">
+    <main className="auth-verify-page flex min-h-screen items-center justify-center bg-[var(--black-void)] px-6">
       <div className="w-full max-w-[480px] text-center">
         <div
           className={`mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full ${iconClass}`}

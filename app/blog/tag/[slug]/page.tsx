@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${tag.name} | VehicleService Blog`,
-    description: `Browse articles tagged with "${tag.name}" on VehicleService Blog`,
+    title: `${tag.name} | Infinia Transfers Blog`,
+    description: `Browse articles tagged with "${tag.name}" on Infinia Transfers Blog`,
   }
 }
 
@@ -46,29 +46,29 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
   return (
     <div className="bg-[var(--black-void)]">
       {/* Tag Hero — compact */}
-      <div className="blog-tag-hero">
+      <div className="blog-tag-hero blog-hero-animate">
         <div className="luxury-container">
           {/* Breadcrumb */}
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors duration-300 mb-6"
+            className="blog-hero__eyebrow inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors duration-300 mb-6"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Blog
           </Link>
 
           {/* Tag name with # prefix */}
-          <h1 className="t-display mb-3">
+          <h1 className="blog-hero__title t-display mb-3">
             <span className="text-[var(--gold)]">#</span>{tag.name}
           </h1>
 
           {/* Post count */}
-          <span className="inline-flex items-center px-3 py-1 t-meta text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-full mb-6">
+          <span className="blog-hero__subtitle inline-flex items-center px-3 py-1 t-meta text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-full mb-6">
             {total} {total === 1 ? 'article' : 'articles'}
           </span>
 
           {/* Decorative hairline */}
-          <div className="flex justify-center">
+          <div className="blog-hero__rule flex justify-center" aria-hidden="true">
             <div className="w-16 h-px bg-[var(--gold)]" />
           </div>
         </div>
@@ -112,21 +112,28 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
               {currentPage > 1 ? (
                 <Link
                   href={`/blog/tag/${slug}?page=${currentPage - 1}`}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] border border-[var(--graphite)] rounded-lg hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all duration-300"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] border border-[var(--graphite)] rounded-lg hover:border-[var(--gold)] hover:text-[var(--gold-text)] transition-all duration-300"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Link>
-              ) : <span />}
+              ) : (
+                <span aria-disabled="true" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)]/40 border border-[var(--graphite)]/50 rounded-lg cursor-not-allowed">
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </span>
+              )}
 
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                 <Link
                   key={page}
                   href={`/blog/tag/${slug}?page=${page}`}
+                  aria-label={`Page ${page}`}
+                  aria-current={page === currentPage ? 'page' : undefined}
                   className={`w-11 h-11 flex items-center justify-center text-sm font-medium rounded-lg transition-all duration-300 ${
                     page === currentPage
                       ? 'bg-[var(--gold)] text-[var(--onyx)]'
-                      : 'text-[var(--text-secondary)] border border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold)]'
+                      : 'text-[var(--text-secondary)] border border-[var(--graphite)] hover:border-[var(--gold)] hover:text-[var(--gold-text)]'
                   }`}
                 >
                   {page}
@@ -136,12 +143,17 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
               {currentPage < totalPages ? (
                 <Link
                   href={`/blog/tag/${slug}?page=${currentPage + 1}`}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] border border-[var(--graphite)] rounded-lg hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all duration-300"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] border border-[var(--graphite)] rounded-lg hover:border-[var(--gold)] hover:text-[var(--gold-text)] transition-all duration-300"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Link>
-              ) : <span />}
+              ) : (
+                <span aria-disabled="true" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)]/40 border border-[var(--graphite)]/50 rounded-lg cursor-not-allowed">
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              )}
             </nav>
           )}
         </div>

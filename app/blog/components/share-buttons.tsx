@@ -66,7 +66,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Share on ${target.name}`}
-          className="w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
+          className="w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
         >
           <target.icon />
         </a>
@@ -74,9 +74,9 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
       <button
         onClick={copyLink}
         aria-label="Copy link"
-        className="w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
+        className="w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200"
       >
-        {copied ? <Check className="w-4 h-4 text-[var(--gold)]" /> : <Link2 className="w-4 h-4" />}
+        {copied ? <Check className="w-4 h-4 text-[var(--gold-text)]" /> : <Link2 className="w-4 h-4" />}
       </button>
     </div>
   )

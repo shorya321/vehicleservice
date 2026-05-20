@@ -2,18 +2,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { Clock, Eye, Calendar } from "lucide-react"
 import type { PublicBlogPost } from "@/lib/blog/queries"
+import { formatDate } from "../utils"
 
 interface ArticleHeroProps {
   post: PublicBlogPost
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }
 
 function formatViewCount(count: number): string {
@@ -38,7 +30,7 @@ export function ArticleHero({ post }: ArticleHeroProps) {
         />
       ) : (
         <div className="absolute inset-0 bg-[var(--charcoal)] flex items-center justify-center">
-          <span className="text-[var(--gold)]/20 text-9xl font-sans font-medium">B</span>
+          <span className="text-[var(--gold)]/20 text-9xl font-sans font-medium" aria-hidden="true">B</span>
         </div>
       )}
 
@@ -48,24 +40,26 @@ export function ArticleHero({ post }: ArticleHeroProps) {
       {/* Content */}
       <div className="blog-featured-hero__content">
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
-          <Link href="/" className="hover:text-[var(--gold)] transition-colors duration-200">
-            Home
-          </Link>
-          <span className="text-[var(--gold)] opacity-40">/</span>
-          <Link href="/blog" className="hover:text-[var(--gold)] transition-colors duration-200">
-            Blog
-          </Link>
-          {post.category && (
-            <>
-              <span className="text-[var(--gold)] opacity-40">/</span>
-              <span className="text-[var(--text-secondary)]">{post.category.name}</span>
-            </>
-          )}
+        <nav aria-label="Breadcrumb" className="article-hero__breadcrumb mb-6">
+          <ol className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+            <li>
+              <Link href="/" className="hover:text-[var(--gold-text)] transition-colors duration-200">Home</Link>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-[var(--gold)] opacity-40" aria-hidden="true">/</span>
+              <Link href="/blog" className="hover:text-[var(--gold-text)] transition-colors duration-200">Blog</Link>
+            </li>
+            {post.category && (
+              <li className="flex items-center gap-2">
+                <span className="text-[var(--gold)] opacity-40" aria-hidden="true">/</span>
+                <span className="text-[var(--text-secondary)]">{post.category.name}</span>
+              </li>
+            )}
+          </ol>
         </nav>
 
         {/* Category badge + reading time + view count */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="article-hero__meta flex items-center gap-3 mb-4">
           {post.category && (
             <Link
               href={`/blog/category/${post.category.slug}`}
@@ -89,10 +83,10 @@ export function ArticleHero({ post }: ArticleHeroProps) {
         </div>
 
         {/* Title */}
-        <h1 className="t-display mb-6 max-w-[800px]">{post.title}</h1>
+        <h1 className="article-hero__title t-display mb-6 max-w-[800px]">{post.title}</h1>
 
         {/* Author row */}
-        <div className="flex items-center gap-3">
+        <div className="article-hero__author flex items-center gap-3">
           {post.author?.avatar_url ? (
             <Image
               src={post.author.avatar_url}

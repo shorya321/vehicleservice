@@ -18,6 +18,7 @@
 
   /* Theme-invariant — always near-black, for text/icons on gold backgrounds (DESIGN.md: Onyx) */
   --onyx: #050506;
+  --onyx-rgb: 5, 5, 6;
 
   /* Gold Spectrum — Brand constant, identical both themes */
   --gold-pale: #f4ece0;
@@ -54,10 +55,34 @@
   --gold-ink: oklch(0.18 0.016 70);
   --text-primary-rgb: 26, 25, 23;
 
+  /* Auth — light-mode tokens */
+  --auth-hero-glow-1: rgba(var(--gold-rgb), 0.06);
+  --auth-hero-glow-2: rgba(var(--gold-rgb), 0.04);
+  --auth-hero-glow-3: rgba(var(--gold-rgb), 0.03);
+  --auth-panel-glow: rgba(var(--gold-rgb), 0.03);
+  --auth-card-bg: var(--black-rich);
+  --auth-card-border: rgba(var(--gold-rgb), 0.08);
+  --auth-tabs-bg: var(--black-warm);
+  --auth-tabs-border: rgba(var(--gold-rgb), 0.06);
+  --auth-tab-active-bg: var(--gold-dark);
+  --auth-tab-active-text: var(--gold-dark);
+  --auth-tab-active-border: var(--gold-dark);
+  --auth-tab-hover-bg: rgba(var(--gold-rgb), 0.06);
+  --auth-input-bg: var(--black-void);
+  --auth-input-border: var(--charcoal-light);
+  --auth-input-focus-border: var(--gold-dark);
+  --auth-input-focus-ring: rgba(var(--gold-rgb), 0.15);
+  --auth-success-border: rgba(var(--success-rgb), 0.25);
+  --auth-success-bg: rgba(var(--success-rgb), 0.06);
+  --auth-success-text: var(--success);
+  --auth-error-border: rgba(var(--destructive-rgb), 0.2);
+  --auth-error-bg: rgba(var(--destructive-rgb), 0.05);
+  --auth-error-text: #c53030;
+
   /* Typography */
-  --font-display: var(--font-dm-serif), 'DM Serif Display', Georgia, serif;
-  --font-body: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
   --font-site: 'TT Commons Pro', 'TT Commons', var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-display: var(--font-site);
+  --font-body: var(--font-site);
 
   /* Spacing Scale */
   --space-xs: 0.25rem;
@@ -154,6 +179,30 @@
   --ring: 35 30% 50%;
   --radius: 0.5rem;
   --reading-bg: #1a1918;
+
+  /* Auth — dark-mode tokens */
+  --auth-hero-glow-1: rgba(var(--gold-rgb), 0.12);
+  --auth-hero-glow-2: rgba(var(--gold-rgb), 0.10);
+  --auth-hero-glow-3: rgba(var(--gold-rgb), 0.07);
+  --auth-panel-glow: rgba(var(--gold-rgb), 0.06);
+  --auth-card-bg: var(--black-rich);
+  --auth-card-border: rgba(var(--gold-rgb), 0.12);
+  --auth-tabs-bg: rgba(var(--graphite-rgb), 0.5);
+  --auth-tabs-border: rgba(var(--gold-rgb), 0.1);
+  --auth-tab-active-bg: var(--gold);
+  --auth-tab-active-text: var(--gold);
+  --auth-tab-active-border: var(--gold);
+  --auth-tab-hover-bg: rgba(var(--gold-rgb), 0.1);
+  --auth-input-bg: var(--black-warm);
+  --auth-input-border: var(--graphite);
+  --auth-input-focus-border: var(--gold);
+  --auth-input-focus-ring: rgba(var(--gold-rgb), 0.25);
+  --auth-success-border: rgba(var(--gold-rgb), 0.3);
+  --auth-success-bg: rgba(var(--gold-rgb), 0.06);
+  --auth-success-text: var(--text-primary);
+  --auth-error-border: rgba(var(--destructive-rgb), 0.2);
+  --auth-error-bg: rgba(var(--destructive-rgb), 0.08);
+  --auth-error-text: rgba(var(--destructive-rgb), 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -197,6 +246,29 @@
     --border: 35 20% 20%;
     --input: 30 4% 12%;
     --reading-bg: #1a1918;
+
+    /* Auth — dark-mode tokens (system preference) */
+    --auth-hero-glow-1: rgba(198, 170, 136, 0.12);
+    --auth-hero-glow-2: rgba(198, 170, 136, 0.10);
+    --auth-hero-glow-3: rgba(198, 170, 136, 0.07);
+    --auth-panel-glow: rgba(198, 170, 136, 0.06);
+    --auth-card-bg: #100f0e;
+    --auth-card-border: rgba(198, 170, 136, 0.12);
+    --auth-tabs-bg: rgba(42, 40, 38, 0.5);
+    --auth-tabs-border: rgba(198, 170, 136, 0.1);
+    --auth-tab-active-text: #c6aa88;
+    --auth-tab-active-border: #c6aa88;
+    --auth-tab-hover-bg: rgba(198, 170, 136, 0.1);
+    --auth-input-bg: #0f0e0d;
+    --auth-input-border: #2a2826;
+    --auth-input-focus-border: #c6aa88;
+    --auth-input-focus-ring: rgba(198, 170, 136, 0.25);
+    --auth-success-border: rgba(198, 170, 136, 0.3);
+    --auth-success-bg: rgba(198, 170, 136, 0.06);
+    --auth-success-text: #f8f6f3;
+    --auth-error-border: rgba(239, 68, 68, 0.2);
+    --auth-error-bg: rgba(239, 68, 68, 0.08);
+    --auth-error-text: rgba(239, 68, 68, 1);
   }
 }
 
@@ -2353,10 +2425,10 @@
     border-color var(--duration-normal) var(--ease-luxury),
     transform var(--duration-normal) var(--ease-luxury),
     box-shadow var(--duration-normal) var(--ease-luxury);
-  will-change: transform, box-shadow;
 }
 
 .blog-card-surface:hover {
+  will-change: transform, box-shadow;
   border-color: rgba(var(--gold-rgb), 0.25);
   transform: translateY(-4px);
   box-shadow: 0 12px 32px -8px rgba(var(--void-rgb, 5, 5, 6), 0.3);
@@ -2371,18 +2443,6 @@
     transform: none;
   }
 }
-
-/* ============================================
-   BLOG NEWSLETTER SECTION — Full-width CTA
-   ============================================ */
-.blog-newsletter-section {
-  border-top: 1px solid var(--graphite);
-  padding-top: clamp(4rem, 9vw, 7rem);
-  padding-bottom: clamp(4rem, 9vw, 7rem);
-  position: relative;
-  overflow: hidden;
-}
-
 
 /* ============================================
    BLOG ARTICLE HEADER — Full-width above grid
@@ -2407,8 +2467,12 @@
 /* Section divider */
 .blog-diamond-divider {
   height: 1px;
-  background-color: var(--graphite);
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.25), transparent);
   margin: 2.5rem 0;
+}
+
+.light .blog-diamond-divider {
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-text-rgb), 0.3), transparent);
 }
 
 /* ============================================
@@ -2417,8 +2481,13 @@
 .author-bio-card {
   background-color: var(--charcoal);
   border: 1px solid rgba(var(--gold-rgb), 0.12);
+  border-top: 2px solid rgba(var(--gold-rgb), 0.25);
   border-radius: 8px;
   padding: 1.5rem;
+}
+
+.light .author-bio-card {
+  border-top-color: rgba(var(--gold-text-rgb), 0.35);
 }
 
 /* Tiptap editor */
@@ -3627,7 +3696,7 @@
   right: 10%;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--auth-panel-glow) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -3639,14 +3708,15 @@
   z-index: 1;
 }
 
-/* Auth Tabs */
+/* Auth Tabs — underline style, theme-aware */
 .auth-tabs {
   display: flex;
-  gap: var(--space-xs);
-  padding: var(--space-xs);
-  background: rgba(var(--graphite-rgb), 0.5);
-  border: 1px solid rgba(var(--gold-rgb), 0.1);
-  border-radius: 12px;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--auth-tabs-border);
+  border-radius: 0;
   margin-bottom: var(--space-xl);
 }
 
@@ -3661,19 +3731,22 @@
   color: var(--text-muted);
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-luxury);
+  transition: color var(--duration-fast) var(--ease-luxury), border-color var(--duration-fast) var(--ease-luxury);
 }
 
 .auth-tab.active {
-  background: var(--gold);
-  color: var(--onyx);
+  background: transparent;
+  color: var(--auth-tab-active-text);
+  border-bottom-color: var(--auth-tab-active-border);
 }
 
 .auth-tab:hover:not(.active) {
   color: var(--text-primary);
-  background: rgba(var(--gold-rgb), 0.1);
+  background: transparent;
+  border-bottom-color: rgba(var(--gold-rgb), 0.3);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3693,6 +3766,78 @@
   .auth-panel {
     padding: var(--space-xl) var(--space-md);
   }
+}
+
+/* Auth Hero Glow — theme-specific atmospheric treatment */
+.dark .auth-hero-glow {
+  background:
+    radial-gradient(ellipse 64% 46% at 50% 0%, var(--auth-hero-glow-1) 0%, transparent 68%),
+    radial-gradient(ellipse 70% 50% at 15% 35%, var(--auth-hero-glow-2) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 85%, var(--auth-hero-glow-3) 0%, transparent 65%);
+}
+
+:root .auth-hero-glow {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(var(--gold-rgb), 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 0% 50%, rgba(var(--warm-rgb), 0.3) 0%, transparent 60%),
+    linear-gradient(180deg, transparent 60%, rgba(var(--gold-rgb), 0.03) 100%);
+}
+
+.dark .auth-hero-panel {
+  background: var(--black-rich);
+}
+
+:root .auth-hero-panel {
+  background: linear-gradient(175deg, var(--gold-pale) 0%, var(--black-rich) 50%, var(--black-warm) 100%);
+}
+
+/* Auth Hero Divider — theme-aware opacity */
+.auth-hero-divider {
+  height: 1px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.dark .auth-hero-divider {
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.18), transparent);
+}
+
+:root .auth-hero-divider {
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.35), transparent);
+}
+
+/* Auth Verify Page — centered layout with ambient glow */
+.auth-verify-page {
+  position: relative;
+}
+
+.auth-verify-page::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--auth-panel-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Auth Form Field Entrance */
+@media (prefers-reduced-motion: no-preference) {
+  .auth-container form > div {
+    animation: auth-field-in 0.4s var(--ease-luxury) both;
+  }
+  .auth-container form > div:nth-child(1) { animation-delay: 0.05s; }
+  .auth-container form > div:nth-child(2) { animation-delay: 0.1s; }
+  .auth-container form > div:nth-child(3) { animation-delay: 0.15s; }
+  .auth-container form > div:nth-child(4) { animation-delay: 0.2s; }
+  .auth-container form > div:nth-child(5) { animation-delay: 0.25s; }
+}
+
+@keyframes auth-field-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================
@@ -4201,17 +4346,34 @@
     text-transform: uppercase;
     color: var(--gold);
   }
+
+  .light .t-label-accent {
+    color: var(--gold-text);
+  }
 }
 
 /* ============================================
    Editorial overrides — non-checkout classes.
    ============================================ */
 @layer components {
-  /* Auth tab (legacy) override for editorial alignment. */
+  /* Auth tab — underline indicator, no pill fill. */
   .auth-tab,
   .auth-tab.active,
   .checkout-auth-tab {
     border-radius: 0 !important;
+    background: transparent !important;
+  }
+  .auth-tab.active {
+    border-bottom: 2px solid var(--auth-tab-active-border) !important;
+    color: var(--auth-tab-active-text) !important;
+  }
+  .auth-tabs {
+    border-radius: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--auth-tabs-border) !important;
+    padding: 0 !important;
+    gap: 0 !important;
   }
 
   /* Header CTA — drop pill in favour of editorial 4px corners. */
@@ -4344,8 +4506,8 @@
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(5, 5, 6, 0.9) 0%,
-    rgba(5, 5, 6, 0.45) 40%,
+    rgba(var(--onyx-rgb), 0.9) 0%,
+    rgba(var(--onyx-rgb), 0.45) 40%,
     transparent 100%
   );
   pointer-events: none;
@@ -4354,8 +4516,8 @@
 .light .blog-featured-hero__overlay {
   background: linear-gradient(
     to top,
-    rgba(250, 249, 247, 0.95) 0%,
-    rgba(250, 249, 247, 0.5) 40%,
+    rgba(var(--void-rgb), 0.95) 0%,
+    rgba(var(--void-rgb), 0.5) 40%,
     transparent 100%
   );
 }
@@ -4364,8 +4526,8 @@
   :root:not(.light) .blog-featured-hero__overlay {
     background: linear-gradient(
       to top,
-      rgba(5, 5, 6, 0.9) 0%,
-      rgba(5, 5, 6, 0.45) 40%,
+      rgba(var(--onyx-rgb), 0.9) 0%,
+      rgba(var(--onyx-rgb), 0.45) 40%,
       transparent 100%
     );
   }
@@ -4378,6 +4540,52 @@
   padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/* Article Hero — Entrance Animations */
+@keyframes article-hero-image {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.blog-featured-hero__image {
+  animation: article-hero-image 800ms var(--ease-luxury) both;
+}
+
+.blog-featured-hero__overlay {
+  animation: blog-hero-reveal 600ms var(--ease-luxury) both;
+  animation-delay: 100ms;
+}
+
+.article-hero__breadcrumb {
+  animation: blog-hero-reveal 600ms var(--ease-luxury) both;
+  animation-delay: 200ms;
+}
+
+.article-hero__meta {
+  animation: blog-hero-reveal 600ms var(--ease-luxury) both;
+  animation-delay: 300ms;
+}
+
+.article-hero__title {
+  animation: blog-hero-reveal 680ms var(--ease-luxury) both;
+  animation-delay: 400ms;
+}
+
+.article-hero__author {
+  animation: blog-hero-reveal 600ms var(--ease-luxury) both;
+  animation-delay: 520ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-featured-hero__image,
+  .blog-featured-hero__overlay,
+  .article-hero__breadcrumb,
+  .article-hero__meta,
+  .article-hero__title,
+  .article-hero__author {
+    animation: none !important;
+  }
 }
 
 /* Overlay Card — image + gradient + text overlaid */
@@ -4412,8 +4620,8 @@
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(5, 5, 6, 0.85) 0%,
-    rgba(5, 5, 6, 0.2) 50%,
+    rgba(var(--onyx-rgb), 0.85) 0%,
+    rgba(var(--onyx-rgb), 0.2) 50%,
     transparent 100%
   );
   transition: opacity 0.3s ease;
@@ -4422,8 +4630,8 @@
 .light .blog-overlay-card__gradient {
   background: linear-gradient(
     to top,
-    rgba(26, 25, 23, 0.8) 0%,
-    rgba(26, 25, 23, 0.15) 50%,
+    rgba(var(--text-primary-rgb), 0.8) 0%,
+    rgba(var(--text-primary-rgb), 0.15) 50%,
     transparent 100%
   );
 }
@@ -4450,10 +4658,14 @@
 
 /* Pull Quote — gold borders */
 .blog-pull-quote {
-  border-top: 2px solid var(--gold);
-  border-bottom: 2px solid var(--gold);
-  padding: 1.5rem 0;
+  border-top: 3px solid var(--gold);
+  border-bottom: 3px solid var(--gold);
+  padding: 2rem 0;
   margin: 0 0 2rem;
+}
+
+.light .blog-pull-quote {
+  border-color: var(--gold-text);
 }
 
 /* Related Posts — horizontal scroll */
@@ -4511,6 +4723,14 @@
   z-index: 40;
 }
 
+.blog-floating-share > div > * {
+  animation: blog-hero-reveal 400ms var(--ease-luxury) both;
+}
+.blog-floating-share > div > *:nth-child(1) { animation-delay: 700ms; }
+.blog-floating-share > div > *:nth-child(2) { animation-delay: 760ms; }
+.blog-floating-share > div > *:nth-child(3) { animation-delay: 820ms; }
+.blog-floating-share > div > *:nth-child(4) { animation-delay: 880ms; }
+
 .blog-floating-share__mobile {
   display: none;
   position: fixed;
@@ -4547,7 +4767,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(198, 170, 136, 0.05) 0%, transparent 60%);
+  background: radial-gradient(ellipse at center, rgba(var(--gold-rgb), 0.05) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -4558,31 +4778,86 @@
   border-bottom: 1px solid var(--graphite);
 }
 
-/* Magazine Grid — first child spans 2 cols */
-.blog-magazine-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+/* ============================================
+   BLOG FEATURED SPREAD — editorial hero
+   ============================================ */
+.blog-featured-spread {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--gold-rgb), 0.1);
+  transition: border-color var(--duration-normal) var(--ease-luxury);
 }
 
-.blog-magazine-grid > :first-child {
-  grid-column: span 2;
+.blog-featured-spread:hover {
+  border-color: rgba(var(--gold-rgb), 0.2);
 }
 
-@media (max-width: 1024px) {
-  .blog-magazine-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .blog-magazine-grid > :first-child {
-    grid-column: span 2;
+.blog-featured-spread__image {
+  position: relative;
+  aspect-ratio: 16 / 10;
+}
+
+@media (min-width: 1024px) {
+  .blog-featured-spread__image {
+    aspect-ratio: auto;
+    min-height: 460px;
   }
 }
 
-@media (max-width: 640px) {
-  .blog-magazine-grid {
-    grid-template-columns: 1fr;
-  }
-  .blog-magazine-grid > :first-child {
-    grid-column: span 1;
+.blog-featured-spread__content {
+  padding: clamp(1.5rem, 4vw, 2rem);
+  background: var(--charcoal);
+}
+
+@media (min-width: 1024px) {
+  .blog-featured-spread__content {
+    padding: clamp(2rem, 4vw, 3rem);
   }
 }
+
+/* ============================================
+   BLOG — LIGHT MODE OVERRIDES
+   ============================================ */
+.light .blog-card-surface {
+  border-color: rgba(var(--text-primary-rgb), 0.12);
+  box-shadow: 0 2px 8px -2px rgba(var(--text-primary-rgb), 0.06);
+}
+
+.light .blog-card-surface:hover {
+  border-color: rgba(var(--gold-rgb), 0.35);
+  box-shadow: 0 8px 24px -6px rgba(var(--text-primary-rgb), 0.1);
+}
+
+.light .blog-featured-spread {
+  border-color: rgba(var(--text-primary-rgb), 0.1);
+  box-shadow: 0 2px 12px -4px rgba(var(--text-primary-rgb), 0.08);
+}
+
+.light .blog-featured-spread:hover {
+  border-color: rgba(var(--gold-rgb), 0.3);
+}
+
+.light .blog-category-hero::before {
+  background: radial-gradient(ellipse at center, rgba(var(--gold-text-rgb), 0.03) 0%, transparent 60%);
+}
+
+.light .blog-hero-glow::after {
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-featured-spread__image img,
+  .blog-card-surface img {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  .blog-floating-share > div > * {
+    animation: none !important;
+  }
+}
+

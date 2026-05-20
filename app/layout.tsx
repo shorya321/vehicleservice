@@ -1,27 +1,11 @@
 import type { Metadata } from 'next'
-import { DM_Sans, DM_Serif_Display, Inter, Plus_Jakarta_Sans } from 'next/font/google'
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
 import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
 
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-dm-sans',
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-})
-
-const dmSerifDisplay = DM_Serif_Display({
-  subsets: ['latin'],
-  variable: '--font-dm-serif',
-  weight: '400',
-  display: 'swap',
-})
-
-// Business portal fonts
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -76,7 +60,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${dmSerifDisplay.variable} ${inter.variable} ${plusJakartaSans.variable}`}
+      className={`${inter.variable} ${plusJakartaSans.variable}`}
       style={themeStyles}
       suppressHydrationWarning
     >

@@ -8,7 +8,6 @@ import { ArticleHero } from "../components/article-hero"
 import { FloatingShare } from "../components/floating-share"
 import { RelatedScroll } from "../components/related-scroll"
 import { ShareButtons } from "../components/share-buttons"
-import { BlogNewsletterCta } from "../components/blog-newsletter-cta"
 import { BlogMotionSection } from "../components/blog-motion-wrapper"
 
 export const dynamic = 'force-dynamic'
@@ -29,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = post.meta_description || post.excerpt || ''
 
   return {
-    title: `${title} | VehicleService Blog`,
+    title: `${title} | Infinia Transfers Blog`,
     description,
     keywords: post.meta_keywords || undefined,
     openGraph: {
@@ -77,11 +76,13 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="blog-reading-column__inner">
           {/* Pull Quote / Excerpt */}
           {post.excerpt && (
-            <div className="blog-pull-quote mb-8">
-              <p className="font-body text-xl italic leading-[1.6] text-[var(--text-primary)]">
-                {post.excerpt}
-              </p>
-            </div>
+            <BlogMotionSection>
+              <div className="blog-pull-quote mb-8">
+                <p className="font-body text-xl italic leading-[1.6] text-[var(--text-primary)]">
+                  {post.excerpt}
+                </p>
+              </div>
+            </BlogMotionSection>
           )}
 
           {/* Article Content */}
@@ -108,7 +109,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <Link
                   key={tag.id}
                   href={`/blog/tag/${tag.slug}`}
-                  className="inline-flex items-center min-h-[44px] px-3.5 py-1.5 text-sm font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--graphite)] rounded-[4px] hover:text-[var(--gold)] hover:border-[var(--gold)] hover:bg-[var(--gold)]/5 transition-all duration-200"
+                  className="inline-flex items-center min-h-[44px] px-3.5 py-1.5 text-sm font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--graphite)] rounded-[4px] hover:text-[var(--gold-text)] hover:border-[var(--gold)] hover:bg-[var(--gold)]/5 transition-all duration-200"
                 >
                   {tag.name}
                 </Link>
@@ -117,9 +118,12 @@ export default async function BlogPostPage({ params }: PageProps) {
           )}
 
           {/* Divider */}
-          <div className="blog-diamond-divider" />
+          <BlogMotionSection>
+            <div className="blog-diamond-divider" />
+          </BlogMotionSection>
 
           {/* Author Bio Card */}
+          <BlogMotionSection>
           <div className="author-bio-card">
             <div className="flex gap-6 items-start max-sm:flex-col max-sm:items-center max-sm:text-center">
               {post.author?.avatar_url ? (
@@ -139,14 +143,11 @@ export default async function BlogPostPage({ params }: PageProps) {
               )}
               <div className="flex-1">
                 <div className="t-label-accent mb-1">Written by</div>
-                <h3 className="t-subhead mb-1">{post.author?.full_name || 'Editorial Team'}</h3>
-                <div className="t-meta mb-3">Senior Travel Editor</div>
-                <p className="t-body">
-                  Bringing you the finest insights on luxury travel, premium transfers, and the art of seamless journeys across the Middle East.
-                </p>
+                <h3 className="t-subhead">{post.author?.full_name || 'Editorial Team'}</h3>
               </div>
             </div>
           </div>
+          </BlogMotionSection>
         </div>
       </div>
 
@@ -163,8 +164,6 @@ export default async function BlogPostPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Newsletter CTA */}
-      <BlogNewsletterCta />
     </div>
   )
 }

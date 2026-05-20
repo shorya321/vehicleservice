@@ -1,18 +1,10 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { PublicBlogPost } from "@/lib/blog/queries"
+import { formatDateShort } from "../utils"
 
 interface RelatedCardProps {
   post: PublicBlogPost
-}
-
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }
 
 export function RelatedCard({ post }: RelatedCardProps) {
@@ -50,7 +42,7 @@ export function RelatedCard({ post }: RelatedCardProps) {
           {post.title}
         </div>
         <div className="t-meta">
-          {formatDate(post.published_at)}
+          {formatDateShort(post.published_at)}
         </div>
       </div>
     </Link>

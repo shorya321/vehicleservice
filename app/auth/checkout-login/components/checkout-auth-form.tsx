@@ -153,7 +153,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
       animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.12)] bg-[var(--black-rich)] p-5 sm:p-7">
+      <div className="rounded-[8px] border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] p-5 sm:p-7">
         {/* Tabs */}
         <div
           role="tablist"
@@ -171,7 +171,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                 id={`checkout-tab-${tab.key}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => handleTabChange(tab.key)}
-                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] ${selected ? 'active' : ''}`}
+                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--auth-card-bg)] ${selected ? 'active' : ''}`}
               >
                 {tab.label}
               </button>
@@ -184,7 +184,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
           <div
             role="alert"
             aria-live="assertive"
-            className="mt-6 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--destructive-rgb),0.2)] bg-[rgba(var(--destructive-rgb),0.08)] p-4 text-[0.875rem] text-[rgba(var(--destructive-rgb),1)]"
+            className="mt-6 flex items-start gap-3 rounded-[4px] border border-[var(--auth-error-border)] bg-[var(--auth-error-bg)] p-4 text-[0.875rem] text-[var(--auth-error-text)]"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <p>{error}</p>
@@ -217,7 +217,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                 aria-describedby={loginFieldErrors.email ? 'login-email-error' : undefined}
               />
               {loginFieldErrors.email && (
-                <p id="login-email-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{loginFieldErrors.email}</p>
+                <p id="login-email-error" className="text-xs text-[var(--auth-error-text)] mt-1">{loginFieldErrors.email}</p>
               )}
             </div>
 
@@ -248,7 +248,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                 </button>
               </div>
               {loginFieldErrors.password && (
-                <p id="checkout-login-password-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{loginFieldErrors.password}</p>
+                <p id="checkout-login-password-error" className="text-xs text-[var(--auth-error-text)] mt-1">{loginFieldErrors.password}</p>
               )}
             </div>
 
@@ -321,7 +321,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                 aria-describedby={registerFieldErrors.email ? 'register-email-error' : undefined}
               />
               {registerFieldErrors.email && (
-                <p id="register-email-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{registerFieldErrors.email}</p>
+                <p id="register-email-error" className="text-xs text-[var(--auth-error-text)] mt-1">{registerFieldErrors.email}</p>
               )}
             </div>
 
@@ -370,7 +370,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                 Minimum 8 characters
               </p>
               {registerFieldErrors.password && (
-                <p id="register-password-error" className="text-xs text-[rgba(var(--destructive-rgb),1)] mt-1">{registerFieldErrors.password}</p>
+                <p id="register-password-error" className="text-xs text-[var(--auth-error-text)] mt-1">{registerFieldErrors.password}</p>
               )}
             </div>
 

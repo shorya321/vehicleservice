@@ -28,11 +28,11 @@ export function BlogArticleHeader({ post }: BlogArticleHeaderProps) {
     <div className="blog-article-header">
       {/* Breadcrumb */}
       <nav className="t-meta flex items-center gap-2 text-[var(--text-muted)] mb-6">
-        <Link href="/" className="hover:text-[var(--gold)] transition-colors duration-200">
+        <Link href="/" className="hover:text-[var(--gold-text)] transition-colors duration-200">
           Home
         </Link>
         <span className="text-[var(--gold)] opacity-40">/</span>
-        <Link href="/blog" className="hover:text-[var(--gold)] transition-colors duration-200">
+        <Link href="/blog" className="hover:text-[var(--gold-text)] transition-colors duration-200">
           Blog
         </Link>
         {post.category && (

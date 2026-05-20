@@ -45,13 +45,17 @@ export function FloatingShare({ url, title }: FloatingShareProps) {
   const [copied, setCopied] = useState(false)
 
   async function copyLink() {
-    await navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard API unavailable
+    }
   }
 
   const buttonClassName =
-    'w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200'
+    'w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200'
 
   return (
     <>
