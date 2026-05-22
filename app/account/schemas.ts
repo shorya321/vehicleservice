@@ -31,8 +31,8 @@ export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>
 // Account Deletion Request Schema
 export const deletionRequestSchema = z.object({
   reason: z.string().min(10, "Please provide a reason (at least 10 characters)"),
-  confirm: z.literal(true, {
-    errorMap: () => ({ message: "You must confirm this action" }),
+  confirm: z.boolean().refine((val) => val === true, {
+    message: "You must confirm this action",
   }),
 })
 

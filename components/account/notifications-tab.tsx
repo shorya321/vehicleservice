@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Bell, Mail, CreditCard, Settings, CheckCheck, ChevronDown, Loader2 } from "lucide-react"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { Bell, Mail, CreditCard, CheckCheck, ChevronDown, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import {
   getNotifications,
@@ -12,6 +12,11 @@ import {
 } from "@/app/account/notification-actions"
 import { NotificationItem } from "./notification-item"
 import { toast } from "sonner"
+import { ContentSection } from "./content-section"
+import { InlineStats } from "./inline-stats"
+import { ListSkeleton } from "./list-skeleton"
+import { EmptyState } from "./empty-state"
+import type { NotificationListItem } from "./types"
 
 interface NotificationsTabProps {
   userId: string
@@ -24,48 +29,43 @@ const CATEGORY_TABS = [
 ]
 
 export function NotificationsTab({ userId }: NotificationsTabProps) {
-  const [notifications, setNotifications] = useState<any[]>([])
+  const [notifications, setNotifications] = useState<NotificationListItem[]>([])
   const [stats, setStats] = useState({ total: 0, unread: 0, read: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [isMarkingAll, setIsMarkingAll] = useState(false)
   const [category, setCategory] = useState<NotificationCategory>("all")
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
-  const [totalPages, setTotalPages] = useState(1)
 
-  const fetchData = useCallback(async (reset = false) => {
-    const currentPage = reset ? 1 : page
-    if (reset) setPage(1)
+  const fetchPage = useCallback(async (targetPage: number, append: boolean) => {
     setIsLoading(true)
 
     const [notifResult, statsResult] = await Promise.all([
-      getNotifications({ category, page: currentPage, limit: 20 }),
+      getNotifications({ category, page: targetPage, limit: 20 }),
       getNotificationStats(),
     ])
 
-    if (reset) {
-      setNotifications(notifResult.data || [])
+    const items = (notifResult.data || []) as NotificationListItem[]
+    if (append) {
+      setNotifications((prev) => [...prev, ...items])
     } else {
-      setNotifications((prev) => [...prev, ...(notifResult.data || [])])
+      setNotifications(items)
     }
 
-    setTotalPages(notifResult.totalPages || 1)
-    setHasMore(currentPage < (notifResult.totalPages || 1))
+    setHasMore(targetPage < (notifResult.totalPages || 1))
     if (statsResult.data) setStats(statsResult.data)
     setIsLoading(false)
-  }, [category, page])
+  }, [category])
 
   useEffect(() => {
-    const loadCategory = () => fetchData(true)
-    loadCategory()
-  }, [category, fetchData])
+    setPage(1)
+    fetchPage(1, false)
+  }, [category, fetchPage])
 
   useEffect(() => {
-    const loadPage = () => { if (page > 1) fetchData() }
-    loadPage()
-  }, [page, fetchData])
+    if (page > 1) fetchPage(page, true)
+  }, [page, fetchPage])
 
-  // Real-time subscription
   useEffect(() => {
     const supabase = createClient()
 
@@ -80,11 +80,8 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          const newNotification = payload.new as any
-          if (
-            category === "all" ||
-            newNotification.category === category
-          ) {
+          const newNotification = payload.new as NotificationListItem
+          if (category === "all" || newNotification.category === category) {
             setNotifications((prev) => [newNotification, ...prev])
             setStats((prev) => ({
               ...prev,
@@ -125,11 +122,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
       toast.error(result.error)
     } else {
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
-      setStats((prev) => ({
-        ...prev,
-        unread: 0,
-        read: prev.total,
-      }))
+      setStats((prev) => ({ ...prev, unread: 0, read: prev.total }))
       toast.success("All notifications marked as read")
     }
   }
@@ -137,67 +130,80 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
   const unreadNotifications = notifications.filter((n) => !n.is_read)
   const readNotifications = notifications.filter((n) => n.is_read)
 
-  return (
-    <div className="space-y-6">
-      {/* Stats Bar */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Total" value={stats.total} color="gold" />
-        <StatCard label="Unread" value={stats.unread} color="blue" />
-        <StatCard label="Read" value={stats.read} color="green" />
-      </div>
+  const inlineStats = useMemo(() => [
+    { label: "total", value: stats.total },
+    { label: "unread", value: stats.unread },
+  ], [stats.total, stats.unread])
 
-      {/* Category Tabs */}
-      <div className="account-tabs-card">
-        <div className="flex gap-1">
-          {CATEGORY_TABS.map((tab) => (
+  const markAllAction = stats.unread > 0 ? (
+    <button
+      onClick={handleMarkAllAsRead}
+      disabled={isMarkingAll}
+      className="text-sm text-[var(--gold-text)] hover:text-[var(--text-primary)] flex items-center gap-1.5 transition-colors"
+    >
+      {isMarkingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+      Mark all as read
+    </button>
+  ) : undefined
+
+  return (
+    <ContentSection
+      title="Notifications"
+      action={
+        <div className="flex items-center gap-4">
+          <InlineStats stats={inlineStats} />
+          {markAllAction}
+        </div>
+      }
+    >
+      {/* Category pills */}
+      <div
+        className="flex gap-2 mb-6"
+        role="tablist"
+        aria-label="Notification categories"
+        onKeyDown={(e) => {
+          const buttons = Array.from(e.currentTarget.querySelectorAll('[role="tab"]')) as HTMLElement[]
+          const currentIndex = buttons.findIndex((b) => b === document.activeElement)
+          let nextIndex = -1
+          if (e.key === "ArrowRight") nextIndex = (currentIndex + 1) % buttons.length
+          else if (e.key === "ArrowLeft") nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+          else if (e.key === "Home") nextIndex = 0
+          else if (e.key === "End") nextIndex = buttons.length - 1
+          if (nextIndex >= 0) { e.preventDefault(); buttons[nextIndex].focus() }
+        }}
+      >
+        {CATEGORY_TABS.map((tab) => {
+          const isActive = category === tab.value
+          return (
             <button
               key={tab.value}
+              role="tab"
+              aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
               onClick={() => setCategory(tab.value as NotificationCategory)}
-              className={`account-tab flex-1 justify-center ${category === tab.value ? "active" : ""}`}
+              className={`account-pill ${isActive ? "active" : ""}`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
 
-      {/* Mark All as Read */}
-      {stats.unread > 0 && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleMarkAllAsRead}
-            disabled={isMarkingAll}
-            className="text-sm text-[var(--gold)] hover:text-[var(--gold-light)] flex items-center gap-1.5"
-          >
-            {isMarkingAll ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <CheckCheck className="w-4 h-4" />
-            )}
-            Mark all as read
-          </button>
-        </div>
-      )}
-
-      {/* Notifications List */}
+      {/* List */}
       {isLoading && notifications.length === 0 ? (
-        <div className="luxury-card p-12 text-center">
-          <div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[var(--text-muted)]">Loading notifications...</p>
-        </div>
+        <ListSkeleton rows={4} />
       ) : notifications.length === 0 ? (
-        <div className="luxury-card p-12 text-center">
-          <Bell className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No notifications</h3>
-          <p className="text-sm text-[var(--text-muted)]">You&apos;re all caught up!</p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          title="All caught up"
+          description="New updates will appear here as they happen"
+        />
       ) : (
         <div className="space-y-6">
-          {/* Unread Section */}
           {unreadNotifications.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-[var(--gold)] uppercase tracking-wider mb-3">
+              <h3 className="account-label mb-3 text-[var(--gold-text)]">
                 Unread ({unreadNotifications.length})
               </h3>
               <div className="space-y-2">
@@ -212,12 +218,9 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
             </div>
           )}
 
-          {/* Read Section */}
           {readNotifications.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-3">
-                Earlier
-              </h3>
+              <h3 className="account-label mb-3">Earlier</h3>
               <div className="space-y-2">
                 {readNotifications.map((notification) => (
                   <NotificationItem
@@ -229,7 +232,6 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
             </div>
           )}
 
-          {/* Load More */}
           {hasMore && (
             <div className="text-center">
               <button
@@ -250,20 +252,6 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
           )}
         </div>
       )}
-    </div>
-  )
-}
-
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  const colors: Record<string, string> = {
-    gold: "text-[var(--gold)]",
-    blue: "text-blue-400",
-    green: "text-green-400",
-  }
-  return (
-    <div className="luxury-card p-4 text-center">
-      <p className={`text-2xl font-semibold ${colors[color]}`}>{value}</p>
-      <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider">{label}</p>
-    </div>
+    </ContentSection>
   )
 }

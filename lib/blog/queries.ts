@@ -85,6 +85,30 @@ export const getPublishedPosts = unstable_cache(
         }
       }
 
+      if (options.tagSlug) {
+        const { data: tag } = await supabase
+          .from('blog_tags')
+          .select('id')
+          .eq('slug', options.tagSlug)
+          .single()
+
+        if (tag) {
+          const { data: taggedPostIds } = await supabase
+            .from('blog_post_tags')
+            .select('post_id')
+            .eq('tag_id', tag.id)
+
+          if (taggedPostIds && taggedPostIds.length > 0) {
+            const ids = taggedPostIds.map(t => t.post_id)
+            query = query.in('id', ids)
+          } else {
+            return { posts: [], total: 0, totalPages: 0 }
+          }
+        } else {
+          return { posts: [], total: 0, totalPages: 0 }
+        }
+      }
+
       if (options.search) {
         query = query.or(`title.ilike.%${options.search}%,excerpt.ilike.%${options.search}%`)
       }
@@ -101,29 +125,6 @@ export const getPublishedPosts = unstable_cache(
       }
 
       let posts = (data || []) as any[]
-
-      // If filtering by tag, we need a secondary query
-      if (options.tagSlug) {
-        const { data: tag } = await supabase
-          .from('blog_tags')
-          .select('id')
-          .eq('slug', options.tagSlug)
-          .single()
-
-        if (tag) {
-          const { data: taggedPostIds } = await supabase
-            .from('blog_post_tags')
-            .select('post_id')
-            .eq('tag_id', tag.id)
-
-          if (taggedPostIds) {
-            const ids = taggedPostIds.map(t => t.post_id)
-            posts = posts.filter(p => ids.includes(p.id))
-          }
-        } else {
-          return { posts: [], total: 0, totalPages: 0 }
-        }
-      }
 
       // Fetch tags for posts
       const postIds = posts.map(p => p.id)
@@ -173,7 +174,9 @@ export const getPublishedPost = unstable_cache(
       const { data, error } = await supabase
         .from('blog_posts')
         .select(`
-          *,
+          id, title, slug, excerpt, content, featured_image_url,
+          status, is_featured, meta_title, meta_description, meta_keywords,
+          published_at, reading_time_minutes, view_count, created_at,
           category:category_id(id, name, slug),
           author:author_id(id, full_name, avatar_url)
         `)
@@ -290,7 +293,8 @@ export const getPopularTags = unstable_cache(
 
       const { data: postTags } = await supabase
         .from('blog_post_tags')
-        .select('tag_id')
+        .select('tag_id, post:post_id!inner(status)')
+        .eq('post.status', 'published')
 
       const countMap: Record<string, number> = {}
       if (postTags) {

@@ -1,7 +1,5 @@
 import { Metadata } from 'next'
 import { ContactHero } from './components/contact-hero'
-
-export const dynamic = 'force-dynamic'
 import { ContactForm } from './components/contact-form'
 import { ContactInfo } from './components/contact-info'
 import { ContactFaq } from './components/contact-faq'
@@ -22,16 +20,12 @@ export default function ContactPage() {
     <>
       <ContactHero />
 
-      {/* Contact Form + Info Section */}
-      <section className="section-padding bg-[var(--black-rich)]">
+      <section className="py-10 md:py-16 bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <div className="luxury-container">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-            {/* Left: Contact Form (60%) */}
             <div className="lg:col-span-3">
               <ContactForm />
             </div>
-
-            {/* Right: Info Cards (40%) */}
             <div className="lg:col-span-2">
               <ContactInfo />
             </div>
@@ -39,20 +33,12 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="section-padding bg-[var(--black-void)]">
+      <section className="py-14 md:py-20 bg-[var(--black-void)] border-t border-[var(--graphite)]">
         <div className="luxury-container">
-          <div className="section-header">
-            <p className="section-eyebrow">Common Questions</p>
-            <h2 className="section-title font-serif">
-              Frequently Asked Questions
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text-primary)] mb-8 md:mb-10 [text-wrap:balance]">
+              Common Questions
             </h2>
-            <div className="section-divider">
-              <div className="section-divider-icon" />
-            </div>
-            <p className="section-subtitle">
-              Find quick answers to the most common questions about our services.
-            </p>
           </div>
           <ContactFaq />
         </div>

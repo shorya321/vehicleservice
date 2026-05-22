@@ -55,7 +55,7 @@ export function FloatingShare({ url, title }: FloatingShareProps) {
   }
 
   const buttonClassName =
-    'w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 transition-all duration-200'
+    'w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2 transition-all duration-200'
 
   return (
     <>
@@ -76,8 +76,8 @@ export function FloatingShare({ url, title }: FloatingShareProps) {
           ))}
           <button
             onClick={copyLink}
-            className={buttonClassName}
-            aria-label="Copy link"
+            className={`${buttonClassName}${copied ? ' copy-link--copied' : ''}`}
+            aria-label={copied ? 'Link copied' : 'Copy link'}
           >
             {copied ? (
               <Check className="w-4 h-4" />
@@ -105,8 +105,8 @@ export function FloatingShare({ url, title }: FloatingShareProps) {
           ))}
           <button
             onClick={copyLink}
-            className={buttonClassName}
-            aria-label="Copy link"
+            className={`${buttonClassName}${copied ? ' copy-link--copied' : ''}`}
+            aria-label={copied ? 'Link copied' : 'Copy link'}
           >
             {copied ? (
               <Check className="w-4 h-4" />

@@ -14,14 +14,60 @@ interface VendorCTAProps {
   vendorApplication: VendorApplication | null
 }
 
+const STATUS_CONFIG: Record<string, {
+  icon: typeof Clock
+  iconColor: string
+  bgColor: string
+  borderColor: string
+  hoverBorderColor: string
+  badgeLabel: string
+  badgeTextColor: string
+  fallbackTitle: string
+  href: string
+}> = {
+  pending: {
+    icon: Clock,
+    iconColor: "text-[var(--status-pending-text)]",
+    bgColor: "bg-[var(--status-pending-bg)]",
+    borderColor: "border-[var(--status-pending-border)]",
+    hoverBorderColor: "hover:border-[var(--status-pending-text)]/50",
+    badgeLabel: "Under Review",
+    badgeTextColor: "text-[var(--status-pending-text)]",
+    fallbackTitle: "Vendor Application",
+    href: "/vendor-application",
+  },
+  approved: {
+    icon: CheckCircle2,
+    iconColor: "text-[var(--status-completed-text)]",
+    bgColor: "bg-[var(--status-completed-bg)]",
+    borderColor: "border-[var(--status-completed-border)]",
+    hoverBorderColor: "hover:border-[var(--status-completed-text)]/50",
+    badgeLabel: "Approved",
+    badgeTextColor: "text-[var(--status-completed-text)]",
+    fallbackTitle: "Vendor Portal",
+    href: "/vendor/dashboard",
+  },
+  rejected: {
+    icon: XCircle,
+    iconColor: "text-[var(--error-text)]",
+    bgColor: "bg-[var(--status-cancelled-bg)]",
+    borderColor: "border-[var(--status-cancelled-border)]",
+    hoverBorderColor: "hover:border-[var(--error-text)]/50",
+    badgeLabel: "Rejected",
+    badgeTextColor: "text-[var(--error-text)]",
+    fallbackTitle: "Application Rejected",
+    href: "/vendor-application",
+  },
+}
+
 export function VendorCTA({ vendorApplication }: VendorCTAProps) {
   if (!vendorApplication) {
     return (
       <Link href="/become-vendor" className="block">
-        <div className="luxury-card p-6 border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-all duration-300 group cursor-pointer">
+        <div className="account-item-card border-[var(--gold)]/20 hover:border-[var(--gold)]/40 group">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[var(--gold)]/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-[var(--gold)]/10 flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-[var(--gold)]" />
               </div>
               <div>
@@ -33,95 +79,38 @@ export function VendorCTA({ vendorApplication }: VendorCTAProps) {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-[var(--gold)] group-hover:translate-x-1 transition-transform duration-300" />
+            <ArrowRight className="w-5 h-5 text-[var(--gold)] group-hover:translate-x-1 transition-transform duration-200" />
           </div>
         </div>
       </Link>
     )
   }
 
-  const { status, business_name } = vendorApplication
+  const config = STATUS_CONFIG[vendorApplication.status]
+  if (!config) return null
 
-  if (status === "pending") {
-    return (
-      <Link href="/vendor-application" className="block">
-        <div className="luxury-card p-6 border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-500" />
-              </div>
-              <div>
-                <h3 className="text-lg font-medium text-[var(--text-primary)]">
-                  {business_name || "Vendor Application"}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500">
-                    Under Review
-                  </span>
-                </div>
-              </div>
+  const StatusIcon = config.icon
+
+  return (
+    <Link href={config.href} className="block">
+      <div className={`account-item-card ${config.borderColor} ${config.hoverBorderColor}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-lg ${config.bgColor} flex items-center justify-center`}>
+              <StatusIcon className={`w-6 h-6 ${config.iconColor}`} />
             </div>
-            <ArrowRight className="w-5 h-5 text-[var(--text-muted)]" />
-          </div>
-        </div>
-      </Link>
-    )
-  }
-
-  if (status === "approved") {
-    return (
-      <Link href="/vendor/dashboard" className="block">
-        <div className="luxury-card p-6 border border-green-500/30 hover:border-green-500/50 transition-all duration-300 cursor-pointer">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-green-500" />
-              </div>
-              <div>
-                <h3 className="text-lg font-medium text-[var(--text-primary)]">
-                  {business_name || "Vendor Portal"}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-500">
-                    Approved
-                  </span>
-                </div>
-              </div>
+            <div>
+              <h3 className="text-lg font-medium text-[var(--text-primary)]">
+                {vendorApplication.business_name || config.fallbackTitle}
+              </h3>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium uppercase mt-1 ${config.bgColor} ${config.badgeTextColor}`}>
+                {config.badgeLabel}
+              </span>
             </div>
-            <ArrowRight className="w-5 h-5 text-[var(--text-muted)]" />
           </div>
+          <ArrowRight className="w-5 h-5 text-[var(--text-muted)]" />
         </div>
-      </Link>
-    )
-  }
-
-  if (status === "rejected") {
-    return (
-      <Link href="/vendor-application" className="block">
-        <div className="luxury-card p-6 border border-red-500/30 hover:border-red-500/50 transition-all duration-300 cursor-pointer">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <XCircle className="w-6 h-6 text-red-500" />
-              </div>
-              <div>
-                <h3 className="text-lg font-medium text-[var(--text-primary)]">
-                  Application Rejected
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500">
-                    Rejected
-                  </span>
-                </div>
-              </div>
-            </div>
-            <ArrowRight className="w-5 h-5 text-[var(--text-muted)]" />
-          </div>
-        </div>
-      </Link>
-    )
-  }
-
-  return null
+      </div>
+    </Link>
+  )
 }

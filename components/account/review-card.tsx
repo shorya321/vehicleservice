@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Star, MapPin, Car, Calendar, MoreVertical, Edit2, Trash2, Clock, CheckCircle } from "lucide-react"
 
 interface ReviewCardProps {
@@ -20,7 +20,34 @@ interface ReviewCardProps {
 
 export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
   const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const isPending = review.status === "pending"
+
+  const handleMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const items = menuRef.current?.querySelectorAll<HTMLButtonElement>('button')
+    if (!items?.length) return
+
+    const currentIndex = Array.from(items).indexOf(document.activeElement as HTMLButtonElement)
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      items[Math.min(currentIndex + 1, items.length - 1)].focus()
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      items[Math.max(currentIndex - 1, 0)].focus()
+    } else if (e.key === "Escape") {
+      e.preventDefault()
+      setShowMenu(false)
+      triggerRef.current?.focus()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (showMenu && menuRef.current) {
+      menuRef.current.querySelector<HTMLButtonElement>('button')?.focus()
+    }
+  }, [showMenu])
   const createdDate = new Date(review.created_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -38,15 +65,15 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-4 h-4 ${star <= review.rating ? "text-[var(--gold)] fill-[var(--gold)]" : "text-[var(--graphite)]"}`}
+                  className={`w-5 h-5 ${star <= review.rating ? "text-[var(--gold)] fill-[var(--gold)]" : "text-[var(--graphite)]"}`}
                 />
               ))}
             </div>
             <span className={`
-              px-2 py-0.5 text-xs font-medium rounded-full border flex items-center gap-1
+              px-2 py-0.5 text-xs font-medium rounded-sm border flex items-center gap-1 uppercase
               ${isPending
-                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                : "bg-green-500/20 text-green-400 border-green-500/30"}
+                ? "bg-[var(--status-pending-bg)] text-[var(--status-pending-text)] border-[var(--status-pending-border)]"
+                : "bg-[var(--status-completed-bg)] text-[var(--status-completed-text)] border-[var(--status-completed-border)]"}
             `}>
               {isPending ? <Clock className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
               {review.status}
@@ -89,8 +116,13 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
         {isPending && (
           <div className="relative">
             <button
+              ref={triggerRef}
               onClick={() => setShowMenu(!showMenu)}
               className="p-2 hover:bg-[var(--charcoal)] rounded-lg transition-colors"
+              aria-label="Review options"
+              aria-expanded={showMenu}
+              aria-haspopup="true"
+              aria-controls={showMenu ? `review-menu-${review.id}` : undefined}
             >
               <MoreVertical className="w-4 h-4 text-[var(--text-muted)]" />
             </button>
@@ -98,8 +130,15 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-1 z-20 w-36 py-1 bg-[var(--charcoal)] border border-[var(--gold)]/20 rounded-lg shadow-xl">
+                <div
+                  ref={menuRef}
+                  id={`review-menu-${review.id}`}
+                  role="menu"
+                  onKeyDown={handleMenuKeyDown}
+                  className="absolute right-0 top-full mt-1 z-20 w-36 py-1 bg-[var(--charcoal)] border border-[var(--border-default)] rounded-lg shadow-xl"
+                >
                   <button
+                    role="menuitem"
                     onClick={() => { setShowMenu(false); onEdit() }}
                     className="w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--gold)]/10 flex items-center gap-2"
                   >
@@ -107,8 +146,9 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
                     Edit
                   </button>
                   <button
+                    role="menuitem"
                     onClick={() => { setShowMenu(false); onDelete() }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-[var(--error-text)] hover:bg-[var(--status-cancelled-bg)] flex items-center gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete

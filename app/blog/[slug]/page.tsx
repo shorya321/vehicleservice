@@ -2,13 +2,24 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import nextDynamic from "next/dynamic"
 import DOMPurify from "isomorphic-dompurify"
 import { getPublishedPost, getRelatedPosts, incrementViewCount } from "@/lib/blog/queries"
-import { ArticleHero } from "../components/article-hero"
+import { ArticleMasthead } from "../components/article-masthead"
 import { FloatingShare } from "../components/floating-share"
-import { RelatedScroll } from "../components/related-scroll"
+import { RelatedGrid } from "../components/related-grid"
 import { ShareButtons } from "../components/share-buttons"
-import { BlogMotionSection } from "../components/blog-motion-wrapper"
+import { AuthorSignoff } from "../components/author-signoff"
+import { ReadingProgressBar } from "../components/reading-progress-bar"
+
+const BlogMotionSection = nextDynamic(
+  () => import("../components/blog-motion-wrapper").then(m => ({ default: m.BlogMotionSection })),
+  { ssr: true }
+)
+const BlogMotionRule = nextDynamic(
+  () => import("../components/blog-motion-wrapper").then(m => ({ default: m.BlogMotionRule })),
+  { ssr: true }
+)
 
 export const dynamic = 'force-dynamic'
 
@@ -56,14 +67,16 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound()
   }
 
-  incrementViewCount(post.id)
+  void incrementViewCount(post.id).catch(() => {})
 
   const relatedPosts = await getRelatedPosts(post.id, post.category?.id || null)
 
   return (
-    <div className="bg-[var(--black-void)]">
-      {/* Article Hero — full-bleed image with overlaid text */}
-      <ArticleHero post={post} />
+    <article className="article-page">
+      <ReadingProgressBar />
+
+      {/* Typographic Masthead */}
+      <ArticleMasthead post={post} />
 
       {/* Floating Share — desktop sidebar + mobile bottom bar */}
       <FloatingShare
@@ -71,99 +84,77 @@ export default async function BlogPostPage({ params }: PageProps) {
         title={post.title}
       />
 
-      {/* Article Content — reading column with distinct background */}
-      <div className="blog-reading-column">
-        <div className="blog-reading-column__inner">
-          {/* Pull Quote / Excerpt */}
-          {post.excerpt && (
-            <BlogMotionSection>
-              <div className="blog-pull-quote mb-8">
-                <p className="font-body text-xl italic leading-[1.6] text-[var(--text-primary)]">
-                  {post.excerpt}
-                </p>
+      {/* Article Body */}
+      <div className="article-page__body">
+        <div className="article-page__body-inner">
+          {/* Featured Image — contained within reading column */}
+          {post.featured_image_url && (
+            <BlogMotionSection className="article-page__featured-image" withScale>
+              <div className="article-page__featured-image-inner">
+                <Image
+                  src={post.featured_image_url}
+                  alt={post.title}
+                  width={1200}
+                  height={675}
+                  priority
+                  sizes="(max-width: 768px) 100vw, 75ch"
+                  className="article-page__featured-img"
+                />
               </div>
             </BlogMotionSection>
           )}
 
           {/* Article Content */}
           {post.content ? (
-            <div className="prose-luxury mb-8" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+            <div className="prose-luxury" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
           ) : (
-            <div className="prose-luxury mb-8">
-              <p className="text-[var(--text-muted)]">No content available.</p>
+            <div className="prose-luxury">
+              <p className="text-[var(--text-muted)]">This article is being prepared.</p>
             </div>
           )}
 
-          {/* Share Buttons (inline fallback) */}
-          <div className="mb-8 pb-8 border-b border-[var(--graphite)]">
+          {/* Share Buttons */}
+          <BlogMotionSection className="article-page__share-row">
             <ShareButtons
               url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
               title={post.title}
             />
-          </div>
+          </BlogMotionSection>
 
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-8">
+            <div className="article-page__tags">
               {post.tags.map((tag) => (
                 <Link
                   key={tag.id}
                   href={`/blog/tag/${tag.slug}`}
-                  className="inline-flex items-center min-h-[44px] px-3.5 py-1.5 text-sm font-medium tracking-[0.05em] text-[var(--text-muted)] border border-[var(--graphite)] rounded-[4px] hover:text-[var(--gold-text)] hover:border-[var(--gold)] hover:bg-[var(--gold)]/5 transition-all duration-200"
+                  className="article-page__tag"
                 >
                   {tag.name}
                 </Link>
               ))}
             </div>
           )}
-
-          {/* Divider */}
-          <BlogMotionSection>
-            <div className="blog-diamond-divider" />
-          </BlogMotionSection>
-
-          {/* Author Bio Card */}
-          <BlogMotionSection>
-          <div className="author-bio-card">
-            <div className="flex gap-6 items-start max-sm:flex-col max-sm:items-center max-sm:text-center">
-              {post.author?.avatar_url ? (
-                <Image
-                  src={post.author.avatar_url}
-                  alt={post.author.full_name || 'Author'}
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 rounded-full object-cover border border-[var(--gold)]/15 flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-[var(--charcoal-light)] border border-[var(--gold)]/15 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-[var(--gold)] text-2xl font-sans font-medium">
-                    {(post.author?.full_name || 'A').charAt(0)}
-                  </span>
-                </div>
-              )}
-              <div className="flex-1">
-                <div className="t-label-accent mb-1">Written by</div>
-                <h3 className="t-subhead">{post.author?.full_name || 'Editorial Team'}</h3>
-              </div>
-            </div>
-          </div>
-          </BlogMotionSection>
         </div>
       </div>
 
-      {/* Related Posts — horizontal scroll */}
+      {/* Author Sign-off */}
+      <BlogMotionSection>
+        <AuthorSignoff author={post.author} />
+      </BlogMotionSection>
+
+      {/* Related Articles */}
       {relatedPosts.length > 0 && (
-        <section className="editorial-section editorial-section--raised bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-          <div className="luxury-container">
-            <BlogMotionSection className="flex items-center gap-3 mb-8">
-              <span className="w-6 h-px bg-[var(--gold)]" />
-              <h2 className="t-label-accent">Related Articles</h2>
+        <section className="article-page__related" aria-label="Related articles">
+          <div className="article-page__related-inner">
+            <BlogMotionSection className="article-page__related-header">
+              <BlogMotionRule className="article-page__related-rule" />
+              <h2 className="article-page__related-title">Continue Reading</h2>
             </BlogMotionSection>
-            <RelatedScroll posts={relatedPosts} />
+            <RelatedGrid posts={relatedPosts} />
           </div>
         </section>
       )}
-
-    </div>
+    </article>
   )
 }

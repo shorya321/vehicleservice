@@ -1,45 +1,20 @@
 export function ContactHero() {
   return (
-    <section className="relative py-14 md:py-20 bg-[var(--black-void)] overflow-hidden">
-      {/* Background dot pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, var(--gold) 1px, transparent 0)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
-
-      {/* Radial gold gradient glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[var(--gold)]/5 blur-[100px] rounded-full" />
-
-      <div className="relative z-10 luxury-container text-center">
-        {/* Eyebrow */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="w-8 h-px bg-gradient-to-r from-transparent to-[var(--gold)]" />
-          <span className="text-xs font-medium tracking-[0.25em] uppercase text-[var(--gold)]">
-            Get in Touch
-          </span>
-          <span className="w-8 h-px bg-gradient-to-l from-transparent to-[var(--gold)]" />
-        </div>
-
-        {/* Title */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[var(--text-primary)] mb-4">
-          Contact <em className="text-[var(--gold)] not-italic">Infinia</em>
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
-          Have a question or need assistance with your luxury transfer? Our
-          concierge team is here to help, around the clock.
+    <section className="pt-16 pb-10 md:pt-20 md:pb-12 bg-[var(--black-void)]">
+      <div className="luxury-container max-w-3xl">
+        <div className="w-10 h-px bg-[var(--gold)] mb-5" aria-hidden="true" />
+        <p className="text-[0.75rem] font-medium tracking-[0.12em] uppercase text-[var(--gold-text)] mb-4">
+          Get in Touch
         </p>
 
-        {/* Decorative line */}
-        <div className="mt-8 flex justify-center">
-          <div className="w-20 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent" />
-        </div>
+        <h1 className="text-[clamp(2.5rem,5vw,3.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)] mb-4 [text-wrap:balance]">
+          Contact
+        </h1>
+
+        <p className="text-[0.9375rem] leading-relaxed tracking-[0.01em] text-[var(--text-secondary)] max-w-xl [text-wrap:pretty]">
+          Questions about a booking, corporate inquiries, or general feedback.
+          Our concierge team responds within 24 hours.
+        </p>
       </div>
     </section>
   )

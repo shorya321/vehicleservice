@@ -17,7 +17,7 @@ function AuthPageContent({ initialTab }: AuthPageProps) {
 
       <section className="auth-panel">
         <div className="auth-container">
-          <div className="mb-10 lg:hidden">
+          <div className="lg:hidden text-center mb-8">
             <AuthLogo className="text-2xl" />
           </div>
           <AuthFormCard initialTab={initialTab} />

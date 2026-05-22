@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { Car, CreditCard, Bell, CheckCircle, AlertTriangle, Info, XCircle } from "lucide-react"
 
 interface NotificationItemProps {
@@ -23,10 +24,10 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 }
 
 const TYPE_STYLES: Record<string, { icon: React.ElementType; color: string }> = {
-  success: { icon: CheckCircle, color: "text-green-400" },
-  warning: { icon: AlertTriangle, color: "text-yellow-400" },
-  error: { icon: XCircle, color: "text-red-400" },
-  info: { icon: Info, color: "text-blue-400" },
+  success: { icon: CheckCircle, color: "text-[var(--status-completed-text)]" },
+  warning: { icon: AlertTriangle, color: "text-[var(--status-pending-text)]" },
+  error: { icon: XCircle, color: "text-[var(--error-text)]" },
+  info: { icon: Info, color: "text-[var(--status-confirmed-text)]" },
 }
 
 export function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
@@ -34,13 +35,14 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
   const typeStyle = TYPE_STYLES[notification.type] || TYPE_STYLES.info
   const TypeIcon = typeStyle.icon
 
-  const timeAgo = getTimeAgo(notification.created_at)
+  const timeAgo = useMemo(() => getTimeAgo(notification.created_at), [notification.created_at])
 
   return (
     <div
+      role="article"
       className={`account-item-card ${
         !notification.is_read
-          ? "border-[var(--gold)]/30 bg-[var(--gold)]/5"
+          ? "border-[var(--border-accent)] bg-[var(--gold)]/5 animate-[glow-settle_600ms_var(--ease-luxury)]"
           : "opacity-75"
       }`}
     >
@@ -49,19 +51,19 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
         <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
           !notification.is_read ? "bg-[var(--gold)]/20" : "bg-[var(--charcoal)]"
         }`}>
-          <CategoryIcon className={`w-5 h-5 ${!notification.is_read ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}`} />
+          <CategoryIcon className={`w-6 h-6 ${!notification.is_read ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}`} />
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h4 className={`text-sm font-medium ${!notification.is_read ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>
+            <h4 className={`${!notification.is_read ? "text-[0.9375rem] font-semibold text-[var(--text-primary)]" : "text-sm font-medium text-[var(--text-secondary)]"}`}>
               {notification.title}
             </h4>
             <div className="flex items-center gap-2 flex-shrink-0">
               <TypeIcon className={`w-4 h-4 ${typeStyle.color}`} />
               {!notification.is_read && (
-                <span className="w-2 h-2 rounded-full bg-[var(--gold)]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)]" />
               )}
             </div>
           </div>
@@ -76,7 +78,8 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
             {!notification.is_read && onMarkAsRead && (
               <button
                 onClick={onMarkAsRead}
-                className="text-xs text-[var(--gold)] hover:text-[var(--gold-light)] transition-colors"
+                className="text-xs text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors"
+                aria-label={`Mark "${notification.title}" as read`}
               >
                 Mark as read
               </button>

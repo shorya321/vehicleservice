@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X, Star, MapPin, Calendar, Car, Loader2 } from "lucide-react"
@@ -32,6 +32,42 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
   const [selectedBooking, setSelectedBooking] = useState<string>(review?.booking_id || "")
   const [hoverRating, setHoverRating] = useState(0)
   const isEditing = !!review
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const modal = modalRef.current
+    if (!modal) return
+
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    modal.focus()
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") { onClose(); return }
+      if (e.key !== "Tab") return
+
+      const focusable = modal!.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+      previouslyFocused?.focus()
+    }
+  }, [onClose])
 
   const form = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
@@ -80,22 +116,27 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay-bg)] account-overlay-enter p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg bg-[var(--black-rich)] border border-[var(--gold)]/20 rounded-2xl overflow-hidden"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="review-modal-title"
+        tabIndex={-1}
+        className="w-full max-w-lg bg-[var(--black-rich)] border border-[var(--border-default)] rounded-lg overflow-hidden account-modal-enter outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 border-b border-[var(--gold)]/10 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-[var(--text-primary)]">
+        <div className="p-4 border-b border-[var(--border-subtle)] flex items-center justify-between">
+          <h2 id="review-modal-title" className="text-lg font-medium text-[var(--text-primary)]">
             {isEditing ? "Edit Review" : "Write a Review"}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-[var(--charcoal)] rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-[var(--charcoal)] rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2" aria-label="Close review form">
             <X className="w-5 h-5 text-[var(--text-muted)]" />
           </button>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">
           {/* Booking Selection (only for new reviews) */}
           {!isEditing && eligibleBookings && eligibleBookings.length > 0 && (
             <div>
@@ -109,11 +150,11 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                     className={`w-full p-3 rounded-lg border text-left transition-all ${
                       selectedBooking === booking.id
                         ? "border-[var(--gold)] bg-[var(--gold)]/10"
-                        : "border-[var(--gold)]/10 hover:border-[var(--gold)]/30 bg-[var(--charcoal)]/50"
+                        : "border-[var(--border-subtle)] hover:border-[var(--border-accent)] bg-[var(--charcoal)]/50"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-mono text-[var(--gold)]">#{booking.booking_number}</span>
+                      <span className="text-sm font-mono text-[var(--gold-text)]">#{booking.booking_number}</span>
                       <span className="text-xs text-[var(--text-muted)]">
                         {new Date(booking.pickup_datetime).toLocaleDateString()}
                       </span>
@@ -132,7 +173,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                 ))}
               </div>
               {form.formState.errors.booking_id && (
-                <p className="mt-1.5 text-sm text-red-400">{form.formState.errors.booking_id.message}</p>
+                <p className="mt-1.5 text-sm text-[var(--error-text)]">{form.formState.errors.booking_id.message}</p>
               )}
             </div>
           )}
@@ -145,6 +186,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                 <button
                   key={star}
                   type="button"
+                  aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => handleRatingClick(star)}
@@ -164,7 +206,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
               </span>
             </div>
             {form.formState.errors.rating && (
-              <p className="mt-1.5 text-sm text-red-400">{form.formState.errors.rating.message}</p>
+              <p className="mt-1.5 text-sm text-[var(--error-text)]">{form.formState.errors.rating.message}</p>
             )}
           </div>
 
@@ -178,7 +220,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                 placeholder="Summarize your experience"
               />
               {form.formState.errors.title && (
-                <p className="mt-1.5 text-sm text-red-400">{form.formState.errors.title.message}</p>
+                <p className="mt-1.5 text-sm text-[var(--error-text)]">{form.formState.errors.title.message}</p>
               )}
             </div>
           )}
@@ -192,7 +234,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
               placeholder="Share your experience with this transfer service..."
             />
             {form.formState.errors.content && (
-              <p className="mt-1.5 text-sm text-red-400">{form.formState.errors.content.message}</p>
+              <p className="mt-1.5 text-sm text-[var(--error-text)]">{form.formState.errors.content.message}</p>
             )}
           </div>
 

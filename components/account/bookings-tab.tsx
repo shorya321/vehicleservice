@@ -1,11 +1,17 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Search, Filter, Car, Calendar, CheckCircle, XCircle, ChevronLeft, ChevronRight } from "lucide-react"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { Search, Car, ChevronLeft, ChevronRight } from "lucide-react"
+import Link from "next/link"
 import { getBookings, getBookingStats, type BookingFilters } from "@/app/account/booking-actions"
 import { BookingCard } from "./booking-card"
 import { BookingDetailModal } from "./booking-detail-modal"
-import { useCurrency } from '@/lib/currency/context'
+import { useDebounce } from "@/lib/hooks/use-debounce"
+import { ContentSection } from "./content-section"
+import { InlineStats } from "./inline-stats"
+import { ListSkeleton } from "./list-skeleton"
+import { EmptyState } from "./empty-state"
+import type { BookingListItem } from "./types"
 
 interface BookingsTabProps {
   userId: string
@@ -28,8 +34,7 @@ const PAYMENT_OPTIONS = [
 ]
 
 export function BookingsTab({ userId }: BookingsTabProps) {
-  const { currentCurrency, exchangeRates } = useCurrency()
-  const [bookings, setBookings] = useState<any[]>([])
+  const [bookings, setBookings] = useState<BookingListItem[]>([])
   const [stats, setStats] = useState({ total: 0, upcoming: 0, completed: 0, cancelled: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
@@ -41,26 +46,39 @@ export function BookingsTab({ userId }: BookingsTabProps) {
     limit: 10,
   })
   const [pagination, setPagination] = useState({ total: 0, totalPages: 0, page: 1 })
+  const [searchInput, setSearchInput] = useState("")
+  const debouncedSearch = useDebounce(searchInput, 300)
+
+  useEffect(() => {
+    setFilters((prev) => {
+      if (prev.search === debouncedSearch) return prev
+      return { ...prev, search: debouncedSearch, page: 1 }
+    })
+  }, [debouncedSearch])
+
+  const fetchStats = useCallback(async () => {
+    const result = await getBookingStats(userId)
+    setStats(result)
+  }, [userId])
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
-    const [bookingsResult, statsResult] = await Promise.all([
-      getBookings(userId, filters),
-      getBookingStats(userId),
-    ])
-    setBookings(bookingsResult.bookings)
+    const bookingsResult = await getBookings(userId, filters)
+    setBookings(bookingsResult.bookings as BookingListItem[])
     setPagination({
       total: bookingsResult.total,
       totalPages: bookingsResult.totalPages,
       page: bookingsResult.page,
     })
-    setStats(statsResult)
     setIsLoading(false)
   }, [userId, filters])
 
   useEffect(() => {
-    const loadData = () => fetchData()
-    loadData()
+    fetchData()
   }, [fetchData])
 
   const handleFilterChange = (key: keyof BookingFilters, value: string) => {
@@ -71,87 +89,94 @@ export function BookingsTab({ userId }: BookingsTabProps) {
     setFilters((prev) => ({ ...prev, page: newPage }))
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Stats Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={<Car className="w-5 h-5" />} label="Total" value={stats.total} color="gold" />
-        <StatCard icon={<Calendar className="w-5 h-5" />} label="Upcoming" value={stats.upcoming} color="blue" />
-        <StatCard icon={<CheckCircle className="w-5 h-5" />} label="Completed" value={stats.completed} color="green" />
-        <StatCard icon={<XCircle className="w-5 h-5" />} label="Cancelled" value={stats.cancelled} color="red" />
-      </div>
+  const inlineStats = useMemo(() => [
+    { label: "total", value: stats.total },
+    { label: "upcoming", value: stats.upcoming, color: "var(--status-confirmed-text)" },
+    { label: "completed", value: stats.completed, color: "var(--status-completed-text)" },
+    { label: "cancelled", value: stats.cancelled, color: "var(--status-cancelled-text)" },
+  ], [stats.total, stats.upcoming, stats.completed, stats.cancelled])
 
+  return (
+    <ContentSection
+      title="Bookings"
+      action={<InlineStats stats={inlineStats} />}
+    >
       {/* Filters */}
-      <div className="luxury-card p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-            <input
-              type="text"
-              placeholder="Search by booking number or address..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-              className="luxury-input pl-11"
-            />
-          </div>
-          <div className="flex gap-3">
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="luxury-input min-w-[140px]"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <select
-              value={filters.paymentStatus}
-              onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
-              className="luxury-input min-w-[140px]"
-            >
-              {PAYMENT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
+      <div className="flex flex-col md:flex-row gap-3 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+          <input
+            type="text"
+            placeholder="Search by booking number or address..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="luxury-input pl-11"
+            aria-label="Search bookings"
+          />
+        </div>
+        <div className="flex gap-3">
+          <select
+            value={filters.status}
+            onChange={(e) => handleFilterChange("status", e.target.value)}
+            className="luxury-input min-w-0 w-full sm:min-w-[140px]"
+            aria-label="Filter by booking status"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <select
+            value={filters.paymentStatus}
+            onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
+            className="luxury-input min-w-0 w-full sm:min-w-[140px]"
+            aria-label="Filter by payment status"
+          >
+            {PAYMENT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Bookings List */}
-      <div className="space-y-4">
+      {/* List */}
+      <div key={`${filters.status}-${filters.paymentStatus}-${pagination.page}`} className="space-y-3 account-tab-enter">
         {isLoading ? (
-          <div className="luxury-card p-12 text-center">
-            <div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-[var(--text-muted)]">Loading bookings...</p>
-          </div>
+          <ListSkeleton rows={3} />
         ) : bookings.length === 0 ? (
-          <div className="luxury-card p-12 text-center">
-            <Car className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No bookings found</h3>
-            <p className="text-sm text-[var(--text-muted)]">
-              {filters.search || filters.status !== "all" || filters.paymentStatus !== "all"
+          <EmptyState
+            icon={Car}
+            title={
+              filters.search || filters.status !== "all" || filters.paymentStatus !== "all"
+                ? "No matching bookings"
+                : "Your journeys will appear here"
+            }
+            description={
+              filters.search || filters.status !== "all" || filters.paymentStatus !== "all"
                 ? "Try adjusting your filters"
-                : "Book a transfer to get started"}
-            </p>
-          </div>
+                : "Once you book a transfer, you can track every detail from this page"
+            }
+            action={
+              !(filters.search || filters.status !== "all" || filters.paymentStatus !== "all")
+                ? <Link href="/" className="btn btn-primary">Book a Transfer</Link>
+                : undefined
+            }
+          />
         ) : (
-          <>
-            {bookings.map((booking) => (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                onClick={() => setSelectedBookingId(booking.id)}
-              />
-            ))}
-          </>
+          bookings.map((booking) => (
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              onClick={() => setSelectedBookingId(booking.id)}
+            />
+          ))
         )}
       </div>
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-[var(--text-muted)]">
-            Showing {(pagination.page - 1) * 10 + 1} to {Math.min(pagination.page * 10, pagination.total)} of {pagination.total}
+        <div className="flex items-center justify-between mt-6">
+          <p className="text-sm text-[var(--text-muted)] tabular-nums">
+            Showing {(pagination.page - 1) * (filters.limit || 10) + 1} to {Math.min(pagination.page * (filters.limit || 10), pagination.total)} of {pagination.total}
           </p>
           <div className="flex gap-2">
             <button
@@ -174,48 +199,14 @@ export function BookingsTab({ userId }: BookingsTabProps) {
         </div>
       )}
 
-      {/* Detail Modal */}
+      {/* Detail Panel */}
       {selectedBookingId && (
         <BookingDetailModal
           bookingId={selectedBookingId}
           onClose={() => setSelectedBookingId(null)}
-          onRefresh={fetchData}
-          currentCurrency={currentCurrency}
-          exchangeRates={exchangeRates}
+          onRefresh={() => { fetchData(); fetchStats() }}
         />
       )}
-    </div>
-  )
-}
-
-interface StatCardProps {
-  icon: React.ReactNode
-  label: string
-  value: number
-  color: "gold" | "blue" | "green" | "red"
-}
-
-function StatCard({ icon, label, value, color }: StatCardProps) {
-  const iconColorClasses = {
-    gold: "text-[var(--gold)]",
-    blue: "text-blue-400",
-    green: "text-green-400",
-    red: "text-red-400",
-  }
-
-  return (
-    <div className="luxury-card p-4">
-      <div className="flex items-center gap-3">
-        <div className="profile-stat">
-          <div className={`profile-stat-icon ${color}`}>
-            <span className={iconColorClasses[color]}>{icon}</span>
-          </div>
-        </div>
-        <div>
-          <p className="text-2xl font-semibold text-[var(--text-primary)]">{value}</p>
-          <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider">{label}</p>
-        </div>
-      </div>
-    </div>
+    </ContentSection>
   )
 }

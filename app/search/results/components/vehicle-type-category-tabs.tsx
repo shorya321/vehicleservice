@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { VehicleTypeResult, VehicleTypesByCategory } from '../actions'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
@@ -82,6 +82,21 @@ export function VehicleTypeCategoryTabs({
     })),
   ]
 
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent, index: number) => {
+    let nextIndex: number | null = null
+    if (e.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length
+    else if (e.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length
+    else if (e.key === 'Home') nextIndex = 0
+    else if (e.key === 'End') nextIndex = tabs.length - 1
+    if (nextIndex !== null) {
+      e.preventDefault()
+      setActiveCategory(tabs[nextIndex].id)
+      tabRefs.current[nextIndex]?.focus()
+    }
+  }, [tabs])
+
   return (
     <div className="w-full space-y-10">
       <LayoutGroup id="vehicleTypeTabs">
@@ -90,15 +105,17 @@ export function VehicleTypeCategoryTabs({
           aria-label="Vehicle categories"
           className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[var(--graphite)] pb-1"
         >
-          {tabs.map((tab) => {
+          {tabs.map((tab, tabIndex) => {
             const selected = activeCategory === tab.id
             return (
               <button
                 key={tab.id}
+                ref={(el) => { tabRefs.current[tabIndex] = el }}
                 role="tab"
                 aria-selected={selected}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveCategory(tab.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, tabIndex)}
                 className={`relative -mb-px rounded px-3 py-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--gold-text)] bg-[rgba(var(--gold-rgb),0.12)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
               >
                 <span>{tab.name}</span>
@@ -134,7 +151,7 @@ export function VehicleTypeCategoryTabs({
             id="vehicle-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="h-11 min-w-[10rem] cursor-pointer rounded-[4px] border border-[var(--graphite)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25"
+            className="h-11 min-w-[10rem] cursor-pointer rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25 [&>option]:text-[#1a1917] [&>option]:bg-[#f8f6f3]"
           >
             {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
               <option key={opt} value={opt}>{SORT_LABELS[opt]}</option>

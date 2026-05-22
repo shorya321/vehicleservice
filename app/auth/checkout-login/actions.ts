@@ -6,26 +6,26 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export interface RegisterData {
   email: string
   password: string
-  fullName: string
+  firstName: string
+  lastName: string
   phone: string
 }
 
 export async function registerAndAutoVerify(data: RegisterData) {
   try {
+    // Use admin client to create user with auto-verification
     const adminClient = createAdminClient()
-    const nameParts = data.fullName.trim().split(/\s+/)
-    const firstName = nameParts[0] || ''
-    const lastName = nameParts.slice(1).join(' ') || ''
-
+    
+    // Create the user with admin privileges (auto-confirms email)
     const { data: userData, error: createError } = await adminClient.auth.admin.createUser({
       email: data.email,
       password: data.password,
-      email_confirm: true,
+      email_confirm: true, // This auto-verifies the email
       user_metadata: {
-        first_name: firstName,
-        last_name: lastName,
+        first_name: data.firstName,
+        last_name: data.lastName,
         phone: data.phone,
-        full_name: data.fullName
+        full_name: `${data.firstName} ${data.lastName}`
       }
     })
 
@@ -37,29 +37,31 @@ export async function registerAndAutoVerify(data: RegisterData) {
       return { error: 'Failed to create user' }
     }
 
+    // Create/update profile - use insert first, then update if it fails
     const { error: insertError } = await adminClient
       .from('profiles')
       .insert({
         id: userData.user.id,
         email: data.email,
-        full_name: data.fullName,
-        first_name: firstName,
-        last_name: lastName,
+        full_name: `${data.firstName} ${data.lastName}`,
+        first_name: data.firstName,
+        last_name: data.lastName,
         phone: data.phone,
         role: 'customer'
       })
-
+    
+    // If insert fails (profile already exists), update it
     if (insertError) {
       const { error: updateError } = await adminClient
         .from('profiles')
         .update({
-          full_name: data.fullName,
-          first_name: firstName,
-          last_name: lastName,
+          full_name: `${data.firstName} ${data.lastName}`,
+          first_name: data.firstName,
+          last_name: data.lastName,
           phone: data.phone
         })
         .eq('id', userData.user.id)
-
+      
       if (updateError) {
         console.error('Profile update error:', updateError)
       }

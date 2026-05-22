@@ -55,7 +55,7 @@ export function Pagination({
           {pages.map((page, idx) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${idx}`} className="inline-flex h-10 min-w-6 items-center justify-center text-[var(--text-muted)]">
+                <span key={`ellipsis-${idx}`} className="inline-flex h-10 min-w-6 items-center justify-center text-[var(--text-muted)]" aria-hidden="true">
                   <span className="numeric">&hellip;</span>
                 </span>
               )

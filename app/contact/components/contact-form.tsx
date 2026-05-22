@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Loader2, CheckCircle2, Send } from 'lucide-react'
+import { Loader2, CheckCircle2, ChevronDown } from 'lucide-react'
 import { submitContactForm } from '../actions'
 
 const contactFormSchema = z.object({
@@ -26,6 +26,12 @@ const subjectOptions = [
   { value: 'feedback', label: 'Feedback' },
   { value: 'other', label: 'Other' },
 ]
+
+const inputClass =
+  'w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[rgba(var(--gold-rgb),0.15)] transition-[border,box-shadow] duration-200 disabled:opacity-60'
+
+const labelClass =
+  'block text-[0.75rem] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2'
 
 export function ContactForm() {
   const [isSuccess, setIsSuccess] = useState(false)
@@ -53,7 +59,6 @@ export function ContactForm() {
         setIsSuccess(true)
         reset()
         toast.success(result.message)
-        setTimeout(() => setIsSuccess(false), 5000)
       } else {
         toast.error(result.error || 'Something went wrong')
       }
@@ -64,119 +69,151 @@ export function ContactForm() {
 
   if (isSuccess) {
     return (
-      <div className="luxury-card p-8 md:p-10 flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div
-          className="w-16 h-16 rounded-full bg-[var(--gold)]/10 flex items-center justify-center mb-6"
-          style={{ animation: 'scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}
-        >
-          <CheckCircle2 className="w-8 h-8 text-[var(--gold)]" />
+      <div
+        className="bg-[var(--charcoal)] border border-[var(--graphite)] rounded-[8px] p-8 md:p-10 flex flex-col items-center justify-center min-h-[400px] text-center"
+        style={{ animation: 'contactFadeIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both' }}
+      >
+        <div className="w-14 h-14 rounded-full bg-[rgba(var(--gold-rgb),0.15)] flex items-center justify-center mb-5">
+          <CheckCircle2 className="w-7 h-7 text-[var(--gold)]" />
         </div>
-        <h3 className="text-xl font-serif text-[var(--text-primary)] mb-3">
-          Message Sent Successfully
-        </h3>
-        <p className="text-[var(--text-secondary)] max-w-sm">
-          Thank you for reaching out. Our team will review your message and
-          respond within 24 hours.
+        <h2 className="text-[1.25rem] font-semibold text-[var(--text-primary)] mb-2 [text-wrap:balance]">
+          Message received
+        </h2>
+        <p className="text-[0.9375rem] tracking-[0.01em] text-[var(--text-secondary)] max-w-sm mb-6 [text-wrap:pretty]">
+          Our team will respond within 24 hours.
         </p>
+        <button
+          type="button"
+          onClick={() => setIsSuccess(false)}
+          className="text-[0.875rem] font-medium text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] rounded-[4px] px-5 py-3 transition-colors"
+        >
+          Send another message
+        </button>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="luxury-card p-8 md:p-10">
-      <h3 className="text-xl font-serif text-[var(--text-primary)] mb-1">
-        Send Us a Message
-      </h3>
-      <p className="text-sm text-[var(--text-muted)] mb-8">
-        Fill in the form below and we&apos;ll get back to you promptly.
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="bg-[var(--charcoal)] border border-[var(--graphite)] rounded-[8px] p-8 md:p-10"
+    >
+      <h2 className="text-[1.25rem] font-semibold text-[var(--text-primary)] mb-1 [text-wrap:balance]">
+        Send us a message
+      </h2>
+      <p className="text-[0.875rem] tracking-[0.01em] text-[var(--text-secondary)] mb-8 [text-wrap:pretty]">
+        We read every message and respond promptly.
       </p>
 
       <div className="space-y-5">
-        {/* Name & Email row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Full Name <span className="text-[var(--gold)]">*</span>
+            <label htmlFor="contact-name" className={labelClass}>
+              Full Name <span className="text-[var(--gold-text)]">*</span>
             </label>
             <input
+              id="contact-name"
               {...register('name')}
-              className="luxury-input"
+              autoComplete="name"
+              className={inputClass}
               placeholder="Your full name"
+              aria-invalid={errors.name ? 'true' : undefined}
+              aria-describedby={errors.name ? 'name-error' : undefined}
             />
             {errors.name && (
-              <p className="text-red-400 text-xs mt-1.5">{errors.name.message}</p>
+              <p id="name-error" role="alert" className="text-[var(--error-text)] text-xs mt-1.5" style={{ animation: 'errorFadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
+                {errors.name.message}
+              </p>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Email Address <span className="text-[var(--gold)]">*</span>
+            <label htmlFor="contact-email" className={labelClass}>
+              Email Address <span className="text-[var(--gold-text)]">*</span>
             </label>
             <input
+              id="contact-email"
               {...register('email')}
               type="email"
-              className="luxury-input"
+              autoComplete="email"
+              className={inputClass}
               placeholder="your@email.com"
+              aria-invalid={errors.email ? 'true' : undefined}
+              aria-describedby={errors.email ? 'email-error' : undefined}
             />
             {errors.email && (
-              <p className="text-red-400 text-xs mt-1.5">{errors.email.message}</p>
+              <p id="email-error" role="alert" className="text-[var(--error-text)] text-xs mt-1.5" style={{ animation: 'errorFadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
+                {errors.email.message}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Phone & Subject row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            <label htmlFor="contact-phone" className={labelClass}>
               Phone Number
             </label>
             <input
+              id="contact-phone"
               {...register('phone')}
               type="tel"
-              className="luxury-input"
+              autoComplete="tel"
+              className={inputClass}
               placeholder="+971 50 123 4567"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Subject <span className="text-[var(--gold)]">*</span>
+            <label htmlFor="contact-subject" className={labelClass}>
+              Subject <span className="text-[var(--gold-text)]">*</span>
             </label>
-            <select
-              {...register('subject')}
-              className="luxury-input appearance-none cursor-pointer"
-            >
-              {subjectOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                id="contact-subject"
+                {...register('subject')}
+                className={`${inputClass} appearance-none cursor-pointer pr-10`}
+                aria-invalid={errors.subject ? 'true' : undefined}
+                aria-describedby={errors.subject ? 'subject-error' : undefined}
+              >
+                {subjectOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+            </div>
             {errors.subject && (
-              <p className="text-red-400 text-xs mt-1.5">{errors.subject.message}</p>
+              <p id="subject-error" role="alert" className="text-[var(--error-text)] text-xs mt-1.5" style={{ animation: 'errorFadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
+                {errors.subject.message}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Message */}
         <div>
-          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-            Message <span className="text-[var(--gold)]">*</span>
+          <label htmlFor="contact-message" className={labelClass}>
+            Message <span className="text-[var(--gold-text)]">*</span>
           </label>
           <textarea
+            id="contact-message"
             {...register('message')}
-            className="luxury-input"
+            className={`${inputClass} h-auto min-h-[140px] py-3`}
             rows={5}
-            placeholder="Tell us how we can help you..."
+            placeholder="Tell us how we can help..."
+            aria-invalid={errors.message ? 'true' : undefined}
+            aria-describedby={errors.message ? 'message-error' : undefined}
           />
           {errors.message && (
-            <p className="text-red-400 text-xs mt-1.5">{errors.message.message}</p>
+            <p id="message-error" role="alert" className="text-[var(--error-text)] text-xs mt-1.5" style={{ animation: 'errorFadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
+              {errors.message.message}
+            </p>
           )}
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-14 rounded-xl font-medium text-sm tracking-wide uppercase bg-gradient-to-r from-[#C6AA88] to-[#A68B5B] text-[var(--onyx)] hover:shadow-[0_0_30px_rgba(198,170,136,0.3)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full h-[52px] rounded-[4px] font-medium text-[0.875rem] tracking-[0.04em] uppercase bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold-medium)] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-5px_rgba(198,170,136,0.15),0_4px_8px_-4px_rgba(198,170,136,0.1)] active:bg-[var(--gold-deep)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] transition-[color,background-color,transform,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
@@ -184,10 +221,7 @@ export function ContactForm() {
               Sending...
             </>
           ) : (
-            <>
-              <Send className="w-4 h-4" />
-              Send Message
-            </>
+            'Send Message'
           )}
         </button>
       </div>

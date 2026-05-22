@@ -3,27 +3,24 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Loader2, Mail, Lock, User, Phone, Car, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
 import { registerAndAutoVerify } from '../actions'
-import { inputClass, fieldLabelClass } from '@/components/auth/auth-styles'
 
 interface CheckoutAuthFormProps {
   returnUrl: string
 }
 
-type TabKey = 'login' | 'register'
-
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'login', label: 'Sign in' },
-  { key: 'register', label: 'Create account' },
-]
-
 export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
   const router = useRouter()
   const prefersReducedMotion = useReducedMotion()
-  const [activeTab, setActiveTab] = useState<TabKey>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,12 +28,14 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [loginFieldErrors, setLoginFieldErrors] = useState<Record<string, string>>({})
 
   // Register form state
   const [registerEmail, setRegisterEmail] = useState('')
   const [registerPassword, setRegisterPassword] = useState('')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [showRegisterPassword, setShowRegisterPassword] = useState(false)
   const [registerFieldErrors, setRegisterFieldErrors] = useState<Record<string, string>>({})
@@ -50,7 +49,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
 
   const validatePassword = useCallback((password: string): string | null => {
     if (!password) return null
-    return password.length < 8 ? 'Password must be at least 8 characters' : null
+    return password.length < 6 ? 'Password must be at least 6 characters' : null
   }, [])
 
   const handleLoginBlur = useCallback((field: string, value: string) => {
@@ -76,11 +75,6 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
       return rest
     })
   }, [validateEmail, validatePassword])
-
-  const handleTabChange = (tab: TabKey) => {
-    setActiveTab(tab)
-    setError(null)
-  }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -116,8 +110,9 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
     setLoading(true)
     setError(null)
 
-    if (registerPassword.length < 8) {
-      setError('Password must be at least 8 characters')
+    // Validate password length
+    if (registerPassword.length < 6) {
+      setError('Password must be at least 6 characters')
       setLoading(false)
       return
     }
@@ -126,7 +121,8 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
       const result = await registerAndAutoVerify({
         email: registerEmail,
         password: registerPassword,
-        fullName: fullName,
+        firstName: firstName,
+        lastName: lastName,
         phone: phone
       })
 
@@ -147,263 +143,324 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
     }
   }
 
+  const cardMotionProps = prefersReducedMotion
+    ? {}
+    : {
+        initial: { opacity: 0, scale: 0.95 } as const,
+        animate: { opacity: 1, scale: 1 } as const,
+        transition: { duration: 0.5, delay: 0.2 },
+      }
+
+  const logoMotionProps = prefersReducedMotion
+    ? {}
+    : {
+        initial: { scale: 0 } as const,
+        animate: { scale: 1 } as const,
+        transition: { delay: 0.4, type: 'spring' as const, stiffness: 200 },
+      }
+
   return (
     <motion.div
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
-      animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="luxury-card auth-card-luxury backdrop-blur-md bg-luxury-darkGray/80 border border-luxury-gold/20 rounded-2xl p-6 sm:p-8 md:p-10"
+      {...cardMotionProps}
     >
-      <div className="rounded-[8px] border border-[var(--auth-card-border)] bg-[var(--auth-card-bg)] p-5 sm:p-7">
-        {/* Tabs */}
-        <div
-          role="tablist"
-          aria-label="Authentication"
-          className="auth-tabs"
+      <div className="relative z-10">
+        {/* Logo with Spring Animation */}
+        <motion.div
+          className="flex items-center justify-center mb-4 sm:mb-6"
+          {...logoMotionProps}
         >
-          {TABS.map((tab) => {
-            const selected = activeTab === tab.key
-            return (
-              <button
-                key={tab.key}
-                role="tab"
-                aria-selected={selected}
-                aria-controls={`checkout-panel-${tab.key}`}
-                id={`checkout-tab-${tab.key}`}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => handleTabChange(tab.key)}
-                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--auth-card-bg)] ${selected ? 'active' : ''}`}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
+          <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-luxury-gold/20 to-luxury-gold/5 backdrop-blur-sm border border-luxury-gold/30 flex items-center justify-center">
+            <Car className="h-6 w-6 sm:h-8 sm:w-8 text-luxury-gold" aria-hidden="true" />
+          </div>
+        </motion.div>
 
-        {/* Error */}
+        <h2 className="t-headline mb-2 text-center">
+          Complete Your Booking
+        </h2>
+        <p className="t-meta text-center mb-6">
+          Sign in or create an account to continue
+        </p>
+
+        {/* Error Alert - accessible with role="alert" */}
         {error && (
-          <div
-            role="alert"
-            aria-live="assertive"
-            className="mt-6 flex items-start gap-3 rounded-[4px] border border-[var(--auth-error-border)] bg-[var(--auth-error-bg)] p-4 text-[0.875rem] text-[var(--auth-error-text)]"
-          >
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-            <p>{error}</p>
+          <div role="alert" aria-live="assertive" className="mb-4">
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
+              animate={prefersReducedMotion ? false : { opacity: 1, y: 0 }}
+            >
+              <Alert className="bg-red-950/50 border-red-900/50" variant="destructive">
+                <AlertDescription className="text-red-200">{error}</AlertDescription>
+              </Alert>
+            </motion.div>
           </div>
         )}
 
-        {/* Login Tab */}
-        {activeTab === 'login' ? (
-          <form
-            id="checkout-panel-login"
-            role="tabpanel"
-            aria-labelledby="checkout-tab-login"
-            onSubmit={handleLogin}
-            className="flex flex-col gap-4"
-          >
-            <div>
-              <label htmlFor="login-email" className={fieldLabelClass}>Email</label>
-              <input
-                id="login-email"
-                type="email"
-                autoComplete="email"
-                placeholder="john@example.com"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                onBlur={(e) => handleLoginBlur('email', e.target.value)}
-                required
-                disabled={loading}
-                className={inputClass}
-                aria-invalid={!!loginFieldErrors.email}
-                aria-describedby={loginFieldErrors.email ? 'login-email-error' : undefined}
-              />
-              {loginFieldErrors.email && (
-                <p id="login-email-error" className="text-xs text-[var(--auth-error-text)] mt-1">{loginFieldErrors.email}</p>
-              )}
-            </div>
+        <Tabs defaultValue="login" className="w-full" onValueChange={() => setError(null)}>
+          <TabsList className="grid w-full grid-cols-2 p-1 bg-luxury-graphite/50 border border-luxury-gold/10 rounded-xl mb-6 h-auto">
+            <TabsTrigger
+              value="login"
+              className="checkout-auth-tab py-3 text-xs font-semibold tracking-[0.1em] uppercase text-luxury-textMuted rounded-lg transition-all"
+            >
+              Login
+            </TabsTrigger>
+            <TabsTrigger
+              value="register"
+              className="checkout-auth-tab py-3 text-xs font-semibold tracking-[0.1em] uppercase text-luxury-textMuted rounded-lg transition-all"
+            >
+              Register
+            </TabsTrigger>
+          </TabsList>
 
-            <div>
-              <label htmlFor="login-password" className={fieldLabelClass}>Password</label>
-              <div className="relative">
-                <input
-                  id="login-password"
-                  type={showLoginPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  onBlur={(e) => handleLoginBlur('password', e.target.value)}
-                  required
-                  disabled={loading}
-                  className={inputClass + ' pr-12'}
-                  aria-invalid={!!loginFieldErrors.password}
-                  aria-describedby={loginFieldErrors.password ? 'checkout-login-password-error' : undefined}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
-                >
-                  {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+          {/* Login Tab */}
+          <TabsContent value="login">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="login-email" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    onBlur={(e) => handleLoginBlur('email', e.target.value)}
+                    required
+                    className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    disabled={loading}
+                    aria-invalid={!!loginFieldErrors.email}
+                    aria-describedby={loginFieldErrors.email ? 'login-email-error' : undefined}
+                  />
+                </div>
+                {loginFieldErrors.email && (
+                  <p id="login-email-error" className="text-xs text-red-400 mt-1">{loginFieldErrors.email}</p>
+                )}
               </div>
-              {loginFieldErrors.password && (
-                <p id="checkout-login-password-error" className="text-xs text-[var(--auth-error-text)] mt-1">{loginFieldErrors.password}</p>
-              )}
-            </div>
 
-            <div className="flex items-center justify-end">
-              <a
-                href="/auth/forgot-password"
-                className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors"
-                aria-label="Reset your password"
+              <div className="space-y-2">
+                <Label htmlFor="login-password" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                  <Input
+                    id="login-password"
+                    type={showLoginPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                    className="h-12 sm:h-14 pl-12 pr-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="password-toggle"
+                    aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                  >
+                    {showLoginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    className="border-luxury-gold/30 data-[state=checked]:bg-luxury-gold data-[state=checked]:border-luxury-gold"
+                  />
+                  <span className="text-sm text-luxury-textSecondary">Remember me</span>
+                </label>
+                <a
+                  href="/auth/forgot-password"
+                  className="text-sm text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors"
+                  aria-label="Reset your password"
+                >
+                  Forgot password?
+                </a>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 sm:h-14 bg-gradient-to-br from-luxury-gold to-luxury-goldDeep hover:from-luxury-goldDeep hover:to-luxury-gold text-luxury-void font-sans uppercase tracking-[0.1em] font-semibold transition-all duration-300 active:scale-[0.98] rounded-xl shadow-[0_10px_30px_-10px_rgba(198,170,136,0.4)] hover:shadow-[0_15px_40px_-10px_rgba(198,170,136,0.5)]"
+                disabled={loading}
               >
-                Forgot
-              </a>
-            </div>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
+                    SIGNING IN...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                  </>
+                )}
+              </Button>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px] disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  Signing in
-                </>
-              ) : (
-                <>
-                  Sign in
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </>
-              )}
-            </button>
-          </form>
-        ) : (
-          /* Register Tab */
-          <form
-            id="checkout-panel-register"
-            role="tabpanel"
-            aria-labelledby="checkout-tab-register"
-            onSubmit={handleRegister}
-            className="flex flex-col gap-4"
-          >
-            <div>
-              <label htmlFor="checkout-full-name" className={fieldLabelClass}>Full name</label>
-              <input
-                id="checkout-full-name"
-                type="text"
-                autoComplete="name"
-                placeholder="As on your ID"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                disabled={loading}
-                className={inputClass}
-              />
-            </div>
+            </form>
+          </TabsContent>
 
-            <div>
-              <label htmlFor="register-email" className={fieldLabelClass}>Email</label>
-              <input
-                id="register-email"
-                type="email"
-                autoComplete="email"
-                placeholder="john@example.com"
-                value={registerEmail}
-                onChange={(e) => setRegisterEmail(e.target.value)}
-                onBlur={(e) => handleRegisterBlur('email', e.target.value)}
-                required
-                disabled={loading}
-                className={inputClass}
-                aria-invalid={!!registerFieldErrors.email}
-                aria-describedby={registerFieldErrors.email ? 'register-email-error' : undefined}
-              />
-              {registerFieldErrors.email && (
-                <p id="register-email-error" className="text-xs text-[var(--auth-error-text)] mt-1">{registerFieldErrors.email}</p>
-              )}
-            </div>
+          {/* Register Tab */}
+          <TabsContent value="register">
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="first-name" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                    First Name
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                    <Input
+                      id="first-name"
+                      type="text"
+                      placeholder="John"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label htmlFor="phone" className={fieldLabelClass}>Phone Number</label>
-              <input
-                id="phone"
-                type="tel"
-                autoComplete="tel"
-                placeholder="+1 234 567 8900"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={loading}
-                className={inputClass}
-              />
-              <p className="text-[0.6875rem] text-[var(--text-muted)] mt-1.5">Optional - can be added during checkout</p>
-            </div>
-
-            <div>
-              <label htmlFor="register-password" className={fieldLabelClass}>Password</label>
-              <div className="relative">
-                <input
-                  id="register-password"
-                  type={showRegisterPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  placeholder="Create a password"
-                  value={registerPassword}
-                  onChange={(e) => setRegisterPassword(e.target.value)}
-                  onBlur={(e) => handleRegisterBlur('password', e.target.value)}
-                  required
-                  disabled={loading}
-                  className={inputClass + ' pr-12'}
-                  aria-invalid={!!registerFieldErrors.password}
-                  aria-describedby={`register-password-hint${registerFieldErrors.password ? ' register-password-error' : ''}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                  aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
-                >
-                  {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                <div className="space-y-2">
+                  <Label htmlFor="last-name" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                    Last Name
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                    <Input
+                      id="last-name"
+                      type="text"
+                      placeholder="Doe"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                      className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
               </div>
-              <p id="register-password-hint" className="text-[0.6875rem] text-[var(--text-muted)] mt-1.5">
-                Minimum 8 characters
+
+              <div className="space-y-2">
+                <Label htmlFor="register-email" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                  <Input
+                    id="register-email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    onBlur={(e) => handleRegisterBlur('email', e.target.value)}
+                    required
+                    className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    disabled={loading}
+                    aria-invalid={!!registerFieldErrors.email}
+                    aria-describedby={registerFieldErrors.email ? 'register-email-error' : undefined}
+                  />
+                </div>
+                {registerFieldErrors.email && (
+                  <p id="register-email-error" className="text-xs text-red-400 mt-1">{registerFieldErrors.email}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                  Phone Number
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 234 567 8900"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="h-12 sm:h-14 pl-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    disabled={loading}
+                  />
+                </div>
+                <p className="text-[11px] text-luxury-textMuted">Optional - can be added during checkout</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="register-password" className="text-[11px] text-luxury-gold uppercase tracking-[0.1em] font-semibold">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-luxury-gold" aria-hidden="true" />
+                  <Input
+                    id="register-password"
+                    type={showRegisterPassword ? "text" : "password"}
+                    placeholder="Create a password"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    onBlur={(e) => handleRegisterBlur('password', e.target.value)}
+                    required
+                    className="h-12 sm:h-14 pl-12 pr-12 bg-luxury-black/40 border-luxury-gold/20 text-luxury-pearl placeholder:text-luxury-lightGray/50 focus:ring-2 focus:ring-luxury-gold focus:border-luxury-gold rounded-xl"
+                    disabled={loading}
+                    aria-invalid={!!registerFieldErrors.password}
+                    aria-describedby="register-password-hint"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                    className="password-toggle"
+                    aria-label={showRegisterPassword ? "Hide password" : "Show password"}
+                  >
+                    {showRegisterPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <p id="register-password-hint" className="text-[11px] text-luxury-textMuted">
+                  Minimum 6 characters
+                </p>
+                {registerFieldErrors.password && (
+                  <p className="text-xs text-red-400">{registerFieldErrors.password}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 sm:h-14 bg-gradient-to-br from-luxury-gold to-luxury-goldDeep hover:from-luxury-goldDeep hover:to-luxury-gold text-luxury-void font-sans uppercase tracking-[0.1em] font-semibold transition-all duration-300 active:scale-[0.98] rounded-xl shadow-[0_10px_30px_-10px_rgba(198,170,136,0.4)] hover:shadow-[0_15px_40px_-10px_rgba(198,170,136,0.5)]"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
+                    CREATING ACCOUNT...
+                  </>
+                ) : (
+                  <>
+                    Create Account
+                    <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                  </>
+                )}
+              </Button>
+
+              <p className="text-xs text-center text-luxury-lightGray mt-4">
+                By creating an account, you agree to our{' '}
+                <a href="/terms" className="text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors">
+                  Terms of Service
+                </a>
+                {' '}and{' '}
+                <a href="/privacy" className="text-luxury-gold hover:text-luxury-gold/80 font-medium transition-colors">
+                  Privacy Policy
+                </a>
               </p>
-              {registerFieldErrors.password && (
-                <p id="register-password-error" className="text-xs text-[var(--auth-error-text)] mt-1">{registerFieldErrors.password}</p>
-              )}
-            </div>
+            </form>
+          </TabsContent>
+        </Tabs>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px] disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  Creating account
-                </>
-              ) : (
-                <>
-                  Create account
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </>
-              )}
-            </button>
-
-            <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
-              By creating an account, you agree to our{' '}
-              <a href="/terms" className="text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
-                Terms of Service
-              </a>
-              {' '}and{' '}
-              <a href="/privacy" className="text-[var(--gold-text)] visited:text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors">
-                Privacy Policy
-              </a>
-            </p>
-          </form>
-        )}
       </div>
     </motion.div>
   )

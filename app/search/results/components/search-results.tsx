@@ -138,10 +138,15 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       ? Math.min(...results.vehicleTypes.map(vt => vt.price))
       : 0
 
+    const routeHeading = results.type === 'zone' && results.zone
+      ? `${results.zone.fromZone.name} → ${results.zone.toZone.name}`
+      : results.routeName || `${results.originName} → ${results.destinationName}`
+
     return (
     <div className="space-y-12 lg:space-y-16">
+      <h1 className="sr-only">{routeHeading}</h1>
       <motion.section
-        className="hidden rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] py-12 lg:py-16 px-8 lg:px-12"
+        className="hidden rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--charcoal)] py-12 lg:py-16 px-8 lg:px-12"
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -225,7 +230,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               >
                 <motion.div
-                  className="flex flex-wrap items-start gap-8 rounded-[8px] border border-[var(--graphite)] bg-[var(--black-warm)] dark:bg-[var(--charcoal)] px-6 py-5"
+                  className="flex flex-wrap items-start gap-8 rounded-[8px] border border-[var(--graphite)] bg-[var(--charcoal)] px-6 py-5"
                   initial={prefersReducedMotion ? false : "hidden"}
                   animate={prefersReducedMotion ? undefined : "visible"}
                   variants={filterStaggerVariants}
@@ -237,7 +242,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                         <button
                           key={opt}
                           onClick={() => setCapacityFilter(opt)}
-                          className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] uppercase tracking-[0.08em] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${capacityFilter === opt ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
+                          className={`rounded-[4px] border min-h-[44px] px-4 py-2.5 text-[0.75rem] uppercase tracking-[0.08em] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${capacityFilter === opt ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
                         >
                           {opt === 'any' ? 'Any' : opt}
                         </button>
@@ -255,7 +260,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                             <button
                               key={feature}
                               onClick={() => toggleFeature(feature)}
-                              className={`rounded-[4px] border px-3 py-1.5 text-[0.75rem] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${active ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
+                              className={`rounded-[4px] border min-h-[44px] px-4 py-2.5 text-[0.75rem] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${active ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
                             >
                               {feature}
                             </button>

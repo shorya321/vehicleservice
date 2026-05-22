@@ -2,8 +2,10 @@ import { Metadata } from "next"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
+import { AuthHeroStatic } from "@/components/auth/auth-hero-static"
+import { AuthLogo } from "@/components/auth/auth-logo"
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: "Verify Email",
@@ -16,101 +18,105 @@ interface VerifyEmailPageProps {
   }>
 }
 
-function VerifyLayout({
-  icon,
-  iconClass,
-  eyebrow,
-  headline,
-  body,
-  cta,
-}: {
-  icon: React.ReactNode
-  iconClass: string
-  eyebrow: string
-  headline: string
-  body: string
-  cta: { label: string; href: string }
-}) {
-  return (
-    <main className="auth-verify-page flex min-h-screen items-center justify-center bg-[var(--black-void)] px-6">
-      <div className="w-full max-w-[480px] text-center">
-        <div
-          className={`mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full ${iconClass}`}
-        >
-          {icon}
-        </div>
-
-        <div className="editorial-eyebrow">{eyebrow}</div>
-
-        <h1 className="mt-5 text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)]">
-          {headline}
-        </h1>
-
-        <p className="mx-auto mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
-          {body}
-        </p>
-
-        <Link
-          href={cta.href}
-          className="btn btn-primary mt-10 inline-flex h-[52px] items-center justify-center rounded-[4px] px-8"
-        >
-          {cta.label}
-        </Link>
-      </div>
-    </main>
-  )
-}
-
-export default async function VerifyEmailPage({
-  searchParams,
-}: VerifyEmailPageProps) {
+export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
   const params = await searchParams
   const { token } = params
 
   if (!token) {
     return (
-      <VerifyLayout
-        icon={<XCircle className="h-8 w-8" aria-hidden="true" />}
-        iconClass="bg-[rgba(var(--destructive-rgb),0.1)] text-[rgba(var(--destructive-rgb),1)]"
-        eyebrow="Verification"
-        headline="Invalid link."
-        body="The verification link is invalid or missing. Request a new one from sign-in."
-        cta={{ label: "Go to sign in", href: "/login" }}
-      />
+      <main className="auth-page">
+        <AuthHeroStatic />
+        <section className="auth-panel">
+          <div className="auth-container">
+            <div className="lg:hidden text-center mb-8">
+              <AuthLogo className="text-2xl" />
+            </div>
+            <XCircle className="h-12 w-12 text-[hsl(var(--destructive))]" />
+            <div className="editorial-eyebrow mt-6">Invalid Link</div>
+            <h1 className="editorial-headline mt-6">
+              Invalid <em>link.</em>
+            </h1>
+            <p className="editorial-body mt-6 max-w-md">
+              The verification link is invalid or missing. Request a new one from your account settings.
+            </p>
+            <Link
+              href="/login"
+              className="btn btn-primary mt-10 inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
+            >
+              Go to login
+            </Link>
+          </div>
+        </section>
+      </main>
     )
   }
 
   const supabase = await createAdminClient()
 
-  const { data: result, error } = await supabase.rpc(
-    "verify_email_with_token",
-    { p_token: token }
-  )
+  const { data: result, error } = await supabase
+    .rpc('verify_email_with_token', { p_token: token })
 
-  if (error || !result?.success) {
+  if (error || !(result as Record<string, unknown>)?.success) {
     return (
-      <VerifyLayout
-        icon={<XCircle className="h-8 w-8" aria-hidden="true" />}
-        iconClass="bg-[rgba(var(--destructive-rgb),0.1)] text-[rgba(var(--destructive-rgb),1)]"
-        eyebrow="Verification"
-        headline="Verification failed."
-        body={
-          result?.error ||
-          "The verification link is invalid or has expired. Please contact support if you need assistance."
-        }
-        cta={{ label: "Go to sign in", href: "/login" }}
-      />
+      <main className="auth-page">
+        <AuthHeroStatic />
+        <section className="auth-panel">
+          <div className="auth-container">
+            <div className="lg:hidden text-center mb-8">
+              <AuthLogo className="text-2xl" />
+            </div>
+            <XCircle className="h-12 w-12 text-[hsl(var(--destructive))]" />
+            <div className="editorial-eyebrow mt-6">Verification Failed</div>
+            <h1 className="editorial-headline mt-6">
+              Verification <em>failed.</em>
+            </h1>
+            <p className="editorial-body mt-6 max-w-md">
+              {(result as Record<string, unknown>)?.error as string || "The verification link is invalid or has expired."}
+            </p>
+            <div className="mt-10 flex gap-4">
+              <Link
+                href="/login"
+                className="btn btn-primary inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
+              >
+                Go to login
+              </Link>
+              <Link
+                href="/contact"
+                className="btn btn-secondary inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
+              >
+                Contact support
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
     )
   }
 
   return (
-    <VerifyLayout
-      icon={<CheckCircle2 className="h-8 w-8" aria-hidden="true" />}
-      iconClass="bg-[rgba(var(--gold-rgb),0.1)] text-[var(--gold)]"
-      eyebrow="Verified"
-      headline="Email confirmed."
-      body="Your email address has been verified. You can now sign in to your account with full access."
-      cta={{ label: "Continue to sign in", href: "/login" }}
-    />
+    <main className="auth-page">
+      <AuthHeroStatic />
+      <section className="auth-panel">
+        <div className="auth-container">
+          <div className="mb-10 lg:hidden">
+            <AuthLogo className="text-2xl" />
+          </div>
+          <CheckCircle2 className="h-12 w-12 text-[var(--gold)]" />
+          <div className="editorial-eyebrow mt-6">Verified</div>
+          <h1 className="editorial-headline mt-6">
+            Email <em>confirmed.</em>
+          </h1>
+          <p className="editorial-body mt-6 max-w-md">
+            Your email address has been verified. You can now log in with full access.
+          </p>
+          <Link
+            href="/login"
+            className="btn btn-primary mt-10 inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
+          >
+            Continue to login
+          </Link>
+        </div>
+      </section>
+    </main>
   )
 }

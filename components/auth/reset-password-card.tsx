@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, useReducedMotion } from "motion/react"
 import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
-import { inputClass, fieldLabelClass } from "@/components/auth/auth-styles"
+import { inputClass, fieldLabelClass } from "./auth-classes"
 
 export function ResetPasswordCard() {
   const reduceMotion = useReducedMotion()
@@ -20,11 +20,11 @@ export function ResetPasswordCard() {
   const [loading, setLoading] = useState(false)
 
   if (!token) {
-    router.push("/forgot-password")
+    router.push("/forgot-password?expired=true")
     return null
   }
 
-  const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -50,12 +50,13 @@ export function ResetPasswordCard() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Failed to update password")
+        setError(data.error || "We couldn't update your password. The link may have expired.")
       } else {
         router.push("/login?message=Password updated successfully")
       }
-    } catch {
-      setError("An unexpected error occurred")
+    } catch (err) {
+      console.error("Password update error:", err)
+      setError("We couldn't reach our servers. Check your connection and try again.")
     } finally {
       setLoading(false)
     }
@@ -68,10 +69,10 @@ export function ResetPasswordCard() {
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="editorial-eyebrow">Set new password</div>
-      <h1 className="editorial-headline mt-5 text-[clamp(2rem,4vw,2.75rem)]">
+      <h1 className="editorial-headline mt-6">
         Pick a fresh <em>password.</em>
       </h1>
-      <p className="mt-5 max-w-md text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+      <p className="editorial-body mt-6 max-w-md">
         Minimum 8 characters. Use whatever your password manager generates.
       </p>
 
@@ -79,10 +80,10 @@ export function ResetPasswordCard() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[var(--auth-error-border)] bg-[var(--auth-error-bg)] p-4 text-[0.875rem] text-[var(--auth-error-text)]"
+          className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <p>{error}</p>
+          <p className="break-words">{error}</p>
         </div>
       )}
 
@@ -98,23 +99,20 @@ export function ResetPasswordCard() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
+              maxLength={128}
               disabled={loading}
               placeholder="At least 8 characters"
               className={inputClass + " pr-12"}
-              aria-describedby="rp-password-hint"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-warm)]"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <p id="rp-password-hint" className="text-[0.6875rem] text-[var(--text-muted)] mt-1.5">
-            Minimum 8 characters
-          </p>
         </div>
 
         <div>
@@ -128,16 +126,16 @@ export function ResetPasswordCard() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={8}
+              maxLength={128}
               disabled={loading}
               placeholder="Repeat your password"
               className={inputClass + " pr-12"}
-              aria-invalid={!!error && password !== confirmPassword}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-              className="absolute right-1 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:text-[var(--gold)]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-warm)]"
             >
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -147,11 +145,11 @@ export function ResetPasswordCard() {
         <button
           type="submit"
           disabled={loading}
-          className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px] disabled:opacity-60"
+          className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px]"
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Updating
             </>
           ) : (

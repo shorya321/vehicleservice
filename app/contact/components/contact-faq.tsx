@@ -30,41 +30,49 @@ export function ContactFaq() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-3">
-      {faqs.map((faq, index) => {
-        const isOpen = openIndex === index
-        return (
-          <div
-            key={index}
-            className="luxury-card overflow-hidden"
-          >
-            <button
-              onClick={() => setOpenIndex(isOpen ? null : index)}
-              className="w-full flex items-center justify-between p-5 text-left"
-            >
-              <span className="text-sm font-medium text-[var(--text-primary)] pr-4">
-                {faq.question}
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 text-[var(--gold)] shrink-0 transition-transform duration-300 ${
-                  isOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-            <div
-              className="overflow-hidden transition-all duration-300"
-              style={{
-                maxHeight: isOpen ? '200px' : '0',
-                opacity: isOpen ? 1 : 0,
-              }}
-            >
-              <p className="px-5 pb-5 text-sm text-[var(--text-secondary)] leading-relaxed">
-                {faq.answer}
-              </p>
+    <div className="max-w-3xl mx-auto">
+      <div className="divide-y divide-[var(--graphite)]">
+        {faqs.map((faq, index) => {
+          const isOpen = openIndex === index
+          return (
+            <div key={faq.question}>
+              <button
+                id={`faq-trigger-${index}`}
+                onClick={() => setOpenIndex(isOpen ? null : index)}
+                className="w-full flex items-center justify-between py-5 text-left group rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+                aria-expanded={isOpen}
+                aria-controls={`faq-answer-${index}`}
+              >
+                <span className="text-[0.9375rem] font-medium text-[var(--text-primary)] pr-4 group-hover:text-[var(--gold-text-hover)] transition-colors duration-200">
+                  {faq.question}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-[var(--text-muted)] shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              <div
+                id={`faq-answer-${index}`}
+                role="region"
+                aria-labelledby={`faq-trigger-${index}`}
+                aria-hidden={!isOpen}
+                className="grid transition-[grid-template-rows,opacity] duration-200"
+                style={{
+                  gridTemplateRows: isOpen ? '1fr' : '0fr',
+                  opacity: isOpen ? 1 : 0,
+                }}
+              >
+                <div className="overflow-hidden">
+                  <p className="pb-5 text-[0.9375rem] leading-[1.7] tracking-[0.01em] text-[var(--text-secondary)] max-w-[65ch] [text-wrap:pretty]">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }

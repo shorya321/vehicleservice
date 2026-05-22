@@ -8,7 +8,7 @@ interface TagCloudProps {
 export function TagCloud({ tags, currentSlug }: TagCloudProps) {
   return (
     <section
-      className="editorial-section editorial-section--ground bg-[var(--black-void)]"
+      className="editorial-section editorial-section--compact editorial-section--ground"
       aria-label="Related topics"
     >
       <div className="luxury-container">

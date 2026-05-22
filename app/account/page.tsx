@@ -22,25 +22,6 @@ async function getAccountData(userId: string) {
     .eq("id", userId)
     .single()
 
-  // Fetch booking stats
-  const [totalResult, upcomingResult, completedResult] = await Promise.all([
-    adminClient
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .eq("customer_id", userId),
-    adminClient
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .eq("customer_id", userId)
-      .eq("booking_status", "confirmed")
-      .gte("pickup_datetime", new Date().toISOString()),
-    adminClient
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .eq("customer_id", userId)
-      .eq("booking_status", "completed"),
-  ])
-
   // Fetch notification preferences
   const { data: notificationPrefs } = await adminClient
     .from("notification_preferences")
@@ -63,16 +44,20 @@ async function getAccountData(userId: string) {
     .eq("user_id", userId)
     .single()
 
+  // Fetch unread notification count for sidebar badge
+  const { count: unreadNotifications } = await adminClient
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .in("category", ["booking", "payment", "system"])
+    .eq("is_read", false)
+
   return {
     profile,
-    stats: {
-      total: totalResult.count || 0,
-      upcoming: upcomingResult.count || 0,
-      completed: completedResult.count || 0,
-    },
     notificationPrefs,
     deletionRequest,
     vendorApplication,
+    unreadNotifications: unreadNotifications || 0,
   }
 }
 
@@ -92,7 +77,7 @@ export default async function AccountPage({
     redirect("/login")
   }
 
-  const { profile, stats, notificationPrefs, deletionRequest, vendorApplication } = await getAccountData(user.id)
+  const { profile, notificationPrefs, deletionRequest, vendorApplication, unreadNotifications } = await getAccountData(user.id)
 
   if (!profile) {
     redirect("/login")
@@ -126,10 +111,10 @@ export default async function AccountPage({
               address_country: profile.address_country,
               created_at: profile.created_at,
             }}
-            stats={stats}
             notificationPrefs={notificationPrefs}
             deletionRequest={deletionRequest}
             vendorApplication={vendorApplication}
+            unreadNotifications={unreadNotifications}
           />
         </div>
       </div>
