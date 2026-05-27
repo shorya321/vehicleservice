@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
-import { AuthHeroStatic } from "@/components/auth/auth-hero-static"
+import { AuthHeroPanelStatic } from "@/components/auth/auth-hero-panel-static"
 import { AuthLogo } from "@/components/auth/auth-logo"
 
 export const dynamic = 'force-dynamic'
@@ -25,13 +25,13 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
   if (!token) {
     return (
       <main className="auth-page">
-        <AuthHeroStatic />
+        <AuthHeroPanelStatic />
         <section className="auth-panel">
           <div className="auth-container">
             <div className="lg:hidden text-center mb-8">
               <AuthLogo className="text-2xl" />
             </div>
-            <XCircle className="h-12 w-12 text-[hsl(var(--destructive))]" />
+            <XCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
             <div className="editorial-eyebrow mt-6">Invalid Link</div>
             <h1 className="editorial-headline mt-6">
               Invalid <em>link.</em>
@@ -59,13 +59,13 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
   if (error || !(result as Record<string, unknown>)?.success) {
     return (
       <main className="auth-page">
-        <AuthHeroStatic />
+        <AuthHeroPanelStatic />
         <section className="auth-panel">
           <div className="auth-container">
             <div className="lg:hidden text-center mb-8">
               <AuthLogo className="text-2xl" />
             </div>
-            <XCircle className="h-12 w-12 text-[hsl(var(--destructive))]" />
+            <XCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
             <div className="editorial-eyebrow mt-6">Verification Failed</div>
             <h1 className="editorial-headline mt-6">
               Verification <em>failed.</em>
@@ -95,13 +95,13 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
 
   return (
     <main className="auth-page">
-      <AuthHeroStatic />
+      <AuthHeroPanelStatic />
       <section className="auth-panel">
         <div className="auth-container">
-          <div className="mb-10 lg:hidden">
+          <div className="mb-8 lg:hidden">
             <AuthLogo className="text-2xl" />
           </div>
-          <CheckCircle2 className="h-12 w-12 text-[var(--gold)]" />
+          <CheckCircle2 className="h-12 w-12 text-[var(--gold)]" aria-hidden="true" />
           <div className="editorial-eyebrow mt-6">Verified</div>
           <h1 className="editorial-headline mt-6">
             Email <em>confirmed.</em>

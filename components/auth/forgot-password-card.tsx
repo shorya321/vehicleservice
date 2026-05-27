@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { motion, useReducedMotion } from "motion/react"
+import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { inputClass, fieldLabelClass } from "./auth-classes"
@@ -16,7 +16,7 @@ export function ForgotPasswordCard() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
@@ -36,8 +36,7 @@ export function ForgotPasswordCard() {
       } else {
         setMessage("Check your inbox for the reset link.")
       }
-    } catch (err) {
-      console.error("Password reset error:", err)
+    } catch {
       setError("We couldn't reach our servers. Check your connection and try again.")
     } finally {
       setLoading(false)
@@ -58,38 +57,59 @@ export function ForgotPasswordCard() {
         Enter the email you booked with. We&rsquo;ll send a one-time link valid for one hour.
       </p>
 
-      {expired && !message && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
-        >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <p className="break-words">Your reset link has expired. Enter your email to get a new one.</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {expired && !message && (
+          <motion.div
+            key="expired"
+            role="alert"
+            aria-live="assertive"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <p className="break-words">Your reset link has expired. Enter your email to get a new one.</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {message && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
-        >
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden />
-          <p className="break-words">{message}</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {message && (
+          <motion.div
+            key="success"
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+          >
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden="true" />
+            <p className="break-words">{message}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {error && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
-        >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <p className="break-words">{error}</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            key="error"
+            role="alert"
+            aria-live="assertive"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <p className="break-words">{error}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <form onSubmit={handleResetPassword} className="mt-8 flex flex-col gap-5">
         <div>
@@ -127,7 +147,7 @@ export function ForgotPasswordCard() {
           href="/login"
           className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
         >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Back to sign in
         </Link>
       </form>

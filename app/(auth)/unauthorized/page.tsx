@@ -1,18 +1,18 @@
 import { ShieldAlert } from "lucide-react"
 import Link from "next/link"
-import { AuthHeroStatic } from "@/components/auth/auth-hero-static"
+import { AuthHeroPanelStatic } from "@/components/auth/auth-hero-panel-static"
 import { AuthLogo } from "@/components/auth/auth-logo"
 
 export default function UnauthorizedPage() {
   return (
     <main className="auth-page">
-      <AuthHeroStatic />
+      <AuthHeroPanelStatic />
       <section className="auth-panel">
         <div className="auth-container">
           <div className="lg:hidden text-center mb-8">
             <AuthLogo className="text-2xl" />
           </div>
-          <ShieldAlert className="h-12 w-12 text-[hsl(var(--destructive))]" />
+          <ShieldAlert className="h-12 w-12 text-destructive" aria-hidden="true" />
           <div className="editorial-eyebrow mt-6">Access Denied</div>
           <h1 className="editorial-headline mt-6">
             Not <em>authorized.</em>

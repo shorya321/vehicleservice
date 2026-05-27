@@ -12,7 +12,7 @@ interface AuthPageProps {
 
 function AuthPageContent({ initialTab }: AuthPageProps) {
   return (
-    <main className="auth-page min-h-screen bg-[var(--black-void)]">
+    <main className="auth-page">
       <AuthHeroPanel />
 
       <section className="auth-panel">
@@ -31,7 +31,7 @@ export function AuthPage({ initialTab }: AuthPageProps) {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[var(--black-void)]">
+        <div className="flex min-h-screen items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--gold)]" />
         </div>
       }

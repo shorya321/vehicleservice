@@ -4,8 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { CheckoutLoginContent } from './components/checkout-login-content'
 
-export const dynamic = 'force-dynamic'
-
 export const metadata: Metadata = {
   title: 'Login to Continue | Secure Checkout',
   description: 'Login or create an account to complete your booking',

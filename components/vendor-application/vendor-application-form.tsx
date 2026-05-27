@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -28,6 +27,9 @@ import {
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { countries } from "@/lib/constants/countries"
+
+const checkoutFieldBase = "bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold-text)]/20 focus:border-[var(--gold-text)] hover:border-[rgba(var(--gold-text-rgb),0.3)] transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+const checkoutInputStyles = `h-[52px] ${checkoutFieldBase}`
 
 const vendorApplicationSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
@@ -102,6 +104,17 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
     },
   })
 
+  const isDirty = form.formState.isDirty
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirty) return
+      e.preventDefault()
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [isDirty])
+
   async function onSubmit(data: VendorApplicationFormData) {
     setIsSubmitting(true)
     const supabase = createClient()
@@ -153,7 +166,6 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
       toast.success("Application submitted successfully! We'll review it within 48 hours.")
       router.push('/vendor-application')
     } catch (error) {
-      console.error('Error submitting application:', error)
       toast.error("Failed to submit application. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -162,53 +174,30 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="businessName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Business Name *</FormLabel>
-              <FormControl>
-                <Input placeholder="ABC Car Rentals" {...field} />
-              </FormControl>
-              <FormDescription>
-                Your registered business name or trading name
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="vendor-form space-y-8" aria-busy={isSubmitting}>
 
-        <FormField
-          control={form.control}
-          name="registrationNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Business Registration Number *</FormLabel>
-              <FormControl>
-                <Input placeholder="123456789" {...field} />
-              </FormControl>
-              <FormDescription>
-                Your official business registration number (required for verification)
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* Section 1: Business Information */}
+        <fieldset className="space-y-5 border-0 p-0 m-0">
+          <legend className="sr-only">Business Information</legend>
+          <div>
+            <p className="t-label-accent mb-1" aria-hidden="true">
+              Business Information
+            </p>
+            <p className="text-sm text-[var(--text-muted)]">
+              Core details about your company.
+            </p>
+          </div>
           <FormField
             control={form.control}
-            name="businessEmail"
+            name="businessName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Email</FormLabel>
+                <FormLabel className="text-[var(--text-secondary)]">Business Name *</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="contact@business.com" {...field} />
+                  <Input className={checkoutInputStyles} placeholder="ABC Car Rentals" aria-required="true" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Contact email for business inquiries
+                <FormDescription className="text-xs text-[var(--text-muted)]">
+                  Your registered business name or trading name
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -217,269 +206,299 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
 
           <FormField
             control={form.control}
-            name="businessPhone"
+            name="registrationNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Phone</FormLabel>
+                <FormLabel className="text-[var(--text-secondary)]">Business Registration Number *</FormLabel>
                 <FormControl>
-                  <Input placeholder="+971 50 123 4567" {...field} />
+                  <Input className={checkoutInputStyles} placeholder="123456789" aria-required="true" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Primary contact number
+                <FormDescription className="text-xs text-[var(--text-muted)]">
+                  Your company or commercial registration number issued by the licensing authority
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="businessAddress"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Business Address</FormLabel>
-              <FormControl>
-                <Input placeholder="123 Main Street, Building A" {...field} />
-              </FormControl>
-              <FormDescription>
-                Your business location or office address
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="businessCity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>City</FormLabel>
-                <FormControl>
-                  <Input placeholder="Dubai" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="businessCountryCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Country</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <div className="grid gap-5 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="businessEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Business Email</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
+                    <Input type="email" className={checkoutInputStyles} placeholder="contact@business.com" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        {country.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="businessPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Business Phone</FormLabel>
+                  <FormControl>
+                    <Input className={checkoutInputStyles} placeholder="+971 50 123 4567" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="businessAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[var(--text-secondary)]">Business Address</FormLabel>
+                <FormControl>
+                  <Input className={checkoutInputStyles} placeholder="123 Main Street, Building A" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="businessDescription"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Business Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Tell us about your business, the types of vehicles you offer, and your experience in the rental industry..."
-                  className="min-h-[120px]"
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Help us understand your business better
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <div className="grid gap-5 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="businessCity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">City</FormLabel>
+                  <FormControl>
+                    <Input className={checkoutInputStyles} placeholder="Dubai" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        {/* Required Documents Section */}
-        <div className="space-y-4">
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4">Documents (Required)</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              These documents are required for verification and approval of your vendor application
-            </p>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="tradeLicenseNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trade License Number *</FormLabel>
+            <FormField
+              control={form.control}
+              name="businessCountryCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Country</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input placeholder="TL-123456789" {...field} />
+                      <SelectTrigger className={`h-[52px] ${checkoutFieldBase}`}>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tradeLicenseExpiry"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trade License Expiry *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="insurancePolicyNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Insurance Policy Number *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="INS-123456789" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="insuranceExpiry"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Insurance Expiry *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-        </div>
 
-        {/* Optional Banking Details Section */}
-        <div className="space-y-4">
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4">Banking Details (Optional)</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Bank account information for payments. Can be completed later if preferred.
+          <FormField
+            control={form.control}
+            name="businessDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[var(--text-secondary)]">Business Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Tell us about your business, the types of vehicles you offer, and your experience in the industry..."
+                    className={`${checkoutFieldBase} min-h-[100px] resize-none`}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </fieldset>
+
+        {/* Divider */}
+        <div className="border-t border-[rgba(var(--gold-text-rgb),0.2)]" />
+
+        {/* Section 2: Verification Documents */}
+        <fieldset className="space-y-5 border-0 p-0 m-0">
+          <legend className="sr-only">Verification Documents</legend>
+          <div>
+            <p className="t-label-accent mb-1" aria-hidden="true">
+              Verification Documents
             </p>
-            
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="bankName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Bank Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Emirates NBD" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="accountHolderName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Account Holder Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ABC Car Rentals LLC" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="accountNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Account Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="1234567890" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="swiftCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>SWIFT Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="EBILAEAD" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="iban"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>IBAN</FormLabel>
-                    <FormControl>
-                      <Input placeholder="AE07 0331 2345 6789 0123 456" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      International Bank Account Number for international transfers
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <p className="text-sm text-[var(--text-muted)]">
+              Required for approval. Ensure documents are current.
+            </p>
           </div>
-        </div>
 
-        <div className="flex gap-4">
-          <Button type="submit" disabled={isSubmitting}>
+          <div className="grid gap-5 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="tradeLicenseNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Trade License Number *</FormLabel>
+                  <FormControl>
+                    <Input className={checkoutInputStyles} placeholder="TL-123456789" aria-required="true" {...field} />
+                  </FormControl>
+                  <FormDescription className="text-xs text-[var(--text-muted)]">Found on your trade license document</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tradeLicenseExpiry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Trade License Expiry *</FormLabel>
+                  <FormControl>
+                    <Input type="date" className={`${checkoutInputStyles} dark:[color-scheme:dark]`} aria-required="true" {...field} />
+                  </FormControl>
+                  <FormDescription className="text-xs text-[var(--text-muted)]">Must be a future date</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="insurancePolicyNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Insurance Policy Number *</FormLabel>
+                  <FormControl>
+                    <Input className={checkoutInputStyles} placeholder="INS-123456789" aria-required="true" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="insuranceExpiry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Insurance Expiry *</FormLabel>
+                  <FormControl>
+                    <Input type="date" className={`${checkoutInputStyles} dark:[color-scheme:dark]`} aria-required="true" {...field} />
+                  </FormControl>
+                  <FormDescription className="text-xs text-[var(--text-muted)]">Must be a future date</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </fieldset>
+
+        {/* Divider */}
+        <div className="border-t border-[rgba(var(--gold-text-rgb),0.2)]" />
+
+        {/* Section 3: Banking Details (Optional) */}
+        <fieldset className="space-y-5 border-0 p-0 m-0">
+          <legend className="sr-only">Banking Details</legend>
+          <div>
+            <p className="t-label-accent mb-1" aria-hidden="true">
+              Banking Details
+            </p>
+            <p className="text-sm text-[var(--text-muted)]">
+              For payout processing. You can complete this later from your vendor dashboard.
+            </p>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="bankName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[var(--text-secondary)]">Bank Name <span className="text-[var(--text-muted)] font-normal ml-1.5">(optional)</span></FormLabel>
+                <FormControl>
+                  <Input className={checkoutInputStyles} placeholder="Emirates NBD" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="accountHolderName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[var(--text-secondary)]">Account Holder Name <span className="text-[var(--text-muted)] font-normal ml-1.5">(optional)</span></FormLabel>
+                <FormControl>
+                  <Input className={checkoutInputStyles} placeholder="ABC Car Rentals LLC" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="accountNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">Account Number <span className="text-[var(--text-muted)] font-normal ml-1.5">(optional)</span></FormLabel>
+                  <FormControl>
+                    <Input className={checkoutInputStyles} placeholder="1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="swiftCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[var(--text-secondary)]">SWIFT Code <span className="text-[var(--text-muted)] font-normal ml-1.5">(optional)</span></FormLabel>
+                  <FormControl>
+                    <Input className={checkoutInputStyles} placeholder="EBILAEAD" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="iban"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[var(--text-secondary)]">IBAN <span className="text-[var(--text-muted)] font-normal ml-1.5">(optional)</span></FormLabel>
+                <FormControl>
+                  <Input className={checkoutInputStyles} placeholder="AE07 0331 2345 6789 0123 456" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </fieldset>
+
+        {/* Divider */}
+        <div className="border-t border-[rgba(var(--gold-text-rgb),0.2)]" />
+
+        {/* Actions */}
+        <div className="pt-6">
+          <button type="submit" disabled={isSubmitting} className="checkout-btn-primary min-w-[160px]">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Submit Application
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push('/account')}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
+          </button>
         </div>
       </form>
     </Form>

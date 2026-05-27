@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { ArrowLeft, Building2, FileText, CreditCard, Info } from "lucide-react"
+import { ArrowLeft, Check } from "lucide-react"
 import Link from "next/link"
 import { VendorApplicationForm } from "@/components/vendor-application/vendor-application-form"
 import { PublicLayout } from "@/components/layout/public-layout"
@@ -12,6 +12,31 @@ export const metadata: Metadata = {
   title: "Become a Vendor | Start Your Transfer Business",
   description: "Apply to list your vehicles and start your rental business with us",
 }
+
+const benefits = [
+  {
+    number: "01",
+    title: "No upfront fees",
+    description: "Commission on completed bookings only. Zero cost to join the platform.",
+  },
+  {
+    number: "02",
+    title: "48-hour review",
+    description: "Every application is reviewed by our team within two business days.",
+  },
+  {
+    number: "03",
+    title: "Weekly payouts",
+    description: "Earnings deposited directly to your bank account each week.",
+  },
+]
+
+const requirements = [
+  "Business registration number",
+  "Current trade license",
+  "Valid insurance policy",
+  "Banking details (optional initially)",
+]
 
 export default async function BecomeVendorPage() {
   const supabase = await createClient()
@@ -46,102 +71,100 @@ export default async function BecomeVendorPage() {
 
   return (
     <PublicLayout>
-    <div className="bg-[var(--black-void)]">
-      <div className="luxury-container py-8 md:py-12">
-        {/* Back Link */}
-        <Link
-          href="/account"
-          className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Account
-        </Link>
+      <div className="bg-[var(--black-void)] min-h-screen">
+        <div className="luxury-container py-8 md:py-12 lg:py-16">
+          {/* Back Link */}
+          <Link
+            href="/account"
+            className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold-text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors mb-8 lg:mb-12 py-3 -my-3 motion-safe:animate-in fade-in-0 duration-300"
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            Back to Account
+          </Link>
 
-        <div className="max-w-3xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-medium text-[var(--text-primary)] mb-3">
-              Become a Vendor
-            </h1>
-            <p className="text-[var(--text-muted)] max-w-lg mx-auto">
-              Apply to list your vehicles and start earning with our premium transfer service
-            </p>
-          </div>
+          {/* Two-column grid on desktop, single column on mobile/tablet */}
+          <div className="lg:grid lg:grid-cols-[2fr_3fr] lg:gap-16 xl:gap-20">
 
-          {/* Benefits */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <BenefitCard
-              icon={<Building2 className="w-5 h-5" />}
-              title="No Upfront Fees"
-              description="Join for free - we only charge a small commission on completed bookings"
-            />
-            <BenefitCard
-              icon={<FileText className="w-5 h-5" />}
-              title="Quick Approval"
-              description="Applications reviewed within 48 hours by our team"
-            />
-            <BenefitCard
-              icon={<CreditCard className="w-5 h-5" />}
-              title="Fast Payouts"
-              description="Get paid directly to your bank account weekly"
-            />
-          </div>
+            {/* Left Column — Persuasion (sticky on desktop) */}
+            <div className="lg:sticky lg:top-28 lg:self-start mb-10 lg:mb-0 motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+              <h1 className="editorial-section-title--promoted [text-wrap:balance] mb-4">
+                Partner with Infinia
+              </h1>
+              <p className="text-[var(--text-secondary)] leading-relaxed mb-10 max-w-md">
+                List your vehicles on our premium transfer platform and grow your business with access to high-value bookings.
+              </p>
 
-          {/* Info Alert */}
-          <div className="luxury-card p-4 border-[var(--gold)]/30 bg-[var(--gold)]/5">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-[var(--gold)] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-[var(--gold)] mb-2">Before you apply:</p>
-                <ul className="text-sm text-[var(--text-muted)] space-y-1 list-disc list-inside">
-                  <li>Have your business registration documents ready</li>
-                  <li>Ensure your trade license and insurance are current</li>
-                  <li>Prepare your banking details for payouts</li>
+              {/* Benefits — typographic, no card wrappers */}
+              <div className="space-y-6 mb-10">
+                {benefits.map((benefit) => (
+                  <div key={benefit.number} className="flex gap-4">
+                    <span className="text-lg font-semibold text-[var(--gold-text)] tabular-nums leading-6 shrink-0">
+                      {benefit.number}
+                    </span>
+                    <div>
+                      <p className="text-[var(--text-primary)] font-semibold leading-6">
+                        {benefit.title}
+                      </p>
+                      <p className="text-sm text-[var(--text-muted)] leading-relaxed mt-0.5">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Requirements checklist */}
+              <div className="border-t border-[rgba(var(--gold-text-rgb),0.2)] pt-8">
+                <p className="t-label-accent mb-3">
+                  What you&apos;ll need
+                </p>
+                <ul className="space-y-2.5">
+                  {requirements.map((req) => (
+                    <li key={req} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-[var(--gold-text)] shrink-0 mt-0.5" aria-hidden="true" />
+                      <span className="text-sm text-[var(--text-secondary)]">{req}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
-          </div>
 
-          {/* Application Form */}
-          <div className="luxury-card p-6 md:p-8">
-            <h2 className="text-xl font-medium text-[var(--text-primary)] mb-6">
-              Application Form
-            </h2>
-            <VendorApplicationForm
-              userId={user.id}
-              defaultValues={{
-                businessEmail: profile?.email || "",
-                businessPhone: profile?.phone || "",
-              }}
-            />
-          </div>
+            {/* Right Column — Application Form */}
+            <div className="motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500 [animation-delay:150ms] [animation-fill-mode:backwards]">
+              <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-text-rgb),0.2)] rounded-lg p-6 md:p-8">
+                <div className="mb-8">
+                  <p className="t-label-accent mb-2">
+                    Application
+                  </p>
+                  <h2 className="text-2xl font-semibold text-[var(--text-primary)] [text-wrap:balance]">
+                    Vendor Registration
+                  </h2>
+                </div>
 
-          {/* Terms */}
-          <p className="text-center text-xs text-[var(--text-muted)]">
-            By submitting this application, you agree to our{" "}
-            <Link href="/terms" className="text-[var(--gold)] hover:underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/vendor-agreement" className="text-[var(--gold)] hover:underline">
-              Vendor Agreement
-            </Link>
-          </p>
+                <VendorApplicationForm
+                  userId={user.id}
+                  defaultValues={{
+                    businessEmail: profile?.email || "",
+                    businessPhone: profile?.phone || "",
+                  }}
+                />
+              </div>
+
+              {/* Terms */}
+              <p className="text-center text-xs text-[var(--text-muted)] mt-6">
+                By submitting, you agree to our{" "}
+                <Link href="/terms" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/vendor-agreement" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
+                  Vendor Agreement
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
     </PublicLayout>
-  )
-}
-
-function BenefitCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  return (
-    <div className="luxury-card p-4 text-center">
-      <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-[var(--gold)]/10 flex items-center justify-center text-[var(--gold)]">
-        {icon}
-      </div>
-      <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">{title}</h3>
-      <p className="text-xs text-[var(--text-muted)]">{description}</p>
-    </div>
   )
 }

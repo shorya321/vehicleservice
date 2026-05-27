@@ -1,41 +1,54 @@
 "use client"
 
 import Link from "next/link"
-import { motion, useReducedMotion } from "motion/react"
 import { AuthLogo } from "@/components/auth/auth-logo"
 
-const details = [
-  { index: "01", label: "Pick-up", value: "Airport Terminal" },
-  { index: "02", label: "Drop-off", value: "Hotel Downtown" },
-  { index: "03", label: "Date", value: "Dec 31, 2025" },
-  { index: "04", label: "Passengers", value: "2 passengers" },
-]
+interface CheckoutHeroPanelProps {
+  from?: string | null
+  to?: string | null
+  date?: string | null
+  passengers?: string | null
+}
 
-export function CheckoutHeroPanel() {
-  const reduceMotion = useReducedMotion()
+export function CheckoutHeroPanel({ from, to, date, passengers }: CheckoutHeroPanelProps) {
+  const details: { index: string; label: string; value: string }[] = []
+  let counter = 1
+
+  if (from) {
+    details.push({ index: String(counter).padStart(2, "0"), label: "Pick-up", value: from })
+    counter++
+  }
+  if (to) {
+    details.push({ index: String(counter).padStart(2, "0"), label: "Drop-off", value: to })
+    counter++
+  }
+  if (date) {
+    const formattedDate = new Date(date + "T00:00:00").toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+    details.push({ index: String(counter).padStart(2, "0"), label: "Date", value: formattedDate })
+    counter++
+  }
+  if (passengers) {
+    details.push({
+      index: String(counter).padStart(2, "0"),
+      label: "Passengers",
+      value: `${passengers} passenger${parseInt(passengers) !== 1 ? "s" : ""}`,
+    })
+  }
 
   return (
-    <aside className="auth-hero-panel relative overflow-hidden border-r border-[var(--graphite)]">
-      <div aria-hidden className="pointer-events-none absolute inset-0 auth-hero-glow" />
-
-      <motion.div
-        className="absolute left-10 top-10 z-10 lg:left-12 lg:top-12"
-        initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      >
+    <aside aria-label="Booking summary" className="auth-hero-panel relative overflow-hidden border-r border-[var(--graphite)]">
+      <div className="absolute left-10 top-10 z-10 lg:left-12 lg:top-12">
         <AuthLogo className="text-2xl" />
-      </motion.div>
+      </div>
 
-      <div aria-hidden className="shrink-0 h-16 lg:h-20" />
+      <div aria-hidden="true" className="shrink-0 h-16 lg:h-20" />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-10 pb-10 lg:px-12 lg:pb-12">
         <div className="my-auto flex flex-col gap-12 lg:gap-14">
-          <motion.div
-            className="max-w-md"
-            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <div className="max-w-md">
             <div className="editorial-eyebrow">Secure checkout</div>
             <h2 className="editorial-headline mt-6">
               Complete your <em>booking.</em>
@@ -44,49 +57,46 @@ export function CheckoutHeroPanel() {
               You&apos;re one step away from confirming your transfer.
               Sign in or create an account to continue.
             </p>
-          </motion.div>
+          </div>
 
-          <div aria-hidden className="auth-hero-divider" />
+          <div aria-hidden="true" className="h-px w-full bg-[var(--graphite)]" />
 
-          <motion.div
-            className="max-w-md"
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="flex items-center justify-between mb-5">
-              <span className="text-[0.6875rem] font-semibold tracking-[0.15em] uppercase text-[var(--gold)]">
-                Your booking
-              </span>
-              <Link
-                href="/"
-                className="text-xs text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors"
-              >
-                Edit search
-              </Link>
-            </div>
-
-            <ol className="space-y-0">
-              {details.map((item) => (
-                <li
-                  key={item.index}
-                  className="flex items-center gap-4 border-t border-[var(--graphite)] py-4"
+          {details.length > 0 && (
+            <div className="max-w-md">
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-[0.6875rem] font-semibold tracking-[0.15em] uppercase text-[var(--gold)]">
+                  Your booking
+                </span>
+                <Link
+                  href="/"
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors"
                 >
-                  <span className="numeric text-[0.75rem] tracking-[0.16em] text-[var(--gold)]">
-                    {item.index}
-                  </span>
-                  <div className="flex flex-col">
-                    <span className="text-[0.6875rem] font-medium tracking-[0.1em] uppercase text-[var(--text-muted)]">
-                      {item.label}
+                  Edit search
+                </Link>
+              </div>
+
+              <ol className="space-y-0">
+                {details.map((item) => (
+                  <li
+                    key={item.index}
+                    className="flex items-center gap-4 border-t border-[var(--graphite)] py-4"
+                  >
+                    <span className="numeric text-[0.75rem] tracking-[0.16em] text-[var(--gold)]">
+                      {item.index}
                     </span>
-                    <span className="text-[0.9375rem] font-medium text-[var(--text-primary)]">
-                      {item.value}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </motion.div>
+                    <div className="flex flex-col">
+                      <span className="text-[0.6875rem] font-medium tracking-[0.1em] uppercase text-[var(--text-muted)]">
+                        {item.label}
+                      </span>
+                      <span className="text-[0.9375rem] font-medium text-[var(--text-primary)]">
+                        {item.value}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
       </div>
     </aside>
