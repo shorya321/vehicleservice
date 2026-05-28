@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { AuthMessages } from '@/components/auth/auth-messages'
 import { CheckoutLoginForm } from './checkout-login-form'
 import { CheckoutRegisterForm } from './checkout-register-form'
+import { fadeEntrance } from '@/lib/auth/motion'
 
 interface CheckoutAuthFormProps {
   returnUrl: string
@@ -69,11 +70,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
   }, [])
 
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <motion.div {...fadeEntrance(reduceMotion)}>
       <div className="auth-card">
         <div
           role="tablist"
@@ -94,7 +91,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
                 tabIndex={selected ? 0 : -1}
                 onClick={() => handleTabChange(tab.key)}
                 onKeyDown={(e) => handleTabKeyDown(e, i)}
-                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] ${selected ? 'active' : ''}`}
+                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? 'active' : ''}`}
               >
                 {tab.label}
               </button>
@@ -127,7 +124,7 @@ export function CheckoutAuthForm({ returnUrl }: CheckoutAuthFormProps) {
 
       <Link
         href="/"
-        className="mt-6 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+        className="mt-6 inline-flex items-center justify-center gap-2 auth-label-link auth-text-link"
       >
         <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
         Back to search

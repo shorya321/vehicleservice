@@ -1,12 +1,12 @@
 import { ShieldAlert } from "lucide-react"
 import Link from "next/link"
-import { AuthHeroPanelStatic } from "@/components/auth/auth-hero-panel-static"
+import { AuthHeroPanel } from "@/components/auth/auth-hero-panel"
 import { AuthLogo } from "@/components/auth/auth-logo"
 
 export default function UnauthorizedPage() {
   return (
     <main className="auth-page">
-      <AuthHeroPanelStatic />
+      <AuthHeroPanel animated={false} />
       <section className="auth-panel">
         <div className="auth-container">
           <div className="lg:hidden text-center mb-8">
@@ -22,16 +22,16 @@ export default function UnauthorizedPage() {
           </p>
           <div className="mt-10 flex gap-4">
             <Link
+              href="/login"
+              className="btn btn-primary inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
+            >
+              Sign in
+            </Link>
+            <Link
               href="/"
               className="btn btn-secondary inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
             >
               Go to home
-            </Link>
-            <Link
-              href="/login"
-              className="btn btn-primary inline-flex h-[52px] items-center justify-center rounded-[4px] px-7"
-            >
-              Login
             </Link>
           </div>
         </div>

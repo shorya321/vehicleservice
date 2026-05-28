@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
-import { AuthHeroPanelStatic } from "@/components/auth/auth-hero-panel-static"
+import { AuthHeroPanel } from "@/components/auth/auth-hero-panel"
 import { AuthLogo } from "@/components/auth/auth-logo"
 
 export const dynamic = 'force-dynamic'
@@ -25,7 +25,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
   if (!token) {
     return (
       <main className="auth-page">
-        <AuthHeroPanelStatic />
+        <AuthHeroPanel animated={false} />
         <section className="auth-panel">
           <div className="auth-container">
             <div className="lg:hidden text-center mb-8">
@@ -59,7 +59,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
   if (error || !(result as Record<string, unknown>)?.success) {
     return (
       <main className="auth-page">
-        <AuthHeroPanelStatic />
+        <AuthHeroPanel animated={false} />
         <section className="auth-panel">
           <div className="auth-container">
             <div className="lg:hidden text-center mb-8">
@@ -95,7 +95,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
 
   return (
     <main className="auth-page">
-      <AuthHeroPanelStatic />
+      <AuthHeroPanel animated={false} />
       <section className="auth-panel">
         <div className="auth-container">
           <div className="mb-8 lg:hidden">

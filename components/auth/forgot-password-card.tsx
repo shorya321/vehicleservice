@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { inputClass, fieldLabelClass } from "./auth-classes"
+import { fadeEntrance, fadeAlert } from "@/lib/auth/motion"
 
 export function ForgotPasswordCard() {
   const reduceMotion = useReducedMotion()
@@ -43,12 +44,10 @@ export function ForgotPasswordCard() {
     }
   }
 
+  const alertState = message ? "success" : error ? "error" : (expired && !message) ? "expired" : null
+
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <motion.div {...fadeEntrance(reduceMotion)}>
       <div className="editorial-eyebrow">Password recovery</div>
       <h1 className="editorial-headline mt-6">
         Send me a <em>reset link.</em>
@@ -57,53 +56,38 @@ export function ForgotPasswordCard() {
         Enter the email you booked with. We&rsquo;ll send a one-time link valid for one hour.
       </p>
 
-      <AnimatePresence>
-        {expired && !message && (
+      <AnimatePresence mode="wait">
+        {alertState === "expired" && (
           <motion.div
             key="expired"
             role="alert"
             aria-live="assertive"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+            {...fadeAlert}
+            className="mt-8 auth-alert-error auth-alert-text text-destructive"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <p className="break-words">Your reset link has expired. Enter your email to get a new one.</p>
           </motion.div>
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {message && (
+        {alertState === "success" && (
           <motion.div
             key="success"
             role="status"
             aria-live="polite"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 flex items-start gap-3 rounded-[4px] border border-[rgba(var(--gold-rgb),0.3)] bg-[rgba(var(--gold-rgb),0.06)] p-4 text-[0.875rem] text-[var(--text-primary)]"
+            {...fadeAlert}
+            className="mt-8 auth-alert-success auth-alert-text text-[var(--text-primary)]"
           >
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden="true" />
             <p className="break-words">{message}</p>
           </motion.div>
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {error && (
+        {alertState === "error" && (
           <motion.div
             key="error"
             role="alert"
             aria-live="assertive"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 flex items-start gap-3 rounded-[4px] border border-destructive/20 bg-destructive/[0.08] p-4 text-[0.875rem] text-destructive"
+            {...fadeAlert}
+            className="mt-8 auth-alert-error auth-alert-text text-destructive"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <p className="break-words">{error}</p>
@@ -111,7 +95,7 @@ export function ForgotPasswordCard() {
         )}
       </AnimatePresence>
 
-      <form onSubmit={handleResetPassword} className="mt-8 flex flex-col gap-5">
+      <form onSubmit={handleResetPassword} className="mt-8 flex flex-col gap-6">
         <div>
           <label htmlFor="fp-email" className={fieldLabelClass}>Email</label>
           <input
@@ -131,7 +115,7 @@ export function ForgotPasswordCard() {
         <button
           type="submit"
           disabled={loading || !!message}
-          className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px]"
+          className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
         >
           {loading ? (
             <>
@@ -145,7 +129,7 @@ export function ForgotPasswordCard() {
 
         <Link
           href="/login"
-          className="mt-2 inline-flex items-center justify-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+          className="mt-2 inline-flex items-center justify-center gap-2 auth-label-link auth-text-link"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Back to sign in

@@ -29,10 +29,10 @@
   --gold-deep: #a68b5b;
   --gold-dark: #8b7349;
 
-  /* Gold text — darkened in light mode for WCAG AA (5.5:1 on --black-void, 5.1:1 on --black-rich) */
-  --gold-text: #745d33;
-  --gold-text-hover: #5f4a28;
-  --gold-text-rgb: 116, 93, 51;
+  /* Gold text — darkened in light mode for WCAG AA (≥5:1 on --charcoal card bg, ≥6:1 on --black-void) */
+  --gold-text: #6b5530;
+  --gold-text-hover: #5a4625;
+  --gold-text-rgb: 107, 85, 48;
 
   /* Warm Rose Accent */
   --rose-subtle: rgba(198, 156, 136, 0.08);
@@ -44,7 +44,7 @@
   /* Text Colors — Light Mode */
   --text-primary: #1a1917;
   --text-secondary: #5c5955;
-  --text-muted: #706c69;
+  --text-muted: #625e5b;
   --success: #3d7a4a;
   --success-rgb: 61, 122, 74;
 
@@ -3787,6 +3787,8 @@
   display: none;
   min-height: 100vh;
   overflow: hidden;
+  content-visibility: hidden;
+  contain-intrinsic-size: 0;
 }
 
 @media (min-width: 1024px) {
@@ -3796,6 +3798,8 @@
     position: sticky;
     top: 0;
     height: 100vh;
+    content-visibility: visible;
+    contain-intrinsic-size: auto;
   }
 
   .auth-hero-panel::before {
@@ -3943,6 +3947,103 @@
   .auth-panel {
     padding: var(--space-xl) var(--space-md);
   }
+}
+
+/* Auth-scoped headline — product register scale, not marketing Display. */
+.auth-page .editorial-headline {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.15;
+}
+
+/* Auth hero beat — Title role for stronger contrast with body (1.31:1). */
+.auth-beat-title {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.auth-beat-body {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Auth secondary body — helper text, terms, links inside forms. */
+.auth-body-sm {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+/* Auth alert text — sits between Body and Label. */
+.auth-alert-text {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Auth hint — Label-scale for field hints and micro-copy. */
+.auth-hint {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Auth label-link — navigational labels like "back to sign in". */
+.auth-label-link {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Auth inline link — gold accent links inside body text. */
+.auth-text-link {
+  color: var(--gold-text);
+  transition: color var(--duration-fast) var(--ease-luxury);
+}
+.auth-text-link:hover {
+  color: var(--gold-text-hover);
+}
+
+/* Auth alert boxes — error and success feedback. */
+.auth-alert-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid rgba(var(--destructive-rgb), 0.35);
+  background: rgba(var(--destructive-rgb), 0.06);
+  padding: 1rem;
+}
+
+.auth-alert-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid rgba(var(--gold-rgb), 0.45);
+  background: rgba(var(--gold-rgb), 0.10);
+  padding: 1rem;
+}
+
+.dark .auth-alert-error {
+  border-color: rgba(var(--destructive-rgb), 0.2);
+  background: rgba(var(--destructive-rgb), 0.08);
+}
+
+.dark .auth-alert-success {
+  border-color: rgba(var(--gold-rgb), 0.3);
+  background: rgba(var(--gold-rgb), 0.06);
 }
 
 /* ============================================

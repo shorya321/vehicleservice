@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "motion/react"
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { userLogin } from "@/app/(auth)/login/actions"
-import { inputClass, fieldLabelClass, passwordToggleClass } from "./auth-classes"
+import { inputClass, fieldLabelClass } from "./auth-classes"
+import { PasswordField } from "./password-field"
+import { fadeSlide } from "@/lib/auth/motion"
 
 interface LoginFormProps {
   loading: boolean
@@ -21,7 +23,6 @@ export function LoginForm({ loading, onSubmitStart, onError, onSuccess }: LoginF
 
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
-  const [showLoginPassword, setShowLoginPassword] = useState(false)
 
   const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault()
@@ -62,11 +63,8 @@ export function LoginForm({ loading, onSubmitStart, onError, onSuccess }: LoginF
       role="tabpanel"
       aria-labelledby="auth-tab-login"
       onSubmit={handleLogin}
-      className="mt-6 flex flex-col gap-5"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="mt-6 flex flex-col gap-6"
+      {...fadeSlide}
     >
       <div>
         <label htmlFor="login-email" className={fieldLabelClass}>Email</label>
@@ -88,39 +86,24 @@ export function LoginForm({ loading, onSubmitStart, onError, onSuccess }: LoginF
           <label htmlFor="login-password" className={fieldLabelClass + " mb-0"}>Password</label>
           <Link
             href="/forgot-password"
-            className="text-[0.8125rem] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+            className="auth-body-sm auth-text-link"
           >
             Forgot password?
           </Link>
         </div>
-        <div className="relative">
-          <input
-            id="login-password"
-            type={showLoginPassword ? "text" : "password"}
-            autoComplete="current-password"
-            value={loginPassword}
-            onChange={(e) => setLoginPassword(e.target.value)}
-            required
-            maxLength={128}
-            disabled={loading}
-            placeholder="••••••••"
-            className={inputClass + " pr-12"}
-          />
-          <button
-            type="button"
-            onClick={() => setShowLoginPassword(!showLoginPassword)}
-            aria-label={showLoginPassword ? "Hide password" : "Show password"}
-            className={passwordToggleClass}
-          >
-            {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
+        <PasswordField
+          id="login-password"
+          value={loginPassword}
+          onChange={setLoginPassword}
+          autoComplete="current-password"
+          disabled={loading}
+        />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px]"
+        className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
       >
         {loading ? (
           <>
@@ -135,9 +118,9 @@ export function LoginForm({ loading, onSubmitStart, onError, onSuccess }: LoginF
         )}
       </button>
 
-      <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
+      <p className="mt-2 text-center auth-body-sm text-[var(--text-muted)]">
         Need help signing in?{" "}
-        <Link href="/contact" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+        <Link href="/contact" className="auth-text-link">
           Contact support
         </Link>
       </p>

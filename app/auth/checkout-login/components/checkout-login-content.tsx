@@ -43,29 +43,29 @@ function MobileBookingSummary({ from, to, date, passengers }: {
 
   return (
     <div className="lg:hidden mb-8 rounded-[8px] border border-[var(--graphite)] bg-[var(--charcoal)] p-4">
-      <div className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--gold)] mb-3">
+      <div className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-3">
         Your booking
       </div>
       {(from || to) && (
         <div className="flex items-center gap-3 mb-3">
-          <MapPin className="w-4 h-4 text-[var(--gold)] shrink-0" aria-hidden="true" />
-          <div className="flex items-center gap-2 text-[0.875rem] text-[var(--text-primary)] min-w-0">
+          <MapPin className="w-4 h-4 text-[var(--gold-text)] shrink-0" aria-hidden="true" />
+          <div className="flex items-center gap-2 auth-alert-text text-[var(--text-primary)] min-w-0">
             {from && <span className="truncate">{from}</span>}
-            {from && to && <ArrowRight className="w-3 h-3 text-[var(--gold)] shrink-0" aria-hidden="true" />}
+            {from && to && <ArrowRight className="w-3 h-3 text-[var(--gold-text)] shrink-0" aria-hidden="true" />}
             {to && <span className="truncate">{to}</span>}
           </div>
         </div>
       )}
-      <div className="flex items-center gap-4 text-[0.75rem] text-[var(--text-secondary)]">
+      <div className="flex items-center gap-4 auth-hint text-[var(--text-secondary)]">
         {formattedDate && (
           <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[var(--gold)]" aria-hidden="true" />
+            <Calendar className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
             <span>{formattedDate}</span>
           </div>
         )}
         {passengers && (
           <div className="flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[var(--gold)]" aria-hidden="true" />
+            <Users className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
             <span>{passengers} passenger{parseInt(passengers) !== 1 ? 's' : ''}</span>
           </div>
         )}
@@ -103,11 +103,11 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
             <CheckoutAuthForm returnUrl={returnUrl} />
           </div>
 
-          <p className="mt-6 text-center text-[0.8125rem] text-[var(--text-muted)]">
+          <p className="mt-6 text-center auth-body-sm text-[var(--text-muted)]">
             Need help?{' '}
             <Link
               href="/contact"
-              className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+              className="auth-text-link"
             >
               Contact support
             </Link>

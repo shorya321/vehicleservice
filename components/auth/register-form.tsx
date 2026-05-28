@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { registerUser } from "@/app/(auth)/register/actions"
-import { inputClass, fieldLabelClass, passwordToggleClass } from "./auth-classes"
+import { inputClass, fieldLabelClass, checkboxClass } from "./auth-classes"
+import { PasswordField } from "./password-field"
+import { fadeSlide } from "@/lib/auth/motion"
 
 interface RegisterFormProps {
   loading: boolean
@@ -23,8 +25,6 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
 
   const handleRegister = async (e: React.SubmitEvent) => {
@@ -70,11 +70,8 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
       role="tabpanel"
       aria-labelledby="auth-tab-register"
       onSubmit={handleRegister}
-      className="mt-6 flex flex-col gap-5"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="mt-6 flex flex-col gap-6"
+      {...fadeSlide}
     >
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -137,78 +134,50 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
           aria-describedby="reg-phone-hint"
           className={inputClass}
         />
-        <p id="reg-phone-hint" className="mt-1 text-[0.75rem] text-[var(--text-muted)]">
+        <p id="reg-phone-hint" className="mt-1 auth-hint">
           Optional. Can be added during checkout.
         </p>
       </div>
-      <div>
-        <label htmlFor="reg-password" className={fieldLabelClass}>Password</label>
-        <div className="relative">
-          <input
-            id="reg-password"
-            type={showRegisterPassword ? "text" : "password"}
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            maxLength={128}
-            disabled={loading}
-            placeholder="At least 8 characters"
-            aria-describedby="reg-password-hint"
-            className={inputClass + " pr-12"}
-          />
-          <button
-            type="button"
-            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-            aria-label={showRegisterPassword ? "Hide password" : "Show password"}
-            className={passwordToggleClass}
-          >
-            {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-        <p id="reg-password-hint" className="mt-1 text-[0.75rem] text-[var(--text-muted)]">
-          <span className={password.length >= 8 ? "text-[var(--gold)]" : ""}>
-            {password.length}
-          </span>
-          /8 characters
-        </p>
-      </div>
-      <div>
-        <label htmlFor="reg-confirm" className={fieldLabelClass}>Confirm password</label>
-        <div className="relative">
-          <input
-            id="reg-confirm"
-            type={showConfirmPassword ? "text" : "password"}
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={8}
-            maxLength={128}
-            disabled={loading}
-            placeholder="Repeat your password"
-            aria-describedby="reg-confirm-hint"
-            className={inputClass + " pr-12"}
-          />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-            className={passwordToggleClass}
-          >
-            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-        {confirmPassword.length > 0 && (
-          <p id="reg-confirm-hint" className="mt-1 text-[0.75rem]">
-            {password === confirmPassword
-              ? <span className="text-[var(--gold)]">Passwords match</span>
-              : <span className="text-destructive">Passwords don&apos;t match</span>
-            }
+      <PasswordField
+        id="reg-password"
+        label="Password"
+        value={password}
+        onChange={setPassword}
+        autoComplete="new-password"
+        disabled={loading}
+        placeholder="At least 8 characters"
+        ariaDescribedBy="reg-password-hint"
+        minLength={8}
+        hint={
+          <p id="reg-password-hint" className="mt-1 auth-hint">
+            <span className={`numeric ${password.length >= 8 ? "text-[var(--gold-text)]" : ""}`}>
+              {password.length}
+            </span>
+            <span className="numeric">/8</span> characters
           </p>
-        )}
-      </div>
+        }
+      />
+      <PasswordField
+        id="reg-confirm"
+        label="Confirm password"
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        autoComplete="new-password"
+        disabled={loading}
+        placeholder="Repeat your password"
+        ariaDescribedBy="reg-confirm-hint"
+        minLength={8}
+        hint={
+          confirmPassword.length > 0 ? (
+            <p id="reg-confirm-hint" className="mt-1 auth-hint">
+              {password === confirmPassword
+                ? <span className="text-[var(--gold-text)]">Passwords match</span>
+                : <span className="text-destructive">Passwords don&apos;t match</span>
+              }
+            </p>
+          ) : undefined
+        }
+      />
 
       <label htmlFor="reg-terms" className="mt-1 flex items-start gap-3 cursor-pointer">
         <input
@@ -216,15 +185,15 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
           type="checkbox"
           checked={termsAccepted}
           onChange={(e) => setTermsAccepted(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 appearance-none border border-[var(--graphite)] bg-[var(--black-warm)] checked:border-[var(--gold)] checked:bg-[var(--gold)] checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22%23050506%22 d=%22M6 11.4 2.6 8 4 6.6l2 2 6-6L13.4 4z%22/></svg>')] bg-center bg-no-repeat focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+          className={checkboxClass}
         />
-        <span className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+        <span className="auth-body-sm leading-relaxed text-[var(--text-secondary)]">
           I agree to the{" "}
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="auth-text-link">
             Terms
           </Link>
           {" "}and{" "}
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="auth-text-link">
             Privacy Policy
           </Link>
           .
@@ -234,7 +203,7 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px]"
+        className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
       >
         {loading ? (
           <>
@@ -249,9 +218,9 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
         )}
       </button>
 
-      <p className="mt-2 text-center text-[0.8125rem] text-[var(--text-muted)]">
+      <p className="mt-2 text-center auth-body-sm text-[var(--text-muted)]">
         You can also book without an account.{" "}
-        <Link href="/" className="text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors">
+        <Link href="/" className="auth-text-link">
           Start a booking
         </Link>
       </p>

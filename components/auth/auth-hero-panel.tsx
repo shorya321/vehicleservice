@@ -3,30 +3,61 @@
 import { motion, useReducedMotion } from "motion/react"
 import { AuthLogo } from "./auth-logo"
 import { memberBeats } from "./auth-hero-data"
+import { AUTH_EASE, fadeUp } from "@/lib/auth/motion"
 
-export function AuthHeroPanel() {
+interface AuthHeroPanelProps {
+  animated?: boolean
+}
+
+export function AuthHeroPanel({ animated = true }: AuthHeroPanelProps) {
   const reduceMotion = useReducedMotion()
-  const shouldAnimate = !reduceMotion
+  const shouldAnimate = animated && !reduceMotion
 
-  const ease = [0.16, 1, 0.3, 1] as [number, number, number, number]
-  const fadeUp = (delay = 0) =>
-    shouldAnimate
-      ? {
-          initial: { opacity: 0, y: delay > 0 ? 24 : 16 } as const,
-          animate: { opacity: 1, y: 0 } as const,
-          transition: { duration: delay > 0 ? 0.8 : 0.7, delay, ease },
-        }
-      : {}
+  if (!shouldAnimate) {
+    return (
+      <aside aria-label="Membership benefits" className="auth-hero-panel relative border-r border-[var(--graphite)] bg-[var(--black-void)]">
+        <div className="relative z-10 flex flex-1 flex-col items-center p-8 lg:p-12">
+          <div className="w-full max-w-md">
+            <AuthLogo className="text-2xl" />
+          </div>
+          <div className="flex flex-1 flex-col items-center justify-center gap-8">
+            <div className="max-w-md">
+              <div className="editorial-eyebrow">Members</div>
+              <h2 className="editorial-headline mt-4">
+                One account, every <em>itinerary.</em>
+              </h2>
+              <p className="editorial-body mt-4 max-w-sm">
+                Bookings work without sign-in. With an account, you stop re-entering the same details and keep every receipt in one place.
+              </p>
+            </div>
+            <ol className="max-w-md space-y-0">
+              {memberBeats.map((beat) => (
+                <li key={beat.index} className="grid grid-cols-[3rem_1fr] gap-x-4 border-t border-[var(--graphite)] py-4">
+                  <span className="numeric text-[0.875rem] font-semibold tracking-[0.12em] text-[var(--gold-text)]">
+                    {beat.index}
+                  </span>
+                  <div>
+                    <p className="auth-beat-title">{beat.title}</p>
+                    <p className="mt-1 auth-beat-body">{beat.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside aria-label="Membership benefits" className="auth-hero-panel relative border-r border-[var(--graphite)] bg-[var(--black-void)]">
       <div className="relative z-10 flex flex-1 flex-col items-center p-8 lg:p-12">
-        <motion.div className="w-full max-w-md" {...fadeUp()}>
+        <motion.div className="w-full max-w-md" {...fadeUp(0, reduceMotion)}>
           <AuthLogo className="text-2xl" />
         </motion.div>
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8">
-          <motion.div className="max-w-md" {...fadeUp(0.1)}>
+          <motion.div className="max-w-md" {...fadeUp(0.1, reduceMotion)}>
             <div className="editorial-eyebrow">Members</div>
             <h2 className="editorial-headline mt-4">
               One account, every <em>itinerary.</em>
@@ -36,25 +67,21 @@ export function AuthHeroPanel() {
             </p>
           </motion.div>
 
-          <motion.ol className="max-w-md space-y-0" {...fadeUp(0.2)}>
+          <motion.ol className="max-w-md space-y-0" {...fadeUp(0.2, reduceMotion)}>
             {memberBeats.map((beat, i) => (
               <motion.li
                 key={beat.index}
                 className="grid grid-cols-[3rem_1fr] gap-x-4 border-t border-[var(--graphite)] py-4"
-                initial={shouldAnimate ? { opacity: 0, x: -12 } : undefined}
-                animate={shouldAnimate ? { opacity: 1, x: 0 } : undefined}
-                transition={shouldAnimate ? { duration: 0.5, delay: 0.3 + i * 0.1, ease } : undefined}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 + i * 0.1, ease: AUTH_EASE }}
               >
-                <span className="numeric text-[0.875rem] font-semibold tracking-[0.12em] text-[var(--gold)]">
+                <span className="numeric text-[0.875rem] font-semibold tracking-[0.12em] text-[var(--gold-text)]">
                   {beat.index}
                 </span>
                 <div>
-                  <p className="text-[0.9375rem] font-medium leading-snug text-[var(--text-primary)]">
-                    {beat.title}
-                  </p>
-                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
-                    {beat.body}
-                  </p>
+                  <p className="auth-beat-title">{beat.title}</p>
+                  <p className="mt-1 auth-beat-body">{beat.body}</p>
                 </div>
               </motion.li>
             ))}

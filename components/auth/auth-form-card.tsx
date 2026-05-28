@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import { AuthMessages } from "./auth-messages"
 import { LoginForm } from "./login-form"
 import { RegisterForm } from "./register-form"
+import { fadeEntrance } from "@/lib/auth/motion"
 
 interface AuthFormCardProps {
   initialTab: "login" | "register"
@@ -80,15 +81,11 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
   }, [])
 
   const handleLoginSuccess = useCallback(() => {
-    // Login form handles its own redirect; nothing extra needed here
+    // Login form handles its own redirect
   }, [])
 
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <motion.div {...fadeEntrance(reduceMotion)}>
       <div className="editorial-eyebrow">
         {activeTab === "login" ? "Welcome back" : "New here"}
       </div>
@@ -125,7 +122,7 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
                 tabIndex={selected ? 0 : -1}
                 onClick={() => handleTabChange(tab.key)}
                 onKeyDown={(e) => handleTabKeyDown(e, i)}
-                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] ${selected ? "active" : ""}`}
+                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "active" : ""}`}
               >
                 {tab.label}
               </button>

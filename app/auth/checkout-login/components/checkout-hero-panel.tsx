@@ -64,12 +64,12 @@ export function CheckoutHeroPanel({ from, to, date, passengers }: CheckoutHeroPa
           {details.length > 0 && (
             <div className="max-w-md">
               <div className="flex items-center justify-between mb-5">
-                <span className="text-[0.6875rem] font-semibold tracking-[0.15em] uppercase text-[var(--gold)]">
+                <span className="text-[0.6875rem] font-semibold tracking-[0.15em] uppercase text-[var(--gold-text)]">
                   Your booking
                 </span>
                 <Link
                   href="/"
-                  className="text-xs text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors"
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors"
                 >
                   Edit search
                 </Link>
@@ -81,14 +81,14 @@ export function CheckoutHeroPanel({ from, to, date, passengers }: CheckoutHeroPa
                     key={item.index}
                     className="flex items-center gap-4 border-t border-[var(--graphite)] py-4"
                   >
-                    <span className="numeric text-[0.75rem] tracking-[0.16em] text-[var(--gold)]">
+                    <span className="numeric text-[0.75rem] tracking-[0.16em] text-[var(--gold-text)]">
                       {item.index}
                     </span>
                     <div className="flex flex-col">
                       <span className="text-[0.6875rem] font-medium tracking-[0.1em] uppercase text-[var(--text-muted)]">
                         {item.label}
                       </span>
-                      <span className="text-[0.9375rem] font-medium text-[var(--text-primary)]">
+                      <span className="auth-beat-title">
                         {item.value}
                       </span>
                     </div>

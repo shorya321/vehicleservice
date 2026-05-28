@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { inputClass, fieldLabelClass, passwordToggleClass } from '@/components/auth/auth-classes'
+import { inputClass, fieldLabelClass } from '@/components/auth/auth-classes'
+import { PasswordField } from '@/components/auth/password-field'
+import { fadeSlide } from '@/lib/auth/motion'
 
 interface CheckoutLoginFormProps {
   loading: boolean
@@ -28,7 +30,6 @@ export function CheckoutLoginForm({
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
-  const [showLoginPassword, setShowLoginPassword] = useState(false)
 
   const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault()
@@ -63,11 +64,8 @@ export function CheckoutLoginForm({
       role="tabpanel"
       aria-labelledby="checkout-tab-login"
       onSubmit={handleLogin}
-      className="mt-6 flex flex-col gap-5"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="mt-6 flex flex-col gap-6"
+      {...fadeSlide}
     >
       <div>
         <label htmlFor="co-login-email" className={fieldLabelClass}>Email</label>
@@ -90,39 +88,24 @@ export function CheckoutLoginForm({
           <label htmlFor="co-login-password" className={fieldLabelClass + ' mb-0'}>Password</label>
           <Link
             href="/forgot-password"
-            className="text-[0.8125rem] text-[var(--gold)] hover:text-[var(--gold-pale)] transition-colors"
+            className="auth-body-sm auth-text-link"
           >
             Forgot password?
           </Link>
         </div>
-        <div className="relative">
-          <input
-            id="co-login-password"
-            type={showLoginPassword ? 'text' : 'password'}
-            autoComplete="current-password"
-            value={loginPassword}
-            onChange={(e) => setLoginPassword(e.target.value)}
-            required
-            maxLength={128}
-            disabled={loading}
-            placeholder="••••••••"
-            className={inputClass + ' pr-12'}
-          />
-          <button
-            type="button"
-            onClick={() => setShowLoginPassword(!showLoginPassword)}
-            aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
-            className={passwordToggleClass}
-          >
-            {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
+        <PasswordField
+          id="co-login-password"
+          value={loginPassword}
+          onChange={setLoginPassword}
+          autoComplete="current-password"
+          disabled={loading}
+        />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary mt-3 h-[52px] w-full rounded-[4px]"
+        className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
       >
         {loading ? (
           <>
