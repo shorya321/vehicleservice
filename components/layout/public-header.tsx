@@ -186,7 +186,7 @@ export function PublicHeader({
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-[var(--charcoal)] border-[var(--gold)]/20">
+                  <DropdownMenuContent align="end" className="bg-[var(--black-warm)] border border-[var(--graphite)]">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none text-[var(--text-primary)]">
@@ -200,42 +200,42 @@ export function PublicHeader({
                     <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
                     {(!profile?.role || profile.role === 'customer') ? (
                       <>
-                        <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
                           My Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                           <Car className="mr-2 h-4 w-4" />
                           My Bookings
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                           <Star className="mr-2 h-4 w-4" />
                           My Reviews
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                           <Building2 className="mr-2 h-4 w-4" />
                           Partner With Us
                         </DropdownMenuItem>
                       </>
                     ) : profile.role === 'admin' ? (
-                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Go to Dashboard
                       </DropdownMenuItem>
                     ) : profile.role === 'vendor' ? (
-                      <DropdownMenuItem onClick={() => router.push('/vendor/dashboard')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <DropdownMenuItem onClick={() => router.push('/vendor/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Go to Dashboard
                       </DropdownMenuItem>
                     ) : profile.role === 'business' ? (
-                      <DropdownMenuItem onClick={() => router.push('/business/dashboard')} className="hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <DropdownMenuItem onClick={() => router.push('/business/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Go to Dashboard
                       </DropdownMenuItem>
                     ) : null}
                     <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
                     <DropdownMenuItem
-                      className="text-red-400 hover:bg-red-500/10 cursor-pointer"
+                      className="text-red-700 dark:text-red-400 focus:text-red-700 dark:focus:text-red-400 hover:bg-red-700/10 dark:hover:bg-red-500/10 cursor-pointer"
                       onClick={handleSignOut}
                     >
                       <LogOut className="mr-2 h-4 w-4" />

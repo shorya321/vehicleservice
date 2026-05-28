@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   sendContactConfirmationEmail,
   sendContactAdminNotificationEmail,
@@ -25,7 +25,7 @@ export async function submitContactForm(data: ContactFormData) {
     return { success: false, error: parsed.error.errors[0].message }
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Rate limiting: check for recent submissions from same email
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
