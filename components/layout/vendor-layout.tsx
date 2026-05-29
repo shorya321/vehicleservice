@@ -213,7 +213,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative flex h-screen overflow-hidden bg-background">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -288,9 +288,9 @@ export function VendorLayout({ children }: VendorLayoutProps) {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="flex h-full flex-1 flex-col overflow-hidden lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
+        <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -336,7 +336,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
                   <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8} forceMount>
+              <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8}>
                 <DropdownMenuLabel className="font-normal !text-primary">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
@@ -369,7 +369,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="w-full px-4 py-6 md:px-6 lg:px-8">{children}</main>
+        <main className="flex-1 overflow-y-auto w-full px-4 py-6 md:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   )
