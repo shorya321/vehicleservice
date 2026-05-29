@@ -19,9 +19,10 @@ const itemVariants: Variants = {
 }
 
 export function MenuNavItem({ href, label, icon: Icon, onClick, reducedMotion, variant = 'default' }: MenuNavItemProps) {
+  const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]'
   const className = variant === 'danger'
-    ? 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200 text-sm font-body'
-    : 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body'
+    ? `group flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-lg text-[var(--destructive)] hover:bg-[var(--destructive)]/10 transition-colors duration-200 text-sm font-body ${focusRing}`
+    : `group flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body ${focusRing}`
 
   const content = (
     <>
@@ -61,9 +62,10 @@ interface MenuButtonItemProps {
 }
 
 export function MenuButtonItem({ label, icon: Icon, onClick, reducedMotion, variant = 'default' }: MenuButtonItemProps) {
+  const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]'
   const className = variant === 'danger'
-    ? 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200 text-sm font-body w-full text-left'
-    : 'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body w-full text-left'
+    ? `group flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-lg text-[var(--destructive)] hover:bg-[var(--destructive)]/10 transition-colors duration-200 text-sm font-body w-full text-left ${focusRing}`
+    : `group flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 text-sm font-body w-full text-left ${focusRing}`
 
   return (
     <motion.button

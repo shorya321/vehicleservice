@@ -175,7 +175,7 @@ export function TransferDetailsSection({
               type="button"
               variant="outline"
               size="icon"
-              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)]"
+              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)] hover:text-[var(--text-primary)]"
               onClick={() => setPassengers(Math.max(1, passengers - 1))}
               disabled={passengers <= 1}
               aria-label="Decrease passenger count"
@@ -189,7 +189,7 @@ export function TransferDetailsSection({
               type="button"
               variant="outline"
               size="icon"
-              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)]"
+              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)] hover:text-[var(--text-primary)]"
               onClick={() => setPassengers(Math.min(vehicleType.passenger_capacity, passengers + 1))}
               disabled={passengers >= vehicleType.passenger_capacity}
               aria-label="Increase passenger count"

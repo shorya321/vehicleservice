@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { AuthLogo } from "@/components/auth/auth-logo"
 
 interface CheckoutHeroPanelProps {
   from?: string | null
@@ -40,12 +39,7 @@ export function CheckoutHeroPanel({ from, to, date, passengers }: CheckoutHeroPa
   }
 
   return (
-    <aside aria-label="Booking summary" className="auth-hero-panel relative overflow-hidden border-r border-[var(--graphite)]">
-      <div className="absolute left-10 top-10 z-10 lg:left-12 lg:top-12">
-        <AuthLogo className="text-2xl" />
-      </div>
-
-      <div aria-hidden="true" className="shrink-0 h-16 lg:h-20" />
+    <aside aria-label="Booking summary" className="auth-hero-panel relative overflow-hidden">
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-10 pb-10 lg:px-12 lg:pb-12">
         <div className="my-auto flex flex-col gap-12 lg:gap-14">
           <div className="max-w-md">

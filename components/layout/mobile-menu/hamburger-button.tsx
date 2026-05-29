@@ -13,7 +13,7 @@ export function HamburgerButton({ isOpen, onClick }: HamburgerButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="lg:hidden flex flex-col justify-center items-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors duration-300 gap-[5px]"
+      className="lg:hidden flex flex-col justify-center items-center w-11 h-11 rounded-lg border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors duration-300 gap-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
       aria-label={isOpen ? 'Close menu' : 'Open menu'}
       aria-expanded={isOpen}
     >

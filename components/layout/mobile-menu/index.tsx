@@ -107,7 +107,7 @@ export function MobileMenu({
           </Link>
           <button
             onClick={close}
-            className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--gold)]/5 transition-colors duration-200"
+            className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--gold)]/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -116,11 +116,10 @@ export function MobileMenu({
 
         {/* Scrollable content */}
         <motion.div
-          className="flex-1 overflow-y-auto py-6 space-y-6"
+          className="flex-1 overflow-y-auto py-6 space-y-6 pb-[env(safe-area-inset-bottom,24px)]"
           initial={reducedMotion ? false : 'hidden'}
           animate={reducedMotion ? undefined : 'visible'}
           variants={reducedMotion ? undefined : contentVariants}
-          key={isOpen ? 'open' : 'closed'}
         >
           {/* User card */}
           <MenuUserCard

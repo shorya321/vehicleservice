@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, type Variants } from 'motion/react'
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 
 interface MenuSectionProps {
   label: string
@@ -22,13 +22,15 @@ const labelVariants: Variants = {
 }
 
 export function MenuSection({ label, children, reducedMotion }: MenuSectionProps) {
+  const labelId = useId()
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" role="group" aria-labelledby={labelId}>
       <motion.p
+        id={labelId}
         className="flex items-center gap-2 text-[10px] font-body tracking-[0.25em] uppercase text-[var(--gold-text)] px-3"
         variants={reducedMotion ? undefined : labelVariants}
       >
-        <span className="block w-3 h-px bg-[var(--gold)]/60 shrink-0" />
+        <span className="block w-3 h-px bg-[var(--gold)]/60 shrink-0" aria-hidden="true" />
         {label}
       </motion.p>
       <motion.div

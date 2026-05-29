@@ -3,9 +3,12 @@ import { useCallback, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowRight, CalendarDays, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { format, parse } from 'date-fns'
 import { Location } from '@/lib/types/location'
 import { LocationAutocomplete } from './location-autocomplete'
 import { buildSearchUrl } from '@/lib/utils/url-builder'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 export function SearchForm({ todayDate }: { todayDate: string }) {
   const router = useRouter()
@@ -14,6 +17,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
   const [toLocation, setToLocation] = useState<Location | null>(null)
   const [passengers, setPassengers] = useState(2)
   const [selectedDate, setSelectedDate] = useState(todayDate)
+  const [calendarOpen, setCalendarOpen] = useState(false)
 
   const [fromInput, setFromInput] = useState('')
   const [toInput, setToInput] = useState('')
@@ -89,20 +93,42 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
       {/* Date */}
       <div className="search-bar-field search-bar-field--compact">
         <label htmlFor="travel-date" className="search-bar-label">Date</label>
-        <div className="relative">
-          <CalendarDays
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-muted)]"
-            aria-hidden
-          />
-          <input
-            id="travel-date"
-            type="date"
-            value={selectedDate}
-            min={todayDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="search-bar-input pl-9"
-          />
-        </div>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <button
+              id="travel-date"
+              type="button"
+              className="search-bar-input search-bar-date-trigger"
+            >
+              <CalendarDays
+                className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
+                aria-hidden
+              />
+              <span className="truncate">
+                {format(parse(selectedDate, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}
+              </span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="search-bar-calendar-popover w-auto p-0"
+            align="start"
+            sideOffset={8}
+          >
+            <Calendar
+              mode="single"
+              selected={parse(selectedDate, 'yyyy-MM-dd', new Date())}
+              onSelect={(date) => {
+                if (date) {
+                  setSelectedDate(format(date, 'yyyy-MM-dd'))
+                  setCalendarOpen(false)
+                }
+              }}
+              disabled={{ before: parse(todayDate, 'yyyy-MM-dd', new Date()) }}
+              defaultMonth={parse(selectedDate, 'yyyy-MM-dd', new Date())}
+              autoFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="search-bar-divider" aria-hidden />

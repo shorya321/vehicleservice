@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
-import { Copy, Check, Printer, Info, ArrowRight, CalendarPlus } from 'lucide-react'
+import { Copy, Check, Printer, Info, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -66,7 +66,6 @@ interface ConfirmationContentProps {
 
 const EASE_LUXURY: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
-const ACTIVE_STATUSES: string[] = ['confirmed', 'assigned', 'in_progress']
 
 function SuccessCheck({ skip }: { skip: boolean }) {
   return (
@@ -226,43 +225,6 @@ function CardMotion({
   )
 }
 
-function escapeICS(text: string): string {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/;/g, '\\;')
-    .replace(/,/g, '\\,')
-    .replace(/\n/g, '\\n')
-}
-
-function generateICS(booking: Booking): string {
-  const dt = booking.pickup_datetime ? new Date(booking.pickup_datetime) : null
-  if (!dt) return ''
-
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const toICSDate = (d: Date) =>
-    `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`
-
-  const endDate = new Date(dt.getTime() + 2 * 60 * 60 * 1000)
-  const vehicle = booking.vehicle_type?.name || 'Transfer'
-  const summary = `${vehicle} — ${booking.pickup_address} to ${booking.dropoff_address}`
-  const description = `Booking: ${booking.booking_number}\\nVehicle: ${vehicle}\\nPassengers: ${booking.passenger_count}`
-
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//InfiniaTransfers//Booking//EN',
-    'BEGIN:VEVENT',
-    `DTSTART:${toICSDate(dt)}`,
-    `DTEND:${toICSDate(endDate)}`,
-    `SUMMARY:${escapeICS(summary)}`,
-    `LOCATION:${escapeICS(booking.pickup_address)}`,
-    `DESCRIPTION:${escapeICS(description)}`,
-    `UID:${booking.booking_number}@infiniatransfers.com`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n')
-}
-
 function getStatusConfig(status: string) {
   if (status === 'cancelled') {
     return {
@@ -327,8 +289,6 @@ export function ConfirmationContent({
   const isConverted = currentCurrency !== 'AED'
   const pickupDate = booking.pickup_datetime ? new Date(booking.pickup_datetime) : null
   const statusConfig = getStatusConfig(booking.booking_status)
-  const isActive = ACTIVE_STATUSES.includes(booking.booking_status)
-
   const copyBookingNumber = async () => {
     try {
       await navigator.clipboard.writeText(booking.booking_number)
@@ -338,19 +298,6 @@ export function ConfirmationContent({
     } catch {
       toast.error('Failed to copy')
     }
-  }
-
-  const downloadCalendar = () => {
-    const ics = generateICS(booking)
-    if (!ics) return
-    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `transfer-${booking.booking_number}.ics`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.success('Calendar event downloaded')
   }
 
   const cardClass = 'bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden'
@@ -457,17 +404,7 @@ export function ConfirmationContent({
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
               {copied ? 'Copied' : 'Copy reference'}
             </button>
-            {isActive && pickupDate && (
-              <button
-                onClick={downloadCalendar}
-                className={actionBtnClass}
-                aria-label="Add to calendar"
-              >
-                <CalendarPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                Add to calendar
-              </button>
-            )}
-            <button
+<button
               onClick={() => window.print()}
               className={`print:hidden ${actionBtnClass}`}
               aria-label="Print confirmation"
@@ -495,33 +432,33 @@ export function ConfirmationContent({
                 <h2 id="itinerary-heading" className="t-label">Itinerary</h2>
               </div>
               <div className={cardBodyClass}>
-                <dl className="space-y-0">
+                <dl>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                     <div>
                       <dt className="t-label">From</dt>
-                      <dd className="mt-1.5 text-[1rem] font-medium leading-tight text-[var(--text-primary)] break-words">
+                      <dd className="mt-1.5 text-[1.125rem] font-medium leading-tight text-[var(--text-primary)] break-words">
                         {booking.pickup_address}
                       </dd>
                     </div>
                     <div>
                       <dt className="t-label">To</dt>
-                      <dd className="mt-1.5 text-[1rem] font-medium leading-tight text-[var(--text-primary)] break-words">
+                      <dd className="mt-1.5 text-[1.125rem] font-medium leading-tight text-[var(--text-primary)] break-words">
                         {booking.dropoff_address}
                       </dd>
                     </div>
                   </div>
 
-                  <div className={`mt-5 pt-5 border-t ${dividerClass}`}>
-                    <div className="flex flex-wrap gap-x-8 gap-y-4">
+                  <div className="mt-8 pt-6 border-t border-[rgba(var(--gold-rgb),0.06)]">
+                    <div className="flex flex-wrap gap-x-8 gap-y-5">
                       <div>
                         <dt className="t-label">Date</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium text-[var(--text-primary)]">
+                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
                           {pickupDate ? formatDate(pickupDate) : 'TBC'}
                         </dd>
                       </div>
                       <div>
                         <dt className="t-label">Pickup</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium text-[var(--text-primary)]">
+                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
                           {pickupDate ? formatTime(pickupDate) : 'TBC'}
                         </dd>
                       </div>
@@ -533,12 +470,12 @@ export function ConfirmationContent({
                               alt={booking.vehicle_type.name}
                               width={80}
                               height={48}
-                              className="mt-6 rounded object-contain w-12 h-8 lg:w-[72px] lg:h-12"
+                              className="mt-1.5 rounded object-contain w-12 h-8 lg:w-[72px] lg:h-12"
                             />
                           )}
                           <div>
                             <dt className="t-label">Vehicle</dt>
-                            <dd className="mt-1.5 text-[1rem] font-medium text-[var(--text-primary)]">
+                            <dd className="mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
                               {booking.vehicle_type.name}
                             </dd>
                           </div>
@@ -546,13 +483,13 @@ export function ConfirmationContent({
                       )}
                       <div>
                         <dt className="t-label">Passengers</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium text-[var(--text-primary)]">
+                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
                           {booking.passenger_count}{booking.vehicle_type ? ` / ${booking.vehicle_type.passenger_capacity}` : ''}
                         </dd>
                       </div>
                       <div>
                         <dt className="t-label">Bags</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium text-[var(--text-primary)]">
+                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
                           {booking.luggage_count || 0}{booking.vehicle_type ? ` / ${booking.vehicle_type.luggage_capacity}` : ''}
                         </dd>
                       </div>
@@ -572,17 +509,17 @@ export function ConfirmationContent({
                   <dl className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
                     <div>
                       <dt className="t-label">Name</dt>
-                      <dd className="mt-1.5 text-[var(--text-primary)] truncate">
+                      <dd className="mt-1.5 font-medium text-[var(--text-primary)] truncate">
                         {primaryPassenger.first_name} {primaryPassenger.last_name}
                       </dd>
                     </div>
                     <div>
                       <dt className="t-label">Email</dt>
-                      <dd className="mt-1.5 text-[var(--text-primary)] break-all">{primaryPassenger.email}</dd>
+                      <dd className="mt-1.5 font-medium text-[var(--text-primary)] break-all">{primaryPassenger.email}</dd>
                     </div>
                     <div>
                       <dt className="t-label">Phone</dt>
-                      <dd className="numeric mt-1.5 text-[var(--text-primary)] break-words">{primaryPassenger.phone}</dd>
+                      <dd className="numeric mt-1.5 font-medium text-[var(--text-primary)] break-words">{primaryPassenger.phone}</dd>
                     </div>
                   </dl>
                 </div>

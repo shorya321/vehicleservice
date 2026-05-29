@@ -20,7 +20,7 @@ function getStripeAppearance(isDark: boolean) {
   return {
     theme: (isDark ? 'night' : 'flat') as 'night' | 'flat',
     variables: {
-      colorPrimary: '#c6aa88',
+      colorPrimary: isDark ? '#c6aa88' : '#7e6439',
       colorBackground: cardBg,
       colorText: text,
       colorTextSecondary: secondary,

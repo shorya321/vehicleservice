@@ -39,13 +39,13 @@ export function MenuFooter({ reducedMotion }: MenuFooterProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
-            className="footer-social p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            className="footer-social p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
           >
             <Icon className="w-4 h-4" />
           </a>
         ))}
       </div>
-      <p className="text-[9px] font-body text-[var(--text-muted)]/60 text-center mt-3 pb-2">
+      <p className="text-[10px] font-body text-[var(--text-muted)]/60 text-center mt-3 pb-2">
         &copy; 2026 Infinia Transfers
       </p>
     </motion.div>

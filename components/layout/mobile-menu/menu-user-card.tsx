@@ -35,14 +35,14 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
         <Link
           href="/login"
           onClick={onClose}
-          className="flex-1 py-2.5 text-center text-sm font-body rounded-lg border border-[var(--gold)]/30 text-[var(--gold-text)] hover:bg-[var(--gold)]/10 transition-colors duration-200"
+          className="flex-1 py-2.5 min-h-[44px] flex items-center justify-center text-sm font-body rounded-lg border border-[var(--gold)]/30 text-[var(--gold-text)] hover:bg-[var(--gold)]/10 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
         >
           Sign In
         </Link>
         <Link
           href="/register"
           onClick={onClose}
-          className="flex-1 py-2.5 text-center text-sm font-body rounded-lg bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold)]/90 transition-colors duration-200 font-medium"
+          className="flex-1 py-2.5 min-h-[44px] flex items-center justify-center text-sm font-body rounded-lg bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold)]/90 transition-colors duration-200 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
         >
           Sign Up
         </Link>

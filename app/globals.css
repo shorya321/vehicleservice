@@ -1789,6 +1789,99 @@
     transform: translateX(3px);
   }
 
+  /* ── Search Bar Date Trigger ── */
+  .search-bar-date-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  /* ── Search Bar Calendar Popover ── */
+  .search-bar-calendar-popover {
+    background: var(--black-warm) !important;
+    border: 1px solid color-mix(in oklch, var(--graphite) 70%, var(--gold) 30%) !important;
+    border-radius: 8px !important;
+    box-shadow:
+      0 20px 48px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(var(--gold-rgb), 0.08) !important;
+  }
+
+  .search-bar-calendar-popover .rdp-root {
+    --rdp-accent-color: var(--gold);
+    --rdp-accent-background-color: rgba(var(--gold-rgb), 0.15);
+    --rdp-day_button-height: 36px;
+    --rdp-day_button-width: 36px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+  }
+
+  .search-bar-calendar-popover .rdp-month_caption {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .search-bar-calendar-popover .rdp-weekday {
+    color: var(--text-muted);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .search-bar-calendar-popover .rdp-day_button {
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 400;
+    border-radius: 4px;
+    transition: background-color 150ms ease-out, color 150ms ease-out;
+  }
+
+  .search-bar-calendar-popover .rdp-day_button:hover:not([disabled]) {
+    background: rgba(var(--gold-rgb), 0.12);
+    color: var(--gold-cream);
+  }
+
+  .search-bar-calendar-popover .rdp-selected .rdp-day_button {
+    background: var(--gold) !important;
+    color: var(--black-void) !important;
+    font-weight: 600;
+  }
+
+  .search-bar-calendar-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+    background: rgba(var(--gold-rgb), 0.08);
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .search-bar-calendar-popover .rdp-disabled .rdp-day_button {
+    color: var(--text-muted);
+    opacity: 0.35;
+  }
+
+  .search-bar-calendar-popover .rdp-outside .rdp-day_button {
+    color: var(--text-muted);
+    opacity: 0.3;
+  }
+
+  .search-bar-calendar-popover .rdp-button_previous,
+  .search-bar-calendar-popover .rdp-button_next {
+    color: var(--text-secondary);
+    border: 1px solid var(--graphite);
+    background: transparent;
+    border-radius: 4px;
+    transition: color 150ms ease-out, border-color 150ms ease-out, background-color 150ms ease-out;
+  }
+
+  .search-bar-calendar-popover .rdp-button_previous:hover,
+  .search-bar-calendar-popover .rdp-button_next:hover {
+    color: var(--gold);
+    border-color: color-mix(in oklch, var(--graphite) 60%, var(--gold) 40%);
+    background: rgba(var(--gold-rgb), 0.06);
+  }
+
   /* Vehicle Card */
   .vehicle-card {
     background: linear-gradient(135deg, var(--charcoal) 0%, rgba(var(--charcoal-rgb), 0.8) 100%);
@@ -3789,6 +3882,13 @@
   overflow: hidden;
   content-visibility: hidden;
   contain-intrinsic-size: 0;
+  background: linear-gradient(175deg, #ebe5db 0%, #f2ede5 100%);
+  border-right: 1px solid rgba(198, 170, 136, 0.18);
+}
+
+.dark .auth-hero-panel {
+  background: var(--black-void);
+  border-right-color: var(--graphite);
 }
 
 @media (min-width: 1024px) {
@@ -3806,8 +3906,12 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(var(--gold-rgb), 0.04) 0%, transparent 60%);
+    background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(var(--gold-rgb), 0.1) 0%, transparent 60%);
     pointer-events: none;
+  }
+
+  .dark .auth-hero-panel::before {
+    background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(var(--gold-rgb), 0.04) 0%, transparent 60%);
   }
 }
 
@@ -3820,14 +3924,23 @@
   justify-content: center;
   min-height: 100vh;
   position: relative;
+  background: #f7f4ef;
+}
+
+.dark .auth-panel {
+  background: transparent;
 }
 
 .auth-panel::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 50% 30%, rgba(var(--gold-rgb), 0.03) 0%, transparent 60%);
+  background: radial-gradient(ellipse 60% 50% at 50% 20%, rgba(var(--gold-rgb), 0.06) 0%, transparent 55%);
   pointer-events: none;
+}
+
+.dark .auth-panel::before {
+  background: radial-gradient(ellipse 60% 50% at 50% 30%, rgba(var(--gold-rgb), 0.03) 0%, transparent 60%);
 }
 
 @media (min-width: 768px) {
@@ -3847,10 +3960,18 @@
 /* Auth Card */
 .auth-card {
   border-radius: 8px;
+  border: 1px solid rgba(var(--gold-rgb), 0.2);
+  border-top: 2px solid rgba(var(--gold-rgb), 0.4);
+  background: #fdfcfa;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(198, 170, 136, 0.08), 0 6px 20px rgba(198, 170, 136, 0.05);
+}
+
+.dark .auth-card {
   border: 1px solid var(--graphite);
   border-top-color: rgba(var(--gold-rgb), 0.25);
   background: var(--charcoal);
-  padding: 20px;
+  box-shadow: none;
 }
 
 @media (min-width: 640px) {
@@ -3865,11 +3986,15 @@
   display: flex;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--graphite);
+  border-bottom: 1px solid rgba(var(--gold-rgb), 0.18);
   border-radius: 0;
   padding: 0;
   gap: 0;
   margin-bottom: var(--space-xl);
+}
+
+.dark .auth-tabs {
+  border-bottom-color: var(--graphite);
 }
 
 .auth-tabs::after {
@@ -3879,8 +4004,12 @@
   left: 0;
   width: 50%;
   height: 3px;
-  background: var(--gold);
+  background: var(--gold-medium);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .auth-tabs::after {
+  background: var(--gold);
 }
 
 .auth-tabs[data-active-tab="1"]::after {
@@ -3926,6 +4055,12 @@
   width: 40px;
   transform-origin: left center;
   animation: eyebrow-line-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  background-color: var(--gold-medium);
+}
+
+.dark .auth-hero-panel .editorial-eyebrow::before,
+.dark .auth-panel .editorial-eyebrow::before {
+  background-color: var(--gold);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4044,6 +4179,26 @@
 .dark .auth-alert-success {
   border-color: rgba(var(--gold-rgb), 0.3);
   background: rgba(var(--gold-rgb), 0.06);
+}
+
+/* Auth light-mode input refinement */
+.auth-card input:not([type="checkbox"]) {
+  background-color: #f5f2ed;
+  border-color: rgba(198, 170, 136, 0.22);
+}
+
+.dark .auth-card input:not([type="checkbox"]) {
+  background-color: var(--black-warm);
+  border-color: var(--graphite);
+}
+
+/* Hero panel beat dividers — gold-tinted in light mode */
+.auth-hero-panel li {
+  border-top-color: rgba(198, 170, 136, 0.2);
+}
+
+.dark .auth-hero-panel li {
+  border-top-color: var(--graphite);
 }
 
 /* ============================================
