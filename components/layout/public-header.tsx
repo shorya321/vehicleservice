@@ -36,18 +36,12 @@ export function PublicHeader({
   initialProfile = null,
 }: PublicHeaderProps) {
   const { allCurrencies } = useCurrency()
-  const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
   const [user, setUser] = useState<SupabaseUser | null>(initialUser)
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const supabase = useMemo(() => createClient(), [])
-
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true))
-    return () => cancelAnimationFrame(id)
-  }, [])
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
@@ -167,11 +161,10 @@ export function PublicHeader({
 
             {/* Currency Selector */}
             {allCurrencies.length > 1 && (
-              <CurrencySelector staticMode={!mounted} className="scale-90 sm:scale-100 origin-right" />
+              <CurrencySelector className="scale-90 sm:scale-100 origin-right" />
             )}
 
             {user ? (
-              mounted ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
@@ -243,19 +236,6 @@ export function PublicHeader({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
-                <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 transition-colors">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={profile?.avatar_url || undefined}
-                      alt={profile?.full_name || profile?.first_name || user?.email}
-                    />
-                    <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)]">
-                      {getInitials(profile)}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              )
             ) : (
               <Link
                 href="/login"
