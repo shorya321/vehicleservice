@@ -183,7 +183,7 @@ function LocationAutocompleteBase({
         <div
           id={`${id}-suggestions`}
           role="listbox"
-          className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-[var(--graphite)] bg-[var(--charcoal)] shadow-lg max-h-60 overflow-y-auto"
+          className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-[var(--graphite)] bg-[var(--charcoal)] shadow-lg max-h-60 overflow-y-auto luxury-scrollbar"
         >
           {suggestions.map((location, index) => (
             <button

@@ -4,12 +4,11 @@ export function Hero({ todayDate }: { todayDate: string }) {
   return (
     <section
       aria-labelledby="hero-headline"
-      className="home-hero-color home-hero-motion relative overflow-hidden bg-[var(--black-void)] pt-[clamp(5rem,12vw,6.5rem)]"
+      className="home-hero-color home-hero-motion relative bg-[var(--black-void)] pt-[clamp(5rem,12vw,6.5rem)]"
     >
-      <div
-        aria-hidden
-        className="home-hero-color-wash pointer-events-none absolute inset-0"
-      />
+      <div className="absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="home-hero-color-wash pointer-events-none absolute inset-0" />
+      </div>
 
       <div className="luxury-container relative z-10 pb-[clamp(4rem,8vw,6.5rem)] pt-[clamp(3rem,7vw,5.5rem)]">
         <div className="mx-auto max-w-[52rem] text-center">
