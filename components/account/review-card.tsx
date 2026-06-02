@@ -70,7 +70,7 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
               ))}
             </div>
             <span className={`
-              px-2 py-0.5 text-xs font-medium rounded-sm border flex items-center gap-1 uppercase
+              px-2 py-0.5 text-xs font-medium rounded border flex items-center gap-1 uppercase
               ${isPending
                 ? "bg-[var(--status-pending-bg)] text-[var(--status-pending-text)] border-[var(--status-pending-border)]"
                 : "bg-[var(--status-completed-bg)] text-[var(--status-completed-text)] border-[var(--status-completed-border)]"}

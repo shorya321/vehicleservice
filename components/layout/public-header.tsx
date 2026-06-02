@@ -165,77 +165,77 @@ export function PublicHeader({
             )}
 
             {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={profile?.avatar_url || undefined}
-                          alt={profile?.full_name || profile?.first_name || user?.email}
-                        />
-                        <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)]">
-                          {getInitials(profile)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-[var(--black-warm)] border border-[var(--graphite)]">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none text-[var(--text-primary)]">
-                          {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
-                        </p>
-                        <p className="text-xs leading-none text-[var(--text-muted)]">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
-                    {(!profile?.role || profile.role === 'customer') ? (
-                      <>
-                        <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                          <User className="mr-2 h-4 w-4" />
-                          My Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                          <Car className="mr-2 h-4 w-4" />
-                          My Bookings
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                          <Star className="mr-2 h-4 w-4" />
-                          My Reviews
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                          <Building2 className="mr-2 h-4 w-4" />
-                          Partner With Us
-                        </DropdownMenuItem>
-                      </>
-                    ) : profile.role === 'admin' ? (
-                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Go to Dashboard
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={profile?.avatar_url || undefined}
+                        alt={profile?.full_name || profile?.first_name || user?.email}
+                      />
+                      <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)]">
+                        {getInitials(profile)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-[var(--black-warm)] border border-[var(--graphite)]">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-[var(--text-primary)]">
+                        {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
+                      </p>
+                      <p className="text-xs leading-none text-[var(--text-muted)]">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+                  {(!profile?.role || profile.role === 'customer') ? (
+                    <>
+                      <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        My Profile
                       </DropdownMenuItem>
-                    ) : profile.role === 'vendor' ? (
-                      <DropdownMenuItem onClick={() => router.push('/vendor/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Go to Dashboard
+                      <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <Car className="mr-2 h-4 w-4" />
+                        My Bookings
                       </DropdownMenuItem>
-                    ) : profile.role === 'business' ? (
-                      <DropdownMenuItem onClick={() => router.push('/business/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Go to Dashboard
+                      <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <Star className="mr-2 h-4 w-4" />
+                        My Reviews
                       </DropdownMenuItem>
-                    ) : null}
-                    <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
-                    <DropdownMenuItem
-                      className="text-red-700 dark:text-red-400 focus:text-red-700 dark:focus:text-red-400 hover:bg-red-700/10 dark:hover:bg-red-500/10 cursor-pointer"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
+                      <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                        <Building2 className="mr-2 h-4 w-4" />
+                        Partner With Us
+                      </DropdownMenuItem>
+                    </>
+                  ) : profile.role === 'admin' ? (
+                    <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Go to Dashboard
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  ) : profile.role === 'vendor' ? (
+                    <DropdownMenuItem onClick={() => router.push('/vendor/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Go to Dashboard
+                    </DropdownMenuItem>
+                  ) : profile.role === 'business' ? (
+                    <DropdownMenuItem onClick={() => router.push('/business/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Go to Dashboard
+                    </DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+                  <DropdownMenuItem
+                    className="text-red-700 dark:text-red-400 focus:text-red-700 dark:focus:text-red-400 hover:bg-red-700/10 dark:hover:bg-red-500/10 cursor-pointer"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link
                 href="/login"

@@ -10,12 +10,12 @@ interface InlineStatsProps {
 
 export function InlineStats({ stats }: InlineStatsProps) {
   return (
-    <div className="flex items-center gap-1 flex-wrap" role="group" aria-label="Statistics">
+    <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap" role="group" aria-label="Statistics">
       {stats.map((stat, i) => (
-        <span key={stat.label} className="flex items-center gap-1">
-          {i > 0 && <span className="text-[var(--text-muted)] mx-1" aria-hidden="true">&middot;</span>}
+        <span key={stat.label} className="flex items-center gap-0.5 sm:gap-1">
+          {i > 0 && <span className="text-[var(--text-muted)] mx-0.5 sm:mx-1" aria-hidden="true">&middot;</span>}
           <span
-            className={`text-base font-semibold tabular-nums lining-nums ${stat.color ? '' : 'text-[var(--text-primary)]'}`}
+            className={`text-sm sm:text-base font-semibold tabular-nums lining-nums ${stat.color ? '' : 'text-[var(--text-primary)]'}`}
             style={stat.color ? { color: stat.color } : undefined}
           >
             {stat.value}

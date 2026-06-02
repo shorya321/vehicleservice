@@ -64,13 +64,13 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
         {/* Left: Route Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm font-mono text-[var(--gold-text)]">#{booking.booking_number}</span>
-            <span aria-label={`Booking status: ${booking.booking_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 ${bookingStatusConfig.style}`}>
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="text-sm font-mono text-[var(--gold-text)] min-w-0 truncate max-w-full">#{booking.booking_number}</span>
+            <span aria-label={`Booking status: ${booking.booking_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 flex-shrink-0 ${bookingStatusConfig.style}`}>
               <BookingStatusIcon className="w-3 h-3" />
               {booking.booking_status}
             </span>
-            <span aria-label={`Payment: ${booking.payment_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 ${paymentConfig.style}`}>
+            <span aria-label={`Payment: ${booking.payment_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 flex-shrink-0 ${paymentConfig.style}`}>
               <PaymentIcon className="w-3 h-3" />
               {booking.payment_status}
             </span>
@@ -93,7 +93,7 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
         </div>
 
         {/* Middle: Date/Time & Vehicle */}
-        <div className="flex lg:flex-col items-center lg:items-end gap-4 lg:gap-2">
+        <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-2 sm:gap-4 lg:gap-2">
           <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] tabular-nums">
             <Calendar className={`w-4 h-4 ${dateIconColor}`} />
             <span>{formattedDate}</span>
@@ -113,7 +113,7 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
         {/* Right: Price & Arrow */}
         <div className="flex items-center justify-between lg:justify-end gap-4">
           <div className="text-right">
-            <p className="text-lg font-semibold text-[var(--gold-text)]">
+            <p className="text-lg font-semibold text-[var(--gold-text)] tabular-nums lining-nums">
               {formattedPrice}
             </p>
             {vendorName && (

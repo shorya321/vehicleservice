@@ -53,6 +53,7 @@ export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <ContentSection
         title="Personal Information"
+        eyebrow="Profile"
         description="Update your personal details to complete your profile"
       >
         <div className="space-y-6">

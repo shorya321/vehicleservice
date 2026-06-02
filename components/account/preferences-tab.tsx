@@ -51,6 +51,7 @@ export function PreferencesTab({ userId, preferences }: PreferencesTabProps) {
   return (
     <ContentSection
       title="Email Notifications"
+      eyebrow="Settings"
       description="Choose which email notifications you'd like to receive"
     >
       <div className="divide-y divide-[var(--border-subtle)]">

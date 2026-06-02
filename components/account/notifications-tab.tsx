@@ -132,7 +132,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
 
   const inlineStats = useMemo(() => [
     { label: "total", value: stats.total },
-    { label: "unread", value: stats.unread },
+    { label: "unread", value: stats.unread, color: "var(--status-confirmed-text)" },
   ], [stats.total, stats.unread])
 
   const markAllAction = stats.unread > 0 ? (
@@ -149,8 +149,9 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
   return (
     <ContentSection
       title="Notifications"
+      eyebrow="Updates"
       action={
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <InlineStats stats={inlineStats} />
           {markAllAction}
         </div>

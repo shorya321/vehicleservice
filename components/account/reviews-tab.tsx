@@ -109,8 +109,8 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
 
   const inlineStats = useMemo(() => [
     { label: "total", value: stats.total },
-    { label: "pending", value: stats.pending },
-    { label: "approved", value: stats.approved },
+    { label: "pending", value: stats.pending, color: "var(--status-pending-text)" },
+    { label: "approved", value: stats.approved, color: "var(--status-completed-text)" },
   ], [stats.total, stats.pending, stats.approved])
 
   const writeReviewButton = eligibleBookings.length > 0 ? (
@@ -123,8 +123,9 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
   return (
     <ContentSection
       title="Reviews"
+      eyebrow="Feedback"
       action={
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <InlineStats stats={inlineStats} />
           {writeReviewButton}
         </div>
@@ -156,7 +157,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
           <select
             value={filters.sortBy}
             onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-            className="luxury-input min-w-0 w-full sm:min-w-[130px]"
+            className="luxury-input min-w-0 flex-1 min-w-[130px]"
             aria-label="Sort reviews by"
           >
             {SORT_OPTIONS.map((opt) => (
@@ -166,7 +167,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
           <select
             value={filters.status}
             onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="luxury-input min-w-0 w-full sm:min-w-[120px]"
+            className="luxury-input min-w-0 flex-1 min-w-[120px]"
             aria-label="Filter by review status"
           >
             {STATUS_OPTIONS.map((opt) => (
@@ -176,7 +177,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
           <select
             value={filters.ratingRange}
             onChange={(e) => handleFilterChange("ratingRange", e.target.value)}
-            className="luxury-input min-w-0 w-full sm:min-w-[120px]"
+            className="luxury-input min-w-0 flex-1 min-w-[120px]"
             aria-label="Filter by rating"
           >
             {RATING_OPTIONS.map((opt) => (
@@ -218,7 +219,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 mt-6">
           <p className="text-sm text-[var(--text-muted)] tabular-nums">
             Page {pagination.page} of {pagination.totalPages}
           </p>
@@ -227,16 +228,18 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
               onClick={() => setFilters((p) => ({ ...p, page: p.page! - 1 }))}
               disabled={pagination.page === 1}
               className="btn btn-secondary disabled:opacity-50"
+              aria-label="Previous page"
             >
               <ChevronLeft className="w-4 h-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </button>
             <button
               onClick={() => setFilters((p) => ({ ...p, page: p.page! + 1 }))}
               disabled={pagination.page === pagination.totalPages}
               className="btn btn-secondary disabled:opacity-50"
+              aria-label="Next page"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

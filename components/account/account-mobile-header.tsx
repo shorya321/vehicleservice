@@ -51,7 +51,7 @@ export function AccountMobileHeader({ user, activeTab, onTabChange, unreadNotifi
   }, [])
 
   return (
-    <div className="lg:hidden">
+    <div className="lg:hidden min-w-0">
       {/* Compact Profile Row */}
       <div className="flex items-center gap-3 px-4 py-4">
         <div className="w-11 h-11 rounded-full bg-[var(--charcoal)] flex items-center justify-center overflow-hidden flex-shrink-0">

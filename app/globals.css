@@ -3529,12 +3529,13 @@
   display: grid;
   grid-template-columns: 1fr;
   min-height: calc(100vh - 200px);
+  overflow-x: hidden;
 }
 
 @media (min-width: 1024px) {
   .account-layout {
     grid-template-columns: 280px 1fr;
-    gap: var(--space-3xl);
+    gap: var(--space-2xl);
   }
 }
 
@@ -3589,7 +3590,7 @@
 .account-label {
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -3685,7 +3686,7 @@
 }
 
 .account-pill.active {
-  background: rgba(var(--gold-rgb), 0.12);
+  background: rgba(var(--gold-rgb), 0.1);
   color: var(--gold-text);
   font-weight: 600;
 }
@@ -3744,24 +3745,44 @@
   color: var(--gold-text);
 }
 
-/* Item Card Pattern */
+/* Item Card Pattern — aligned with luxury-card vocabulary */
 .account-item-card {
   padding: var(--space-lg);
-  background: rgba(var(--graphite-rgb), 0.3);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.5) 0%, rgba(var(--warm-rgb), 0.3) 100%);
+  border: 1px solid rgba(var(--gold-rgb), 0.1);
+  border-radius: 12px;
   transition: border-color 200ms var(--ease-luxury), transform 200ms var(--ease-luxury), box-shadow 200ms var(--ease-luxury);
 }
 
 .account-item-card:hover {
-  border-color: var(--border-accent);
+  border-color: rgba(var(--gold-rgb), 0.25);
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px -8px rgba(var(--gold-rgb), 0.22);
+  box-shadow: 0 10px 24px -8px rgba(var(--gold-rgb), 0.18);
+}
+
+/* Account Eyebrow — editorial label with gold rule */
+.account-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.account-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background-color: var(--gold);
 }
 
 /* Content Section (flat, no card wrapper) */
 .account-section {
-  padding-top: var(--space-2xl);
+  padding-top: clamp(2rem, 4vw, 3.5rem);
 }
 
 .account-section:first-child {
@@ -3773,18 +3794,20 @@
 }
 
 .account-section-title {
-  font-size: 1.375rem;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
   font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   color: var(--text-primary);
-  line-height: 1.35;
 }
 
 .account-section-desc {
-  font-size: 1rem;
-  color: var(--text-muted);
-  margin-top: var(--space-xs);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-top: var(--space-sm);
   margin-bottom: var(--space-lg);
-  max-width: 70ch;
+  max-width: 65ch;
 }
 
 /* Skeleton loading */

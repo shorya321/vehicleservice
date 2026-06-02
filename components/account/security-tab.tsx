@@ -88,6 +88,7 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
     <div>
       <ContentSection
         title="Change Password"
+        eyebrow="Security"
         description="Update your password to keep your account secure"
       >
         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">

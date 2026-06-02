@@ -99,6 +99,7 @@ export function BookingsTab({ userId }: BookingsTabProps) {
   return (
     <ContentSection
       title="Bookings"
+      eyebrow="My Transfers"
       action={<InlineStats stats={inlineStats} />}
     >
       {/* Filters */}
@@ -114,11 +115,11 @@ export function BookingsTab({ userId }: BookingsTabProps) {
             aria-label="Search bookings"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <select
             value={filters.status}
             onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="luxury-input min-w-0 w-full sm:min-w-[140px]"
+            className="luxury-input min-w-0 flex-1 min-w-[140px]"
             aria-label="Filter by booking status"
           >
             {STATUS_OPTIONS.map((opt) => (
@@ -128,7 +129,7 @@ export function BookingsTab({ userId }: BookingsTabProps) {
           <select
             value={filters.paymentStatus}
             onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
-            className="luxury-input min-w-0 w-full sm:min-w-[140px]"
+            className="luxury-input min-w-0 flex-1 min-w-[140px]"
             aria-label="Filter by payment status"
           >
             {PAYMENT_OPTIONS.map((opt) => (
@@ -174,7 +175,7 @@ export function BookingsTab({ userId }: BookingsTabProps) {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 mt-6">
           <p className="text-sm text-[var(--text-muted)] tabular-nums">
             Showing {(pagination.page - 1) * (filters.limit || 10) + 1} to {Math.min(pagination.page * (filters.limit || 10), pagination.total)} of {pagination.total}
           </p>
@@ -183,16 +184,18 @@ export function BookingsTab({ userId }: BookingsTabProps) {
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page === 1}
               className="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Previous page"
             >
               <ChevronLeft className="w-4 h-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </button>
             <button
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page === pagination.totalPages}
               className="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Next page"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
