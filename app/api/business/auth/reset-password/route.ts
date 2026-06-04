@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { z } from 'zod';
 
 /**
@@ -43,7 +42,7 @@ export async function POST(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
 
     // Initialize Supabase client
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // STEP 1: Fetch token from database
     const { data: resetToken, error: tokenError } = await supabase
@@ -116,13 +115,8 @@ export async function POST(request: NextRequest) {
       auth_user_id: businessUserResult[0].auth_user_id
     };
 
-    // STEP 6: Update password using Supabase Admin client (bypass RLS)
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+    // STEP 6: Update password using admin client (bypass RLS)
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
       businessUser.auth_user_id,
       { password }
     );

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/email/services/auth-emails';
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     console.log('[FORGOT-PW] Hostname:', hostname, 'Platform:', platformDomain);
 
     // Initialize Supabase client
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     console.log('[FORGOT-PW] Supabase client initialized');
 
     // STEP 1: Query which business this email belongs to using database function
