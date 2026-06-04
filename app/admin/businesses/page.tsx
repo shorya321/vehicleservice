@@ -10,6 +10,7 @@ import { BusinessAccountsTableWrapper } from './components/business-accounts-tab
 import { ClientFilters } from './components/client-filters';
 import { AnimatedPage } from '@/components/layout/animated-page';
 import { AnimatedCard } from '@/components/ui/animated-card';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Building2, Clock, CheckCircle, Car } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -106,11 +107,12 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
 
   return (
       <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Business Accounts', href: '/admin/businesses' }]} />
         <div className="space-y-6">
           {/* Page Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Business Accounts</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Business Accounts</h1>
               <p className="text-muted-foreground">Manage B2B business accounts</p>
             </div>
           </div>

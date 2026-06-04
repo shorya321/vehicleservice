@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format, parseISO, addHours } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 import { Clock, CalendarDays, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FormDatePicker } from '@/components/ui/form-date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
@@ -65,10 +66,6 @@ export function EditDateTimeModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hoursRemaining = getHoursRemainingToModify(currentDatetime);
-
-  // Get minimum datetime (now + 3 hours to allow for future modifications)
-  const minDateTime = addHours(new Date(), MODIFICATION_CUTOFF_HOURS);
-  const minDateTimeString = format(minDateTime, "yyyy-MM-dd'T'HH:mm");
 
   // Format current datetime for display
   const currentDatetimeFormatted = format(
@@ -159,23 +156,58 @@ export function EditDateTimeModal({
             </div>
 
             {/* New DateTime Input */}
-            <FormField
-              control={form.control}
-              name="pickup_datetime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Pickup Date & Time</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" min={minDateTimeString} {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Select the new pickup date and time (must be at least{' '}
-                    {MODIFICATION_CUTOFF_HOURS} hours from now)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="pickup_datetime"
+                render={({ field }) => {
+                  const dateValue = field.value ? field.value.split('T')[0] : '';
+                  const timeValue = field.value ? field.value.split('T')[1] || '' : '';
+                  return (
+                    <FormItem>
+                      <FormLabel>New Pickup Date</FormLabel>
+                      <FormControl>
+                        <FormDatePicker
+                          value={dateValue ? parse(dateValue, 'yyyy-MM-dd', new Date()) : undefined}
+                          onChange={(date) => {
+                            const d = date ? format(date, 'yyyy-MM-dd') : '';
+                            field.onChange(d && timeValue ? `${d}T${timeValue}` : d ? `${d}T12:00` : '');
+                          }}
+                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          placeholder="Select date"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="pickup_datetime"
+                render={({ field }) => {
+                  const dateValue = field.value ? field.value.split('T')[0] : '';
+                  const timeValue = field.value ? field.value.split('T')[1] || '' : '';
+                  return (
+                    <FormItem>
+                      <FormLabel>New Pickup Time</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="time"
+                          value={timeValue}
+                          onChange={(e) => {
+                            field.onChange(dateValue ? `${dateValue}T${e.target.value}` : '');
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Must be at least {MODIFICATION_CUTOFF_HOURS}h from now
+                      </FormDescription>
+                    </FormItem>
+                  );
+                }}
+              />
+            </div>
 
             {/* Reason (Optional) */}
             <FormField

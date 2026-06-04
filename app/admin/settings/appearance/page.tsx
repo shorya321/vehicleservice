@@ -11,8 +11,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAdminThemeSettings } from '@/lib/admin/theme-server'
 import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { AppearanceSettingsForm } from './components/appearance-form'
-import { Palette } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Appearance Settings | Admin Portal',
@@ -44,15 +44,11 @@ export default async function AppearanceSettingsPage() {
 
   return (
       <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Settings', href: '/admin/settings' }, { label: 'Appearance' }]} />
         <div className="space-y-6">
           {/* Page Header */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Palette className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Appearance Settings
-              </h1>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Appearance Settings</h1>
             <p className="text-muted-foreground">
               Customize the look and feel of admin and vendor dashboards. Changes apply to all users.
             </p>

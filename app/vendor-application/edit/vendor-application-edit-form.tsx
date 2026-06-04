@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { Loader2, Building2, FileText, Landmark } from "lucide-react"
+import { FormDatePicker } from "@/components/ui/form-date-picker"
+import { parse, format } from "date-fns"
 import { countries } from "@/lib/constants/countries"
 import { vendorApplicationSchema, VendorApplicationFormData } from "../schemas"
 import { updateVendorApplication } from "../actions"
@@ -67,7 +69,7 @@ export function VendorApplicationEditForm({ application, defaultValues }: Vendor
     finally { setIsSubmitting(false) }
   }
 
-  const { register, formState: { errors } } = form
+  const { register, formState: { errors }, watch, setValue } = form
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -156,7 +158,12 @@ export function VendorApplicationEditForm({ application, defaultValues }: Vendor
             </div>
             <div>
               <label className="form-label">Trade License Expiry *</label>
-              <input {...register("tradeLicenseExpiry")} type="date" className="luxury-input" />
+              <FormDatePicker
+                value={watch("tradeLicenseExpiry") ? parse(watch("tradeLicenseExpiry") as string, "yyyy-MM-dd", new Date()) : undefined}
+                onChange={(date) => setValue("tradeLicenseExpiry", date ? format(date, "yyyy-MM-dd") : "", { shouldValidate: true })}
+                placeholder="Select expiry date"
+                className="luxury-input"
+              />
               {errors.tradeLicenseExpiry && <p className="mt-1.5 text-sm text-red-400">{errors.tradeLicenseExpiry.message}</p>}
             </div>
             <div>
@@ -166,7 +173,12 @@ export function VendorApplicationEditForm({ application, defaultValues }: Vendor
             </div>
             <div>
               <label className="form-label">Insurance Expiry *</label>
-              <input {...register("insuranceExpiry")} type="date" className="luxury-input" />
+              <FormDatePicker
+                value={watch("insuranceExpiry") ? parse(watch("insuranceExpiry") as string, "yyyy-MM-dd", new Date()) : undefined}
+                onChange={(date) => setValue("insuranceExpiry", date ? format(date, "yyyy-MM-dd") : "", { shouldValidate: true })}
+                placeholder="Select expiry date"
+                className="luxury-input"
+              />
               {errors.insuranceExpiry && <p className="mt-1.5 text-sm text-red-400">{errors.insuranceExpiry.message}</p>}
             </div>
           </div>

@@ -17,6 +17,7 @@ import BookingStatusUpdateEmail from '@/lib/email/templates/booking/status-updat
 import VendorApplicationReceivedEmail from '@/lib/email/templates/vendor/application-received';
 import VendorApplicationApprovedEmail from '@/lib/email/templates/vendor/application-approved';
 import VendorApplicationRejectedEmail from '@/lib/email/templates/vendor/application-rejected';
+import BookingAssignedEmail from '@/lib/email/templates/vendor/booking-assigned';
 
 const templateComponents = {
   welcome: WelcomeEmail,
@@ -27,6 +28,7 @@ const templateComponents = {
   vendorReceived: VendorApplicationReceivedEmail,
   vendorApproved: VendorApplicationApprovedEmail,
   vendorRejected: VendorApplicationRejectedEmail,
+  vendorBookingAssigned: BookingAssignedEmail,
 };
 
 interface SendTestEmailParams {

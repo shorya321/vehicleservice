@@ -29,7 +29,7 @@ export function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80 rounded-xl bg-popover border border-border shadow-lg p-0 dropdown-animate">
+      <DropdownMenuContent align="end" collisionPadding={16} className="w-[calc(100vw-2rem)] sm:w-80 rounded-xl bg-popover border border-border shadow-lg p-0 dropdown-animate">
         {/* Header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">

@@ -5,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getVendorApplicationsStats } from "./actions"
 import { Building2, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { AnimatedPage } from "@/components/layout/animated-page"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export const metadata = {
@@ -35,10 +37,10 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
   }
   
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Vendor Applications', href: '/admin/vendor-applications' }]} />
         <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Building2 className="h-8 w-8" />
+            <h1 className="text-3xl font-bold tracking-tight">
               Vendor Applications
             </h1>
             <p className="text-muted-foreground">
@@ -145,7 +147,7 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
             </Suspense>
           </CardContent>
         </Card>
-      </div>
+      </AnimatedPage>
   )
 }
 

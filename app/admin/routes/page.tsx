@@ -6,6 +6,8 @@ import { ClientFilters } from "./components/client-filters"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { AnimatedPage } from "@/components/layout/animated-page"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Plus, Route } from "lucide-react"
 import Link from "next/link"
 
@@ -41,10 +43,11 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
   const routesData = await getRoutes(filters)
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Routes', href: '/admin/routes' }]} />
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Routes</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Routes</h1>
             <p className="text-muted-foreground mt-1">
               Manage transfer routes between locations
             </p>
@@ -80,6 +83,6 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
           <ClientFilters initialFilters={filters} />
           <RoutesTableWithBulk routes={routesData.routes} pagination={routesData} />
         </div>
-      </div>
+      </AnimatedPage>
   )
 }

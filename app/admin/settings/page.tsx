@@ -9,7 +9,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Palette, Bell, Settings2, ChevronRight, Coins } from 'lucide-react'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { Palette, Bell, ChevronRight, Coins } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Settings | Admin Portal',
@@ -59,15 +60,11 @@ export default async function SettingsPage() {
 
   return (
       <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Settings' }]} />
         <div className="space-y-6">
           {/* Page Header */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Settings2 className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Settings
-              </h1>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
             <p className="text-muted-foreground">
               Manage your admin portal preferences and configurations
             </p>

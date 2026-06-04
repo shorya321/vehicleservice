@@ -1,4 +1,6 @@
 import { EmailManagementClient } from './components/email-management-client';
+import { AnimatedPage } from '@/components/layout/animated-page';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 
 export const metadata = {
   title: 'Email Templates - Admin',
@@ -7,6 +9,9 @@ export const metadata = {
 
 export default function EmailManagementPage() {
   return (
-      <EmailManagementClient />
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Email Templates', href: '/admin/emails' }]} />
+        <EmailManagementClient />
+      </AnimatedPage>
   );
 }

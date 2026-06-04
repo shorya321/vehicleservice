@@ -217,7 +217,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -225,7 +225,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -288,9 +288,9 @@ export function VendorLayout({ children }: VendorLayoutProps) {
       </aside>
 
       {/* Main content */}
-      <div className="flex h-full flex-1 flex-col overflow-hidden lg:pl-64">
+      <div className="flex flex-1 flex-col overflow-hidden lg:pl-64">
         {/* Top bar */}
-        <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
+        <header className="z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -369,7 +369,11 @@ export function VendorLayout({ children }: VendorLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto w-full px-4 py-6 md:px-6 lg:px-8">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-background">
+          <div className="w-full px-4 py-6 md:px-6 lg:px-8">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   )

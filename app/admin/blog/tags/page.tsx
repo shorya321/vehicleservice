@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/card"
 import { Tag } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { AnimatedPage } from "@/components/layout/animated-page"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 
 export const metadata: Metadata = {
   title: "Blog Tags | Admin",
@@ -20,7 +22,8 @@ export default async function BlogTagsPage() {
   const tags = await getBlogTags()
 
   return (
-    <div className="space-y-6">
+    <AnimatedPage>
+      <Breadcrumb items={[{ label: 'Blog', href: '/admin/blog/posts' }, { label: 'Tags' }]} />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Blog Tags</h1>
         <p className="text-muted-foreground">
@@ -72,6 +75,6 @@ export default async function BlogTagsPage() {
           <TagsManager initialTags={tags} />
         </CardContent>
       </Card>
-    </div>
+    </AnimatedPage>
   )
 }

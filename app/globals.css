@@ -1798,8 +1798,8 @@
     text-align: left;
   }
 
-  /* ── Search Bar Calendar Popover ── */
-  .search-bar-calendar-popover {
+  /* ── Luxury Calendar Popover ── */
+  .luxury-calendar-popover {
     background: var(--black-warm) !important;
     border: 1px solid color-mix(in oklch, var(--graphite) 70%, var(--gold) 30%) !important;
     border-radius: 8px !important;
@@ -1808,7 +1808,7 @@
       0 0 0 1px rgba(var(--gold-rgb), 0.08) !important;
   }
 
-  .search-bar-calendar-popover .rdp-root {
+  .luxury-calendar-popover .rdp-root {
     --rdp-accent-color: var(--gold);
     --rdp-accent-background-color: rgba(var(--gold-rgb), 0.15);
     --rdp-day_button-height: 36px;
@@ -1817,13 +1817,13 @@
     font-family: var(--font-body);
   }
 
-  .search-bar-calendar-popover .rdp-month_caption {
+  .luxury-calendar-popover .rdp-month_caption {
     color: var(--text-primary);
     font-weight: 500;
     font-size: 0.875rem;
   }
 
-  .search-bar-calendar-popover .rdp-weekday {
+  .luxury-calendar-popover .rdp-weekday {
     color: var(--text-muted);
     font-size: 0.6875rem;
     font-weight: 500;
@@ -1831,7 +1831,7 @@
     text-transform: uppercase;
   }
 
-  .search-bar-calendar-popover .rdp-day_button {
+  .luxury-calendar-popover .rdp-day_button {
     color: var(--text-primary);
     font-variant-numeric: tabular-nums lining-nums;
     font-weight: 400;
@@ -1839,35 +1839,35 @@
     transition: background-color 150ms ease-out, color 150ms ease-out;
   }
 
-  .search-bar-calendar-popover .rdp-day_button:hover:not([disabled]) {
+  .luxury-calendar-popover .rdp-day_button:hover:not([disabled]) {
     background: rgba(var(--gold-rgb), 0.12);
     color: var(--gold-cream);
   }
 
-  .search-bar-calendar-popover .rdp-selected .rdp-day_button {
+  .luxury-calendar-popover .rdp-selected .rdp-day_button {
     background: var(--gold) !important;
     color: var(--black-void) !important;
     font-weight: 600;
   }
 
-  .search-bar-calendar-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+  .luxury-calendar-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
     background: rgba(var(--gold-rgb), 0.08);
     color: var(--gold);
     font-weight: 500;
   }
 
-  .search-bar-calendar-popover .rdp-disabled .rdp-day_button {
+  .luxury-calendar-popover .rdp-disabled .rdp-day_button {
     color: var(--text-muted);
     opacity: 0.35;
   }
 
-  .search-bar-calendar-popover .rdp-outside .rdp-day_button {
+  .luxury-calendar-popover .rdp-outside .rdp-day_button {
     color: var(--text-muted);
     opacity: 0.3;
   }
 
-  .search-bar-calendar-popover .rdp-button_previous,
-  .search-bar-calendar-popover .rdp-button_next {
+  .luxury-calendar-popover .rdp-button_previous,
+  .luxury-calendar-popover .rdp-button_next {
     color: var(--text-secondary);
     border: 1px solid var(--graphite);
     background: transparent;
@@ -1875,8 +1875,8 @@
     transition: color 150ms ease-out, border-color 150ms ease-out, background-color 150ms ease-out;
   }
 
-  .search-bar-calendar-popover .rdp-button_previous:hover,
-  .search-bar-calendar-popover .rdp-button_next:hover {
+  .luxury-calendar-popover .rdp-button_previous:hover,
+  .luxury-calendar-popover .rdp-button_next:hover {
     color: var(--gold);
     border-color: color-mix(in oklch, var(--graphite) 60%, var(--gold) 40%);
     background: rgba(var(--gold-rgb), 0.06);
@@ -3542,11 +3542,11 @@
 /* Sidebar */
 .account-sidebar {
   position: sticky;
-  top: 100px;
+  top: 0;
   display: flex;
   flex-direction: column;
   height: fit-content;
-  max-height: calc(100vh - 120px);
+  max-height: 100vh;
   background: var(--black-rich);
   border-right: 1px solid var(--border-default);
   border-radius: 8px;

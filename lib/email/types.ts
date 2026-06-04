@@ -70,6 +70,7 @@ export interface BookingAssignmentEmailData {
   bookingReference: string;
   customerName: string;
   vehicleCategory: string;
+  vehicleType: string;
   pickupLocation: string;
   dropoffLocation: string;
   pickupDate: string;

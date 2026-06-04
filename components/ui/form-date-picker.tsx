@@ -56,7 +56,7 @@ export function FormDatePicker({
           <CalendarIcon className="ml-auto h-4 w-4 text-muted-foreground" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="luxury-calendar-popover w-auto p-0" align="start">
         <Calendar
           mode="single"
           selected={value}

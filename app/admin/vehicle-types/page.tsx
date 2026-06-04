@@ -3,6 +3,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Plus, Layers, Hash, Users, Luggage } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { getVehicleTypes, VehicleTypeFilters } from "./actions"
 import { VehicleTypesTable } from "./components/vehicle-types-table"
 import { VehicleTypeFilters as VehicleTypeFiltersComponent } from "./components/vehicle-type-filters"
@@ -58,7 +60,8 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
     : 0
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Vehicle Types', href: '/admin/vehicle-types' }]} />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Types</h1>
@@ -163,6 +166,6 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
             )}
           </CardContent>
         </Card>
-      </div>
+      </AnimatedPage>
   )
 }

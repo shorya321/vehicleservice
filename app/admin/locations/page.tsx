@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, MapPin } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { LocationTableWithBulk } from './components/location-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getLocations, getCountries } from './actions'
@@ -54,11 +56,11 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
   const countries = await getCountries()
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Locations', href: '/admin/locations' }]} />
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <MapPin className="h-8 w-8" />
+            <h1 className="text-3xl font-bold tracking-tight">
               Locations
             </h1>
             <p className="text-muted-foreground">
@@ -152,6 +154,6 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
             )}
           </CardContent>
         </Card>
-      </div>
+      </AnimatedPage>
   )
 }

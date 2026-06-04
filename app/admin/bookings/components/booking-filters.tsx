@@ -239,7 +239,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="luxury-calendar-popover w-auto p-0" align="start">
                       <Calendar
                         initialFocus
                         mode="range"

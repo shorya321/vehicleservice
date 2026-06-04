@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, MapPin, Users, Search } from 'lucide-react'
+import { MapPin, Users, Search, CalendarDays } from 'lucide-react'
+import { FormDatePicker } from '@/components/ui/form-date-picker'
+import { parse } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { ZoneLocation, DestinationZone } from '../actions'
 import { format } from 'date-fns'
@@ -92,16 +94,14 @@ export function QuickBooking({ locations, destinations }: QuickBookingProps) {
 
           <div className="space-y-2">
             <Label htmlFor="date">
-              <Calendar className="inline h-3 w-3 mr-1" />
+              <CalendarDays className="inline h-3 w-3 mr-1" />
               Date
             </Label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              min={format(new Date(), 'yyyy-MM-dd')}
+            <FormDatePicker
+              value={date ? parse(date, 'yyyy-MM-dd', new Date()) : undefined}
+              onChange={(d) => setDate(d ? format(d, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'))}
+              disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+              placeholder="Select date"
             />
           </div>
 

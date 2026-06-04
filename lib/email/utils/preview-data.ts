@@ -8,7 +8,8 @@ export type EmailTemplateType =
   | 'bookingStatus'
   | 'vendorReceived'
   | 'vendorApproved'
-  | 'vendorRejected';
+  | 'vendorRejected'
+  | 'vendorBookingAssigned';
 
 export interface EmailTemplate {
   id: EmailTemplateType;
@@ -104,6 +105,25 @@ export const emailTemplates: EmailTemplate[] = [
     subject: 'Vendor Application Update - Infinia Transfers',
     variables: ['name', 'applicationReference', 'rejectionReason', 'reapplyUrl'],
   },
+  {
+    id: 'vendorBookingAssigned',
+    name: 'Vendor Booking Assigned',
+    category: 'vendor',
+    description: 'Sent when a booking is assigned to a vendor by admin',
+    subject: 'New Booking Assignment - #{bookingReference}',
+    variables: [
+      'vendorName',
+      'bookingReference',
+      'customerName',
+      'vehicleCategory',
+      'vehicleType',
+      'pickupLocation',
+      'dropoffLocation',
+      'pickupDate',
+      'pickupTime',
+      'bookingUrl',
+    ],
+  },
 ];
 
 export const emailPreviewData: Record<EmailTemplateType, any> = {
@@ -159,6 +179,18 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     rejectionReason:
       'Incomplete documentation. Please submit your business license and insurance certificates.',
     reapplyUrl: `${getAppUrl()}/become-vendor`,
+  },
+  vendorBookingAssigned: {
+    vendorName: 'Ahmed Transportation LLC',
+    bookingReference: 'BK-2024-001234',
+    customerName: 'Sarah Johnson',
+    vehicleCategory: 'Luxury Sedan',
+    vehicleType: 'Mercedes S-Class',
+    pickupLocation: 'Dubai International Airport (DXB)',
+    dropoffLocation: 'Burj Khalifa, Downtown Dubai',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    bookingUrl: `${getAppUrl()}/vendor/bookings`,
   },
 };
 

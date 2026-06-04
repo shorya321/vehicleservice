@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { FormDatePicker } from "@/components/ui/form-date-picker"
+import { parse, format } from "date-fns"
 import { countries } from "@/lib/constants/countries"
 
 const checkoutFieldBase = "bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold-text)]/20 focus:border-[var(--gold-text)] hover:border-[rgba(var(--gold-text-rgb),0.3)] transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -363,7 +365,13 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                 <FormItem>
                   <FormLabel className="text-[var(--text-secondary)]">Trade License Expiry *</FormLabel>
                   <FormControl>
-                    <Input type="date" className={`${checkoutInputStyles} dark:[color-scheme:dark]`} aria-required="true" {...field} />
+                    <FormDatePicker
+                      value={field.value ? parse(field.value, "yyyy-MM-dd", new Date()) : undefined}
+                      onChange={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      placeholder="Select expiry date"
+                      className={checkoutInputStyles}
+                    />
                   </FormControl>
                   <FormDescription className="text-xs text-[var(--text-muted)]">Must be a future date</FormDescription>
                   <FormMessage />
@@ -392,7 +400,13 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                 <FormItem>
                   <FormLabel className="text-[var(--text-secondary)]">Insurance Expiry *</FormLabel>
                   <FormControl>
-                    <Input type="date" className={`${checkoutInputStyles} dark:[color-scheme:dark]`} aria-required="true" {...field} />
+                    <FormDatePicker
+                      value={field.value ? parse(field.value, "yyyy-MM-dd", new Date()) : undefined}
+                      onChange={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      placeholder="Select expiry date"
+                      className={checkoutInputStyles}
+                    />
                   </FormControl>
                   <FormDescription className="text-xs text-[var(--text-muted)]">Must be a future date</FormDescription>
                   <FormMessage />

@@ -21,13 +21,14 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
 import { getAvailableVendors, assignBookingToVendor } from '../actions'
 
 interface AssignVendorModalProps {
   bookingId: string
   bookingType: 'customer' | 'business'
   currentVendorId?: string
+  vehicleTypeId?: string
   onClose: () => void
 }
 
@@ -37,12 +38,14 @@ interface Vendor {
   business_email: string | null
   business_phone: string | null
   business_city: string | null
+  hasMatchingVehicle: boolean
 }
 
 export function AssignVendorModal({
   bookingId,
   bookingType,
   currentVendorId,
+  vehicleTypeId,
   onClose,
 }: AssignVendorModalProps) {
   const router = useRouter()
@@ -59,7 +62,7 @@ export function AssignVendorModal({
   const loadVendors = async () => {
     setIsLoading(true)
     try {
-      const vendorList = await getAvailableVendors()
+      const vendorList = await getAvailableVendors(vehicleTypeId)
       setVendors(vendorList)
     } catch (error) {
       toast.error('Failed to load vendors')
@@ -121,20 +124,56 @@ export function AssignVendorModal({
                     <div className="p-2 text-sm text-muted-foreground text-center">
                       No vendors available
                     </div>
-                  ) : (
-                    vendors.map((vendor) => (
-                      <SelectItem key={vendor.id} value={vendor.id}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{vendor.business_name}</span>
-                          {vendor.business_city && (
-                            <span className="text-xs text-muted-foreground">
-                              {vendor.business_city}
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))
-                  )}
+                  ) : (() => {
+                    const matching = vendors.filter(v => v.hasMatchingVehicle)
+                    const others = vendors.filter(v => !v.hasMatchingVehicle)
+                    return (
+                      <>
+                        {matching.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-emerald-600">
+                              Recommended — has matching vehicle
+                            </div>
+                            {matching.map((vendor) => (
+                              <SelectItem key={vendor.id} value={vendor.id}>
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{vendor.business_name}</span>
+                                    {vendor.business_city && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {vendor.business_city}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                            {others.length > 0 && (
+                              <div className="my-1 border-t" />
+                            )}
+                          </>
+                        )}
+                        {others.length > 0 && matching.length > 0 && (
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                            Other vendors
+                          </div>
+                        )}
+                        {others.map((vendor) => (
+                          <SelectItem key={vendor.id} value={vendor.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{vendor.business_name}</span>
+                              {vendor.business_city && (
+                                <span className="text-xs text-muted-foreground">
+                                  {vendor.business_city}
+                                </span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </>
+                    )
+                  })()}
                 </SelectContent>
               </Select>
             )}

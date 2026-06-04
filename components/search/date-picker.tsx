@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { CalendarDays } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 interface DatePickerProps {
@@ -14,51 +14,39 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, className }: DatePickerProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const [open, setOpen] = useState(false)
 
   return (
-    <div className={cn("relative", className)} ref={containerRef}>
-      <Button
-        type="button"
-        variant="outline"
-        className={cn(
-          "w-full justify-start text-left font-normal",
-          !value && "text-muted-foreground"
-        )}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {value ? format(value, 'PPP') : 'Select date'}
-      </Button>
-      
-      {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-auto rounded-md border bg-popover p-0 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95">
-          <Calendar
-            mode="single"
-            selected={value}
-            onSelect={(newDate) => {
-              if (newDate) {
-                onChange(newDate)
-                setIsOpen(false)
-              }
-            }}
-            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-            initialFocus
-          />
-        </div>
-      )}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-left font-normal",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            !value && "text-muted-foreground",
+            className
+          )}
+        >
+          <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+          {value ? format(value, 'PPP') : 'Select date'}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="luxury-calendar-popover w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={(newDate) => {
+            if (newDate) {
+              onChange(newDate)
+              setOpen(false)
+            }
+          }}
+          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+          defaultMonth={value}
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
   )
 }

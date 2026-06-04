@@ -3,6 +3,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Plus, FolderOpen } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { AnimatedPage } from "@/components/layout/animated-page"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { getBlogCategories, BlogCategoryFilters } from "./actions"
 import { BlogCategoriesTable } from "./components/categories-table"
 import { CustomPagination } from "@/components/ui/custom-pagination"
@@ -38,7 +40,8 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
   const { categories, total, page, totalPages } = await getBlogCategories(filters)
 
   return (
-    <div className="space-y-6">
+    <AnimatedPage>
+      <Breadcrumb items={[{ label: 'Blog', href: '/admin/blog/posts' }, { label: 'Categories' }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Blog Categories</h1>
@@ -108,6 +111,6 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AnimatedPage>
   )
 }

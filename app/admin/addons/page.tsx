@@ -3,6 +3,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Plus, Package, DollarSign, Layers, Hash } from "lucide-react"
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { getAddons, getAddonCategories, AddonFilters } from "./actions"
 import { AddonsTable } from "./components/addons-table"
 import { AddonFilters as AddonFiltersComponent } from "./components/addon-filters"
@@ -52,7 +54,8 @@ export default async function AddonsPage({ searchParams }: PageProps) {
   const freeCount = addons.filter(a => Number(a.price) === 0).length
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Addons', href: '/admin/addons' }]} />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Addons</h1>
@@ -157,6 +160,6 @@ export default async function AddonsPage({ searchParams }: PageProps) {
             )}
           </CardContent>
         </Card>
-      </div>
+      </AnimatedPage>
   )
 }

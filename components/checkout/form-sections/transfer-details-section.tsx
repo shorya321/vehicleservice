@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Briefcase, Users } from 'lucide-react'
+import { FormDatePicker } from '@/components/ui/form-date-picker'
+import { parse, format } from 'date-fns'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 
 interface TransferDetailsSectionProps {
@@ -25,12 +27,16 @@ export function TransferDetailsSection({
   setPassengers,
   onDateTimeChange
 }: TransferDetailsSectionProps) {
-  const { register, formState: { errors }, watch } = form
+  const { register, formState: { errors }, watch, setValue } = form
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value
+  const pickupDateStr = watch('pickupDate')
+  const pickupDateValue = pickupDateStr ? parse(pickupDateStr, 'yyyy-MM-dd', new Date()) : undefined
+
+  const handleDatePickerChange = (date: Date | undefined) => {
+    const formatted = date ? format(date, 'yyyy-MM-dd') : ''
+    setValue('pickupDate', formatted, { shouldValidate: true })
     const currentTime = watch('pickupTime')
-    onDateTimeChange?.(newDate, currentTime)
+    onDateTimeChange?.(formatted, currentTime)
   }
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,16 +120,12 @@ export function TransferDetailsSection({
             <Label htmlFor="pickupDate" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
               Pickup Date
             </Label>
-            <Input
-              id="pickupDate"
-              type="date"
-              className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
-              {...register('pickupDate')}
-              min={new Date().toISOString().split('T')[0]}
-              onChange={handleDateChange}
-              aria-required="true"
-              aria-invalid={!!errors.pickupDate}
-              aria-describedby={errors.pickupDate ? 'pickupDate-error' : undefined}
+            <FormDatePicker
+              value={pickupDateValue}
+              onChange={handleDatePickerChange}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              placeholder="Select pickup date"
+              className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus-visible:ring-1 focus-visible:ring-[var(--gold)]/15 focus-visible:border-[var(--gold)]"
             />
             {errors.pickupDate && (
               <p id="pickupDate-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupDate.message as string}</p>

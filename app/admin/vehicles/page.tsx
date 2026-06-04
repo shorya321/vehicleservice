@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Car, Building2, Layers } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { AdminVehicleTableWithBulk } from './components/admin-vehicle-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getAdminVehicles, getVendors, AdminVehicleFilters } from './actions'
@@ -58,7 +60,8 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
   const vendorCount = new Set(vehicles.map(v => v.business_id)).size
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Vehicles', href: '/admin/vehicles' }]} />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">All Vehicles</h1>
@@ -165,6 +168,6 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
             )}
           </CardContent>
         </Card>
-      </div>
+      </AnimatedPage>
   )
 }

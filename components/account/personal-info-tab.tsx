@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { User, Phone, Calendar, Loader2 } from "lucide-react"
+import { User, Phone, Loader2 } from "lucide-react"
+import { FormDatePicker } from "@/components/ui/form-date-picker"
+import { parse } from "date-fns"
 import { updateProfile } from "@/app/account/actions"
 import { personalInfoSchema, type PersonalInfoFormData } from "@/app/account/schemas"
 import { toast } from "sonner"
@@ -109,16 +111,20 @@ export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
 
             <div>
               <label htmlFor="date_of_birth" className="form-label">Date of Birth</label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-                <input
-                  id="date_of_birth"
-                  type="date"
-                  {...form.register("date_of_birth")}
-                  className="luxury-input pl-11"
-                  aria-invalid={!!form.formState.errors.date_of_birth}
-                />
-              </div>
+              <FormDatePicker
+                value={form.watch("date_of_birth") ? parse(form.watch("date_of_birth") as string, "yyyy-MM-dd", new Date()) : undefined}
+                onChange={(date) => {
+                  const formatted = date ? new Intl.DateTimeFormat("en-CA").format(date) : ""
+                  form.setValue("date_of_birth", formatted, { shouldValidate: true })
+                }}
+                disabled={(date) => date > new Date()}
+                placeholder="Select date of birth"
+                captionLayout="dropdown"
+                startMonth={new Date(1930, 0)}
+                endMonth={new Date()}
+                className="luxury-input"
+                dateFormat="PPP"
+              />
               {form.formState.errors.date_of_birth && (
                 <p className="mt-1.5 text-sm text-[var(--error-text)]" role="alert">{form.formState.errors.date_of_birth.message}</p>
               )}

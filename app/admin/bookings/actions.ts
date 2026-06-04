@@ -4,6 +4,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getUnifiedBookingsList, createBookingAssignment, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
+import { sendBookingAssignmentEmail } from '@/lib/email/services/vendor-emails'
+import { getAppUrl } from '@/lib/email/config'
+import { format, parseISO } from 'date-fns'
 
 export interface BookingFilters {
   search?: string
@@ -763,9 +766,9 @@ export async function bulkDeleteBookings(bookingIds: string[]) {
   }
 }
 
-export async function getAvailableVendors() {
+export async function getAvailableVendors(vehicleTypeId?: string) {
   const adminClient = createAdminClient()
-  
+
   const { data: vendors, error } = await adminClient
     .from('vendor_applications')
     .select(`
@@ -777,13 +780,42 @@ export async function getAvailableVendors() {
     `)
     .eq('status', 'approved')
     .order('business_name')
-  
+
   if (error) {
     console.error('Error fetching vendors:', error)
     throw new Error('Failed to fetch vendors')
   }
-  
-  return vendors || []
+
+  if (!vendors?.length) return []
+
+  if (!vehicleTypeId) {
+    return vendors.map(v => ({ ...v, hasMatchingVehicle: false }))
+  }
+
+  let matchingBusinessIds = new Set<string>()
+  try {
+    const { data: matchingVehicles } = await adminClient
+      .from('vehicles')
+      .select('business_id')
+      .eq('vehicle_type_id', vehicleTypeId)
+
+    if (matchingVehicles) {
+      matchingBusinessIds = new Set(matchingVehicles.map(v => v.business_id))
+    }
+  } catch (err) {
+    console.error('Error fetching matching vehicles:', err)
+  }
+
+  const annotated = vendors.map(v => ({
+    ...v,
+    hasMatchingVehicle: matchingBusinessIds.has(v.id),
+  }))
+
+  return annotated.sort((a, b) => {
+    if (a.hasMatchingVehicle && !b.hasMatchingVehicle) return -1
+    if (!a.hasMatchingVehicle && b.hasMatchingVehicle) return 1
+    return a.business_name.localeCompare(b.business_name)
+  })
 }
 
 /**
@@ -819,10 +851,89 @@ export async function assignBookingToVendor(
     console.error('Error creating booking assignment:', error)
     throw new Error('Failed to assign booking to vendor')
   }
-  
+
+  // Send email notification to vendor (non-blocking)
+  try {
+    const adminClient = createAdminClient()
+
+    const { data: vendor } = await adminClient
+      .from('vendor_applications')
+      .select('business_name, business_email')
+      .eq('id', vendorId)
+      .single()
+
+    if (vendor?.business_email) {
+      const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
+
+      const { data: booking } = await adminClient
+        .from(tableName)
+        .select(`
+          booking_number,
+          pickup_address,
+          dropoff_address,
+          pickup_datetime,
+          vehicle_type_id
+        `)
+        .eq('id', bookingId)
+        .single()
+
+      if (booking) {
+        const { data: vehicleType } = await adminClient
+          .from('vehicle_types')
+          .select('name, vehicle_categories(name)')
+          .eq('id', booking.vehicle_type_id)
+          .single()
+
+        let customerName = 'Customer'
+        if (bookingType === 'business') {
+          const { data: bizBooking } = await adminClient
+            .from('business_bookings')
+            .select('customer_name')
+            .eq('id', bookingId)
+            .single()
+          customerName = bizBooking?.customer_name || 'Customer'
+        } else {
+          const { data: customerBooking } = await adminClient
+            .from('bookings')
+            .select('customer_id')
+            .eq('id', bookingId)
+            .single()
+          if (customerBooking?.customer_id) {
+            const { data: profile } = await adminClient
+              .from('profiles')
+              .select('full_name')
+              .eq('id', customerBooking.customer_id)
+              .single()
+            customerName = profile?.full_name || 'Customer'
+          }
+        }
+
+        const pickupDatetime = parseISO(booking.pickup_datetime)
+        const categoryName = (vehicleType as any)?.vehicle_categories?.name || 'Vehicle'
+
+        await sendBookingAssignmentEmail({
+          bookingId,
+          vendorName: vendor.business_name,
+          vendorEmail: vendor.business_email,
+          bookingReference: booking.booking_number,
+          customerName,
+          vehicleCategory: categoryName,
+          vehicleType: vehicleType?.name || 'Vehicle',
+          pickupLocation: booking.pickup_address || 'TBD',
+          dropoffLocation: booking.dropoff_address || 'TBD',
+          pickupDate: format(pickupDatetime, 'MMMM d, yyyy'),
+          pickupTime: format(pickupDatetime, 'h:mm a'),
+          bookingUrl: `${getAppUrl()}/vendor/bookings`,
+        })
+      }
+    }
+  } catch (emailError) {
+    console.error('Failed to send booking assignment email:', emailError)
+  }
+
   revalidatePath('/admin/bookings')
   revalidatePath(`/admin/bookings/${bookingId}`)
-  
+
   return { success: true }
 }
 

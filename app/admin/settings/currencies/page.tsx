@@ -15,10 +15,11 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Coins, AlertTriangle, Clock, Info, Star } from 'lucide-react'
+import { AlertTriangle, Clock, Coins, Info, Star } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { getPaginatedCurrencies, getExchangeRatesObject, getLastRateUpdate, areRatesStale } from '@/lib/currency/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -98,15 +99,11 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
 
   return (
       <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Settings', href: '/admin/settings' }, { label: 'Currencies' }]} />
         <div className="space-y-6">
           {/* Page Header */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Coins className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Currency Settings
-              </h1>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Currency Settings</h1>
             <p className="text-muted-foreground">
               Configure which currencies are available for price display on the public website.
               All payments are processed in {defaultCurrencyCode}.

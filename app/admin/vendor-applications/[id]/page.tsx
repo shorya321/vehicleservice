@@ -79,18 +79,18 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
 
   return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/admin/vendor-applications">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Review Vendor Application</h1>
             <p className="text-muted-foreground">
               Review application from {application.business_name}
             </p>
           </div>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/admin/vendor-applications">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">

@@ -3,6 +3,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Plus, FileText, Eye, PenLine, Star } from "lucide-react"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { getBlogPosts, BlogPostFilters } from "./actions"
 import { BlogPostsTable } from "./components/blog-posts-table"
 import { BlogPostFilters as BlogPostFiltersComponent } from "./components/blog-post-filters"
@@ -50,7 +52,8 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
   const totalViews = posts.reduce((sum, p) => sum + (p.view_count || 0), 0)
 
   return (
-    <div className="space-y-6">
+    <AnimatedPage>
+      <Breadcrumb items={[{ label: 'Blog Posts', href: '/admin/blog/posts' }]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Blog Posts</h1>
@@ -155,6 +158,6 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AnimatedPage>
   )
 }

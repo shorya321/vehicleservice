@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FormDatePicker } from '@/components/ui/form-date-picker';
+import { parse, format } from 'date-fns';
 import {
   Select,
   SelectContent,
@@ -167,16 +169,15 @@ export function TransactionFilters({
           {/* Start Date */}
           <div className="space-y-2">
             <Label htmlFor="startDate" className="text-foreground">Start Date</Label>
-            <Input
-              id="startDate"
-              type="date"
-              value={localFilters.start_date || ''}
-              onChange={(e) =>
+            <FormDatePicker
+              value={localFilters.start_date ? parse(localFilters.start_date, 'yyyy-MM-dd', new Date()) : undefined}
+              onChange={(date) =>
                 setLocalFilters({
                   ...localFilters,
-                  start_date: e.target.value || undefined,
+                  start_date: date ? format(date, 'yyyy-MM-dd') : undefined,
                 })
               }
+              placeholder="Start date"
               className={inputStyles}
             />
           </div>
@@ -184,16 +185,15 @@ export function TransactionFilters({
           {/* End Date */}
           <div className="space-y-2">
             <Label htmlFor="endDate" className="text-foreground">End Date</Label>
-            <Input
-              id="endDate"
-              type="date"
-              value={localFilters.end_date || ''}
-              onChange={(e) =>
+            <FormDatePicker
+              value={localFilters.end_date ? parse(localFilters.end_date, 'yyyy-MM-dd', new Date()) : undefined}
+              onChange={(date) =>
                 setLocalFilters({
                   ...localFilters,
-                  end_date: e.target.value || undefined,
+                  end_date: date ? format(date, 'yyyy-MM-dd') : undefined,
                 })
               }
+              placeholder="End date"
               className={inputStyles}
             />
           </div>

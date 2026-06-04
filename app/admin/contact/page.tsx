@@ -21,6 +21,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Contact Submissions | Admin',
@@ -57,7 +59,8 @@ export default async function ContactSubmissionsPage({
   ])
 
   return (
-    <div className="space-y-6">
+    <AnimatedPage>
+      <Breadcrumb items={[{ label: 'Contact Submissions', href: '/admin/contact' }]} />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
           Contact Submissions
@@ -157,6 +160,6 @@ export default async function ContactSubmissionsPage({
           )}
         </CardContent>
       </Card>
-    </div>
+    </AnimatedPage>
   )
 }

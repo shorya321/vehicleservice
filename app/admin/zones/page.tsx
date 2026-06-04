@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { ZonesTable } from './components/zones-table'
 import { getZones } from './actions'
 
@@ -16,7 +18,8 @@ export default async function ZonesPage() {
   const zones = await getZones()
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Zones', href: '/admin/zones' }]} />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Zones</h1>
@@ -59,6 +62,6 @@ export default async function ZonesPage() {
         </div>
 
         <ZonesTable zones={zones} />
-      </div>
+      </AnimatedPage>
   )
 }

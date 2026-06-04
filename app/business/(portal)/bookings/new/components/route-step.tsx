@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { MapPin, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FormDatePicker } from '@/components/ui/form-date-picker';
+import { parse, format } from 'date-fns';
 import {
   Form,
   FormControl,
@@ -137,19 +139,55 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="pickup_datetime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Pickup Date & Time</FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" min={minDateTimeString} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="pickup_datetime"
+              render={({ field }) => {
+                const dateValue = field.value ? field.value.split('T')[0] : '';
+                const timeValue = field.value ? field.value.split('T')[1] || '' : '';
+                return (
+                  <FormItem>
+                    <FormLabel>Pickup Date</FormLabel>
+                    <FormControl>
+                      <FormDatePicker
+                        value={dateValue ? parse(dateValue, 'yyyy-MM-dd', new Date()) : undefined}
+                        onChange={(date) => {
+                          const d = date ? format(date, 'yyyy-MM-dd') : '';
+                          field.onChange(d && timeValue ? `${d}T${timeValue}` : d ? `${d}T12:00` : '');
+                        }}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        placeholder="Select date"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+            <FormField
+              control={form.control}
+              name="pickup_datetime"
+              render={({ field }) => {
+                const dateValue = field.value ? field.value.split('T')[0] : '';
+                const timeValue = field.value ? field.value.split('T')[1] || '' : '';
+                return (
+                  <FormItem>
+                    <FormLabel>Pickup Time</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        value={timeValue}
+                        onChange={(e) => {
+                          field.onChange(dateValue ? `${dateValue}T${e.target.value}` : '');
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                );
+              }}
+            />
+          </div>
 
           <FormField
             control={form.control}

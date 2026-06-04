@@ -110,7 +110,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
             </button>
           </PopoverTrigger>
           <PopoverContent
-            className="search-bar-calendar-popover w-auto p-0"
+            className="luxury-calendar-popover w-auto p-0"
             align="start"
             sideOffset={8}
           >

@@ -559,6 +559,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           bookingId={assignModalBookingId}
           bookingType={bookings.find(b => b.id === assignModalBookingId)?.bookingType || 'customer'}
           currentVendorId={bookings.find(b => b.id === assignModalBookingId)?.booking_assignments?.[0]?.vendor_id}
+          vehicleTypeId={bookings.find(b => b.id === assignModalBookingId)?.vehicle_type_id}
           onClose={() => setAssignModalBookingId(null)}
         />
       )}

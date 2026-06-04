@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Tag } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { CategoryTableWithBulk } from './components/category-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getCategories, getCategoryUsageCount, CategoryFilters } from './actions'
@@ -51,7 +53,8 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
   )
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Vehicle Categories', href: '/admin/vehicle-categories' }]} />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Categories</h1>
@@ -108,6 +111,6 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
             )}
           </CardContent>
         </Card>
-      </div>
+      </AnimatedPage>
   )
 }

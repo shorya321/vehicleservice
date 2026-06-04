@@ -2,6 +2,8 @@ import { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ProfileForm } from "./profile-form"
+import { AnimatedPage } from '@/components/layout/animated-page'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 export const metadata: Metadata = {
   title: "Profile Settings | Admin",
   description: "Manage your profile settings",
@@ -27,7 +29,8 @@ export default async function ProfilePage() {
   }
 
   return (
-      <div className="space-y-6">
+      <AnimatedPage>
+        <Breadcrumb items={[{ label: 'Profile', href: '/admin/profile' }]} />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
           <p className="text-muted-foreground">
@@ -36,6 +39,6 @@ export default async function ProfilePage() {
         </div>
 
         <ProfileForm user={profile} />
-      </div>
+      </AnimatedPage>
   )
 }
