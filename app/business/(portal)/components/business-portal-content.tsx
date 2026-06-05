@@ -19,6 +19,7 @@ interface BusinessPortalContentProps {
   businessName: string;
   brandName?: string | null;
   logoUrl?: string | null;
+  avatarUrl?: string | null;
   primaryColor?: string | null;
   secondaryColor?: string | null;
   accentColor?: string | null;
@@ -31,6 +32,7 @@ export function BusinessPortalContent({
   businessName,
   brandName,
   logoUrl,
+  avatarUrl,
   primaryColor,
   secondaryColor,
   accentColor,
@@ -66,6 +68,7 @@ export function BusinessPortalContent({
         businessName={businessName}
         brandName={brandName}
         logoUrl={logoUrl}
+        avatarUrl={avatarUrl}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
         accentColor={accentColor}

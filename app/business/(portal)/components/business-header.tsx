@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { BusinessNotificationBell } from '@/components/business/notifications/notification-bell';
@@ -43,6 +43,7 @@ interface BusinessHeaderProps {
   // User info
   userEmail: string;
   contactPersonName: string | null;
+  avatarUrl?: string | null;
 
   // Branding props
   businessName: string;
@@ -56,6 +57,7 @@ interface BusinessHeaderProps {
 export function BusinessHeader({
   userEmail,
   contactPersonName,
+  avatarUrl,
   businessName,
   brandName,
 }: BusinessHeaderProps) {
@@ -163,6 +165,7 @@ export function BusinessHeader({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 font-normal hover:bg-primary/10">
               <Avatar className="h-8 w-8 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={displayPersonName} />}
                 <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                   {getInitials(displayPersonName)}
                 </AvatarFallback>

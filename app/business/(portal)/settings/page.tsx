@@ -56,6 +56,13 @@ export default async function BusinessSettingsPage() {
     redirect('/business/login');
   }
 
+  // Get user avatar from profiles table
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('avatar_url')
+    .eq('id', user.id)
+    .single();
+
   const businessAccount = businessUser.business_accounts;
 
   return (
@@ -63,6 +70,8 @@ export default async function BusinessSettingsPage() {
       businessAccountId={businessAccount.id}
       businessAccount={businessAccount}
       userRole={businessUser.role}
+      avatarUrl={profile?.avatar_url ?? null}
+      contactPersonName={businessAccount.contact_person_name}
     />
   );
 }

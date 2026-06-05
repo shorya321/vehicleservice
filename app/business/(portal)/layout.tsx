@@ -62,6 +62,13 @@ export default async function BusinessPortalLayout({
     redirect('/business/login');
   }
 
+  // Get user avatar from profiles table
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('avatar_url')
+    .eq('id', user.id)
+    .single();
+
   // Extract branding for convenience
   const branding = businessUser.business_accounts as {
     business_name: string;
@@ -107,6 +114,7 @@ export default async function BusinessPortalLayout({
             businessName={branding.business_name}
             brandName={branding.brand_name}
             logoUrl={branding.logo_url}
+            avatarUrl={profile?.avatar_url ?? null}
             primaryColor={themeConfig.accent.primary}
             secondaryColor={themeConfig.accent.secondary}
             accentColor={themeConfig.accent.tertiary}

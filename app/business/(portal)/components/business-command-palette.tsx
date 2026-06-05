@@ -146,16 +146,13 @@ export function BusinessCommandPalette({
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <Command className="rounded-lg border-none shadow-2xl">
-        <div className="flex items-center border-b border-border px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-          <CommandInput
-            placeholder="Search actions, pages, or bookings..."
-            value={searchQuery}
-            onValueChange={setSearchQuery}
-            className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-          />
-        </div>
+      <Command className="rounded-lg border-none shadow-2xl [&_input]:focus-visible:outline-none [&_input]:focus-visible:ring-0">
+        <CommandInput
+          placeholder="Search actions, pages, or bookings..."
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0"
+        />
         <CommandList className="max-h-[400px]">
           <CommandEmpty className="py-8 text-center">
             <div className="flex flex-col items-center gap-2">

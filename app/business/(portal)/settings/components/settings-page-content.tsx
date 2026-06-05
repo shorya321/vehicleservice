@@ -29,6 +29,7 @@ import { FadeIn } from '@/components/business/motion';
 import { staggerContainer, staggerItem } from '@/lib/business/animation/variants';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { ProfileSettings } from './profile-settings';
+import { AvatarUpload } from './avatar-upload';
 
 interface BusinessAccount {
   id: string;
@@ -47,6 +48,8 @@ interface SettingsPageContentProps {
   businessAccountId: string;
   businessAccount: BusinessAccount;
   userRole: string;
+  avatarUrl?: string | null;
+  contactPersonName?: string | null;
 }
 
 // Settings links with accent colors
@@ -89,6 +92,8 @@ export function SettingsPageContent({
   businessAccountId,
   businessAccount,
   userRole,
+  avatarUrl,
+  contactPersonName,
 }: SettingsPageContentProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -219,6 +224,14 @@ export function SettingsPageContent({
             </div>
           </CardContent>
         </Card>
+      </FadeIn>
+
+      {/* Profile Photo */}
+      <FadeIn delay={0.25}>
+        <AvatarUpload
+          currentAvatarUrl={avatarUrl ?? null}
+          contactPersonName={contactPersonName ?? null}
+        />
       </FadeIn>
 
       {/* Profile Settings */}

@@ -36,7 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
@@ -483,20 +483,23 @@ export function BusinessSidebar({
           side="left"
           className="w-[280px] p-0 [&>button]:hidden bg-card border-r border-border"
         >
-          <div className="relative flex flex-col h-full overflow-hidden">
-            <SidebarContent
-              isMobileView
-              displayName={displayName}
-              initials={initials}
-              logoUrl={logoUrl}
-              logoError={logoError}
-              onLogoError={() => setLogoError(true)}
-              isCollapsed={isCollapsed}
-              onToggle={toggle}
-              closeMobile={closeMobile}
-              isPathActive={isPathActive}
-            />
-          </div>
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          <TooltipProvider delayDuration={0}>
+            <div className="relative flex flex-col h-full overflow-hidden">
+              <SidebarContent
+                isMobileView
+                displayName={displayName}
+                initials={initials}
+                logoUrl={logoUrl}
+                logoError={logoError}
+                onLogoError={() => setLogoError(true)}
+                isCollapsed={isCollapsed}
+                onToggle={toggle}
+                closeMobile={closeMobile}
+                isPathActive={isPathActive}
+              />
+            </div>
+          </TooltipProvider>
         </SheetContent>
       </Sheet>
     );
