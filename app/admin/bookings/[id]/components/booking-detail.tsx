@@ -33,7 +33,9 @@ import {
   AlertCircle,
   DollarSign,
   Building2,
-  UserCheck
+  UserCheck,
+  UserPlus,
+  History
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { formatCurrency } from '@/lib/utils'
@@ -255,138 +257,216 @@ export function BookingDetail({ booking }: BookingDetailProps) {
             <CardDescription>Assigned vendor and resources</CardDescription>
           </CardHeader>
           <CardContent>
-            {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
-              <div className="space-y-4">
-                {/* Assignment Status Banner */}
-                <div className={`p-3 rounded-lg border ${
-                  booking.booking_assignments[0].status === 'completed'
-                    ? 'bg-blue-50 border-blue-200'
-                    : booking.booking_assignments[0].status === 'accepted'
-                    ? 'bg-green-50 border-green-200'
-                    : booking.booking_assignments[0].status === 'rejected'
-                    ? 'bg-red-50 border-red-200'
-                    : 'bg-yellow-50 border-yellow-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {booking.booking_assignments[0].status === 'completed' ? (
-                        <CheckCircle className="h-5 w-5 text-blue-600" />
-                      ) : booking.booking_assignments[0].status === 'accepted' ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      ) : booking.booking_assignments[0].status === 'rejected' ? (
-                        <XCircle className="h-5 w-5 text-red-600" />
-                      ) : (
-                        <Clock className="h-5 w-5 text-yellow-600" />
-                      )}
-                      <span className={`font-semibold ${
-                        booking.booking_assignments[0].status === 'completed'
-                          ? 'text-blue-700'
-                          : booking.booking_assignments[0].status === 'accepted'
-                          ? 'text-green-700'
-                          : booking.booking_assignments[0].status === 'rejected'
-                          ? 'text-red-700'
-                          : 'text-yellow-700'
-                      }`}>
-                        Assignment {booking.booking_assignments[0].status.charAt(0).toUpperCase() + booking.booking_assignments[0].status.slice(1)}
-                      </span>
-                    </div>
-                    {booking.booking_assignments[0].status === 'completed' && booking.booking_assignments[0].completed_at && (
-                      <span className="text-sm text-blue-600 font-medium">
-                        {format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}
-                      </span>
-                    )}
-                    {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].accepted_at && (
-                      <span className="text-sm text-green-600">
-                        {format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}
-                      </span>
-                    )}
-                  </div>
-                </div>
+            {(() => {
+              const allAssignments = booking.booking_assignments || []
+              const currentAssignment = allAssignments.find((a: any) =>
+                ['pending', 'accepted', 'completed'].includes(a.status)
+              )
+              const cancelledAssignments = allAssignments.filter((a: any) =>
+                ['cancelled', 'rejected'].includes(a.status)
+              )
 
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                    <Building2 className="h-5 w-5 text-muted-foreground" />
+              if (!currentAssignment && cancelledAssignments.length === 0) {
+                return (
+                  <div className="text-center py-6">
+                    <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">No vendor assigned yet</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => setShowAssignVendorModal(true)}
+                    >
+                      Assign Vendor
+                    </Button>
                   </div>
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <p className="font-semibold">{booking.booking_assignments[0].vendor?.business_name || 'N/A'}</p>
-                    </div>
-                    
-                    {booking.booking_assignments[0].driver && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <UserCheck className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <span className="font-medium">Driver: </span>
-                          {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
-                          <span className="text-muted-foreground ml-2">
-                            (License: {booking.booking_assignments[0].driver.license_number})
-                          </span>
-                          {booking.booking_assignments[0].driver.phone && (
-                            <span className="text-muted-foreground ml-2">
-                              • Phone: {booking.booking_assignments[0].driver.phone}
+                )
+              }
+
+              return (
+                <div className="space-y-4">
+                  {currentAssignment ? (
+                    <>
+                      <div className={`p-3 rounded-lg border ${
+                        currentAssignment.status === 'completed'
+                          ? 'bg-blue-50 border-blue-200'
+                          : currentAssignment.status === 'accepted'
+                          ? 'bg-green-50 border-green-200'
+                          : 'bg-yellow-50 border-yellow-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {currentAssignment.status === 'completed' ? (
+                              <CheckCircle className="h-5 w-5 text-blue-600" />
+                            ) : currentAssignment.status === 'accepted' ? (
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                            ) : (
+                              <Clock className="h-5 w-5 text-yellow-600" />
+                            )}
+                            <span className={`font-semibold ${
+                              currentAssignment.status === 'completed'
+                                ? 'text-blue-700'
+                                : currentAssignment.status === 'accepted'
+                                ? 'text-green-700'
+                                : 'text-yellow-700'
+                            }`}>
+                              Assignment {currentAssignment.status.charAt(0).toUpperCase() + currentAssignment.status.slice(1)}
+                            </span>
+                          </div>
+                          {currentAssignment.status === 'completed' && currentAssignment.completed_at && (
+                            <span className="text-sm text-blue-600 font-medium">
+                              {format(new Date(currentAssignment.completed_at), 'PPp')}
+                            </span>
+                          )}
+                          {currentAssignment.status === 'accepted' && currentAssignment.accepted_at && (
+                            <span className="text-sm text-green-600">
+                              {format(new Date(currentAssignment.accepted_at), 'PPp')}
                             </span>
                           )}
                         </div>
                       </div>
-                    )}
-                    
-                    {booking.booking_assignments[0].vehicle && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Car className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <span className="font-medium">Vehicle: </span>
-                          {booking.booking_assignments[0].vehicle.make} {booking.booking_assignments[0].vehicle.model} ({booking.booking_assignments[0].vehicle.year})
-                          <span className="text-muted-foreground ml-2">
-                            Reg: {booking.booking_assignments[0].vehicle.registration_number}
-                          </span>
+
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <p className="font-semibold">{currentAssignment.vendor?.business_name || 'N/A'}</p>
+                          </div>
+
+                          {currentAssignment.driver && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <UserCheck className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <span className="font-medium">Driver: </span>
+                                {currentAssignment.driver.first_name} {currentAssignment.driver.last_name}
+                                <span className="text-muted-foreground ml-2">
+                                  (License: {currentAssignment.driver.license_number})
+                                </span>
+                                {currentAssignment.driver.phone && (
+                                  <span className="text-muted-foreground ml-2">
+                                    • Phone: {currentAssignment.driver.phone}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {currentAssignment.vehicle && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Car className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <span className="font-medium">Vehicle: </span>
+                                {currentAssignment.vehicle.make} {currentAssignment.vehicle.model} ({currentAssignment.vehicle.year})
+                                <span className="text-muted-foreground ml-2">
+                                  Reg: {currentAssignment.vehicle.registration_number}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {currentAssignment.assigned_at && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4" />
+                              <span>Assigned: {format(new Date(currentAssignment.assigned_at), 'PPp')}</span>
+                            </div>
+                          )}
+
+                          {currentAssignment.accepted_at && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <CheckCircle className="h-4 w-4" />
+                              <span>Accepted: {format(new Date(currentAssignment.accepted_at), 'PPp')}</span>
+                            </div>
+                          )}
+
+                          {currentAssignment.completed_at && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-600">Completed: {format(new Date(currentAssignment.completed_at), 'PPp')}</span>
+                            </div>
+                          )}
+
+                          {currentAssignment.notes && (
+                            <div className="mt-3 p-3 bg-muted rounded-lg">
+                              <p className="text-sm font-medium mb-1">Notes:</p>
+                              <p className="text-sm text-muted-foreground">{currentAssignment.notes}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
-                    
-                    {booking.booking_assignments[0].assigned_at && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        <span>Assigned: {format(new Date(booking.booking_assignments[0].assigned_at), 'PPp')}</span>
-                      </div>
-                    )}
-                    
-                    {booking.booking_assignments[0].accepted_at && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Accepted: {format(new Date(booking.booking_assignments[0].accepted_at), 'PPp')}</span>
-                      </div>
-                    )}
 
-                    {booking.booking_assignments[0].completed_at && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-green-600">Completed: {format(new Date(booking.booking_assignments[0].completed_at), 'PPp')}</span>
-                      </div>
-                    )}
+                      {['pending', 'accepted'].includes(currentAssignment.status) && (
+                        <div className="flex justify-end pt-3 border-t mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowAssignVendorModal(true)}
+                          >
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Reassign Vendor
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-4">
+                      <Building2 className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground mb-3">No active vendor assignment</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAssignVendorModal(true)}
+                      >
+                        Assign Vendor
+                      </Button>
+                    </div>
+                  )}
 
-                    {booking.booking_assignments[0].notes && (
-                      <div className="mt-3 p-3 bg-muted rounded-lg">
-                        <p className="text-sm font-medium mb-1">Notes:</p>
-                        <p className="text-sm text-muted-foreground">{booking.booking_assignments[0].notes}</p>
+                  {cancelledAssignments.length > 0 && (
+                    <div className="border-t pt-4 mt-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <History className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm font-medium text-muted-foreground">Previous Assignments</p>
                       </div>
-                    )}
-                  </div>
+                      <div className="space-y-3">
+                        {cancelledAssignments.map((assignment: any) => (
+                          <div key={assignment.id} className={`p-3 rounded-lg border ${
+                            assignment.status === 'rejected'
+                              ? 'bg-red-50/50 border-red-100'
+                              : 'bg-muted/50 border-muted'
+                          }`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <XCircle className={`h-4 w-4 ${
+                                  assignment.status === 'rejected' ? 'text-red-400' : 'text-muted-foreground'
+                                }`} />
+                                <span className="text-sm font-medium">
+                                  {assignment.vendor?.business_name || 'Unknown Vendor'}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {assignment.status === 'rejected' ? 'Rejected' : 'Cancelled'}
+                                </Badge>
+                              </div>
+                              {assignment.cancelled_at && (
+                                <span className="text-xs text-muted-foreground">
+                                  {format(new Date(assignment.cancelled_at), 'PPp')}
+                                </span>
+                              )}
+                            </div>
+                            {assignment.cancellation_reason && (
+                              <p className="text-xs text-muted-foreground ml-6">
+                                Reason: {assignment.cancellation_reason}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No vendor assigned yet</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => setShowAssignVendorModal(true)}
-                >
-                  Assign Vendor
-                </Button>
-              </div>
-            )}
+              )
+            })()}
           </CardContent>
         </Card>
 
@@ -659,7 +739,11 @@ export function BookingDetail({ booking }: BookingDetailProps) {
         <AssignVendorModal
           bookingId={booking.id}
           bookingType={booking.bookingType || 'customer'}
-          currentVendorId={booking.booking_assignments?.[0]?.vendor_id}
+          currentVendorId={
+            ['pending', 'accepted'].includes(booking.booking_assignments?.[0]?.status)
+              ? booking.booking_assignments?.[0]?.vendor_id
+              : undefined
+          }
           onClose={() => {
             setShowAssignVendorModal(false)
             router.refresh()

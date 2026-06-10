@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getUnifiedBookingsList, createBookingAssignment, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
-import { sendBookingAssignmentEmail } from '@/lib/email/services/vendor-emails'
+import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/email/services/vendor-emails'
 import { getAppUrl } from '@/lib/email/config'
 import { format, parseISO } from 'date-fns'
 
@@ -210,6 +210,8 @@ export async function getBookingDetails(bookingId: string) {
         assigned_at,
         accepted_at,
         completed_at,
+        cancelled_at,
+        cancellation_reason,
         notes,
         vendor:vendor_applications!left(
           id,
@@ -266,6 +268,14 @@ export async function getBookingDetails(bookingId: string) {
       assignments = [assignments];
     }
 
+    const activeStatuses = ['pending', 'accepted', 'completed']
+    assignments.sort((a: any, b: any) => {
+      const aActive = activeStatuses.includes(a.status) ? 0 : 1
+      const bActive = activeStatuses.includes(b.status) ? 0 : 1
+      if (aActive !== bActive) return aActive - bActive
+      return new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+    })
+
     return {
       ...customerBooking,
       bookingType: 'customer' as const,
@@ -316,6 +326,8 @@ export async function getBookingDetails(bookingId: string) {
         assigned_at,
         accepted_at,
         completed_at,
+        cancelled_at,
+        cancellation_reason,
         notes,
         vendor:vendor_applications!left(
           id,
@@ -339,8 +351,16 @@ export async function getBookingDetails(bookingId: string) {
         )
       `)
       .eq('business_booking_id', bookingId)
+      .order('assigned_at', { ascending: false })
 
     businessAssignments = assignments || []
+    const activeStatuses = ['pending', 'accepted', 'completed']
+    businessAssignments.sort((a: any, b: any) => {
+      const aActive = activeStatuses.includes(a.status) ? 0 : 1
+      const bActive = activeStatuses.includes(b.status) ? 0 : 1
+      if (aActive !== bActive) return aActive - bActive
+      return new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+    })
   }
 
   // Fetch business booking addons
@@ -819,32 +839,31 @@ export async function getAvailableVendors(vehicleTypeId?: string) {
 }
 
 /**
- * Assign booking to vendor (works for both customer and business bookings)
- * @param bookingId - ID of the booking (customer or business)
- * @param bookingType - Type of booking ('customer' or 'business')
- * @param vendorId - ID of the vendor to assign
- * @param notes - Optional notes for the assignment
+ * Assign (or reassign) booking to vendor (works for both customer and business bookings)
+ * On reassignment: cancels old assignment, cleans up resources, notifies previous vendor.
  */
 export async function assignBookingToVendor(
   bookingId: string,
   bookingType: BookingType,
   vendorId: string,
-  notes?: string
+  notes?: string,
+  reassignmentReason?: string
 ) {
   const supabase = await createClient()
 
-  // Get the current user (admin)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
 
-  // Use unified service to create assignment
-  const { data, error } = await createBookingAssignment({
+  // Create assignment (automatically cancels any existing active assignment)
+  const { cancelledAssignment, error } = await createBookingAssignment({
     bookingId: bookingType === 'customer' ? bookingId : undefined,
     businessBookingId: bookingType === 'business' ? bookingId : undefined,
     vendorId,
     assignedBy: user.id,
+    cancellationReason: reassignmentReason,
+    notes,
   })
 
   if (error) {
@@ -852,77 +871,72 @@ export async function assignBookingToVendor(
     throw new Error('Failed to assign booking to vendor')
   }
 
-  // Send email notification to vendor (non-blocking)
-  try {
-    const adminClient = createAdminClient()
+  // If reassignment: clean up old resources and notify previous vendor
+  if (cancelledAssignment) {
+    // Free driver/vehicle schedules if old assignment was accepted
+    if (cancelledAssignment.status === 'accepted') {
+      try {
+        const { AvailabilityService } = await import('@/lib/availability/service')
+        await AvailabilityService.removeSchedule(cancelledAssignment.id)
+      } catch (cleanupError) {
+        console.error('Failed to clean up old assignment resources:', cleanupError)
+      }
+    }
 
-    const { data: vendor } = await adminClient
-      .from('vendor_applications')
-      .select('business_name, business_email')
-      .eq('id', vendorId)
-      .single()
-
-    if (vendor?.business_email) {
-      const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
-
-      const { data: booking } = await adminClient
-        .from(tableName)
-        .select(`
-          booking_number,
-          pickup_address,
-          dropoff_address,
-          pickup_datetime,
-          vehicle_type_id
-        `)
-        .eq('id', bookingId)
+    // Notify previous vendor (non-blocking)
+    try {
+      const adminClient = createAdminClient()
+      const { data: oldVendor } = await adminClient
+        .from('vendor_applications')
+        .select('business_name, business_email')
+        .eq('id', cancelledAssignment.vendor_id)
         .single()
 
-      if (booking) {
-        const { data: vehicleType } = await adminClient
-          .from('vehicle_types')
-          .select('name, vehicle_categories(name)')
-          .eq('id', booking.vehicle_type_id)
-          .single()
-
-        let customerName = 'Customer'
-        if (bookingType === 'business') {
-          const { data: bizBooking } = await adminClient
-            .from('business_bookings')
-            .select('customer_name')
-            .eq('id', bookingId)
-            .single()
-          customerName = bizBooking?.customer_name || 'Customer'
-        } else {
-          const { data: customerBooking } = await adminClient
-            .from('bookings')
-            .select('customer_id')
-            .eq('id', bookingId)
-            .single()
-          if (customerBooking?.customer_id) {
-            const { data: profile } = await adminClient
-              .from('profiles')
-              .select('full_name')
-              .eq('id', customerBooking.customer_id)
-              .single()
-            customerName = profile?.full_name || 'Customer'
-          }
+      if (oldVendor?.business_email) {
+        const bookingDetails = await getBookingDetailsForEmail(bookingId, bookingType)
+        if (bookingDetails) {
+          await sendBookingUnassignmentEmail({
+            vendorName: oldVendor.business_name,
+            vendorEmail: oldVendor.business_email,
+            bookingReference: bookingDetails.bookingNumber,
+            customerName: bookingDetails.customerName,
+            pickupLocation: bookingDetails.pickupAddress,
+            pickupDate: bookingDetails.pickupDate,
+            pickupTime: bookingDetails.pickupTime,
+            reassignmentReason,
+            bookingUrl: `${getAppUrl()}/vendor/bookings`,
+          })
         }
+      }
+    } catch (emailError) {
+      console.error('Failed to send unassignment email to previous vendor:', emailError)
+    }
+  }
 
-        const pickupDatetime = parseISO(booking.pickup_datetime)
-        const categoryName = (vehicleType as any)?.vehicle_categories?.name || 'Vehicle'
+  // Send assignment email to new vendor (non-blocking)
+  try {
+    const bookingDetails = await getBookingDetailsForEmail(bookingId, bookingType)
+    if (bookingDetails) {
+      const adminClient = createAdminClient()
+      const { data: vendor } = await adminClient
+        .from('vendor_applications')
+        .select('business_name, business_email')
+        .eq('id', vendorId)
+        .single()
 
+      if (vendor?.business_email) {
         await sendBookingAssignmentEmail({
           bookingId,
           vendorName: vendor.business_name,
           vendorEmail: vendor.business_email,
-          bookingReference: booking.booking_number,
-          customerName,
-          vehicleCategory: categoryName,
-          vehicleType: vehicleType?.name || 'Vehicle',
-          pickupLocation: booking.pickup_address || 'TBD',
-          dropoffLocation: booking.dropoff_address || 'TBD',
-          pickupDate: format(pickupDatetime, 'MMMM d, yyyy'),
-          pickupTime: format(pickupDatetime, 'h:mm a'),
+          bookingReference: bookingDetails.bookingNumber,
+          customerName: bookingDetails.customerName,
+          vehicleCategory: bookingDetails.vehicleCategory,
+          vehicleType: bookingDetails.vehicleType,
+          pickupLocation: bookingDetails.pickupAddress,
+          dropoffLocation: bookingDetails.dropoffAddress,
+          pickupDate: bookingDetails.pickupDate,
+          pickupTime: bookingDetails.pickupTime,
           bookingUrl: `${getAppUrl()}/vendor/bookings`,
         })
       }
@@ -935,6 +949,75 @@ export async function assignBookingToVendor(
   revalidatePath(`/admin/bookings/${bookingId}`)
 
   return { success: true }
+}
+
+/**
+ * Helper: fetch booking details needed for email notifications
+ */
+async function getBookingDetailsForEmail(bookingId: string, bookingType: BookingType) {
+  const adminClient = createAdminClient()
+
+  let bookingNumber = ''
+  let pickupAddress = 'TBD'
+  let dropoffAddress = 'TBD'
+  let pickupDatetimeStr = ''
+  let vehicleTypeId = ''
+  let customerName = 'Customer'
+
+  if (bookingType === 'business') {
+    const { data: booking } = await adminClient
+      .from('business_bookings')
+      .select('booking_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name')
+      .eq('id', bookingId)
+      .single()
+    if (!booking) return null
+    bookingNumber = booking.booking_number
+    pickupAddress = booking.pickup_address || 'TBD'
+    dropoffAddress = booking.dropoff_address || 'TBD'
+    pickupDatetimeStr = booking.pickup_datetime
+    vehicleTypeId = booking.vehicle_type_id
+    customerName = booking.customer_name || 'Customer'
+  } else {
+    const { data: booking } = await adminClient
+      .from('bookings')
+      .select('booking_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id')
+      .eq('id', bookingId)
+      .single()
+    if (!booking) return null
+    bookingNumber = booking.booking_number
+    pickupAddress = booking.pickup_address || 'TBD'
+    dropoffAddress = booking.dropoff_address || 'TBD'
+    pickupDatetimeStr = booking.pickup_datetime
+    vehicleTypeId = booking.vehicle_type_id
+    if (booking.customer_id) {
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('full_name')
+        .eq('id', booking.customer_id)
+        .single()
+      customerName = profile?.full_name || 'Customer'
+    }
+  }
+
+  const { data: vehicleType } = await adminClient
+    .from('vehicle_types')
+    .select('name, vehicle_categories(name)')
+    .eq('id', vehicleTypeId)
+    .single()
+
+  const pickupDatetime = parseISO(pickupDatetimeStr)
+  const categoryName = (vehicleType as any)?.vehicle_categories?.name || 'Vehicle'
+
+  return {
+    bookingNumber,
+    customerName,
+    vehicleCategory: categoryName,
+    vehicleType: vehicleType?.name || 'Vehicle',
+    pickupAddress,
+    dropoffAddress,
+    pickupDate: format(pickupDatetime, 'MMMM d, yyyy'),
+    pickupTime: format(pickupDatetime, 'h:mm a'),
+  }
 }
 
 export async function getBookingAssignment(bookingId: string) {
