@@ -118,9 +118,15 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const hostname = request.headers.get('host') || '';
   const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname;
 
+  // DEV-ONLY: Allow IP address access for LAN testing (remove before production)
+  const hostWithoutPort = hostname.split(':')[0];
+  const isDevIpAccess = process.env.NODE_ENV !== 'production' &&
+    /^\d{1,3}(\.\d{1,3}){3}$/.test(hostWithoutPort);
+
   // Check if main platform (with or without port number)
   const isMainPlatform = hostname === platformDomain ||
-                         hostname.startsWith(`${platformDomain}:`);
+                         hostname.startsWith(`${platformDomain}:`) ||
+                         isDevIpAccess;
 
   // Skip validation for main platform domain (open access for all businesses)
   if (isMainPlatform) {

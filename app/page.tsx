@@ -15,6 +15,7 @@ import { Footer } from '@/components/layout/footer'
 import { getEnabledCurrencies, getFeaturedCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
+import { getSiteSettings } from '@/lib/site-settings/server'
 
 export const metadata = {
   title: 'VehicleService - Premier Luxury Transportation',
@@ -38,12 +39,13 @@ export default async function HomePage() {
     profile = data
   }
 
-  // Fetch currency data
-  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates] = await Promise.all([
+  // Fetch currency data and site settings
+  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates, siteSettings] = await Promise.all([
     getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getDefaultCurrency(),
     getExchangeRatesObject(),
+    getSiteSettings(),
   ])
 
   // Get user's currency preference from cookie
@@ -67,6 +69,7 @@ export default async function HomePage() {
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
+        siteSettings={siteSettings}
       />
       <Hero todayDate={todayStr} />
       <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
@@ -90,7 +93,7 @@ export default async function HomePage() {
       <div className="bg-[var(--black-rich)]" id="faq">
         <FAQ />
       </div>
-      <Footer />
+      <Footer siteSettings={siteSettings} />
     </main>
     </CurrencyProvider>
   )

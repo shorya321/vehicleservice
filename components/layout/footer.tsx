@@ -1,7 +1,14 @@
 "use client"
 import { motion, useReducedMotion } from "motion/react"
 import Link from 'next/link'
+import Image from 'next/image'
 import { Instagram, Linkedin, Facebook, Twitter, Youtube } from "lucide-react"
+import type { SiteSettingsConfig } from '@/lib/site-settings/types'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
+
+interface FooterProps {
+  siteSettings?: SiteSettingsConfig
+}
 
 interface FooterLinkCategory {
   title: string
@@ -39,15 +46,16 @@ const footerLinkCategories: FooterLinkCategory[] = [
   },
 ]
 
-const socialMediaLinks = [
-  { icon: Instagram, href: "#", name: "Instagram" },
-  { icon: Linkedin, href: "#", name: "LinkedIn" },
-  { icon: Facebook, href: "#", name: "Facebook" },
-  { icon: Twitter, href: "#", name: "Twitter" },
-  { icon: Youtube, href: "#", name: "Youtube" },
-]
+const SOCIAL_ICON_MAP: Record<string, typeof Instagram> = {
+  instagram: Instagram,
+  linkedin: Linkedin,
+  facebook: Facebook,
+  twitter: Twitter,
+  youtube: Youtube,
+}
 
-export function Footer() {
+export function Footer({ siteSettings }: FooterProps) {
+  const settings = siteSettings ?? DEFAULT_SITE_SETTINGS
   const reduceMotion = useReducedMotion()
 
   return (
@@ -66,10 +74,22 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              aria-label="Infinia Transfers, go to homepage"
+              aria-label={`${settings.brand_name}, go to homepage`}
               className="footer-logo text-2xl"
             >
-              Infinia <span>Transfers</span>
+              {settings.footer_logo_url ? (
+                <Image
+                  src={settings.footer_logo_url}
+                  alt={settings.brand_name}
+                  width={180}
+                  height={48}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <>{settings.brand_name.includes(' ') ? (
+                  <>{settings.brand_name.split(' ').slice(0, -1).join(' ')} <span>{settings.brand_name.split(' ').pop()}</span></>
+                ) : settings.brand_name}</>
+              )}
             </Link>
             <p className="mt-6 max-w-sm text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
               Premium ground transfers, fixed-price, in 47 cities. Booked from a phone in under 90 seconds.
@@ -82,11 +102,11 @@ export function Footer() {
                 </dt>
                 <dd className="mt-1">
                   <a
-                    href="mailto:support@infiniatransfers.com"
+                    href={`mailto:${settings.support_email}`}
                     aria-label="Email support"
                     className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
                   >
-                    support@infiniatransfers.com
+                    {settings.support_email}
                   </a>
                 </dd>
               </div>
@@ -96,11 +116,11 @@ export function Footer() {
                 </dt>
                 <dd className="mt-1 numeric">
                   <a
-                    href="tel:+971501234567"
+                    href={`tel:${settings.support_phone.replace(/\s/g, '')}`}
                     aria-label="Call support"
                     className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
                   >
-                    +971 50 123 4567
+                    {settings.support_phone}
                   </a>
                 </dd>
               </div>
@@ -133,23 +153,29 @@ export function Footer() {
             className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]"
             suppressHydrationWarning
           >
-            © {new Date().getFullYear()} Infinia Transfers
+            &copy; {new Date().getFullYear()} {settings.copyright_text}
           </p>
 
           <ul className="flex items-center gap-3">
-            {socialMediaLinks.map((social) => (
-              <li key={social.name}>
-                <a
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center border border-[var(--graphite)] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
-                  aria-label={social.name}
-                >
-                  <social.icon className="h-4 w-4" aria-hidden="true" />
-                </a>
-              </li>
-            ))}
+            {Object.entries(settings.social_links)
+              .filter(([, url]) => url && url.length > 0)
+              .map(([platform, url]) => {
+                const Icon = SOCIAL_ICON_MAP[platform]
+                if (!Icon) return null
+                return (
+                  <li key={platform}>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center border border-[var(--graphite)] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+                      aria-label={platform.charAt(0).toUpperCase() + platform.slice(1)}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                  </li>
+                )
+              })}
           </ul>
         </div>
       </div>

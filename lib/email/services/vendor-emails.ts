@@ -9,12 +9,14 @@ import {
   type VendorApplicationRejectedEmailData,
   type BookingDatetimeModifiedEmailData,
   type BookingAssignmentEmailData,
+  type BookingUnassignmentEmailData,
 } from '../types';
 import VendorApplicationReceivedEmail from '../templates/vendor/application-received';
 import VendorApplicationApprovedEmail from '../templates/vendor/application-approved';
 import VendorApplicationRejectedEmail from '../templates/vendor/application-rejected';
 import BookingDatetimeModifiedEmail from '../templates/vendor/booking-datetime-modified';
 import BookingAssignedEmail from '../templates/vendor/booking-assigned';
+import BookingUnassignedEmail from '../templates/vendor/booking-unassigned';
 
 /**
  * Send vendor application received confirmation email
@@ -238,6 +240,54 @@ export async function sendBookingAssignmentEmail(
     };
   } catch (error) {
     console.error('Unexpected error sending booking assignment email:', error);
+    return {
+      success: false,
+      error: 'An unexpected error occurred while sending the email',
+    };
+  }
+}
+
+/**
+ * Send booking unassignment notification to previous vendor
+ */
+export async function sendBookingUnassignmentEmail(
+  data: BookingUnassignmentEmailData
+): Promise<EmailResult> {
+  try {
+    const resend = getResendClient();
+    const emailConfig = getEmailConfig();
+
+    const { data: emailData, error } = await resend.emails.send({
+      from: emailConfig.from,
+      to: data.vendorEmail,
+      replyTo: emailConfig.replyTo,
+      subject: `Booking Reassigned - #${data.bookingReference}`,
+      react: jsx(BookingUnassignedEmail, {
+        vendorName: data.vendorName,
+        bookingReference: data.bookingReference,
+        customerName: data.customerName,
+        pickupLocation: data.pickupLocation,
+        pickupDate: data.pickupDate,
+        pickupTime: data.pickupTime,
+        reassignmentReason: data.reassignmentReason,
+        bookingUrl: data.bookingUrl,
+      }),
+    });
+
+    if (error) {
+      console.error('Failed to send booking unassignment email:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to send booking unassignment email',
+      };
+    }
+
+    return {
+      success: true,
+      emailId: emailData?.id,
+    };
+  } catch (error) {
+    console.error('Unexpected error sending booking unassignment email:', error);
     return {
       success: false,
       error: 'An unexpected error occurred while sending the email',

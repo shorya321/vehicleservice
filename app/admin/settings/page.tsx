@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/server'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
-import { Palette, Bell, ChevronRight, Coins } from 'lucide-react'
+import { Palette, Bell, ChevronRight, Coins, Globe } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Settings | Admin Portal',
@@ -18,6 +18,12 @@ export const metadata: Metadata = {
 }
 
 const settingsCards = [
+  {
+    title: 'General',
+    description: 'Configure site identity, logos, contact details, and social media links',
+    href: '/admin/settings/general',
+    icon: Globe,
+  },
   {
     title: 'Appearance',
     description: 'Customize theme colors and display mode for admin and vendor dashboards',

@@ -5,6 +5,7 @@ import { Footer } from './footer'
 import { getFeaturedCurrencies, getEnabledCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
+import { getSiteSettings } from '@/lib/site-settings/server'
 
 export async function PublicLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -22,12 +23,13 @@ export async function PublicLayout({ children }: { children: React.ReactNode }) 
     profile = data
   }
 
-  // Fetch currency data
-  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates] = await Promise.all([
+  // Fetch currency data and site settings
+  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates, siteSettings] = await Promise.all([
     getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getDefaultCurrency(),
     getExchangeRatesObject(),
+    getSiteSettings(),
   ])
 
   // Get user's currency preference from cookie
@@ -45,11 +47,12 @@ export async function PublicLayout({ children }: { children: React.ReactNode }) 
         <PublicHeader
           initialUser={user}
           initialProfile={profile}
+          siteSettings={siteSettings}
         />
         <main className="flex-1 pt-20">
           {children}
         </main>
-        <Footer />
+        <Footer siteSettings={siteSettings} />
       </div>
     </CurrencyProvider>
   )

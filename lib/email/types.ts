@@ -77,6 +77,18 @@ export interface BookingAssignmentEmailData {
   pickupTime: string;
 }
 
+export interface BookingUnassignmentEmailData {
+  vendorName: string;
+  vendorEmail: string;
+  bookingReference: string;
+  customerName: string;
+  pickupLocation: string;
+  pickupDate: string;
+  pickupTime: string;
+  reassignmentReason?: string;
+  bookingUrl: string;
+}
+
 // Vendor application emails
 export interface VendorApplicationReceivedEmailData {
   email: string;

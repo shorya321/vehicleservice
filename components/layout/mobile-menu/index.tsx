@@ -30,6 +30,8 @@ import {
 } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
+import type { SiteSettingsConfig } from '@/lib/site-settings/types'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -40,6 +42,7 @@ interface MobileMenuProps {
   profile: Profile | null
   getInitials: (profile: Profile | null) => string
   onSignOut: () => void
+  siteSettings?: SiteSettingsConfig
 }
 
 const contentVariants: Variants = {
@@ -63,7 +66,9 @@ export function MobileMenu({
   profile,
   getInitials,
   onSignOut,
+  siteSettings,
 }: MobileMenuProps) {
+  const settings = siteSettings ?? DEFAULT_SITE_SETTINGS
   const router = useRouter()
   const reducedMotion = useReducedMotion() ?? false
 
@@ -103,7 +108,9 @@ export function MobileMenu({
         {/* Header row */}
         <div className="relative flex items-center justify-between px-4 py-3 border-b border-[var(--gold)]/10">
           <Link href="/" onClick={close} className="footer-logo text-xl hover:opacity-80 transition-opacity duration-300">
-            Infinia <span>Transfers</span>
+            {settings.brand_name.includes(' ') ? (
+              <>{settings.brand_name.split(' ').slice(0, -1).join(' ')} <span>{settings.brand_name.split(' ').pop()}</span></>
+            ) : settings.brand_name}
           </Link>
           <button
             onClick={close}
@@ -164,11 +171,11 @@ export function MobileMenu({
 
           {/* Contact section */}
           <MenuSection label="Contact" reducedMotion={reducedMotion}>
-            <MenuNavItem href="tel:+971501234567" label="+971 50 123 4567" icon={Phone} onClick={close} reducedMotion={reducedMotion} />
+            <MenuNavItem href={`tel:${settings.support_phone.replace(/\s/g, '')}`} label={settings.support_phone} icon={Phone} onClick={close} reducedMotion={reducedMotion} />
           </MenuSection>
 
           {/* Footer */}
-          <MenuFooter reducedMotion={reducedMotion} />
+          <MenuFooter reducedMotion={reducedMotion} siteSettings={settings} />
         </motion.div>
       </SheetContent>
     </Sheet>

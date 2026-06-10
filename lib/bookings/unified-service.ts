@@ -243,36 +243,98 @@ export async function getBookingFromAssignment(
   return result;
 }
 
+export interface CancelledAssignment {
+  id: string;
+  vendor_id: string;
+  driver_id: string | null;
+  vehicle_id: string | null;
+  status: string;
+}
+
+/**
+ * Cancel any active (pending/accepted) assignment for a booking.
+ * Preserves the old record for audit trail by setting status to 'cancelled'.
+ *
+ * @returns The cancelled assignment row (for notification/cleanup), or null if none existed
+ */
+export async function cancelActiveAssignment(params: {
+  bookingId?: string;
+  businessBookingId?: string;
+  cancellationReason?: string;
+}): Promise<{ cancelledAssignment: CancelledAssignment | null; error: any }> {
+  const supabase = createAdminClient();
+
+  let query = supabase
+    .from('booking_assignments')
+    .select('id, vendor_id, driver_id, vehicle_id, status')
+    .in('status', ['pending', 'accepted']);
+
+  if (params.bookingId) {
+    query = query.eq('booking_id', params.bookingId);
+  } else if (params.businessBookingId) {
+    query = query.eq('business_booking_id', params.businessBookingId);
+  } else {
+    return { cancelledAssignment: null, error: null };
+  }
+
+  const { data: existing, error: fetchError } = await query.maybeSingle();
+
+  if (fetchError) {
+    console.error('Error fetching active assignment:', fetchError);
+    return { cancelledAssignment: null, error: fetchError };
+  }
+
+  if (!existing) {
+    return { cancelledAssignment: null, error: null };
+  }
+
+  const { error: updateError } = await supabase
+    .from('booking_assignments')
+    .update({
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+      cancellation_reason: params.cancellationReason || 'Reassigned to another vendor',
+    })
+    .eq('id', existing.id);
+
+  if (updateError) {
+    console.error('Error cancelling active assignment:', updateError);
+    return { cancelledAssignment: null, error: updateError };
+  }
+
+  return { cancelledAssignment: existing as CancelledAssignment, error: null };
+}
+
 /**
  * Create booking assignment (works for both customer and business bookings)
+ * Automatically cancels any existing active assignment before creating the new one.
  *
  * @param params - Assignment parameters
- * @returns Created assignment or error
- *
- * @example
- * // Assign customer booking
- * await createBookingAssignment({
- *   bookingId: 'customer-uuid',
- *   vendorId: 'vendor-uuid',
- *   assignedBy: 'admin-uuid',
- * });
- *
- * // Assign business booking
- * await createBookingAssignment({
- *   businessBookingId: 'business-uuid',
- *   vendorId: 'vendor-uuid',
- *   assignedBy: 'admin-uuid',
- * });
+ * @returns Created assignment, cancelled assignment (if any), or error
  */
 export async function createBookingAssignment(params: {
   bookingId?: string;
   businessBookingId?: string;
   vendorId: string;
   assignedBy: string;
+  cancellationReason?: string;
+  notes?: string;
 }) {
+  // Cancel any existing active assignment first (idempotent reassign)
+  const { cancelledAssignment, error: cancelError } = await cancelActiveAssignment({
+    bookingId: params.bookingId,
+    businessBookingId: params.businessBookingId,
+    cancellationReason: params.cancellationReason,
+  });
+
+  if (cancelError) {
+    console.error('Failed to cancel previous assignment:', cancelError);
+    return { data: null, cancelledAssignment: null, error: cancelError };
+  }
+
   const supabase = await createClient();
 
-  const assignment = {
+  const assignment: Record<string, unknown> = {
     booking_id: params.bookingId || null,
     business_booking_id: params.businessBookingId || null,
     vendor_id: params.vendorId,
@@ -281,18 +343,22 @@ export async function createBookingAssignment(params: {
     assigned_at: new Date().toISOString(),
   };
 
+  if (params.notes) {
+    assignment.notes = params.notes;
+  }
+
   const { data, error } = await supabase
     .from('booking_assignments')
-    .insert(assignment)
+    .insert(assignment as any)
     .select()
     .single();
 
   if (error) {
     console.error('Error creating booking assignment:', error);
-    return { data: null, error };
+    return { data: null, cancelledAssignment: null, error };
   }
 
-  return { data, error: null };
+  return { data, cancelledAssignment, error: null };
 }
 
 /**

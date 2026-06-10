@@ -52,8 +52,10 @@ export function AssignVendorModal({
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [selectedVendorId, setSelectedVendorId] = useState<string>(currentVendorId || '')
   const [notes, setNotes] = useState('')
+  const [reassignmentReason, setReassignmentReason] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const isReassignment = !!currentVendorId
 
   useEffect(() => {
     loadVendors()
@@ -80,8 +82,8 @@ export function AssignVendorModal({
 
     setIsSaving(true)
     try {
-      await assignBookingToVendor(bookingId, bookingType, selectedVendorId, notes)
-      toast.success('Booking assigned to vendor successfully')
+      await assignBookingToVendor(bookingId, bookingType, selectedVendorId, notes, reassignmentReason || undefined)
+      toast.success(isReassignment ? 'Booking reassigned to vendor successfully' : 'Booking assigned to vendor successfully')
       router.refresh()
       onClose()
     } catch (error) {
@@ -100,7 +102,9 @@ export function AssignVendorModal({
             {currentVendorId ? 'Reassign Vendor' : 'Assign Vendor'}
           </DialogTitle>
           <DialogDescription>
-            Select a vendor to handle this booking. The vendor will be notified and can assign their driver and vehicle.
+            {isReassignment
+              ? 'Select a new vendor to handle this booking. The previous vendor will be notified of the reassignment.'
+              : 'Select a vendor to handle this booking. The vendor will be notified and can assign their driver and vehicle.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -189,6 +193,19 @@ export function AssignVendorModal({
               rows={3}
             />
           </div>
+
+          {isReassignment && (
+            <div className="space-y-2">
+              <Label htmlFor="reassignment-reason">Reassignment Reason (Optional)</Label>
+              <Textarea
+                id="reassignment-reason"
+                placeholder="Why are you reassigning this booking? (e.g., vendor rejected, vendor unavailable, customer request...)"
+                value={reassignmentReason}
+                onChange={(e) => setReassignmentReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -199,10 +216,10 @@ export function AssignVendorModal({
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Assigning...
+                {isReassignment ? 'Reassigning...' : 'Assigning...'}
               </>
             ) : (
-              'Assign Vendor'
+              isReassignment ? 'Reassign Vendor' : 'Assign Vendor'
             )}
           </Button>
         </DialogFooter>

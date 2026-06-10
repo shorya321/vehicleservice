@@ -29,7 +29,9 @@ export function AccountMobileHeader({ user, activeTab, onTabChange, unreadNotifi
     const container = pillContainerRef.current
     if (!container) return
     const activeButton = container.querySelector('[aria-selected="true"]') as HTMLElement
-    activeButton?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
+    if (!activeButton) return
+    const scrollLeft = activeButton.offsetLeft - container.offsetWidth / 2 + activeButton.offsetWidth / 2
+    container.scrollTo({ left: scrollLeft, behavior: "smooth" })
   }, [activeTab])
 
   const handlePillKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -76,8 +78,8 @@ export function AccountMobileHeader({ user, activeTab, onTabChange, unreadNotifi
       </div>
 
       {/* Pill Navigation */}
-      <div className="account-pill-bar" role="tablist" aria-label="Account sections" onKeyDown={handlePillKeyDown}>
-        <div ref={pillContainerRef} className="flex gap-1.5 min-w-max px-4">
+      <div ref={pillContainerRef} className="account-pill-bar" role="tablist" aria-label="Account sections" onKeyDown={handlePillKeyDown}>
+        <div className="flex gap-1.5 min-w-max px-4">
           {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.id
             return (

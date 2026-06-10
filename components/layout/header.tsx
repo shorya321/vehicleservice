@@ -2,7 +2,6 @@
 
 import { Search, Menu, LogOut, User, ChevronDown, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +17,8 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { NotificationBell } from "@/components/admin/notifications/notification-bell"
 import { AdminThemeToggle } from "@/components/admin/ui/theme-toggle"
+import { AdminCommandPalette } from "@/components/admin/admin-command-palette"
+import { useCommandPalette } from "@/lib/hooks/use-command-palette"
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -31,6 +32,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     avatar_url: string | null
   } | null>(null)
   const supabase = createClient()
+  const { isOpen: commandOpen, setIsOpen: setCommandOpen } = useCommandPalette()
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -78,18 +80,18 @@ export function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <div className="relative hidden sm:block sm:w-64 lg:w-80">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="pl-10 pr-14 h-9 rounded-lg bg-secondary border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-          />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs text-muted-foreground pointer-events-none">
+        <Button
+          variant="ghost"
+          onClick={() => setCommandOpen(true)}
+          className="hidden sm:flex items-center gap-2 sm:w-64 lg:w-80 rounded-lg border border-border bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30 h-9 justify-start"
+        >
+          <Search className="h-4 w-4" />
+          <span className="flex-1 text-left text-sm">Search...</span>
+          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs">
             <span>⌘</span>
             <span>K</span>
           </div>
-        </div>
+        </Button>
       </div>
 
       <div className="flex items-center gap-2">
@@ -142,6 +144,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <AdminCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </header>
   )
 }

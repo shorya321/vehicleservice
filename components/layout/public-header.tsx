@@ -23,18 +23,24 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useCurrency } from '@/lib/currency/context'
 import { HamburgerButton } from '@/components/layout/mobile-menu/hamburger-button'
 import { MobileMenu } from '@/components/layout/mobile-menu'
+import type { SiteSettingsConfig } from '@/lib/site-settings/types'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
+import Image from 'next/image'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface PublicHeaderProps {
   initialUser?: SupabaseUser | null
   initialProfile?: Profile | null
+  siteSettings?: SiteSettingsConfig
 }
 
 export function PublicHeader({
   initialUser = null,
   initialProfile = null,
+  siteSettings,
 }: PublicHeaderProps) {
+  const settings = siteSettings ?? DEFAULT_SITE_SETTINGS
   const { allCurrencies } = useCurrency()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -133,13 +139,26 @@ export function PublicHeader({
     >
       <div className="luxury-container">
         <div className="flex items-center justify-between">
-          {/* Logo with Cormorant Garamond */}
+          {/* Logo */}
           <Link
             href="/"
-            aria-label="Infinia Transfers, go to homepage"
+            aria-label={`${settings.brand_name}, go to homepage`}
             className="footer-logo text-2xl hover:opacity-80 transition-opacity duration-200"
           >
-            Infinia <span>Transfers</span>
+            {settings.header_logo_url ? (
+              <Image
+                src={settings.header_logo_url}
+                alt={settings.brand_name}
+                width={160}
+                height={40}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+            ) : (
+              <>{settings.brand_name.includes(' ') ? (
+                <>{settings.brand_name.split(' ').slice(0, -1).join(' ')} <span>{settings.brand_name.split(' ').pop()}</span></>
+              ) : settings.brand_name}</>
+            )}
           </Link>
 
           {/* Navigation Links */}
@@ -267,6 +286,7 @@ export function PublicHeader({
         profile={profile}
         getInitials={getInitials}
         onSignOut={handleSignOut}
+        siteSettings={settings}
       />
     </header>
   )

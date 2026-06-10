@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { AccountSidebar } from "@/components/account/account-sidebar"
 import { AccountMobileHeader } from "@/components/account/account-mobile-header"
 import { PersonalInfoTab } from "@/components/account/personal-info-tab"
@@ -56,15 +56,14 @@ export function AccountClient({
 }: AccountClientProps) {
   const validatedTab: TabId = VALID_TABS.includes(initialTab as TabId) ? (initialTab as TabId) : "personal"
   const [activeTab, setActiveTabState] = useState(validatedTab)
-  const router = useRouter()
   const pathname = usePathname()
   const contentRef = useRef<HTMLElement>(null)
 
   const handleTabChange = useCallback((tab: TabId) => {
     setActiveTabState(tab)
-    router.replace(`${pathname}?tab=${tab}`, { scroll: false })
-    setTimeout(() => contentRef.current?.focus(), 0)
-  }, [router, pathname])
+    window.history.replaceState({}, "", `${pathname}?tab=${tab}`)
+    setTimeout(() => contentRef.current?.focus({ preventScroll: true }), 0)
+  }, [pathname])
 
   useEffect(() => {
     const onPopState = () => {
@@ -100,17 +99,23 @@ export function AccountClient({
 
       {/* Content Area */}
       <main ref={contentRef} className="account-content" role="tabpanel" tabIndex={-1}>
-        <div key={activeTab} className="account-tab-enter">
-          {activeTab === "personal" && <PersonalInfoTab user={user} />}
-          {activeTab === "security" && (
-            <SecurityTab userId={user.id} pendingDeletionRequest={deletionRequest} />
-          )}
-          {activeTab === "preferences" && (
-            <PreferencesTab userId={user.id} preferences={notificationPrefs} />
-          )}
-          {activeTab === "bookings" && <BookingsTab userId={user.id} />}
-          {activeTab === "reviews" && <ReviewsTab userId={user.id} />}
-          {activeTab === "notifications" && <NotificationsTab userId={user.id} />}
+        <div className={activeTab === "personal" ? "account-tab-active" : "account-tab-hidden"}>
+          <PersonalInfoTab user={user} />
+        </div>
+        <div className={activeTab === "security" ? "account-tab-active" : "account-tab-hidden"}>
+          <SecurityTab userId={user.id} pendingDeletionRequest={deletionRequest} />
+        </div>
+        <div className={activeTab === "preferences" ? "account-tab-active" : "account-tab-hidden"}>
+          <PreferencesTab userId={user.id} preferences={notificationPrefs} />
+        </div>
+        <div className={activeTab === "bookings" ? "account-tab-active" : "account-tab-hidden"}>
+          <BookingsTab userId={user.id} />
+        </div>
+        <div className={activeTab === "reviews" ? "account-tab-active" : "account-tab-hidden"}>
+          <ReviewsTab userId={user.id} />
+        </div>
+        <div className={activeTab === "notifications" ? "account-tab-active" : "account-tab-hidden"}>
+          <NotificationsTab userId={user.id} />
         </div>
       </main>
     </div>

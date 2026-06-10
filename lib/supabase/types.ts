@@ -569,6 +569,8 @@ export type Database = {
           assigned_by: string | null
           booking_id: string | null
           business_booking_id: string | null
+          cancelled_at: string | null
+          cancellation_reason: string | null
           completed_at: string | null
           created_at: string | null
           driver_id: string | null
@@ -587,6 +589,8 @@ export type Database = {
           assigned_by?: string | null
           booking_id?: string | null
           business_booking_id?: string | null
+          cancelled_at?: string | null
+          cancellation_reason?: string | null
           completed_at?: string | null
           created_at?: string | null
           driver_id?: string | null
@@ -605,6 +609,8 @@ export type Database = {
           assigned_by?: string | null
           booking_id?: string | null
           business_booking_id?: string | null
+          cancelled_at?: string | null
+          cancellation_reason?: string | null
           completed_at?: string | null
           created_at?: string | null
           driver_id?: string | null
@@ -1984,6 +1990,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      site_settings: {
+        Row: {
+          config: Json
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       theme_settings: {
         Row: {
