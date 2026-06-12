@@ -134,18 +134,20 @@ export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
       </ContentSection>
 
       <ContentSection title="Address">
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="address_street" className="form-label">Street Address</label>
-            <input
-              id="address_street"
-              {...form.register("address_street")}
-              className="luxury-input"
-              placeholder="Enter your street address"
-            />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1">
+            <div>
+              <label htmlFor="address_street" className="form-label">Street Address</label>
+              <input
+                id="address_street"
+                {...form.register("address_street")}
+                className="luxury-input"
+                placeholder="Enter your street address"
+              />
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="address_city" className="form-label">City</label>
               <input

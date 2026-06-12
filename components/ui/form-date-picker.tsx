@@ -45,7 +45,7 @@ export function FormDatePicker({
           type="button"
           disabled={isDisabled}
           className={cn(
-            "flex h-10 w-full items-center rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground font-sans transition-all duration-200",
+            "flex min-h-10 w-full items-center rounded-md border border-border bg-background px-3 text-sm text-foreground font-sans transition-all duration-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary",
             "disabled:cursor-not-allowed disabled:opacity-50",
             !value && "text-muted-foreground",
