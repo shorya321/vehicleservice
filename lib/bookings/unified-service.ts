@@ -25,6 +25,7 @@ export interface UnifiedBooking {
   id: string;
   bookingType: BookingType;
   bookingNumber: string;
+  tripNumber: string | null;
   customerName: string;
   customerEmail: string | null;
   customerPhone: string | null;
@@ -113,6 +114,7 @@ export async function getUnifiedBookingDetails(
       id: data.id,
       bookingType: 'customer',
       bookingNumber: data.booking_number,
+      tripNumber: data.trip_number,
       customerName: (data as any).profiles?.full_name || 'Unknown',
       customerEmail: (data as any).profiles?.email || null,
       customerPhone: (data as any).profiles?.phone || null,
@@ -170,6 +172,7 @@ export async function getUnifiedBookingDetails(
       id: data.id,
       bookingType: 'business',
       bookingNumber: data.booking_number,
+      tripNumber: data.trip_number,
       customerName: data.customer_name,
       customerEmail: data.customer_email || null,
       customerPhone: data.customer_phone || null,
@@ -417,6 +420,7 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     .select(`
       id,
       booking_number,
+      trip_number,
       customer_name,
       customer_email,
       customer_phone,
@@ -457,10 +461,8 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
 
   if (filters?.search) {
     const searchPattern = `%${filters.search}%`;
-    // For customer bookings, only search by booking_number since customer data is joined
-    customerQuery = customerQuery.ilike('booking_number', searchPattern);
-    // For business bookings, search both customer_name and booking_number
-    businessQuery = businessQuery.or(`customer_name.ilike.${searchPattern},booking_number.ilike.${searchPattern}`);
+    customerQuery = customerQuery.or(`booking_number.ilike.${searchPattern},trip_number.ilike.${searchPattern}`);
+    businessQuery = businessQuery.or(`customer_name.ilike.${searchPattern},booking_number.ilike.${searchPattern},trip_number.ilike.${searchPattern}`);
   }
 
   // Execute queries based on filter
@@ -519,8 +521,12 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
         booking_id,
         business_booking_id,
         vendor_id,
+        driver_id,
+        vehicle_id,
         status,
-        vendor:vendor_applications!left(id, business_name)
+        vendor:vendor_applications!left(id, business_name),
+        driver:vendor_drivers!left(id, first_name, last_name),
+        vehicle:vehicles!left(id, make, model, registration_number)
       `)
       .in('booking_id', customerBookings.map(b => b.id));
 
@@ -532,8 +538,12 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
         booking_id,
         business_booking_id,
         vendor_id,
+        driver_id,
+        vehicle_id,
         status,
-        vendor:vendor_applications!left(id, business_name)
+        vendor:vendor_applications!left(id, business_name),
+        driver:vendor_drivers!left(id, first_name, last_name),
+        vehicle:vehicles!left(id, make, model, registration_number)
       `)
       .in('business_booking_id', businessBookings.map(b => b.id));
 
