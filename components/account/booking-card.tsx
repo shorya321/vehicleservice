@@ -65,7 +65,7 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
         {/* Left: Route Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className="text-sm font-mono text-[var(--gold-text)] min-w-0 truncate max-w-full">#{booking.booking_number}</span>
+            <span className="text-sm font-mono text-[var(--gold-text)] min-w-0 truncate max-w-full">#{booking.trip_number || booking.booking_number}</span>
             <span aria-label={`Booking status: ${booking.booking_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 flex-shrink-0 ${bookingStatusConfig.style}`}>
               <BookingStatusIcon className="w-3 h-3" />
               {booking.booking_status}

@@ -18,6 +18,7 @@ interface ReviewFormModalProps {
   eligibleBookings?: Array<{
     id: string
     booking_number: string
+    trip_number?: string
     pickup_address: string
     dropoff_address: string
     pickup_datetime: string
@@ -154,7 +155,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-mono text-[var(--gold-text)]">#{booking.booking_number}</span>
+                      <span className="text-sm font-mono text-[var(--gold-text)]">#{booking.trip_number || booking.booking_number}</span>
                       <span className="text-xs text-[var(--text-muted)]">
                         {new Date(booking.pickup_datetime).toLocaleDateString()}
                       </span>

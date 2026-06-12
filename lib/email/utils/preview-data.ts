@@ -142,6 +142,7 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
   bookingConfirmation: {
     customerName: 'Sarah Johnson',
     bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062601',
     vehicleCategory: 'Luxury Sedan',
     pickupLocation: 'Dubai International Airport (DXB)',
     dropoffLocation: 'Burj Khalifa, Downtown Dubai',
@@ -155,6 +156,7 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
   bookingStatus: {
     customerName: 'Sarah Johnson',
     bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062602',
     previousStatus: 'Pending',
     newStatus: 'Confirmed',
     statusMessage:
@@ -183,6 +185,7 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
   vendorBookingAssigned: {
     vendorName: 'Ahmed Transportation LLC',
     bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062603',
     customerName: 'Sarah Johnson',
     vehicleCategory: 'Luxury Sedan',
     vehicleType: 'Mercedes S-Class',

@@ -24,6 +24,7 @@ export interface BookingFilters {
 export interface BookingWithCustomer {
   id: string
   booking_number: string
+  trip_number: string
   bookingType?: 'customer' | 'business' // Added for unified booking assignment
   customer_id: string
   vehicle_type_id: string
@@ -899,6 +900,7 @@ export async function assignBookingToVendor(
             vendorName: oldVendor.business_name,
             vendorEmail: oldVendor.business_email,
             bookingReference: bookingDetails.bookingNumber,
+            tripNumber: bookingDetails.tripNumber || undefined,
             customerName: bookingDetails.customerName,
             pickupLocation: bookingDetails.pickupAddress,
             pickupDate: bookingDetails.pickupDate,
@@ -930,6 +932,7 @@ export async function assignBookingToVendor(
           vendorName: vendor.business_name,
           vendorEmail: vendor.business_email,
           bookingReference: bookingDetails.bookingNumber,
+          tripNumber: bookingDetails.tripNumber || undefined,
           customerName: bookingDetails.customerName,
           vehicleCategory: bookingDetails.vehicleCategory,
           vehicleType: bookingDetails.vehicleType,
@@ -958,6 +961,7 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   const adminClient = createAdminClient()
 
   let bookingNumber = ''
+  let tripNumber = ''
   let pickupAddress = 'TBD'
   let dropoffAddress = 'TBD'
   let pickupDatetimeStr = ''
@@ -967,11 +971,12 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   if (bookingType === 'business') {
     const { data: booking } = await adminClient
       .from('business_bookings')
-      .select('booking_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name')
+      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name')
       .eq('id', bookingId)
       .single()
     if (!booking) return null
     bookingNumber = booking.booking_number
+    tripNumber = booking.trip_number || ''
     pickupAddress = booking.pickup_address || 'TBD'
     dropoffAddress = booking.dropoff_address || 'TBD'
     pickupDatetimeStr = booking.pickup_datetime
@@ -980,11 +985,12 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   } else {
     const { data: booking } = await adminClient
       .from('bookings')
-      .select('booking_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id')
+      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id')
       .eq('id', bookingId)
       .single()
     if (!booking) return null
     bookingNumber = booking.booking_number
+    tripNumber = booking.trip_number || ''
     pickupAddress = booking.pickup_address || 'TBD'
     dropoffAddress = booking.dropoff_address || 'TBD'
     pickupDatetimeStr = booking.pickup_datetime
@@ -1010,6 +1016,7 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
 
   return {
     bookingNumber,
+    tripNumber,
     customerName,
     vehicleCategory: categoryName,
     vehicleType: vehicleType?.name || 'Vehicle',

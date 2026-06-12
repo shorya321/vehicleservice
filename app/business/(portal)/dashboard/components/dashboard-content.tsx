@@ -23,6 +23,7 @@ import { RecentActivity } from './recent-activity';
 interface RecentBooking {
   id: string;
   booking_number: string;
+  trip_number: string;
   customer_name: string;
   pickup_datetime: string;
   booking_status: string;

@@ -87,7 +87,7 @@ export default async function BusinessDashboardPage() {
   // Get recent bookings
   const { data: recentBookings } = await supabase
     .from('business_bookings')
-    .select('id, booking_number, customer_name, pickup_datetime, booking_status, total_price')
+    .select('id, booking_number, trip_number, customer_name, pickup_datetime, booking_status, total_price')
     .eq('business_account_id', businessAccountId)
     .order('created_at', { ascending: false })
     .limit(5);

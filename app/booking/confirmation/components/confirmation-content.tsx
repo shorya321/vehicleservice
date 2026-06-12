@@ -42,6 +42,7 @@ interface VehicleType {
 
 interface Booking {
   booking_number: string
+  trip_number?: string | null
   booking_status: string
   pickup_address: string
   dropoff_address: string
@@ -291,7 +292,7 @@ export function ConfirmationContent({
   const statusConfig = getStatusConfig(booking.booking_status)
   const copyBookingNumber = async () => {
     try {
-      await navigator.clipboard.writeText(booking.booking_number)
+      await navigator.clipboard.writeText(booking.trip_number || booking.booking_number)
       setCopied(true)
       toast.success('Booking reference copied')
       copyTimerRef.current = setTimeout(() => setCopied(false), 2000)
@@ -375,7 +376,7 @@ export function ConfirmationContent({
             {statusConfig.eyebrow}
             <span className="mx-1 text-[var(--graphite)]" aria-hidden="true">&middot;</span>
             <span className="numeric text-[var(--text-muted)]">
-              No. {booking.booking_number}
+              No. {booking.trip_number || booking.booking_number}
             </span>
           </div>
 

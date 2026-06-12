@@ -69,6 +69,7 @@ import { canModifyBookingDateTime } from '@/lib/business/booking-utils';
 interface Booking {
   id: string;
   booking_number: string;
+  trip_number: string;
   customer_name: string;
   customer_email: string;
   pickup_datetime: string;
@@ -135,6 +136,7 @@ export function BookingsPageContent({
     return bookings.filter((booking) => {
       const matchesSearch =
         booking.booking_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        booking.trip_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         booking.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         booking.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -749,7 +751,7 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
         <Checkbox
           checked={isSelected}
           onCheckedChange={onToggleSelect}
-          aria-label={`Select booking ${booking.booking_number}`}
+          aria-label={`Select booking ${booking.trip_number || booking.booking_number}`}
           className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
         />
       </div>
@@ -770,7 +772,8 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
           {booking.customer_name}
         </p>
         <p className="text-xs text-muted-foreground">
-          {booking.booking_number}
+          {booking.trip_number || booking.booking_number}
+          {booking.trip_number && <span className="ml-1 opacity-60">({booking.booking_number})</span>}
         </p>
       </Link>
 
@@ -834,7 +837,7 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         bookingId={booking.id}
-        bookingNumber={booking.booking_number}
+        bookingNumber={booking.trip_number || booking.booking_number}
         currentDatetime={booking.pickup_datetime}
         onSuccess={onRefresh}
       />
@@ -947,7 +950,7 @@ function MobileBookingCard({
                 <Checkbox
                   checked={isSelected}
                   onCheckedChange={onToggleSelect}
-                  aria-label={`Select booking ${booking.booking_number}`}
+                  aria-label={`Select booking ${booking.trip_number || booking.booking_number}`}
                   className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
                 />
               </div>
@@ -964,7 +967,8 @@ function MobileBookingCard({
               {booking.customer_name}
             </p>
             <p className="text-xs text-muted-foreground">
-              {booking.booking_number}
+              {booking.trip_number || booking.booking_number}
+              {booking.trip_number && <span className="ml-1 opacity-60">({booking.booking_number})</span>}
             </p>
           </Link>
 
@@ -1020,7 +1024,7 @@ function MobileBookingCard({
             open={isEditModalOpen}
             onOpenChange={setIsEditModalOpen}
             bookingId={booking.id}
-            bookingNumber={booking.booking_number}
+            bookingNumber={booking.trip_number || booking.booking_number}
             currentDatetime={booking.pickup_datetime}
             onSuccess={onRefresh}
           />

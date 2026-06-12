@@ -8,6 +8,7 @@ import { emailStyles, statusColors } from '../../styles/constants';
 interface BookingStatusUpdateEmailProps {
   customerName: string;
   bookingReference: string;
+  tripNumber?: string;
   previousStatus: string;
   newStatus: string;
   statusMessage?: string;
@@ -18,6 +19,7 @@ interface BookingStatusUpdateEmailProps {
 export const BookingStatusUpdateEmail = ({
   customerName,
   bookingReference,
+  tripNumber,
   previousStatus,
   newStatus,
   statusMessage,
@@ -45,6 +47,11 @@ export const BookingStatusUpdateEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Booking Reference:</strong> {bookingReference}
         </Text>

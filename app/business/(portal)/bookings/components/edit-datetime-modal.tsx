@@ -133,7 +133,7 @@ export function EditDateTimeModal({
             Edit Pickup Date & Time
           </DialogTitle>
           <DialogDescription>
-            Modify the pickup date and time for booking #{bookingNumber}
+            Modify the pickup date and time for booking {bookingNumber}
           </DialogDescription>
         </DialogHeader>
 

@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns';
 interface BookingDatetimeModifiedEmailProps {
   vendorName: string;
   bookingNumber: string;
+  tripNumber?: string;
   customerName: string;
   pickupAddress: string;
   previousDatetime: string;
@@ -30,6 +31,7 @@ function formatDatetime(isoString: string): string {
 export const BookingDatetimeModifiedEmail = ({
   vendorName,
   bookingNumber,
+  tripNumber,
   customerName,
   pickupAddress,
   previousDatetime,
@@ -39,13 +41,13 @@ export const BookingDatetimeModifiedEmail = ({
 }: BookingDatetimeModifiedEmailProps) => {
   return (
     <EmailLayout
-      preview={`Booking Time Changed - ${bookingNumber}`}
+      preview={`Booking Time Changed - ${tripNumber || bookingNumber}`}
       heading="Booking Time Updated"
     >
       <Text style={emailStyles.text}>Hi {vendorName},</Text>
 
       <InfoBox type="warning">
-        The pickup time for booking <strong>#{bookingNumber}</strong> has been changed by the
+        The pickup time for booking <strong>#{tripNumber || bookingNumber}</strong> has been changed by the
         business.
       </InfoBox>
 
@@ -70,6 +72,11 @@ export const BookingDatetimeModifiedEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Booking #:</strong> {bookingNumber}
         </Text>

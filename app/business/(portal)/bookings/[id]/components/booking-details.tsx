@@ -163,7 +163,10 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
           <div>
             <div className="flex items-center gap-3">
               {getStatusBadge(booking.booking_status)}
-              <span className="text-sm font-mono text-muted-foreground">{booking.booking_number}</span>
+              <span className="text-sm font-mono text-muted-foreground">
+                {booking.trip_number || booking.booking_number}
+                {booking.trip_number && <span className="ml-1 opacity-60">({booking.booking_number})</span>}
+              </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Booked on {format(new Date(booking.created_at), 'MMM d, yyyy')} at {format(new Date(booking.created_at), 'h:mm a')}

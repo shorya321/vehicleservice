@@ -200,7 +200,7 @@ export function BookingWizard({
       }
 
       toast.success('Success!', {
-        description: `Booking ${result.data.booking_number} created successfully.`,
+        description: `Booking ${result.data.trip_number || result.data.booking_number} created successfully.`,
       });
 
       router.push('/business/bookings');

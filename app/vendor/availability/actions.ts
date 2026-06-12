@@ -72,6 +72,7 @@ export async function getVendorCalendarEvents(
         *,
         booking:bookings(
           booking_number,
+          trip_number,
           pickup_address,
           dropoff_address,
           pickup_datetime,
@@ -79,6 +80,7 @@ export async function getVendorCalendarEvents(
         ),
         business_booking:business_bookings(
           booking_number,
+          trip_number,
           pickup_address,
           dropoff_address,
           pickup_datetime,
@@ -108,6 +110,7 @@ export async function getVendorCalendarEvents(
     // Normalize booking data - use business_booking if booking is null
     const bookingData = assignment.booking || (assignment.business_booking ? {
       booking_number: assignment.business_booking.booking_number,
+      trip_number: assignment.business_booking.trip_number,
       pickup_address: assignment.business_booking.from_location?.name
         ? `${assignment.business_booking.from_location.name} - ${assignment.business_booking.pickup_address}`
         : assignment.business_booking.pickup_address,
@@ -131,7 +134,7 @@ export async function getVendorCalendarEvents(
 
     events.push({
       id: assignmentId, // Use assignment ID as unique event ID
-      title: `Booking #${bookingData?.booking_number || 'N/A'}`,
+      title: `Booking #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
       start: new Date(firstSchedule.start_datetime),
       end: new Date(firstSchedule.end_datetime),
       resourceId: assignmentId, // Use assignment ID

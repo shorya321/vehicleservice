@@ -140,7 +140,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
               <span>Back to Bookings</span>
             </Link>
             <span className="text-muted-foreground/50">/</span>
-            <span className="text-foreground font-medium">{booking.booking_number}</span>
+            <span className="text-foreground font-medium">{booking.trip_number || booking.booking_number}</span>
           </nav>
           {/* Title */}
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-display">

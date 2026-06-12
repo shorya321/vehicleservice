@@ -32,6 +32,7 @@ interface TransactionInvoiceData {
 
   // Booking Reference (if applicable)
   bookingReference?: string;
+  tripNumber?: string;
 
   // Metadata
   generatedDate: string;
@@ -76,6 +77,12 @@ export const TransactionInvoicePDF = (data: TransactionInvoiceData) => {
               <View style={pdfStyles.infoBoxRow}>
                 <Text style={pdfStyles.infoBoxLabel}>Payment Method</Text>
                 <Text style={pdfStyles.infoBoxValue}>{data.paymentMethod}</Text>
+              </View>
+            )}
+            {data.tripNumber && (
+              <View style={pdfStyles.infoBoxRow}>
+                <Text style={pdfStyles.infoBoxLabel}>Trip Number</Text>
+                <Text style={pdfStyles.infoBoxValue}>{data.tripNumber}</Text>
               </View>
             )}
             {data.bookingReference && (

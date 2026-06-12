@@ -26,6 +26,7 @@ export interface DashboardMetrics {
   recentBookings: Array<{
     id: string
     bookingNumber: string
+    tripNumber: string
     customerName: string
     route: string
     status: string
@@ -135,6 +136,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .select(`
       id,
       booking_number,
+      trip_number,
       booking_status,
       total_price,
       pickup_datetime,
@@ -148,6 +150,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const recentBookings: DashboardMetrics['recentBookings'] = recentBookingsData?.map(b => ({
     id: b.id,
     bookingNumber: b.booking_number,
+    tripNumber: b.trip_number,
     customerName: b.customer?.full_name || 'Guest',
     route: `${b.from_location?.name || 'Unknown'} → ${b.to_location?.name || 'Unknown'}`,
     status: b.booking_status,
@@ -245,6 +248,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .select(`
       id,
       booking_number,
+      trip_number,
       created_at,
       customer:profiles!customer_id(full_name),
       from_location:locations!from_location_id(name),
@@ -260,7 +264,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     activities.push({
       id: `booking-${booking.id}`,
       type: 'booking_created',
-      description: `New booking ${booking.booking_number} created`,
+      description: `New booking ${booking.trip_number || booking.booking_number} created`,
       timestamp: booking.created_at,
       timeAgo: formatTimeAgo(booking.created_at),
       userInfo: `${customerName} • ${route}`

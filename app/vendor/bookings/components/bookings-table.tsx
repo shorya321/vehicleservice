@@ -58,7 +58,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     try {
       setIsCompleting(true)
       await completeBooking(assignmentId)
-      toast.success(`Booking ${bookingNumber} marked as completed`)
+      toast.success(`Booking ${bookingNumber} marked as completed.`)
       router.refresh()
     } catch (error) {
       console.error('Error completing booking:', error)
@@ -119,7 +119,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               bookings.map((assignment) => (
                 <TableRow key={assignment.id}>
                   <TableCell className="font-mono text-sm">
-                    {assignment.booking?.booking_number || 'N/A'}
+                    {assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
@@ -248,7 +248,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             <DropdownMenuItem
                               onClick={() => setAssignModalData({
                                 assignmentId: assignment.id,
-                                bookingNumber: assignment.booking?.booking_number || 'N/A'
+                                bookingNumber: assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'
                               })}
                             >
                               <UserCheck className="mr-2 h-4 w-4" />
@@ -258,7 +258,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                               className="text-destructive"
                               onClick={() => setRejectModalData({
                                 assignmentId: assignment.id,
-                                bookingNumber: assignment.booking?.booking_number || 'N/A'
+                                bookingNumber: assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'
                               })}
                             >
                               <XCircle className="mr-2 h-4 w-4" />
@@ -271,7 +271,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           <DropdownMenuItem
                             onClick={() => setAssignModalData({
                               assignmentId: assignment.id,
-                              bookingNumber: assignment.booking.booking_number
+                              bookingNumber: assignment.booking.trip_number || assignment.booking.booking_number
                             })}
                           >
                             <UserCheck className="mr-2 h-4 w-4" />
@@ -284,7 +284,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             <DropdownMenuItem
                               onClick={() => setAssignModalData({
                                 assignmentId: assignment.id,
-                                bookingNumber: assignment.booking.booking_number
+                                bookingNumber: assignment.booking.trip_number || assignment.booking.booking_number
                               })}
                             >
                               <UserCheck className="mr-2 h-4 w-4" />
@@ -294,7 +294,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             <DropdownMenuItem
                               onClick={() => handleCompleteBooking(
                                 assignment.id,
-                                assignment.booking?.booking_number || 'N/A'
+                                assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'
                               )}
                               disabled={isCompleting}
                               className="text-green-600"

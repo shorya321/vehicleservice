@@ -60,6 +60,7 @@ export const PATCH = requireBusinessAuth(
           `
           id,
           booking_number,
+          trip_number,
           business_account_id,
           booking_status,
           pickup_datetime,
@@ -164,6 +165,7 @@ export const PATCH = requireBusinessAuth(
               vendorEmail: vendor.business_email,
               vendorName: vendor.business_name,
               bookingNumber: booking.booking_number,
+              tripNumber: booking.trip_number,
               customerName: booking.customer_name,
               pickupAddress: booking.pickup_address,
               previousDatetime: previousDatetime,

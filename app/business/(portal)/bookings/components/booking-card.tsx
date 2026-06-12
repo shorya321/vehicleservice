@@ -21,6 +21,7 @@ import { useReducedMotion } from '@/lib/business/animation/hooks';
 interface Booking {
   id: string;
   booking_number: string;
+  trip_number: string;
   customer_name: string;
   customer_email: string;
   pickup_datetime: string;
@@ -155,7 +156,8 @@ export function BookingCard({ booking, className, index = 0 }: BookingCardProps)
                     {booking.customer_name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {booking.booking_number}
+                    {booking.trip_number || booking.booking_number}
+                    {booking.trip_number && <span className="ml-1 opacity-60">({booking.booking_number})</span>}
                   </p>
                 </div>
               </div>

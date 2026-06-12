@@ -7,6 +7,7 @@ import { emailStyles } from '../../styles/constants';
 
 interface NewBookingNotificationEmailProps {
   bookingReference: string;
+  tripNumber?: string;
   customerName: string;
   customerEmail: string;
   vehicleCategory: string;
@@ -20,6 +21,7 @@ interface NewBookingNotificationEmailProps {
 
 export const NewBookingNotificationEmail = ({
   bookingReference,
+  tripNumber,
   customerName,
   customerEmail,
   vehicleCategory,
@@ -42,6 +44,11 @@ export const NewBookingNotificationEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Booking Reference:</strong> {bookingReference}
         </Text>

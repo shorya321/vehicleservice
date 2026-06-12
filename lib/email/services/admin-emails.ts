@@ -37,10 +37,11 @@ export async function sendNewBookingNotificationEmail(
 ): Promise<EmailResult> {
   return sendEmail({
     to: data.adminEmail,
-    subject: `New Booking - #${data.bookingReference}`,
+    subject: `New Booking - #${data.tripNumber || data.bookingReference}`,
     template: NewBookingNotificationEmail,
     templateProps: {
       bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       vehicleCategory: data.vehicleCategory,

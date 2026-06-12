@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 interface RecentBooking {
   id: string;
   booking_number: string;
+  trip_number: string;
   customer_name: string;
   pickup_datetime: string;
   booking_status: string;
@@ -235,7 +236,7 @@ function ActivityItem({ booking, index, isLast }: ActivityItemProps) {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
-            {booking.booking_number}
+            {booking.trip_number || booking.booking_number}
             <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
             {formattedDate} at {formattedTime}
           </p>

@@ -182,7 +182,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Booking Number</p>
                     <Badge variant="secondary" className="font-mono">
-                      {review.booking.booking_number}
+                      {(review.booking as any).trip_number || review.booking.booking_number}
                     </Badge>
                   </div>
                 )}

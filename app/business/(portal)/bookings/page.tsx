@@ -47,6 +47,7 @@ export default async function BusinessBookingsPage() {
       `
       id,
       booking_number,
+      trip_number,
       customer_name,
       customer_email,
       pickup_datetime,

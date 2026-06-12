@@ -9,6 +9,7 @@ import { emailStyles } from '../../styles/constants';
 interface BookingAssignedEmailProps {
   vendorName: string;
   bookingReference: string;
+  tripNumber?: string;
   customerName: string;
   vehicleCategory: string;
   vehicleType: string;
@@ -22,6 +23,7 @@ interface BookingAssignedEmailProps {
 export const BookingAssignedEmail = ({
   vendorName,
   bookingReference,
+  tripNumber,
   customerName,
   vehicleCategory,
   vehicleType,
@@ -33,13 +35,13 @@ export const BookingAssignedEmail = ({
 }: BookingAssignedEmailProps) => {
   return (
     <EmailLayout
-      preview={`New Booking Assignment - ${bookingReference}`}
+      preview={`New Booking Assignment - ${tripNumber || bookingReference}`}
       heading="New Booking Assigned"
     >
       <Text style={emailStyles.text}>Hi {vendorName},</Text>
 
       <InfoBox type="success">
-        A new booking <strong>#{bookingReference}</strong> has been assigned to your company.
+        A new booking <strong>#{tripNumber || bookingReference}</strong> has been assigned to your company.
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -47,6 +49,11 @@ export const BookingAssignedEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Booking #:</strong> {bookingReference}
         </Text>

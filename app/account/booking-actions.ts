@@ -37,6 +37,7 @@ export async function getBookings(userId: string, filters: BookingFilters = {}) 
   if (filters.search) {
     query = query.or(
       `booking_number.ilike.%${filters.search}%,` +
+      `trip_number.ilike.%${filters.search}%,` +
       `pickup_address.ilike.%${filters.search}%,` +
       `dropoff_address.ilike.%${filters.search}%`
     )

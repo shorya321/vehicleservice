@@ -569,8 +569,8 @@ export type Database = {
           assigned_by: string | null
           booking_id: string | null
           business_booking_id: string | null
-          cancelled_at: string | null
           cancellation_reason: string | null
+          cancelled_at: string | null
           completed_at: string | null
           created_at: string | null
           driver_id: string | null
@@ -589,8 +589,8 @@ export type Database = {
           assigned_by?: string | null
           booking_id?: string | null
           business_booking_id?: string | null
-          cancelled_at?: string | null
           cancellation_reason?: string | null
+          cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string | null
           driver_id?: string | null
@@ -609,8 +609,8 @@ export type Database = {
           assigned_by?: string | null
           booking_id?: string | null
           business_booking_id?: string | null
-          cancelled_at?: string | null
           cancellation_reason?: string | null
+          cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string | null
           driver_id?: string | null
@@ -779,6 +779,7 @@ export type Database = {
           to_location_id: string | null
           to_zone_id: string | null
           total_price: number
+          trip_number: string
           updated_at: string | null
           vehicle_type_id: string
         }
@@ -813,6 +814,7 @@ export type Database = {
           to_location_id?: string | null
           to_zone_id?: string | null
           total_price: number
+          trip_number: string
           updated_at?: string | null
           vehicle_type_id: string
         }
@@ -847,6 +849,7 @@ export type Database = {
           to_location_id?: string | null
           to_zone_id?: string | null
           total_price?: number
+          trip_number?: string
           updated_at?: string | null
           vehicle_type_id?: string
         }
@@ -1085,6 +1088,7 @@ export type Database = {
           reference_number: string | null
           to_location_id: string
           total_price: number
+          trip_number: string
           updated_at: string
           vehicle_type_id: string
           wallet_deduction_amount: number
@@ -1116,6 +1120,7 @@ export type Database = {
           reference_number?: string | null
           to_location_id: string
           total_price: number
+          trip_number: string
           updated_at?: string
           vehicle_type_id: string
           wallet_deduction_amount: number
@@ -1147,6 +1152,7 @@ export type Database = {
           reference_number?: string | null
           to_location_id?: string
           total_price?: number
+          trip_number?: string
           updated_at?: string
           vehicle_type_id?: string
           wallet_deduction_amount?: number
@@ -1991,6 +1997,30 @@ export type Database = {
           },
         ]
       }
+      service_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          description: string
+          is_active: boolean | null
+          service_type: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          description: string
+          is_active?: boolean | null
+          service_type: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          description?: string
+          is_active?: boolean | null
+          service_type?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           config: Json
@@ -2038,6 +2068,32 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      trip_number_counters: {
+        Row: {
+          last_seq: number
+          month_year: string
+          service_code: string
+        }
+        Insert: {
+          last_seq?: number
+          month_year: string
+          service_code: string
+        }
+        Update: {
+          last_seq?: number
+          month_year?: string
+          service_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_number_counters_service_code_fkey"
+            columns: ["service_code"]
+            isOneToOne: false
+            referencedRelation: "service_codes"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       user_activity_logs: {
         Row: {
@@ -2922,6 +2978,13 @@ export type Database = {
         }
         Returns: Json
       }
+      derive_transfer_service_code: {
+        Args: {
+          p_from_type: Database["public"]["Enums"]["location_type"]
+          p_to_type: Database["public"]["Enums"]["location_type"]
+        }
+        Returns: string
+      }
       disconnect_stripe_account: {
         Args: { p_business_account_id: string }
         Returns: undefined
@@ -2982,6 +3045,10 @@ export type Database = {
           total_debits: number
           transaction_count: number
         }[]
+      }
+      generate_trip_number: {
+        Args: { p_service_code: string }
+        Returns: string
       }
       get_admin_audit_log: {
         Args: {

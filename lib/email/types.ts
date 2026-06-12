@@ -42,6 +42,7 @@ export interface BookingConfirmationEmailData {
   totalAmount: number;
   currency: string;
   bookingReference: string;
+  tripNumber?: string;
   originalAmount?: number;
   originalCurrency?: string;
   passengerCount?: number;
@@ -56,6 +57,7 @@ export interface BookingStatusUpdateEmailData {
   customerName: string;
   customerEmail: string;
   bookingReference: string;
+  tripNumber?: string;
   previousStatus: string;
   newStatus: string;
   statusMessage?: string;
@@ -68,6 +70,7 @@ export interface BookingAssignmentEmailData {
   vendorName: string;
   vendorEmail: string;
   bookingReference: string;
+  tripNumber?: string;
   customerName: string;
   vehicleCategory: string;
   vehicleType: string;
@@ -81,6 +84,7 @@ export interface BookingUnassignmentEmailData {
   vendorName: string;
   vendorEmail: string;
   bookingReference: string;
+  tripNumber?: string;
   customerName: string;
   pickupLocation: string;
   pickupDate: string;
@@ -118,6 +122,7 @@ export interface NewBookingNotificationEmailData {
   adminEmail: string;
   bookingId: string;
   bookingReference: string;
+  tripNumber?: string;
   customerName: string;
   customerEmail: string;
   vehicleCategory: string;
@@ -155,6 +160,7 @@ export interface BookingDatetimeModifiedEmailData {
   vendorEmail: string;
   vendorName: string;
   bookingNumber: string;
+  tripNumber?: string;
   customerName: string;
   pickupAddress: string;
   previousDatetime: string;

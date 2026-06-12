@@ -269,7 +269,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
               <dl className="mt-10 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-[var(--graphite)] pt-6 sm:grid-cols-3 text-[0.875rem]">
                 <div>
                   <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Booking</dt>
-                  <dd className="numeric mt-1 text-[var(--gold-text)]">{booking.booking_number}</dd>
+                  <dd className="numeric mt-1 text-[var(--gold-text)]">{booking.trip_number || booking.booking_number}</dd>
                 </div>
                 <div>
                   <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Amount</dt>
@@ -337,7 +337,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
                 <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
                   Booking
                 </div>
-                <div className="numeric mt-1 text-[var(--gold-text)]">{booking.booking_number}</div>
+                <div className="numeric mt-1 text-[var(--gold-text)]">{booking.trip_number || booking.booking_number}</div>
                 {booking.vehicle_type && (
                   <h3 className="mt-3 font-display text-xl text-[var(--text-primary)]">
                     {booking.vehicle_type.name}

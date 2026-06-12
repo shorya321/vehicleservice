@@ -149,7 +149,7 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
         <div className="sticky top-0 z-10 bg-[var(--black-rich)] border-b border-[var(--border-subtle)] p-4 flex items-center justify-between">
           <div>
             <h2 id="booking-detail-title" className="text-lg font-medium text-[var(--text-primary)]">Booking Details</h2>
-            <p id="booking-detail-number" className="text-sm text-[var(--gold-text)] font-mono">#{booking.booking_number}</p>
+            <p id="booking-detail-number" className="text-sm text-[var(--gold-text)] font-mono">#{booking.trip_number || booking.booking_number}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-[var(--charcoal)] rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2" aria-label="Close booking details">
             <X className="w-5 h-5 text-[var(--text-muted)]" />

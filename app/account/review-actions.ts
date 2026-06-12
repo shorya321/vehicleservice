@@ -129,7 +129,7 @@ export async function getEligibleBookings() {
   const { data: bookings } = await supabase
     .from("bookings")
     .select(`
-      id, booking_number, pickup_address, dropoff_address, pickup_datetime,
+      id, booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime,
       booking_status, vehicle_type_id, vehicle_types(name, image_url)
     `)
     .eq("customer_id", user.id)

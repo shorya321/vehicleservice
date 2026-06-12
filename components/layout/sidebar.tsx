@@ -188,6 +188,12 @@ const navGroups: NavGroup[] = [
           },
         ]
       },
+      {
+        name: "Service Codes",
+        href: "/admin/service-codes",
+        icon: Tag,
+        badge: null,
+      },
     ]
   },
   {

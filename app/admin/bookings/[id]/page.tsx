@@ -43,8 +43,11 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Booking #{booking.booking_number}
+              Booking #{booking.trip_number || booking.booking_number}
             </h1>
+            {booking.trip_number && (
+              <p className="text-sm text-muted-foreground font-mono">{booking.booking_number}</p>
+            )}
             <p className="text-muted-foreground">
               View and manage booking details
             </p>

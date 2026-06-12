@@ -9,6 +9,7 @@ import { emailStyles } from '../../styles/constants';
 interface BusinessBookingCancelledEmailProps {
   businessName: string;
   bookingNumber: string;
+  tripNumber?: string;
   customerName: string;
   pickupLocation: string;
   dropoffLocation: string;
@@ -23,6 +24,7 @@ interface BusinessBookingCancelledEmailProps {
 export const BusinessBookingCancelledEmail = ({
   businessName,
   bookingNumber,
+  tripNumber,
   customerName,
   pickupLocation,
   dropoffLocation,
@@ -41,7 +43,7 @@ export const BusinessBookingCancelledEmail = ({
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <InfoBox type="warning">
-        Booking <strong>#{bookingNumber}</strong> has been cancelled.
+        Booking <strong>#{tripNumber || bookingNumber}</strong> has been cancelled.
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -49,6 +51,14 @@ export const BusinessBookingCancelledEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
+        <Text style={emailStyles.detailRow}>
+          <strong>Booking #:</strong> {bookingNumber}
+        </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Customer:</strong> {customerName}
         </Text>

@@ -9,6 +9,7 @@ import { emailStyles } from '../../styles/constants';
 interface BookingUnassignedEmailProps {
   vendorName: string;
   bookingReference: string;
+  tripNumber?: string;
   customerName: string;
   pickupLocation: string;
   pickupDate: string;
@@ -20,6 +21,7 @@ interface BookingUnassignedEmailProps {
 export const BookingUnassignedEmail = ({
   vendorName,
   bookingReference,
+  tripNumber,
   customerName,
   pickupLocation,
   pickupDate,
@@ -29,13 +31,13 @@ export const BookingUnassignedEmail = ({
 }: BookingUnassignedEmailProps) => {
   return (
     <EmailLayout
-      preview={`Booking Reassigned - ${bookingReference}`}
+      preview={`Booking Reassigned - ${tripNumber || bookingReference}`}
       heading="Booking Reassigned"
     >
       <Text style={emailStyles.text}>Hi {vendorName},</Text>
 
       <InfoBox type="warning">
-        Booking <strong>#{bookingReference}</strong> has been reassigned to another vendor.
+        Booking <strong>#{tripNumber || bookingReference}</strong> has been reassigned to another vendor.
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -43,6 +45,11 @@ export const BookingUnassignedEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Booking #:</strong> {bookingReference}
         </Text>

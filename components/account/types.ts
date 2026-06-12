@@ -23,6 +23,7 @@ export function calculateCompletion(user: Pick<AccountUser, "full_name" | "phone
 export interface BookingListItem {
   id: string
   booking_number: string
+  trip_number: string
   pickup_address: string
   dropoff_address: string
   pickup_datetime: string
@@ -64,6 +65,7 @@ export interface NotificationListItem {
 export interface EligibleBooking {
   id: string
   booking_number: string
+  trip_number: string
   pickup_address: string
   dropoff_address: string
   pickup_datetime: string

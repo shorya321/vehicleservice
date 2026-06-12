@@ -88,6 +88,7 @@ export const POST = requireBusinessAuth(
         .from('business_bookings')
         .select(`
           booking_number,
+          trip_number,
           customer_name,
           pickup_address,
           dropoff_address,
@@ -125,6 +126,7 @@ export const POST = requireBusinessAuth(
             email: businessAccount.business_email,
             businessName: businessAccount.business_name,
             bookingNumber: cancelledBooking.booking_number,
+            tripNumber: cancelledBooking.trip_number,
             customerName: cancelledBooking.customer_name,
             pickupLocation,
             dropoffLocation,

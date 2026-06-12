@@ -547,6 +547,7 @@ export async function createBooking(formData: BookingFormData) {
   return {
     success: true,
     bookingNumber: booking.booking_number,
+    tripNumber: booking.trip_number,
     bookingId: booking.id,
     totalPrice: totalPrice
   }

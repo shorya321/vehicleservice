@@ -199,7 +199,7 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
               {recentBookings.map((booking) => (
                 <div key={booking.id} className="flex items-center justify-between border-b pb-2">
                   <div>
-                    <p className="font-medium">{booking.booking_number}</p>
+                    <p className="font-medium">{(booking as any).trip_number || booking.booking_number}</p>
                     <p className="text-sm text-muted-foreground">{booking.customer_name}</p>
                   </div>
                   <div className="text-right">

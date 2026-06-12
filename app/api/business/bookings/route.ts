@@ -240,6 +240,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       .select(`
         id,
         booking_number,
+        trip_number,
         customer_name,
         customer_phone,
         pickup_address,
@@ -282,6 +283,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           email: businessAccount.business_email,
           businessName: businessAccount.business_name,
           bookingNumber: booking.booking_number,
+          tripNumber: booking.trip_number,
           customerName: booking.customer_name,
           customerPhone: booking.customer_phone,
           pickupLocation,

@@ -103,6 +103,7 @@ export interface BusinessBookingConfirmationEmailData {
   email: string;
   businessName: string;
   bookingNumber: string;
+  tripNumber?: string;
   customerName: string;
   customerPhone?: string;
   pickupLocation: string;
@@ -126,11 +127,12 @@ export async function sendBusinessBookingConfirmationEmail(
 ): Promise<EmailResult> {
   return sendEmail({
     to: data.email,
-    subject: `Booking Confirmed - #${data.bookingNumber}`,
+    subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingConfirmationEmail,
     templateProps: {
       businessName: data.businessName,
       bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
       customerName: data.customerName,
       customerPhone: data.customerPhone,
       pickupLocation: data.pickupLocation,
@@ -155,6 +157,7 @@ export interface BusinessBookingCancellationEmailData {
   email: string;
   businessName: string;
   bookingNumber: string;
+  tripNumber?: string;
   customerName: string;
   pickupLocation: string;
   dropoffLocation: string;
@@ -174,11 +177,12 @@ export async function sendBusinessBookingCancellationEmail(
 ): Promise<EmailResult> {
   return sendEmail({
     to: data.email,
-    subject: `Booking Cancelled - #${data.bookingNumber}`,
+    subject: `Booking Cancelled - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingCancelledEmail,
     templateProps: {
       businessName: data.businessName,
       bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
       customerName: data.customerName,
       pickupLocation: data.pickupLocation,
       dropoffLocation: data.dropoffLocation,

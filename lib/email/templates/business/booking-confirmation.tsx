@@ -9,6 +9,7 @@ import { emailStyles } from '../../styles/constants';
 interface BusinessBookingConfirmationEmailProps {
   businessName: string;
   bookingNumber: string;
+  tripNumber?: string;
   customerName: string;
   customerPhone?: string;
   pickupLocation: string;
@@ -27,6 +28,7 @@ interface BusinessBookingConfirmationEmailProps {
 export const BusinessBookingConfirmationEmail = ({
   businessName,
   bookingNumber,
+  tripNumber,
   customerName,
   customerPhone,
   pickupLocation,
@@ -49,7 +51,7 @@ export const BusinessBookingConfirmationEmail = ({
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <InfoBox type="success">
-        Your booking <strong>#{bookingNumber}</strong> has been created successfully!
+        Your booking <strong>#{tripNumber || bookingNumber}</strong> has been created successfully!
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -57,6 +59,14 @@ export const BusinessBookingConfirmationEmail = ({
       </Text>
 
       <DetailsSection>
+        {tripNumber && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Trip #:</strong> {tripNumber}
+          </Text>
+        )}
+        <Text style={emailStyles.detailRow}>
+          <strong>Booking #:</strong> {bookingNumber}
+        </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Customer Name:</strong> {customerName}
         </Text>

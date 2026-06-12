@@ -19,6 +19,7 @@ export interface VendorBooking {
   booking: {
     id: string
     booking_number: string
+    trip_number: string
     pickup_datetime: string
     pickup_address: string
     dropoff_address: string

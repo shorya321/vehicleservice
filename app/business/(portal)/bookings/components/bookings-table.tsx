@@ -22,6 +22,7 @@ import { formatCurrency } from '@/lib/business/wallet-operations';
 interface Booking {
   id: string;
   booking_number: string;
+  trip_number: string;
   customer_name: string;
   customer_email: string;
   pickup_datetime: string;
@@ -87,7 +88,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         <TableBody>
           {bookings.map((booking) => (
             <TableRow key={booking.id}>
-              <TableCell className="font-medium">{booking.booking_number}</TableCell>
+              <TableCell className="font-medium">
+                {booking.trip_number || booking.booking_number}
+                {booking.trip_number && <span className="ml-1 text-xs text-muted-foreground font-normal">({booking.booking_number})</span>}
+              </TableCell>
               <TableCell>
                 <div>
                   <p className="font-medium">{booking.customer_name}</p>
