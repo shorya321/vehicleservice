@@ -21,7 +21,9 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Checkbox } from '@/components/ui/checkbox'
+import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
 import { getAvailableVendors, assignBookingToVendor } from '../actions'
 
 interface AssignVendorModalProps {
@@ -29,6 +31,9 @@ interface AssignVendorModalProps {
   bookingType: 'customer' | 'business'
   currentVendorId?: string
   vehicleTypeId?: string
+  hasDriverAssigned?: boolean
+  currentDriverName?: string
+  currentVehicleName?: string
   onClose: () => void
 }
 
@@ -46,6 +51,9 @@ export function AssignVendorModal({
   bookingType,
   currentVendorId,
   vehicleTypeId,
+  hasDriverAssigned,
+  currentDriverName,
+  currentVehicleName,
   onClose,
 }: AssignVendorModalProps) {
   const router = useRouter()
@@ -55,6 +63,7 @@ export function AssignVendorModal({
   const [reassignmentReason, setReassignmentReason] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [driverWarningAcknowledged, setDriverWarningAcknowledged] = useState(false)
   const isReassignment = !!currentVendorId
 
   useEffect(() => {
@@ -109,6 +118,40 @@ export function AssignVendorModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {isReassignment && hasDriverAssigned && (
+            <Alert variant="default" className="border-amber-500/50 bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 [&>svg]:text-amber-600 dark:[&>svg]:text-amber-400">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="space-y-2">
+                <p className="font-medium">
+                  Driver &amp; vehicle already assigned by the current vendor.
+                </p>
+                {(currentDriverName || currentVehicleName) && (
+                  <p className="text-sm">
+                    {currentDriverName && <>Driver: <strong>{currentDriverName}</strong></>}
+                    {currentDriverName && currentVehicleName && ' • '}
+                    {currentVehicleName && <>Vehicle: <strong>{currentVehicleName}</strong></>}
+                  </p>
+                )}
+                <p className="text-sm">
+                  Reassigning will cancel the current driver/vehicle allocation and their schedules will be freed.
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <Checkbox
+                    id="acknowledge-driver-warning"
+                    checked={driverWarningAcknowledged}
+                    onCheckedChange={(checked) => setDriverWarningAcknowledged(checked === true)}
+                  />
+                  <label
+                    htmlFor="acknowledge-driver-warning"
+                    className="text-sm font-medium cursor-pointer select-none"
+                  >
+                    I understand this will cancel the current assignment
+                  </label>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="vendor">Select Vendor</Label>
             {isLoading ? (
@@ -212,7 +255,7 @@ export function AssignVendorModal({
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={handleAssign} disabled={isSaving || !selectedVendorId}>
+          <Button onClick={handleAssign} disabled={isSaving || !selectedVendorId || (isReassignment && hasDriverAssigned && !driverWarningAcknowledged)}>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

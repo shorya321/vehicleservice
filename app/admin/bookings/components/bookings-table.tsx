@@ -286,7 +286,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       />
                     </TableCell>
                     <TableCell className="font-mono text-sm">
-                      {booking.booking_number}
+                      <div>{booking.trip_number || booking.booking_number}</div>
+                      {booking.trip_number && <div className="text-xs text-muted-foreground">{booking.booking_number}</div>}
                     </TableCell>
                     <TableCell>
                       {getBookingTypeBadge(booking.bookingType)}
@@ -554,15 +555,33 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {assignModalBookingId && (
-        <AssignVendorModal
-          bookingId={assignModalBookingId}
-          bookingType={bookings.find(b => b.id === assignModalBookingId)?.bookingType || 'customer'}
-          currentVendorId={bookings.find(b => b.id === assignModalBookingId)?.booking_assignments?.[0]?.vendor_id}
-          vehicleTypeId={bookings.find(b => b.id === assignModalBookingId)?.vehicle_type_id}
-          onClose={() => setAssignModalBookingId(null)}
-        />
-      )}
+      {assignModalBookingId && (() => {
+        const targetBooking = bookings.find(b => b.id === assignModalBookingId)
+        const activeAssignment = targetBooking?.booking_assignments?.find(
+          (a: any) => ['pending', 'accepted'].includes(a.status)
+        )
+        const driverAssigned = activeAssignment?.status === 'accepted' && !!activeAssignment?.driver_id
+        return (
+          <AssignVendorModal
+            bookingId={assignModalBookingId}
+            bookingType={targetBooking?.bookingType || 'customer'}
+            currentVendorId={activeAssignment?.vendor_id}
+            vehicleTypeId={targetBooking?.vehicle_type_id}
+            hasDriverAssigned={driverAssigned}
+            currentDriverName={
+              driverAssigned && activeAssignment?.driver
+                ? `${activeAssignment.driver.first_name} ${activeAssignment.driver.last_name}`
+                : undefined
+            }
+            currentVehicleName={
+              driverAssigned && activeAssignment?.vehicle
+                ? `${activeAssignment.vehicle.make} ${activeAssignment.vehicle.model} (${activeAssignment.vehicle.registration_number})`
+                : undefined
+            }
+            onClose={() => setAssignModalBookingId(null)}
+          />
+        )
+      })()}
     </>
   )
 }

@@ -35,6 +35,7 @@ import {
   Building2,
   UserCheck,
   UserPlus,
+  AlertTriangle,
   History
 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -139,7 +140,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Booking Number</p>
-                <p className="font-mono text-lg font-semibold">{booking.booking_number}</p>
+                <p className="font-mono text-lg font-semibold">{booking.trip_number || booking.booking_number}</p>
+                {booking.trip_number && (
+                  <p className="font-mono text-xs text-muted-foreground">{booking.booking_number}</p>
+                )}
               </div>
               <div className="space-y-1 text-right">
                 <p className="text-sm text-muted-foreground">Status</p>
@@ -403,7 +407,11 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                             size="sm"
                             onClick={() => setShowAssignVendorModal(true)}
                           >
-                            <UserPlus className="mr-2 h-4 w-4" />
+                            {currentAssignment.status === 'accepted' && currentAssignment.driver_id ? (
+                              <AlertTriangle className="mr-2 h-4 w-4 text-amber-500" />
+                            ) : (
+                              <UserPlus className="mr-2 h-4 w-4" />
+                            )}
                             Reassign Vendor
                           </Button>
                         </div>
@@ -735,21 +743,35 @@ export function BookingDetail({ booking }: BookingDetailProps) {
       </AlertDialog>
 
       {/* Assign Vendor Modal */}
-      {showAssignVendorModal && (
-        <AssignVendorModal
-          bookingId={booking.id}
-          bookingType={booking.bookingType || 'customer'}
-          currentVendorId={
-            ['pending', 'accepted'].includes(booking.booking_assignments?.[0]?.status)
-              ? booking.booking_assignments?.[0]?.vendor_id
-              : undefined
-          }
-          onClose={() => {
-            setShowAssignVendorModal(false)
-            router.refresh()
-          }}
-        />
-      )}
+      {showAssignVendorModal && (() => {
+        const activeAssignment = booking.booking_assignments?.find(
+          (a: any) => ['pending', 'accepted'].includes(a.status)
+        )
+        const driverAssigned = activeAssignment?.status === 'accepted' && !!activeAssignment?.driver_id
+        return (
+          <AssignVendorModal
+            bookingId={booking.id}
+            bookingType={booking.bookingType || 'customer'}
+            currentVendorId={activeAssignment?.vendor_id}
+            vehicleTypeId={booking.vehicle_type_id}
+            hasDriverAssigned={driverAssigned}
+            currentDriverName={
+              driverAssigned && activeAssignment?.driver
+                ? `${activeAssignment.driver.first_name} ${activeAssignment.driver.last_name}`
+                : undefined
+            }
+            currentVehicleName={
+              driverAssigned && activeAssignment?.vehicle
+                ? `${activeAssignment.vehicle.make} ${activeAssignment.vehicle.model} (${activeAssignment.vehicle.registration_number})`
+                : undefined
+            }
+            onClose={() => {
+              setShowAssignVendorModal(false)
+              router.refresh()
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }
