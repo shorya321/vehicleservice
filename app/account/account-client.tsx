@@ -59,6 +59,15 @@ export function AccountClient({
   const pathname = usePathname()
   const contentRef = useRef<HTMLElement>(null)
 
+  useEffect(() => {
+    const newTab: TabId = VALID_TABS.includes(initialTab as TabId)
+      ? (initialTab as TabId)
+      : "personal"
+    if (newTab !== activeTab) {
+      setActiveTabState(newTab)
+    }
+  }, [initialTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleTabChange = useCallback((tab: TabId) => {
     setActiveTabState(tab)
     window.history.replaceState({}, "", `${pathname}?tab=${tab}`)
