@@ -7,40 +7,11 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', request.nextUrl.pathname)
 
-  const response = NextResponse.next({
+  let supabaseResponse = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   })
-
-  // Currency preference handling
-  const currencyCookie = request.cookies.get(CURRENCY_COOKIE_NAME)
-  if (!currencyCookie?.value) {
-    // No currency preference set - detect from Accept-Language
-    const acceptLanguage = request.headers.get('accept-language')
-    const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
-
-    // Set cookie with detected currency
-    response.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {
-      maxAge: CURRENCY_COOKIE_MAX_AGE,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: false,
-    })
-  } else if (!isValidCurrencyCode(currencyCookie.value)) {
-    // Invalid currency in cookie - reset to detected
-    const acceptLanguage = request.headers.get('accept-language')
-    const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
-
-    response.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {
-      maxAge: CURRENCY_COOKIE_MAX_AGE,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: false,
-    })
-  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,10 +22,17 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
-            response.cookies.set(name, value, options)
+          )
+          supabaseResponse = NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
           })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
     }
@@ -70,6 +48,30 @@ export async function proxy(request: NextRequest) {
     user = authUser
   } catch (error) {
     console.error('Middleware fetch error:', error)
+  }
+
+  // Currency preference handling (after auth so supabaseResponse has refreshed cookies)
+  const currencyCookie = request.cookies.get(CURRENCY_COOKIE_NAME)
+  if (!currencyCookie?.value) {
+    const acceptLanguage = request.headers.get('accept-language')
+    const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
+    supabaseResponse.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {
+      maxAge: CURRENCY_COOKIE_MAX_AGE,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: false,
+    })
+  } else if (!isValidCurrencyCode(currencyCookie.value)) {
+    const acceptLanguage = request.headers.get('accept-language')
+    const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
+    supabaseResponse.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {
+      maxAge: CURRENCY_COOKIE_MAX_AGE,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: false,
+    })
   }
 
   // Domain-based business identification for white-labeling
@@ -99,10 +101,10 @@ export async function proxy(request: NextRequest) {
         }
 
         // Inject business branding context into response headers
-        response.headers.set('x-business-id', business.id)
-        response.headers.set('x-business-name', business.business_name || '')
-        response.headers.set('x-brand-name', business.brand_name || business.business_name || '')
-        response.headers.set('x-logo-url', business.logo_url || '')
+        supabaseResponse.headers.set('x-business-id', business.id)
+        supabaseResponse.headers.set('x-business-name', business.business_name || '')
+        supabaseResponse.headers.set('x-brand-name', business.brand_name || business.business_name || '')
+        supabaseResponse.headers.set('x-logo-url', business.logo_url || '')
 
         // Extract colors from theme_config JSONB (new consolidated structure)
         // Falls back to defaults if theme_config is not set
@@ -113,10 +115,10 @@ export async function proxy(request: NextRequest) {
         const secondaryColor = themeConfig?.accent?.secondary || '#14B8A6'
         const accentColor = themeConfig?.accent?.tertiary || '#06B6D4'
 
-        response.headers.set('x-primary-color', primaryColor)
-        response.headers.set('x-secondary-color', secondaryColor)
-        response.headers.set('x-accent-color', accentColor)
-        response.headers.set('x-custom-domain', 'true')
+        supabaseResponse.headers.set('x-primary-color', primaryColor)
+        supabaseResponse.headers.set('x-secondary-color', secondaryColor)
+        supabaseResponse.headers.set('x-accent-color', accentColor)
+        supabaseResponse.headers.set('x-custom-domain', 'true')
 
         // Log domain identification
         console.log('Custom domain identified:', {
@@ -389,7 +391,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return response
+  return supabaseResponse
 }
 
 export const proxyConfig = {
