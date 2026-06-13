@@ -51,10 +51,10 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Only set cookies on the response (request cookies are read-only)
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
             response.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
@@ -392,7 +392,7 @@ export async function proxy(request: NextRequest) {
   return response
 }
 
-export const config = {
+export const proxyConfig = {
   matcher: [
     /*
      * Match all request paths except:
