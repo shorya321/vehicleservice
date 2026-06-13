@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { AvailabilityService } from '@/lib/availability/service'
 import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
+import { sendDriverBookingAssignmentEmail } from '@/lib/email/services/driver-emails'
 
 export interface VendorBooking {
   id: string
@@ -393,7 +394,7 @@ export async function acceptAndAssignResources(
   // Verify driver belongs to vendor
   const { data: driverCheck, error: driverError } = await supabase
     .from('vendor_drivers')
-    .select('id, vendor_id, first_name, last_name')
+    .select('id, vendor_id, first_name, last_name, email')
     .eq('id', driverId)
     .single()
 
@@ -517,6 +518,43 @@ export async function acceptAndAssignResources(
   } catch (scheduleError) {
     console.error('Error creating schedule:', scheduleError)
     // Schedule creation failure is not critical, continue
+  }
+
+  // Send driver assignment email (non-blocking)
+  try {
+    if (driverCheck.email) {
+      const { data: vendorInfo } = await adminClient
+        .from('vendor_applications')
+        .select('business_name')
+        .eq('id', vendorApp.id)
+        .single()
+
+      const { data: vehicleTypeData } = await adminClient
+        .from('vehicle_types')
+        .select('name, vehicle_categories(name)')
+        .eq('id', booking.vehicleTypeId)
+        .single()
+
+      const { format } = await import('date-fns')
+      const pickupDt = new Date(booking.pickupDatetime)
+
+      await sendDriverBookingAssignmentEmail({
+        driverName: `${driverCheck.first_name} ${driverCheck.last_name}`,
+        driverEmail: driverCheck.email,
+        bookingReference: booking.bookingNumber,
+        tripNumber: booking.tripNumber || undefined,
+        customerName: booking.customerName,
+        vehicleCategory: (vehicleTypeData as any)?.vehicle_categories?.name || 'Vehicle',
+        vehicleType: vehicleTypeData?.name || 'Vehicle',
+        pickupLocation: booking.pickupAddress || 'TBD',
+        dropoffLocation: booking.dropoffAddress || 'TBD',
+        pickupDate: format(pickupDt, 'MMMM d, yyyy'),
+        pickupTime: format(pickupDt, 'h:mm a'),
+        vendorName: vendorInfo?.business_name || 'Your Company',
+      })
+    }
+  } catch (driverEmailError) {
+    console.error('Failed to send driver assignment email (non-critical):', driverEmailError)
   }
 
   // Revalidate paths - don't let cache revalidation failures block the response

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getUnifiedBookingsList, createBookingAssignment, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
 import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/email/services/vendor-emails'
+import { sendDriverBookingUnassignmentEmail } from '@/lib/email/services/driver-emails'
 import { getAppUrl } from '@/lib/email/config'
 import { format, parseISO } from 'date-fns'
 
@@ -449,7 +450,7 @@ export async function updateBookingStatus(
     const fieldName = bookingType === 'customer' ? 'booking_id' : 'business_booking_id'
     const { data: assignment } = await adminClient
       .from('booking_assignments')
-      .select('id')
+      .select('id, driver_id, vendor_id')
       .eq(fieldName, bookingId)
       .single()
 
@@ -468,6 +469,43 @@ export async function updateBookingStatus(
 
       const { AvailabilityService } = await import('@/lib/availability/service')
       await AvailabilityService.removeSchedule(assignment.id)
+
+      // Notify driver of booking cancellation (non-blocking)
+      if (status === 'cancelled' && assignment.driver_id) {
+        try {
+          const { data: driver } = await adminClient
+            .from('vendor_drivers')
+            .select('first_name, last_name, email')
+            .eq('id', assignment.driver_id)
+            .single()
+
+          if (driver?.email) {
+            const { data: vendorForDriver } = await adminClient
+              .from('vendor_applications')
+              .select('business_name')
+              .eq('id', assignment.vendor_id)
+              .single()
+
+            const cancelBookingDetails = await getBookingDetailsForEmail(bookingId, bookingType)
+            if (cancelBookingDetails) {
+              await sendDriverBookingUnassignmentEmail({
+                driverName: `${driver.first_name} ${driver.last_name}`,
+                driverEmail: driver.email,
+                bookingReference: cancelBookingDetails.bookingNumber,
+                tripNumber: cancelBookingDetails.tripNumber || undefined,
+                customerName: cancelBookingDetails.customerName,
+                pickupLocation: cancelBookingDetails.pickupAddress,
+                pickupDate: cancelBookingDetails.pickupDate,
+                pickupTime: cancelBookingDetails.pickupTime,
+                reason: cancellationReason || 'Booking cancelled',
+                vendorName: vendorForDriver?.business_name || 'Your Company',
+              })
+            }
+          }
+        } catch (driverCancelEmailError) {
+          console.error('Failed to send driver cancellation email (non-critical):', driverCancelEmailError)
+        }
+      }
     }
   }
 
@@ -912,6 +950,44 @@ export async function assignBookingToVendor(
       }
     } catch (emailError) {
       console.error('Failed to send unassignment email to previous vendor:', emailError)
+    }
+
+    // Notify previous driver if one was assigned (non-blocking)
+    if (cancelledAssignment.driver_id) {
+      try {
+        const driverAdminClient = createAdminClient()
+        const { data: oldDriver } = await driverAdminClient
+          .from('vendor_drivers')
+          .select('first_name, last_name, email')
+          .eq('id', cancelledAssignment.driver_id)
+          .single()
+
+        if (oldDriver?.email) {
+          const { data: oldVendorForDriver } = await driverAdminClient
+            .from('vendor_applications')
+            .select('business_name')
+            .eq('id', cancelledAssignment.vendor_id)
+            .single()
+
+          const driverBookingDetails = await getBookingDetailsForEmail(bookingId, bookingType)
+          if (driverBookingDetails) {
+            await sendDriverBookingUnassignmentEmail({
+              driverName: `${oldDriver.first_name} ${oldDriver.last_name}`,
+              driverEmail: oldDriver.email,
+              bookingReference: driverBookingDetails.bookingNumber,
+              tripNumber: driverBookingDetails.tripNumber || undefined,
+              customerName: driverBookingDetails.customerName,
+              pickupLocation: driverBookingDetails.pickupAddress,
+              pickupDate: driverBookingDetails.pickupDate,
+              pickupTime: driverBookingDetails.pickupTime,
+              reason: reassignmentReason,
+              vendorName: oldVendorForDriver?.business_name || 'Your Company',
+            })
+          }
+        }
+      } catch (driverEmailError) {
+        console.error('Failed to send driver unassignment email (non-critical):', driverEmailError)
+      }
     }
   }
 

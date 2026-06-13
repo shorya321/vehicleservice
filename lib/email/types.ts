@@ -168,3 +168,32 @@ export interface BookingDatetimeModifiedEmailData {
   modificationReason?: string;
   bookingUrl: string;
 }
+
+// Driver notification emails
+export interface DriverBookingAssignmentEmailData {
+  driverName: string;
+  driverEmail: string;
+  bookingReference: string;
+  tripNumber?: string;
+  customerName: string;
+  vehicleCategory: string;
+  vehicleType: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDate: string;
+  pickupTime: string;
+  vendorName: string;
+}
+
+export interface DriverBookingUnassignmentEmailData {
+  driverName: string;
+  driverEmail: string;
+  bookingReference: string;
+  tripNumber?: string;
+  customerName: string;
+  pickupLocation: string;
+  pickupDate: string;
+  pickupTime: string;
+  reason?: string;
+  vendorName: string;
+}
