@@ -31,7 +31,7 @@ export function MenuNavItem({ href, label, icon: Icon, onClick, reducedMotion, v
     </>
   )
 
-  if (href.startsWith('#') || href.startsWith('tel:')) {
+  if (href.startsWith('#') || href.startsWith('/#') || href.startsWith('tel:')) {
     return (
       <motion.a
         href={href}

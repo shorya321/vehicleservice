@@ -3,6 +3,7 @@ import { SearchForm } from './search-form'
 export function Hero({ todayDate }: { todayDate: string }) {
   return (
     <section
+      id="hero"
       aria-labelledby="hero-headline"
       className="home-hero-color home-hero-motion relative bg-[var(--black-void)] pt-[clamp(5rem,12vw,6.5rem)]"
     >

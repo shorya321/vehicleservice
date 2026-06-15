@@ -20,19 +20,19 @@ const footerLinkCategories: FooterLinkCategory[] = [
     title: "Navigation",
     links: [
       { name: "Home", href: "/" },
-      { name: "Services", href: "#services" },
-      { name: "Fleet", href: "#fleet" },
-      { name: "FAQ", href: "#faq" },
+      { name: "Services", href: "/#services" },
+      { name: "Fleet", href: "/#fleet" },
+      { name: "FAQ", href: "/#faq" },
       { name: "Contact", href: "/contact" },
     ],
   },
   {
     title: "Transfers",
     links: [
-      { name: "Airport transfers", href: "/search" },
-      { name: "City transfers", href: "/search" },
-      { name: "Chauffeur hire", href: "/search" },
-      { name: "Corporate travel", href: "/search" },
+      { name: "Airport transfers", href: "/#hero" },
+      { name: "City transfers", href: "/#hero" },
+      { name: "Chauffeur hire", href: "/#hero" },
+      { name: "Corporate travel", href: "/#hero" },
     ],
   },
   {
@@ -133,16 +133,22 @@ export function Footer({ siteSettings }: FooterProps) {
                 {category.title}
               </h4>
               <ul className="mt-5 space-y-3">
-                {category.links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-[0.875rem] text-[var(--text-secondary)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
+                {category.links.map((link) => {
+                  const linkClass = "text-[0.875rem] text-[var(--text-secondary)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+                  return (
+                    <li key={link.name}>
+                      {link.href.includes('#') ? (
+                        <a href={link.href} className={linkClass}>
+                          {link.name}
+                        </a>
+                      ) : (
+                        <Link href={link.href} className={linkClass}>
+                          {link.name}
+                        </Link>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           ))}

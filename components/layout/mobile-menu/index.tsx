@@ -139,10 +139,10 @@ export function MobileMenu({
 
           {/* Navigate section */}
           <MenuSection label="Navigate" reducedMotion={reducedMotion}>
-            <MenuNavItem href="#services" label="Services" icon={Compass} onClick={close} reducedMotion={reducedMotion} />
-            <MenuNavItem href="#fleet" label="Fleet" icon={Car} onClick={close} reducedMotion={reducedMotion} />
+            <MenuNavItem href="/#services" label="Services" icon={Compass} onClick={close} reducedMotion={reducedMotion} />
+            <MenuNavItem href="/#fleet" label="Fleet" icon={Car} onClick={close} reducedMotion={reducedMotion} />
             <MenuNavItem href="/blog" label="Blog" icon={BookOpen} onClick={close} reducedMotion={reducedMotion} />
-            <MenuNavItem href="#faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} />
+            <MenuNavItem href="/#faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} />
             <MenuNavItem href="/contact" label="Contact" icon={Mail} onClick={close} reducedMotion={reducedMotion} />
           </MenuSection>
 
