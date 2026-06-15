@@ -130,24 +130,43 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   // Get default daily revenue trend
   const revenueTrend = await getRevenueTrend('daily')
 
-  // Get recent bookings
-  const { data: recentBookingsData } = await adminClient
-    .from('bookings')
-    .select(`
-      id,
-      booking_number,
-      trip_number,
-      booking_status,
-      total_price,
-      pickup_datetime,
-      customer:profiles!customer_id(full_name),
-      from_location:locations!from_location_id(name),
-      to_location:locations!to_location_id(name)
-    `)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  // Get recent bookings (regular + business)
+  const [{ data: recentBookingsData }, { data: recentBusinessBookingsData }] = await Promise.all([
+    adminClient
+      .from('bookings')
+      .select(`
+        id,
+        booking_number,
+        trip_number,
+        booking_status,
+        total_price,
+        pickup_datetime,
+        created_at,
+        customer:profiles!customer_id(full_name),
+        from_location:locations!from_location_id(name),
+        to_location:locations!to_location_id(name)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    adminClient
+      .from('business_bookings')
+      .select(`
+        id,
+        booking_number,
+        trip_number,
+        booking_status,
+        total_price,
+        pickup_datetime,
+        created_at,
+        customer_name,
+        from_location:locations!from_location_id(name),
+        to_location:locations!to_location_id(name)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(5)
+  ])
 
-  const recentBookings: DashboardMetrics['recentBookings'] = recentBookingsData?.map(b => ({
+  const regularMapped = recentBookingsData?.map(b => ({
     id: b.id,
     bookingNumber: b.booking_number,
     tripNumber: b.trip_number,
@@ -160,8 +179,31 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
+    }),
+    _createdAt: b.created_at || ''
   })) || []
+
+  const businessMapped = recentBusinessBookingsData?.map(b => ({
+    id: b.id,
+    bookingNumber: b.booking_number,
+    tripNumber: b.trip_number,
+    customerName: b.customer_name || 'Business Guest',
+    route: `${b.from_location?.name || 'Unknown'} → ${b.to_location?.name || 'Unknown'}`,
+    status: b.booking_status,
+    amount: Number(b.total_price),
+    time: new Date(b.pickup_datetime).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    _createdAt: b.created_at || ''
+  })) || []
+
+  const recentBookings: DashboardMetrics['recentBookings'] = [...regularMapped, ...businessMapped]
+    .sort((a, b) => new Date(b._createdAt).getTime() - new Date(a._createdAt).getTime())
+    .slice(0, 5)
+    .map(({ _createdAt, ...rest }) => rest)
 
   // Quick stats
   const { data: availableUsers } = await adminClient
@@ -268,6 +310,34 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       timestamp: booking.created_at,
       timeAgo: formatTimeAgo(booking.created_at),
       userInfo: `${customerName} • ${route}`
+    })
+  })
+
+  // Recent business bookings
+  const { data: recentBusinessActivity } = await adminClient
+    .from('business_bookings')
+    .select(`
+      id,
+      booking_number,
+      trip_number,
+      created_at,
+      customer_name,
+      from_location:locations!from_location_id(name),
+      to_location:locations!to_location_id(name)
+    `)
+    .gte('created_at', twoDaysAgo.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  recentBusinessActivity?.forEach(booking => {
+    const route = `${booking.from_location?.name || 'Unknown'} → ${booking.to_location?.name || 'Unknown'}`
+    activities.push({
+      id: `business-booking-${booking.id}`,
+      type: 'booking_created',
+      description: `New business booking ${booking.trip_number || booking.booking_number} created`,
+      timestamp: booking.created_at || '',
+      timeAgo: formatTimeAgo(booking.created_at || ''),
+      userInfo: `${booking.customer_name} • ${route}`
     })
   })
 
