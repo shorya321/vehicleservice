@@ -21,7 +21,7 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     .rpc('get_popular_routes')
 
   if (error) {
-    console.error('Error fetching popular routes:', error)
+    console.warn('Popular routes unavailable:', error.message || error.code || 'Unknown error')
     return []
   }
 
