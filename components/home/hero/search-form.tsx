@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useState } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowRight, CalendarDays, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -19,8 +19,13 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
   const [selectedDate, setSelectedDate] = useState(todayDate)
   const [calendarOpen, setCalendarOpen] = useState(false)
 
+  const [mounted, setMounted] = useState(false)
   const [fromInput, setFromInput] = useState('')
   const [toInput, setToInput] = useState('')
+
+  useLayoutEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleFromInput = useCallback((value: string) => {
     setFromInput(value)
@@ -93,42 +98,58 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
       {/* Date */}
       <div className="search-bar-field search-bar-field--compact">
         <label htmlFor="travel-date" className="search-bar-label">Date</label>
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
-            <button
-              id="travel-date"
-              type="button"
-              className="search-bar-input search-bar-date-trigger"
+        {mounted ? (
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <button
+                id="travel-date"
+                type="button"
+                className="search-bar-input search-bar-date-trigger"
+              >
+                <CalendarDays
+                  className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
+                  aria-hidden
+                />
+                <span className="truncate">
+                  {format(parse(selectedDate, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="luxury-calendar-popover w-auto p-0"
+              align="start"
+              sideOffset={8}
             >
-              <CalendarDays
-                className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
-                aria-hidden
+              <Calendar
+                mode="single"
+                selected={parse(selectedDate, 'yyyy-MM-dd', new Date())}
+                onSelect={(date) => {
+                  if (date) {
+                    setSelectedDate(format(date, 'yyyy-MM-dd'))
+                    setCalendarOpen(false)
+                  }
+                }}
+                disabled={{ before: parse(todayDate, 'yyyy-MM-dd', new Date()) }}
+                defaultMonth={parse(selectedDate, 'yyyy-MM-dd', new Date())}
+                autoFocus
               />
-              <span className="truncate">
-                {format(parse(selectedDate, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}
-              </span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="luxury-calendar-popover w-auto p-0"
-            align="start"
-            sideOffset={8}
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <button
+            id="travel-date"
+            type="button"
+            className="search-bar-input search-bar-date-trigger"
           >
-            <Calendar
-              mode="single"
-              selected={parse(selectedDate, 'yyyy-MM-dd', new Date())}
-              onSelect={(date) => {
-                if (date) {
-                  setSelectedDate(format(date, 'yyyy-MM-dd'))
-                  setCalendarOpen(false)
-                }
-              }}
-              disabled={{ before: parse(todayDate, 'yyyy-MM-dd', new Date()) }}
-              defaultMonth={parse(selectedDate, 'yyyy-MM-dd', new Date())}
-              autoFocus
+            <CalendarDays
+              className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
+              aria-hidden
             />
-          </PopoverContent>
-        </Popover>
+            <span className="truncate">
+              {format(parse(selectedDate, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}
+            </span>
+          </button>
+        )}
       </div>
 
       <div className="search-bar-divider" aria-hidden />

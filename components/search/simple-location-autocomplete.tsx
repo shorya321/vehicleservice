@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { MapPin, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import { createClient } from '@/lib/supabase/client'
+import { createPublicClient } from '@/lib/supabase/public-client'
+import { sanitizePostgrestInput } from '@/lib/utils/postgrest-sanitize'
 import { Location } from '@/lib/types/location'
 
 interface SimpleLocationAutocompleteProps {
@@ -29,12 +30,12 @@ export function SimpleLocationAutocomplete({
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const supabase = useMemo(() => createPublicClient(), [])
 
   useEffect(() => {
     setInputValue(value)
   }, [value])
 
-  // Handle click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -49,40 +50,68 @@ export function SimpleLocationAutocomplete({
   }, [])
 
   useEffect(() => {
+    if (inputValue.length < 2) {
+      setLocations([])
+      setShowDropdown(false)
+      return
+    }
+
+    const controller = new AbortController()
+    let loadingTimeoutId: ReturnType<typeof setTimeout>
+
     const searchLocations = async () => {
-      if (inputValue.length < 2) {
+      setLoading(true)
+
+      loadingTimeoutId = setTimeout(() => {
+        controller.abort()
         setLocations([])
         setShowDropdown(false)
-        return
-      }
+        setLoading(false)
+      }, 8000)
 
-      setLoading(true)
       try {
-        const supabase = createClient()
+        const sanitized = sanitizePostgrestInput(inputValue)
+        if (sanitized.length < 2) {
+          clearTimeout(loadingTimeoutId)
+          setLocations([])
+          setShowDropdown(false)
+          setLoading(false)
+          return
+        }
+
         const { data, error } = await supabase
           .from('locations')
           .select('*')
           .eq('is_active', true)
-          .or(`name.ilike.%${inputValue}%,city.ilike.%${inputValue}%`)
+          .or(`name.ilike.%${sanitized}%,city.ilike.%${sanitized}%`)
           .order('type', { ascending: false })
           .order('name')
           .limit(10)
+          .abortSignal(controller.signal)
 
+        clearTimeout(loadingTimeoutId)
         if (error) throw error
         setLocations(data || [])
         setShowDropdown((data || []).length > 0)
-      } catch (error) {
-        console.error('Error searching locations:', error)
+      } catch (err) {
+        if (controller.signal.aborted) return
+        clearTimeout(loadingTimeoutId)
         setLocations([])
         setShowDropdown(false)
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
     const debounceTimer = setTimeout(searchLocations, 300)
-    return () => clearTimeout(debounceTimer)
-  }, [inputValue])
+    return () => {
+      clearTimeout(debounceTimer)
+      clearTimeout(loadingTimeoutId)
+      controller.abort()
+    }
+  }, [supabase, inputValue])
 
   const handleSelect = (location: Location) => {
     setInputValue(location.name)

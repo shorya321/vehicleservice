@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
@@ -48,6 +48,11 @@ export function PublicHeader({
   const [user, setUser] = useState<SupabaseUser | null>(initialUser)
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const supabase = useMemo(() => createClient(), [])
+  const [mounted, setMounted] = useState(false)
+
+  useLayoutEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
@@ -178,12 +183,12 @@ export function PublicHeader({
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Currency Selector */}
-            {allCurrencies.length > 1 && (
+            {/* Currency Selector — mounted guard prevents Radix useId hydration mismatch */}
+            {mounted && allCurrencies.length > 1 && (
               <CurrencySelector className="scale-90 sm:scale-100 origin-right" />
             )}
 
-            {user ? (
+            {mounted && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
@@ -255,7 +260,7 @@ export function PublicHeader({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
+            ) : mounted ? (
               <Link
                 href="/login"
                 className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors duration-200"
@@ -263,7 +268,7 @@ export function PublicHeader({
                 <User className="w-4 h-4" />
                 Sign In
               </Link>
-            )}
+            ) : null}
             {/* Book Transfer CTA — desktop only */}
             <Link
               href="/#services"
@@ -279,15 +284,17 @@ export function PublicHeader({
         </div>
       </div>
 
-      <MobileMenu
-        isOpen={isMenuOpen}
-        onOpenChange={setIsMenuOpen}
-        user={user}
-        profile={profile}
-        getInitials={getInitials}
-        onSignOut={handleSignOut}
-        siteSettings={settings}
-      />
+      {mounted && (
+        <MobileMenu
+          isOpen={isMenuOpen}
+          onOpenChange={setIsMenuOpen}
+          user={user}
+          profile={profile}
+          getInitials={getInitials}
+          onSignOut={handleSignOut}
+          siteSettings={settings}
+        />
+      )}
     </header>
   )
 }

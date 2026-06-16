@@ -1,7 +1,8 @@
 "use client"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createPublicClient } from '@/lib/supabase/public-client'
 import { Location } from '@/lib/types/location'
+import { sanitizePostgrestInput } from '@/lib/utils/postgrest-sanitize'
 import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react'
 import type { LocationAutocompleteProps } from './types'
 
@@ -37,9 +38,8 @@ function LocationAutocompleteBase({
   const [hasSearched, setHasSearched] = useState(false)
   const [searchError, setSearchError] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const requestIdRef = useRef(0)
   const selectedLocationRef = useRef(selectedLocation)
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => createPublicClient(), [])
 
   useEffect(() => {
     selectedLocationRef.current = selectedLocation
@@ -59,43 +59,69 @@ function LocationAutocompleteBase({
       return
     }
 
-    const thisRequestId = ++requestIdRef.current
+    const controller = new AbortController()
+    let loadingTimeoutId: ReturnType<typeof setTimeout>
 
     const searchLocations = async () => {
       setLoading(true)
       setSearchError(false)
+
+      loadingTimeoutId = setTimeout(() => {
+        controller.abort()
+        setSuggestions([])
+        setHasSearched(true)
+        setSearchError(true)
+        setShowSuggestions(true)
+        setLoading(false)
+      }, 8000)
+
       try {
+        const sanitized = sanitizePostgrestInput(value)
+        if (sanitized.length < 2) {
+          clearTimeout(loadingTimeoutId)
+          setSuggestions([])
+          setHasSearched(true)
+          setShowSuggestions(true)
+          setLoading(false)
+          return
+        }
+
         const { data, error } = await supabase
           .from('locations')
           .select('*')
           .eq('is_active', true)
-          .or(`name.ilike.%${value}%,city.ilike.%${value}%`)
+          .or(`name.ilike.%${sanitized}%,city.ilike.%${sanitized}%`)
           .order('type', { ascending: false })
           .order('name')
           .limit(10)
+          .abortSignal(controller.signal)
 
+        clearTimeout(loadingTimeoutId)
         if (error) throw error
-
-        if (thisRequestId !== requestIdRef.current) return
 
         setSuggestions(data || [])
         setHasSearched(true)
         setShowSuggestions(true)
-      } catch (error) {
-        if (thisRequestId !== requestIdRef.current) return
+      } catch (err) {
+        if (controller.signal.aborted) return
+        clearTimeout(loadingTimeoutId)
         setSuggestions([])
         setHasSearched(true)
         setSearchError(true)
         setShowSuggestions(true)
       } finally {
-        if (thisRequestId === requestIdRef.current) {
+        if (!controller.signal.aborted) {
           setLoading(false)
         }
       }
     }
 
     const debounce = setTimeout(searchLocations, 300)
-    return () => clearTimeout(debounce)
+    return () => {
+      clearTimeout(debounce)
+      clearTimeout(loadingTimeoutId)
+      controller.abort()
+    }
   }, [supabase, value])
 
   const handleSelect = useCallback((location: Location) => {
