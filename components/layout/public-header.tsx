@@ -57,6 +57,8 @@ export function PublicHeader({
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
 
+    setIsScrolled(window.scrollY > 50)
+
     const handleScroll = () => {
       if (timeoutId) clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
