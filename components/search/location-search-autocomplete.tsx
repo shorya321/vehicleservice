@@ -1,7 +1,7 @@
 'use client'
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { MapPin, X, Search } from 'lucide-react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { MapPin, X, Search, Loader2 } from 'lucide-react'
 import { getLocationTypeIcon } from '@/lib/utils/location-type-utils'
 import { getCountryName } from '@/lib/utils/country'
 import {
@@ -57,7 +57,7 @@ function formatLocationSubtitle(location: {
   }
   parts.push(country)
 
-  return parts.join(' - ')
+  return parts.join(' · ')
 }
 
 interface ResultItemProps {
@@ -67,6 +67,7 @@ interface ResultItemProps {
   onSelect: () => void
   onHover: () => void
   variant: 'hero' | 'default'
+  optionId?: string
 }
 
 function ResultItem({
@@ -76,24 +77,41 @@ function ResultItem({
   onSelect,
   onHover,
   variant,
+  optionId,
 }: ResultItemProps) {
   const isHero = variant === 'hero'
+  const itemRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (isSelected && itemRef.current) {
+      itemRef.current.scrollIntoView({ block: 'nearest' })
+    }
+  }, [isSelected])
+
   return (
     <button
+      ref={itemRef}
       type="button"
       role="option"
+      id={optionId}
       aria-selected={isSelected}
       onClick={onSelect}
       onMouseEnter={onHover}
       className={cn(
-        'w-full px-4 py-2.5 text-left transition-colors focus-visible:outline-none',
+        'w-full px-4 py-3 text-left transition-colors',
         isHero
-          ? isSelected
-            ? 'bg-[var(--charcoal-light)]'
-            : 'hover:bg-[var(--charcoal-light)]'
-          : isSelected
-            ? 'bg-accent text-accent-foreground'
-            : 'hover:bg-accent hover:text-accent-foreground'
+          ? cn(
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--gold)]/50',
+              isSelected
+                ? 'bg-[var(--dropdown-surface-hover)]'
+                : 'hover:bg-[var(--dropdown-surface-hover)]'
+            )
+          : cn(
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+              isSelected
+                ? 'bg-accent text-accent-foreground'
+                : 'hover:bg-accent hover:text-accent-foreground'
+            )
       )}
     >
       <div className="flex items-center gap-3">
@@ -129,6 +147,11 @@ function ResultItem({
   )
 }
 
+interface NavigableItem {
+  location: LocationSearchResult
+  section: 'recent' | 'popular' | 'results'
+}
+
 function LocationSearchAutocompleteBase({
   value,
   onChange,
@@ -152,7 +175,10 @@ function LocationSearchAutocompleteBase({
     clearQuery,
   }: UseLocationSearchReturn = useLocationSearch({ debounceMs: 250 })
 
-  const groupedFlat: LocationSearchResult[] = groupedResults.flatMap((g) => g.locations)
+  const groupedFlat = useMemo(
+    () => groupedResults.flatMap((g) => g.locations),
+    [groupedResults]
+  )
 
   const [showDropdown, setShowDropdown] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -172,7 +198,55 @@ function LocationSearchAutocompleteBase({
     setQuery(value)
   }, [value, setQuery])
 
-  const popularFlat: LocationSearchResult[] = popularGroups.flatMap((g) => g.locations)
+  const popularFlat = useMemo(
+    () => popularGroups.flatMap((g) => g.locations),
+    [popularGroups]
+  )
+
+  const recentAsResults = useMemo(
+    (): LocationSearchResult[] =>
+      recentSearches.map((recent) => ({
+        ...recent,
+        address: recent.address ?? null,
+        latitude: null,
+        longitude: null,
+        location_type_id: recent.location_type_id || '',
+        location_type_sort: 0,
+        allow_pickup: null,
+        allow_dropoff: null,
+        relevance: 0,
+      })),
+    [recentSearches]
+  )
+
+  const showResults = query.length >= 2 && hasSearched
+  const showPopularOrRecent =
+    !showResults && (recentSearches.length > 0 || popularFlat.length > 0)
+
+  const allNavigable = useMemo((): NavigableItem[] => {
+    if (showResults) {
+      return groupedFlat.map((loc) => ({ location: loc, section: 'results' as const }))
+    }
+    if (showPopularOrRecent) {
+      const items: NavigableItem[] = []
+      for (const loc of recentAsResults) {
+        items.push({ location: loc, section: 'recent' })
+      }
+      for (const loc of popularFlat) {
+        items.push({ location: loc, section: 'popular' })
+      }
+      return items
+    }
+    return []
+  }, [showResults, showPopularOrRecent, groupedFlat, recentAsResults, popularFlat])
+
+  const hasDropdownContent = showResults || showPopularOrRecent
+  const isPopularLoading = !showResults && recentSearches.length === 0 && popularFlat.length === 0
+
+  const activeDescendantId =
+    selectedIndex >= 0 && selectedIndex < allNavigable.length
+      ? `${id}-option-${selectedIndex}`
+      : undefined
 
   const handleSelect = useCallback(
     (location: LocationSearchResult) => {
@@ -213,7 +287,7 @@ function LocationSearchAutocompleteBase({
         case 'ArrowDown':
           e.preventDefault()
           setSelectedIndex((prev) =>
-            prev < groupedFlat.length - 1 ? prev + 1 : prev
+            prev < allNavigable.length - 1 ? prev + 1 : prev
           )
           break
         case 'ArrowUp':
@@ -222,8 +296,8 @@ function LocationSearchAutocompleteBase({
           break
         case 'Enter':
           e.preventDefault()
-          if (selectedIndex >= 0 && groupedFlat[selectedIndex]) {
-            handleSelect(groupedFlat[selectedIndex])
+          if (selectedIndex >= 0 && allNavigable[selectedIndex]) {
+            handleSelect(allNavigable[selectedIndex].location)
           }
           break
         case 'Escape':
@@ -233,7 +307,7 @@ function LocationSearchAutocompleteBase({
           break
       }
     },
-    [showDropdown, groupedFlat, selectedIndex, handleSelect]
+    [showDropdown, allNavigable, selectedIndex, handleSelect]
   )
 
   useEffect(() => {
@@ -253,10 +327,21 @@ function LocationSearchAutocompleteBase({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showDropdown])
 
-  const showResults = query.length >= 2 && hasSearched
-  const showPopularOrRecent =
-    !showResults && (recentSearches.length > 0 || popularFlat.length > 0)
-  const hasDropdownContent = showResults || showPopularOrRecent
+  const getNavIndex = useCallback(
+    (section: NavigableItem['section'], indexInSection: number): number => {
+      let remaining = indexInSection
+      let offset = 0
+      for (const item of allNavigable) {
+        if (item.section === section) {
+          if (remaining === 0) return offset
+          remaining--
+        }
+        offset++
+      }
+      return -1
+    },
+    [allNavigable]
+  )
 
   return (
     <div ref={containerRef} className="relative w-full flex-grow">
@@ -291,9 +376,10 @@ function LocationSearchAutocompleteBase({
           showDropdown && hasDropdownContent ? `${id}-suggestions` : undefined
         }
         aria-expanded={showDropdown && hasDropdownContent}
+        aria-activedescendant={activeDescendantId}
         className={cn(
           isHero
-            ? 'search-bar-input search-bar-input--location pl-9'
+            ? 'search-bar-input search-bar-input--location pl-9 pr-8'
             : 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-8'
         )}
       />
@@ -323,7 +409,7 @@ function LocationSearchAutocompleteBase({
           type="button"
           onClick={handleClear}
           className={cn(
-            'absolute right-3 top-1/2 -translate-y-1/2',
+            'absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center min-w-[44px] min-h-[44px]',
             isHero
               ? 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               : 'text-muted-foreground hover:text-foreground'
@@ -334,26 +420,37 @@ function LocationSearchAutocompleteBase({
         </button>
       )}
 
-      {showDropdown && hasDropdownContent && (
+      {showDropdown && (hasDropdownContent || isPopularLoading) && (
         <div
           id={`${id}-suggestions`}
           role="listbox"
           className={cn(
-            'absolute top-full left-0 z-50 mt-1 rounded-lg shadow-lg max-h-72 overflow-y-auto min-w-full w-[420px]',
+            'absolute z-50 rounded-lg shadow-lg max-h-72 overflow-y-auto',
             isHero
-              ? 'border border-[var(--graphite)] bg-[var(--charcoal)] luxury-scrollbar'
-              : 'border bg-popover'
+              ? 'top-full mt-3 left-0 w-full lg:left-[-16px] lg:w-[calc(100%+32px)] lg:min-w-[360px] max-w-[min(600px,calc(100vw-2rem))] border border-[var(--graphite)] bg-[var(--dropdown-surface)] luxury-scrollbar'
+              : 'top-full left-0 mt-1 w-full max-w-[min(420px,calc(100vw-2rem))] border bg-popover'
           )}
         >
+          {isPopularLoading && (
+            <div className={cn(
+              'flex items-center gap-2 px-4 py-3 text-xs',
+              isHero ? 'text-[var(--text-muted)]' : 'text-muted-foreground'
+            )}>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>Loading locations...</span>
+            </div>
+          )}
+
           {showPopularOrRecent && (
             <>
               {recentSearches.length > 0 && (
                 <>
                   <div
+                    role="presentation"
                     className={cn(
                       'px-4 py-1.5 text-xs font-semibold uppercase tracking-wider',
                       isHero
-                        ? 'text-[var(--gold-text)] bg-[var(--charcoal)] border-b border-[var(--graphite)]/50'
+                        ? 'text-[var(--gold-text)] bg-[var(--dropdown-surface)] border-b border-[var(--graphite)]/50'
                         : 'text-muted-foreground bg-popover border-b'
                     )}
                   >
@@ -362,75 +459,32 @@ function LocationSearchAutocompleteBase({
                       <span>Recent Searches</span>
                     </div>
                   </div>
-                  {recentSearches.map((recent) => (
-                    <button
-                      key={`recent-${recent.id}`}
-                      type="button"
-                      onClick={() =>
-                        handleSelect({
-                          ...recent,
-                          address: recent.address ?? null,
-                          latitude: null,
-                          longitude: null,
-                          location_type_id: recent.location_type_id || '',
-                          location_type_sort: 0,
-                          allow_pickup: null,
-                          allow_dropoff: null,
-                          relevance: 0,
-                        })
-                      }
-                      className={cn(
-                        'w-full px-4 py-2.5 text-left transition-colors',
-                        isHero
-                          ? 'hover:bg-[var(--charcoal-light)]'
-                          : 'hover:bg-accent hover:text-accent-foreground'
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="shrink-0">
-                          {getLocationTypeIcon(
-                            recent.location_type_icon || 'map-pin',
-                            cn(
-                              'h-4 w-4',
-                              isHero ? 'text-[var(--gold-text)]' : 'text-primary'
-                            )
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className={cn(
-                              'text-sm truncate',
-                              isHero
-                                ? 'text-[var(--text-primary)]'
-                                : 'text-foreground'
-                            )}
-                          >
-                            {recent.name}
-                          </div>
-                          <div
-                            className={cn(
-                              'text-xs',
-                              isHero
-                                ? 'text-[var(--text-muted)]'
-                                : 'text-muted-foreground'
-                            )}
-                          >
-                            {formatLocationSubtitle(recent)}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                  {recentAsResults.map((location, i) => {
+                    const navIdx = getNavIndex('recent', i)
+                    return (
+                      <ResultItem
+                        key={`recent-${location.id}`}
+                        location={location}
+                        query=""
+                        isSelected={navIdx === selectedIndex}
+                        onSelect={() => handleSelect(location)}
+                        onHover={() => setSelectedIndex(navIdx)}
+                        variant={variant}
+                        optionId={`${id}-option-${navIdx}`}
+                      />
+                    )
+                  })}
                 </>
               )}
 
               {popularFlat.length > 0 && (
                 <>
                   <div
+                    role="presentation"
                     className={cn(
                       'px-4 py-1.5 text-xs font-semibold uppercase tracking-wider',
                       isHero
-                        ? 'text-[var(--gold-text)] bg-[var(--charcoal)] border-b border-[var(--graphite)]/50'
+                        ? 'text-[var(--gold-text)] bg-[var(--dropdown-surface)] border-b border-[var(--graphite)]/50'
                         : 'text-muted-foreground bg-popover border-b'
                     )}
                   >
@@ -439,17 +493,21 @@ function LocationSearchAutocompleteBase({
                       <span>Popular Locations</span>
                     </div>
                   </div>
-                  {popularFlat.map((location) => (
-                    <ResultItem
-                      key={`popular-${location.id}`}
-                      location={location}
-                      query=""
-                      isSelected={false}
-                      onSelect={() => handleSelect(location)}
-                      onHover={() => {}}
-                      variant={variant}
-                    />
-                  ))}
+                  {popularFlat.map((location, i) => {
+                    const navIdx = getNavIndex('popular', i)
+                    return (
+                      <ResultItem
+                        key={`popular-${location.id}`}
+                        location={location}
+                        query=""
+                        isSelected={navIdx === selectedIndex}
+                        onSelect={() => handleSelect(location)}
+                        onHover={() => setSelectedIndex(navIdx)}
+                        variant={variant}
+                        optionId={`${id}-option-${navIdx}`}
+                      />
+                    )
+                  })}
                 </>
               )}
             </>
@@ -463,32 +521,40 @@ function LocationSearchAutocompleteBase({
                   return (
                     <div key={`group-${group.label}`}>
                       <div
+                        role="presentation"
                         className={cn(
                           'px-4 py-1.5 text-xs font-semibold uppercase tracking-wider sticky top-0',
                           isHero
-                            ? 'text-[var(--gold-text)] bg-[var(--charcoal)] border-b border-[var(--graphite)]/50'
+                            ? 'text-[var(--gold-text)] bg-[var(--dropdown-surface)] border-b border-[var(--graphite)]/50'
                             : 'text-muted-foreground bg-popover border-b'
                         )}
                       >
                         <div className="flex items-center gap-2">
                           {getLocationTypeIcon(
                             group.icon || 'map-pin',
-                            cn('h-3.5 w-3.5')
+                            cn(
+                              'h-3.5 w-3.5',
+                              isHero ? 'text-[var(--gold-text)]' : 'text-muted-foreground'
+                            )
                           )}
                           <span>{group.label}</span>
                         </div>
                       </div>
-                      {group.locations.map((location, i) => (
-                        <ResultItem
-                          key={location.id}
-                          location={location}
-                          query={query}
-                          isSelected={groupStartIndex + i === selectedIndex}
-                          onSelect={() => handleSelect(location)}
-                          onHover={() => setSelectedIndex(groupStartIndex + i)}
-                          variant={variant}
-                        />
-                      ))}
+                      {group.locations.map((location, i) => {
+                        const navIdx = groupStartIndex + i
+                        return (
+                          <ResultItem
+                            key={location.id}
+                            location={location}
+                            query={query}
+                            isSelected={navIdx === selectedIndex}
+                            onSelect={() => handleSelect(location)}
+                            onHover={() => setSelectedIndex(navIdx)}
+                            variant={variant}
+                            optionId={`${id}-option-${navIdx}`}
+                          />
+                        )
+                      })}
                     </div>
                   )
                 })
