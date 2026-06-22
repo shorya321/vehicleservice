@@ -12,6 +12,7 @@ import type {
 const RECENT_SEARCHES_KEY = 'location-recent-searches'
 const MAX_RECENT = 5
 const MAX_CACHE_SIZE = 20
+const SEARCH_TIMEOUT_MS = 8000
 
 interface RecentSearch {
   id: string
@@ -21,6 +22,7 @@ interface RecentSearch {
   country_code: string
   slug: string
   country_slug: string
+  location_type_id: string
   location_type_icon: string
   location_type_label: string
 }
@@ -47,6 +49,9 @@ function saveRecentSearch(location: LocationSearchResult | Location): void {
       country_code: location.country_code,
       slug: location.slug,
       country_slug: location.country_slug,
+      location_type_id: 'location_type_id' in location
+        ? (location as LocationSearchResult).location_type_id
+        : '',
       location_type_icon: 'location_type_icon' in location
         ? (location as LocationSearchResult).location_type_icon
         : 'map-pin',
@@ -118,6 +123,7 @@ export function useLocationSearch(
   const supabase = useMemo(() => createPublicClient(), [])
   const cacheRef = useRef(new Map<string, LocationSearchResult[]>())
   const abortRef = useRef<AbortController | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const popularFetchedRef = useRef(false)
 
   useEffect(() => {
@@ -142,6 +148,9 @@ export function useLocationSearch(
   }, [supabase])
 
   useEffect(() => {
+    abortRef.current?.abort()
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
     if (debouncedQuery.length < 2) {
       setFlatResults([])
       setHasSearched(false)
@@ -159,11 +168,19 @@ export function useLocationSearch(
       return
     }
 
-    abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
 
     let retried = false
+    let retryScheduled = false
+
+    timeoutRef.current = setTimeout(() => {
+      controller.abort()
+      setFlatResults([])
+      setHasSearched(true)
+      setError(true)
+      setLoading(false)
+    }, SEARCH_TIMEOUT_MS)
 
     const doSearch = async () => {
       if (controller.signal.aborted) return
@@ -182,6 +199,8 @@ export function useLocationSearch(
 
         if (rpcError) throw rpcError
 
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
         const results = (data ?? []) as unknown as LocationSearchResult[]
         setFlatResults(results)
         setHasSearched(true)
@@ -197,17 +216,20 @@ export function useLocationSearch(
 
         if (!retried) {
           retried = true
+          retryScheduled = true
           setTimeout(() => {
+            retryScheduled = false
             if (!controller.signal.aborted) doSearch()
           }, 2000)
           return
         }
 
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
         setFlatResults([])
         setHasSearched(true)
         setError(true)
       } finally {
-        if (!controller.signal.aborted) {
+        if (!retryScheduled) {
           setLoading(false)
         }
       }
@@ -216,6 +238,7 @@ export function useLocationSearch(
     doSearch()
 
     return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
       controller.abort()
     }
   }, [debouncedQuery, supabase])
@@ -229,10 +252,13 @@ export function useLocationSearch(
   }, [])
 
   const clearQuery = useCallback(() => {
+    abortRef.current?.abort()
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
     setQuery('')
     setFlatResults([])
     setHasSearched(false)
     setError(false)
+    setLoading(false)
   }, [])
 
   return {

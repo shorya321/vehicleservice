@@ -299,7 +299,10 @@ function LocationSearchAutocompleteBase({
       />
 
       {loading && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+        <div className={cn(
+          'absolute top-1/2 -translate-y-1/2',
+          value ? 'right-8' : 'right-3'
+        )}>
           <div
             className={cn(
               'animate-spin h-4 w-4 border-2 rounded-full',
@@ -315,7 +318,7 @@ function LocationSearchAutocompleteBase({
         </div>
       )}
 
-      {!loading && value && (
+      {value && (
         <button
           type="button"
           onClick={handleClear}
@@ -325,7 +328,7 @@ function LocationSearchAutocompleteBase({
               ? 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               : 'text-muted-foreground hover:text-foreground'
           )}
-          aria-label="Clear search"
+          aria-label={loading ? 'Cancel search' : 'Clear search'}
         >
           <X className="h-4 w-4" />
         </button>
@@ -369,7 +372,7 @@ function LocationSearchAutocompleteBase({
                           address: recent.address ?? null,
                           latitude: null,
                           longitude: null,
-                          location_type_id: '',
+                          location_type_id: recent.location_type_id || '',
                           location_type_sort: 0,
                           allow_pickup: null,
                           allow_dropoff: null,
