@@ -205,11 +205,13 @@ export function useLocationSearch(
         setFlatResults(results)
         setHasSearched(true)
 
-        const cache = cacheRef.current
-        cache.set(debouncedQuery.toLowerCase(), results)
-        if (cache.size > MAX_CACHE_SIZE) {
-          const firstKey = cache.keys().next().value
-          if (firstKey !== undefined) cache.delete(firstKey)
+        if (results.length > 0) {
+          const cache = cacheRef.current
+          cache.set(debouncedQuery.toLowerCase(), results)
+          if (cache.size > MAX_CACHE_SIZE) {
+            const firstKey = cache.keys().next().value
+            if (firstKey !== undefined) cache.delete(firstKey)
+          }
         }
       } catch (err) {
         if (controller.signal.aborted) return

@@ -1,6 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
+const noopStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+}
+
 let publicClient: ReturnType<typeof createClient<Database>> | null = null
 
 export function createPublicClient() {
@@ -14,6 +20,7 @@ export function createPublicClient() {
         persistSession: false,
         autoRefreshToken: false,
         detectSessionInUrl: false,
+        storage: noopStorage,
       },
     }
   )
