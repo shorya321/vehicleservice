@@ -3,12 +3,16 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { LocationForm } from '../components/location-form'
+import { getActiveLocationTypes } from '@/lib/actions/location-types'
+
 export const metadata: Metadata = {
   title: 'New Location - Admin',
   description: 'Create a new location',
 }
 
-export default function NewLocationPage() {
+export default async function NewLocationPage() {
+  const locationTypes = await getActiveLocationTypes()
+
   return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -25,7 +29,7 @@ export default function NewLocationPage() {
           </div>
         </div>
 
-        <LocationForm mode="create" />
+        <LocationForm mode="create" locationTypes={locationTypes} />
       </div>
   )
 }

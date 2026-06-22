@@ -26,6 +26,7 @@ export function parseRouteSlug(routeSlug: string): { origin: string; destination
 
 export function getCountrySlug(countryCode: string): string {
   const countrySlugMap: Record<string, string> = {
+    'AE': 'united-arab-emirates',
     'IN': 'india',
     'PK': 'pakistan',
     'BD': 'bangladesh',

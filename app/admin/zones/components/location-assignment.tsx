@@ -41,14 +41,14 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
 
   // Get unique zones for filter
   const uniqueZones = Array.from(
-    new Set(locations.map(l => l.zone_name).filter(Boolean))
+    new Set(locations.map(l => l.zone_name).filter((n): n is string => !!n))
   ).sort()
 
   // Filter locations
   const filteredLocations = locations.filter(location => {
     const matchesSearch = !searchQuery || 
       location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      location.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (location.city ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       location.country_code.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesZone = filterZone === 'all' ||
@@ -249,7 +249,7 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
                     <TableCell>{location.city}</TableCell>
                     <TableCell>{location.country_code}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{location.type}</Badge>
+                      <Badge variant="outline">{location.location_type_label || 'Location'}</Badge>
                     </TableCell>
                     <TableCell>
                       {location.zone_name ? (

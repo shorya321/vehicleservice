@@ -177,6 +177,11 @@ const navGroups: NavGroup[] = [
             icon: MapPin,
           },
           {
+            name: "Location Types",
+            href: "/admin/location-types",
+            icon: Tag,
+          },
+          {
             name: "Routes",
             href: "/admin/routes",
             icon: Route,

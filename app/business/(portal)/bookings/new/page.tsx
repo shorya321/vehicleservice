@@ -49,7 +49,7 @@ export default async function NewBookingPage() {
   // Get locations for selection
   const { data: locations } = await supabase
     .from('locations')
-    .select('id, name, city')
+    .select('id, name, city, location_types(icon_name, name)')
     .eq('is_active', true)
     .order('name');
 

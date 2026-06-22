@@ -15,6 +15,7 @@ export interface RouteWithDetails {
     slug: string
     type: string
     city: string
+    location_type_label?: string
   }
   min_price: number
   available_vehicles: number
@@ -58,7 +59,8 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
         name,
         slug,
         type,
-        city
+        city,
+        location_types(label)
       )
     `)
     .eq('origin_location_id', locationId)
@@ -91,6 +93,10 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
 
     return {
       ...route,
+      destination: {
+        ...route.destination,
+        location_type_label: (route.destination as any).location_types?.label,
+      },
       min_price: minPrice,
       available_vehicles: availableVehicles
     }

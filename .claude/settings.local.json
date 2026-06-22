@@ -236,7 +236,8 @@
       "Bash(awk -F: '{print $1}')",
       "Bash(playwright --version)",
       "Bash(npx -y playwright screenshot --help)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(python3 -m json.tool)"
     ]
   },
   "enableAllProjectMcpServers": true,

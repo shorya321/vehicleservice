@@ -5,19 +5,19 @@ import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SimpleLocationAutocomplete as LocationAutocomplete } from './simple-location-autocomplete'
+import { LocationSearchAutocomplete } from './location-search-autocomplete'
 import { PassengerSelector } from './passenger-selector'
 import { DatePicker } from './date-picker'
 import { cn } from '@/lib/utils'
-import { Location } from '@/lib/types/location'
+import type { LocationSearchResult } from '@/lib/types/location'
 import { toast } from 'sonner'
 import { buildSearchUrl } from '@/lib/utils/url-builder'
 
 interface SearchWidgetProps {
   className?: string
   onSearch?: (params: SearchParams) => void
-  defaultOrigin?: Location
-  defaultDestination?: Location
+  defaultOrigin?: LocationSearchResult
+  defaultDestination?: LocationSearchResult
 }
 
 export interface SearchParams {
@@ -29,8 +29,10 @@ export interface SearchParams {
 
 export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestination }: SearchWidgetProps) {
   const router = useRouter()
-  const [originLocation, setOriginLocation] = useState<Location | null>(defaultOrigin || null)
-  const [destinationLocation, setDestinationLocation] = useState<Location | null>(defaultDestination || null)
+  const [originLocation, setOriginLocation] = useState<LocationSearchResult | null>(defaultOrigin || null)
+  const [destinationLocation, setDestinationLocation] = useState<LocationSearchResult | null>(defaultDestination || null)
+  const [originInput, setOriginInput] = useState(defaultOrigin?.name || '')
+  const [destInput, setDestInput] = useState(defaultDestination?.name || '')
   const [date, setDate] = useState<Date>(new Date())
   const [passengers, setPassengers] = useState(2)
   const [loading, setLoading] = useState(false)
@@ -67,9 +69,12 @@ export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestin
   }
 
   const handleSwapLocations = () => {
-    const temp = originLocation
+    const tempLoc = originLocation
+    const tempInput = originInput
     setOriginLocation(destinationLocation)
-    setDestinationLocation(temp)
+    setOriginInput(destInput)
+    setDestinationLocation(tempLoc)
+    setDestInput(tempInput)
   }
 
   return (
@@ -78,13 +83,20 @@ export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestin
       className
     )}>
       <div className="grid gap-4 md:grid-cols-[1fr,auto,1fr] md:items-center">
-        <LocationAutocomplete
-          value={originLocation?.name || ''}
-          onSelect={setOriginLocation}
+        <LocationSearchAutocomplete
+          id="search-origin"
+          value={originInput}
+          onChange={(v) => {
+            setOriginInput(v)
+            if (!v) setOriginLocation(null)
+          }}
+          onSelect={(loc) => {
+            setOriginLocation(loc)
+            setOriginInput(loc.name)
+          }}
           placeholder="From (airport, port, address)"
-          className="w-full"
         />
-        
+
         <Button
           type="button"
           variant="ghost"
@@ -95,11 +107,18 @@ export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestin
           <ArrowRight className="h-4 w-4" />
         </Button>
 
-        <LocationAutocomplete
-          value={destinationLocation?.name || ''}
-          onSelect={setDestinationLocation}
+        <LocationSearchAutocomplete
+          id="search-dest"
+          value={destInput}
+          onChange={(v) => {
+            setDestInput(v)
+            if (!v) setDestinationLocation(null)
+          }}
+          onSelect={(loc) => {
+            setDestinationLocation(loc)
+            setDestInput(loc.name)
+          }}
           placeholder="To (optional)"
-          className="w-full"
         />
       </div>
 

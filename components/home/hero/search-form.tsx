@@ -4,8 +4,8 @@ import type { FormEvent } from 'react'
 import { ArrowRight, CalendarDays, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { format, parse } from 'date-fns'
-import { Location } from '@/lib/types/location'
-import { LocationAutocomplete } from './location-autocomplete'
+import type { LocationSearchResult } from '@/lib/types/location'
+import { LocationSearchAutocomplete } from '@/components/search/location-search-autocomplete'
 import { buildSearchUrl } from '@/lib/utils/url-builder'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -13,8 +13,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export function SearchForm({ todayDate }: { todayDate: string }) {
   const router = useRouter()
 
-  const [fromLocation, setFromLocation] = useState<Location | null>(null)
-  const [toLocation, setToLocation] = useState<Location | null>(null)
+  const [fromLocation, setFromLocation] = useState<LocationSearchResult | null>(null)
+  const [toLocation, setToLocation] = useState<LocationSearchResult | null>(null)
   const [passengers, setPassengers] = useState(2)
   const [selectedDate, setSelectedDate] = useState(todayDate)
   const [calendarOpen, setCalendarOpen] = useState(false)
@@ -29,20 +29,20 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
 
   const handleFromInput = useCallback((value: string) => {
     setFromInput(value)
-    setFromLocation(null)
+    setFromLocation(prev => prev && prev.name === value ? prev : null)
   }, [])
 
   const handleToInput = useCallback((value: string) => {
     setToInput(value)
-    setToLocation(null)
+    setToLocation(prev => prev && prev.name === value ? prev : null)
   }, [])
 
-  const selectFromLocation = useCallback((location: Location) => {
+  const selectFromLocation = useCallback((location: LocationSearchResult) => {
     setFromLocation(location)
     setFromInput(location.name)
   }, [])
 
-  const selectToLocation = useCallback((location: Location) => {
+  const selectToLocation = useCallback((location: LocationSearchResult) => {
     setToLocation(location)
     setToInput(location.name)
   }, [])
@@ -66,7 +66,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
       {/* From */}
       <div className="search-bar-field search-bar-field--location">
         <label htmlFor="pickup-location" className="search-bar-label">From</label>
-        <LocationAutocomplete
+        <LocationSearchAutocomplete
           id="pickup-location"
           value={fromInput}
           onChange={handleFromInput}
@@ -74,6 +74,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
           placeholder="Airport, hotel, or address"
           ariaLabel="Pick-up location"
           selectedLocation={fromLocation}
+          variant="hero"
         />
       </div>
 
@@ -82,7 +83,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
       {/* To */}
       <div className="search-bar-field search-bar-field--location">
         <label htmlFor="dropoff-location" className="search-bar-label">To</label>
-        <LocationAutocomplete
+        <LocationSearchAutocomplete
           id="dropoff-location"
           value={toInput}
           onChange={handleToInput}
@@ -90,6 +91,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
           placeholder="Airport, hotel, or address"
           ariaLabel="Drop-off location"
           selectedLocation={toLocation}
+          variant="hero"
         />
       </div>
 

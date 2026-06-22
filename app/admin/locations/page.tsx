@@ -8,6 +8,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { LocationTableWithBulk } from './components/location-table-with-bulk'
 import { ClientFilters } from './components/client-filters'
 import { getLocations, getCountries } from './actions'
+import { getActiveLocationTypes } from '@/lib/actions/location-types'
 import { LocationFilters } from '@/lib/types/location'
 import {
   Card,
@@ -52,8 +53,11 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
     })
   }
 
-  const { locations, total, page, totalPages } = await getLocations(filters)
-  const countries = await getCountries()
+  const [{ locations, total, page, totalPages }, countries, locationTypes] = await Promise.all([
+    getLocations(filters),
+    getCountries(),
+    getActiveLocationTypes(),
+  ])
 
   return (
       <AnimatedPage>
@@ -102,9 +106,9 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ClientFilters initialFilters={filters} countries={countries} />
-            
-            <LocationTableWithBulk locations={locations} />
+            <ClientFilters initialFilters={filters} countries={countries} locationTypes={locationTypes} />
+
+            <LocationTableWithBulk locations={locations} locationTypes={locationTypes} />
 
             {totalPages > 1 && (
               <div className="flex items-center justify-between">

@@ -25,17 +25,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { BookingFormData } from './booking-wizard';
-import { LocationAutocomplete } from './location-autocomplete';
-
-interface Location {
-  id: string;
-  name: string;
-  city: string;
-}
+import { LocationSearchAutocomplete } from '@/components/search/location-search-autocomplete';
+import type { LocationSearchResult } from '@/lib/types/location';
 
 interface RouteStepProps {
   formData: Partial<BookingFormData>;
-  locations: Location[];
   onUpdate: (data: Partial<BookingFormData>) => void;
   onNext: () => void;
   onFetchVehicles: (fromLocationId: string, toLocationId: string) => Promise<void>;
@@ -52,7 +46,7 @@ const routeSchema = z.object({
 
 type RouteFormData = z.infer<typeof routeSchema>;
 
-export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
+export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
   const form = useForm<RouteFormData>({
     resolver: zodResolver(routeSchema),
     defaultValues: {
@@ -65,15 +59,8 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
     },
   });
 
-  // Input state for autocomplete fields
-  const [fromInput, setFromInput] = useState(() => {
-    const loc = locations.find((l) => l.id === formData.from_location_id);
-    return loc ? `${loc.name} - ${loc.city}` : '';
-  });
-  const [toInput, setToInput] = useState(() => {
-    const loc = locations.find((l) => l.id === formData.to_location_id);
-    return loc ? `${loc.name} - ${loc.city}` : '';
-  });
+  const [fromInput, setFromInput] = useState(formData.pickup_address || '');
+  const [toInput, setToInput] = useState(formData.dropoff_address || '');
 
   async function onSubmit(values: RouteFormData) {
     onUpdate(values);
@@ -108,16 +95,15 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
               <FormItem>
                 <FormLabel>Pickup Location</FormLabel>
                 <FormControl>
-                  <LocationAutocomplete
+                  <LocationSearchAutocomplete
                     value={fromInput}
                     onChange={setFromInput}
-                    onSelect={(id) => {
-                      field.onChange(id);
-                      const loc = locations.find((l) => l.id === id);
-                      if (loc) setFromInput(`${loc.name} - ${loc.city}`);
+                    onSelect={(loc: LocationSearchResult) => {
+                      field.onChange(loc.id);
+                      setFromInput(loc.name);
                     }}
                     placeholder="Search pickup location..."
-                    locations={locations}
+                    id="from-location"
                   />
                 </FormControl>
                 <FormMessage />
@@ -233,16 +219,15 @@ export function RouteStep({ formData, locations, onUpdate, onNext, onFetchVehicl
               <FormItem>
                 <FormLabel>Dropoff Location</FormLabel>
                 <FormControl>
-                  <LocationAutocomplete
+                  <LocationSearchAutocomplete
                     value={toInput}
                     onChange={setToInput}
-                    onSelect={(id) => {
-                      field.onChange(id);
-                      const loc = locations.find((l) => l.id === id);
-                      if (loc) setToInput(`${loc.name} - ${loc.city}`);
+                    onSelect={(loc: LocationSearchResult) => {
+                      field.onChange(loc.id);
+                      setToInput(loc.name);
                     }}
                     placeholder="Search dropoff location..."
-                    locations={locations}
+                    id="to-location"
                   />
                 </FormControl>
                 <FormMessage />

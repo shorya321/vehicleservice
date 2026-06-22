@@ -18,7 +18,7 @@ import { AddonSelection, SelectedAddon } from './addon-selection';
 interface Location {
   id: string;
   name: string;
-  city: string;
+  city: string | null;
 }
 
 interface ReviewStepProps {

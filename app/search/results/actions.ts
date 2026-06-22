@@ -686,7 +686,7 @@ async function getRouteById(
     .select(`
       *,
       origin_location:locations!routes_origin_location_id_fkey(*),
-      destination_location:locations!routes_destination_location_id_fkey(*)
+      destination_location:locations!routes_destination_location_id_fkey(*, location_types(label))
     `)
     .eq('id', routeId)
     .eq('is_active', true)
@@ -775,7 +775,7 @@ async function getRouteById(
       routeName: route.route_name,
       destinationId: route.destination_location_id,
       destinationName: route.destination_location.name,
-      destinationType: route.destination_location.type,
+      destinationType: (route.destination_location as any).location_types?.label || 'Location',
       distance: route.distance_km,
       duration: route.estimated_duration_minutes,
       minPrice: 0, // Zone pricing will be used
@@ -956,7 +956,7 @@ async function getLocationSearchResults(
       destination:destination_location_id(
         id,
         name,
-        type
+        location_types(label)
       )
     `)
     .eq('origin_location_id', originId)
@@ -987,7 +987,7 @@ async function getLocationSearchResults(
         routeName: route.route_name,
         destinationId: route.destination.id,
         destinationName: route.destination.name,
-        destinationType: route.destination.type,
+        destinationType: (route.destination as any).location_types?.label || 'Transfer',
         distance: route.distance_km,
         duration: route.estimated_duration_minutes,
         minPrice,

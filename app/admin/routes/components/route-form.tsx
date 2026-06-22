@@ -27,7 +27,7 @@ import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { createRoute, updateRoute } from "../actions"
 import { RouteWithLocations } from "@/lib/types/route"
-import { Location } from "@/lib/types/location"
+import { LocationWithType } from "@/lib/types/location"
 import { Loader2 } from "lucide-react"
 
 const routeSchema = z.object({
@@ -49,7 +49,7 @@ type RouteFormValues = z.infer<typeof routeSchema>
 
 interface RouteFormProps {
   route?: RouteWithLocations
-  locations: Location[]
+  locations: LocationWithType[]
 }
 
 export function RouteForm({ route, locations }: RouteFormProps) {
@@ -153,7 +153,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                   <SelectContent>
                     {pickupLocations.map((location) => (
                       <SelectItem key={location.id} value={location.id}>
-                        {location.name} ({location.type})
+                        {location.name} ({location.location_types?.label || 'Location'})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -188,7 +188,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                   <SelectContent>
                     {dropoffLocations.map((location) => (
                       <SelectItem key={location.id} value={location.id}>
-                        {location.name} ({location.type})
+                        {location.name} ({location.location_types?.label || 'Location'})
                       </SelectItem>
                     ))}
                   </SelectContent>

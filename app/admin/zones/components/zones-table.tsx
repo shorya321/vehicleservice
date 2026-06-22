@@ -26,8 +26,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { Zone, deleteZone, toggleZoneStatus } from '../actions'
+import { Zone, PaginatedZones, deleteZone, toggleZoneStatus } from '../actions'
 import { EmptyState } from '@/components/ui/empty-state'
+import { CustomPagination } from '@/components/ui/custom-pagination'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,9 +42,10 @@ import {
 
 interface ZonesTableProps {
   zones: Zone[]
+  pagination: PaginatedZones
 }
 
-export function ZonesTable({ zones }: ZonesTableProps) {
+export function ZonesTable({ zones, pagination }: ZonesTableProps) {
   const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [zoneToDelete, setZoneToDelete] = useState<Zone | null>(null)
@@ -226,6 +228,21 @@ export function ZonesTable({ zones }: ZonesTableProps) {
           </TableBody>
         </Table>
         </div>
+
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+              {pagination.total} zones
+            </p>
+            <CustomPagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              baseUrl="/admin/zones"
+            />
+          </div>
+        )}
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

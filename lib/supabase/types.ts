@@ -1385,6 +1385,42 @@ export type Database = {
         }
         Relationships: []
       }
+      location_types: {
+        Row: {
+          abbreviation: string
+          color_config: Json
+          created_at: string | null
+          icon_name: string
+          id: string
+          is_active: boolean
+          label: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          abbreviation: string
+          color_config?: Json
+          created_at?: string | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          abbreviation?: string
+          color_config?: Json
+          created_at?: string | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
           address: string | null
@@ -1394,14 +1430,17 @@ export type Database = {
           country_code: string
           country_slug: string
           created_at: string | null
+          google_place_id: string | null
+          google_place_types: string[] | null
           id: string
           is_active: boolean | null
+          is_popular: boolean
           latitude: number | null
+          location_type_id: string
           longitude: number | null
           name: string
           slug: string
           timezone: string | null
-          type: Database["public"]["Enums"]["location_type"]
           zone_id: string | null
         }
         Insert: {
@@ -1412,14 +1451,17 @@ export type Database = {
           country_code: string
           country_slug: string
           created_at?: string | null
+          google_place_id?: string | null
+          google_place_types?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_popular?: boolean
           latitude?: number | null
+          location_type_id: string
           longitude?: number | null
           name: string
           slug: string
           timezone?: string | null
-          type: Database["public"]["Enums"]["location_type"]
           zone_id?: string | null
         }
         Update: {
@@ -1430,17 +1472,27 @@ export type Database = {
           country_code?: string
           country_slug?: string
           created_at?: string | null
+          google_place_id?: string | null
+          google_place_types?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_popular?: boolean
           latitude?: number | null
+          location_type_id?: string
           longitude?: number | null
           name?: string
           slug?: string
           timezone?: string | null
-          type?: Database["public"]["Enums"]["location_type"]
           zone_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "locations_location_type_id_fkey"
+            columns: ["location_type_id"]
+            isOneToOne: false
+            referencedRelation: "location_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "locations_zone_id_fkey"
             columns: ["zone_id"]
@@ -2979,10 +3031,7 @@ export type Database = {
         Returns: Json
       }
       derive_transfer_service_code: {
-        Args: {
-          p_from_type: Database["public"]["Enums"]["location_type"]
-          p_to_type: Database["public"]["Enums"]["location_type"]
-        }
+        Args: { p_from_location_type_id: string; p_to_location_type_id: string }
         Returns: string
       }
       disconnect_stripe_account: {
@@ -3179,17 +3228,6 @@ export type Database = {
         }
       }
       get_location_hierarchy: { Args: { city_id: string }; Returns: Json }
-      get_locations_with_booking_counts: {
-        Args: never
-        Returns: {
-          booking_count: number
-          city: string
-          country_code: string
-          id: string
-          name: string
-          type: Database["public"]["Enums"]["location_type"]
-        }[]
-      }
       get_or_create_notification_preferences: {
         Args: { p_user_id: string }
         Returns: {
@@ -3219,6 +3257,26 @@ export type Database = {
         }
       }
       get_pending_reviews_count: { Args: never; Returns: number }
+      get_popular_locations: {
+        Args: never
+        Returns: {
+          address: string
+          allow_dropoff: boolean
+          allow_pickup: boolean
+          city: string
+          country_code: string
+          country_slug: string
+          id: string
+          latitude: number
+          location_type_icon: string
+          location_type_id: string
+          location_type_label: string
+          location_type_sort: number
+          longitude: number
+          name: string
+          slug: string
+        }[]
+      }
       get_popular_routes: {
         Args: { limit_count?: number }
         Returns: {
@@ -3321,6 +3379,27 @@ export type Database = {
         }
         Returns: Json
       }
+      search_locations: {
+        Args: { result_limit?: number; search_query: string }
+        Returns: {
+          address: string
+          allow_dropoff: boolean
+          allow_pickup: boolean
+          city: string
+          country_code: string
+          country_slug: string
+          id: string
+          latitude: number
+          location_type_icon: string
+          location_type_id: string
+          location_type_label: string
+          location_type_sort: number
+          longitude: number
+          name: string
+          relevance: number
+          slug: string
+        }[]
+      }
       search_transactions: {
         Args: {
           p_business_account_id: string
@@ -3350,6 +3429,8 @@ export type Database = {
         }
         Returns: Json
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       unfreeze_business_wallet: {
         Args: {
           p_admin_user_id: string
@@ -3418,7 +3499,6 @@ export type Database = {
         | "phone_charger"
         | "wifi_hotspot"
         | "priority_pickup"
-      location_type: "airport" | "city" | "hotel" | "station"
       notification_category:
         | "booking"
         | "user"
@@ -3596,7 +3676,6 @@ export const Constants = {
         "wifi_hotspot",
         "priority_pickup",
       ],
-      location_type: ["airport", "city", "hotel", "station"],
       notification_category: [
         "booking",
         "user",

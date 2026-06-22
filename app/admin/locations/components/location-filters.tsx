@@ -15,7 +15,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { LocationFilters, LocationType, LocationStatus } from "@/lib/types/location"
+import { LocationFilters, LocationStatus } from "@/lib/types/location"
+import { LocationTypeRecord } from "@/lib/types/location-type"
 import { Filter, X, ChevronDown, MapPin, Navigation } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -25,9 +26,10 @@ interface LocationFiltersProps {
   filters: LocationFilters
   onFiltersChange: (filters: LocationFilters) => void
   countries?: string[]
+  locationTypes?: LocationTypeRecord[]
 }
 
-export function LocationFiltersComponent({ filters, onFiltersChange, countries = [] }: LocationFiltersProps) {
+export function LocationFiltersComponent({ filters, onFiltersChange, countries = [], locationTypes = [] }: LocationFiltersProps) {
   const [localSearch, setLocalSearch] = useState(filters.search || "")
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [allowPickup, setAllowPickup] = useState<boolean | null>(filters.allowPickup ?? null)
@@ -39,7 +41,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
   }
 
   const handleTypeChange = (type: string) => {
-    onFiltersChange({ ...filters, type: type as LocationType | "all", page: 1 })
+    onFiltersChange({ ...filters, type: type === "all" ? "all" : type, page: 1 })
   }
 
   const handleStatusChange = (status: string) => {
@@ -113,10 +115,11 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All types</SelectItem>
-            <SelectItem value="airport">Airport</SelectItem>
-            <SelectItem value="city">City</SelectItem>
-            <SelectItem value="hotel">Hotel</SelectItem>
-            <SelectItem value="station">Station</SelectItem>
+            {locationTypes.map((lt) => (
+              <SelectItem key={lt.id} value={lt.name}>
+                {lt.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 

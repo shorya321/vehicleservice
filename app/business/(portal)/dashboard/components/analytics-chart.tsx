@@ -10,6 +10,7 @@
 
 import { motion } from 'motion/react';
 import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react';
+import { getLocationTypeIconComponent } from '@/lib/utils/location-type-utils';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';
@@ -346,10 +347,17 @@ export function TrafficSourceCard({
 export interface LocationData {
   id: string;
   name: string;
-  type: 'airport' | 'city' | 'hotel' | 'station';
   city: string | null;
   country_code: string;
   booking_count: number;
+  icon_name?: string;
+  color_config?: {
+    color: string;
+    bg: string;
+    progressBg: string;
+    badgeClass: string;
+    badgeVariant: string;
+  } | null;
 }
 
 interface LocationsCardProps {
@@ -437,17 +445,16 @@ interface LocationItemProps {
 function LocationItem({ location, maxBookings, index }: LocationItemProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  // Get base config for the location type
-  const baseConfig = locationTypeConfig[location.type] || locationTypeConfig.city;
+  // Use dynamic color_config from DB, fallback to default
+  const fallbackConfig = locationTypeConfig.city;
+  const config: { color: string; bg: string; progressBg: string; badgeClass: string } = location.color_config
+    ? { color: location.color_config.color, bg: location.color_config.bg, progressBg: location.color_config.progressBg, badgeClass: location.color_config.badgeClass }
+    : { ...fallbackConfig, ...cityColorVariants[index % cityColorVariants.length] };
 
-  // For cities, rotate through color variants to avoid all being the same color
-  let config = baseConfig;
-  if (location.type === 'city') {
-    const cityIndex = index % cityColorVariants.length;
-    config = { ...baseConfig, ...cityColorVariants[cityIndex] };
-  }
-
-  const Icon = baseConfig.icon;
+  // Use dynamic icon from DB, fallback to MapPin
+  const Icon = location.icon_name
+    ? getLocationTypeIconComponent(location.icon_name)
+    : fallbackConfig.icon;
   const percentage = (location.booking_count / maxBookings) * 100;
 
   return (

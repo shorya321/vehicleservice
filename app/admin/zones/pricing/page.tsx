@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ZonePricingPage() {
-  const [zones, pricing] = await Promise.all([
+  const [zonesData, pricing] = await Promise.all([
     getZones(),
     getZonePricing()
   ])
@@ -37,7 +37,7 @@ export default async function ZonePricingPage() {
           </div>
         </div>
 
-        <PricingMatrix zones={zones} pricingMap={pricingMap} />
+        <PricingMatrix zones={zonesData.zones} pricingMap={pricingMap} />
       </div>
   )
 }

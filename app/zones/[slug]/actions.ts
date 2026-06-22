@@ -14,12 +14,13 @@ export interface ZoneDetails {
 export interface ZoneLocation {
   id: string
   name: string
-  type: string
   address: string | null
-  city: string
-  country: string
+  city: string | null
+  country: string | null
   latitude: number | null
   longitude: number | null
+  location_type_label?: string
+  location_type_icon_name?: string
 }
 
 export interface DestinationZone {
@@ -28,16 +29,16 @@ export interface DestinationZone {
   slug: string
   description: string | null
   basePrice: number
-  currency: string
+  currency: string | null
 }
 
 export interface PopularRoute {
   id: string
   routeName: string
   destinationName: string
-  destinationCity: string
-  distance: number
-  duration: number
+  destinationCity: string | null
+  distance: number | null
+  duration: number | null
 }
 
 export async function getZoneBySlug(slug: string): Promise<ZoneDetails | null> {
@@ -60,8 +61,8 @@ export async function getZoneBySlug(slug: string): Promise<ZoneDetails | null> {
     name: data.name,
     slug: data.slug,
     description: data.description,
-    sortOrder: data.sort_order,
-    isActive: data.is_active
+    sortOrder: data.sort_order ?? 0,
+    isActive: data.is_active ?? true
   }
 }
 
@@ -70,7 +71,7 @@ export async function getZoneLocations(zoneId: string): Promise<ZoneLocation[]> 
 
   const { data, error } = await supabase
     .from('locations')
-    .select('*')
+    .select('*, location_types(icon_name, label, color_config)')
     .eq('zone_id', zoneId)
     .eq('is_active', true)
     .order('name')
@@ -83,12 +84,13 @@ export async function getZoneLocations(zoneId: string): Promise<ZoneLocation[]> 
   return data.map(location => ({
     id: location.id,
     name: location.name,
-    type: location.type,
     address: location.address,
     city: location.city,
-    country: location.country,
+    country: location.country_code,
     latitude: location.latitude,
-    longitude: location.longitude
+    longitude: location.longitude,
+    location_type_label: (location as any).location_types?.label,
+    location_type_icon_name: (location as any).location_types?.icon_name,
   }))
 }
 

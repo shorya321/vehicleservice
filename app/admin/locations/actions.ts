@@ -1,9 +1,8 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { 
-  Location, 
-  LocationFilters, 
+import {
+  LocationFilters,
   PaginatedLocations,
   LocationFormData
 } from "@/lib/types/location"
@@ -24,19 +23,22 @@ export async function getLocations(filters: LocationFilters = {}): Promise<Pagin
     limit = 10
   } = filters
 
-  // Build query
+  // Build query - join location_types for dynamic type data
   let query = supabase
     .from('locations')
-    .select('*', { count: 'exact' })
+    .select('*, location_types(*)', { count: 'exact' })
 
   // Apply search filter
   if (search) {
     query = query.or(`name.ilike.%${search}%,city.ilike.%${search}%,address.ilike.%${search}%`)
   }
 
-  // Apply type filter
+  // Apply type filter via location_types table
   if (type !== 'all') {
-    query = query.eq('type', type)
+    const { data: lt } = await supabase.from('location_types').select('id').eq('name', type).single()
+    if (lt) {
+      query = query.eq('location_type_id', lt.id)
+    }
   }
 
   // Apply status filter  
@@ -110,11 +112,21 @@ export async function createLocation(data: LocationFormData) {
   const { data: location, error } = await supabase
     .from('locations')
     .insert({
-      ...data,
+      name: data.name,
+      location_type_id: data.location_type_id,
+      address: data.address,
+      country_code: data.country_code,
+      city: data.city,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      timezone: data.timezone,
+      allow_pickup: data.allow_pickup,
+      allow_dropoff: data.allow_dropoff,
+      is_active: data.is_active,
       slug,
-      country_slug
+      country_slug,
     })
-    .select()
+    .select('*, location_types(*)')
     .single()
 
   if (error) {
@@ -145,14 +157,15 @@ export async function updateLocation(id: string, data: Partial<LocationFormData>
     throw new Error('Forbidden: Admin access required')
   }
 
-  // Prepare update data
-  const updateData: any = { ...data }
-  
+  // Prepare update data — exclude old type field
+  const { type: _type, ...cleanData } = data as Record<string, unknown>
+  const updateData: Record<string, unknown> = { ...cleanData }
+
   // If name is being updated, regenerate slug
   if (data.name) {
     updateData.slug = generateSlug(data.name)
   }
-  
+
   // If country_code is being updated, regenerate country_slug
   if (data.country_code) {
     updateData.country_slug = getCountrySlug(data.country_code)
@@ -162,7 +175,7 @@ export async function updateLocation(id: string, data: Partial<LocationFormData>
     .from('locations')
     .update(updateData)
     .eq('id', id)
-    .select()
+    .select('*, location_types(*)')
     .single()
 
   if (error) {
@@ -221,7 +234,7 @@ export async function getCountries(): Promise<string[]> {
   }
 
   // Get unique country codes
-  const uniqueCountries = [...new Set(data?.map(item => item.country_code) || [])]
+  const uniqueCountries = Array.from(new Set(data?.map(item => item.country_code) || []))
   return uniqueCountries
 }
 

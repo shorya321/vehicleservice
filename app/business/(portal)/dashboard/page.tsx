@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { DashboardContent } from './components/dashboard-content';
+import type { LocationData } from './components/analytics-chart';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Business Portal',
@@ -98,19 +99,27 @@ export default async function BusinessDashboardPage() {
     .limit(6);
 
   // Fallback: if RPC doesn't exist, fetch locations directly
-  let locations = locationsData || [];
+  let locations: LocationData[] = (locationsData || []) as LocationData[];
   if (!locationsData || locationsData.length === 0) {
     const { data: rawLocations } = await supabase
       .from('locations')
-      .select('id, name, type, city, country_code')
+      .select('id, name, city, country_code, location_types(icon_name, color_config, name)')
       .eq('is_active', true)
       .order('name')
       .limit(6);
 
-    locations = (rawLocations || []).map(loc => ({
-      ...loc,
-      booking_count: 0
-    }));
+    locations = (rawLocations || []).map(loc => {
+      const lt = loc.location_types as { icon_name?: string; color_config?: LocationData['color_config'] } | null;
+      return {
+        id: loc.id,
+        name: loc.name,
+        city: loc.city,
+        country_code: loc.country_code,
+        booking_count: 0,
+        icon_name: lt?.icon_name,
+        color_config: lt?.color_config,
+      };
+    });
   }
 
   return (

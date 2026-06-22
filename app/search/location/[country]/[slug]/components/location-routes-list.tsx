@@ -53,7 +53,7 @@ export function LocationRoutesList({ routes, originLocation, countrySlug }: Loca
                       </div>
                     </div>
                     <Badge variant={route.destination.type === 'airport' ? 'default' : 'secondary'}>
-                      {route.destination.type}
+                      {(route as any).destination?.location_types?.label || route.destination.type}
                     </Badge>
                   </div>
 

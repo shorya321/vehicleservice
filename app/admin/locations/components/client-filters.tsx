@@ -3,13 +3,15 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import { LocationFiltersComponent } from "./location-filters"
 import { LocationFilters } from "@/lib/types/location"
+import { LocationTypeRecord } from "@/lib/types/location-type"
 
 interface ClientFiltersProps {
   initialFilters: LocationFilters
   countries?: string[]
+  locationTypes?: LocationTypeRecord[]
 }
 
-export function ClientFilters({ initialFilters, countries }: ClientFiltersProps) {
+export function ClientFilters({ initialFilters, countries, locationTypes }: ClientFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -65,10 +67,11 @@ export function ClientFilters({ initialFilters, countries }: ClientFiltersProps)
   }
 
   return (
-    <LocationFiltersComponent 
-      filters={initialFilters} 
+    <LocationFiltersComponent
+      filters={initialFilters}
       onFiltersChange={handleFiltersChange}
       countries={countries}
+      locationTypes={locationTypes}
     />
   )
 }

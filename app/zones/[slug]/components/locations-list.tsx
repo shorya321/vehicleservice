@@ -1,5 +1,5 @@
-import { MapPin, Building, Plane, Anchor, Train } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { getLocationTypeIcon } from '@/lib/utils/location-type-utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -11,34 +11,6 @@ interface LocationsListProps {
 }
 
 export function LocationsList({ locations, zoneSlug }: LocationsListProps) {
-  const getLocationIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'airport':
-        return <Plane className="h-4 w-4" />
-      case 'port':
-        return <Anchor className="h-4 w-4" />
-      case 'train_station':
-      case 'train':
-        return <Train className="h-4 w-4" />
-      case 'city':
-      case 'hotel':
-        return <Building className="h-4 w-4" />
-      default:
-        return <MapPin className="h-4 w-4" />
-    }
-  }
-
-  const getTypeBadgeVariant = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'airport':
-        return 'default'
-      case 'port':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
-
   if (locations.length === 0) {
     return (
       <Card>
@@ -63,7 +35,7 @@ export function LocationsList({ locations, zoneSlug }: LocationsListProps) {
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 flex-1">
                   <div className="p-2 bg-muted rounded-lg">
-                    {getLocationIcon(location.type)}
+                    {getLocationTypeIcon(location.location_type_icon_name || 'map-pin', 'h-4 w-4')}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium">{location.name}</h3>
@@ -77,8 +49,8 @@ export function LocationsList({ locations, zoneSlug }: LocationsListProps) {
                     </p>
                   </div>
                 </div>
-                <Badge variant={getTypeBadgeVariant(location.type)} className="text-xs">
-                  {location.type.replace('_', ' ')}
+                <Badge variant="outline" className="text-xs">
+                  {location.location_type_label || 'Location'}
                 </Badge>
               </div>
               <div className="mt-3">

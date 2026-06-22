@@ -37,7 +37,7 @@ import { SelectedAddon } from './addon-selection';
 interface Location {
   id: string;
   name: string;
-  city: string;
+  city: string | null;
 }
 
 interface BookingWizardProps {
@@ -235,7 +235,6 @@ export function BookingWizard({
           {currentStep === 0 && (
             <RouteStep
               formData={formData}
-              locations={locations}
               onUpdate={updateFormData}
               onNext={nextStep}
               onFetchVehicles={fetchAvailableVehicles}

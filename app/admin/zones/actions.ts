@@ -15,6 +15,21 @@ export interface Zone {
   location_count?: number
 }
 
+export interface ZoneFilters {
+  search?: string
+  status?: string
+  page?: number
+  limit?: number
+}
+
+export interface PaginatedZones {
+  zones: Zone[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 export interface ZonePricing {
   id: string
   from_zone_id: string
@@ -26,28 +41,55 @@ export interface ZonePricing {
   to_zone?: Zone
 }
 
-export async function getZones(): Promise<Zone[]> {
-  const supabase = await createClient()
+const PAGE_SIZE = 10
 
-  const { data: zones, error } = await supabase
+export async function getZones(filters: ZoneFilters = {}): Promise<PaginatedZones> {
+  const supabase = await createClient()
+  const page = filters.page || 1
+  const limit = filters.limit || PAGE_SIZE
+  const offset = (page - 1) * limit
+
+  let query = supabase
     .from('zones')
     .select(`
       *,
       locations(count)
-    `)
+    `, { count: 'exact' })
+
+  if (filters.search) {
+    query = query.or(`name.ilike.%${filters.search}%,slug.ilike.%${filters.search}%`)
+  }
+
+  if (filters.status === 'active') {
+    query = query.eq('is_active', true)
+  } else if (filters.status === 'inactive') {
+    query = query.eq('is_active', false)
+  }
+
+  query = query
     .order('sort_order')
     .order('name')
+    .range(offset, offset + limit - 1)
+
+  const { data: zones, error, count } = await query
 
   if (error) {
     console.error('Error fetching zones:', error)
-    return []
+    return { zones: [], total: 0, page, limit, totalPages: 0 }
   }
 
-  // Transform the data to include location count
-  return zones.map(zone => ({
-    ...zone,
-    location_count: zone.locations?.[0]?.count || 0
-  }))
+  const total = count || 0
+
+  return {
+    zones: (zones || []).map(zone => ({
+      ...zone,
+      location_count: zone.locations?.[0]?.count || 0,
+    })),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  }
 }
 
 export async function getZone(id: string): Promise<Zone | null> {

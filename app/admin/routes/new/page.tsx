@@ -19,7 +19,7 @@ export default async function NewRoutePage() {
   const supabase = await createClient()
   const { data: locations } = await supabase
     .from('locations')
-    .select('*')
+    .select('*, location_types(*)')
     .eq('is_active', true)
     .order('name')
 

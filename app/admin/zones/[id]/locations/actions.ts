@@ -6,11 +6,11 @@ import { revalidatePath } from 'next/cache'
 export interface LocationWithZone {
   id: string
   name: string
-  city: string
+  city: string | null
   country_code: string
-  type: string
   zone_id: string | null
   zone_name?: string
+  location_type_label?: string
 }
 
 export async function getLocationsWithZones(): Promise<LocationWithZone[]> {
@@ -23,9 +23,9 @@ export async function getLocationsWithZones(): Promise<LocationWithZone[]> {
       name,
       city,
       country_code,
-      type,
       zone_id,
-      zones(name)
+      zones(name),
+      location_types(label)
     `)
     .order('name')
 
@@ -39,9 +39,9 @@ export async function getLocationsWithZones(): Promise<LocationWithZone[]> {
     name: location.name,
     city: location.city,
     country_code: location.country_code,
-    type: location.type,
     zone_id: location.zone_id,
-    zone_name: location.zones?.name
+    zone_name: location.zones?.name,
+    location_type_label: (location as any).location_types?.label,
   }))
 }
 

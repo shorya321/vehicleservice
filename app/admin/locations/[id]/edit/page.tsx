@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { LocationForm } from '../../components/location-form'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveLocationTypes } from '@/lib/actions/location-types'
+
 export const metadata: Metadata = {
   title: 'Edit Location - Admin',
   description: 'Edit location details',
@@ -18,12 +20,15 @@ export default async function EditLocationPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch location by ID
-  const { data: location, error } = await supabase
-    .from('locations')
-    .select('*')
-    .eq('id', id)
-    .single()
+  // Fetch location by ID with location_types join
+  const [{ data: location, error }, locationTypes] = await Promise.all([
+    supabase
+      .from('locations')
+      .select('*, location_types(*)')
+      .eq('id', id)
+      .single(),
+    getActiveLocationTypes(),
+  ])
 
   if (error || !location) {
     notFound()
@@ -45,7 +50,7 @@ export default async function EditLocationPage({
           </div>
         </div>
 
-        <LocationForm location={location} mode="edit" />
+        <LocationForm location={location} mode="edit" locationTypes={locationTypes} />
       </div>
   )
 }

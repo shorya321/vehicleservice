@@ -14,8 +14,23 @@ export const metadata: Metadata = {
   description: 'Manage pricing zones',
 }
 
-export default async function ZonesPage() {
-  const zones = await getZones()
+interface ZonesPageProps {
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    page?: string
+  }>
+}
+
+export default async function ZonesPage({ searchParams }: ZonesPageProps) {
+  const params = await searchParams
+  const filters = {
+    search: params.search,
+    status: params.status,
+    page: params.page ? parseInt(params.page) : 1,
+  }
+
+  const zonesData = await getZones(filters)
 
   return (
       <AnimatedPage>
@@ -53,7 +68,7 @@ export default async function ZonesPage() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{zones.length}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{zonesData.total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All zones</p>
               </CardContent>
@@ -61,7 +76,7 @@ export default async function ZonesPage() {
           </AnimatedCard>
         </div>
 
-        <ZonesTable zones={zones} />
+        <ZonesTable zones={zonesData.zones} pagination={zonesData} />
       </AnimatedPage>
   )
 }

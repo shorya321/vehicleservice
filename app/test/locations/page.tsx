@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 interface Location {
   id: string
   name: string
-  city: string
+  city: string | null
   country_code: string
 }
 

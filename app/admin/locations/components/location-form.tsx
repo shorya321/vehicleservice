@@ -28,47 +28,50 @@ import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Database } from '@/lib/supabase/types'
 import { AddressAutocomplete } from './address-autocomplete'
 import { extractLocationDetails, getTimezoneByCountryCode } from './google-maps-utils'
 import { MapPreview } from './map-preview'
 import { GoogleMapsProvider } from './google-maps-provider'
 import { createLocation, updateLocation } from '../actions'
-
-type Location = Database['public']['Tables']['locations']['Row']
-type LocationInsert = Database['public']['Tables']['locations']['Insert']
-type LocationUpdate = Database['public']['Tables']['locations']['Update']
+import { LocationTypeRecord } from '@/lib/types/location-type'
+import { LocationWithType } from '@/lib/types/location'
 
 const locationSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  type: z.enum(['airport', 'city', 'hotel', 'station']),
+  location_type_id: z.string().min(1, 'Location type is required'),
   address: z.string().optional().nullable(),
   country_code: z.string().length(2, 'Country code must be 2 characters'),
   city: z.string().optional().nullable(),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
   timezone: z.string().optional().nullable(),
-  allow_pickup: z.boolean().default(true),
-  allow_dropoff: z.boolean().default(true),
-  is_active: z.boolean().default(true),
+  allow_pickup: z.boolean(),
+  allow_dropoff: z.boolean(),
+  is_active: z.boolean(),
 })
 
 type LocationFormValues = z.infer<typeof locationSchema>
 
 interface LocationFormProps {
-  location?: Location
+  location?: LocationWithType
   mode: 'create' | 'edit'
+  locationTypes: LocationTypeRecord[]
 }
 
-export function LocationForm({ location, mode }: LocationFormProps) {
+export function LocationForm({ location, mode, locationTypes }: LocationFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const resolveDefaultTypeId = (): string => {
+    if (location?.location_type_id) return location.location_type_id
+    return locationTypes[0]?.id ?? ''
+  }
 
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
     defaultValues: {
       name: location?.name || '',
-      type: location?.type || 'airport',
+      location_type_id: resolveDefaultTypeId(),
       address: location?.address || '',
       country_code: location?.country_code || 'AE',
       city: location?.city || '',
@@ -109,10 +112,10 @@ export function LocationForm({ location, mode }: LocationFormProps) {
     setIsSubmitting(true)
     try {
       if (mode === 'create') {
-        await createLocation(values)
+        await createLocation(values as any)
         toast.success(`Location "${values.name}" created successfully`)
       } else if (location?.id) {
-        await updateLocation(location.id, values)
+        await updateLocation(location.id, values as any)
         toast.success(`Location "${values.name}" updated successfully`)
       }
 
@@ -165,7 +168,7 @@ export function LocationForm({ location, mode }: LocationFormProps) {
 
                     <FormField
                       control={form.control}
-                      name="type"
+                      name="location_type_id"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Type</FormLabel>
@@ -176,10 +179,11 @@ export function LocationForm({ location, mode }: LocationFormProps) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="airport">Airport</SelectItem>
-                              <SelectItem value="city">City</SelectItem>
-                              <SelectItem value="hotel">Hotel</SelectItem>
-                              <SelectItem value="station">Station</SelectItem>
+                              {locationTypes.map((lt) => (
+                                <SelectItem key={lt.id} value={lt.id}>
+                                  {lt.label}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormDescription>
@@ -335,8 +339,8 @@ export function LocationForm({ location, mode }: LocationFormProps) {
 
             {/* Map Preview Below */}
             <MapPreview
-              latitude={form.watch('latitude')}
-              longitude={form.watch('longitude')}
+              latitude={form.watch('latitude') ?? null}
+              longitude={form.watch('longitude') ?? null}
               name={form.watch('name')}
             />
           </TabsContent>

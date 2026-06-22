@@ -13,7 +13,13 @@ import {
 } from "@/components/ui/select"
 import { Search, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { Location } from "@/lib/types/location"
+interface LocationWithLabel {
+  id: string
+  name: string
+  allow_pickup: boolean | null
+  allow_dropoff: boolean | null
+  location_types?: { label: string } | null
+}
 
 interface RouteFiltersProps {
   initialFilters: {
@@ -36,19 +42,19 @@ export function RouteFilters({ initialFilters }: RouteFiltersProps) {
   const [isPopular, setIsPopular] = useState(
     initialFilters.isPopular === true ? 'true' : initialFilters.isPopular === false ? 'false' : 'all'
   )
-  const [locations, setLocations] = useState<Location[]>([])
+  const [locations, setLocations] = useState<LocationWithLabel[]>([])
 
   useEffect(() => {
     const loadLocations = async () => {
       const supabase = createClient()
       const { data } = await supabase
         .from('locations')
-        .select('*')
+        .select('*, location_types(label)')
         .eq('is_active', true)
         .order('name')
 
       if (data) {
-        setLocations(data)
+        setLocations(data as LocationWithLabel[])
       }
     }
     loadLocations()
@@ -108,7 +114,7 @@ export function RouteFilters({ initialFilters }: RouteFiltersProps) {
               <SelectItem value="all">All locations</SelectItem>
               {locations.filter(loc => loc.allow_pickup).map((location) => (
                 <SelectItem key={location.id} value={location.id}>
-                  {location.name} ({location.type})
+                  {location.name} ({location.location_types?.label || 'Location'})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -125,7 +131,7 @@ export function RouteFilters({ initialFilters }: RouteFiltersProps) {
               <SelectItem value="all">All locations</SelectItem>
               {locations.filter(loc => loc.allow_dropoff).map((location) => (
                 <SelectItem key={location.id} value={location.id}>
-                  {location.name} ({location.type})
+                  {location.name} ({location.location_types?.label || 'Location'})
                 </SelectItem>
               ))}
             </SelectContent>

@@ -32,14 +32,17 @@ import {
 } from '@/components/ui/alert-dialog'
 import { MoreHorizontal, Pencil, Trash2, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
-import { Location } from '@/lib/types/location'
+import { LocationWithType } from '@/lib/types/location'
+import { LocationTypeRecord } from '@/lib/types/location-type'
+import { getLocationTypeBadgeVariant } from '@/lib/utils/location-type-utils'
 import { deleteLocation } from '../actions'
 
 interface LocationListProps {
-  locations: Location[]
+  locations: LocationWithType[]
+  locationTypes?: LocationTypeRecord[]
 }
 
-export function LocationList({ locations }: LocationListProps) {
+export function LocationList({ locations, locationTypes = [] }: LocationListProps) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -61,17 +64,15 @@ export function LocationList({ locations }: LocationListProps) {
     }
   }
 
-  const getLocationTypeBadge = (type: Location['type']) => {
-    const variants: Record<Location['type'], 'default' | 'secondary' | 'outline' | 'destructive'> = {
-      airport: 'default',
-      city: 'secondary',
-      hotel: 'outline',
-      station: 'destructive',
-    }
-    
+  const getLocationTypeBadge = (location: LocationWithType) => {
+    const typeRecord = location.location_types
+    const label = typeRecord?.label ?? 'Unknown'
+    const variant = getLocationTypeBadgeVariant(typeRecord?.color_config) as
+      'default' | 'secondary' | 'outline' | 'destructive'
+
     return (
-      <Badge variant={variants[type]}>
-        {type.charAt(0).toUpperCase() + type.slice(1)}
+      <Badge variant={variant} className={typeRecord?.color_config?.badgeClass}>
+        {label}
       </Badge>
     )
   }
@@ -108,7 +109,7 @@ export function LocationList({ locations }: LocationListProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {getLocationTypeBadge(location.type)}
+                    {getLocationTypeBadge(location)}
                   </TableCell>
                   <TableCell>{location.city || '-'}</TableCell>
                   <TableCell>{location.country_code}</TableCell>
