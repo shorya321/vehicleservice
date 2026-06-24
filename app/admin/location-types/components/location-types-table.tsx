@@ -34,15 +34,13 @@ import {
 } from '@/components/ui/alert-dialog'
 import { LocationTypeRecord } from '@/lib/types/location-type'
 import { getLocationTypeIcon } from '@/lib/utils/location-type-utils'
-import { toggleLocationTypeStatus, deleteLocationType, PaginatedLocationTypes } from '../actions'
-import { CustomPagination } from '@/components/ui/custom-pagination'
+import { toggleLocationTypeStatus, deleteLocationType } from '../actions'
 
 interface LocationTypesTableProps {
   locationTypes: LocationTypeRecord[]
-  pagination: PaginatedLocationTypes
 }
 
-export function LocationTypesTable({ locationTypes, pagination }: LocationTypesTableProps) {
+export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -161,21 +159,6 @@ export function LocationTypesTable({ locationTypes, pagination }: LocationTypesT
           </TableBody>
         </Table>
       </div>
-
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-            {pagination.total} location types
-          </p>
-          <CustomPagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            baseUrl="/admin/location-types"
-          />
-        </div>
-      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>

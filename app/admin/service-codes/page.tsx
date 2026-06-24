@@ -129,23 +129,43 @@ export default async function ServiceCodesPage({ searchParams }: PageProps) {
       </Suspense>
 
       {result.totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: result.totalPages }, (_, i) => i + 1).map(
-            (p) => (
-              <Button
-                key={p}
-                variant={p === result.page ? 'default' : 'outline'}
-                size="sm"
-                asChild
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {((result.page - 1) * result.limit) + 1} to{' '}
+            {Math.min(result.page * result.limit, result.total)} of {result.total} service codes
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={result.page === 1}
+              asChild
+            >
+              <Link
+                href={{
+                  pathname: '/admin/service-codes',
+                  query: { ...params, page: result.page - 1 },
+                }}
               >
-                <Link
-                  href={`/admin/service-codes?page=${p}${params.search ? `&search=${params.search}` : ''}${params.serviceType ? `&serviceType=${params.serviceType}` : ''}`}
-                >
-                  {p}
-                </Link>
-              </Button>
-            )
-          )}
+                Previous
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={result.page === result.totalPages}
+              asChild
+            >
+              <Link
+                href={{
+                  pathname: '/admin/service-codes',
+                  query: { ...params, page: result.page + 1 },
+                }}
+              >
+                Next
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>

@@ -81,7 +81,48 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
 
         <div className="space-y-4">
           <ClientFilters initialFilters={filters} />
-          <RoutesTableWithBulk routes={routesData.routes} pagination={routesData} />
+          <RoutesTableWithBulk routes={routesData.routes} />
+
+          {routesData.totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {((routesData.page - 1) * routesData.limit) + 1} to{' '}
+                {Math.min(routesData.page * routesData.limit, routesData.total)} of {routesData.total} routes
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={routesData.page === 1}
+                  asChild
+                >
+                  <Link
+                    href={{
+                      pathname: '/admin/routes',
+                      query: { ...params, page: routesData.page - 1 },
+                    }}
+                  >
+                    Previous
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={routesData.page === routesData.totalPages}
+                  asChild
+                >
+                  <Link
+                    href={{
+                      pathname: '/admin/routes',
+                      query: { ...params, page: routesData.page + 1 },
+                    }}
+                  >
+                    Next
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </AnimatedPage>
   )

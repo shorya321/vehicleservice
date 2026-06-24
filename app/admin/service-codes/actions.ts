@@ -45,7 +45,7 @@ export async function getServiceCodes(
   const supabase: AnyClient = await createClient()
 
   const page = filters.page || 1
-  const limit = filters.limit || 20
+  const limit = filters.limit || 10
   const from = (page - 1) * limit
   const to = from + limit - 1
 

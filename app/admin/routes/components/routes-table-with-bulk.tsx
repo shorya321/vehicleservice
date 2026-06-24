@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import { RouteWithDetails, PaginatedRoutes } from "@/lib/types/route"
+import { RouteWithDetails } from "@/lib/types/route"
 import {
   Table,
   TableBody,
@@ -34,7 +34,6 @@ import {
 import Link from "next/link"
 import { deleteRoute, toggleRouteStatus, toggleRoutePopular } from "../actions"
 import { toast } from "sonner"
-import { CustomPagination } from "@/components/ui/custom-pagination"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,10 +48,9 @@ import { RouteBulkActionsBar } from "./route-bulk-actions-bar"
 
 interface RoutesTableWithBulkProps {
   routes: RouteWithDetails[]
-  pagination: PaginatedRoutes
 }
 
-export function RoutesTableWithBulk({ routes, pagination }: RoutesTableWithBulkProps) {
+export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -264,16 +262,6 @@ export function RoutesTableWithBulk({ routes, pagination }: RoutesTableWithBulkP
           </TableBody>
         </Table>
       </div>
-
-      {pagination.totalPages > 1 && (
-        <div className="mt-4">
-          <CustomPagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            baseUrl="/admin/routes"
-          />
-        </div>
-      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
