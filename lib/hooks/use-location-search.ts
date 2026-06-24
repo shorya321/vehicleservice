@@ -13,6 +13,8 @@ const RECENT_SEARCHES_KEY = 'location-recent-searches'
 const MAX_RECENT = 5
 const MAX_CACHE_SIZE = 20
 const HARD_TIMEOUT_MS = 15000
+const RETRY_TIMEOUT_MS = 3000
+const SAFETY_TIMEOUT_MS = 25000
 
 interface RecentSearch {
   id: string
@@ -152,7 +154,10 @@ export function useLocationSearch(
 
   useEffect(() => {
     abortRef.current?.abort()
-    if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current)
+      retryTimerRef.current = null
+    }
 
     if (debouncedQuery.length < 2) {
       setFlatResults([])
@@ -172,30 +177,28 @@ export function useLocationSearch(
     }
 
     let cancelled = false
-    let retried = false
 
-    const doSearch = async () => {
+    const doSearch = async (isRetry = false) => {
       if (cancelled) return
 
       const controller = new AbortController()
       abortRef.current = controller
 
+      const timeoutMs = isRetry ? RETRY_TIMEOUT_MS : HARD_TIMEOUT_MS
       let signal: AbortSignal
       let timeoutId: ReturnType<typeof setTimeout> | undefined
       if (typeof AbortSignal.any === 'function') {
         signal = AbortSignal.any([
           controller.signal,
-          AbortSignal.timeout(HARD_TIMEOUT_MS),
+          AbortSignal.timeout(timeoutMs),
         ])
       } else {
         signal = controller.signal
-        timeoutId = setTimeout(() => controller.abort(), HARD_TIMEOUT_MS)
+        timeoutId = setTimeout(() => controller.abort(), timeoutMs)
       }
 
       setLoading(true)
       setError(false)
-
-      let shouldResetLoading = true
 
       try {
         const { data, error: rpcError } = await supabase
@@ -222,12 +225,10 @@ export function useLocationSearch(
       } catch (err: unknown) {
         if (cancelled) return
 
-        if (!retried) {
-          retried = true
+        if (!isRetry) {
           controller.abort()
-          shouldResetLoading = false
           retryTimerRef.current = setTimeout(() => {
-            if (!cancelled) doSearch()
+            if (!cancelled) doSearch(true)
           }, 1500)
           return
         }
@@ -241,7 +242,7 @@ export function useLocationSearch(
         setError(true)
       } finally {
         if (timeoutId !== undefined) clearTimeout(timeoutId)
-        if (shouldResetLoading) {
+        if (isRetry || !retryTimerRef.current) {
           setLoading(false)
         }
       }
@@ -251,7 +252,10 @@ export function useLocationSearch(
 
     return () => {
       cancelled = true
-      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current)
+        retryTimerRef.current = null
+      }
       abortRef.current?.abort()
     }
   }, [debouncedQuery, supabase, retryTrigger])
@@ -264,7 +268,7 @@ export function useLocationSearch(
       console.error('[LocationSearch] safety timeout: loading state stuck, forcing reset')
       setLoading(false)
       setError(true)
-    }, HARD_TIMEOUT_MS + 5000)
+    }, SAFETY_TIMEOUT_MS)
 
     return () => clearTimeout(safetyTimeout)
   }, [loading])
