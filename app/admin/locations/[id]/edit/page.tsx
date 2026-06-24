@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { LocationForm } from '../../components/location-form'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveLocationTypes } from '@/lib/actions/location-types'
+import { LocationTypeRecord } from '@/lib/types/location-type'
 
 export const metadata: Metadata = {
   title: 'Edit Location - Admin',
@@ -21,7 +22,7 @@ export default async function EditLocationPage({
   const supabase = await createClient()
 
   // Fetch location by ID with location_types join
-  const [{ data: location, error }, locationTypes] = await Promise.all([
+  const [{ data: location, error }, activeLocationTypes] = await Promise.all([
     supabase
       .from('locations')
       .select('*, location_types(*)')
@@ -33,6 +34,14 @@ export default async function EditLocationPage({
   if (error || !location) {
     notFound()
   }
+
+  // Ensure the location's current type is in the list even if deactivated
+  const currentTypeInList = activeLocationTypes.some(
+    (lt) => lt.id === location.location_type_id
+  )
+  const locationTypes = currentTypeInList || !location.location_types
+    ? activeLocationTypes
+    : [location.location_types as unknown as LocationTypeRecord, ...activeLocationTypes]
 
   return (
       <div className="space-y-6">
