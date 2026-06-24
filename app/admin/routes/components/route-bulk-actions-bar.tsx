@@ -54,7 +54,7 @@ export function RouteBulkActionsBar({ selectedCount, selectedIds, onClearSelecti
       setConfirmAction({
         type: 'delete',
         title: 'Delete Routes',
-        description: `Are you sure you want to delete ${selectedCount} route${selectedCount > 1 ? 's' : ''}? This action cannot be undone and will remove all related vendor services.`
+        description: `Are you sure you want to delete ${selectedCount} route${selectedCount > 1 ? 's' : ''}? This action cannot be undone.`
       })
       return
     }

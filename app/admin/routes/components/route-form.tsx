@@ -70,8 +70,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
     },
   })
 
-  const pickupLocations = locations.filter(loc => loc.allow_pickup)
-  const dropoffLocations = locations.filter(loc => loc.allow_dropoff)
+
 
   const generateSlug = () => {
     const originId = form.getValues('origin_location_id')
@@ -143,7 +142,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                     generateRouteName()
                     generateSlug()
                   }} 
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -151,7 +150,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {pickupLocations.map((location) => (
+                    {locations.map((location) => (
                       <SelectItem key={location.id} value={location.id}>
                         {location.name} ({location.location_types?.label || 'Location'})
                       </SelectItem>
@@ -178,7 +177,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                     generateRouteName()
                     generateSlug()
                   }} 
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -186,7 +185,7 @@ export function RouteForm({ route, locations }: RouteFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {dropoffLocations.map((location) => (
+                    {locations.map((location) => (
                       <SelectItem key={location.id} value={location.id}>
                         {location.name} ({location.location_types?.label || 'Location'})
                       </SelectItem>

@@ -88,12 +88,13 @@ export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestin
           value={originInput}
           onChange={(v) => {
             setOriginInput(v)
-            if (!v) setOriginLocation(null)
+            setOriginLocation(prev => prev && prev.name === v ? prev : null)
           }}
           onSelect={(loc) => {
             setOriginLocation(loc)
             setOriginInput(loc.name)
           }}
+          selectedLocation={originLocation}
           placeholder="From (airport, port, address)"
         />
 
@@ -112,12 +113,13 @@ export function SearchWidget({ className, onSearch, defaultOrigin, defaultDestin
           value={destInput}
           onChange={(v) => {
             setDestInput(v)
-            if (!v) setDestinationLocation(null)
+            setDestinationLocation(prev => prev && prev.name === v ? prev : null)
           }}
           onSelect={(loc) => {
             setDestinationLocation(loc)
             setDestInput(loc.name)
           }}
+          selectedLocation={destinationLocation}
           placeholder="To (optional)"
         />
       </div>

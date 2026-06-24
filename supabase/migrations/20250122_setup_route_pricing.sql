@@ -25,7 +25,7 @@ $$ LANGUAGE plpgsql;
 
 -- Populate route_vehicle_type_pricing for all existing routes
 INSERT INTO route_vehicle_type_pricing (route_id, vehicle_type_id, price)
-SELECT 
+SELECT
   r.id AS route_id,
   vt.id AS vehicle_type_id,
   calculate_vehicle_type_price(r.base_price, vt.slug) AS price
@@ -37,17 +37,9 @@ ON CONFLICT (route_id, vehicle_type_id) DO UPDATE SET
   price = EXCLUDED.price,
   updated_at = NOW();
 
--- Update vendor_route_services to remove price_multiplier dependency
--- Vendors will now compete on service quality rather than price manipulation
-ALTER TABLE vendor_route_services 
-ADD COLUMN IF NOT EXISTS notes TEXT,
-ADD COLUMN IF NOT EXISTS service_features JSONB DEFAULT '{}';
-
--- Add comments to clarify the new pricing model
+-- Add comments to clarify the pricing model
 COMMENT ON TABLE route_vehicle_type_pricing IS 'Stores fixed prices for each vehicle type on each route';
 COMMENT ON COLUMN route_vehicle_type_pricing.price IS 'Fixed price for this vehicle type on this route';
-COMMENT ON TABLE vendor_route_services IS 'Tracks which vendors service which routes';
-COMMENT ON COLUMN vendor_route_services.price_multiplier IS 'DEPRECATED - Use route_vehicle_type_pricing instead';
 
 -- Drop the function after use
 DROP FUNCTION IF EXISTS calculate_vehicle_type_price(DECIMAL, VARCHAR);

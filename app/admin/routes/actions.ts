@@ -63,8 +63,6 @@ export async function getRoutes(filters: RouteFilters = {}): Promise<PaginatedRo
 
   const routesWithDetails: RouteWithDetails[] = (data || []).map(route => ({
     ...route,
-    search_count: 0, // No longer tracking search counts
-    vendor_count: 0 // All vendors can service all routes (aggregator model)
   }))
 
   return {

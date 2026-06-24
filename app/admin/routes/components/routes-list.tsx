@@ -17,8 +17,6 @@ import {
   Trash2, 
   MapPin, 
   Clock, 
-  Car,
-  TrendingUp,
   Star,
   StarOff,
   Check,
@@ -121,7 +119,6 @@ export function RoutesList({ routes, pagination }: RoutesListProps) {
               <TableHead>Route</TableHead>
               <TableHead>Distance/Duration</TableHead>
               <TableHead>Popularity</TableHead>
-              <TableHead>Vendors</TableHead>
               <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -170,18 +167,6 @@ export function RoutesList({ routes, pagination }: RoutesListProps) {
                         </Badge>
                       )}
                     </div>
-                    {route.search_count && route.search_count > 0 && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        {route.search_count} searches
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Car className="h-3 w-3" />
-                    {route.vendor_count || 0}
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
@@ -243,7 +228,7 @@ export function RoutesList({ routes, pagination }: RoutesListProps) {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the route
-              and remove it from all vendor services.
+              and any associated pricing data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

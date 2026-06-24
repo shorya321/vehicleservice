@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MapPin, X, Search, Loader2 } from 'lucide-react'
+import { MapPin, X, Search, Loader2, AlertCircle } from 'lucide-react'
 import { getLocationTypeIcon } from '@/lib/utils/location-type-utils'
 import { getCountryName } from '@/lib/utils/country'
 import {
@@ -173,6 +173,8 @@ function LocationSearchAutocompleteBase({
     hasSearched,
     selectLocation,
     clearQuery,
+    retry,
+    clearError,
   }: UseLocationSearchReturn = useLocationSearch({ debounceMs: 250 })
 
   const groupedFlat = useMemo(
@@ -268,8 +270,9 @@ function LocationSearchAutocompleteBase({
   )
 
   const handleFocus = useCallback(() => {
+    clearError()
     setShowDropdown(true)
-  }, [])
+  }, [clearError])
 
   const handleClear = useCallback(() => {
     onChange('')
@@ -572,8 +575,21 @@ function LocationSearchAutocompleteBase({
               ) : null}
 
               {error && (
-                <div className="px-4 py-3 text-sm text-destructive">
-                  Unable to search locations. Try again.
+                <div className="px-4 py-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                  <span className="text-sm text-destructive">
+                    Unable to search locations.{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        retry()
+                      }}
+                      className="underline underline-offset-2 hover:text-destructive/80 font-medium"
+                    >
+                      Try again
+                    </button>
+                  </span>
                 </div>
               )}
             </>
