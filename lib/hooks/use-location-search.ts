@@ -159,7 +159,7 @@ export function useLocationSearch(
       retryTimerRef.current = null
     }
 
-    if (debouncedQuery.length < 2) {
+    if (debouncedQuery.length < 3) {
       setFlatResults([])
       setHasSearched(false)
       setError(false)
@@ -292,7 +292,7 @@ export function useLocationSearch(
   }, [])
 
   const retry = useCallback(() => {
-    if (debouncedQuery.length < 2) return
+    if (debouncedQuery.length < 3) return
     cacheRef.current.delete(debouncedQuery.toLowerCase())
     setError(false)
     setRetryTrigger((prev) => prev + 1)

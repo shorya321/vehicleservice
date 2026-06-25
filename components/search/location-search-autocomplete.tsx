@@ -175,7 +175,7 @@ function LocationSearchAutocompleteBase({
     clearQuery,
     retry,
     clearError,
-  }: UseLocationSearchReturn = useLocationSearch({ debounceMs: 250 })
+  }: UseLocationSearchReturn = useLocationSearch({ debounceMs: 350 })
 
   const groupedFlat = useMemo(
     () => groupedResults.flatMap((g) => g.locations),
