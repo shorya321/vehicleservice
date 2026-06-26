@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createPublicClient } from '@/lib/supabase/public-client'
+import { createClient } from '@/lib/supabase/client'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import type {
   Location,
@@ -14,7 +14,6 @@ const MAX_RECENT = 5
 const MAX_CACHE_SIZE = 20
 const HARD_TIMEOUT_MS = 15000
 const RETRY_TIMEOUT_MS = 3000
-const SAFETY_TIMEOUT_MS = 25000
 
 interface RecentSearch {
   id: string
@@ -125,7 +124,7 @@ export function useLocationSearch(
   const [retryTrigger, setRetryTrigger] = useState(0)
 
   const debouncedQuery = useDebounce(query, debounceMs)
-  const supabase = useMemo(() => createPublicClient(), [])
+  const supabase = useMemo(() => createClient(), [])
   const cacheRef = useRef(new Map<string, LocationSearchResult[]>())
   const abortRef = useRef<AbortController | null>(null)
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -229,7 +228,7 @@ export function useLocationSearch(
           controller.abort()
           retryTimerRef.current = setTimeout(() => {
             if (!cancelled) doSearch(true)
-          }, 1500)
+          }, 200)
           return
         }
 
@@ -242,7 +241,7 @@ export function useLocationSearch(
         setError(true)
       } finally {
         if (timeoutId !== undefined) clearTimeout(timeoutId)
-        if (isRetry || !retryTimerRef.current) {
+        if (!cancelled) {
           setLoading(false)
         }
       }
@@ -260,18 +259,6 @@ export function useLocationSearch(
     }
   }, [debouncedQuery, supabase, retryTrigger])
 
-  // Safety net: force-reset loading if stuck beyond all timeouts
-  useEffect(() => {
-    if (!loading) return
-
-    const safetyTimeout = setTimeout(() => {
-      console.error('[LocationSearch] safety timeout: loading state stuck, forcing reset')
-      setLoading(false)
-      setError(true)
-    }, SAFETY_TIMEOUT_MS)
-
-    return () => clearTimeout(safetyTimeout)
-  }, [loading])
 
   const groupedResults = useMemo(() => groupByType(flatResults), [flatResults])
   const popularGroups = useMemo(() => groupByType(popularResults), [popularResults])
