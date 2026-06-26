@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createSearchClient } from '@/lib/supabase/search-client'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import type {
   Location,
@@ -124,7 +124,7 @@ export function useLocationSearch(
   const [retryTrigger, setRetryTrigger] = useState(0)
 
   const debouncedQuery = useDebounce(query, debounceMs)
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => createSearchClient(), [])
   const cacheRef = useRef(new Map<string, LocationSearchResult[]>())
   const abortRef = useRef<AbortController | null>(null)
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
