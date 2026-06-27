@@ -14,6 +14,7 @@ import {
   MODIFIABLE_STATUSES,
 } from '@/lib/business/booking-utils';
 import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-emails';
+import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/email/services/business-emails';
 
 /**
  * PATCH /api/business/bookings/[id]/datetime
@@ -178,6 +179,32 @@ export const PATCH = requireBusinessAuth(
             // Don't fail the request, email is secondary
           }
         }
+      }
+
+      // Send datetime change email to customer
+      if (booking.customer_email) {
+        const formatDt = (dt: string) =>
+          new Date(dt).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
+
+        const { data: businessAccount } = await supabaseAdmin
+          .from('business_accounts')
+          .select('business_name')
+          .eq('id', booking.business_account_id)
+          .single();
+
+        sendBusinessCustomerDatetimeChangedEmail({
+          customerName: booking.customer_name,
+          customerEmail: booking.customer_email,
+          businessName: businessAccount?.business_name || 'Your booking provider',
+          bookingNumber: booking.booking_number,
+          tripNumber: booking.trip_number,
+          pickupLocation: booking.pickup_address || 'TBD',
+          previousDateTime: formatDt(previousDatetime),
+          newDateTime: formatDt(newPickupDatetime),
+          modificationReason: reason,
+        }).catch((err: unknown) => {
+          console.error('Failed to send customer datetime change email:', err);
+        });
       }
 
       // Fetch updated booking to return

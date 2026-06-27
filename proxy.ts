@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
   let user = null
   try {
     const { data: { user: authUser }, error } = await supabase.auth.getUser()
-    if (error) {
+    if (error && error.message !== 'Auth session missing!') {
       console.warn('Middleware auth error:', error.message)
     }
     user = authUser

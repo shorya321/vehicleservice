@@ -795,17 +795,19 @@ async function getZoneToZoneResults(
   const supabase = await createClient()
 
   // Get both zones information
+  const isSameZone = fromZoneId === toZoneId
   const { data: zones } = await supabase
     .from('zones')
     .select('*')
     .in('id', [fromZoneId, toZoneId])
 
-  if (!zones || zones.length !== 2) {
+  const expectedCount = isSameZone ? 1 : 2
+  if (!zones || zones.length !== expectedCount) {
     return null
   }
 
   const fromZone = zones.find(z => z.id === fromZoneId)
-  const toZone = zones.find(z => z.id === toZoneId)
+  const toZone = isSameZone ? fromZone : zones.find(z => z.id === toZoneId)
 
   if (!fromZone || !toZone) {
     return null

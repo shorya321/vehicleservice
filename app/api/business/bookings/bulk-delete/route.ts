@@ -12,6 +12,7 @@ import {
   apiError,
   parseRequestBody,
 } from '@/lib/business/api-utils';
+import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/email/services/business-emails';
 
 const bulkDeleteSchema = z.object({
   booking_ids: z.array(z.string().uuid()).min(1).max(50),
@@ -45,10 +46,16 @@ export const POST = requireBusinessAuth(
     );
 
     try {
-      // Fetch all bookings to verify ownership and get refund info
+      // Fetch all bookings to verify ownership, get refund info, and capture details for notifications
       const { data: bookings, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
-        .select('id, business_account_id, booking_status, wallet_deduction_amount')
+        .select(`
+          id, business_account_id, booking_status, wallet_deduction_amount,
+          booking_number, trip_number, customer_name, customer_email,
+          pickup_address, dropoff_address, pickup_datetime,
+          from_location:from_location_id(name),
+          to_location:to_location_id(name)
+        `)
         .in('id', booking_ids);
 
       if (fetchError) {
@@ -99,6 +106,45 @@ export const POST = requireBusinessAuth(
           // Continue with deletion even if refund fails
         }
       }
+
+      // Send customer cancellation emails BEFORE deletion (fire-and-forget)
+      const { data: businessAccount } = await supabaseAdmin
+        .from('business_accounts')
+        .select('business_name, currency')
+        .eq('id', user.businessAccountId)
+        .single();
+
+      const businessName = businessAccount?.business_name || 'Your booking provider';
+
+      Promise.allSettled(
+        bookings
+          .filter((b) => b.customer_email)
+          .map((b) => {
+            const pickupLocation = (b as any).from_location?.name
+              ? `${(b as any).from_location.name}${b.pickup_address ? ` - ${b.pickup_address}` : ''}`
+              : b.pickup_address || 'N/A';
+
+            const dropoffLocation = (b as any).to_location?.name
+              ? `${(b as any).to_location.name}${b.dropoff_address ? ` - ${b.dropoff_address}` : ''}`
+              : b.dropoff_address || 'N/A';
+
+            const pickupDateTime = new Date(b.pickup_datetime).toLocaleString('en-US', {
+              dateStyle: 'full',
+              timeStyle: 'short',
+            });
+
+            return sendBusinessCustomerBookingCancelledEmail({
+              customerName: b.customer_name,
+              customerEmail: b.customer_email,
+              businessName,
+              bookingNumber: b.booking_number,
+              tripNumber: b.trip_number,
+              pickupLocation,
+              dropoffLocation,
+              pickupDateTime,
+            });
+          })
+      ).catch((err) => console.error('Bulk deletion email error:', err));
 
       // Delete all bookings
       const bookingIdsToDelete = bookings.map((b) => b.id);

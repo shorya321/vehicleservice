@@ -6,6 +6,11 @@ import { revalidatePath } from 'next/cache'
 import { getUnifiedBookingsList, createBookingAssignment, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
 import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/email/services/vendor-emails'
 import { sendDriverBookingUnassignmentEmail } from '@/lib/email/services/driver-emails'
+import {
+  sendBusinessCustomerBookingCancelledEmail,
+  sendBusinessBookingStatusUpdateEmail,
+  sendBusinessBookingCancellationEmail,
+} from '@/lib/email/services/business-emails'
 import { getAppUrl } from '@/lib/email/config'
 import { format, parseISO } from 'date-fns'
 
@@ -509,6 +514,83 @@ export async function updateBookingStatus(
     }
   }
 
+  // Send email notifications for business bookings
+  if (bookingType === 'business') {
+    try {
+      const emailDetails = await getBusinessBookingEmailDetails(bookingId)
+      if (emailDetails) {
+        if (status === 'cancelled') {
+          // Send customer cancellation email
+          if (emailDetails.customerEmail) {
+            sendBusinessCustomerBookingCancelledEmail({
+              customerName: emailDetails.customerName,
+              customerEmail: emailDetails.customerEmail,
+              businessName: emailDetails.businessName,
+              bookingNumber: emailDetails.bookingNumber,
+              tripNumber: emailDetails.tripNumber,
+              pickupLocation: emailDetails.pickupLocation,
+              dropoffLocation: emailDetails.dropoffLocation,
+              pickupDateTime: emailDetails.pickupDateTime,
+              cancellationReason,
+            }).catch((err: unknown) => console.error('Failed to send customer cancel email:', err))
+          }
+
+          // Send business cancellation email
+          if (emailDetails.businessEmail) {
+            sendBusinessBookingCancellationEmail({
+              email: emailDetails.businessEmail,
+              businessName: emailDetails.businessName,
+              bookingNumber: emailDetails.bookingNumber,
+              tripNumber: emailDetails.tripNumber,
+              customerName: emailDetails.customerName,
+              pickupLocation: emailDetails.pickupLocation,
+              dropoffLocation: emailDetails.dropoffLocation,
+              pickupDateTime: emailDetails.pickupDateTime,
+              cancellationReason,
+              refundAmount: 0,
+              newBalance: 0,
+              currency: emailDetails.currency,
+              walletUrl: `${getAppUrl()}/business/wallet`,
+            }).catch((err: unknown) => console.error('Failed to send business cancel email:', err))
+          }
+        } else {
+          // Send status update emails for non-cancellation status changes
+          if (emailDetails.customerEmail) {
+            sendBusinessBookingStatusUpdateEmail({
+              email: emailDetails.customerEmail,
+              businessName: emailDetails.businessName,
+              bookingNumber: emailDetails.bookingNumber,
+              tripNumber: emailDetails.tripNumber,
+              customerName: emailDetails.customerName,
+              pickupLocation: emailDetails.pickupLocation,
+              dropoffLocation: emailDetails.dropoffLocation,
+              pickupDateTime: emailDetails.pickupDateTime,
+              previousStatus: 'pending',
+              newStatus: status,
+            }).catch((err: unknown) => console.error('Failed to send customer status email:', err))
+          }
+
+          if (emailDetails.businessEmail) {
+            sendBusinessBookingStatusUpdateEmail({
+              email: emailDetails.businessEmail,
+              businessName: emailDetails.businessName,
+              bookingNumber: emailDetails.bookingNumber,
+              tripNumber: emailDetails.tripNumber,
+              customerName: emailDetails.customerName,
+              pickupLocation: emailDetails.pickupLocation,
+              dropoffLocation: emailDetails.dropoffLocation,
+              pickupDateTime: emailDetails.pickupDateTime,
+              previousStatus: 'pending',
+              newStatus: status,
+            }).catch((err: unknown) => console.error('Failed to send business status email:', err))
+          }
+        }
+      }
+    } catch (emailError) {
+      console.error('Failed to send status update emails:', emailError)
+    }
+  }
+
   revalidatePath('/admin/bookings')
   revalidatePath(`/admin/bookings/${bookingId}`)
 
@@ -708,29 +790,82 @@ export async function bulkUpdateBookingStatus(
   status: 'confirmed' | 'cancelled'
 ) {
   const adminClient = createAdminClient()
-  
+
   const updateData: any = {
     booking_status: status,
     updated_at: new Date().toISOString()
   }
-  
+
   if (status === 'cancelled') {
     updateData.cancelled_at = new Date().toISOString()
     updateData.cancellation_reason = 'Bulk cancellation by admin'
   }
-  
+
+  // Update customer bookings
   const { error } = await adminClient
     .from('bookings')
     .update(updateData)
     .in('id', bookingIds)
-  
+
   if (error) {
-    console.error('Error bulk updating booking status:', error)
+    console.error('Error bulk updating customer booking status:', error)
+  }
+
+  // Update business bookings
+  const { error: bizError } = await adminClient
+    .from('business_bookings')
+    .update(updateData)
+    .in('id', bookingIds)
+
+  if (bizError) {
+    console.error('Error bulk updating business booking status:', bizError)
+  }
+
+  if (error && bizError) {
     throw new Error('Failed to bulk update booking status')
   }
-  
+
+  // Send notifications for business bookings (fire-and-forget)
+  Promise.allSettled(
+    bookingIds.map(async (bookingId) => {
+      try {
+        const details = await getBusinessBookingEmailDetails(bookingId)
+        if (!details) return
+
+        if (status === 'cancelled' && details.customerEmail) {
+          await sendBusinessCustomerBookingCancelledEmail({
+            customerName: details.customerName,
+            customerEmail: details.customerEmail,
+            businessName: details.businessName,
+            bookingNumber: details.bookingNumber,
+            tripNumber: details.tripNumber,
+            pickupLocation: details.pickupLocation,
+            dropoffLocation: details.dropoffLocation,
+            pickupDateTime: details.pickupDateTime,
+            cancellationReason: 'Bulk cancellation by admin',
+          })
+        } else if (details.customerEmail) {
+          await sendBusinessBookingStatusUpdateEmail({
+            email: details.customerEmail,
+            businessName: details.businessName,
+            bookingNumber: details.bookingNumber,
+            tripNumber: details.tripNumber,
+            customerName: details.customerName,
+            pickupLocation: details.pickupLocation,
+            dropoffLocation: details.dropoffLocation,
+            pickupDateTime: details.pickupDateTime,
+            previousStatus: 'pending',
+            newStatus: status,
+          })
+        }
+      } catch (err) {
+        console.error(`Failed to send email for bulk booking ${bookingId}:`, err)
+      }
+    })
+  ).catch((err) => console.error('Bulk email notification error:', err))
+
   revalidatePath('/admin/bookings')
-  
+
   return { success: true }
 }
 
@@ -1100,6 +1235,59 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
     dropoffAddress,
     pickupDate: format(pickupDatetime, 'MMMM d, yyyy'),
     pickupTime: format(pickupDatetime, 'h:mm a'),
+  }
+}
+
+/**
+ * Helper: fetch business booking details needed for email notifications
+ */
+async function getBusinessBookingEmailDetails(bookingId: string) {
+  const adminClient = createAdminClient()
+
+  const { data: booking } = await adminClient
+    .from('business_bookings')
+    .select(`
+      booking_number, trip_number, customer_name, customer_email,
+      pickup_address, dropoff_address, pickup_datetime,
+      business_account_id,
+      from_location:from_location_id(name),
+      to_location:to_location_id(name)
+    `)
+    .eq('id', bookingId)
+    .single()
+
+  if (!booking) return null
+
+  const { data: account } = await adminClient
+    .from('business_accounts')
+    .select('business_name, business_email, currency')
+    .eq('id', booking.business_account_id)
+    .single()
+
+  const pickupLocation = (booking.from_location as any)?.name
+    ? `${(booking.from_location as any).name}${booking.pickup_address ? ` - ${booking.pickup_address}` : ''}`
+    : booking.pickup_address || 'N/A'
+
+  const dropoffLocation = (booking.to_location as any)?.name
+    ? `${(booking.to_location as any).name}${booking.dropoff_address ? ` - ${booking.dropoff_address}` : ''}`
+    : booking.dropoff_address || 'N/A'
+
+  const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+  })
+
+  return {
+    bookingNumber: booking.booking_number,
+    tripNumber: booking.trip_number || undefined,
+    customerName: booking.customer_name || 'Customer',
+    customerEmail: booking.customer_email,
+    businessName: account?.business_name || 'Business',
+    businessEmail: account?.business_email || '',
+    currency: account?.currency || 'AED',
+    pickupLocation,
+    dropoffLocation,
+    pickupDateTime,
   }
 }
 

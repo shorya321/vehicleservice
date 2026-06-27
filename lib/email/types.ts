@@ -197,3 +197,56 @@ export interface DriverBookingUnassignmentEmailData {
   reason?: string;
   vendorName: string;
 }
+
+// Business customer emails (sent to end customer when business books on their behalf)
+export interface BusinessCustomerBookingConfirmationEmailData {
+  customerName: string;
+  customerEmail: string;
+  businessName: string;
+  bookingNumber: string;
+  tripNumber?: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDateTime: string;
+  vehicleType: string;
+  passengerCount: number;
+  referenceNumber?: string;
+}
+
+export interface BusinessCustomerDatetimeChangedEmailData {
+  customerName: string;
+  customerEmail: string;
+  businessName: string;
+  bookingNumber: string;
+  tripNumber?: string;
+  pickupLocation: string;
+  previousDateTime: string;
+  newDateTime: string;
+  modificationReason?: string;
+}
+
+export interface BusinessCustomerBookingCancelledEmailData {
+  customerName: string;
+  customerEmail: string;
+  businessName: string;
+  bookingNumber: string;
+  tripNumber?: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDateTime: string;
+  cancellationReason?: string;
+}
+
+export interface BusinessBookingStatusUpdateEmailData {
+  email: string;
+  businessName: string;
+  bookingNumber: string;
+  tripNumber?: string;
+  customerName: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDateTime: string;
+  previousStatus: string;
+  newStatus: string;
+  statusMessage?: string;
+}

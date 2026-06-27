@@ -116,12 +116,14 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
     <PublicLayout>
       <div className="bg-[var(--black-void)] relative min-h-screen">
         <div className="relative z-10">
-          <SearchSummary
-            origin={origin}
-            destination={destination}
-            date={new Date(date)}
-            passengers={parseInt(passengers)}
-          />
+          <div className="hidden">
+            <SearchSummary
+              origin={origin}
+              destination={destination}
+              date={new Date(date)}
+              passengers={parseInt(passengers)}
+            />
+          </div>
 
           <div className="luxury-container py-12 lg:py-16">
             <SearchResults results={results} searchParams={enrichedSearchParams} />

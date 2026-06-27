@@ -6,10 +6,10 @@ import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
 import { EmptyState } from './empty-state'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
-import { ZoneResultCard } from '@/components/search/zone-result-card'
 import { ZonesList } from '@/components/search/zones-list'
-import { Clock, MapPin, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, Clock, MapPin, SlidersHorizontal, Users, X } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { format } from 'date-fns'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
 
@@ -40,7 +40,6 @@ type CapacityFilter = 'any' | '1-4' | '5-8' | '9+'
 export function SearchResults({ results, searchParams }: SearchResultsProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const prefersReducedMotion = useReducedMotion()
-  const [showVehicles, setShowVehicles] = useState(results?.type === 'zone')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [capacityFilter, setCapacityFilter] = useState<CapacityFilter>('any')
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
@@ -94,21 +93,6 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
   }
 
   // Handle different result types
-  if (results.type === 'zone' && results.zone) {
-    // If showing zone and user hasn't proceeded to vehicles yet
-    if (!showVehicles) {
-      return (
-        <div className="max-w-4xl mx-auto">
-          <ZoneResultCard 
-            zone={results.zone} 
-            onProceed={() => setShowVehicles(true)}
-          />
-        </div>
-      )
-    }
-    // Otherwise fall through to show vehicle types
-  }
-
   if (results.type === 'zones' && results.zones) {
     return <ZonesList zones={results.zones} searchParams={searchParams} />
   }
@@ -127,8 +111,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
   }
 
   // Handle route or zone with vehicle types
-  if ((results.type === 'route' && results.vehicleTypes) || 
-      (results.type === 'zone' && showVehicles && results.vehicleTypes)) {
+  if ((results.type === 'route' || results.type === 'zone') && results.vehicleTypes) {
     if (results.vehicleTypes.length === 0) {
       return <EmptyState searchParams={searchParams} />
     }
@@ -138,43 +121,43 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       ? Math.min(...results.vehicleTypes.map(vt => vt.price))
       : 0
 
-    const routeHeading = results.type === 'zone' && results.zone
-      ? `${results.zone.fromZone.name} → ${results.zone.toZone.name}`
-      : results.routeName || `${results.originName} → ${results.destinationName}`
+    const isSameZone = results.type === 'zone' && results.zone
+      && results.zone.fromZone.id === results.zone.toZone.id
+    const routeHeading = results.routeName || `${results.originName} → ${results.destinationName}`
+
+    const zoneLabel = results.type === 'zone' && results.zone
+      ? (isSameZone
+          ? `Within ${results.zone.fromZone.name}`
+          : `${results.zone.fromZone.name} → ${results.zone.toZone.name}`)
+      : null
 
     return (
     <div className="space-y-12 lg:space-y-16">
       <h1 className="sr-only">{routeHeading}</h1>
       <motion.section
-        className="hidden rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--charcoal)] py-12 lg:py-16 px-8 lg:px-12"
+        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] py-8 lg:py-10 px-6 lg:px-8"
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div className="grid gap-x-10 gap-y-6 sm:grid-cols-[2fr_auto_auto_auto] sm:items-end">
           <div>
             <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--gold-text)]">
-              {results.type === 'zone' && results.zone ? 'Zone transfer' : 'Route'}
+              Route
             </div>
-            <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
-              {results.type === 'zone' && results.zone ? (
-                <>
-                  {results.zone.fromZone.name}
-                  <span className="mx-3 text-[var(--gold-text)]" aria-hidden="true">→</span>
-                  {results.zone.toZone.name}
-                </>
-              ) : (
-                results.routeName || (
-                  <>
-                    {results.originName}
-                    <span className="mx-3 text-[var(--gold-text)]" aria-hidden="true">→</span>
-                    {results.destinationName}
-                  </>
-                )
-              )}
+            <h1 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+              {results.originName}
+              <span className="mx-2 text-[var(--gold-text)]" aria-hidden="true">→</span>
+              {results.destinationName}
             </h1>
+            {zoneLabel && (
+              <p className="mt-2 text-[0.75rem] text-[var(--text-muted)]">
+                <MapPin className="mr-1 inline-block h-3 w-3 text-[var(--gold-text)]" aria-hidden="true" />
+                {zoneLabel}
+              </p>
+            )}
             {results.type !== 'zone' && results.distance && (
-              <p className="mt-4 flex items-baseline gap-5 text-[0.875rem] text-[var(--text-secondary)]">
+              <p className="mt-3 flex items-baseline gap-4 text-[0.8125rem] text-[var(--text-secondary)]">
                 <span className="flex items-baseline gap-1.5">
                   <Clock className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                   <span className="numeric font-medium">{results.distance} km</span>
@@ -187,15 +170,32 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             )}
           </div>
 
-          <div className="md:text-right">
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)] mb-2">
+          <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              Date
+            </div>
+            <div className="numeric mt-1.5 flex items-center gap-1.5 text-[1rem] text-[var(--text-primary)]">
+              <Calendar className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+              {searchParams.date ? format(new Date(searchParams.date), 'EEE · d MMM yyyy') : '—'}
+            </div>
+          </div>
+
+          <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              Passengers
+            </div>
+            <div className="numeric mt-1.5 flex items-center gap-1.5 text-[1rem] text-[var(--text-primary)]">
+              <Users className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+              {searchParams.passengers || '—'}
+            </div>
+          </div>
+
+          <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
+            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
               {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
             </div>
-            <div className="numeric text-[clamp(2.5rem,5vw,3.5rem)] font-semibold text-[var(--gold-text)]">
+            <div className="numeric mt-1.5 flex items-center text-[1rem] font-semibold text-[var(--gold-text)]">
               {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
-            </div>
-            <div className="mt-1 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              per vehicle
             </div>
           </div>
         </div>

@@ -13,7 +13,10 @@ import {
 } from '@/lib/business/api-utils';
 import { bookingCancellationSchema } from '@/lib/business/validators';
 import { formatCurrency } from '@/lib/business/wallet-operations';
-import { sendBusinessBookingCancellationEmail } from '@/lib/email/services/business-emails';
+import {
+  sendBusinessBookingCancellationEmail,
+  sendBusinessCustomerBookingCancelledEmail,
+} from '@/lib/email/services/business-emails';
 
 /**
  * POST /api/business/bookings/[id]/cancel
@@ -90,6 +93,7 @@ export const POST = requireBusinessAuth(
           booking_number,
           trip_number,
           customer_name,
+          customer_email,
           pickup_address,
           dropoff_address,
           pickup_datetime,
@@ -106,40 +110,83 @@ export const POST = requireBusinessAuth(
         .eq('id', user.businessAccountId)
         .single();
 
-      // Send cancellation email
+      // Send cancellation emails and notification
       if (cancelledBooking && businessAccount) {
-        try {
-          const pickupLocation = cancelledBooking.from_location?.name
-            ? `${cancelledBooking.from_location.name}${cancelledBooking.pickup_address ? ` - ${cancelledBooking.pickup_address}` : ''}`
-            : cancelledBooking.pickup_address || 'N/A';
+        const pickupLocation = (cancelledBooking as any).from_location?.name
+          ? `${(cancelledBooking as any).from_location.name}${cancelledBooking.pickup_address ? ` - ${cancelledBooking.pickup_address}` : ''}`
+          : cancelledBooking.pickup_address || 'N/A';
 
-          const dropoffLocation = cancelledBooking.to_location?.name
-            ? `${cancelledBooking.to_location.name}${cancelledBooking.dropoff_address ? ` - ${cancelledBooking.dropoff_address}` : ''}`
-            : cancelledBooking.dropoff_address || 'N/A';
+        const dropoffLocation = (cancelledBooking as any).to_location?.name
+          ? `${(cancelledBooking as any).to_location.name}${cancelledBooking.dropoff_address ? ` - ${cancelledBooking.dropoff_address}` : ''}`
+          : cancelledBooking.dropoff_address || 'N/A';
 
-          const pickupDateTime = new Date(cancelledBooking.pickup_datetime).toLocaleString('en-US', {
-            dateStyle: 'full',
-            timeStyle: 'short',
-          });
+        const pickupDateTime = new Date(cancelledBooking.pickup_datetime).toLocaleString('en-US', {
+          dateStyle: 'full',
+          timeStyle: 'short',
+        });
 
-          await sendBusinessBookingCancellationEmail({
-            email: businessAccount.business_email,
+        // Send cancellation email to business owner
+        sendBusinessBookingCancellationEmail({
+          email: businessAccount.business_email,
+          businessName: businessAccount.business_name,
+          bookingNumber: cancelledBooking.booking_number,
+          tripNumber: cancelledBooking.trip_number,
+          customerName: cancelledBooking.customer_name,
+          pickupLocation,
+          dropoffLocation,
+          pickupDateTime,
+          cancellationReason: body.cancellation_reason,
+          refundAmount,
+          newBalance,
+          currency: businessAccount.currency || 'AED',
+          walletUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/wallet`,
+        }).catch((err: unknown) => {
+          console.error('Failed to send business cancellation email:', err);
+        });
+
+        // Send cancellation email to customer
+        if (cancelledBooking.customer_email) {
+          sendBusinessCustomerBookingCancelledEmail({
+            customerName: cancelledBooking.customer_name,
+            customerEmail: cancelledBooking.customer_email,
             businessName: businessAccount.business_name,
             bookingNumber: cancelledBooking.booking_number,
             tripNumber: cancelledBooking.trip_number,
-            customerName: cancelledBooking.customer_name,
             pickupLocation,
             dropoffLocation,
             pickupDateTime,
             cancellationReason: body.cancellation_reason,
-            refundAmount,
-            newBalance,
-            currency: businessAccount.currency || 'AED',
-            walletUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/wallet`,
+          }).catch((err: unknown) => {
+            console.error('Failed to send customer cancellation email:', err);
           });
-        } catch (emailError) {
-          console.error('Failed to send cancellation email:', emailError);
-          // Don't fail the cancellation if email fails
+        }
+
+        // Create in-app notification with refund details
+        const { data: ownerUser } = await supabaseAdmin
+          .from('business_users')
+          .select('auth_user_id')
+          .eq('business_account_id', user.businessAccountId)
+          .eq('role', 'owner')
+          .single();
+
+        if (ownerUser?.auth_user_id) {
+          supabaseAdmin.rpc('create_business_notification', {
+            p_business_user_auth_id: ownerUser.auth_user_id,
+            p_category: 'booking',
+            p_type: 'booking_cancelled_refund',
+            p_title: `Booking Cancelled - #${cancelledBooking.trip_number || cancelledBooking.booking_number}`,
+            p_message: `Booking for ${cancelledBooking.customer_name} cancelled. ${businessAccount.currency || 'AED'} ${refundAmount.toFixed(2)} refunded to wallet.`,
+            p_data: {
+              booking_number: cancelledBooking.booking_number,
+              trip_number: cancelledBooking.trip_number,
+              refund_amount: refundAmount,
+              new_balance: newBalance,
+              currency: businessAccount.currency || 'AED',
+            },
+            p_link: `/business/wallet`,
+          }).then(({ error: notifError }) => {
+            if (notifError) console.error('Failed to create cancellation notification:', notifError);
+          });
         }
       }
 

@@ -12,7 +12,11 @@ import {
 } from '@/lib/business/api-utils';
 import { bookingCreationSchema } from '@/lib/business/validators';
 import { createClient } from '@supabase/supabase-js';
-import { sendBusinessBookingConfirmationEmail } from '@/lib/email/services/business-emails';
+import {
+  sendBusinessBookingConfirmationEmail,
+  sendBusinessCustomerBookingConfirmationEmail,
+} from '@/lib/email/services/business-emails';
+import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails';
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 
@@ -242,6 +246,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         booking_number,
         trip_number,
         customer_name,
+        customer_email,
         customer_phone,
         pickup_address,
         dropoff_address,
@@ -263,44 +268,83 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       .eq('id', user.businessAccountId)
       .single();
 
-    // Send booking confirmation email
+    // Send booking confirmation emails
     if (booking && businessAccount) {
-      try {
-        const pickupLocation = booking.from_location?.name
-          ? `${booking.from_location.name}${booking.pickup_address ? ` - ${booking.pickup_address}` : ''}`
-          : booking.pickup_address || 'N/A';
+      const pickupLocation = booking.from_location?.name
+        ? `${booking.from_location.name}${booking.pickup_address ? ` - ${booking.pickup_address}` : ''}`
+        : booking.pickup_address || 'N/A';
 
-        const dropoffLocation = booking.to_location?.name
-          ? `${booking.to_location.name}${booking.dropoff_address ? ` - ${booking.dropoff_address}` : ''}`
-          : booking.dropoff_address || 'N/A';
+      const dropoffLocation = booking.to_location?.name
+        ? `${booking.to_location.name}${booking.dropoff_address ? ` - ${booking.dropoff_address}` : ''}`
+        : booking.dropoff_address || 'N/A';
 
-        const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
-          dateStyle: 'full',
-          timeStyle: 'short',
-        });
+      const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
+        dateStyle: 'full',
+        timeStyle: 'short',
+      });
 
-        await sendBusinessBookingConfirmationEmail({
-          email: businessAccount.business_email,
+      // Send confirmation to business owner
+      sendBusinessBookingConfirmationEmail({
+        email: businessAccount.business_email,
+        businessName: businessAccount.business_name,
+        bookingNumber: booking.booking_number,
+        tripNumber: booking.trip_number,
+        customerName: booking.customer_name,
+        customerPhone: booking.customer_phone,
+        pickupLocation,
+        dropoffLocation,
+        pickupDateTime,
+        vehicleType: booking.vehicle_types?.name || 'Standard',
+        passengerCount: booking.passenger_count,
+        totalPrice: booking.total_price,
+        currency: businessAccount.currency || 'AED',
+        walletDeducted: booking.total_price,
+        newBalance: businessAccount.wallet_balance,
+        bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/bookings/${booking.id}`,
+        referenceNumber: booking.reference_number,
+      }).catch((err: unknown) => {
+        console.error('Failed to send booking confirmation email:', err);
+      });
+
+      // Send confirmation to customer
+      if (booking.customer_email) {
+        sendBusinessCustomerBookingConfirmationEmail({
+          customerName: booking.customer_name,
+          customerEmail: booking.customer_email,
           businessName: businessAccount.business_name,
           bookingNumber: booking.booking_number,
           tripNumber: booking.trip_number,
-          customerName: booking.customer_name,
-          customerPhone: booking.customer_phone,
           pickupLocation,
           dropoffLocation,
           pickupDateTime,
           vehicleType: booking.vehicle_types?.name || 'Standard',
           passengerCount: booking.passenger_count,
-          totalPrice: booking.total_price,
-          currency: businessAccount.currency || 'AED',
-          walletDeducted: booking.total_price,
-          newBalance: businessAccount.wallet_balance,
-          bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/bookings/${booking.id}`,
           referenceNumber: booking.reference_number,
+        }).catch((err: unknown) => {
+          console.error('Failed to send customer booking confirmation email:', err);
         });
-      } catch (emailError) {
-        console.error('Failed to send booking confirmation email:', emailError);
-        // Don't fail the booking if email fails
+      }
+
+      // Send admin notification
+      const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.RESEND_REPLY_TO_EMAIL;
+      if (adminEmail) {
+        sendNewBookingNotificationEmail({
+          adminEmail,
+          bookingId: bookingId as string,
+          bookingReference: booking.booking_number,
+          tripNumber: booking.trip_number,
+          customerName: booking.customer_name,
+          customerEmail: booking.customer_email || '',
+          vehicleCategory: booking.vehicle_types?.name || 'Standard',
+          pickupLocation,
+          dropoffLocation,
+          pickupDate: pickupDateTime,
+          totalAmount: booking.total_price,
+          currency: businessAccount.currency || 'AED',
+          bookingDetailsUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin/bookings/${bookingId}`,
+        }).catch((err: unknown) => {
+          console.error('Failed to send admin booking notification email:', err);
+        });
       }
     }
 
