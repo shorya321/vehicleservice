@@ -6,7 +6,7 @@ import { Elements } from '@stripe/react-stripe-js'
 import { CheckoutForm } from './checkout-form'
 import { stripePromise } from '@/lib/stripe/client'
 
-const FONT_FAMILY = '"TT Commons Pro", "TT Commons", Inter, system-ui, sans-serif'
+const FONT_FAMILY = '"Inter", system-ui, sans-serif'
 
 function getStripeAppearance(isDark: boolean) {
   const surface = isDark ? '#0f0e0d' : '#eae7e2'

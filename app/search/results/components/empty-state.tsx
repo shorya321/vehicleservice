@@ -27,7 +27,7 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
         No vehicles available for this route
       </h2>
       <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
-        This corridor may not be in the network for your selected date, or all vehicles are reserved. Try a different date or adjust your search. Routes often have more availability on weekdays.
+        This corridor may not be in the network for your selected date, or all vehicles are reserved. Try a different date or adjust your search.
       </p>
 
       <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">

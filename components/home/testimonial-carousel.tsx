@@ -68,7 +68,7 @@ export function TestimonialCarousel({ reviews }: { reviews: Review[] }) {
             {/* Quote */}
             <blockquote className="mt-6 mb-8 text-center">
               <p className="font-display text-2xl lg:text-3xl text-[var(--text-primary)] leading-relaxed">
-                &quot;{review.review_text || "Exceptional service that exceeded all expectations."}&quot;
+                &quot;{review.review_text || "Smooth pickup, clean vehicle, on time."}&quot;
               </p>
             </blockquote>
 

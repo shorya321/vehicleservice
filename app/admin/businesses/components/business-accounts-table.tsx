@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Eye, Building2, MoreHorizontal, CheckCircle, XCircle, AlertTriangle, PauseCircle } from 'lucide-react';
+import { Eye, Building2, MoreHorizontal, CheckCircle, XCircle, PauseCircle, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,6 +45,7 @@ import {
   quickSuspendBusinessAction,
   quickReactivateBusinessAction,
 } from '../actions';
+import { DeleteBusinessDialog } from './delete-business-dialog';
 
 interface BusinessAccount {
   id: string;
@@ -88,6 +89,12 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
     action: QuickAction;
     businessId: string;
     businessName: string;
+  } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+    customDomain: string | null;
+    totalBookings: number;
   } | null>(null);
 
   const isAllSelected = accounts.length > 0 && selectedIds.length === accounts.length;
@@ -340,6 +347,22 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
                             })}
                           </>
                         )}
+
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: account.id,
+                              name: account.business_name,
+                              customDomain: account.custom_domain,
+                              totalBookings: account.total_bookings,
+                            })
+                          }
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -373,6 +396,15 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
           </AlertDialogContent>
         </AlertDialog>
       )}
+
+      <DeleteBusinessDialog
+        businessId={deleteTarget?.id ?? null}
+        businessName={deleteTarget?.name ?? null}
+        hasCustomDomain={!!deleteTarget?.customDomain}
+        bookingCount={deleteTarget?.totalBookings ?? 0}
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+      />
     </>
   );
 }

@@ -582,11 +582,8 @@ export function ConfirmationContent({
                     <div>
                       <span className="block">Free cancellation up to 24 hours before pickup. Contact us for any changes.</span>
                       <span className="mt-2 flex flex-wrap gap-3">
-                        <a href="mailto:support@infiniatransfers.com" className={actionBtnClass}>
+                        <a href="mailto:info@infiniatransfers.com" className={actionBtnClass}>
                           Email support
-                        </a>
-                        <a href="tel:+971501234567" className={actionBtnClass}>
-                          +971 50 123 4567
                         </a>
                       </span>
                     </div>

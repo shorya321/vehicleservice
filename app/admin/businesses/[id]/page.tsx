@@ -17,6 +17,7 @@ import { UpdateStatusButton } from './components/update-status-button';
 import { ApproveButton } from './components/approve-button';
 import { RejectButton } from './components/reject-button';
 import { AnimatedPage } from '@/components/layout/animated-page';
+import { DeleteBusinessButton } from './components/delete-business-button';
 
 export const metadata: Metadata = {
   title: 'Business Account Details | Admin Portal',
@@ -105,6 +106,12 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
             businessId={businessAccount.id}
             businessName={businessAccount.business_name}
             currentBalance={businessAccount.wallet_balance}
+          />
+          <DeleteBusinessButton
+            businessId={businessAccount.id}
+            businessName={businessAccount.business_name}
+            hasCustomDomain={!!businessAccount.custom_domain}
+            bookingCount={recentBookings?.length ?? 0}
           />
         </div>
       </div>

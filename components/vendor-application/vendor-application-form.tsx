@@ -371,6 +371,9 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                       disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                       placeholder="Select expiry date"
                       className={checkoutInputStyles}
+                      captionLayout="dropdown"
+                      startMonth={new Date()}
+                      endMonth={new Date(new Date().getFullYear() + 10, 11)}
                     />
                   </FormControl>
                   <FormDescription className="text-xs text-[var(--text-muted)]">Must be a future date</FormDescription>
@@ -406,6 +409,9 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                       disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                       placeholder="Select expiry date"
                       className={checkoutInputStyles}
+                      captionLayout="dropdown"
+                      startMonth={new Date()}
+                      endMonth={new Date(new Date().getFullYear() + 10, 11)}
                     />
                   </FormControl>
                   <FormDescription className="text-xs text-[var(--text-muted)]">Must be a future date</FormDescription>

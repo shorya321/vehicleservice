@@ -12,8 +12,8 @@ const benefits: Benefit[] = [
   {
     index: "01",
     title: "Booked in under two minutes.",
-    body: "Search by route, pick a vehicle, complete checkout. No account-required upsell, no carousel of partner offers between you and the confirmation.",
-    meta: "90 sec median",
+    body: "Search any route, pick a vehicle, create a free account at checkout. One-time setup, then every return booking is even faster. No partner ads or upsell screens between you and the confirmation.",
+    meta: "Search → Select → Confirm",
   },
   {
     index: "02",
@@ -25,7 +25,7 @@ const benefits: Benefit[] = [
     index: "03",
     title: "One price, in the currency you booked.",
     body: "Fixed pricing at the moment of booking. No surge, no tip prompt, no waiting-time surcharge for traffic on the airport road.",
-    meta: "11 currencies supported",
+    meta: "Multi-currency pricing",
   },
 ]
 
@@ -50,7 +50,7 @@ export function TransportationBenefits() {
             Specifics, not adjectives.
           </h2>
           <p className="editorial-body mt-6">
-            Three things we hold ourselves to on every transfer. Read them as a contract, not as marketing.
+            Three things we hold ourselves to on every transfer. Each one is measurable.
           </p>
         </motion.header>
 

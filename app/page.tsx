@@ -18,8 +18,8 @@ import { CurrencyProvider } from '@/lib/currency/context'
 import { getSiteSettings } from '@/lib/site-settings/server'
 
 export const metadata = {
-  title: 'VehicleService - Premier Luxury Transportation',
-  description: 'Experience unparalleled luxury, comfort, and reliability with our premier transfer services.',
+  title: 'Infinia Transfers - Airport & City Transfers, Fixed-Price',
+  description: 'Book private airport and city transfers with fixed pricing. Meet-and-greet included, chauffeur at the gate, no surge fees.',
 }
 
 export default async function HomePage() {

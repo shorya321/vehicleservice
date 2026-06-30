@@ -63,7 +63,7 @@
   --text-primary-rgb: 26, 25, 23;
 
   /* Typography */
-  --font-site: 'TT Commons Pro', 'TT Commons', var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-site: var(--font-inter), 'Inter', system-ui, sans-serif;
   --font-display: var(--font-site);
   --font-body: var(--font-site);
 
@@ -1889,6 +1889,83 @@
     color: var(--gold);
     border-color: color-mix(in oklch, var(--graphite) 60%, var(--gold) 40%);
     background: rgba(var(--gold-rgb), 0.06);
+  }
+
+  /* ── Time Popover (base styles) ── */
+  .time-column-header {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 0 4px;
+    text-align: center;
+  }
+
+  .time-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 36px;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+    border-radius: 4px;
+    transition: background-color 150ms ease-out, color 150ms ease-out;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+
+  .time-option:hover:not([data-selected="true"]) {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .time-option[data-selected="true"] {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-weight: 600;
+  }
+
+  .time-separator {
+    width: 1px;
+    background: hsl(var(--border));
+    margin: 8px 0;
+  }
+
+  /* ── Luxury Time Popover (theme overrides) ── */
+  .luxury-time-popover {
+    background: var(--black-warm) !important;
+    border: 1px solid color-mix(in oklch, var(--graphite) 70%, var(--gold) 30%) !important;
+    border-radius: 8px !important;
+    box-shadow:
+      0 20px 48px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(var(--gold-rgb), 0.08) !important;
+  }
+
+  .luxury-time-popover .time-column-header {
+    color: var(--text-muted);
+  }
+
+  .luxury-time-popover .time-option {
+    color: var(--text-primary);
+    font-family: var(--font-body);
+  }
+
+  .luxury-time-popover .time-option:hover:not([data-selected="true"]) {
+    background: rgba(var(--gold-rgb), 0.12);
+    color: var(--gold-cream);
+  }
+
+  .luxury-time-popover .time-option[data-selected="true"] {
+    background: var(--gold) !important;
+    color: var(--black-void) !important;
+  }
+
+  .luxury-time-popover .time-separator {
+    background: var(--graphite);
   }
 
   /* Vehicle Card */

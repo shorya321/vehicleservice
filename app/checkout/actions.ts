@@ -119,6 +119,39 @@ export interface CheckoutAddonsByCategory {
   addons: CheckoutAddon[]
 }
 
+export interface ExtraItemPrices {
+  extraLuggagePerUnit: number
+  childSeatPerUnit: number
+}
+
+const EXTRA_ITEM_DEFAULTS: ExtraItemPrices = {
+  extraLuggagePerUnit: 15,
+  childSeatPerUnit: 10,
+}
+
+export async function getExtraItemPrices(): Promise<ExtraItemPrices> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('addons')
+    .select('name, price, category')
+    .eq('is_active', true)
+    .eq('pricing_type', 'per_unit')
+    .in('category', ['Luggage', 'Child Safety'])
+
+  if (!data || data.length === 0) return EXTRA_ITEM_DEFAULTS
+
+  const luggageAddon = data.find(
+    a => a.category === 'Luggage' && a.name.toLowerCase().includes('luggage')
+  )
+  const childSeatAddon = data.find(a => a.category === 'Child Safety')
+
+  return {
+    extraLuggagePerUnit: luggageAddon?.price ?? EXTRA_ITEM_DEFAULTS.extraLuggagePerUnit,
+    childSeatPerUnit: childSeatAddon?.price ?? EXTRA_ITEM_DEFAULTS.childSeatPerUnit,
+  }
+}
+
 /**
  * Get active addons for customer checkout
  */
@@ -369,8 +402,11 @@ export async function createBooking(formData: BookingFormData) {
     }
   }
 
-  const extraLuggagePrice = validatedData.extraLuggageCount * 15 // $15 per extra bag
-  const amenitiesPrice = extraLuggagePrice + verifiedAddonsPrice
+  const extraPrices = await getExtraItemPrices()
+  const extraLuggagePrice = validatedData.extraLuggageCount * extraPrices.extraLuggagePerUnit
+  const childSeatsCount = (validatedData.childSeats?.infant || 0) + (validatedData.childSeats?.booster || 0)
+  const childSeatsPrice = childSeatsCount * extraPrices.childSeatPerUnit
+  const amenitiesPrice = extraLuggagePrice + childSeatsPrice + verifiedAddonsPrice
   const totalPrice = basePrice + amenitiesPrice
   
   // Get zone IDs if location IDs are provided
@@ -500,7 +536,17 @@ export async function createBooking(formData: BookingFormData) {
       booking_id: booking.id,
       amenity_type: 'extra_luggage',
       quantity: validatedData.extraLuggageCount,
-      price: validatedData.extraLuggageCount * 15
+      price: extraLuggagePrice,
+    })
+  }
+
+  // Add child seats if any
+  if (childSeatsCount > 0) {
+    amenities.push({
+      booking_id: booking.id,
+      amenity_type: 'child_seat',
+      quantity: childSeatsCount,
+      price: childSeatsPrice,
     })
   }
 

@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "copywriting": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/copywriting/SKILL.md",
+      "computedHash": "c8d63b1f77be04fd54981720de65697988810bd28331097dbe0aaf3e166d638a"
+    },
+    "humanizer": {
+      "source": "blader/humanizer",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "ee5890d9751e3481da065aaf84b8057678dda3dda72911a3cdf3479ece4ce18e"
+    },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",

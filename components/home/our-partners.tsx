@@ -29,7 +29,7 @@ export function OurPartners() {
             <div className="section-divider-icon"></div>
           </div>
           <p className="section-subtitle">
-            Trusted by leading airlines, hotels, and tourism organizations across the UAE
+            Airlines, hotels, and tourism boards we work with across the UAE
           </p>
         </motion.div>
 

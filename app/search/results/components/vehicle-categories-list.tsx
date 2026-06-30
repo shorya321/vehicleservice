@@ -95,7 +95,6 @@ function CategoryCard({ category, searchParams, currentCurrency, exchangeRates }
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={() => setImageError(true)}
           />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--charcoal)] via-[var(--charcoal)]/60 to-transparent" aria-hidden="true" />
         </div>
       ) : (
         category.imageUrl && (

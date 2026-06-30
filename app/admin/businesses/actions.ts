@@ -7,6 +7,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
+import { removeDomainFromVercel, isVercelConfigured } from '@/lib/vercel/api';
+import { stripe } from '@/lib/stripe/server';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -149,5 +151,100 @@ export async function bulkReactivateBusinessesAction(businessIds: string[]) {
     return { success: true, count: businessIds.length };
   } catch (error) {
     return { success: false, error: 'Failed to bulk reactivate businesses' };
+  }
+}
+
+export async function deleteBusinessAction(businessId: string) {
+  try {
+    const { data: business, error: fetchError } = await supabaseAdmin
+      .from('business_accounts')
+      .select('id, business_name, custom_domain, custom_domain_verified, stripe_customer_id')
+      .eq('id', businessId)
+      .single();
+
+    if (fetchError || !business) {
+      return { success: false, error: 'Business account not found' };
+    }
+
+    const { data: businessUsers } = await supabaseAdmin
+      .from('business_users')
+      .select('auth_user_id')
+      .eq('business_account_id', businessId);
+
+    const authUserIds = businessUsers?.map((u) => u.auth_user_id) ?? [];
+
+    if (business.custom_domain && business.custom_domain_verified && isVercelConfigured()) {
+      try {
+        await removeDomainFromVercel(business.custom_domain);
+      } catch {
+        console.error(`Failed to remove domain ${business.custom_domain} from Vercel`);
+      }
+    }
+
+    if (business.stripe_customer_id && stripe) {
+      try {
+        await stripe.customers.del(business.stripe_customer_id);
+      } catch (stripeError: unknown) {
+        const isAlreadyDeleted =
+          stripeError instanceof Error &&
+          'code' in stripeError &&
+          (stripeError as { code: string }).code === 'resource_missing';
+        if (!isAlreadyDeleted) {
+          console.error(`Failed to delete Stripe customer ${business.stripe_customer_id}`);
+        }
+      }
+    }
+
+    const { error: deleteError } = await supabaseAdmin
+      .from('business_accounts')
+      .delete()
+      .eq('id', businessId);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    for (const authUserId of authUserIds) {
+      try {
+        await supabaseAdmin.auth.admin.deleteUser(authUserId);
+      } catch {
+        console.error(`Failed to delete auth user ${authUserId}`);
+      }
+    }
+
+    revalidatePath('/admin/businesses');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'Failed to delete business account' };
+  }
+}
+
+export async function bulkDeleteBusinessesAction(businessIds: string[]) {
+  try {
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of businessIds) {
+      const result = await deleteBusinessAction(id);
+      if (result.success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+
+    revalidatePath('/admin/businesses');
+
+    if (failCount > 0) {
+      return {
+        success: successCount > 0,
+        error: `Deleted ${successCount} of ${businessIds.length} businesses. ${failCount} failed.`,
+        count: successCount,
+      };
+    }
+
+    return { success: true, count: successCount };
+  } catch (error) {
+    return { success: false, error: 'Failed to bulk delete businesses' };
   }
 }

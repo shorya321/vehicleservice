@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Clock, LucideIcon } from 'lucide-react'
+import { MapPin, Mail, Clock, LucideIcon } from 'lucide-react'
 
 interface ContactLine {
   text: string
@@ -22,27 +22,17 @@ const contactEntries: ContactEntry[] = [
     ],
   },
   {
-    icon: Phone,
-    label: 'Phone',
-    lines: [
-      { text: '+971 50 123 4567', href: 'tel:+971501234567' },
-      { text: '+971 4 123 4567', href: 'tel:+97141234567' },
-    ],
-  },
-  {
     icon: Mail,
     label: 'Email',
     lines: [
       { text: 'info@infiniatransfers.com', href: 'mailto:info@infiniatransfers.com' },
-      { text: 'bookings@infiniatransfers.com', href: 'mailto:bookings@infiniatransfers.com' },
     ],
   },
   {
     icon: Clock,
     label: 'Hours',
     lines: [
-      { text: 'Mon – Fri: 8:00 AM – 10:00 PM' },
-      { text: 'Sat – Sun: 9:00 AM – 8:00 PM' },
+      { text: 'Available 24/7' },
     ],
     muted: true,
   },
@@ -83,15 +73,8 @@ function ContactEntryRow({ entry }: { entry: ContactEntry }) {
 export function ContactInfo() {
   return (
     <div>
-      {/* Mobile quick-actions: phone + email */}
+      {/* Mobile quick-action: email */}
       <div className="flex flex-col gap-3 mb-6 lg:hidden">
-        <a
-          href="tel:+971501234567"
-          className="flex items-center justify-center gap-2.5 h-[52px] rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] text-[var(--text-primary)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--gold-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] transition-colors duration-200"
-        >
-          <Phone className="w-4 h-4" />
-          <span className="text-[0.875rem] font-medium">+971 50 123 4567</span>
-        </a>
         <a
           href="mailto:info@infiniatransfers.com"
           className="flex items-center justify-center gap-2.5 h-[52px] rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] text-[var(--text-primary)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--gold-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] transition-colors duration-200"

@@ -82,7 +82,6 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setImageError(true)}
             />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--charcoal)] via-[var(--charcoal)]/60 to-transparent" aria-hidden="true" />
           </>
         )}
       </div>
@@ -118,7 +117,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
               {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </div>
             <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              per vehicle · 15 min wait
+              per vehicle · meet-and-greet included
             </p>
           </div>
 

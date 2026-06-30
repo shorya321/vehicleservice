@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { BookingForm } from './booking-form'
 import { OrderSummary } from './order-summary'
 import { MobileStickyBar } from './mobile-sticky-bar'
-import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, ExtraItemPrices } from '@/app/checkout/actions'
 
 export interface OrderSummaryAddon {
   id: string
@@ -33,6 +33,7 @@ interface CheckoutWrapperProps {
   user: any
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
+  extraItemPrices: ExtraItemPrices
 }
 
 const TOTAL_STEPS = 2
@@ -47,6 +48,7 @@ export function CheckoutWrapper({
   user,
   profile,
   addonsByCategory,
+  extraItemPrices,
 }: CheckoutWrapperProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
@@ -71,8 +73,8 @@ export function CheckoutWrapper({
 
   const basePrice = vehicleType.price || 50
   const extraLuggageCount = Math.max(0, currentLuggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * 15
-  const childSeatsCost = (infantSeats + boosterSeats) * 10
+  const extraLuggageCost = extraLuggageCount * extraItemPrices.extraLuggagePerUnit
+  const childSeatsCost = (infantSeats + boosterSeats) * extraItemPrices.childSeatPerUnit
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
   const totalPrice = basePrice + extraLuggageCost + childSeatsCost + addonsCost
 
@@ -158,6 +160,7 @@ export function CheckoutWrapper({
               agreeToTerms={formMethods.agreeToTerms}
               onAgreeToTermsChange={formMethods.setAgreeToTerms}
               selectedAddons={selectedAddons}
+              extraItemPrices={extraItemPrices}
             />
           </div>
         </div>
@@ -182,6 +185,7 @@ export function CheckoutWrapper({
         isLastStep={isLastStep}
         agreeToTerms={formMethods.agreeToTerms}
         onAgreeToTermsChange={formMethods.setAgreeToTerms}
+        extraItemPrices={extraItemPrices}
       />
     </div>
   )

@@ -7,7 +7,7 @@ export function GuaranteeCard() {
         Cancellation
       </div>
       <p className="mt-2 text-[0.875rem] leading-relaxed text-[var(--text-secondary)]">
-        <span className="text-[var(--success)] font-medium">Free cancellation</span> up to 24 hours before pickup. Full refund if we don&rsquo;t deliver.
+        <span className="text-[var(--success)] font-medium">Free cancellation</span> up to 24 hours before pickup. Full refund if we cancel your transfer.
       </p>
     </div>
   )

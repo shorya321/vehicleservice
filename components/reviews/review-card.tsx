@@ -195,26 +195,26 @@ export function ReviewCard({
 
   if (variant === 'compact') {
     return (
-      <Card className="p-4 bg-luxury-black/50 backdrop-blur-sm border-luxury-lightGray/10">
+      <Card className="p-4 bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-sm border-[var(--graphite)]">
         <div className="flex gap-4">
           <Avatar className="w-10 h-10">
             <AvatarImage src={review.customer?.avatar_url || undefined} />
-            <AvatarFallback className="bg-luxury-gold/20 text-luxury-gold">
+            <AvatarFallback className="bg-[rgba(var(--gold-rgb),0.2)] text-[var(--gold-text)]">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between">
               <div>
-                <h4 className="font-medium text-luxury-pearl">{customerName}</h4>
+                <h4 className="font-medium text-[var(--text-primary)]">{customerName}</h4>
                 <StarRating rating={review.rating} size="sm" />
               </div>
-              <span className="text-xs text-luxury-lightGray">
+              <span className="text-[0.75rem] text-[var(--text-muted)]">
                 {formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
               </span>
             </div>
             {review.review_text && (
-              <p className="text-sm text-luxury-lightGray line-clamp-2">
+              <p className="text-[0.875rem] text-[var(--text-secondary)] line-clamp-2">
                 {review.review_text}
               </p>
             )}
@@ -232,8 +232,8 @@ export function ReviewCard({
     >
       <Card
         className={cn(
-          'overflow-hidden bg-luxury-black/50 backdrop-blur-md border-luxury-lightGray/10',
-          'hover:border-luxury-gold/30 transition-all duration-300',
+          'overflow-hidden bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-md border-[var(--graphite)]',
+          'hover:border-[rgba(var(--gold-rgb),0.3)] transition-all duration-300',
           variant === 'featured' && 'p-8',
           variant !== 'featured' && 'p-6'
         )}
@@ -243,7 +243,7 @@ export function ReviewCard({
           <div className="flex items-start gap-4">
             <Avatar className={variant === 'featured' ? 'w-14 h-14' : 'w-12 h-12'}>
               <AvatarImage src={review.customer?.avatar_url || undefined} />
-              <AvatarFallback className="bg-luxury-gold/20 text-luxury-gold text-lg">
+              <AvatarFallback className="bg-[rgba(var(--gold-rgb),0.2)] text-[var(--gold-text)] text-lg">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -251,16 +251,16 @@ export function ReviewCard({
               <div className="flex items-center gap-2">
                 <h3
                   className={cn(
-                    'font-medium text-luxury-pearl',
+                    'font-medium text-[var(--text-primary)]',
                     variant === 'featured' && 'text-lg'
                   )}
                 >
                   {customerName}
                 </h3>
-                <CheckCircle className="w-4 h-4 text-luxury-gold" title="Verified Purchase" />
+                <CheckCircle className="w-4 h-4 text-[var(--gold-text)]" aria-label="Verified Purchase" />
               </div>
               <StarRating rating={review.rating} size={variant === 'featured' ? 'md' : 'sm'} />
-              <div className="flex items-center gap-3 text-xs text-luxury-lightGray">
+              <div className="flex items-center gap-3 text-[0.75rem] text-[var(--text-muted)]">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
@@ -338,13 +338,13 @@ export function ReviewCard({
         {/* Review Text */}
         {review.review_text && (
           <div className="mb-4">
-            <p className="text-luxury-lightGray leading-relaxed whitespace-pre-wrap">
+            <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
               {displayText}
             </p>
             {shouldTruncate && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-luxury-gold hover:text-luxury-gold/80 text-sm mt-2 flex items-center gap-1"
+                className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] text-[0.875rem] mt-2 flex items-center gap-1"
               >
                 {isExpanded ? (
                   <>
@@ -382,18 +382,18 @@ export function ReviewCard({
 
         {/* Admin Response */}
         {review.admin_response && (
-          <div className="mt-4 p-4 bg-luxury-gold/5 border border-luxury-gold/20 rounded-lg">
+          <div className="mt-4 p-4 bg-[rgba(var(--gold-rgb),0.05)] border border-[rgba(var(--gold-rgb),0.2)] rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Badge className="bg-luxury-gold/20 text-luxury-gold border-luxury-gold/30">
+              <Badge className="bg-[rgba(var(--gold-rgb),0.2)] text-[var(--gold-text)] border-[rgba(var(--gold-rgb),0.3)]">
                 Admin Response
               </Badge>
               {review.admin_response_at && (
-                <span className="text-xs text-luxury-lightGray">
+                <span className="text-[0.75rem] text-[var(--text-muted)]">
                   {formatDistanceToNow(new Date(review.admin_response_at), { addSuffix: true })}
                 </span>
               )}
             </div>
-            <p className="text-luxury-lightGray text-sm">{review.admin_response}</p>
+            <p className="text-[var(--text-secondary)] text-[0.875rem]">{review.admin_response}</p>
           </div>
         )}
 
@@ -413,13 +413,13 @@ export function ReviewCard({
 
         {/* Footer Actions */}
         {variant === 'admin' && (
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-luxury-lightGray/10">
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--graphite)]">
               {!review.admin_response && (
                 <Button
                   onClick={() => setShowResponseForm(!showResponseForm)}
                   size="sm"
                   variant={showResponseForm ? 'outline' : 'ghost'}
-                  className="text-luxury-gold hover:text-luxury-gold/80"
+                  className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)]"
                 >
                   <MessageSquare className="w-3 h-3 mr-1" />
                   {showResponseForm ? 'Cancel' : 'Respond'}
@@ -457,7 +457,7 @@ export function ReviewCard({
                 onClick={handleToggleFeature}
                 size="sm"
                 variant="ghost"
-                className={review.is_featured ? 'text-luxury-gold' : ''}
+                className={review.is_featured ? 'text-[var(--gold-text)]' : ''}
                 disabled={isTogglingFeature}
               >
                 {isTogglingFeature && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}

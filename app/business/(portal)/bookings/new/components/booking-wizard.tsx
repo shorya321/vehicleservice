@@ -51,6 +51,8 @@ export interface BookingFormData {
   // Route
   from_location_id: string;
   to_location_id: string;
+  from_location_name: string;
+  to_location_name: string;
   pickup_address: string;
   dropoff_address: string;
   pickup_datetime: string;
@@ -179,12 +181,13 @@ export function BookingWizard({
     setIsSubmitting(true);
 
     try {
-      // Convert datetime-local format to ISO 8601 format for API
+      // Strip display-only fields and convert datetime to ISO 8601
+      const { from_location_name, to_location_name, ...apiData } = formData;
       const submissionData = {
-        ...formData,
-        pickup_datetime: formData.pickup_datetime
-          ? new Date(formData.pickup_datetime).toISOString()
-          : formData.pickup_datetime,
+        ...apiData,
+        pickup_datetime: apiData.pickup_datetime
+          ? new Date(apiData.pickup_datetime).toISOString()
+          : apiData.pickup_datetime,
       };
 
       const response = await fetch('/api/business/bookings', {

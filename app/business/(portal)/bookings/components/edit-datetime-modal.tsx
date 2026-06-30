@@ -20,8 +20,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { FormDatePicker } from '@/components/ui/form-date-picker';
+import { FormTimePicker } from '@/components/ui/form-time-picker';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
@@ -192,12 +192,13 @@ export function EditDateTimeModal({
                     <FormItem>
                       <FormLabel>New Pickup Time</FormLabel>
                       <FormControl>
-                        <Input
-                          type="time"
+                        <FormTimePicker
                           value={timeValue}
-                          onChange={(e) => {
-                            field.onChange(dateValue ? `${dateValue}T${e.target.value}` : '');
+                          onChange={(time) => {
+                            field.onChange(dateValue ? `${dateValue}T${time}` : '');
                           }}
+                          popoverClassName=""
+                          placeholder="Select time"
                         />
                       </FormControl>
                       <FormDescription>

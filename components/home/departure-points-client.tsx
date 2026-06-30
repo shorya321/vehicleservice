@@ -30,10 +30,10 @@ export function DeparturePointsClient({ routes, totalRoutes, todayDate }: Depart
           <div className="max-w-2xl">
             <div className="editorial-eyebrow">Routes</div>
             <h2 id="routes-heading" className="editorial-section-title mt-5">
-              The routes travellers book most often.
+              The routes travellers book most.
             </h2>
             <p className="editorial-body mt-6">
-              Quoted in your selected currency. Tap a route to see vehicles, capacity, and final pricing for your date.
+              Priced in your selected currency. Tap a route to see vehicles, capacity, and the final number for your date.
             </p>
           </div>
           {totalRoutes > routes.length && (

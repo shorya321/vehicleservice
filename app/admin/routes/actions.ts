@@ -128,6 +128,7 @@ export async function createRoute(data: Omit<RouteInsert, 'id' | 'created_at' | 
   }
 
   revalidatePath('/admin/routes')
+  revalidatePath('/routes')
   return route
 }
 
@@ -161,6 +162,7 @@ export async function updateRoute(id: string, data: Omit<RouteUpdate, 'id' | 'cr
   }
 
   revalidatePath('/admin/routes')
+  revalidatePath('/routes')
   revalidatePath(`/admin/routes/${id}/edit`)
   return route
 }
@@ -179,6 +181,7 @@ export async function deleteRoute(id: string) {
   }
 
   revalidatePath('/admin/routes')
+  revalidatePath('/routes')
 }
 
 export async function toggleRouteStatus(id: string, isActive: boolean) {
@@ -195,6 +198,7 @@ export async function toggleRouteStatus(id: string, isActive: boolean) {
   }
 
   revalidatePath('/admin/routes')
+  revalidatePath('/routes')
 }
 
 export async function toggleRoutePopular(id: string, isPopular: boolean) {
@@ -211,6 +215,7 @@ export async function toggleRoutePopular(id: string, isPopular: boolean) {
   }
 
   revalidatePath('/admin/routes')
+  revalidatePath('/routes')
 }
 
 export async function getPopularRoutes(limit: number = 10) {
@@ -260,6 +265,7 @@ export async function bulkDeleteRoutes(ids: string[]) {
   }
 
   revalidatePath('/admin/routes')
+  revalidatePath('/routes')
   return { count: ids.length }
 }
 

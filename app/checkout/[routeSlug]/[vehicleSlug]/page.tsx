@@ -6,7 +6,7 @@ import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getVehicleType, getLocationDetails, getActiveAddons } from '../../actions'
+import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from '../../actions'
 import { createClient } from '@/lib/supabase/server'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { resolveRouteSlugs, resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
@@ -117,11 +117,12 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   }
 
   // Fetch location, vehicle type, and addons details
-  const [originLocation, destinationLocation, vehicleType, addonsData] = await Promise.all([
+  const [originLocation, destinationLocation, vehicleType, addonsData, extraItemPrices] = await Promise.all([
     getLocationDetails(fromId),
     getLocationDetails(toId),
     getVehicleType(vehicleTypeRef.id, fromId, toId),
     getActiveAddons(),
+    getExtraItemPrices(),
   ])
 
   if (!originLocation || !destinationLocation || !vehicleType) {
@@ -189,6 +190,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
+            extraItemPrices={extraItemPrices}
           />
         </div>
       </div>

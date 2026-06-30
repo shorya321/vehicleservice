@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import { Metadata } from 'next'
 import { ReviewCard } from '@/components/reviews/review-card'
 import { ReviewStats } from '@/components/reviews/review-stats'
 import { Button } from '@/components/ui/button'
@@ -24,7 +25,7 @@ interface PageProps {
   }>
 }
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Customer Reviews - Infinia Transfers',
   description: 'Read what our customers say about their transfer experiences',
 }
@@ -50,14 +51,18 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
   const { data: stats } = await getReviewStats()
 
   return (
-    <div className="min-h-screen bg-luxury-black py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--black-void)] py-12">
+      <div className="luxury-container">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold text-luxury-pearl font-playfair mb-4">
+        <div className="mb-8">
+          <div className="w-10 h-px bg-[var(--gold)] mb-5" aria-hidden="true" />
+          <p className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-4">
+            What Our Customers Say
+          </p>
+          <h1 className="editorial-section-title--promoted">
             Customer Reviews
           </h1>
-          <p className="text-xl text-luxury-lightGray">
+          <p className="mt-4 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-xl [text-wrap:pretty]">
             Real experiences from our valued customers
           </p>
         </div>
@@ -68,18 +73,18 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
         </div>
 
         {/* Filters */}
-        <Card className="p-6 bg-luxury-black/50 backdrop-blur-md border-luxury-lightGray/10 mb-8">
+        <Card className="p-6 bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-md border-[var(--graphite)] mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="md:col-span-2">
               <form method="GET" className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-luxury-lightGray/50" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
                 <Input
                   type="text"
                   name="search"
                   placeholder="Search reviews..."
                   defaultValue={search}
-                  className="pl-10 bg-luxury-black/30 border-luxury-lightGray/20 focus:border-luxury-gold text-luxury-pearl"
+                  className="pl-10 bg-[rgba(var(--void-rgb),0.3)] border-[var(--graphite)] focus:border-[var(--gold)] text-[var(--text-primary)]"
                 />
                 <input type="hidden" name="page" value="1" />
                 <input type="hidden" name="sortBy" value={sortBy} />
@@ -91,7 +96,7 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
             <div>
               <form method="GET">
                 <Select name="rating" defaultValue={rating?.toString() || 'all'}>
-                  <SelectTrigger className="bg-luxury-black/30 border-luxury-lightGray/20">
+                  <SelectTrigger className="bg-[rgba(var(--void-rgb),0.3)] border-[var(--graphite)]">
                     <SelectValue placeholder="All Ratings" />
                   </SelectTrigger>
                   <SelectContent>
@@ -113,7 +118,7 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
             <div>
               <form method="GET">
                 <Select name="sortBy" defaultValue={sortBy}>
-                  <SelectTrigger className="bg-luxury-black/30 border-luxury-lightGray/20">
+                  <SelectTrigger className="bg-[rgba(var(--void-rgb),0.3)] border-[var(--graphite)]">
                     <SelectValue placeholder="Sort By" />
                   </SelectTrigger>
                   <SelectContent>
@@ -134,20 +139,20 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
 
         {/* Results Info */}
         <div className="mb-6 flex items-center justify-between">
-          <p className="text-luxury-lightGray">
+          <p className="text-[0.875rem] text-[var(--text-secondary)]">
             Showing {reviews?.length || 0} of {total} reviews
           </p>
-          <p className="text-luxury-lightGray">
+          <p className="text-[0.875rem] text-[var(--text-secondary)]">
             Page {page} of {totalPages}
           </p>
         </div>
 
         {/* Reviews Grid */}
         {!reviews || reviews.length === 0 ? (
-          <Card className="p-12 bg-luxury-black/50 backdrop-blur-md border-luxury-lightGray/10 text-center">
-            <SlidersHorizontal className="w-16 h-16 text-luxury-gold/30 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-luxury-pearl mb-2">No reviews found</h3>
-            <p className="text-luxury-lightGray mb-6">
+          <Card className="p-12 bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-md border-[var(--graphite)] text-center">
+            <SlidersHorizontal className="w-16 h-16 text-[rgba(var(--gold-rgb),0.3)] mx-auto mb-4" />
+            <h3 className="t-title mb-2">No reviews found</h3>
+            <p className="text-[0.9375rem] text-[var(--text-secondary)] mb-6">
               Try adjusting your filters to see more results
             </p>
           </Card>

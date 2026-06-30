@@ -3,7 +3,7 @@
 import { useState, memo } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import { ArrowRight, Lock, ChevronUp, ChevronDown } from 'lucide-react'
-import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails, ExtraItemPrices } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
@@ -26,6 +26,7 @@ interface MobileStickyBarProps {
   isLastStep: boolean
   agreeToTerms: boolean
   onAgreeToTermsChange: (checked: boolean) => void
+  extraItemPrices?: ExtraItemPrices
 }
 
 export const MobileStickyBar = memo(function MobileStickyBar({
@@ -46,6 +47,7 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   isLastStep,
   agreeToTerms,
   onAgreeToTermsChange,
+  extraItemPrices,
 }: MobileStickyBarProps) {
   const reduceMotion = useReducedMotion()
   const { currentCurrency, exchangeRates } = useCurrency()
@@ -54,8 +56,8 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   const [detailsOpen, setDetailsOpen] = useState(false)
 
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * 15
-  const childSeatsCost = (infantSeats + boosterSeats) * 10
+  const extraLuggageCost = extraLuggageCount * (extraItemPrices?.extraLuggagePerUnit ?? 15)
+  const childSeatsCost = (infantSeats + boosterSeats) * (extraItemPrices?.childSeatPerUnit ?? 10)
 
   const formattedDate = pickupDate
     ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })

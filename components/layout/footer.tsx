@@ -20,28 +20,20 @@ const footerLinkCategories: FooterLinkCategory[] = [
     title: "Navigation",
     links: [
       { name: "Home", href: "/" },
-      { name: "Services", href: "/#services" },
+      { name: "Routes", href: "/routes" },
       { name: "Fleet", href: "/#fleet" },
+      { name: "Reviews", href: "/reviews" },
       { name: "FAQ", href: "/#faq" },
       { name: "Contact", href: "/contact" },
     ],
   },
   {
-    title: "Transfers",
+    title: "Company",
     links: [
-      { name: "Airport transfers", href: "/#hero" },
-      { name: "City transfers", href: "/#hero" },
-      { name: "Chauffeur hire", href: "/#hero" },
-      { name: "Corporate travel", href: "/#hero" },
-    ],
-  },
-  {
-    title: "Business",
-    links: [
-      { name: "Corporate clients", href: "/business" },
-      { name: "API & integrations", href: "/business" },
+      { name: "Services", href: "/#services" },
       { name: "Partner with us", href: "/become-vendor" },
-      { name: "Business portal", href: "/business" },
+      { name: "Blog", href: "/blog" },
+      { name: "Business", href: "/business/login" },
     ],
   },
 ]
@@ -65,7 +57,7 @@ export function Footer({ siteSettings }: FooterProps) {
     >
       <div className="luxury-container">
         <motion.div
-          className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-16"
+          className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] lg:gap-16"
           initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
@@ -92,7 +84,7 @@ export function Footer({ siteSettings }: FooterProps) {
               )}
             </Link>
             <p className="mt-6 max-w-sm text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
-              Premium ground transfers, fixed-price, in 47 cities. Booked from a phone in under 90 seconds.
+              Private airport and city transfers, fixed-price, worldwide. Search a route, pick a vehicle, book in minutes.
             </p>
 
             <dl className="mt-8 space-y-3 text-[0.875rem]">

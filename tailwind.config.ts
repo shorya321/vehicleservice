@@ -212,6 +212,7 @@ export default {
         sans: ["var(--font-site)", "system-ui", "sans-serif"],
         display: ["var(--font-site)", "system-ui", "sans-serif"],
         body: ["var(--font-site)", "system-ui", "sans-serif"],
+        playfair: ["var(--font-playfair)", "'Playfair Display'", "Georgia", "serif"],
         // Business portal fonts
         "business-display": ["var(--font-jakarta)", "'Plus Jakarta Sans'", "system-ui", "sans-serif"],
         "business-body": ["var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],

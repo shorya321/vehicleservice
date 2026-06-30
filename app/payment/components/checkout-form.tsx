@@ -122,7 +122,6 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
       toast.success('Payment successful!')
       router.push(buildConfirmationUrl(bookingNumber))
     } catch (error) {
-      console.error('Error confirming payment:', error)
       setErrorMessage('Payment received but failed to update booking. Please contact support.')
     } finally {
       setIsLoading(false)

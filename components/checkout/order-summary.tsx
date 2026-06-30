@@ -3,7 +3,7 @@
 import { useState, memo } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Info, Lock } from 'lucide-react'
-import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails, ExtraItemPrices } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
@@ -23,6 +23,7 @@ interface OrderSummaryProps {
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
   selectedAddons?: OrderSummaryAddon[]
+  extraItemPrices?: ExtraItemPrices
 }
 
 function PriceRow({
@@ -65,6 +66,7 @@ export const OrderSummary = memo(function OrderSummary({
   agreeToTerms = false,
   onAgreeToTermsChange,
   selectedAddons = [],
+  extraItemPrices,
 }: OrderSummaryProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = useReducedMotion()
@@ -79,8 +81,8 @@ export const OrderSummary = memo(function OrderSummary({
 
   const basePrice = vehicleType.price || 50
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * 15
-  const childSeatsCost = (infantSeats + boosterSeats) * 10
+  const extraLuggageCost = extraLuggageCount * (extraItemPrices?.extraLuggagePerUnit ?? 15)
+  const childSeatsCost = (infantSeats + boosterSeats) * (extraItemPrices?.childSeatPerUnit ?? 10)
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
   const subtotal = basePrice + extraLuggageCost + childSeatsCost + addonsCost
   const total = subtotal - promoDiscount
@@ -90,7 +92,7 @@ export const OrderSummary = memo(function OrderSummary({
     : ''
 
   const applyPromoCode = () => {
-    if (promoCode.toUpperCase() === 'SAVE10') {
+    if (process.env.NODE_ENV === 'development' && promoCode.toUpperCase() === 'SAVE10') {
       setPromoDiscount(basePrice * 0.1)
       setPromoApplied(true)
     } else {

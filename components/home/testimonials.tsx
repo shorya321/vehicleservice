@@ -60,7 +60,7 @@ export async function Testimonials() {
           <header>
             <div className="editorial-eyebrow justify-center">Spoken for</div>
             <h2 id="testimonials-heading" className="editorial-section-title--promoted mt-5">
-              What travellers say, in their own words.
+              Travellers on record.
             </h2>
             {stats && stats.totalReviews > 0 && (
               <p

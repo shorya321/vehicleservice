@@ -112,8 +112,8 @@ export function StarRating({
                 'transition-all duration-200',
                 interactive && 'cursor-pointer',
                 filled || halfStar
-                  ? 'text-luxury-gold fill-luxury-gold'
-                  : 'text-luxury-lightGray/30',
+                  ? 'text-[var(--gold)] fill-[var(--gold)]'
+                  : 'text-[var(--graphite)]',
                 interactive && 'hover:scale-110'
               )}
               strokeWidth={1.5}
@@ -127,7 +127,7 @@ export function StarRating({
                 <Star
                   className={cn(
                     sizeClasses[size],
-                    'text-luxury-gold fill-luxury-gold'
+                    'text-[var(--gold)] fill-[var(--gold)]'
                   )}
                   strokeWidth={1.5}
                 />
@@ -138,7 +138,7 @@ export function StarRating({
       })}
 
       {showCount && count !== undefined && (
-        <span className="ml-2 text-sm text-luxury-lightGray">
+        <span className="ml-2 text-[0.875rem] text-[var(--text-secondary)]">
           ({count.toLocaleString()})
         </span>
       )}
@@ -158,11 +158,11 @@ export function StarRatingCompact({
 }) {
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
-      <Star className="w-4 h-4 text-luxury-gold fill-luxury-gold" strokeWidth={1.5} />
-      <span className="text-sm font-medium text-luxury-lightGray">
+      <Star className="w-4 h-4 text-[var(--gold)] fill-[var(--gold)]" strokeWidth={1.5} />
+      <span className="text-[0.875rem] font-medium text-[var(--text-secondary)]">
         {rating.toFixed(1)}
         {count !== undefined && (
-          <span className="text-luxury-lightGray/60 ml-1">
+          <span className="text-[var(--text-muted)] ml-1">
             ({count.toLocaleString()})
           </span>
         )}

@@ -993,6 +993,47 @@ body {
   background-color: rgba(198, 170, 136, 0.5);
 }
 
+/* ============================================
+   AUTOCOMPLETE DROPDOWN OVERRIDES
+   Scoped to business portal via data-business-branding
+   Fixes scrollbar, group spacing, and hover colors
+   without modifying the shared component
+   ============================================ */
+
+[data-business-branding] [role="listbox"].bg-popover {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(198, 170, 136, 0.3) transparent;
+}
+
+[data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+[data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar-thumb {
+  background-color: rgba(198, 170, 136, 0.3);
+  border-radius: 3px;
+}
+
+[data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(198, 170, 136, 0.5);
+}
+
+/* Group headers - more breathing room */
+[data-business-branding] [role="listbox"] [role="presentation"] {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Group separation - border between consecutive groups */
+[data-business-branding] [role="listbox"] > div + div {
+  border-top: 1px solid hsl(var(--border));
+}
+
 /* Divider */
 .business-divider {
   height: 1px;

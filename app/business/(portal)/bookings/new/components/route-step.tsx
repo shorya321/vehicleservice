@@ -15,6 +15,7 @@ import { MapPin, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormDatePicker } from '@/components/ui/form-date-picker';
+import { FormTimePicker } from '@/components/ui/form-time-picker';
 import { parse, format } from 'date-fns';
 import {
   Form,
@@ -35,6 +36,8 @@ interface RouteStepProps {
   onFetchVehicles: (fromLocationId: string, toLocationId: string) => Promise<void>;
 }
 
+type RouteFormData = z.infer<typeof routeSchema>;
+
 const routeSchema = z.object({
   from_location_id: z.string().min(1, 'Pickup location is required'),
   to_location_id: z.string().min(1, 'Dropoff location is required'),
@@ -43,8 +46,6 @@ const routeSchema = z.object({
   pickup_datetime: z.string().min(1, 'Pickup date and time is required'),
   passenger_count: z.number().int().min(1).max(20),
 });
-
-type RouteFormData = z.infer<typeof routeSchema>;
 
 export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
   const form = useForm<RouteFormData>({
@@ -59,8 +60,8 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
     },
   });
 
-  const [fromInput, setFromInput] = useState(formData.pickup_address || '');
-  const [toInput, setToInput] = useState(formData.dropoff_address || '');
+  const [fromInput, setFromInput] = useState(formData.from_location_name || '');
+  const [toInput, setToInput] = useState(formData.to_location_name || '');
 
   async function onSubmit(values: RouteFormData) {
     onUpdate(values);
@@ -101,6 +102,7 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
                     onSelect={(loc: LocationSearchResult) => {
                       field.onChange(loc.id);
                       setFromInput(loc.name);
+                      onUpdate({ from_location_name: loc.name });
                     }}
                     placeholder="Search pickup location..."
                     id="from-location"
@@ -161,12 +163,13 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
                   <FormItem>
                     <FormLabel>Pickup Time</FormLabel>
                     <FormControl>
-                      <Input
-                        type="time"
+                      <FormTimePicker
                         value={timeValue}
-                        onChange={(e) => {
-                          field.onChange(dateValue ? `${dateValue}T${e.target.value}` : '');
+                        onChange={(time) => {
+                          field.onChange(dateValue ? `${dateValue}T${time}` : '');
                         }}
+                        popoverClassName=""
+                        placeholder="Select time"
                       />
                     </FormControl>
                   </FormItem>
@@ -225,6 +228,7 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
                     onSelect={(loc: LocationSearchResult) => {
                       field.onChange(loc.id);
                       setToInput(loc.name);
+                      onUpdate({ to_location_name: loc.name });
                     }}
                     placeholder="Search dropoff location..."
                     id="to-location"

@@ -6,7 +6,7 @@ import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getVehicleType, getLocationDetails, getActiveAddons } from './actions'
+import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from './actions'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
@@ -97,11 +97,12 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   }
 
   // Fetch location, vehicle type, and addons details
-  const [originLocation, destinationLocation, vehicleType, addonsData] = await Promise.all([
+  const [originLocation, destinationLocation, vehicleType, addonsData, extraItemPrices] = await Promise.all([
     getLocationDetails(params.from!),
     getLocationDetails(params.to!),
     getVehicleType(params.vehicleType, params.from!, params.to!),
-    getActiveAddons()
+    getActiveAddons(),
+    getExtraItemPrices(),
   ])
 
   if (!originLocation || !destinationLocation || !vehicleType) {
@@ -169,6 +170,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
+            extraItemPrices={extraItemPrices}
           />
         </div>
       </div>

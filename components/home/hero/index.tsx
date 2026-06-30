@@ -15,7 +15,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
         <div className="mx-auto max-w-[52rem] text-center">
           <div className="hero-reveal hero-reveal--eyebrow">
             <p className="mx-auto text-[0.6875rem] font-medium tracking-[0.2em] uppercase text-[var(--gold-text)]">
-              Premium ground transportation
+              Airport & city transfers, fixed-price
             </p>
           </div>
 
@@ -25,25 +25,25 @@ export function Hero({ todayDate }: { todayDate: string }) {
           >
             Infinia Transfers
             <br />
-            Travel Beyond Limits
+            Booked Before You Land
           </h1>
 
           <p
             className="hero-reveal hero-reveal--summary mx-auto mt-7 max-w-lg text-base leading-relaxed text-[var(--text-secondary)]"
           >
-            Fixed prices in your currency, confirmed in seconds. Door-to-door in 47 cities worldwide.
+            Pick a route, choose a vehicle, confirm your transfer. Fixed pricing in your currency across 40+ cities.
           </p>
 
           <div
             className="hero-reveal hero-reveal--stats hero-itinerary-stats mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[0.8125rem] tracking-wide text-[var(--text-muted)]"
           >
-            <span><span className="tabular-nums font-bold text-[var(--gold-text)]">47</span> cities</span>
+            <span><span className="tabular-nums font-bold text-[var(--gold-text)]">40+</span> cities</span>
             <span className="hero-itinerary-separator" aria-hidden="true">|</span>
             <span><span className="tabular-nums font-bold text-[var(--gold-text)]">120+</span> vehicles</span>
             <span className="hero-itinerary-separator" aria-hidden="true">|</span>
             <span><span className="tabular-nums font-bold text-[var(--gold-text)]">4.9</span><span aria-hidden="true">&#9733;</span><span className="sr-only"> star</span> rating</span>
             <span className="hero-itinerary-separator" aria-hidden="true">|</span>
-            <span>{"< "}<span className="tabular-nums font-bold text-[var(--gold-text)]">90</span>s booking</span>
+            <span>Meet-and-greet <span className="tabular-nums font-bold text-[var(--gold-text)]">included</span></span>
           </div>
         </div>
 

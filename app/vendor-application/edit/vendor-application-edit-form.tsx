@@ -163,6 +163,9 @@ export function VendorApplicationEditForm({ application, defaultValues }: Vendor
                 onChange={(date) => setValue("tradeLicenseExpiry", date ? format(date, "yyyy-MM-dd") : "", { shouldValidate: true })}
                 placeholder="Select expiry date"
                 className="luxury-input"
+                captionLayout="dropdown"
+                startMonth={new Date()}
+                endMonth={new Date(new Date().getFullYear() + 10, 11)}
               />
               {errors.tradeLicenseExpiry && <p className="mt-1.5 text-sm text-red-400">{errors.tradeLicenseExpiry.message}</p>}
             </div>
@@ -178,6 +181,9 @@ export function VendorApplicationEditForm({ application, defaultValues }: Vendor
                 onChange={(date) => setValue("insuranceExpiry", date ? format(date, "yyyy-MM-dd") : "", { shouldValidate: true })}
                 placeholder="Select expiry date"
                 className="luxury-input"
+                captionLayout="dropdown"
+                startMonth={new Date()}
+                endMonth={new Date(new Date().getFullYear() + 10, 11)}
               />
               {errors.insuranceExpiry && <p className="mt-1.5 text-sm text-red-400">{errors.insuranceExpiry.message}</p>}
             </div>

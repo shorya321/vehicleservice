@@ -1,9 +1,9 @@
 export function ContactHero() {
   return (
     <section className="pt-16 pb-10 md:pt-20 md:pb-12 bg-[var(--black-void)]">
-      <div className="luxury-container max-w-3xl">
+      <div className="luxury-container">
         <div className="w-10 h-px bg-[var(--gold)] mb-5" aria-hidden="true" />
-        <p className="text-[0.75rem] font-medium tracking-[0.12em] uppercase text-[var(--gold-text)] mb-4">
+        <p className="text-[0.75rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-4">
           Get in Touch
         </p>
 

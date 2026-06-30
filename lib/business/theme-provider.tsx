@@ -115,7 +115,6 @@ export function BusinessThemeProvider({
     // Get accent colors from config
     const primary = config.accent.primary;
     const secondary = config.accent.secondary;
-    const tertiary = config.accent.tertiary;
 
     // Get mode-specific colors based on resolved theme
     const modeColors = isDark ? config.dark : config.light;
@@ -125,8 +124,8 @@ export function BusinessThemeProvider({
     root.style.setProperty("--primary-foreground", isDark ? "240 10% 4%" : "0 0% 100%");
     root.style.setProperty("--secondary", hexToHsl(secondary));
     root.style.setProperty("--secondary-foreground", "0 0% 100%");
-    root.style.setProperty("--accent", hexToHsl(tertiary));
-    root.style.setProperty("--accent-foreground", "0 0% 100%");
+    root.style.setProperty("--accent", isDark ? hexToHsl(modeColors.muted) : hexToHsl(modeColors.surface));
+    root.style.setProperty("--accent-foreground", hexToHsl(modeColors.text_primary));
     root.style.setProperty("--ring", hexToHsl(primary));
 
     // Apply mode-specific colors as CSS variables

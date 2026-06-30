@@ -13,7 +13,12 @@ const faqData: FaqItem[] = [
   {
     question: "How does pricing work?",
     answer:
-      "Every transfer is fixed-price at the moment of booking. The number you see at checkout is the number on your card. No surge, no waiting-time surcharge, no driver-tip prompt. Prices are quoted in your selected currency; payment is processed in AED.",
+      "Every transfer is fixed-price at the moment of booking. The number you see at checkout is the number on your card. No surge, no waiting-time surcharge, no driver-tip prompt. Prices are quoted in your selected currency; payment settles in AED at your bank's exchange rate.",
+  },
+  {
+    question: "Do I need an account to book?",
+    answer:
+      "Yes, a free account is created at checkout with your name, email, and a password. No email verification needed before your transfer is confirmed. The account stores your booking history and passenger details so return trips are faster.",
   },
   {
     question: "How far in advance should I book?",
@@ -61,7 +66,7 @@ export function FAQ() {
           >
             <div className="editorial-eyebrow">Asked</div>
             <h2 id="faq-heading" className="editorial-section-title mt-5">
-              The five questions travellers actually ask.
+              Questions travellers actually ask.
             </h2>
             <p className="editorial-body mt-6">
               If yours isn&rsquo;t here, our team replies within an hour during local business hours.

@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { X, ChevronDown, Download, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, ChevronDown, Download, CheckCircle, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ import {
   bulkApproveBusinessesAction,
   bulkSuspendBusinessesAction,
   bulkReactivateBusinessesAction,
+  bulkDeleteBusinessesAction,
 } from '../actions';
 
 interface BulkActionsBarProps {
@@ -39,7 +40,7 @@ interface BulkActionsBarProps {
   onExportCsv: () => void;
 }
 
-type BulkAction = 'approve' | 'suspend' | 'reactivate' | null;
+type BulkAction = 'approve' | 'suspend' | 'reactivate' | 'delete' | null;
 
 export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: BulkActionsBarProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,9 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
           break;
         case 'reactivate':
           result = await bulkReactivateBusinessesAction(selectedIds);
+          break;
+        case 'delete':
+          result = await bulkDeleteBusinessesAction(selectedIds);
           break;
       }
 
@@ -106,6 +110,13 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
           description: `Are you sure you want to reactivate ${selectedIds.length} suspended business${selectedIds.length > 1 ? 'es' : ''}?`,
           icon: CheckCircle,
           variant: 'default' as const,
+        };
+      case 'delete':
+        return {
+          title: 'Delete Businesses',
+          description: `Are you sure you want to permanently delete ${selectedIds.length} business${selectedIds.length > 1 ? 'es' : ''}? This will remove all associated data including bookings, wallet transactions, user accounts, and domain configurations. This action cannot be undone.`,
+          icon: Trash2,
+          variant: 'destructive' as const,
         };
       default:
         return null;
@@ -153,6 +164,14 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
               <DropdownMenuItem onClick={onExportCsv}>
                 <Download className="mr-2 h-4 w-4" />
                 Export Selected
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setPendingAction('delete')}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete All
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

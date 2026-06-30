@@ -22,7 +22,7 @@ const faqs = [
   {
     question: 'What areas do you serve?',
     answer:
-      'We provide luxury transfer services across the UAE, covering Dubai, Abu Dhabi, Sharjah, and all major airports, hotels, and business districts. Cross-emirate and intercity transfers are available upon request.',
+      'We provide luxury transfer services across the UAE and select international cities. Core coverage includes Dubai, Abu Dhabi, Sharjah, and their airports, hotels, and business districts. Cross-emirate and intercity transfers are available on all routes.',
   },
 ]
 

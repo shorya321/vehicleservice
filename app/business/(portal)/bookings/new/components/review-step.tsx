@@ -48,8 +48,10 @@ export function ReviewStep({
   onSubmit,
   isSubmitting,
 }: ReviewStepProps) {
-  const fromLocation = locations.find((l) => l.id === formData.from_location_id);
-  const toLocation = locations.find((l) => l.id === formData.to_location_id);
+  const fromLocationLookup = locations.find((l) => l.id === formData.from_location_id);
+  const toLocationLookup = locations.find((l) => l.id === formData.to_location_id);
+  const fromLocationName = formData.from_location_name || fromLocationLookup?.name || '';
+  const toLocationName = formData.to_location_name || toLocationLookup?.name || '';
   const vehicleType = vehicleTypes.find((v) => v.id === formData.vehicle_type_id);
 
   const hasBalance = hasSufficientBalance(walletBalance, formData.total_price);
@@ -83,7 +85,7 @@ export function ReviewStep({
             <div>
               <span className="text-muted-foreground">From:</span>
               <p className="font-medium text-foreground">
-                {fromLocation?.name} - {formData.pickup_address}
+                {fromLocationName}{fromLocationName && formData.pickup_address ? ' - ' : ''}{formData.pickup_address}
               </p>
             </div>
           </div>
@@ -92,7 +94,7 @@ export function ReviewStep({
             <div>
               <span className="text-muted-foreground">To:</span>
               <p className="font-medium text-foreground">
-                {toLocation?.name} - {formData.dropoff_address}
+                {toLocationName}{toLocationName && formData.dropoff_address ? ' - ' : ''}{formData.dropoff_address}
               </p>
             </div>
           </div>

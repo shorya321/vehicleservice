@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Briefcase, Users } from 'lucide-react'
 import { FormDatePicker } from '@/components/ui/form-date-picker'
+import { FormTimePicker } from '@/components/ui/form-time-picker'
 import { parse, format } from 'date-fns'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 
@@ -39,10 +40,10 @@ export function TransferDetailsSection({
     onDateTimeChange?.(formatted, currentTime)
   }
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTimePickerChange = (time: string) => {
+    setValue('pickupTime', time, { shouldValidate: true })
     const currentDate = watch('pickupDate')
-    const newTime = e.target.value
-    onDateTimeChange?.(currentDate, newTime)
+    onDateTimeChange?.(currentDate, time)
   }
 
   return (
@@ -135,12 +136,12 @@ export function TransferDetailsSection({
             <Label htmlFor="pickupTime" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
               Pickup Time
             </Label>
-            <Input
+            <FormTimePicker
               id="pickupTime"
-              type="time"
-              className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
-              {...register('pickupTime')}
-              onChange={handleTimeChange}
+              value={watch('pickupTime')}
+              onChange={handleTimePickerChange}
+              placeholder="Select pickup time"
+              className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus-visible:ring-1 focus-visible:ring-[var(--gold)]/15 focus-visible:border-[var(--gold)]"
               aria-required="true"
               aria-invalid={!!errors.pickupTime}
               aria-describedby={errors.pickupTime ? 'pickupTime-error' : undefined}

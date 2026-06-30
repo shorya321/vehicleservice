@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
+import { Inter, Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
 import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider'
@@ -19,9 +19,26 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: 'swap',
 })
 
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  weight: ['400', '700'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'Vehicle Service - Premier Luxury Transportation',
-  description: 'Experience unparalleled luxury, comfort, and reliability with our premier vehicle services',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.infiniatransfers.com'),
+  title: {
+    default: 'Infinia Transfers — Airport & City Transfers, Fixed-Price',
+    template: '%s | Infinia Transfers',
+  },
+  description: 'Book private airport and city transfers in 47 cities. Fixed pricing, meet-and-greet included, confirmed in under 90 seconds.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Infinia Transfers',
+    title: 'Infinia Transfers — Airport & City Transfers, Fixed-Price',
+    description: 'Book private airport and city transfers in 47 cities. Fixed pricing, meet-and-greet included, confirmed in under 90 seconds.',
+  },
 }
 
 export default async function RootLayout({
@@ -60,7 +77,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${plusJakartaSans.variable}`}
+      className={`${inter.variable} ${plusJakartaSans.variable} ${playfairDisplay.variable}`}
       style={themeStyles}
       suppressHydrationWarning
     >

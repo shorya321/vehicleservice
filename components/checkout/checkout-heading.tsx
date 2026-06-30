@@ -9,7 +9,7 @@ interface CheckoutHeadingProps {
 
 export function CheckoutHeading({
   title = 'Complete your booking',
-  subtitle = 'Confirm passenger details and add any extras. We hold the vehicle while you check out.',
+  subtitle = 'Confirm passenger details and add any extras. We hold the vehicle for the next 15 minutes while you check out.',
 }: CheckoutHeadingProps) {
   const reduceMotion = useReducedMotion()
 

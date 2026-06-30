@@ -4,10 +4,10 @@ import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 const memberFacts = [
-  "Saved passenger details on every booking",
-  "Itinerary archive and downloadable receipts",
-  "Priority chauffeur assignment on peak routes",
-  "Early notice on new cities and vehicle classes",
+  "Return bookings in seconds, your details already on file",
+  "Rebook a past route in two taps",
+  "Every trip on record: city, route, date, vehicle",
+  "Priority support with no queue",
 ]
 
 export function JoinCommunity() {
@@ -32,21 +32,21 @@ export function JoinCommunity() {
           viewport={{ once: true, amount: 0.3 }}
         >
           <div className="max-w-xl">
-            <div className="editorial-eyebrow">Membership</div>
+            <div className="editorial-eyebrow">Your account</div>
             <h2 id="membership-heading" className="editorial-section-title mt-5">
-              An account is optional. We recommend one anyway.
+              One signup. Every ride faster after that.
             </h2>
             <p className="editorial-body mt-6">
-              Bookings work without sign-in. With an account, you don&rsquo;t re-enter the same passenger and contact details on the next trip, and your itineraries stay in one place.
+              A free account is part of every first booking. Takes about a minute. From there, your past routes, passenger details, and receipts stay in one place, and return transfers book in seconds.
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
               <Link href="/register" className="btn btn-primary">
-                Create an account
+                Create your free account
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Link>
               <Link href="/auth/login" className="editorial-action">
-                Already a member
+                Sign in
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Link>
             </div>
