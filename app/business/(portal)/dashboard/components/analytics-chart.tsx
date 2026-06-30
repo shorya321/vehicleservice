@@ -9,7 +9,7 @@
  */
 
 import { motion } from 'motion/react';
-import { Plane, Building2, Hotel, Train, MapPin } from 'lucide-react';
+import { Plane, Building2, Hotel, Train, MapPin, Navigation } from 'lucide-react';
 import { getLocationTypeIconComponent } from '@/lib/utils/location-type-utils';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
@@ -496,6 +496,152 @@ function LocationItem({ location, maxBookings, index }: LocationItemProps) {
               className={cn("h-full rounded-full", config.progressBg)}
               initial={prefersReducedMotion ? { width: `${percentage}%` } : { width: 0 }}
               animate={{ width: `${percentage}%` }}
+              transition={{ duration: 0.6, delay: index * 0.08, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// POPULAR ROUTES CARD COMPONENT
+// ============================================================================
+
+export interface PopularRouteData {
+  id: string;
+  route_slug: string;
+  origin_name: string;
+  origin_city: string;
+  destination_name: string;
+  destination_city: string;
+  distance_km: number | null;
+  estimated_duration_minutes: number | null;
+}
+
+interface PopularRoutesCardProps {
+  routes: PopularRouteData[];
+  className?: string;
+}
+
+function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0) {
+    return `${hours}h${mins > 0 ? ` ${mins}m` : ''}`;
+  }
+  return `${mins}m`;
+}
+
+export function PopularRoutesCard({ routes, className }: PopularRoutesCardProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      <Card className={cn(
+        'relative overflow-hidden group rounded-xl',
+        'bg-card',
+        'border border-border',
+        'shadow-sm hover:shadow-md card-hover',
+        'transition-all duration-300',
+        className
+      )}>
+        <div className="p-5 pb-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Navigation className="h-4 w-4 text-primary" />
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Popular Routes
+            </h3>
+          </div>
+        </div>
+        <div className="p-5 space-y-3">
+          {routes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl mb-4 bg-primary/10">
+                <Navigation className="h-6 w-6 text-primary" />
+              </div>
+              <h4 className="text-sm font-medium text-foreground mb-1">
+                No popular routes yet
+              </h4>
+              <p className="text-xs text-muted-foreground max-w-[200px]">
+                Your most popular transfer routes will appear here
+              </p>
+            </div>
+          ) : (
+            routes.map((route, index) => (
+              <PopularRouteItem
+                key={route.id}
+                route={route}
+                index={index}
+              />
+            ))
+          )}
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
+interface PopularRouteItemProps {
+  route: PopularRouteData;
+  index: number;
+}
+
+function PopularRouteItem({ route, index }: PopularRouteItemProps) {
+  const prefersReducedMotion = useReducedMotion();
+  const config = cityColorVariants[index % cityColorVariants.length];
+
+  const metaParts: string[] = [];
+  if (route.distance_km != null) {
+    metaParts.push(`${route.distance_km} km`);
+  }
+  if (route.estimated_duration_minutes != null) {
+    metaParts.push(formatDuration(route.estimated_duration_minutes));
+  }
+
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={prefersReducedMotion ? undefined : { x: 4 }}
+      transition={{ duration: 0.4, delay: index * 0.08 }}
+      className="group/item hover:bg-muted/50 rounded-lg px-2 py-2 -mx-2 transition-colors"
+    >
+      <div className="flex items-start gap-3">
+        {/* Icon */}
+        <div className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+          config.bg
+        )}>
+          <Navigation className={cn('h-4 w-4', config.color)} />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-foreground truncate">
+              {route.origin_name} → {route.destination_name}
+            </span>
+          </div>
+
+          {/* Subtitle with cities + meta */}
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            {route.origin_city} → {route.destination_city}
+            {metaParts.length > 0 && ` · ${metaParts.join(' · ')}`}
+          </p>
+
+          {/* Decorative progress bar */}
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <motion.div
+              className={cn("h-full rounded-full", config.progressBg)}
+              initial={prefersReducedMotion ? { width: '60%' } : { width: 0 }}
+              animate={{ width: `${60 + (index % 3) * 15}%` }}
               transition={{ duration: 0.6, delay: index * 0.08, ease: 'easeOut' }}
             />
           </div>

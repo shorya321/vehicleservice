@@ -8,9 +8,8 @@
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { formatCurrency } from '@/lib/business/wallet-operations';
 import { DashboardContent } from './components/dashboard-content';
-import type { LocationData } from './components/analytics-chart';
+import type { PopularRouteData } from './components/analytics-chart';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Business Portal',
@@ -93,34 +92,20 @@ export default async function BusinessDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  // Get all available locations with booking counts
-  const { data: locationsData } = await supabase
-    .rpc('get_locations_with_booking_counts')
-    .limit(6);
+  // Get popular routes
+  const { data: popularRoutesData } = await supabase
+    .rpc('get_popular_routes', { limit_count: 5 });
 
-  // Fallback: if RPC doesn't exist, fetch locations directly
-  let locations: LocationData[] = (locationsData || []) as LocationData[];
-  if (!locationsData || locationsData.length === 0) {
-    const { data: rawLocations } = await supabase
-      .from('locations')
-      .select('id, name, city, country_code, location_types(icon_name, color_config, name)')
-      .eq('is_active', true)
-      .order('name')
-      .limit(6);
-
-    locations = (rawLocations || []).map(loc => {
-      const lt = loc.location_types as { icon_name?: string; color_config?: LocationData['color_config'] } | null;
-      return {
-        id: loc.id,
-        name: loc.name,
-        city: loc.city,
-        country_code: loc.country_code,
-        booking_count: 0,
-        icon_name: lt?.icon_name,
-        color_config: lt?.color_config,
-      };
-    });
-  }
+  const popularRoutes: PopularRouteData[] = (popularRoutesData || []).map(route => ({
+    id: route.id,
+    route_slug: route.route_slug,
+    origin_name: route.origin_name,
+    origin_city: route.origin_city,
+    destination_name: route.destination_name,
+    destination_city: route.destination_city,
+    distance_km: route.distance_km,
+    estimated_duration_minutes: route.estimated_duration_minutes,
+  }));
 
   return (
     <DashboardContent
@@ -131,7 +116,7 @@ export default async function BusinessDashboardPage() {
       completedBookings={completedBookings || 0}
       monthlyBookings={monthlyBookings || 0}
       recentBookings={recentBookings || []}
-      locations={locations}
+      popularRoutes={popularRoutes}
     />
   );
 }

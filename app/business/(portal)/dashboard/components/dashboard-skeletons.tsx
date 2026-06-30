@@ -163,9 +163,9 @@ export function RecentActivitySkeleton() {
 }
 
 /**
- * Location Item Skeleton
+ * Popular Route Item Skeleton
  */
-function LocationItemSkeleton() {
+function PopularRouteItemSkeleton() {
   return (
     <div className="flex items-start gap-3 px-2 py-2">
       {/* Icon */}
@@ -173,11 +173,8 @@ function LocationItemSkeleton() {
 
       {/* Content */}
       <div className="flex-1 min-w-0 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <SkeletonPulse className="h-4 w-28 rounded" />
-          <SkeletonPulse className="h-5 w-16 rounded-full" />
-        </div>
-        <SkeletonPulse className="h-3 w-24 rounded" />
+        <SkeletonPulse className="h-4 w-full rounded" />
+        <SkeletonPulse className="h-3 w-32 rounded" />
         <SkeletonPulse className="h-1.5 w-full rounded-full" />
       </div>
     </div>
@@ -185,21 +182,21 @@ function LocationItemSkeleton() {
 }
 
 /**
- * Locations Card Skeleton
- * 6 location items
+ * Popular Routes Card Skeleton
+ * 5 route items
  */
-export function LocationsCardSkeleton() {
+export function PopularRoutesCardSkeleton() {
   return (
     <Card className="relative overflow-hidden rounded-xl bg-card border border-border">
-      <CardHeader className="pb-3">
+      <div className="p-5 pb-3 border-b border-border">
         <div className="flex items-center gap-2">
           <SkeletonPulse className="h-4 w-4 rounded" />
-          <SkeletonPulse className="h-4 w-20 rounded" />
+          <SkeletonPulse className="h-4 w-28 rounded" />
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <LocationItemSkeleton key={i} />
+      </div>
+      <CardContent className="p-5 space-y-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <PopularRouteItemSkeleton key={i} />
         ))}
       </CardContent>
     </Card>
@@ -301,8 +298,8 @@ export function DashboardFullSkeleton() {
 
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-5">
-          {/* Locations */}
-          <LocationsCardSkeleton />
+          {/* Popular Routes */}
+          <PopularRoutesCardSkeleton />
 
           {/* Quick Actions */}
           <QuickActionsCardSkeleton />

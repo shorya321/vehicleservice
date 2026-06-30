@@ -17,7 +17,7 @@ import { WalletHeroCard } from './wallet-hero-card';
 import { StatsGrid } from './stats-grid';
 import { QuickActionsCard } from './quick-actions-card';
 import { PremiumFeaturesCard } from './premium-features-card';
-import { LocationsCard, type LocationData } from './analytics-chart';
+import { PopularRoutesCard, type PopularRouteData } from './analytics-chart';
 import { RecentActivity } from './recent-activity';
 
 interface RecentBooking {
@@ -38,7 +38,7 @@ interface DashboardContentProps {
   completedBookings: number;
   monthlyBookings: number;
   recentBookings: RecentBooking[];
-  locations: LocationData[];
+  popularRoutes: PopularRouteData[];
 }
 
 export function DashboardContent({
@@ -49,7 +49,7 @@ export function DashboardContent({
   completedBookings,
   monthlyBookings,
   recentBookings,
-  locations,
+  popularRoutes,
 }: DashboardContentProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -107,8 +107,8 @@ export function DashboardContent({
 
         {/* Right Column - Locations & Quick Actions */}
         <div className="lg:col-span-4 space-y-5">
-          {/* Locations */}
-          <LocationsCard locations={locations} />
+          {/* Popular Routes */}
+          <PopularRoutesCard routes={popularRoutes} />
 
           {/* Quick Actions */}
           <QuickActionsCard />
