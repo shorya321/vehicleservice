@@ -56,6 +56,12 @@ build-fix.log
 # Documentation (session notes)
 /docs/
 
+# Design mockups (static HTML)
+/design/
+
+# Test/debug pages (not production routes)
+/app/test/
+
 # Python cache
 __pycache__/
 *.pyc
