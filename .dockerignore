@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+docs
+supabase
+scripts
+*.md
+.vscode
+.idea
+build.log

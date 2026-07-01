@@ -86,7 +86,7 @@ export function AdjustCreditsButton({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button size="sm">
           <Wallet className="mr-2 h-4 w-4" />
           Adjust Credits
         </Button>

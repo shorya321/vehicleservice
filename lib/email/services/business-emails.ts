@@ -17,6 +17,21 @@ import CustomerBookingConfirmationEmail from '../templates/business/customer-boo
 import CustomerDatetimeChangedEmail from '../templates/business/customer-datetime-changed';
 import CustomerBookingCancelledEmail from '../templates/business/customer-booking-cancelled';
 import BusinessBookingStatusUpdateEmail from '../templates/business/booking-status-update';
+import NewBusinessRegistrationAdminNotificationEmail from '../templates/business/new-registration-admin-notification';
+import { getAdminEmail, getAppUrl } from '../config';
+
+/**
+ * Business Registration Admin Notification Email Data
+ */
+export interface BusinessRegistrationAdminNotificationEmailData {
+  businessId: string;
+  businessName: string;
+  businessEmail: string;
+  businessPhone: string;
+  contactPersonName: string;
+  subdomain: string;
+  registrationDate: string;
+}
 
 /**
  * Business Account Approval Email Data
@@ -299,6 +314,30 @@ export async function sendBusinessBookingStatusUpdateEmail(
       previousStatus: data.previousStatus,
       newStatus: data.newStatus,
       statusMessage: data.statusMessage,
+    },
+  });
+}
+
+/**
+ * Send admin notification when a new business registers (pending approval)
+ */
+export async function sendBusinessRegistrationAdminNotificationEmail(
+  data: BusinessRegistrationAdminNotificationEmailData
+): Promise<EmailResult> {
+  const adminEmail = getAdminEmail();
+  const appUrl = getAppUrl();
+  return sendEmail({
+    to: adminEmail,
+    subject: `New Business Registration - ${data.businessName}`,
+    template: NewBusinessRegistrationAdminNotificationEmail,
+    templateProps: {
+      businessName: data.businessName,
+      businessEmail: data.businessEmail,
+      businessPhone: data.businessPhone,
+      contactPersonName: data.contactPersonName,
+      subdomain: data.subdomain,
+      registrationDate: data.registrationDate,
+      businessDetailsUrl: `${appUrl}/admin/businesses/${data.businessId}`,
     },
   });
 }

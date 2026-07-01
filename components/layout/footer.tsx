@@ -154,6 +154,22 @@ export function Footer({ siteSettings }: FooterProps) {
             &copy; {new Date().getFullYear()} {settings.copyright_text}
           </p>
 
+          <nav aria-label="Legal" className="flex items-center gap-4">
+            <Link
+              href="/privacy"
+              className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            >
+              Privacy
+            </Link>
+            <span className="text-[var(--graphite)]" aria-hidden="true">|</span>
+            <Link
+              href="/terms"
+              className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+            >
+              Terms
+            </Link>
+          </nav>
+
           <ul className="flex items-center gap-3">
             {Object.entries(settings.social_links)
               .filter(([, url]) => url && url.length > 0)

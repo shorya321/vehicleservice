@@ -12,7 +12,10 @@ import {
 } from '@/lib/business/validators';
 import { generateSubdomain, isValidSubdomain } from '@/lib/business/domain-utils';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
-import { sendBusinessWelcomePendingEmail } from '@/lib/email/services/business-emails';
+import {
+  sendBusinessWelcomePendingEmail,
+  sendBusinessRegistrationAdminNotificationEmail,
+} from '@/lib/email/services/business-emails';
 import { DEFAULT_THEME_CONFIG } from '@/lib/business/branding-utils';
 
 /**
@@ -144,9 +147,33 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     if (!emailResult.success) {
       console.error('Failed to send welcome email:', emailResult.error);
-      // Don't fail registration if email fails - just log
     } else {
       console.log('Welcome email sent successfully:', emailResult.emailId);
+    }
+
+    // Notify admin about new business registration (separate try-catch to never affect signup)
+    try {
+      const adminEmailResult = await sendBusinessRegistrationAdminNotificationEmail({
+        businessId: businessAccount.id,
+        businessName: data.business_name,
+        businessEmail: data.business_email,
+        businessPhone: data.business_phone,
+        contactPersonName: data.contact_person_name,
+        subdomain: businessAccount.subdomain,
+        registrationDate: new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      });
+
+      if (!adminEmailResult.success) {
+        console.error('Failed to send admin notification email:', adminEmailResult.error);
+      }
+    } catch (adminEmailError) {
+      console.error('Admin notification email error:', adminEmailError);
     }
 
     return apiSuccess(

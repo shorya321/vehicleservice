@@ -73,7 +73,7 @@ export function UpdateStatusButton({ businessId, currentStatus }: UpdateStatusBu
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" size="sm">
           <Settings className="mr-2 h-4 w-4" />
           Update Status
         </Button>

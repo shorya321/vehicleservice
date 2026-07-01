@@ -65,7 +65,7 @@ export function RejectButton({ businessId, businessName }: RejectButtonProps) {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive">
+        <Button variant="destructive" size="sm">
           <XCircle className="mr-2 h-4 w-4" />
           Reject Business
         </Button>

@@ -12,7 +12,7 @@ import {
   apiSuccess,
   apiError,
 } from '@/lib/business/api-utils';
-import { getVercelCNAME } from '@/lib/business/domain-utils';
+import { getVercelCNAMEAsync } from '@/lib/business/domain-utils';
 
 const resolveTxt = promisify(dns.resolveTxt);
 const resolveCname = promisify(dns.resolveCname);
@@ -60,8 +60,11 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     let cnameValid = false;
     try {
       const cnameRecords = await resolveCname(customDomain);
-      const expectedCname = getVercelCNAME();
-      cnameValid = cnameRecords.some((record) => record.includes('vercel-dns.com') || record === expectedCname);
+      const expectedCname = await getVercelCNAMEAsync();
+      cnameValid = cnameRecords.some((record) => {
+        const normalized = record.replace(/\.$/, '');
+        return normalized.includes('vercel-dns') || normalized === expectedCname;
+      });
     } catch (error) {
       console.log('CNAME lookup failed:', error);
     }

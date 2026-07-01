@@ -39,7 +39,7 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
       <CardContent className="space-y-6">
         {/* Step 1: CNAME Record */}
         <div className="space-y-3">
-          <h3 className="font-semibold text-foreground flex items-center gap-2">
+          <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-bold">1</span>
             Add CNAME Record
           </h3>
@@ -54,11 +54,11 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
               </div>
               <div>
                 <span className="text-muted-foreground text-xs uppercase tracking-wider">Name:</span>
-                <p className="font-semibold text-foreground break-all">{customDomain.split('.')[0]}</p>
+                <p className="font-medium text-foreground break-all">{customDomain.split('.')[0]}</p>
               </div>
               <div>
                 <span className="text-muted-foreground text-xs uppercase tracking-wider">Value:</span>
-                <p className="font-semibold text-foreground break-all">{cnameTarget}</p>
+                <p className="font-medium text-foreground break-all">{cnameTarget}</p>
               </div>
             </div>
           </div>
@@ -67,7 +67,7 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
         {/* Step 2: TXT Record for Verification */}
         {verificationToken && (
           <div className="space-y-3">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-bold">2</span>
               Add TXT Record (Verification)
             </h3>
@@ -82,11 +82,11 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
                 </div>
                 <div>
                   <span className="text-muted-foreground text-xs uppercase tracking-wider">Name:</span>
-                  <p className="font-semibold text-foreground break-all">{txtRecordName}</p>
+                  <p className="font-medium text-foreground break-all">{txtRecordName}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground text-xs uppercase tracking-wider">Value:</span>
-                  <p className="font-semibold text-foreground break-all">{verificationToken}</p>
+                  <p className="font-medium text-foreground break-all">{verificationToken}</p>
                 </div>
               </div>
             </div>
@@ -123,7 +123,7 @@ export function DNSInstructions({ customDomain, verificationToken, cnameTarget =
 
         {/* Provider-Specific Instructions */}
         <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">Provider-Specific Guides</h3>
+          <h3 className="text-lg font-medium text-foreground">Provider-Specific Guides</h3>
           <div className="space-y-2 text-sm">
             <details className="group border border-border rounded-xl bg-muted overflow-hidden">
               <summary className="cursor-pointer font-medium text-foreground p-4 flex items-center justify-between hover:bg-muted/80 transition-colors">

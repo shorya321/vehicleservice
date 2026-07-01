@@ -22,7 +22,7 @@ export function DeleteBusinessButton({
 
   return (
     <>
-      <Button variant="destructive" onClick={() => setIsOpen(true)}>
+      <Button variant="destructive" size="sm" onClick={() => setIsOpen(true)}>
         <Trash2 className="mr-2 h-4 w-4" />
         Delete
       </Button>

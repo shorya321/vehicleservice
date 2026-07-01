@@ -36,3 +36,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI tool config (local to each developer)
+.agents/
+.claude/
+.mcp.json
+skills-lock.json
+
+# Large data files (seed data already in production DB)
+*.csv
+
+# Build artifacts & logs
+build.log
+build-fix.log
+
+# Backup files
+*.bak
+
+# Documentation (session notes)
+/docs/
+
+# Python cache
+__pycache__/
+*.pyc
