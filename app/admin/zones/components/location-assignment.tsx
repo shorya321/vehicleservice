@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { MapPin, Search, Check, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,46 +29,51 @@ import { LocationWithZone, assignLocationToZone, bulkAssignLocationsToZone } fro
 interface LocationAssignmentProps {
   zone: Zone
   locations: LocationWithZone[]
+  currentSearch: string
+  currentZoneFilter: string
 }
 
-export function LocationAssignment({ zone, locations }: LocationAssignmentProps) {
+export function LocationAssignment({ zone, locations, currentSearch, currentZoneFilter }: LocationAssignmentProps) {
   const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterZone, setFilterZone] = useState<string>('all')
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [searchInput, setSearchInput] = useState(currentSearch)
   const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set())
   const [savingLocation, setSavingLocation] = useState<string | null>(null)
   const [bulkSaving, setBulkSaving] = useState(false)
 
-  // Get unique zones for filter
-  const uniqueZones = Array.from(
-    new Set(locations.map(l => l.zone_name).filter((n): n is string => !!n))
-  ).sort()
+  const updateParams = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value !== 'all') {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    })
+    params.delete('page')
+    router.push(`${pathname}?${params.toString()}`)
+  }, [searchParams, pathname, router])
 
-  // Filter locations
-  const filteredLocations = locations.filter(location => {
-    const matchesSearch = !searchQuery || 
-      location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (location.city ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      location.country_code.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    updateParams({ search: searchInput })
+  }
 
-    const matchesZone = filterZone === 'all' ||
-      (filterZone === 'unassigned' && !location.zone_id) ||
-      (filterZone === zone.id && location.zone_id === zone.id) ||
-      (filterZone !== 'unassigned' && location.zone_id === filterZone)
-
-    return matchesSearch && matchesZone
-  })
+  const handleZoneFilterChange = (value: string) => {
+    updateParams({ zoneFilter: value })
+  }
 
   const handleAssignLocation = async (location: LocationWithZone) => {
     setSavingLocation(location.id)
-    
+
     const newZoneId = location.zone_id === zone.id ? null : zone.id
     const result = await assignLocationToZone(location.id, newZoneId)
 
     if (result.error) {
       toast.error(result.error)
     } else {
-      toast.success(newZoneId 
+      toast.success(newZoneId
         ? `${location.name} assigned to ${zone.name}`
         : `${location.name} removed from ${zone.name}`)
       router.refresh()
@@ -126,10 +131,10 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
   }
 
   const toggleSelectAll = () => {
-    if (selectedLocations.size === filteredLocations.length) {
+    if (selectedLocations.size === locations.length) {
       setSelectedLocations(new Set())
     } else {
-      setSelectedLocations(new Set(filteredLocations.map(l => l.id)))
+      setSelectedLocations(new Set(locations.map(l => l.id)))
     }
   }
 
@@ -146,16 +151,16 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search locations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="pl-9"
           />
-        </div>
-        <Select value={filterZone} onValueChange={setFilterZone}>
+        </form>
+        <Select value={currentZoneFilter} onValueChange={handleZoneFilterChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter by zone" />
           </SelectTrigger>
@@ -163,11 +168,6 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
             <SelectItem value="all">All Locations</SelectItem>
             <SelectItem value={zone.id}>In {zone.name}</SelectItem>
             <SelectItem value="unassigned">Unassigned</SelectItem>
-            {uniqueZones.map(zoneName => (
-              <SelectItem key={zoneName} value={zoneName}>
-                {zoneName}
-              </SelectItem>
-            ))}
           </SelectContent>
         </Select>
       </div>
@@ -206,8 +206,8 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
               <TableHead className="w-[40px]">
                 <Checkbox
                   checked={
-                    filteredLocations.length > 0 &&
-                    selectedLocations.size === filteredLocations.length
+                    locations.length > 0 &&
+                    selectedLocations.size === locations.length
                   }
                   onCheckedChange={toggleSelectAll}
                 />
@@ -221,14 +221,14 @@ export function LocationAssignment({ zone, locations }: LocationAssignmentProps)
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredLocations.length === 0 ? (
+            {locations.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center">
                   No locations found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLocations.map((location) => {
+              locations.map((location) => {
                 const isInThisZone = location.zone_id === zone.id
                 const isLoading = savingLocation === location.id
 

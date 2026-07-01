@@ -16,13 +16,26 @@ interface ZoneLocationsPageProps {
   params: Promise<{
     id: string
   }>
+  searchParams: Promise<{
+    search?: string
+    zoneFilter?: string
+    page?: string
+  }>
 }
 
-export default async function ZoneLocationsPage({ params }: ZoneLocationsPageProps) {
+export default async function ZoneLocationsPage({ params, searchParams }: ZoneLocationsPageProps) {
   const { id } = await params
-  const [zone, locations] = await Promise.all([
+  const queryParams = await searchParams
+
+  const filters = {
+    search: queryParams.search,
+    zoneFilter: queryParams.zoneFilter,
+    page: queryParams.page ? parseInt(queryParams.page) : 1,
+  }
+
+  const [zone, locationsData] = await Promise.all([
     getZone(id),
-    getLocationsWithZones()
+    getLocationsWithZones(filters)
   ])
 
   if (!zone) {
@@ -33,7 +46,7 @@ export default async function ZoneLocationsPage({ params }: ZoneLocationsPagePro
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href={`/admin/zones/${id}`}>
+            <Link href="/admin/zones">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
@@ -49,8 +62,51 @@ export default async function ZoneLocationsPage({ params }: ZoneLocationsPagePro
 
         <LocationAssignment
           zone={zone}
-          locations={locations}
+          locations={locationsData.locations}
+          currentSearch={queryParams.search || ''}
+          currentZoneFilter={queryParams.zoneFilter || 'all'}
         />
+
+        {locationsData.totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {((locationsData.page - 1) * locationsData.limit) + 1} to{' '}
+              {Math.min(locationsData.page * locationsData.limit, locationsData.total)} of {locationsData.total} locations
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={locationsData.page === 1}
+                asChild
+              >
+                <Link
+                  href={{
+                    pathname: `/admin/zones/${id}/locations`,
+                    query: { ...queryParams, page: locationsData.page - 1 },
+                  }}
+                >
+                  Previous
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={locationsData.page === locationsData.totalPages}
+                asChild
+              >
+                <Link
+                  href={{
+                    pathname: `/admin/zones/${id}/locations`,
+                    query: { ...queryParams, page: locationsData.page + 1 },
+                  }}
+                >
+                  Next
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
   )
 }
