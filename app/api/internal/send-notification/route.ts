@@ -8,8 +8,6 @@ import { NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { apiSuccess, apiError } from '@/lib/business/api-utils';
 import {
-  sendAutoRechargeSuccessEmail,
-  sendAutoRechargeFailedEmail,
   sendTransactionCompletedEmail,
   sendLowBalanceAlert,
   sendWalletFrozenEmail,
@@ -73,23 +71,6 @@ export async function POST(request: NextRequest) {
     let emailResult;
 
     switch (notification_type) {
-      case 'auto_recharge_success':
-        emailResult = await sendAutoRechargeSuccessEmail({
-          ...baseEmailData,
-          previousBalance: baseEmailData.previousBalance || businessAccount.wallet_balance - baseEmailData.rechargeAmount,
-          newBalance: baseEmailData.newBalance || businessAccount.wallet_balance,
-        });
-        break;
-
-      case 'auto_recharge_failed':
-        emailResult = await sendAutoRechargeFailedEmail({
-          ...baseEmailData,
-          currentBalance: businessAccount.wallet_balance,
-          paymentMethod: baseEmailData.paymentMethod || 'Default payment method',
-          walletUrl: baseEmailData.walletUrl,
-        });
-        break;
-
       case 'transaction_completed':
         emailResult = await sendTransactionCompletedEmail({
           ...baseEmailData,

@@ -1,10 +1,6 @@
 {
   "crons": [
     {
-      "path": "/api/business/wallet/auto-recharge/process-pending",
-      "schedule": "0 6 * * *"
-    },
-    {
       "path": "/api/cron/refresh-rates",
       "schedule": "0 6 * * *"
     }

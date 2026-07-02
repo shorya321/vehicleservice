@@ -163,157 +163,6 @@ export type Database = {
           },
         ]
       }
-      auto_recharge_attempts: {
-        Row: {
-          actual_recharged_amount: number | null
-          business_account_id: string
-          created_at: string
-          currency: string
-          error_code: string | null
-          error_message: string | null
-          id: string
-          idempotency_key: string
-          last_retry_at: string | null
-          max_retries: number
-          next_retry_at: string | null
-          payment_method_id: string | null
-          processed_at: string | null
-          requested_amount: number
-          retry_count: number
-          status: Database["public"]["Enums"]["auto_recharge_status"]
-          stripe_payment_intent_id: string | null
-          trigger_balance: number
-          trigger_threshold: number
-          updated_at: string
-          wallet_transaction_id: string | null
-        }
-        Insert: {
-          actual_recharged_amount?: number | null
-          business_account_id: string
-          created_at?: string
-          currency?: string
-          error_code?: string | null
-          error_message?: string | null
-          id?: string
-          idempotency_key: string
-          last_retry_at?: string | null
-          max_retries?: number
-          next_retry_at?: string | null
-          payment_method_id?: string | null
-          processed_at?: string | null
-          requested_amount: number
-          retry_count?: number
-          status?: Database["public"]["Enums"]["auto_recharge_status"]
-          stripe_payment_intent_id?: string | null
-          trigger_balance: number
-          trigger_threshold: number
-          updated_at?: string
-          wallet_transaction_id?: string | null
-        }
-        Update: {
-          actual_recharged_amount?: number | null
-          business_account_id?: string
-          created_at?: string
-          currency?: string
-          error_code?: string | null
-          error_message?: string | null
-          id?: string
-          idempotency_key?: string
-          last_retry_at?: string | null
-          max_retries?: number
-          next_retry_at?: string | null
-          payment_method_id?: string | null
-          processed_at?: string | null
-          requested_amount?: number
-          retry_count?: number
-          status?: Database["public"]["Enums"]["auto_recharge_status"]
-          stripe_payment_intent_id?: string | null
-          trigger_balance?: number
-          trigger_threshold?: number
-          updated_at?: string
-          wallet_transaction_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "auto_recharge_attempts_business_account_id_fkey"
-            columns: ["business_account_id"]
-            isOneToOne: false
-            referencedRelation: "business_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "auto_recharge_attempts_payment_method_id_fkey"
-            columns: ["payment_method_id"]
-            isOneToOne: false
-            referencedRelation: "payment_methods"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "auto_recharge_attempts_wallet_transaction_id_fkey"
-            columns: ["wallet_transaction_id"]
-            isOneToOne: false
-            referencedRelation: "wallet_transactions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      auto_recharge_settings: {
-        Row: {
-          business_account_id: string
-          created_at: string
-          currency: string
-          enabled: boolean
-          id: string
-          max_recharge_per_month: number | null
-          payment_method_id: string | null
-          recharge_amount: number
-          trigger_threshold: number
-          updated_at: string
-          use_default_payment_method: boolean
-        }
-        Insert: {
-          business_account_id: string
-          created_at?: string
-          currency?: string
-          enabled?: boolean
-          id?: string
-          max_recharge_per_month?: number | null
-          payment_method_id?: string | null
-          recharge_amount?: number
-          trigger_threshold?: number
-          updated_at?: string
-          use_default_payment_method?: boolean
-        }
-        Update: {
-          business_account_id?: string
-          created_at?: string
-          currency?: string
-          enabled?: boolean
-          id?: string
-          max_recharge_per_month?: number | null
-          payment_method_id?: string | null
-          recharge_amount?: number
-          trigger_threshold?: number
-          updated_at?: string
-          use_default_payment_method?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "auto_recharge_settings_business_account_id_fkey"
-            columns: ["business_account_id"]
-            isOneToOne: true
-            referencedRelation: "business_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "auto_recharge_settings_payment_method_id_fkey"
-            columns: ["payment_method_id"]
-            isOneToOne: false
-            referencedRelation: "payment_methods"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       blog_categories: {
         Row: {
           created_at: string | null
@@ -1384,6 +1233,35 @@ export type Database = {
           target_currency?: string
         }
         Relationships: []
+      }
+      location_aliases: {
+        Row: {
+          alias: string
+          created_at: string
+          id: string
+          location_id: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string
+          id?: string
+          location_id: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          id?: string
+          location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_aliases_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       location_types: {
         Row: {
@@ -2814,25 +2692,6 @@ export type Database = {
       }
     }
     Views: {
-      auto_recharge_monthly_spending: {
-        Row: {
-          business_account_id: string | null
-          failed_count: number | null
-          month: string | null
-          recharge_count: number | null
-          successful_count: number | null
-          total_recharged: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "auto_recharge_attempts_business_account_id_fkey"
-            columns: ["business_account_id"]
-            isOneToOne: false
-            referencedRelation: "business_accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       daily_transaction_summary: {
         Row: {
           avg_transaction: number | null
@@ -2926,10 +2785,6 @@ export type Database = {
           should_send: boolean
           threshold: number
         }[]
-      }
-      check_monthly_auto_recharge_limit: {
-        Args: { p_business_account_id: string; p_new_amount: number }
-        Returns: boolean
       }
       cleanup_expired_password_reset_tokens: { Args: never; Returns: number }
       cleanup_expired_verification_tokens: { Args: never; Returns: number }
@@ -3079,10 +2934,6 @@ export type Database = {
           p_reason: string
         }
         Returns: Json
-      }
-      generate_auto_recharge_idempotency_key: {
-        Args: { p_business_account_id: string }
-        Returns: string
       }
       generate_booking_number: { Args: never; Returns: string }
       generate_monthly_statement_data: {
@@ -3333,10 +3184,6 @@ export type Database = {
         }[]
       }
       get_vendor_user_id: { Args: { p_vendor_app_id: string }; Returns: string }
-      increment_auto_recharge_retry: {
-        Args: { p_attempt_id: string; p_error_message?: string }
-        Returns: boolean
-      }
       is_admin: { Args: { user_id: string }; Returns: boolean }
       log_user_activity: {
         Args: {
@@ -3439,18 +3286,6 @@ export type Database = {
         }
         Returns: Json
       }
-      update_auto_recharge_attempt_status: {
-        Args: {
-          p_actual_amount?: number
-          p_attempt_id: string
-          p_error_code?: string
-          p_error_message?: string
-          p_payment_intent_id?: string
-          p_status: Database["public"]["Enums"]["auto_recharge_status"]
-          p_wallet_transaction_id?: string
-        }
-        Returns: boolean
-      }
       update_last_low_balance_alert: {
         Args: { p_business_account_id: string }
         Returns: boolean
@@ -3470,12 +3305,6 @@ export type Database = {
       verify_email_with_token: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
-      auto_recharge_status:
-        | "pending"
-        | "processing"
-        | "succeeded"
-        | "failed"
-        | "cancelled"
       blog_post_status: "draft" | "published" | "archived"
       booking_status:
         | "pending"
@@ -3644,13 +3473,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      auto_recharge_status: [
-        "pending",
-        "processing",
-        "succeeded",
-        "failed",
-        "cancelled",
-      ],
       blog_post_status: ["draft", "published", "archived"],
       booking_status: [
         "pending",

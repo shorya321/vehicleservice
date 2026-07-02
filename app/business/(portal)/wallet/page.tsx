@@ -84,17 +84,9 @@ export default async function BusinessWalletPage() {
     .eq('business_account_id', businessAccountId)
     .gte('created_at', startOfMonth.toISOString());
 
-  // 3. Auto-recharge status
-  const { data: autoRechargeConfig } = await supabase
-    .from('auto_recharge_settings')
-    .select('enabled')
-    .eq('business_account_id', businessAccountId)
-    .single();
-
   const quickStats = {
     paymentMethodsCount: paymentMethodsCount || 0,
     monthlyTransactionCount: monthlyTransactionCount || 0,
-    autoRechargeEnabled: autoRechargeConfig?.enabled || false,
   };
 
   return (

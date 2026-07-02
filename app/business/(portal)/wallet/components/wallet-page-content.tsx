@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { ArrowRight, CreditCard, Loader2, ExternalLink, Wallet, Activity } from 'lucide-react';
 import { FadeIn } from '@/components/business/motion/fade-in';
-import { StaggerContainer, StaggerItem } from '@/components/business/motion/stagger-container';
 import { HeroStatCard } from '@/components/business/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,8 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader, PageContainer } from '@/components/business/layout';
 import { TransactionHistory } from './transaction-history';
 import { PaymentMethodsList } from './payment-methods-list';
-import { AutoRechargeSettings } from './auto-recharge-settings';
-import { AutoRechargeHistory } from './auto-recharge-history';
 import { CheckoutSuccessHandler } from './checkout-success-handler';
 import { WalletRechargeModal } from './wallet-recharge-modal';
 import { staggerContainer, staggerItem } from '@/lib/business/animation/variants';
@@ -59,7 +56,6 @@ interface WalletTransaction {
 interface WalletQuickStatsData {
   paymentMethodsCount: number;
   monthlyTransactionCount: number;
-  autoRechargeEnabled: boolean;
 }
 
 interface WalletPageContentProps {
@@ -213,27 +209,15 @@ export function WalletPageContent({
               value={quickStats?.monthlyTransactionCount ?? 0}
               subtitle="Transactions"
               icon={<Activity className="h-5 w-5" />}
-              variant={quickStats?.autoRechargeEnabled ? 'success' : 'default'}
+              variant="default"
             />
           </motion.div>
         </motion.div>
 
-        {/* Two Column Grid: Payment Methods & Auto-Recharge */}
+        {/* Payment Methods */}
         {paymentElementEnabled && (
-          <StaggerContainer className="grid grid-cols-1 lg:grid-cols-2 gap-6" delay={0.3}>
-            <StaggerItem>
-              <PaymentMethodsList />
-            </StaggerItem>
-            <StaggerItem>
-              <AutoRechargeSettings />
-            </StaggerItem>
-          </StaggerContainer>
-        )}
-
-        {/* Auto-Recharge History */}
-        {paymentElementEnabled && (
-          <FadeIn delay={0.4}>
-            <AutoRechargeHistory />
+          <FadeIn delay={0.3}>
+            <PaymentMethodsList />
           </FadeIn>
         )}
 
