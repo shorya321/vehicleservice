@@ -444,6 +444,7 @@ export async function createBooking(formData: BookingFormData) {
       base_price: basePrice,
       amenities_price: amenitiesPrice,
       total_price: totalPrice,
+      currency: 'AED', // Charge currency is always AED (PaymentIntent hardcodes 'aed')
       booking_status: 'pending',
       payment_status: 'processing',
       customer_notes: validatedData.specialRequests || null
