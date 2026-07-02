@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { CreditCard, Activity, Zap } from 'lucide-react';
+import { CreditCard, Activity } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/lib/business/animation/variants';
@@ -17,7 +17,6 @@ import { useReducedMotion } from '@/lib/business/animation/hooks';
 interface WalletQuickStatsProps {
   paymentMethodsCount: number;
   monthlyTransactionCount: number;
-  autoRechargeEnabled: boolean;
 }
 
 interface StatPillProps {
@@ -101,7 +100,6 @@ function StatPill({ icon, value, label, variant, isActive }: StatPillProps) {
 export function WalletQuickStats({
   paymentMethodsCount,
   monthlyTransactionCount,
-  autoRechargeEnabled,
 }: WalletQuickStatsProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -118,13 +116,6 @@ export function WalletQuickStats({
       label: 'This Month',
       variant: 'info' as const,
     },
-    {
-      icon: <Zap className="h-4 w-4" />,
-      value: autoRechargeEnabled ? 'Active' : 'Inactive',
-      label: 'Auto-Recharge',
-      variant: autoRechargeEnabled ? ('success' as const) : ('warning' as const),
-      isActive: autoRechargeEnabled,
-    },
   ];
 
   if (prefersReducedMotion) {
@@ -137,7 +128,6 @@ export function WalletQuickStats({
             value={stat.value}
             label={stat.label}
             variant={stat.variant}
-            isActive={stat.isActive}
           />
         ))}
       </div>
@@ -158,7 +148,6 @@ export function WalletQuickStats({
           value={stat.value}
           label={stat.label}
           variant={stat.variant}
-          isActive={stat.isActive}
         />
       ))}
     </motion.div>

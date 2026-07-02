@@ -98,8 +98,7 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
               </Label>
               <p className="text-sm text-muted-foreground">
                 Automatically save payment methods after successful payments. This enables faster
-                future transactions and allows auto-recharge functionality. Payment methods are
-                securely stored with Stripe.
+                future transactions. Payment methods are securely stored with Stripe.
               </p>
             </div>
             <Switch

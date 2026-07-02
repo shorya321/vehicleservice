@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
         newBalance: data,
       });
 
-      // Save payment method if available (for future auto-recharge)
+      // Save payment method if available (for future recharges)
       try {
         // Checkout sessions may have payment_method directly
         const paymentMethodId = session.payment_method as string;
@@ -349,7 +349,7 @@ export async function POST(request: NextRequest) {
         newBalance: data,
       });
 
-      // Save payment method if available (for future auto-recharge)
+      // Save payment method if available (for future recharges)
       try {
         // PaymentIntents have payment_method field
         const paymentMethodId = paymentIntent.payment_method as string;

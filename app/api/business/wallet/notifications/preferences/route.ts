@@ -20,14 +20,6 @@ const notificationPreferencesSchema = z.object({
     enabled: z.boolean(),
     channels: z.array(z.enum(['email'])),
   }).optional(),
-  auto_recharge_success: z.object({
-    enabled: z.boolean(),
-    channels: z.array(z.enum(['email'])),
-  }).optional(),
-  auto_recharge_failed: z.object({
-    enabled: z.boolean(),
-    channels: z.array(z.enum(['email'])),
-  }).optional(),
   wallet_frozen: z.object({
     enabled: z.boolean(),
     channels: z.array(z.enum(['email'])),

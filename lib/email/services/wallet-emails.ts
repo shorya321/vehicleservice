@@ -14,8 +14,6 @@ import { formatCurrency } from '@/lib/utils/currency-converter';
 // Import email templates
 import LowBalanceAlertEmail from '../templates/wallet/low-balance-alert';
 import TransactionCompletedEmail from '../templates/wallet/transaction-completed';
-import AutoRechargeSuccessEmail from '../templates/wallet/auto-recharge-success';
-import AutoRechargeFailedEmail from '../templates/wallet/auto-recharge-failed';
 import WalletFrozenEmail from '../templates/wallet/wallet-frozen';
 import SpendingLimitReachedEmail from '../templates/wallet/spending-limit-reached';
 import MonthlyStatementEmail from '../templates/wallet/monthly-statement';
@@ -41,32 +39,6 @@ export interface TransactionCompletedData {
   newBalance: number;
   transactionDate: Date;
   transactionId: string;
-  walletUrl: string;
-}
-
-export interface AutoRechargeSuccessData {
-  businessName: string;
-  businessEmail: string;
-  rechargeAmount: number;
-  currency: string;
-  previousBalance: number;
-  newBalance: number;
-  paymentMethod: string;
-  rechargeDate: Date;
-  rechargeId: string;
-  walletUrl: string;
-}
-
-export interface AutoRechargeFailedData {
-  businessName: string;
-  businessEmail: string;
-  attemptedAmount: number;
-  currency: string;
-  currentBalance: number;
-  paymentMethod: string;
-  failureReason: string;
-  attemptDate: Date;
-  nextRetryDate?: Date;
   walletUrl: string;
 }
 
@@ -186,95 +158,6 @@ export async function sendTransactionCompletedEmail(
     };
   } catch (error) {
     console.error('Unexpected error sending transaction completed email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
-}
-
-/**
- * Send auto-recharge success email
- */
-export async function sendAutoRechargeSuccessEmail(
-  data: AutoRechargeSuccessData
-): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const formattedData = {
-      ...data,
-      rechargeDate: format(data.rechargeDate, 'PPp'),
-    };
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Auto-Recharge Successful - ${formatCurrency(data.rechargeAmount, data.currency)} added`,
-      react: jsx(AutoRechargeSuccessEmail, formattedData),
-    });
-
-    if (error) {
-      console.error('Failed to send auto-recharge success email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send auto-recharge success email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending auto-recharge success email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
-}
-
-/**
- * Send auto-recharge failed email
- */
-export async function sendAutoRechargeFailedEmail(
-  data: AutoRechargeFailedData
-): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const formattedData = {
-      ...data,
-      attemptDate: format(data.attemptDate, 'PPp'),
-      nextRetryDate: data.nextRetryDate ? format(data.nextRetryDate, 'PPp') : undefined,
-    };
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject: 'Auto-Recharge Failed - Action Required',
-      react: jsx(AutoRechargeFailedEmail, formattedData),
-    });
-
-    if (error) {
-      console.error('Failed to send auto-recharge failed email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send auto-recharge failed email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending auto-recharge failed email:', error);
     return {
       success: false,
       error: 'An unexpected error occurred while sending the email',

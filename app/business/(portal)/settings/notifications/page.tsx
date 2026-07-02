@@ -24,11 +24,9 @@ import {
   Mail,
   CheckCircle2,
   AlertTriangle,
-  XCircle,
   ShieldAlert,
   TrendingDown,
   FileText,
-  RefreshCw,
 } from 'lucide-react';
 
 interface NotificationConfig {
@@ -41,8 +39,6 @@ interface NotificationConfig {
 interface NotificationPreferences {
   low_balance_alert?: NotificationConfig;
   transaction_completed?: NotificationConfig;
-  auto_recharge_success?: NotificationConfig;
-  auto_recharge_failed?: NotificationConfig;
   wallet_frozen?: NotificationConfig;
   spending_limit_reached?: NotificationConfig;
   monthly_statement?: NotificationConfig;
@@ -63,20 +59,6 @@ const notificationTypes = {
     description: 'Receive confirmation for every wallet transaction',
     iconBg: 'bg-emerald-500/10',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
-  },
-  auto_recharge_success: {
-    icon: RefreshCw,
-    title: 'Auto-Recharge Success',
-    description: 'Get notified when automatic recharge completes successfully',
-    iconBg: 'bg-emerald-500/10',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-  },
-  auto_recharge_failed: {
-    icon: XCircle,
-    title: 'Auto-Recharge Failed',
-    description: 'Get notified when automatic recharge fails (always on)',
-    iconBg: 'bg-red-500/10',
-    iconColor: 'text-red-600 dark:text-red-400',
   },
   wallet_frozen: {
     icon: ShieldAlert,
@@ -197,7 +179,7 @@ export default function NotificationPreferencesPage() {
   // Helper to check if a notification is enabled
   const isEnabled = (key: keyof NotificationPreferences) => {
     if (key === 'wallet_frozen') return true; // Always on
-    if (key === 'auto_recharge_failed' || key === 'spending_limit_reached') {
+    if (key === 'spending_limit_reached') {
       return preferences[key]?.enabled !== false;
     }
     return preferences[key]?.enabled || false;
@@ -315,86 +297,6 @@ export default function NotificationPreferencesPage() {
               </div>
             </CardHeader>
             {isEnabled('transaction_completed') && (
-              <CardContent className="pt-0">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4" />
-                  <span>Notifications sent via email</span>
-                </div>
-              </CardContent>
-            )}
-          </Card>
-        </motion.div>
-
-        {/* Auto-Recharge Success */}
-        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className={cn(
-                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                    notificationTypes.auto_recharge_success.iconBg
-                  )}>
-                    <RefreshCw className={cn('h-5 w-5', notificationTypes.auto_recharge_success.iconColor)} />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base font-semibold text-foreground">
-                      {notificationTypes.auto_recharge_success.title}
-                    </CardTitle>
-                    <CardDescription className="mt-1 text-sm text-muted-foreground">
-                      {notificationTypes.auto_recharge_success.description}
-                    </CardDescription>
-                  </div>
-                </div>
-                <Switch
-                  checked={isEnabled('auto_recharge_success')}
-                  onCheckedChange={(checked) =>
-                    updatePreference('auto_recharge_success', { enabled: checked })
-                  }
-                />
-              </div>
-            </CardHeader>
-            {isEnabled('auto_recharge_success') && (
-              <CardContent className="pt-0">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4" />
-                  <span>Notifications sent via email</span>
-                </div>
-              </CardContent>
-            )}
-          </Card>
-        </motion.div>
-
-        {/* Auto-Recharge Failed */}
-        <motion.div variants={prefersReducedMotion ? undefined : itemVariants}>
-          <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className={cn(
-                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                    notificationTypes.auto_recharge_failed.iconBg
-                  )}>
-                    <XCircle className={cn('h-5 w-5', notificationTypes.auto_recharge_failed.iconColor)} />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base font-semibold text-foreground">
-                      {notificationTypes.auto_recharge_failed.title}
-                    </CardTitle>
-                    <CardDescription className="mt-1 text-sm text-muted-foreground">
-                      {notificationTypes.auto_recharge_failed.description}
-                    </CardDescription>
-                  </div>
-                </div>
-                <Switch
-                  checked={isEnabled('auto_recharge_failed')}
-                  onCheckedChange={(checked) =>
-                    updatePreference('auto_recharge_failed', { enabled: checked })
-                  }
-                />
-              </div>
-            </CardHeader>
-            {isEnabled('auto_recharge_failed') && (
               <CardContent className="pt-0">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />

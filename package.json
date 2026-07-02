@@ -13,7 +13,6 @@
     "test:integration": "RUN_INTEGRATION_TESTS=true jest",
     "test:oauth": "jest stripe-connect-oauth",
     "test:payment": "jest payment-element-connected",
-    "test:autorecharge": "jest auto-recharge-connected",
     "test:webhook": "jest webhook-connected-accounts"
   },
   "keywords": [],
