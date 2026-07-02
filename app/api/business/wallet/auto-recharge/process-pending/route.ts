@@ -390,6 +390,15 @@ async function processAttempt(
  * Process all pending auto-recharge attempts
  */
 export async function GET(request: NextRequest) {
+  // Auth: allow Vercel Cron (x-vercel-cron header) or a valid CRON_SECRET bearer.
+  // Mirrors app/api/cron/refresh-rates/route.ts so the scheduled job keeps working.
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+    if (request.headers.get('x-vercel-cron') !== '1') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
   console.log(`[Auto-Recharge] Processing pending attempts...`);
 
   try {
@@ -463,6 +472,13 @@ export async function GET(request: NextRequest) {
  * Process specific attempt by ID (for testing)
  */
 export async function POST(request: NextRequest) {
+  // Auth: privileged single-attempt charge with no legitimate cron caller —
+  // require a valid CRON_SECRET bearer and fail closed if it is unset.
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { attempt_id } = await request.json();
 

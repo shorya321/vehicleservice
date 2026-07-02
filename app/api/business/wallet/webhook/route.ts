@@ -157,7 +157,16 @@ export async function POST(request: NextRequest) {
 
     // Extract metadata
     const businessAccountId = session.metadata?.business_account_id;
-    const amount = parseFloat(session.metadata?.amount || '0');
+    // Credit the actually-charged total (fils -> AED), not client-supplied metadata.
+    const amount = (session.amount_total ?? 0) / 100;
+    const metadataAmount = parseFloat(session.metadata?.amount || '0');
+    if (metadataAmount && Math.abs(metadataAmount - amount) > 0.01) {
+      console.warn('Webhook: metadata.amount diverges from amount_total', {
+        sessionId: session.id,
+        metadataAmount,
+        amountTotal: amount,
+      });
+    }
     const paymentIntentId = session.payment_intent as string;
 
     if (!businessAccountId || !amount) {

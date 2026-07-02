@@ -44,8 +44,17 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
       return apiError('Payment not completed', 400);
     }
 
-    // Extract payment details
-    const amount = parseFloat(session.metadata?.amount || '0');
+    // Extract payment details — credit the actually-charged total (fils -> AED),
+    // not the client-supplied metadata amount.
+    const amount = (session.amount_total ?? 0) / 100;
+    const metadataAmount = parseFloat(session.metadata?.amount || '0');
+    if (metadataAmount && Math.abs(metadataAmount - amount) > 0.01) {
+      console.warn('verify-payment: metadata.amount diverges from amount_total', {
+        sessionId,
+        metadataAmount,
+        amountTotal: amount,
+      });
+    }
     const paymentIntentId = session.payment_intent as string;
 
     if (!amount) {
