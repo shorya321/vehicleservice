@@ -2,7 +2,7 @@
 
 import { jsx } from 'react/jsx-runtime';
 import { render } from '@react-email/render';
-import { getResendClient, getEmailConfig, getUnsubscribeUrl } from '../config';
+import { getResendClient, getEmailConfig } from '../config';
 import type { EmailResult } from '../types';
 import type React from 'react';
 
@@ -26,7 +26,6 @@ export async function sendEmail({
   try {
     const resend = getResendClient();
     const emailConfig = getEmailConfig();
-    const unsubscribeUrl = getUnsubscribeUrl();
 
     const reactElement = jsx(template, templateProps);
     const plainText = await render(reactElement, { plainText: true });
@@ -38,9 +37,6 @@ export async function sendEmail({
       subject,
       react: reactElement,
       text: plainText,
-      headers: {
-        'List-Unsubscribe': `<${unsubscribeUrl}>`,
-      },
     });
 
     if (error) {

@@ -11,7 +11,7 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
-import { BRAND_NAME, BRAND_ADDRESS, getBrandUrl, getUnsubscribeUrl } from '../../config';
+import { BRAND_NAME, BRAND_ADDRESS, getBrandUrl } from '../../config';
 
 interface EmailLayoutProps {
   preview: string;
@@ -22,7 +22,6 @@ interface EmailLayoutProps {
 export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) => {
   const currentYear = new Date().getFullYear();
   const brandUrl = getBrandUrl();
-  const unsubscribeUrl = getUnsubscribeUrl();
 
   return (
     <Html>
@@ -63,11 +62,6 @@ export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) =>
               {' | '}
               <Link href={`${brandUrl}/contact`} style={footerLink}>
                 Contact Support
-              </Link>
-            </Text>
-            <Text style={footerLinks}>
-              <Link href={unsubscribeUrl} style={footerLink}>
-                Unsubscribe
               </Link>
             </Text>
           </Section>
