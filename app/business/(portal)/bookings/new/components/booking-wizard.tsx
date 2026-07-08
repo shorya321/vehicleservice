@@ -166,9 +166,7 @@ export function BookingWizard({
   }
 
   function nextStep() {
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    }
+    setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
   }
 
   function previousStep() {

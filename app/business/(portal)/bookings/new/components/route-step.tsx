@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, ArrowDown } from 'lucide-react';
+import { MapPin, ArrowDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormDatePicker } from '@/components/ui/form-date-picker';
@@ -256,7 +256,16 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
 
         {/* Actions */}
         <div className="flex justify-end">
-          <Button type="submit">Continue to Vehicle Selection</Button>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading Vehicles…
+              </>
+            ) : (
+              'Continue to Vehicle Selection'
+            )}
+          </Button>
         </div>
       </form>
     </Form>
