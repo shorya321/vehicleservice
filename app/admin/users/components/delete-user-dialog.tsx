@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
@@ -26,20 +26,28 @@ export function DeleteUserDialog({ userId, open, onClose }: DeleteUserDialogProp
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (open) setError(null)
+  }, [open])
+
   const handleDelete = async () => {
     if (!userId) return
 
     setLoading(true)
     setError(null)
 
-    const result = await deleteUser(userId)
+    try {
+      const result = await deleteUser(userId)
 
-    if (result.error) {
-      setError(result.error)
-      setLoading(false)
-    } else {
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+
       router.refresh()
       onClose()
+    } finally {
+      setLoading(false)
     }
   }
 
