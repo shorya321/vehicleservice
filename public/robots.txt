@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /vendor/
-Disallow: /business/
-Disallow: /api/
-Disallow: /account/
-
-Sitemap: https://www.infiniatransfers.com/sitemap.xml

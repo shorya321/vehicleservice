@@ -93,16 +93,28 @@ export async function proxy(request: NextRequest) {
     '/login',        // customer/vendor login (let anonymous authenticate)
     '/auth',         // auth callbacks (email confirm, etc.)
     '/unauthorized',
+    '/robots.txt',   // crawl directives must stay reachable during maintenance
+    '/sitemap.xml',  // sitemap must stay reachable during maintenance
   ]
 
-  if (
-    isMainPlatformHost &&
-    !user &&
-    !MAINTENANCE_EXEMPT_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p))
-  ) {
-    const { isMaintenanceMode } = await import('@/lib/site-settings/maintenance')
-    if (await isMaintenanceMode(supabase)) {
+  // Only anonymous traffic needs these flags: maintenance gates anonymous visitors,
+  // and crawlers (the target of the indexing block) are always anonymous. Skipping
+  // the uncached read for logged-in users keeps it off the authenticated hot path.
+  if (isMainPlatformHost && !user) {
+    const { readSiteFlags } = await import('@/lib/site-settings/flags')
+    const flags = await readSiteFlags(supabase)
+
+    // Maintenance gate: anonymous visitors on non-exempt paths see the maintenance page.
+    if (
+      flags.maintenanceMode &&
+      !MAINTENANCE_EXEMPT_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p))
+    ) {
       return NextResponse.rewrite(new URL('/maintenance', request.url))
+    }
+
+    // Pre-launch crawl block: keep search engines out of demo content.
+    if (flags.blockIndexing) {
+      supabaseResponse.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
     }
   }
 

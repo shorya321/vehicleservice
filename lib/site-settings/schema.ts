@@ -20,6 +20,7 @@ export const siteSettingsSchema = z.object({
     tiktok: z.string().url('Invalid URL').or(z.literal('')),
   }),
   maintenance_mode: z.boolean(),
+  block_search_indexing: z.boolean(),
 })
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>

@@ -5,6 +5,7 @@ import './globals.css'
 import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
+import { getSiteSettings } from '@/lib/site-settings/server'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,19 +27,25 @@ const playfairDisplay = Playfair_Display({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.infiniatransfers.com'),
-  title: {
-    default: 'Infinia Transfers — Airport & City Transfers, Fixed-Price',
-    template: '%s | Infinia Transfers',
-  },
-  description: 'Book private airport and city transfers in 47 cities. Fixed pricing, meet-and-greet included, confirmed in under 90 seconds.',
-  openGraph: {
-    type: 'website',
-    siteName: 'Infinia Transfers',
-    title: 'Infinia Transfers — Airport & City Transfers, Fixed-Price',
+export async function generateMetadata(): Promise<Metadata> {
+  // Site-wide noindex while pre-launch demo content is blocked from crawlers.
+  const { block_search_indexing } = await getSiteSettings()
+
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.infiniatransfers.com'),
+    title: {
+      default: 'Infinia Transfers — Airport & City Transfers, Fixed-Price',
+      template: '%s | Infinia Transfers',
+    },
     description: 'Book private airport and city transfers in 47 cities. Fixed pricing, meet-and-greet included, confirmed in under 90 seconds.',
-  },
+    openGraph: {
+      type: 'website',
+      siteName: 'Infinia Transfers',
+      title: 'Infinia Transfers — Airport & City Transfers, Fixed-Price',
+      description: 'Book private airport and city transfers in 47 cities. Fixed pricing, meet-and-greet included, confirmed in under 90 seconds.',
+    },
+    ...(block_search_indexing ? { robots: { index: false, follow: false } } : {}),
+  }
 }
 
 export default async function RootLayout({

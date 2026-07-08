@@ -1,7 +1,14 @@
 import type { MetadataRoute } from 'next'
+import { getSiteSettings } from '@/lib/site-settings/server'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.infiniatransfers.com'
+
+  // Pre-launch: hand crawlers no URL list while demo content is blocked.
+  const { block_search_indexing } = await getSiteSettings()
+  if (block_search_indexing) {
+    return []
+  }
 
   return [
     {

@@ -20,6 +20,7 @@ import {
   Image as ImageIcon,
   Type,
   Wrench,
+  EyeOff,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { updateSiteSettings, uploadSiteLogo, removeSiteLogo } from '../actions'
@@ -50,6 +51,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       office_address: currentSettings.office_address,
       social_links: currentSettings.social_links,
       maintenance_mode: currentSettings.maintenance_mode,
+      block_search_indexing: currentSettings.block_search_indexing,
     },
   })
 
@@ -108,7 +110,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <FormField
               control={form.control}
               name="maintenance_mode"
@@ -126,6 +128,32 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                       checked={field.value}
                       onCheckedChange={field.onChange}
                       aria-label="Toggle maintenance mode"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="block_search_indexing"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-4">
+                  <div className="space-y-1">
+                    <FormLabel className="flex items-center gap-2 text-base">
+                      <EyeOff className="h-4 w-4" />
+                      Block search engine indexing
+                    </FormLabel>
+                    <p className="text-sm text-muted-foreground">
+                      Keeps Google and other crawlers out while the site holds demo
+                      content (robots.txt, X-Robots-Tag header, and noindex meta tag).
+                      Turn OFF when you go live.
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label="Toggle search engine indexing block"
                     />
                   </FormControl>
                 </FormItem>
