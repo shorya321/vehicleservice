@@ -19,6 +19,7 @@ export const siteSettingsSchema = z.object({
     youtube: z.string().url('Invalid URL').or(z.literal('')),
     tiktok: z.string().url('Invalid URL').or(z.literal('')),
   }),
+  maintenance_mode: z.boolean(),
 })
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>

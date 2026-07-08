@@ -19,6 +19,7 @@ export interface SiteSettingsConfig {
   secondary_phone: string
   office_address: string
   social_links: SocialLinks
+  maintenance_mode: boolean
 }
 
 export const DEFAULT_SOCIAL_LINKS: SocialLinks = {
@@ -42,6 +43,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   secondary_phone: '+971 4 123 4567',
   office_address: 'Business Bay, Dubai, United Arab Emirates',
   social_links: DEFAULT_SOCIAL_LINKS,
+  maintenance_mode: false,
 }
 
 export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
@@ -85,5 +87,6 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
     secondary_phone: typeof obj.secondary_phone === 'string' ? obj.secondary_phone : DEFAULT_SITE_SETTINGS.secondary_phone,
     office_address: typeof obj.office_address === 'string' ? obj.office_address : DEFAULT_SITE_SETTINGS.office_address,
     social_links: social,
+    maintenance_mode: typeof obj.maintenance_mode === 'boolean' ? obj.maintenance_mode : false,
   }
 }

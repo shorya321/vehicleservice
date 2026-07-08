@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { ImageUpload } from '@/components/ui/image-upload'
+import { Switch } from '@/components/ui/switch'
 import {
   Loader2,
   Save,
@@ -18,6 +19,7 @@ import {
   Share2,
   Image as ImageIcon,
   Type,
+  Wrench,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { updateSiteSettings, uploadSiteLogo, removeSiteLogo } from '../actions'
@@ -47,6 +49,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       secondary_phone: currentSettings.secondary_phone,
       office_address: currentSettings.office_address,
       social_links: currentSettings.social_links,
+      maintenance_mode: currentSettings.maintenance_mode,
     },
   })
 
@@ -92,6 +95,45 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Site Availability Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Wrench className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle>Site Availability</CardTitle>
+                <CardDescription>Control public access to the site</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <FormField
+              control={form.control}
+              name="maintenance_mode"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-4">
+                  <div className="space-y-1">
+                    <FormLabel className="text-base">Maintenance mode</FormLabel>
+                    <p className="text-sm text-muted-foreground">
+                      When enabled, anonymous visitors see a maintenance page. Logged-in
+                      users (admins, customers, vendors) and business portals are unaffected.
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label="Toggle maintenance mode"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
         {/* Branding Section */}
         <Card>
           <CardHeader>

@@ -78,6 +78,34 @@ export async function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') || request.nextUrl.hostname
   const platformDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001').hostname
 
+  // Maintenance mode gate (main platform domain only).
+  // Anonymous visitors see the maintenance page; any logged-in user browses normally.
+  // Business subdomains/custom domains are exempt (non-platform hosts skip this block).
+  const isMainPlatformHost =
+    hostname === platformDomain || hostname.startsWith(`${platformDomain}:`)
+
+  const MAINTENANCE_EXEMPT_PREFIXES = [
+    '/admin',        // admin panel + login (so admin can toggle it off)
+    '/business',     // business portals exempt
+    '/api',          // API + auth routes
+    '/_next',        // Next internals / data
+    '/maintenance',  // the maintenance page itself (avoid loop)
+    '/login',        // customer/vendor login (let anonymous authenticate)
+    '/auth',         // auth callbacks (email confirm, etc.)
+    '/unauthorized',
+  ]
+
+  if (
+    isMainPlatformHost &&
+    !user &&
+    !MAINTENANCE_EXEMPT_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p))
+  ) {
+    const { isMaintenanceMode } = await import('@/lib/site-settings/maintenance')
+    if (await isMaintenanceMode(supabase)) {
+      return NextResponse.rewrite(new URL('/maintenance', request.url))
+    }
+  }
+
   // Track if business exists for this domain
   let businessFound: { id: string; subdomain: string; custom_domain: string | null } | null = null
 
