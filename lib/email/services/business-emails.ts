@@ -61,7 +61,6 @@ export interface BusinessWelcomePendingEmailData {
   email: string;
   businessName: string;
   ownerName: string;
-  subdomain: string;
   supportEmail?: string;
 }
 
@@ -115,7 +114,6 @@ export async function sendBusinessWelcomePendingEmail(
     templateProps: {
       businessName: data.businessName,
       ownerName: data.ownerName,
-      subdomain: data.subdomain,
       supportEmail: data.supportEmail,
     },
   });

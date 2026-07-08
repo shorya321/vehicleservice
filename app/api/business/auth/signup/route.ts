@@ -142,7 +142,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       email: data.business_email,
       businessName: data.business_name,
       ownerName: data.contact_person_name,
-      subdomain: businessAccount.subdomain,
     });
 
     if (!emailResult.success) {

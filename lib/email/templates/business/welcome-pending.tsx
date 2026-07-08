@@ -8,14 +8,12 @@ import { emailStyles } from '../../styles/constants';
 interface BusinessWelcomePendingEmailProps {
   businessName: string;
   ownerName: string;
-  subdomain: string;
   supportEmail?: string;
 }
 
 export const BusinessWelcomePendingEmail = ({
   businessName,
   ownerName,
-  subdomain,
   supportEmail = 'support@infiniatransfers.com',
 }: BusinessWelcomePendingEmailProps) => {
   return (
@@ -45,14 +43,6 @@ export const BusinessWelcomePendingEmail = ({
           'After approval, you can log in and start creating bookings',
         ]}
       />
-
-      <Text style={emailStyles.text}>
-        <strong>Your portal details:</strong>
-      </Text>
-
-      <Text style={{ ...emailStyles.text, marginLeft: '16px' }}>
-        Subdomain: <strong>{subdomain}.infiniatransfers.com</strong>
-      </Text>
 
       <InfoBox type="warning" title="Important">
         Please do not attempt to log in until you receive the approval confirmation email. Pending
