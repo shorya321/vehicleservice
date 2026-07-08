@@ -90,9 +90,12 @@ export async function proxy(request: NextRequest) {
     '/api',          // API + auth routes
     '/_next',        // Next internals / data
     '/maintenance',  // the maintenance page itself (avoid loop)
-    '/login',        // customer/vendor login (let anonymous authenticate)
-    '/register',     // customer signup (let anonymous register)
-    '/auth',         // auth callbacks (email confirm, etc.)
+    '/login',           // customer/vendor login (let anonymous authenticate)
+    '/register',        // customer signup (let anonymous register)
+    '/verify-email',    // email verification link (works during maintenance)
+    '/forgot-password', // password reset request (works during maintenance)
+    '/reset-password',  // password reset form (works during maintenance)
+    '/auth',            // auth callbacks (email confirm, etc.)
     '/unauthorized',
     '/robots.txt',   // crawl directives must stay reachable during maintenance
     '/sitemap.xml',  // sitemap must stay reachable during maintenance

@@ -46,9 +46,12 @@ export const getEmailConfig = () => {
  * Works on both client and server by checking NEXT_PUBLIC_APP_URL first
  */
 export const getAppUrl = (): string => {
-  // Check public env var first (available on both client and server)
+  // Prefer explicit app URL, then the site URL used across the app (sitemap/robots/layout)
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
   }
 
   // Fallback to localhost in development
@@ -57,7 +60,7 @@ export const getAppUrl = (): string => {
   }
 
   // Production fallback
-  return 'https://yourdomain.com';
+  return 'https://infiniatransfers.com';
 };
 
 /**
