@@ -172,7 +172,7 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
   vendorApproved: {
     name: 'Ahmed Transportation LLC',
     applicationReference: 'VA-2024-5678',
-    loginUrl: `${getAppUrl()}/vendor/login`,
+    loginUrl: `${getAppUrl()}/login`,
     dashboardUrl: `${getAppUrl()}/vendor/dashboard`,
   },
   vendorRejected: {

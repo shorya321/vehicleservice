@@ -51,7 +51,7 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
 
     // Send approval email
     const appUrl = getAppUrl();
-    const loginUrl = `${appUrl}/vendor/login`;
+    const loginUrl = `${appUrl}/login`;
     const dashboardUrl = `${appUrl}/vendor`;
 
     const emailResult = await sendVendorApplicationApprovedEmail({
