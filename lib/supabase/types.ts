@@ -2171,7 +2171,6 @@ export type Database = {
           category_id: string | null
           created_at: string
           fuel_type: string | null
-          gallery_images: Json | null
           id: string
           is_available: boolean | null
           luggage_capacity: number | null
@@ -2190,7 +2189,6 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           fuel_type?: string | null
-          gallery_images?: Json | null
           id?: string
           is_available?: boolean | null
           luggage_capacity?: number | null
@@ -2209,7 +2207,6 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           fuel_type?: string | null
-          gallery_images?: Json | null
           id?: string
           is_available?: boolean | null
           luggage_capacity?: number | null
