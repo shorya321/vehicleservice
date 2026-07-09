@@ -55,7 +55,7 @@ export const PUT = withErrorHandling(
       // First, check if business exists and is in pending status
       const { data: business, error: fetchError } = await supabaseAdmin
         .from('business_accounts')
-        .select('id, status, business_name, business_email, subdomain, custom_domain')
+        .select('id, status, business_name, business_email')
         .eq('id', businessId)
         .single();
 
@@ -94,19 +94,10 @@ export const PUT = withErrorHandling(
 
       const ownerName = ownerUser?.full_name || 'Business Owner';
 
-      // Build the login URL based on custom domain or subdomain
+      // Always link to the main platform domain: tenant subdomains and custom
+      // domains are not provisioned yet at approval time.
       const platformDomain = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
-      let loginUrl: string;
-
-      if (business.custom_domain) {
-        loginUrl = `https://${business.custom_domain}/business/login`;
-      } else if (business.subdomain) {
-        const platformHost = new URL(platformDomain).hostname;
-        const protocol = platformHost.includes('localhost') ? 'http' : 'https';
-        loginUrl = `${protocol}://${business.subdomain}.${platformHost}/business/login`;
-      } else {
-        loginUrl = `${platformDomain}/business/login`;
-      }
+      const loginUrl = `${platformDomain}/business/login`;
 
       // Send approval notification email
       const emailResult = await sendBusinessApprovalEmail({
