@@ -5,6 +5,9 @@ import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 
+/** Strips spaces, dashes and brackets so the tel: href is dialable. Keeps a leading +. */
+const toDialableNumber = (phone: string): string => phone.replace(/[^\d+]/g, '');
+
 interface DriverBookingAssignedEmailProps {
   driverName: string;
   bookingReference: string;
@@ -88,7 +91,7 @@ export const DriverBookingAssignedEmail = ({
         {customerPhone && (
           <Text style={emailStyles.detailRow}>
             <strong>Phone:</strong>{' '}
-            <Link href={`tel:${customerPhone}`} style={emailStyles.link}>
+            <Link href={`tel:${toDialableNumber(customerPhone)}`} style={emailStyles.link}>
               {customerPhone}
             </Link>
           </Text>
