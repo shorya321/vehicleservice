@@ -176,6 +176,8 @@ export interface DriverBookingAssignmentEmailData {
   bookingReference: string;
   tripNumber?: string;
   customerName: string;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
   vehicleCategory: string;
   vehicleType: string;
   pickupLocation: string;

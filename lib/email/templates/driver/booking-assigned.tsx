@@ -1,4 +1,4 @@
-import { Hr, Text } from '@react-email/components';
+import { Hr, Link, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
@@ -10,6 +10,8 @@ interface DriverBookingAssignedEmailProps {
   bookingReference: string;
   tripNumber?: string;
   customerName: string;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
   vehicleCategory: string;
   vehicleType: string;
   pickupLocation: string;
@@ -24,6 +26,8 @@ export const DriverBookingAssignedEmail = ({
   bookingReference,
   tripNumber,
   customerName,
+  customerEmail,
+  customerPhone,
   vehicleCategory,
   vehicleType,
   pickupLocation,
@@ -58,9 +62,6 @@ export const DriverBookingAssignedEmail = ({
           <strong>Booking #:</strong> {bookingReference}
         </Text>
         <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
           <strong>Vehicle Category:</strong> {vehicleCategory}
         </Text>
         <Text style={emailStyles.detailRow}>
@@ -79,6 +80,28 @@ export const DriverBookingAssignedEmail = ({
           <strong>Pickup Time:</strong> {pickupTime}
         </Text>
       </DetailsSection>
+
+      <InfoBox type="info" title="Customer Contact">
+        <Text style={emailStyles.detailRow}>
+          <strong>Name:</strong> {customerName}
+        </Text>
+        {customerPhone && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Phone:</strong>{' '}
+            <Link href={`tel:${customerPhone}`} style={emailStyles.link}>
+              {customerPhone}
+            </Link>
+          </Text>
+        )}
+        {customerEmail && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Email:</strong>{' '}
+            <Link href={`mailto:${customerEmail}`} style={emailStyles.link}>
+              {customerEmail}
+            </Link>
+          </Text>
+        )}
+      </InfoBox>
 
       <InfoBox type="info" title="Action Required">
         Please ensure you are available for the scheduled pickup time. Contact your dispatch

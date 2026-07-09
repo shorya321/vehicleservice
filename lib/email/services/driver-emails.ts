@@ -30,6 +30,8 @@ export async function sendDriverBookingAssignmentEmail(
         bookingReference: data.bookingReference,
         tripNumber: data.tripNumber,
         customerName: data.customerName,
+        customerEmail: data.customerEmail,
+        customerPhone: data.customerPhone,
         vehicleCategory: data.vehicleCategory,
         vehicleType: data.vehicleType,
         pickupLocation: data.pickupLocation,
