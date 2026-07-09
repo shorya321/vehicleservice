@@ -126,6 +126,7 @@ export interface NewBookingNotificationEmailData {
   customerName: string;
   customerEmail: string;
   vehicleCategory: string;
+  vehicleType?: string;
   pickupLocation: string;
   dropoffLocation: string;
   pickupDate: string;

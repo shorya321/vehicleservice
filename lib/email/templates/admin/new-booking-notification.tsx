@@ -11,6 +11,7 @@ interface NewBookingNotificationEmailProps {
   customerName: string;
   customerEmail: string;
   vehicleCategory: string;
+  vehicleType?: string;
   pickupLocation: string;
   dropoffLocation: string;
   pickupDate: string;
@@ -25,6 +26,7 @@ export const NewBookingNotificationEmail = ({
   customerName,
   customerEmail,
   vehicleCategory,
+  vehicleType,
   pickupLocation,
   dropoffLocation,
   pickupDate,
@@ -63,6 +65,11 @@ export const NewBookingNotificationEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Vehicle Category:</strong> {vehicleCategory}
         </Text>
+        {vehicleType && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Vehicle Type:</strong> {vehicleType}
+          </Text>
+        )}
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
           <strong>Pickup Location:</strong> {pickupLocation}

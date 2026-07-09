@@ -45,6 +45,7 @@ export async function sendNewBookingNotificationEmail(
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       vehicleCategory: data.vehicleCategory,
+      vehicleType: data.vehicleType,
       pickupLocation: data.pickupLocation,
       dropoffLocation: data.dropoffLocation,
       pickupDate: data.pickupDate,

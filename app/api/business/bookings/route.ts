@@ -254,7 +254,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         total_price,
         reference_number,
         passenger_count,
-        vehicle_types:vehicle_type_id(name),
+        vehicle_types:vehicle_type_id(name, category:vehicle_categories!category_id(name)),
         from_location:from_location_id(name),
         to_location:to_location_id(name)
       `)
@@ -270,6 +270,11 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
 
     // Send booking confirmation emails
     if (booking && businessAccount) {
+      const vehicle = booking.vehicle_types as unknown as {
+        name: string;
+        category: { name: string } | null;
+      } | null;
+
       const pickupLocation = booking.from_location?.name
         ? `${booking.from_location.name}${booking.pickup_address ? ` - ${booking.pickup_address}` : ''}`
         : booking.pickup_address || 'N/A';
@@ -294,7 +299,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         pickupLocation,
         dropoffLocation,
         pickupDateTime,
-        vehicleType: booking.vehicle_types?.name || 'Standard',
+        vehicleType: vehicle?.name || 'Standard',
         passengerCount: booking.passenger_count,
         totalPrice: booking.total_price,
         currency: businessAccount.currency || 'AED',
@@ -317,7 +322,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           pickupLocation,
           dropoffLocation,
           pickupDateTime,
-          vehicleType: booking.vehicle_types?.name || 'Standard',
+          vehicleType: vehicle?.name || 'Standard',
           passengerCount: booking.passenger_count,
           referenceNumber: booking.reference_number,
         }).catch((err: unknown) => {
@@ -335,7 +340,8 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           tripNumber: booking.trip_number,
           customerName: booking.customer_name,
           customerEmail: booking.customer_email || '',
-          vehicleCategory: booking.vehicle_types?.name || 'Standard',
+          vehicleCategory: vehicle?.category?.name || 'Vehicle',
+          vehicleType: vehicle?.name || undefined,
           pickupLocation,
           dropoffLocation,
           pickupDate: pickupDateTime,
