@@ -16,7 +16,7 @@ type TabKey = "login" | "register"
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "login", label: "Sign in" },
-  { key: "register", label: "Create account" },
+  { key: "register", label: "Sign up" },
 ]
 
 export function AuthFormCard({ initialTab }: AuthFormCardProps) {
