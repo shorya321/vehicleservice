@@ -36,3 +36,59 @@ export async function removeVehicleImages(urls: (string | null | undefined)[]): 
 export async function removeVehicleImage(url: string): Promise<void> {
   return removeVehicleImages([url])
 }
+
+/**
+ * The image URLs of every vehicle owned by these users, keyed by user id.
+ *
+ * Deleting a user cascades away their vehicles with no application code in the
+ * loop: auth.users -> profiles -> vendor_applications -> vehicles, all CASCADE.
+ * Callers must collect the URLs BEFORE the delete, because the cascade destroys
+ * the only record of them.
+ *
+ * Service-role: an admin deleting a vendor is not that vendor, so RLS would
+ * hide the rows.
+ */
+export async function getVehicleImageUrlsForUsers(
+  userIds: string[]
+): Promise<Map<string, string[]>> {
+  const byUser = new Map<string, string[]>()
+
+  if (userIds.length === 0) return byUser
+
+  const adminClient = createAdminClient()
+
+  const { data: applications, error: applicationsError } = await adminClient
+    .from('vendor_applications')
+    .select('id, user_id')
+    .in('user_id', userIds)
+
+  if (applicationsError) {
+    console.error('Could not load vendor applications:', applicationsError.message)
+    return byUser
+  }
+
+  if (!applications || applications.length === 0) return byUser
+
+  const userIdByBusinessId = new Map(applications.map((a) => [a.id, a.user_id]))
+
+  const { data: vehicles, error: vehiclesError } = await adminClient
+    .from('vehicles')
+    .select('business_id, primary_image_url')
+    .in('business_id', applications.map((a) => a.id))
+
+  if (vehiclesError) {
+    console.error('Could not load vehicles:', vehiclesError.message)
+    return byUser
+  }
+
+  for (const vehicle of vehicles ?? []) {
+    if (!vehicle.primary_image_url) continue
+
+    const userId = userIdByBusinessId.get(vehicle.business_id)
+    if (!userId) continue
+
+    byUser.set(userId, [...(byUser.get(userId) ?? []), vehicle.primary_image_url])
+  }
+
+  return byUser
+}

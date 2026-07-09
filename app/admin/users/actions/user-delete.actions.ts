@@ -3,6 +3,10 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { SupabaseClient } from "@supabase/supabase-js"
+import {
+  getVehicleImageUrlsForUsers,
+  removeVehicleImages,
+} from "@/lib/vehicles/server-storage"
 import { revalidatePath } from "next/cache"
 
 /**
@@ -69,12 +73,20 @@ export async function deleteUser(id: string) {
     const bizCleanup = await cleanupBusinessData(adminClient, id)
     if (bizCleanup.error) return { error: bizCleanup.error }
 
+    // Collect the vehicle images before the delete: deleting the user cascades
+    // auth.users -> profiles -> vendor_applications -> vehicles, destroying the
+    // only record of the image URLs.
+    const imageUrls = (await getVehicleImageUrlsForUsers([id])).get(id) ?? []
+
     // Delete from auth (cascade will delete profile)
     const { error } = await adminClient.auth.admin.deleteUser(id)
 
     if (error) {
       return { error: 'Failed to delete user' }
     }
+
+    // Only after the user is gone, so a failed delete never destroys live images.
+    await removeVehicleImages(imageUrls)
 
     revalidatePath('/admin/users')
 
