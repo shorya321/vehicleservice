@@ -2,6 +2,16 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { optionalPhoneSchema } from '@/lib/validation/phone'
+import { z } from 'zod'
+
+const registerDataSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required').max(50),
+  lastName: z.string().min(1, 'Last name is required').max(50),
+  phone: optionalPhoneSchema,
+})
 
 export interface RegisterData {
   email: string
@@ -11,8 +21,16 @@ export interface RegisterData {
   phone: string
 }
 
-export async function registerAndAutoVerify(data: RegisterData) {
+export async function registerAndAutoVerify(input: RegisterData) {
   try {
+    const parsed = registerDataSchema.safeParse(input)
+
+    if (!parsed.success) {
+      return { error: parsed.error.errors[0]?.message || 'Invalid registration details' }
+    }
+
+    const data = parsed.data
+
     // Use admin client to create user with auto-verification
     const adminClient = createAdminClient()
     

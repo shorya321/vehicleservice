@@ -9,6 +9,7 @@ import { PublicLayout } from '@/components/layout/public-layout'
 import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from '../../actions'
 import { createClient } from '@/lib/supabase/server'
 import { parseRouteSlug } from '@/lib/utils/slug'
+import { toStoredPhone } from '@/lib/validation/phone'
 import { resolveRouteSlugs, resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
 
 interface CheckoutRoutePageProps {
@@ -93,13 +94,16 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   if (!profile || (!profile.first_name && !profile.last_name && !profile.phone)) {
     const userData = user.user_metadata
     if (userData && (userData.first_name || userData.last_name || userData.phone)) {
+      // Metadata may carry a malformed phone from an older signup - never trust it
+      const metadataPhone = toStoredPhone(userData.phone)
+
       profile = {
         ...profile,
         id: user.id,
         email: user.email || profile?.email,
         first_name: userData.first_name || profile?.first_name || '',
         last_name: userData.last_name || profile?.last_name || '',
-        phone: userData.phone || profile?.phone || '',
+        phone: metadataPhone || profile?.phone || '',
         full_name:
           profile?.full_name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
       } as typeof profile
@@ -109,7 +113,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
         email: user.email,
         first_name: userData.first_name || '',
         last_name: userData.last_name || '',
-        phone: userData.phone || '',
+        phone: metadataPhone,
         full_name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
         role: profile?.role || 'customer',
       })

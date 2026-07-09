@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { optionalPhoneField, toStoredPhone } from "@/lib/validation/phone"
 import * as z from "zod"
 
 interface NotificationPreferences {
@@ -15,7 +16,7 @@ interface NotificationPreferences {
 const profileSchema = z.object({
   full_name: z.string().min(2),
   email: z.string().email(),
-  phone: z.string().optional(),
+  phone: optionalPhoneField,
 })
 
 export async function updateProfile(
@@ -23,8 +24,13 @@ export async function updateProfile(
   values: z.infer<typeof profileSchema>
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
-  
+
   try {
+    const parsed = profileSchema.safeParse(values)
+    if (!parsed.success) {
+      return { error: parsed.error.errors[0]?.message || "Invalid profile details" }
+    }
+
     // Verify the user is updating their own profile
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || user.id !== userId) {
@@ -35,8 +41,8 @@ export async function updateProfile(
     const { error } = await supabase
       .from('profiles')
       .update({
-        full_name: values.full_name,
-        phone: values.phone,
+        full_name: parsed.data.full_name,
+        phone: toStoredPhone(parsed.data.phone),
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)

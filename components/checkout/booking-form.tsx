@@ -10,6 +10,7 @@ import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, createBooki
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { toast } from 'sonner'
 import { buildPaymentUrl } from '@/lib/utils/url-builder'
+import { phoneField } from '@/lib/validation/phone'
 
 import { TransferDetailsSection } from './form-sections/transfer-details-section'
 import { PassengerInfoSection } from './form-sections/passenger-info-section'
@@ -29,7 +30,7 @@ const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phone: phoneField,
   pickupDate: z.string().min(1, 'Pickup date is required'),
   pickupTime: z.string().min(1, 'Pickup time is required'),
   flightNumber: z.string().optional(),

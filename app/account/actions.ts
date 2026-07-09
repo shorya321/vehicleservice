@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
+import { toStoredPhone } from "@/lib/validation/phone"
 import type { PersonalInfoFormData, NotificationPreferencesFormData } from "./schemas"
 
 // ============================================================================
@@ -24,7 +25,7 @@ export async function updateProfile(
     .from("profiles")
     .update({
       full_name: data.full_name,
-      phone: data.phone || null,
+      phone: toStoredPhone(data.phone),
       date_of_birth: data.date_of_birth || null,
       address_street: data.address_street || null,
       address_city: data.address_city || null,

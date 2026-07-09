@@ -7,6 +7,7 @@ import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { registerAndAutoVerify } from '../actions'
+import { isValidPhone, sanitizePhoneInput } from '@/lib/validation/phone'
 import { inputClass, fieldLabelClass, checkboxClass } from '@/components/auth/auth-classes'
 import { PasswordField } from '@/components/auth/password-field'
 import { fadeSlide } from '@/lib/auth/motion'
@@ -50,6 +51,10 @@ export function CheckoutRegisterForm({
     }
     if (registerPassword.length < 8) {
       onError('Password must be at least 8 characters long')
+      return
+    }
+    if (phone.trim() && !isValidPhone(phone)) {
+      onError('Enter a valid phone number, or leave it blank')
       return
     }
 
@@ -143,9 +148,10 @@ export function CheckoutRegisterForm({
         <input
           id="co-phone"
           type="tel"
+          inputMode="tel"
           autoComplete="tel"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
           maxLength={20}
           disabled={loading}
           placeholder="+971 50 123 4567"

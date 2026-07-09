@@ -24,11 +24,12 @@ import { toast } from "sonner"
 import { updateProfile, uploadAvatar, updatePassword, getNotificationPreferences, updateNotificationPreferences } from "./actions"
 import type { User } from "@/lib/types/user"
 import { Switch } from "@/components/ui/switch"
+import { optionalPhoneField } from "@/lib/validation/phone"
 
 const profileFormSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
+  phone: optionalPhoneField,
 })
 
 const passwordFormSchema = z.object({

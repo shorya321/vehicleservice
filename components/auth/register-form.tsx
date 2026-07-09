@@ -6,6 +6,7 @@ import { motion } from "motion/react"
 import { ArrowRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { registerUser } from "@/app/(auth)/register/actions"
+import { isValidPhone, sanitizePhoneInput } from "@/lib/validation/phone"
 import { inputClass, fieldLabelClass, checkboxClass } from "./auth-classes"
 import { PasswordField } from "./password-field"
 import { fadeSlide } from "@/lib/auth/motion"
@@ -40,6 +41,10 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
     }
     if (!termsAccepted) {
       onError("Please accept the Terms of Service and Privacy Policy")
+      return
+    }
+    if (phone.trim() && !isValidPhone(phone)) {
+      onError("Enter a valid phone number, or leave it blank")
       return
     }
 
@@ -125,9 +130,10 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
         <input
           id="reg-phone"
           type="tel"
+          inputMode="tel"
           autoComplete="tel"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
           maxLength={20}
           disabled={loading}
           placeholder="+971 50 123 4567"

@@ -5,7 +5,16 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { sendWelcomeEmail } from "@/lib/email/services/auth-emails"
 import { sendNewUserNotificationEmail } from "@/lib/email/services/admin-emails"
 import { getAppUrl, getAdminEmail } from "@/lib/email/config"
+import { optionalPhoneSchema } from "@/lib/validation/phone"
 import { randomBytes } from "crypto"
+import { z } from "zod"
+
+const registerSchema = z.object({
+  full_name: z.string().min(1, "Name is required").max(101),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  phone: optionalPhoneSchema,
+})
 
 interface RegisterData {
   full_name: string
@@ -14,11 +23,19 @@ interface RegisterData {
   phone: string
 }
 
-export async function registerUser(data: RegisterData) {
+export async function registerUser(input: RegisterData) {
   try {
+    const parsed = registerSchema.safeParse(input)
+
+    if (!parsed.success) {
+      return { error: parsed.error.errors[0]?.message || "Invalid registration details" }
+    }
+
+    const data = parsed.data
+
     // Use regular client for registration
     const supabase = await createClient()
-    
+
     // Use admin client to create user with email confirmation
     const adminClient = await createAdminClient()
     
@@ -113,7 +130,7 @@ export async function registerUser(data: RegisterData) {
       userId: authData.user.id,
       userName: data.full_name,
       userEmail: data.email,
-      userPhone: data.phone,
+      userPhone: data.phone ?? 'Not provided',
       registrationDate: new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',

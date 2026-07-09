@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { signBookingPayload } from '@/lib/security/booking-hmac'
+import { phoneSchema } from '@/lib/validation/phone'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -305,7 +306,7 @@ const bookingSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
-  phone: z.string().min(10),
+  phone: phoneSchema,
   specialRequests: z.string().optional(),
   childSeats: z.object({
     infant: z.number().min(0).max(4),

@@ -8,6 +8,7 @@ import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from './actions'
 import { createClient } from '@/lib/supabase/server'
+import { toStoredPhone } from '@/lib/validation/phone'
 
 export const metadata: Metadata = {
   title: 'Checkout | Complete Your Booking',
@@ -71,16 +72,19 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     
     // If we have metadata, use it to populate the profile
     if (userData && (userData.first_name || userData.last_name || userData.phone)) {
+      // Metadata may carry a malformed phone from an older signup - never trust it
+      const metadataPhone = toStoredPhone(userData.phone)
+
       profile = {
         ...profile,
         id: user.id,
         email: user.email || profile?.email,
         first_name: userData.first_name || profile?.first_name || '',
         last_name: userData.last_name || profile?.last_name || '',
-        phone: userData.phone || profile?.phone || '',
+        phone: metadataPhone || profile?.phone || '',
         full_name: profile?.full_name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim()
       }
-      
+
       // Try to update the profile with the metadata
       await supabase
         .from('profiles')
@@ -89,7 +93,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           email: user.email,
           first_name: userData.first_name || '',
           last_name: userData.last_name || '',
-          phone: userData.phone || '',
+          phone: metadataPhone,
           full_name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
           role: profile?.role || 'customer'
         })

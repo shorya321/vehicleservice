@@ -10,6 +10,7 @@ import {
   UserFormData,
   UserUpdate
 } from "@/lib/types/user"
+import { isValidPhone, toStoredPhone } from "@/lib/validation/phone"
 import { revalidatePath } from "next/cache"
 
 export async function getUsers(filters: UserFilters = {}): Promise<PaginatedUsers> {
@@ -106,7 +107,11 @@ export async function getUser(id: string): Promise<User | null> {
 
 export async function createUser(data: CreateUserData) {
   const adminClient = createAdminClient()
-  
+
+  if (data.phone && !isValidPhone(data.phone)) {
+    return { error: 'Enter a valid phone number, or leave it blank' }
+  }
+
   try {
     let password: string | undefined
     let temporaryPassword: string | undefined
@@ -154,7 +159,7 @@ export async function createUser(data: CreateUserData) {
         id: authData.user.id,
         email: data.email,
         full_name: data.full_name,
-        phone: data.phone,
+        phone: toStoredPhone(data.phone),
         role: data.role,
         status: data.status,
         email_verified: data.password_option === 'reset_link' ? false : true,
@@ -228,7 +233,11 @@ export async function createUser(data: CreateUserData) {
 export async function updateUser(id: string, data: UserFormData) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
-  
+
+  if (data.phone && !isValidPhone(data.phone)) {
+    return { error: 'Enter a valid phone number, or leave it blank' }
+  }
+
   try {
     // Get current user data
     const { data: currentUser } = await supabase
@@ -246,7 +255,7 @@ export async function updateUser(id: string, data: UserFormData) {
       .from('profiles')
       .update({
         full_name: data.full_name,
-        phone: data.phone,
+        phone: toStoredPhone(data.phone),
         role: data.role,
         status: data.status,
         updated_at: new Date().toISOString()

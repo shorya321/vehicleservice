@@ -1,9 +1,10 @@
 import * as z from "zod"
+import { optionalPhoneField } from "@/lib/validation/phone"
 
 // Personal Info Schema
 export const personalInfoSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().optional(),
+  phone: optionalPhoneField,
   date_of_birth: z.string().optional(),
   address_street: z.string().optional(),
   address_city: z.string().optional(),
