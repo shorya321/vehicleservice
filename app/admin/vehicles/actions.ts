@@ -1,10 +1,63 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { VehicleFormData } from "@/lib/types/vehicle"
 import { revalidatePath } from "next/cache"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { uploadVehicleImages } from "./actions/upload"
+import { storagePathFromUrl } from "@/lib/storage/paths"
+import {
+  adminVehicleMutationSchema,
+  firstIssueMessage,
+  type AdminVehicleMutationInput,
+} from "@/lib/vehicles/schema"
+
+const VEHICLE_BUCKET = 'vehicles'
+
+/** Postgres unique_violation. */
+const UNIQUE_VIOLATION = '23505'
+
+function toUserFacingError(
+  error: { code?: string; message: string },
+  registrationNumber: string
+): string {
+  if (error.code === UNIQUE_VIOLATION && error.message.includes('registration_number')) {
+    return `A vehicle with registration number ${registrationNumber} is already registered.`
+  }
+
+  return error.message
+}
+
+async function removeVehicleImage(url: string): Promise<void> {
+  const path = storagePathFromUrl(url, VEHICLE_BUCKET)
+
+  if (!path) {
+    console.error('Could not derive storage path from URL:', url)
+    return
+  }
+
+  const { error } = await createAdminClient().storage.from(VEHICLE_BUCKET).remove([path])
+
+  if (error) {
+    console.error('Error removing vehicle image:', error)
+  }
+}
+
+async function requireAdmin(
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return 'Unauthorized'
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  return profile?.role === 'admin' ? null : 'Only admins can manage vehicles'
+}
 
 export interface AdminVehicleFilters {
   search?: string
@@ -19,13 +72,7 @@ export interface AdminVehicleFilters {
   limit?: number
 }
 
-export interface AdminVehicleFormData extends VehicleFormData {
-  business_id: string
-  primaryImageBase64?: string | null
-  galleryImagesBase64?: string[]
-  existingPrimaryImage?: string | null
-  existingGalleryImages?: string[]
-}
+export type AdminVehicleFormData = AdminVehicleMutationInput
 
 export async function getAdminVehicles(filters: AdminVehicleFilters) {
   const supabase = await createClient()
@@ -171,75 +218,43 @@ export async function getAdminVehicle(id: string) {
 }
 
 export async function createAdminVehicle(formData: AdminVehicleFormData) {
+  const parsed = adminVehicleMutationSchema.safeParse(formData)
+
+  if (!parsed.success) {
+    return { error: firstIssueMessage(parsed.error) }
+  }
+
+  const vehicle = parsed.data
   const supabase = await createClient()
 
-  // Check if user is admin
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return { error: 'Unauthorized' }
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    return { error: 'Only admins can create vehicles' }
-  }
-
-  // Handle image uploads if provided
-  let primaryImageUrl = formData.existingPrimaryImage || null
-  let galleryImageUrls = formData.existingGalleryImages || []
-
-  if (formData.primaryImageBase64 || (formData.galleryImagesBase64 && formData.galleryImagesBase64.length > 0)) {
-    const uploadResult = await uploadVehicleImages(
-      formData.business_id,
-      formData.primaryImageBase64,
-      formData.galleryImagesBase64
-    )
-
-    if (uploadResult.error) {
-      return { error: uploadResult.error }
-    }
-
-    if (uploadResult.primaryImageUrl) {
-      primaryImageUrl = uploadResult.primaryImageUrl
-    }
-
-    if (uploadResult.galleryImageUrls.length > 0) {
-      galleryImageUrls = [...galleryImageUrls, ...uploadResult.galleryImageUrls]
-    }
-  }
-
-  // Create vehicle
-  const vehicleData = {
-    business_id: formData.business_id,
-    make: formData.make,
-    model: formData.model,
-    year: formData.year,
-    registration_number: formData.registration_number,
-    category_id: formData.category_id || null,
-    vehicle_type_id: formData.vehicle_type_id,
-    fuel_type: formData.fuel_type || null,
-    transmission: formData.transmission || null,
-    seats: formData.seats || null,
-    luggage_capacity: formData.luggage_capacity || 2,
-    is_available: formData.is_available,
-    primary_image_url: primaryImageUrl,
-    gallery_images: galleryImageUrls,
+  const authError = await requireAdmin(supabase)
+  if (authError) {
+    return { error: authError }
   }
 
   const { data, error } = await supabase
     .from('vehicles')
-    .insert([vehicleData])
+    .insert([{
+      business_id: vehicle.business_id,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      registration_number: vehicle.registration_number,
+      category_id: vehicle.category_id,
+      vehicle_type_id: vehicle.vehicle_type_id,
+      fuel_type: vehicle.fuel_type || null,
+      transmission: vehicle.transmission || null,
+      seats: vehicle.seats || null,
+      luggage_capacity: vehicle.luggage_capacity || 2,
+      is_available: vehicle.is_available,
+      primary_image_url: vehicle.primaryImageUrl,
+    }])
     .select()
     .single()
 
   if (error) {
     console.error('Error creating vehicle:', error)
-    return { error: error.message }
+    return { error: toUserFacingError(error, vehicle.registration_number) }
   }
 
   revalidatePath('/admin/vehicles')
@@ -248,65 +263,48 @@ export async function createAdminVehicle(formData: AdminVehicleFormData) {
 }
 
 export async function updateAdminVehicle(id: string, formData: AdminVehicleFormData) {
+  const parsed = adminVehicleMutationSchema.safeParse(formData)
+
+  if (!parsed.success) {
+    return { error: firstIssueMessage(parsed.error) }
+  }
+
+  const vehicle = parsed.data
   const supabase = await createClient()
 
-  // Check if user is admin
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return { error: 'Unauthorized' }
+  const authError = await requireAdmin(supabase)
+  if (authError) {
+    return { error: authError }
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
+  // Read the stored image rather than trusting the client's copy of it.
+  const { data: existing, error: fetchError } = await supabase
+    .from('vehicles')
+    .select('primary_image_url')
+    .eq('id', id)
     .single()
 
-  if (profile?.role !== 'admin') {
-    return { error: 'Only admins can update vehicles' }
-  }
-
-  // Handle image uploads if provided
-  let primaryImageUrl = formData.existingPrimaryImage || null
-  let galleryImageUrls = formData.existingGalleryImages || []
-
-  if (formData.primaryImageBase64 || (formData.galleryImagesBase64 && formData.galleryImagesBase64.length > 0)) {
-    const uploadResult = await uploadVehicleImages(
-      formData.business_id,
-      formData.primaryImageBase64,
-      formData.galleryImagesBase64
-    )
-
-    if (uploadResult.error) {
-      return { error: uploadResult.error }
-    }
-
-    if (uploadResult.primaryImageUrl) {
-      primaryImageUrl = uploadResult.primaryImageUrl
-    }
-
-    if (uploadResult.galleryImageUrls.length > 0) {
-      galleryImageUrls = [...galleryImageUrls, ...uploadResult.galleryImageUrls]
-    }
+  if (fetchError) {
+    console.error('Error loading vehicle:', fetchError)
+    return { error: fetchError.message }
   }
 
   const { data, error } = await supabase
     .from('vehicles')
     .update({
-      business_id: formData.business_id,
-      make: formData.make,
-      model: formData.model,
-      year: formData.year,
-      registration_number: formData.registration_number,
-      category_id: formData.category_id || null,
-      vehicle_type_id: formData.vehicle_type_id,
-      fuel_type: formData.fuel_type || null,
-      transmission: formData.transmission || null,
-      seats: formData.seats || null,
-      luggage_capacity: formData.luggage_capacity || 2,
-      is_available: formData.is_available,
-      primary_image_url: primaryImageUrl,
-      gallery_images: galleryImageUrls,
+      business_id: vehicle.business_id,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      registration_number: vehicle.registration_number,
+      category_id: vehicle.category_id,
+      vehicle_type_id: vehicle.vehicle_type_id,
+      fuel_type: vehicle.fuel_type || null,
+      transmission: vehicle.transmission || null,
+      seats: vehicle.seats || null,
+      luggage_capacity: vehicle.luggage_capacity || 2,
+      is_available: vehicle.is_available,
+      primary_image_url: vehicle.primaryImageUrl,
     })
     .eq('id', id)
     .select()
@@ -314,7 +312,13 @@ export async function updateAdminVehicle(id: string, formData: AdminVehicleFormD
 
   if (error) {
     console.error('Error updating vehicle:', error)
-    return { error: error.message }
+    return { error: toUserFacingError(error, vehicle.registration_number) }
+  }
+
+  const previousImage = existing?.primary_image_url
+
+  if (previousImage && previousImage !== vehicle.primaryImageUrl) {
+    await removeVehicleImage(previousImage)
   }
 
   revalidatePath('/admin/vehicles')

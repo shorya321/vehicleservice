@@ -1,9 +1,54 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { Vehicle, VehicleFormData, VehicleFilters } from "@/lib/types/vehicle"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { Vehicle, VehicleFilters } from "@/lib/types/vehicle"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
+import { storagePathFromUrl } from "@/lib/storage/paths"
+import {
+  firstIssueMessage,
+  vehicleMutationSchema,
+  type VehicleMutationInput,
+} from "@/lib/vehicles/schema"
 import { revalidatePath } from "next/cache"
+
+const VEHICLE_BUCKET = 'vehicles'
+
+/** Postgres unique_violation. */
+const UNIQUE_VIOLATION = '23505'
+
+function toUserFacingError(
+  error: { code?: string; message: string },
+  registrationNumber: string
+): string {
+  if (error.code === UNIQUE_VIOLATION && error.message.includes('registration_number')) {
+    return `A vehicle with registration number ${registrationNumber} is already registered.`
+  }
+
+  return error.message
+}
+
+/**
+ * Removes a superseded image with the service-role client.
+ *
+ * Service-role is required because the caller may be deleting a legacy object
+ * under the old doubled `vehicles/vehicles/...` prefix, and because storage
+ * delete policies are scheduled to be scoped to the owning vendor.
+ */
+async function removeVehicleImage(url: string): Promise<void> {
+  const path = storagePathFromUrl(url, VEHICLE_BUCKET)
+
+  if (!path) {
+    console.error('Could not derive storage path from URL:', url)
+    return
+  }
+
+  const { error } = await createAdminClient().storage.from(VEHICLE_BUCKET).remove([path])
+
+  if (error) {
+    console.error('Error removing vehicle image:', error)
+  }
+}
 
 export async function getVehicles(businessId: string, filters: VehicleFilters): Promise<{
   vehicles: (Vehicle & { category?: VehicleCategory | null })[]
@@ -186,118 +231,40 @@ export async function bulkToggleAvailability(
   }
 }
 
-export async function createVehicle(businessId: string, data: VehicleFormData & {
-  primaryImageBase64?: string | null
-  galleryImagesBase64?: string[]
-}): Promise<{ success?: boolean; error?: string }> {
+export async function createVehicle(
+  businessId: string,
+  data: VehicleMutationInput
+): Promise<{ success?: boolean; error?: string }> {
+  const parsed = vehicleMutationSchema.safeParse(data)
+
+  if (!parsed.success) {
+    return { error: firstIssueMessage(parsed.error) }
+  }
+
+  const vehicle = parsed.data
   const supabase = await createClient()
 
   try {
-    // First create the vehicle record
-    const { data: vehicle, error: vehicleError } = await supabase
-      .from('vehicles')
-      .insert({
-        business_id: businessId,
-        make: data.make,
-        model: data.model,
-        year: data.year,
-        registration_number: data.registration_number,
-        category_id: data.category_id,
-        vehicle_type_id: data.vehicle_type_id,
-        fuel_type: data.fuel_type || null,
-        transmission: data.transmission || null,
-        seats: data.seats || null,
-        luggage_capacity: data.luggage_capacity || 2,
-        is_available: data.is_available,
-      })
-      .select()
-      .single()
+    const { error } = await supabase.from('vehicles').insert({
+      business_id: businessId,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      registration_number: vehicle.registration_number,
+      category_id: vehicle.category_id,
+      vehicle_type_id: vehicle.vehicle_type_id,
+      fuel_type: vehicle.fuel_type || null,
+      transmission: vehicle.transmission || null,
+      seats: vehicle.seats || null,
+      luggage_capacity: vehicle.luggage_capacity || 2,
+      is_available: vehicle.is_available,
+      primary_image_url: vehicle.primaryImageUrl,
+    })
 
-    if (vehicleError) {
-      console.error('Error creating vehicle:', vehicleError)
-      return { error: vehicleError.message }
+    if (error) {
+      console.error('Error creating vehicle:', error)
+      return { error: toUserFacingError(error, vehicle.registration_number) }
     }
-
-    // Upload images if provided
-    let primaryImageUrl = null
-    let galleryImageUrls = []
-
-    if (data.primaryImageBase64 || data.galleryImagesBase64?.length) {
-      const vehicleId = vehicle.id
-      const folderPath = `vehicles/${businessId}/${vehicleId}`
-
-      // Upload primary image
-      if (data.primaryImageBase64) {
-        const matches = data.primaryImageBase64.match(/^data:(.+);base64,(.+)$/)
-        if (matches) {
-          const mimeType = matches[1]
-          const base64Data = matches[2]
-          const fileExt = mimeType.split('/')[1] || 'jpg'
-          const buffer = Buffer.from(base64Data, 'base64')
-          const primaryImagePath = `${folderPath}/primary-${Date.now()}.${fileExt}`
-          const { error: uploadError } = await supabase.storage
-            .from('vehicles')
-            .upload(primaryImagePath, buffer, {
-              cacheControl: '3600',
-              upsert: false,
-              contentType: mimeType
-            })
-
-          if (uploadError) {
-            console.error('Error uploading primary image:', uploadError)
-          } else {
-            const { data: { publicUrl } } = supabase.storage
-              .from('vehicles')
-              .getPublicUrl(primaryImagePath)
-            primaryImageUrl = publicUrl
-          }
-        }
-      }
-
-      // Upload gallery images
-      if (data.galleryImagesBase64?.length > 0) {
-        for (let i = 0; i < data.galleryImagesBase64.length; i++) {
-          const base64 = data.galleryImagesBase64[i]
-          const matches = base64.match(/^data:(.+);base64,(.+)$/)
-          if (matches) {
-            const mimeType = matches[1]
-            const base64Data = matches[2]
-            const fileExt = mimeType.split('/')[1] || 'jpg'
-            const buffer = Buffer.from(base64Data, 'base64')
-            const galleryImagePath = `${folderPath}/gallery-${i}-${Date.now()}.${fileExt}`
-
-            const { error: uploadError } = await supabase.storage
-              .from('vehicles')
-              .upload(galleryImagePath, buffer, {
-                cacheControl: '3600',
-                upsert: false,
-                contentType: mimeType
-              })
-
-            if (!uploadError) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('vehicles')
-                .getPublicUrl(galleryImagePath)
-              galleryImageUrls.push(publicUrl)
-            }
-          }
-        }
-      }
-
-      // Update vehicle with image URLs
-      const { error: updateError } = await supabase
-        .from('vehicles')
-        .update({
-          primary_image_url: primaryImageUrl,
-          gallery_images: galleryImageUrls
-        })
-        .eq('id', vehicleId)
-
-      if (updateError) {
-        console.error('Error updating vehicle with images:', updateError)
-      }
-    }
-
 
     revalidatePath('/vendor/vehicles')
     return { success: true }
@@ -310,130 +277,61 @@ export async function createVehicle(businessId: string, data: VehicleFormData & 
 export async function updateVehicle(
   vehicleId: string,
   businessId: string,
-  data: VehicleFormData & {
-    primaryImageBase64?: string | null
-    galleryImagesBase64?: string[]
-    existingPrimaryImage?: string | null
-    existingGalleryImages?: string[]
-  }
+  data: VehicleMutationInput
 ): Promise<{ success?: boolean; error?: string }> {
+  const parsed = vehicleMutationSchema.safeParse(data)
+
+  if (!parsed.success) {
+    return { error: firstIssueMessage(parsed.error) }
+  }
+
+  const vehicle = parsed.data
   const supabase = await createClient()
 
   try {
-    // Update basic vehicle data
+    // Read the stored image rather than trusting the client's copy of it.
+    const { data: existing, error: fetchError } = await supabase
+      .from('vehicles')
+      .select('primary_image_url')
+      .eq('id', vehicleId)
+      .eq('business_id', businessId)
+      .single()
+
+    if (fetchError) {
+      console.error('Error loading vehicle:', fetchError)
+      return { error: fetchError.message }
+    }
+
     const { error } = await supabase
       .from('vehicles')
       .update({
-        make: data.make,
-        model: data.model,
-        year: data.year,
-        registration_number: data.registration_number,
-        category_id: data.category_id,
-        vehicle_type_id: data.vehicle_type_id,
-        fuel_type: data.fuel_type || null,
-        transmission: data.transmission || null,
-        seats: data.seats || null,
-        luggage_capacity: data.luggage_capacity || 2,
-        is_available: data.is_available,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        registration_number: vehicle.registration_number,
+        category_id: vehicle.category_id,
+        vehicle_type_id: vehicle.vehicle_type_id,
+        fuel_type: vehicle.fuel_type || null,
+        transmission: vehicle.transmission || null,
+        seats: vehicle.seats || null,
+        luggage_capacity: vehicle.luggage_capacity || 2,
+        is_available: vehicle.is_available,
+        primary_image_url: vehicle.primaryImageUrl,
       })
       .eq('id', vehicleId)
       .eq('business_id', businessId)
 
     if (error) {
       console.error('Error updating vehicle:', error)
-      return { error: error.message }
+      return { error: toUserFacingError(error, vehicle.registration_number) }
     }
 
-    // Handle image updates
-    let primaryImageUrl = data.existingPrimaryImage
-    let galleryImageUrls = [...(data.existingGalleryImages || [])]
+    const previousImage = existing?.primary_image_url
 
-    const folderPath = `vehicles/${businessId}/${vehicleId}`
-
-    // Upload new primary image if provided
-    if (data.primaryImageBase64) {
-      // Delete old primary image if it exists
-      if (primaryImageUrl) {
-        const oldPath = primaryImageUrl.split('/').slice(-4).join('/')
-        await supabase.storage
-          .from('vehicles')
-          .remove([oldPath])
-      }
-
-      const matches = data.primaryImageBase64.match(/^data:(.+);base64,(.+)$/)
-      if (matches) {
-        const mimeType = matches[1]
-        const base64Data = matches[2]
-        const fileExt = mimeType.split('/')[1] || 'jpg'
-        const buffer = Buffer.from(base64Data, 'base64')
-        const primaryImagePath = `${folderPath}/primary-${Date.now()}.${fileExt}`
-        const { error: uploadError } = await supabase.storage
-          .from('vehicles')
-          .upload(primaryImagePath, buffer, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: mimeType
-          })
-
-        if (uploadError) {
-          console.error('Error uploading primary image:', uploadError)
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('vehicles')
-            .getPublicUrl(primaryImagePath)
-          primaryImageUrl = publicUrl
-        }
-      }
+    if (previousImage && previousImage !== vehicle.primaryImageUrl) {
+      await removeVehicleImage(previousImage)
     }
 
-    // Upload new gallery images if provided
-    if (data.galleryImagesBase64?.length > 0) {
-      const newGalleryUrls = []
-
-      for (let i = 0; i < data.galleryImagesBase64.length; i++) {
-        const base64 = data.galleryImagesBase64[i]
-        const matches = base64.match(/^data:(.+);base64,(.+)$/)
-        if (matches) {
-          const mimeType = matches[1]
-          const base64Data = matches[2]
-          const fileExt = mimeType.split('/')[1] || 'jpg'
-          const buffer = Buffer.from(base64Data, 'base64')
-          const galleryImagePath = `${folderPath}/gallery-${galleryImageUrls.length + i}-${Date.now()}.${fileExt}`
-
-          const { error: uploadError } = await supabase.storage
-            .from('vehicles')
-            .upload(galleryImagePath, buffer, {
-              cacheControl: '3600',
-              upsert: false,
-              contentType: mimeType
-            })
-
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('vehicles')
-              .getPublicUrl(galleryImagePath)
-            newGalleryUrls.push(publicUrl)
-          }
-        }
-      }
-
-      galleryImageUrls = [...galleryImageUrls, ...newGalleryUrls]
-    }
-
-    // Update vehicle with new image URLs
-    const { error: updateError } = await supabase
-      .from('vehicles')
-      .update({
-        primary_image_url: primaryImageUrl,
-        gallery_images: galleryImageUrls
-      })
-      .eq('id', vehicleId)
-
-    if (updateError) {
-      console.error('Error updating vehicle images:', updateError)
-    }
-
-    // Handle feature mappings
     revalidatePath('/vendor/vehicles')
     revalidatePath(`/vendor/vehicles/${vehicleId}/edit`)
     return { success: true }

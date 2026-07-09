@@ -9,7 +9,6 @@ export interface SearchResultVehicle {
   categoryId?: string
   capacity: number
   luggageCapacity: number
-  images: string[]
   features: string[]
   vendorName: string
   vendorRating: number
@@ -305,7 +304,6 @@ export async function getSearchResults(params: {
       make,
       model,
       seats,
-      gallery_images,
       is_available,
       business_id,
       category_id,
@@ -376,7 +374,6 @@ export async function getSearchResults(params: {
       categoryId: vehicle.category_id || 'uncategorized',
       capacity: vehicle.seats || 4,
       luggageCapacity: 2, // Default value since column doesn't exist
-      images: Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : [],
       features: [], // Features not available in current schema
       vendorName: vendor?.business_name || 'Unknown Vendor',
       vendorRating: 4.5, // Default rating since rating column doesn't exist

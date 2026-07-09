@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,29 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Vehicle, VehicleType } from "@/lib/types/vehicle"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
-import { createAdminVehicle, updateAdminVehicle, AdminVehicleFormData } from "../actions"
+import { createAdminVehicle, updateAdminVehicle } from "../actions"
+import { adminVehicleFormSchema, type AdminVehicleFormValues } from "@/lib/vehicles/schema"
+import { deleteVehicleImage, uploadVehicleImage } from "@/lib/vehicles/image-upload"
 import { getVehicleCategories, getVehicleTypesByCategory } from "@/app/vendor/vehicles/actions"
 import { Loader2, Building2 } from "lucide-react"
 import { ImageUpload } from "@/app/vendor/vehicles/components/image-upload"
 
 const currentYear = new Date().getFullYear()
-
-const vehicleSchema = z.object({
-  business_id: z.string().min(1, "Vendor is required"),
-  make: z.string().min(2, "Make must be at least 2 characters"),
-  model: z.string().min(2, "Model must be at least 2 characters"),
-  year: z.number()
-    .min(1900, "Year must be 1900 or later")
-    .max(currentYear + 1, `Year cannot be more than ${currentYear + 1}`),
-  registration_number: z.string().min(3, "Registration number is required"),
-  category_id: z.string().min(1, "Category is required"),
-  vehicle_type_id: z.string().min(1, "Vehicle type is required"),
-  fuel_type: z.enum(['petrol', 'diesel', 'electric', 'hybrid']).optional(),
-  transmission: z.enum(['manual', 'automatic']).optional(),
-  seats: z.number().min(1).max(20).optional(),
-  luggage_capacity: z.number().min(0).max(20).optional(),
-  is_available: z.boolean().default(true),
-})
 
 interface VehicleWithVendor extends Vehicle {
   vendor?: {
@@ -64,16 +48,14 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
   const [isLoading, setIsLoading] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
   const [primaryImageFile, setPrimaryImageFile] = useState<File | null>(null)
-  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
   const [primaryImage, setPrimaryImage] = useState<string>(initialData?.primary_image_url || "")
-  const [galleryImages, setGalleryImages] = useState<string[]>(initialData?.gallery_images || [])
   const [categories, setCategories] = useState<VehicleCategory[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
   const [loadingVehicleTypes, setLoadingVehicleTypes] = useState(true)
 
-  const form = useForm<AdminVehicleFormData>({
-    resolver: zodResolver(vehicleSchema),
+  const form = useForm<AdminVehicleFormValues>({
+    resolver: zodResolver(adminVehicleFormSchema),
     defaultValues: {
       business_id: initialData?.business_id || "",
       make: initialData?.make || "",
@@ -158,75 +140,61 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
     setPrimaryImage("")
   }
 
-  const handleGalleryImagesChange = (files: File[]) => {
-    setGalleryFiles(prev => [...prev, ...files])
-    const urls = files.map(file => URL.createObjectURL(file))
-    setGalleryImages(prev => [...prev, ...urls])
-  }
-
-  const handleGalleryImageRemove = (index: number) => {
-    const removedFile = galleryFiles[index]
-    if (removedFile) {
-      setGalleryFiles(prev => prev.filter((_, i) => i !== index))
-    }
-    
-    const removedUrl = galleryImages[index]
-    if (removedUrl && removedUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(removedUrl)
-    }
-    setGalleryImages(prev => prev.filter((_, i) => i !== index))
-  }
-
-  async function onSubmit(values: AdminVehicleFormData) {
+  async function onSubmit(values: AdminVehicleFormValues) {
     setIsLoading(true)
-    
+
+    // Uploaded ahead of the save so the image never travels through the Server
+    // Action body, which Next.js caps at 1 MB. Tracked so it can be rolled back
+    // if the save then fails.
+    let uploadedImageUrl: string | null = null
+
     try {
-      // Convert files to base64
-      let primaryImageBase64: string | null = null
-      let galleryImagesBase64: string[] = []
+      let primaryImageUrl = initialData?.primary_image_url || null
 
       if (primaryImageFile) {
-        primaryImageBase64 = await fileToBase64(primaryImageFile)
+        setUploadingImages(true)
+        const { url, error } = await uploadVehicleImage({
+          businessId: values.business_id,
+          file: primaryImageFile,
+        })
+        setUploadingImages(false)
+
+        if (error || !url) {
+          toast.error(error || "Failed to upload image")
+          return
+        }
+
+        uploadedImageUrl = url
+        primaryImageUrl = url
+      } else if (!primaryImage) {
+        primaryImageUrl = null
       }
 
-      if (galleryFiles.length > 0) {
-        galleryImagesBase64 = await Promise.all(
-          galleryFiles.map(file => fileToBase64(file))
-        )
-      }
-
-      const formData = {
-        ...values,
-        primaryImageBase64,
-        galleryImagesBase64,
-        existingPrimaryImage: initialData?.primary_image_url || null,
-        existingGalleryImages: initialData?.gallery_images || []
-      }
+      const formData = { ...values, primaryImageUrl }
 
       const result = initialData
         ? await updateAdminVehicle(initialData.id, formData)
         : await createAdminVehicle(formData)
-      
+
       if (result.error) {
+        if (uploadedImageUrl) {
+          await deleteVehicleImage(uploadedImageUrl)
+        }
         toast.error(result.error)
-      } else {
-        toast.success(initialData ? "Vehicle updated" : "Vehicle added successfully")
-        router.push('/admin/vehicles')
+        return
       }
+
+      toast.success(initialData ? "Vehicle updated" : "Vehicle added successfully")
+      router.push('/admin/vehicles')
     } catch (error) {
+      if (uploadedImageUrl) {
+        await deleteVehicleImage(uploadedImageUrl)
+      }
       toast.error("An unexpected error occurred")
     } finally {
+      setUploadingImages(false)
       setIsLoading(false)
     }
-  }
-
-  function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = error => reject(error)
-    })
   }
 
   return (
@@ -566,22 +534,10 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
           <CardContent className="space-y-6">
             <ImageUpload
               label="Primary Image"
-              description="Main photo that will be displayed in search results"
+              description="Main photo that will be displayed in the fleet listing"
               value={primaryImage}
               onChange={handlePrimaryImageChange}
               onRemove={handlePrimaryImageRemove}
-              disabled={isLoading || uploadingImages}
-              uploading={uploadingImages}
-            />
-
-            <ImageUpload
-              label="Gallery Images"
-              description="Additional photos to showcase different angles and features"
-              value={galleryImages}
-              onChange={handleGalleryImagesChange}
-              onRemove={handleGalleryImageRemove}
-              multiple
-              maxFiles={10}
               disabled={isLoading || uploadingImages}
               uploading={uploadingImages}
             />
