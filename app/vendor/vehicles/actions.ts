@@ -1,18 +1,15 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
 import { Vehicle, VehicleFilters } from "@/lib/types/vehicle"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
-import { storagePathFromUrl } from "@/lib/storage/paths"
+import { removeVehicleImage, removeVehicleImages } from "@/lib/vehicles/server-storage"
 import {
   firstIssueMessage,
   vehicleMutationSchema,
   type VehicleMutationInput,
 } from "@/lib/vehicles/schema"
 import { revalidatePath } from "next/cache"
-
-const VEHICLE_BUCKET = 'vehicles'
 
 /** Postgres unique_violation. */
 const UNIQUE_VIOLATION = '23505'
@@ -26,28 +23,6 @@ function toUserFacingError(
   }
 
   return error.message
-}
-
-/**
- * Removes a superseded image with the service-role client.
- *
- * Service-role is required because the caller may be deleting a legacy object
- * under the old doubled `vehicles/vehicles/...` prefix, and because storage
- * delete policies are scheduled to be scoped to the owning vendor.
- */
-async function removeVehicleImage(url: string): Promise<void> {
-  const path = storagePathFromUrl(url, VEHICLE_BUCKET)
-
-  if (!path) {
-    console.error('Could not derive storage path from URL:', url)
-    return
-  }
-
-  const { error } = await createAdminClient().storage.from(VEHICLE_BUCKET).remove([path])
-
-  if (error) {
-    console.error('Error removing vehicle image:', error)
-  }
 }
 
 export async function getVehicles(businessId: string, filters: VehicleFilters): Promise<{
@@ -162,6 +137,15 @@ export async function deleteVehicle(vehicleId: string, businessId: string): Prom
   const supabase = await createClient()
 
   try {
+    // Read the image URL first: once the row is gone it is unrecoverable and
+    // the storage object would be orphaned.
+    const { data: existing } = await supabase
+      .from('vehicles')
+      .select('primary_image_url')
+      .eq('id', vehicleId)
+      .eq('business_id', businessId)
+      .single()
+
     const { error } = await supabase
       .from('vehicles')
       .delete()
@@ -171,6 +155,11 @@ export async function deleteVehicle(vehicleId: string, businessId: string): Prom
     if (error) {
       console.error('Error deleting vehicle:', error)
       return { error: error.message }
+    }
+
+    // Only after the row is gone, so a failed delete never destroys a live image.
+    if (existing?.primary_image_url) {
+      await removeVehicleImage(existing.primary_image_url)
     }
 
     revalidatePath('/vendor/vehicles')
@@ -185,6 +174,14 @@ export async function bulkDeleteVehicles(vehicleIds: string[], businessId: strin
   const supabase = await createClient()
 
   try {
+    // Read the image URLs first: once the rows are gone they are unrecoverable
+    // and the storage objects would be orphaned.
+    const { data: existing } = await supabase
+      .from('vehicles')
+      .select('primary_image_url')
+      .in('id', vehicleIds)
+      .eq('business_id', businessId)
+
     const { error } = await supabase
       .from('vehicles')
       .delete()
@@ -195,6 +192,9 @@ export async function bulkDeleteVehicles(vehicleIds: string[], businessId: strin
       console.error('Error deleting vehicles:', error)
       return { error: error.message }
     }
+
+    // Only after the rows are gone, so a failed delete never destroys live images.
+    await removeVehicleImages((existing ?? []).map((v) => v.primary_image_url))
 
     revalidatePath('/vendor/vehicles')
     return { success: true }

@@ -2,15 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import { createAdminClient } from "@/lib/supabase/admin"
-import { storagePathFromUrl } from "@/lib/storage/paths"
+import { removeVehicleImage } from "@/lib/vehicles/server-storage"
 import {
   adminVehicleMutationSchema,
   firstIssueMessage,
   type AdminVehicleMutationInput,
 } from "@/lib/vehicles/schema"
-
-const VEHICLE_BUCKET = 'vehicles'
 
 /** Postgres unique_violation. */
 const UNIQUE_VIOLATION = '23505'
@@ -24,21 +21,6 @@ function toUserFacingError(
   }
 
   return error.message
-}
-
-async function removeVehicleImage(url: string): Promise<void> {
-  const path = storagePathFromUrl(url, VEHICLE_BUCKET)
-
-  if (!path) {
-    console.error('Could not derive storage path from URL:', url)
-    return
-  }
-
-  const { error } = await createAdminClient().storage.from(VEHICLE_BUCKET).remove([path])
-
-  if (error) {
-    console.error('Error removing vehicle image:', error)
-  }
 }
 
 async function requireAdmin(
@@ -346,6 +328,14 @@ export async function deleteAdminVehicle(id: string) {
     return { error: 'Only admins can delete vehicles' }
   }
 
+  // Read the image URL first: once the row is gone it is unrecoverable and the
+  // storage object would be orphaned.
+  const { data: existing } = await supabase
+    .from('vehicles')
+    .select('primary_image_url')
+    .eq('id', id)
+    .single()
+
   const { error } = await supabase
     .from('vehicles')
     .delete()
@@ -354,6 +344,11 @@ export async function deleteAdminVehicle(id: string) {
   if (error) {
     console.error('Error deleting vehicle:', error)
     return { error: error.message }
+  }
+
+  // Only after the row is gone, so a failed delete never destroys a live image.
+  if (existing?.primary_image_url) {
+    await removeVehicleImage(existing.primary_image_url)
   }
 
   revalidatePath('/admin/vehicles')
