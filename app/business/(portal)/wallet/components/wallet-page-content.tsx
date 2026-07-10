@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
   formatCurrency,
+  getCurrencyInfo,
   getMinimumRechargeAmount,
   getMaximumRechargeAmount,
   type CurrencyCode,
@@ -90,6 +91,7 @@ export function WalletPageContent({
 
   const minAmount = getMinimumRechargeAmount(currency);
   const maxAmount = getMaximumRechargeAmount(currency);
+  const currencySymbol = getCurrencyInfo(currency).symbol;
 
   // Handle Payment Element (embedded) flow
   async function handlePaymentElementRecharge() {
@@ -187,7 +189,7 @@ export function WalletPageContent({
               title="Wallet Balance"
               value={walletBalance}
               format="currency"
-              currency={currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency}
+              currency={currencySymbol}
               subtitle="Available for bookings"
               icon={<Wallet className="h-5 w-5" />}
               actionLabel="Add Credits"
@@ -311,7 +313,7 @@ export function WalletPageContent({
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '¥'}
+                  {currencySymbol}
                 </span>
                 <Input
                   id="amount"
@@ -349,7 +351,7 @@ export function WalletPageContent({
                       : 'border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5'
                   )}
                 >
-                  {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '¥'}
+                  {currencySymbol}
                   {quickAmount}
                 </button>
               ))}

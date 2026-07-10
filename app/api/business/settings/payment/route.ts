@@ -7,6 +7,10 @@ import { NextRequest } from 'next/server';
 import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/lib/utils/currency-converter';
+
+/** The same codes the settings dropdown offers. */
+const CURRENCY_CODES = Object.keys(SUPPORTED_CURRENCIES) as [CurrencyCode, ...CurrencyCode[]];
 
 /**
  * Validation schema for payment settings
@@ -14,11 +18,7 @@ import { z } from 'zod';
 const paymentSettingsSchema = z.object({
   save_payment_methods: z.boolean().optional(),
   payment_element_enabled: z.boolean().optional(),
-  preferred_currency: z
-    .string()
-    .length(3)
-    .regex(/^[A-Z]{3}$/, 'Invalid currency code')
-    .optional(),
+  preferred_currency: z.enum(CURRENCY_CODES).optional(),
 });
 
 /**

@@ -45,7 +45,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     const { data: businessAccount, error: accountError } = await supabase
       .from('business_accounts')
       .select(
-        'id, business_name, business_email, stripe_customer_id, preferred_currency'
+        'id, business_name, business_email, stripe_customer_id'
       )
       .eq('id', user.businessAccountId)
       .single();
@@ -73,8 +73,9 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       return apiError('Payment method not found or inactive', 404);
     }
 
-    // Determine currency
-    const currency = businessAccount.preferred_currency || 'aed';
+    // Wallet top-ups always settle in AED, matching the Stripe Checkout path.
+    // preferred_currency is a display preference and must not pick the charge currency.
+    const currency = 'aed';
 
     // Create and confirm PaymentIntent with saved payment method
     const paymentIntent = await stripe.paymentIntents.create({

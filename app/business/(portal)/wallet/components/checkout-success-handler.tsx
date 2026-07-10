@@ -90,11 +90,11 @@ export function CheckoutSuccessHandler() {
           // Show success toast (only once)
           if (already_processed) {
             toast.success('Payment Already Processed', {
-              description: `Your wallet balance is $${new_balance.toFixed(2)}`,
+              description: `Your wallet balance is AED ${new_balance.toFixed(2)}`,
             });
           } else {
             toast.success('Payment Successful!', {
-              description: `$${amount_added.toFixed(2)} has been added to your wallet. New balance: $${new_balance.toFixed(2)}`,
+              description: `AED ${amount_added.toFixed(2)} has been added to your wallet. New balance: AED ${new_balance.toFixed(2)}`,
             });
           }
 

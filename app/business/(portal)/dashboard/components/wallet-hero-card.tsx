@@ -87,7 +87,7 @@ export function WalletHeroCard({ walletBalance, className }: WalletHeroCardProps
               {/* Large value - dramatic typography */}
               <div className="flex items-baseline gap-4 mb-3">
                 <span className="text-5xl sm:text-6xl font-bold tracking-tight text-primary">
-                  <CurrencyCountUp value={walletBalance} />
+                  <CurrencyCountUp value={walletBalance} currency="AED " />
                 </span>
               </div>
 

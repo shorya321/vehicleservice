@@ -43,7 +43,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     const { data: businessAccount, error: accountError } = await supabase
       .from('business_accounts')
       .select(
-        'id, business_name, business_email, business_phone, address, city, country_code, preferred_currency, payment_element_enabled'
+        'id, business_name, business_email, business_phone, address, city, country_code, payment_element_enabled'
       )
       .eq('id', user.businessAccountId)
       .single();
@@ -58,8 +58,9 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       return apiError('Payment Element is not enabled for this business', 403);
     }
 
-    // Determine currency
-    const currency = businessAccount.preferred_currency || 'aed';
+    // Wallet top-ups always settle in AED, matching the Stripe Checkout path.
+    // preferred_currency is a display preference and must not pick the charge currency.
+    const currency = 'aed';
 
     // Get or create Stripe customer for this business
     // This ensures payment methods can be reused instead of creating duplicates
