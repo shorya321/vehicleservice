@@ -323,8 +323,9 @@ export function BookingsPageContent({
           variants={prefersReducedMotion ? undefined : itemVariants}
           whileHover={prefersReducedMotion ? undefined : { y: -2 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="h-full"
         >
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
+          <div className="group relative h-full overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -333,11 +334,15 @@ export function BookingsPageContent({
                 <p className="text-3xl font-bold tracking-tight text-foreground">
                   {totalCount}
                 </p>
-                {totalCount > 0 && (
+                {totalCount > 0 ? (
                   <div className="flex items-center gap-1 mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     <TrendingUp className="h-3.5 w-3.5" />
                     <span>+12% from last month</span>
                   </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    No bookings yet
+                  </p>
                 )}
               </div>
               <motion.div
@@ -356,8 +361,9 @@ export function BookingsPageContent({
           variants={prefersReducedMotion ? undefined : itemVariants}
           whileHover={prefersReducedMotion ? undefined : { y: -2 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="h-full"
         >
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
+          <div className="group relative h-full overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -386,8 +392,9 @@ export function BookingsPageContent({
           variants={prefersReducedMotion ? undefined : itemVariants}
           whileHover={prefersReducedMotion ? undefined : { y: -2 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="h-full"
         >
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
+          <div className="group relative h-full overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
@@ -416,8 +423,9 @@ export function BookingsPageContent({
           variants={prefersReducedMotion ? undefined : itemVariants}
           whileHover={prefersReducedMotion ? undefined : { y: -2 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="h-full"
         >
-          <div className="group relative overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
+          <div className="group relative h-full overflow-hidden rounded-xl bg-card p-5 border border-border shadow-sm card-hover hover:shadow-md transition-all duration-200">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
