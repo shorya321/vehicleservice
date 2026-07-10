@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { VehicleCategoryTabs } from './vehicle-category-tabs';
 import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, VehicleTypesByCategory, ZoneInfo } from '../actions';
-import { formatCurrency } from '@/lib/business/wallet-operations';
+import { BUSINESS_BASE_CURRENCY, formatCurrency } from '@/lib/business/wallet-operations';
 
 interface VehicleStepProps {
   formData: Partial<BookingFormData>;
@@ -151,7 +151,7 @@ export function VehicleStep({
             </div>
           </div>
           <span className="px-3 py-1.5 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 text-sm font-semibold">
-            Base: {formatCurrency(zoneInfo.basePrice)}
+            Base: {formatCurrency(zoneInfo.basePrice, BUSINESS_BASE_CURRENCY)}
           </span>
         </div>
       )}

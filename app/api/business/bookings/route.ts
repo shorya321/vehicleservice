@@ -18,6 +18,8 @@ import {
 } from '@/lib/email/services/business-emails';
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails';
 import { getAdminEmail, getAppUrl } from '@/lib/email/config';
+import { getExchangeRates } from '@/lib/currency/server';
+import { BUSINESS_BASE_CURRENCY, convertFromAed } from '@/lib/business/wallet-operations';
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 
@@ -265,7 +267,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     // Get business account details for email
     const { data: businessAccount } = await supabaseAdmin
       .from('business_accounts')
-      .select('business_name, business_email, wallet_balance')
+      .select('business_name, business_email, wallet_balance, preferred_currency')
       .eq('id', user.businessAccountId)
       .single();
 
@@ -289,14 +291,22 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         timeStyle: 'short',
       });
 
-      // Booking prices and the wallet are denominated in AED; no conversion happens here
-      const currency = 'AED';
+      // Prices, the wallet and the Stripe charge are all denominated in AED.
+      const currency = BUSINESS_BASE_CURRENCY;
 
       const extras = priceResult.verifiedAddons.map((addon) => ({
         label: addon.name,
         quantity: addon.quantity,
         price: addon.total_price,
       }));
+
+      // The owner email is rendered in the business's preferred currency, with the AED
+      // figure actually charged shown alongside. The admin email stays AED (below).
+      const displayCurrency = businessAccount.preferred_currency || BUSINESS_BASE_CURRENCY;
+      const rates = await getExchangeRates();
+      const toDisplay = (aed: number) => convertFromAed(aed, displayCurrency, rates);
+      const isConverted = displayCurrency !== BUSINESS_BASE_CURRENCY;
+      const extrasForOwner = extras.map((e) => ({ ...e, price: toDisplay(e.price) }));
 
       // Send confirmation to business owner
       sendBusinessBookingConfirmationEmail({
@@ -311,13 +321,15 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         pickupDateTime,
         vehicleType: vehicle?.name || 'Standard',
         passengerCount: booking.passenger_count,
-        totalPrice: booking.total_price,
-        currency,
-        walletDeducted: booking.total_price,
-        newBalance: businessAccount.wallet_balance,
+        totalPrice: toDisplay(booking.total_price),
+        currency: displayCurrency,
+        originalAmount: isConverted ? booking.total_price : undefined,
+        originalCurrency: isConverted ? currency : undefined,
+        walletDeducted: toDisplay(booking.total_price),
+        newBalance: toDisplay(businessAccount.wallet_balance),
         bookingUrl: `${getAppUrl()}/business/bookings/${booking.id}`,
         referenceNumber: booking.reference_number,
-        extras,
+        extras: extrasForOwner,
       }).catch((err: unknown) => {
         console.error('Failed to send booking confirmation email:', err);
       });

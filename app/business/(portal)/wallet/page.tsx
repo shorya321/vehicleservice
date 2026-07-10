@@ -8,6 +8,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getExchangeRates } from '@/lib/currency/server';
 import { WalletPageContent } from './components/wallet-page-content';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
 
@@ -53,8 +54,10 @@ export default async function BusinessWalletPage() {
 
   const businessAccount = businessUser.business_accounts;
   const businessAccountId = businessUser.business_account_id;
+  // Stored balance is always AED. displayCurrency only changes how it is rendered.
   const walletBalance = Number(businessAccount.wallet_balance) || 0;
-  const currency = (businessAccount.preferred_currency as CurrencyCode) || 'AED';
+  const displayCurrency = (businessAccount.preferred_currency as CurrencyCode) || 'AED';
+  const exchangeRates = await getExchangeRates();
   const paymentElementEnabled = businessAccount.payment_element_enabled ?? true;
 
   // Get transaction history (8 most recent + total count)
@@ -93,7 +96,8 @@ export default async function BusinessWalletPage() {
     <WalletPageContent
       walletBalance={walletBalance}
       businessAccountId={businessAccountId}
-      currency={currency}
+      displayCurrency={displayCurrency}
+      exchangeRates={exchangeRates}
       paymentElementEnabled={paymentElementEnabled}
       transactions={transactions || []}
       totalTransactions={totalTransactions}

@@ -24,6 +24,8 @@ interface BusinessBookingConfirmationEmailProps {
   bookingUrl: string;
   referenceNumber?: string;
   extras?: Array<{ label: string; quantity: number; price: number }>;
+  originalAmount?: number;
+  originalCurrency?: string;
 }
 
 export const BusinessBookingConfirmationEmail = ({
@@ -44,7 +46,10 @@ export const BusinessBookingConfirmationEmail = ({
   bookingUrl,
   referenceNumber,
   extras,
+  originalAmount,
+  originalCurrency,
 }: BusinessBookingConfirmationEmailProps) => {
+  const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
       preview={`Booking Created - ${bookingNumber}`}
@@ -121,6 +126,11 @@ export const BusinessBookingConfirmationEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Booking Total:</strong> {currency} {totalPrice.toFixed(2)}
         </Text>
+        {showChargeNote && (
+          <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
+            Payment charged in {originalCurrency} {originalAmount!.toFixed(2)}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Deducted from Wallet:</strong> {currency} {walletDeducted.toFixed(2)}
         </Text>

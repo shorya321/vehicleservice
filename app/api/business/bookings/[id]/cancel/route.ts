@@ -12,7 +12,13 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { bookingCancellationSchema } from '@/lib/business/validators';
-import { formatCurrency } from '@/lib/business/wallet-operations';
+import {
+  BUSINESS_BASE_CURRENCY,
+  convertFromAed,
+  formatCurrency,
+} from '@/lib/business/wallet-operations';
+import { getExchangeRates } from '@/lib/currency/server';
+import { getAppUrl } from '@/lib/email/config';
 import {
   sendBusinessBookingCancellationEmail,
   sendBusinessCustomerBookingCancelledEmail,
@@ -106,7 +112,7 @@ export const POST = requireBusinessAuth(
       // Get business account details for email
       const { data: businessAccount } = await supabaseAdmin
         .from('business_accounts')
-        .select('business_name, business_email, currency')
+        .select('business_name, business_email, currency, preferred_currency')
         .eq('id', user.businessAccountId)
         .single();
 
@@ -125,6 +131,13 @@ export const POST = requireBusinessAuth(
           timeStyle: 'short',
         });
 
+        // Refund and balance are AED. Render them in the business's preferred currency,
+        // showing the AED figure actually refunded alongside.
+        const displayCurrency = businessAccount.preferred_currency || BUSINESS_BASE_CURRENCY;
+        const rates = await getExchangeRates();
+        const toDisplay = (aed: number) => convertFromAed(aed, displayCurrency, rates);
+        const isConverted = displayCurrency !== BUSINESS_BASE_CURRENCY;
+
         // Send cancellation email to business owner
         sendBusinessBookingCancellationEmail({
           email: businessAccount.business_email,
@@ -136,10 +149,12 @@ export const POST = requireBusinessAuth(
           dropoffLocation,
           pickupDateTime,
           cancellationReason: body.cancellation_reason,
-          refundAmount,
-          newBalance,
-          currency: businessAccount.currency || 'AED',
-          walletUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/wallet`,
+          refundAmount: toDisplay(refundAmount),
+          newBalance: toDisplay(newBalance),
+          currency: displayCurrency,
+          originalAmount: isConverted ? refundAmount : undefined,
+          originalCurrency: isConverted ? BUSINESS_BASE_CURRENCY : undefined,
+          walletUrl: `${getAppUrl()}/business/wallet`,
         }).catch((err: unknown) => {
           console.error('Failed to send business cancellation email:', err);
         });

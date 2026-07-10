@@ -32,7 +32,11 @@ interface RecentBooking {
 
 interface DashboardContentProps {
   businessName: string;
+  /** Stored balance, always AED. */
   walletBalance: number;
+  /** walletBalance converted into displayCurrency. Display only. */
+  displayBalance: number;
+  displayCurrency: string;
   totalBookings: number;
   pendingBookings: number;
   completedBookings: number;
@@ -44,6 +48,8 @@ interface DashboardContentProps {
 export function DashboardContent({
   businessName,
   walletBalance,
+  displayBalance,
+  displayCurrency,
   totalBookings,
   pendingBookings,
   completedBookings,
@@ -91,7 +97,12 @@ export function DashboardContent({
         {/* Left Column - Main Stats */}
         <div className="lg:col-span-8 space-y-5">
           {/* Wallet Hero Card */}
-          <WalletHeroCard walletBalance={walletBalance} className="col-span-full" />
+          <WalletHeroCard
+            walletBalance={walletBalance}
+            displayBalance={displayBalance}
+            displayCurrency={displayCurrency}
+            className="col-span-full"
+          />
 
           {/* Stats Grid */}
           <StatsGrid

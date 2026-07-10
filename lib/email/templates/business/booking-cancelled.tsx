@@ -19,6 +19,8 @@ interface BusinessBookingCancelledEmailProps {
   newBalance: number;
   currency: string;
   walletUrl: string;
+  originalAmount?: number;
+  originalCurrency?: string;
 }
 
 export const BusinessBookingCancelledEmail = ({
@@ -34,7 +36,10 @@ export const BusinessBookingCancelledEmail = ({
   newBalance,
   currency,
   walletUrl,
+  originalAmount,
+  originalCurrency,
 }: BusinessBookingCancelledEmailProps) => {
+  const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
       preview={`Booking Cancelled - ${bookingNumber}`}
@@ -90,6 +95,11 @@ export const BusinessBookingCancelledEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Refund Amount:</strong> {currency} {refundAmount.toFixed(2)}
         </Text>
+        {showChargeNote && (
+          <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
+            Refunded in {originalCurrency} {originalAmount!.toFixed(2)}
+          </Text>
+        )}
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.totalRow}>
           <strong>New Wallet Balance:</strong> {currency} {newBalance.toFixed(2)}

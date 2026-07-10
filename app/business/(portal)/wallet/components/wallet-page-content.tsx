@@ -31,6 +31,11 @@ import { TransactionHistory } from './transaction-history';
 import { PaymentMethodsList } from './payment-methods-list';
 import { CheckoutSuccessHandler } from './checkout-success-handler';
 import { WalletRechargeModal } from './wallet-recharge-modal';
+import {
+  BUSINESS_BASE_CURRENCY,
+  convertFromAed,
+} from '@/lib/business/wallet-operations';
+import type { ExchangeRatesMap } from '@/lib/currency/types';
 import { staggerContainer, staggerItem } from '@/lib/business/animation/variants';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { toast } from 'sonner';
@@ -60,9 +65,13 @@ interface WalletQuickStatsData {
 }
 
 interface WalletPageContentProps {
+  /** Stored balance, always denominated in AED. */
   walletBalance: number;
   businessAccountId: string;
-  currency: CurrencyCode;
+  /** Currency the business prefers to read balances in. Display only. */
+  displayCurrency: CurrencyCode;
+  /** AED-based rates map, loaded server-side. */
+  exchangeRates: ExchangeRatesMap;
   paymentElementEnabled: boolean;
   transactions: WalletTransaction[];
   totalTransactions: number | null;
@@ -72,7 +81,8 @@ interface WalletPageContentProps {
 export function WalletPageContent({
   walletBalance,
   businessAccountId,
-  currency,
+  displayCurrency,
+  exchangeRates,
   paymentElementEnabled,
   transactions,
   totalTransactions,
@@ -89,9 +99,17 @@ export function WalletPageContent({
     paymentElementEnabled ? 'embedded' : 'redirect'
   );
 
-  const minAmount = getMinimumRechargeAmount(currency);
-  const maxAmount = getMaximumRechargeAmount(currency);
-  const currencySymbol = getCurrencyInfo(currency).symbol;
+  // The recharge flow is denominated in AED because Stripe is always charged in AED.
+  // Never label these inputs with displayCurrency: the user would type 50 meaning EUR 50
+  // and be billed AED 50.
+  const rechargeCurrency = BUSINESS_BASE_CURRENCY as CurrencyCode;
+  const minAmount = getMinimumRechargeAmount(rechargeCurrency);
+  const maxAmount = getMaximumRechargeAmount(rechargeCurrency);
+  const currencySymbol = getCurrencyInfo(rechargeCurrency).symbol;
+
+  // Balance is converted for display only; the AED figure is shown alongside.
+  const displayBalance = convertFromAed(walletBalance, displayCurrency, exchangeRates);
+  const showAedReference = displayCurrency !== BUSINESS_BASE_CURRENCY;
 
   // Handle Payment Element (embedded) flow
   async function handlePaymentElementRecharge() {
@@ -99,7 +117,7 @@ export function WalletPageContent({
 
     if (isNaN(numAmount) || numAmount < minAmount || numAmount > maxAmount) {
       toast.error('Invalid amount', {
-        description: `Please enter an amount between ${formatCurrency(minAmount, currency)} and ${formatCurrency(maxAmount, currency)}`,
+        description: `Please enter an amount between ${formatCurrency(minAmount, rechargeCurrency)} and ${formatCurrency(maxAmount, rechargeCurrency)}`,
       });
       return;
     }
@@ -114,7 +132,7 @@ export function WalletPageContent({
 
     if (isNaN(numAmount) || numAmount < minAmount || numAmount > maxAmount) {
       toast.error('Invalid amount', {
-        description: `Please enter an amount between ${formatCurrency(minAmount, currency)} and ${formatCurrency(maxAmount, currency)}`,
+        description: `Please enter an amount between ${formatCurrency(minAmount, rechargeCurrency)} and ${formatCurrency(maxAmount, rechargeCurrency)}`,
       });
       return;
     }
@@ -125,7 +143,7 @@ export function WalletPageContent({
       const response = await fetch('/api/business/wallet/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: numAmount, currency }),
+        body: JSON.stringify({ amount: numAmount, currency: rechargeCurrency }),
       });
 
       const result = await response.json();
@@ -187,10 +205,14 @@ export function WalletPageContent({
           <motion.div key="wallet-balance" variants={prefersReducedMotion ? undefined : staggerItem} className="h-full">
             <HeroStatCard
               title="Wallet Balance"
-              value={walletBalance}
+              value={displayBalance}
               format="currency"
-              currency={currencySymbol}
-              subtitle="Available for bookings"
+              currency={getCurrencyInfo(displayCurrency).symbol}
+              subtitle={
+                showAedReference
+                  ? `${formatCurrency(walletBalance, BUSINESS_BASE_CURRENCY)} · converted at current rates`
+                  : 'Available for bookings'
+              }
               icon={<Wallet className="h-5 w-5" />}
               actionLabel="Add Credits"
               onAction={handleAddCreditsClick}
@@ -267,7 +289,7 @@ export function WalletPageContent({
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Enter the amount you want to add to your wallet. Minimum{' '}
-              {formatCurrency(minAmount, currency)}, maximum {formatCurrency(maxAmount, currency)}.
+              {formatCurrency(minAmount, rechargeCurrency)}, maximum {formatCurrency(maxAmount, rechargeCurrency)}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4">
@@ -309,7 +331,7 @@ export function WalletPageContent({
             {/* Amount Input */}
             <div className="space-y-2">
               <Label htmlFor="amount" className="text-foreground text-sm font-medium">
-                Amount ({currency})
+                Amount ({rechargeCurrency})
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -320,7 +342,7 @@ export function WalletPageContent({
                   type="number"
                   min={minAmount}
                   max={maxAmount}
-                  step={currency === 'JPY' ? '100' : '10'}
+                  step={rechargeCurrency === 'JPY' ? '100' : '10'}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder={minAmount.toString()}
@@ -331,7 +353,7 @@ export function WalletPageContent({
               <p className="text-sm text-muted-foreground">
                 You will be charged:{' '}
                 <span className="text-primary font-semibold">
-                  {formatCurrency(parseFloat(amount) || 0, currency)}
+                  {formatCurrency(parseFloat(amount) || 0, rechargeCurrency)}
                 </span>
               </p>
             </div>
@@ -390,7 +412,7 @@ export function WalletPageContent({
           open={isPaymentModalOpen}
           onOpenChange={setIsPaymentModalOpen}
           amount={parseFloat(amount) || 0}
-          currency={currency}
+          currency={rechargeCurrency}
           onSuccess={handlePaymentSuccess}
         />
       )}

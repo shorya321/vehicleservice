@@ -14,13 +14,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, TrendingDown, DollarSign, Activity, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatCurrency } from '@/lib/utils/currency-converter';
+import { convertForDisplay, formatCurrency } from '@/lib/business/wallet-operations';
+import type { ExchangeRatesMap } from '@/lib/currency/types';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 interface TransactionsStatsProps {
   businessAccountId: string;
   filters: any;
+  /** Currency the business prefers to read amounts in. Display only. */
+  displayCurrency: string;
+  /** AED-based rates map, loaded server-side. */
+  exchangeRates: ExchangeRatesMap;
   onClose: () => void;
 }
 
@@ -36,7 +41,13 @@ interface Statistics {
   by_currency?: Record<string, { count: number; total_amount: number }>;
 }
 
-export function TransactionsStats({ businessAccountId, filters, onClose }: TransactionsStatsProps) {
+export function TransactionsStats({
+  businessAccountId,
+  filters,
+  displayCurrency,
+  exchangeRates,
+  onClose,
+}: TransactionsStatsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -89,15 +100,17 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
     return null;
   }
 
-  const getDefaultCurrency = () => {
-    if (statistics.by_currency) {
-      const currencies = Object.keys(statistics.by_currency);
-      return currencies[0] || 'AED';
-    }
-    return 'AED';
-  };
+  // The stats API sums raw amounts across whatever currencies the rows carry. Converting a
+  // mixed-currency total would be meaningless, so only convert when the data is
+  // single-currency (the normal case). When it is mixed, fall back to the previous behaviour
+  // and let the per-currency breakdown below tell the real story.
+  const presentCurrencies = Object.keys(statistics.by_currency ?? {});
+  const isMixedCurrency = presentCurrencies.length > 1;
+  const sourceCurrency = filters.currency || presentCurrencies[0] || 'AED';
 
-  const currency = filters.currency || getDefaultCurrency();
+  const currency = isMixedCurrency ? sourceCurrency : displayCurrency;
+  const toDisplay = (amount: number) =>
+    isMixedCurrency ? amount : convertForDisplay(amount, sourceCurrency, displayCurrency, exchangeRates);
 
   return (
     <Card className="bg-card border border-border rounded-xl shadow-sm">
@@ -158,7 +171,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Credits</p>
                 <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(statistics.total_credits, currency)}
+                  {formatCurrency(toDisplay(statistics.total_credits), currency)}
                 </p>
               </div>
               <motion.div
@@ -181,7 +194,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Debits</p>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {formatCurrency(statistics.total_debits, currency)}
+                  {formatCurrency(toDisplay(statistics.total_debits), currency)}
                 </p>
               </div>
               <motion.div
@@ -209,7 +222,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
                     statistics.net_amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                   )}
                 >
-                  {formatCurrency(statistics.net_amount, currency)}
+                  {formatCurrency(toDisplay(statistics.net_amount), currency)}
                 </p>
               </div>
               <motion.div
@@ -232,7 +245,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
           >
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Average Transaction</p>
             <p className="text-xl font-bold text-foreground">
-              {formatCurrency(statistics.average_transaction, currency)}
+              {formatCurrency(toDisplay(statistics.average_transaction), currency)}
             </p>
           </motion.div>
 
@@ -243,7 +256,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
           >
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Largest Credit</p>
             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              {formatCurrency(statistics.largest_credit, currency)}
+              {formatCurrency(toDisplay(statistics.largest_credit), currency)}
             </p>
           </motion.div>
 
@@ -254,7 +267,7 @@ export function TransactionsStats({ businessAccountId, filters, onClose }: Trans
           >
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Largest Debit</p>
             <p className="text-xl font-bold text-red-600 dark:text-red-400">
-              {formatCurrency(statistics.largest_debit, currency)}
+              {formatCurrency(toDisplay(statistics.largest_debit), currency)}
             </p>
           </motion.div>
         </div>

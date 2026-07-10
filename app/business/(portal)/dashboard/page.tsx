@@ -7,6 +7,8 @@
 
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { getExchangeRates } from '@/lib/currency/server';
+import { convertFromAed } from '@/lib/business/wallet-operations';
 import { redirect } from 'next/navigation';
 import { DashboardContent } from './components/dashboard-content';
 import type { PopularRouteData } from './components/analytics-chart';
@@ -40,6 +42,7 @@ export default async function BusinessDashboardPage() {
         business_name,
         brand_name,
         wallet_balance,
+        preferred_currency,
         subdomain
       )
     `
@@ -52,7 +55,11 @@ export default async function BusinessDashboardPage() {
   }
 
   const businessAccountId = businessUser.business_account_id;
+  // Stored balance is always AED; displayCurrency only changes how it is rendered.
   const walletBalance = Number(businessUser.business_accounts.wallet_balance) || 0;
+  const displayCurrency = businessUser.business_accounts.preferred_currency || 'AED';
+  const exchangeRates = await getExchangeRates();
+  const displayBalance = convertFromAed(walletBalance, displayCurrency, exchangeRates);
   const businessName = businessUser.business_accounts.brand_name || businessUser.business_accounts.business_name;
 
   // Get booking statistics
@@ -111,6 +118,8 @@ export default async function BusinessDashboardPage() {
     <DashboardContent
       businessName={businessName}
       walletBalance={walletBalance}
+      displayBalance={displayBalance}
+      displayCurrency={displayCurrency}
       totalBookings={totalBookings || 0}
       pendingBookings={pendingBookings || 0}
       completedBookings={completedBookings || 0}

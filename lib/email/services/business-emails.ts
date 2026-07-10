@@ -141,6 +141,9 @@ export interface BusinessBookingConfirmationEmailData {
   bookingUrl: string;
   referenceNumber?: string;
   extras?: Array<{ label: string; quantity: number; price: number }>;
+  /** The AED amount actually charged, when `currency` is a converted display currency. */
+  originalAmount?: number;
+  originalCurrency?: string;
 }
 
 /**
@@ -171,6 +174,8 @@ export async function sendBusinessBookingConfirmationEmail(
       bookingUrl: data.bookingUrl,
       referenceNumber: data.referenceNumber,
       extras: data.extras,
+      originalAmount: data.originalAmount,
+      originalCurrency: data.originalCurrency,
     },
   });
 }
@@ -192,6 +197,9 @@ export interface BusinessBookingCancellationEmailData {
   newBalance: number;
   currency: string;
   walletUrl: string;
+  /** The AED amount actually refunded, when `currency` is a converted display currency. */
+  originalAmount?: number;
+  originalCurrency?: string;
 }
 
 /**
@@ -217,6 +225,8 @@ export async function sendBusinessBookingCancellationEmail(
       newBalance: data.newBalance,
       currency: data.currency,
       walletUrl: data.walletUrl,
+      originalAmount: data.originalAmount,
+      originalCurrency: data.originalCurrency,
     },
   });
 }

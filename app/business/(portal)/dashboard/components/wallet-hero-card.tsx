@@ -16,11 +16,19 @@ import { Card, CardContent } from '@/components/business/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { CurrencyCountUp } from '@/components/business/motion';
+import {
+  BUSINESS_BASE_CURRENCY,
+  formatCurrency,
+} from '@/lib/business/wallet-operations';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Sparkline } from './analytics-chart';
 
 interface WalletHeroCardProps {
+  /** Stored balance, always AED. */
   walletBalance: number;
+  /** walletBalance converted into displayCurrency. Display only. */
+  displayBalance: number;
+  displayCurrency: string;
   className?: string;
 }
 
@@ -40,8 +48,14 @@ function generateChartData(baseValue: number, points: number = 7): number[] {
   return data;
 }
 
-export function WalletHeroCard({ walletBalance, className }: WalletHeroCardProps) {
+export function WalletHeroCard({
+  walletBalance,
+  displayBalance,
+  displayCurrency,
+  className,
+}: WalletHeroCardProps) {
   const prefersReducedMotion = useReducedMotion();
+  const showAedReference = displayCurrency !== BUSINESS_BASE_CURRENCY;
 
   // Chart data for wallet sparkline
   const revenueChartData = generateChartData(walletBalance / 100 || 50);
@@ -87,9 +101,15 @@ export function WalletHeroCard({ walletBalance, className }: WalletHeroCardProps
               {/* Large value - dramatic typography */}
               <div className="flex items-baseline gap-4 mb-3">
                 <span className="text-5xl sm:text-6xl font-bold tracking-tight text-primary">
-                  <CurrencyCountUp value={walletBalance} currency="AED " />
+                  <CurrencyCountUp value={displayBalance} currency={`${displayCurrency} `} />
                 </span>
               </div>
+
+              {showAedReference && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  {formatCurrency(walletBalance, BUSINESS_BASE_CURRENCY)} &middot; converted at current rates
+                </p>
+              )}
 
               {/* Title below value */}
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">

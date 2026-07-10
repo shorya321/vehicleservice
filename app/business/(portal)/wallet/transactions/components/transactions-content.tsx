@@ -17,6 +17,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
+import type { ExchangeRatesMap } from '@/lib/currency/types';
 
 interface Transaction {
   id: string;
@@ -48,13 +49,17 @@ interface TransactionFiltersState {
 
 interface TransactionsContentProps {
   businessAccountId: string;
-  currency: CurrencyCode;
+  /** Currency the business prefers to read amounts in. Display only. */
+  displayCurrency: CurrencyCode;
+  /** AED-based rates map, loaded server-side. */
+  exchangeRates: ExchangeRatesMap;
   businessName: string;
 }
 
 export function TransactionsContent({
   businessAccountId,
-  currency,
+  displayCurrency,
+  exchangeRates,
   businessName,
 }: TransactionsContentProps) {
   const [isLoading, setIsLoading] = useState(true);
@@ -172,6 +177,8 @@ export function TransactionsContent({
         <TransactionsStats
           businessAccountId={businessAccountId}
           filters={filters}
+          displayCurrency={displayCurrency}
+          exchangeRates={exchangeRates}
           onClose={() => setShowStats(false)}
         />
       )}
@@ -181,7 +188,7 @@ export function TransactionsContent({
         filters={filters}
         onFilterChange={handleFilterChange}
         onExport={handleExport}
-        defaultCurrency={currency}
+        defaultCurrency={displayCurrency}
       />
 
       {/* Transactions List */}
@@ -204,6 +211,8 @@ export function TransactionsContent({
             <TransactionsList
               transactions={transactions}
               pagination={pagination}
+              displayCurrency={displayCurrency}
+              exchangeRates={exchangeRates}
               onPageChange={handlePageChange}
             />
           )}

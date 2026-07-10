@@ -19,7 +19,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Receipt } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/currency-converter';
+import {
+  BUSINESS_BASE_CURRENCY,
+  convertForDisplay,
+  formatCurrency,
+} from '@/lib/business/wallet-operations';
+import type { ExchangeRatesMap } from '@/lib/currency/types';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +43,10 @@ interface Transaction {
 
 interface TransactionsListProps {
   transactions: Transaction[];
+  /** Currency the business prefers to read amounts in. Display only. */
+  displayCurrency: string;
+  /** AED-based rates map, loaded server-side. */
+  exchangeRates: ExchangeRatesMap;
   pagination: {
     page: number;
     limit: number;
@@ -47,7 +56,17 @@ interface TransactionsListProps {
   onPageChange: (page: number) => void;
 }
 
-export function TransactionsList({ transactions, pagination, onPageChange }: TransactionsListProps) {
+export function TransactionsList({
+  transactions,
+  pagination,
+  displayCurrency,
+  exchangeRates,
+  onPageChange,
+}: TransactionsListProps) {
+  // Rows are stored in AED (legacy admin adjustments may carry USD). Display only.
+  const toDisplay = (amount: number, rowCurrency: string | null | undefined) =>
+    convertForDisplay(amount, rowCurrency || BUSINESS_BASE_CURRENCY, displayCurrency, exchangeRates);
+
   // Transaction type badges with semantic colors
   const getTransactionTypeBadge = (type: string) => {
     const types = {
@@ -131,11 +150,11 @@ export function TransactionsList({ transactions, pagination, onPageChange }: Tra
                     )}
                   >
                     {transaction.amount > 0 ? '+' : ''}
-                    {formatCurrency(transaction.amount, transaction.currency)}
+                    {formatCurrency(toDisplay(transaction.amount, transaction.currency), displayCurrency)}
                   </span>
                 </TableCell>
                 <TableCell className="text-right font-medium text-muted-foreground">
-                  {formatCurrency(transaction.balance_after, transaction.currency)}
+                  {formatCurrency(toDisplay(transaction.balance_after, transaction.currency), displayCurrency)}
                 </TableCell>
                 <TableCell>
                   {transaction.reference_id && (

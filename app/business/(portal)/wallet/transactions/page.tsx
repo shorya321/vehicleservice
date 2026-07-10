@@ -6,6 +6,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getExchangeRates } from '@/lib/currency/server';
 import { TransactionsContent } from './components/transactions-content';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
 
@@ -50,7 +51,8 @@ export default async function BusinessTransactionsPage() {
 
   const businessAccount = businessUser.business_accounts;
   const businessAccountId = businessUser.business_account_id;
-  const currency = (businessAccount.preferred_currency as CurrencyCode) || 'AED';
+  const displayCurrency = (businessAccount.preferred_currency as CurrencyCode) || 'AED';
+  const exchangeRates = await getExchangeRates();
   const businessName = businessAccount.business_name;
 
   return (
@@ -70,7 +72,8 @@ export default async function BusinessTransactionsPage() {
       {/* Transactions Content (Client Component) */}
       <TransactionsContent
         businessAccountId={businessAccountId}
-        currency={currency}
+        displayCurrency={displayCurrency}
+        exchangeRates={exchangeRates}
         businessName={businessName}
       />
     </div>
