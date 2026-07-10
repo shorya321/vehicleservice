@@ -14,6 +14,7 @@ interface PriceCalculationParams {
 
 interface VerifiedAddon {
   addon_id: string;
+  name: string;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -90,14 +91,16 @@ export async function calculateBusinessBookingPrice(
     const addonIds = params.selectedAddons.map((a) => a.addon_id);
     const { data: dbAddons } = await supabase
       .from('addons')
-      .select('id, price, is_active')
+      .select('id, name, price, is_active')
       .in('id', addonIds);
 
     if (!dbAddons) {
       return { error: 'Failed to verify addons' };
     }
 
-    const addonMap = new Map(dbAddons.map((a: { id: string; price: number; is_active: boolean }) => [a.id, a]));
+    const addonMap = new Map(
+      dbAddons.map((a: { id: string; name: string; price: number; is_active: boolean }) => [a.id, a])
+    );
 
     for (const selected of params.selectedAddons) {
       const dbAddon = addonMap.get(selected.addon_id);
@@ -114,6 +117,7 @@ export async function calculateBusinessBookingPrice(
 
       verifiedAddons.push({
         addon_id: selected.addon_id,
+        name: dbAddon.name,
         quantity: selected.quantity,
         unit_price: unitPrice,
         total_price: totalAddonPrice,

@@ -17,6 +17,7 @@ import {
   sendBusinessCustomerBookingConfirmationEmail,
 } from '@/lib/email/services/business-emails';
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails';
+import { getAdminEmail, getAppUrl } from '@/lib/email/config';
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 
@@ -264,7 +265,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     // Get business account details for email
     const { data: businessAccount } = await supabaseAdmin
       .from('business_accounts')
-      .select('business_name, business_email, wallet_balance, currency')
+      .select('business_name, business_email, wallet_balance')
       .eq('id', user.businessAccountId)
       .single();
 
@@ -288,6 +289,15 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         timeStyle: 'short',
       });
 
+      // Booking prices and the wallet are denominated in AED; no conversion happens here
+      const currency = 'AED';
+
+      const extras = priceResult.verifiedAddons.map((addon) => ({
+        label: addon.name,
+        quantity: addon.quantity,
+        price: addon.total_price,
+      }));
+
       // Send confirmation to business owner
       sendBusinessBookingConfirmationEmail({
         email: businessAccount.business_email,
@@ -302,11 +312,12 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         vehicleType: vehicle?.name || 'Standard',
         passengerCount: booking.passenger_count,
         totalPrice: booking.total_price,
-        currency: businessAccount.currency || 'AED',
+        currency,
         walletDeducted: booking.total_price,
         newBalance: businessAccount.wallet_balance,
-        bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/bookings/${booking.id}`,
+        bookingUrl: `${getAppUrl()}/business/bookings/${booking.id}`,
         referenceNumber: booking.reference_number,
+        extras,
       }).catch((err: unknown) => {
         console.error('Failed to send booking confirmation email:', err);
       });
@@ -316,6 +327,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         sendBusinessCustomerBookingConfirmationEmail({
           customerName: booking.customer_name,
           customerEmail: booking.customer_email,
+          customerPhone: booking.customer_phone,
           businessName: businessAccount.business_name,
           bookingNumber: booking.booking_number,
           tripNumber: booking.trip_number,
@@ -325,16 +337,23 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           vehicleType: vehicle?.name || 'Standard',
           passengerCount: booking.passenger_count,
           referenceNumber: booking.reference_number,
+          extras,
         }).catch((err: unknown) => {
           console.error('Failed to send customer booking confirmation email:', err);
         });
+      } else {
+        console.warn('No customer email on booking; customer was not notified', {
+          bookingId,
+          bookingNumber: booking.booking_number,
+        });
       }
 
-      // Send admin notification
-      const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.RESEND_REPLY_TO_EMAIL;
-      if (adminEmail) {
+      // Send admin notification. getAdminEmail() throws when neither
+      // ADMIN_NOTIFICATION_EMAIL nor RESEND_FROM_EMAIL is set, and the booking has
+      // already succeeded and deducted the wallet, so never let that surface.
+      try {
         sendNewBookingNotificationEmail({
-          adminEmail,
+          adminEmail: getAdminEmail(),
           bookingId: bookingId as string,
           bookingReference: booking.booking_number,
           tripNumber: booking.trip_number,
@@ -346,11 +365,13 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           dropoffLocation,
           pickupDate: pickupDateTime,
           totalAmount: booking.total_price,
-          currency: businessAccount.currency || 'AED',
-          bookingDetailsUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin/bookings/${bookingId}`,
+          currency,
+          bookingDetailsUrl: `${getAppUrl()}/admin/bookings/${bookingId}`,
         }).catch((err: unknown) => {
           console.error('Failed to send admin booking notification email:', err);
         });
+      } catch (err: unknown) {
+        console.error('Admin notification email not configured:', err);
       }
     }
 

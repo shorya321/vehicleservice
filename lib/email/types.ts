@@ -205,6 +205,7 @@ export interface DriverBookingUnassignmentEmailData {
 export interface BusinessCustomerBookingConfirmationEmailData {
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   businessName: string;
   bookingNumber: string;
   tripNumber?: string;
@@ -214,6 +215,7 @@ export interface BusinessCustomerBookingConfirmationEmailData {
   vehicleType: string;
   passengerCount: number;
   referenceNumber?: string;
+  extras?: Array<{ label: string; quantity: number; price: number }>;
 }
 
 export interface BusinessCustomerDatetimeChangedEmailData {

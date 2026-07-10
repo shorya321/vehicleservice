@@ -140,6 +140,7 @@ export interface BusinessBookingConfirmationEmailData {
   newBalance: number;
   bookingUrl: string;
   referenceNumber?: string;
+  extras?: Array<{ label: string; quantity: number; price: number }>;
 }
 
 /**
@@ -169,6 +170,7 @@ export async function sendBusinessBookingConfirmationEmail(
       newBalance: data.newBalance,
       bookingUrl: data.bookingUrl,
       referenceNumber: data.referenceNumber,
+      extras: data.extras,
     },
   });
 }
@@ -231,6 +233,7 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
     template: CustomerBookingConfirmationEmail,
     templateProps: {
       customerName: data.customerName,
+      customerPhone: data.customerPhone,
       businessName: data.businessName,
       bookingNumber: data.bookingNumber,
       tripNumber: data.tripNumber,
@@ -240,6 +243,7 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
       vehicleType: data.vehicleType,
       passengerCount: data.passengerCount,
       referenceNumber: data.referenceNumber,
+      extras: data.extras,
     },
   });
 }

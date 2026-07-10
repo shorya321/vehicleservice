@@ -7,6 +7,7 @@ import { emailStyles } from '../../styles/constants';
 
 interface CustomerBookingConfirmationEmailProps {
   customerName: string;
+  customerPhone?: string;
   businessName: string;
   bookingNumber: string;
   tripNumber?: string;
@@ -16,10 +17,12 @@ interface CustomerBookingConfirmationEmailProps {
   vehicleType: string;
   passengerCount: number;
   referenceNumber?: string;
+  extras?: Array<{ label: string; quantity: number; price: number }>;
 }
 
 export const CustomerBookingConfirmationEmail = ({
   customerName,
+  customerPhone,
   businessName,
   bookingNumber,
   tripNumber,
@@ -29,6 +32,7 @@ export const CustomerBookingConfirmationEmail = ({
   vehicleType,
   passengerCount,
   referenceNumber,
+  extras,
 }: CustomerBookingConfirmationEmailProps) => {
   return (
     <EmailLayout
@@ -77,6 +81,22 @@ export const CustomerBookingConfirmationEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Passengers:</strong> {passengerCount}
         </Text>
+        {customerPhone && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Contact:</strong> {customerPhone}
+          </Text>
+        )}
+        {extras && extras.length > 0 && (
+          <>
+            <Hr style={emailStyles.hr} />
+            {extras.map((extra, index) => (
+              <Text key={index} style={emailStyles.detailRow}>
+                <strong>Extra:</strong> {extra.label}
+                {extra.quantity > 1 ? ` x${extra.quantity}` : ''}
+              </Text>
+            ))}
+          </>
+        )}
       </DetailsSection>
 
       <InfoBox type="info" title="What to Expect">

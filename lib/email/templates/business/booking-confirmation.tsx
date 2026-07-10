@@ -23,6 +23,7 @@ interface BusinessBookingConfirmationEmailProps {
   newBalance: number;
   bookingUrl: string;
   referenceNumber?: string;
+  extras?: Array<{ label: string; quantity: number; price: number }>;
 }
 
 export const BusinessBookingConfirmationEmail = ({
@@ -42,6 +43,7 @@ export const BusinessBookingConfirmationEmail = ({
   newBalance,
   bookingUrl,
   referenceNumber,
+  extras,
 }: BusinessBookingConfirmationEmailProps) => {
   return (
     <EmailLayout
@@ -110,6 +112,12 @@ export const BusinessBookingConfirmationEmail = ({
       </Text>
 
       <DetailsSection>
+        {extras && extras.length > 0 && extras.map((extra, index) => (
+          <Text key={index} style={emailStyles.detailRow}>
+            <strong>{extra.label}{extra.quantity > 1 ? ` x${extra.quantity}` : ''}:</strong>{' '}
+            {currency} {extra.price.toFixed(2)}
+          </Text>
+        ))}
         <Text style={emailStyles.detailRow}>
           <strong>Booking Total:</strong> {currency} {totalPrice.toFixed(2)}
         </Text>
