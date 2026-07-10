@@ -42,7 +42,6 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
   formatCurrency,
-  getCurrencyInfo,
   getMinimumRechargeAmount,
   getMaximumRechargeAmount,
   type CurrencyCode,
@@ -105,7 +104,7 @@ export function WalletPageContent({
   const rechargeCurrency = BUSINESS_BASE_CURRENCY as CurrencyCode;
   const minAmount = getMinimumRechargeAmount(rechargeCurrency);
   const maxAmount = getMaximumRechargeAmount(rechargeCurrency);
-  const currencySymbol = getCurrencyInfo(rechargeCurrency).symbol;
+  const currencyLabel = rechargeCurrency;
 
   // Balance is converted for display only; the AED figure is shown alongside.
   const displayBalance = convertFromAed(walletBalance, displayCurrency, exchangeRates);
@@ -207,7 +206,7 @@ export function WalletPageContent({
               title="Wallet Balance"
               value={displayBalance}
               format="currency"
-              currency={getCurrencyInfo(displayCurrency).symbol}
+              currency={`${displayCurrency} `}
               subtitle={
                 showAedReference
                   ? `${formatCurrency(walletBalance, BUSINESS_BASE_CURRENCY)} · converted at current rates`
@@ -334,8 +333,8 @@ export function WalletPageContent({
                 Amount ({rechargeCurrency})
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {currencySymbol}
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                  {currencyLabel}
                 </span>
                 <Input
                   id="amount"
@@ -347,7 +346,7 @@ export function WalletPageContent({
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder={minAmount.toString()}
                   disabled={isLoading}
-                  className="pl-8 bg-muted border-border text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+                  className="pl-14 bg-muted border-border text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
                 />
               </div>
               <p className="text-sm text-muted-foreground">
@@ -373,8 +372,7 @@ export function WalletPageContent({
                       : 'border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5'
                   )}
                 >
-                  {currencySymbol}
-                  {quickAmount}
+                  {currencyLabel} {quickAmount}
                 </button>
               ))}
             </div>
