@@ -130,6 +130,7 @@ export interface NewBookingNotificationEmailData {
   pickupLocation: string;
   dropoffLocation: string;
   pickupDate: string;
+  pickupTime: string;
   totalAmount: number;
   currency: string;
   bookingDetailsUrl: string;

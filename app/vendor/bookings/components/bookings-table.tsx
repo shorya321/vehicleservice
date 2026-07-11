@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
+import { toBookingTz } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
 import { VendorBooking, completeBooking } from '../actions'
 import { AssignResourcesModal } from './assign-resources-modal'
@@ -168,10 +169,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="font-medium">
-                          {assignment.booking?.pickup_datetime ? format(new Date(assignment.booking.pickup_datetime), 'MMM dd, yyyy') : 'N/A'}
+                          {assignment.booking?.pickup_datetime ? format(toBookingTz(assignment.booking.pickup_datetime), 'MMM dd, yyyy') : 'N/A'}
                         </div>
                         <div className="text-muted-foreground">
-                          {assignment.booking?.pickup_datetime ? format(new Date(assignment.booking.pickup_datetime), 'HH:mm') : 'N/A'}
+                          {assignment.booking?.pickup_datetime ? format(toBookingTz(assignment.booking.pickup_datetime), 'HH:mm') : 'N/A'}
                         </div>
                       </div>
                     </div>

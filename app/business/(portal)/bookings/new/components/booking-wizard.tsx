@@ -33,6 +33,7 @@ import {
   getActiveAddons,
 } from '../actions';
 import { SelectedAddon } from './addon-selection';
+import { bookingLocalInputToUtc } from '@/lib/utils/timezone';
 
 interface Location {
   id: string;
@@ -184,7 +185,7 @@ export function BookingWizard({
       const submissionData = {
         ...apiData,
         pickup_datetime: apiData.pickup_datetime
-          ? new Date(apiData.pickup_datetime).toISOString()
+          ? bookingLocalInputToUtc(apiData.pickup_datetime).toISOString()
           : apiData.pickup_datetime,
       };
 

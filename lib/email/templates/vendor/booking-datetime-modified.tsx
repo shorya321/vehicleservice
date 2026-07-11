@@ -5,7 +5,8 @@ import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { toBookingTz } from '@/lib/utils/timezone';
 
 interface BookingDatetimeModifiedEmailProps {
   vendorName: string;
@@ -21,8 +22,7 @@ interface BookingDatetimeModifiedEmailProps {
 
 function formatDatetime(isoString: string): string {
   try {
-    const date = parseISO(isoString);
-    return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
+    return format(toBookingTz(isoString), "EEEE, MMMM d, yyyy 'at' h:mm a");
   } catch {
     return isoString;
   }

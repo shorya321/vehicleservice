@@ -23,6 +23,7 @@ import {
   sendBusinessBookingCancellationEmail,
   sendBusinessCustomerBookingCancelledEmail,
 } from '@/lib/email/services/business-emails';
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 
 /**
  * POST /api/business/bookings/[id]/cancel
@@ -127,6 +128,7 @@ export const POST = requireBusinessAuth(
           : cancelledBooking.dropoff_address || 'N/A';
 
         const pickupDateTime = new Date(cancelledBooking.pickup_datetime).toLocaleString('en-US', {
+          timeZone: BOOKING_TIMEZONE,
           dateStyle: 'full',
           timeStyle: 'short',
         });

@@ -10,6 +10,7 @@ import { StarRating } from '@/components/reviews/star-rating'
 import { ArrowLeft, CheckCircle, XCircle, MapPin, Calendar, Car, Star, MessageSquare } from 'lucide-react'
 import { getReviewById } from '../actions'
 import { format } from 'date-fns'
+import { toBookingTz } from '@/lib/utils/timezone'
 import { ApproveRejectButtons } from './components/approve-reject-buttons'
 import { AdminResponseSection } from './components/admin-response-section'
 
@@ -220,7 +221,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-luxury-gold" />
                       <span>
-                        {format(new Date(review.booking.pickup_datetime), 'MMMM d, yyyy')}
+                        {format(toBookingTz(review.booking.pickup_datetime), 'MMMM d, yyyy')}
                       </span>
                     </div>
                   </div>

@@ -50,6 +50,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
+import { toBookingTz } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
 import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus, deleteBooking } from '../actions'
 import { BulkActionsBar } from './bulk-actions-bar'
@@ -297,10 +298,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <div className="font-medium">
-                            {format(new Date(booking.pickup_datetime), 'MMM dd, yyyy')}
+                            {format(toBookingTz(booking.pickup_datetime), 'MMM dd, yyyy')}
                           </div>
                           <div className="text-muted-foreground">
-                            {format(new Date(booking.pickup_datetime), 'HH:mm')}
+                            {format(toBookingTz(booking.pickup_datetime), 'HH:mm')}
                           </div>
                         </div>
                       </div>

@@ -6,11 +6,14 @@ import { getBookingDetails, cancelBooking } from "@/app/account/booking-actions"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from '@/lib/currency/context'
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 
 const DT_LONG: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }
 const DT_SHORT: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
-const DT_DATE: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric", year: "numeric" }
-const DT_TIME: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" }
+// Pickup-time formats only — pinned to the booking timezone. DT_LONG/DT_SHORT
+// above format audit timestamps (created_at, paid_at, …) and stay viewer-local.
+const DT_DATE: Intl.DateTimeFormatOptions = { timeZone: BOOKING_TIMEZONE, weekday: "long", month: "long", day: "numeric", year: "numeric" }
+const DT_TIME: Intl.DateTimeFormatOptions = { timeZone: BOOKING_TIMEZONE, hour: "2-digit", minute: "2-digit" }
 
 function formatDT(dateStr: string, opts: Intl.DateTimeFormatOptions = DT_LONG) {
   return new Date(dateStr).toLocaleDateString("en-US", opts)

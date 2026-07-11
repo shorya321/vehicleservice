@@ -7,6 +7,7 @@ import { X, Star, MapPin, Calendar, Car, Loader2 } from "lucide-react"
 import { createReview, updateReview } from "@/app/account/review-actions"
 import { reviewSchema, type ReviewFormData } from "@/app/account/schemas"
 import { toast } from "sonner"
+import { BOOKING_TIMEZONE } from "@/lib/utils/timezone"
 
 interface ReviewFormModalProps {
   review?: {
@@ -157,7 +158,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-mono text-[var(--gold-text)]">#{booking.trip_number || booking.booking_number}</span>
                       <span className="text-xs text-[var(--text-muted)]">
-                        {new Date(booking.pickup_datetime).toLocaleDateString()}
+                        {new Date(booking.pickup_datetime).toLocaleDateString(undefined, { timeZone: BOOKING_TIMEZONE })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">

@@ -22,6 +22,7 @@ import { getExchangeRates } from '@/lib/currency/server';
 import { BUSINESS_BASE_CURRENCY, convertFromAed } from '@/lib/business/wallet-operations';
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 
 /**
  * POST /api/business/bookings
@@ -287,8 +288,19 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         : booking.dropoff_address || 'N/A';
 
       const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
+        timeZone: BOOKING_TIMEZONE,
         dateStyle: 'full',
         timeStyle: 'short',
+      });
+
+      // The admin template takes date and time as separate rows.
+      const pickupDate = new Date(booking.pickup_datetime).toLocaleDateString('en-US', {
+        timeZone: BOOKING_TIMEZONE,
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      });
+      const pickupTime = new Date(booking.pickup_datetime).toLocaleTimeString('en-US', {
+        timeZone: BOOKING_TIMEZONE,
+        hour: '2-digit', minute: '2-digit',
       });
 
       // Prices, the wallet and the Stripe charge are all denominated in AED.
@@ -375,7 +387,8 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           vehicleType: vehicle?.name || undefined,
           pickupLocation,
           dropoffLocation,
-          pickupDate: pickupDateTime,
+          pickupDate,
+          pickupTime,
           totalAmount: booking.total_price,
           currency,
           bookingDetailsUrl: `${getAppUrl()}/admin/bookings/${bookingId}`,

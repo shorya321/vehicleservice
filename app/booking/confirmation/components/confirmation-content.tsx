@@ -8,12 +8,13 @@ import { Copy, Check, Printer, Info, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 
 const formatDate = (d: Date) =>
-  new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+  new Intl.DateTimeFormat('en-GB', { timeZone: BOOKING_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d)
 
 const formatTime = (d: Date) =>
-  new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
+  new Intl.DateTimeFormat('en-GB', { timeZone: BOOKING_TIMEZONE, hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
 
 interface BookingPassenger {
   first_name: string

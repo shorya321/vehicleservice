@@ -14,6 +14,7 @@ import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-oper
 import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, ZoneInfo, AddonsByCategory } from '../actions';
 import { AddonSelection, SelectedAddon } from './addon-selection';
+import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/utils/timezone';
 
 interface Location {
   id: string;
@@ -103,7 +104,11 @@ export function ReviewStep({
             <div>
               <span className="text-muted-foreground">Pickup:</span>
               <p className="font-medium text-foreground">
-                {new Date(formData.pickup_datetime).toLocaleString()}
+                {formData.pickup_datetime
+                  ? bookingLocalInputToUtc(formData.pickup_datetime).toLocaleString(undefined, {
+                      timeZone: BOOKING_TIMEZONE,
+                    })
+                  : ''}
               </p>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Calendar, TrendingUp, Users, XCircle, Clock, CheckCircle, Activity } from 'lucide-react'
 import { BookingMetrics } from '@/app/admin/dashboard/actions'
 import { formatCurrency } from '@/lib/utils'
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 import Link from 'next/link'
 
 interface BookingWidgetProps {
@@ -148,6 +149,7 @@ export function BookingWidget({ data }: BookingWidgetProps) {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(booking.pickupDateTime).toLocaleString('en-US', {
+                        timeZone: BOOKING_TIMEZONE,
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',

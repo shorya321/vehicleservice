@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { signBookingPayload } from '@/lib/security/booking-hmac'
 import { phoneSchema } from '@/lib/validation/phone'
+import { bookingWallClockToUtc } from '@/lib/utils/timezone'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -299,8 +300,8 @@ const bookingSchema = z.object({
   toLocationId: z.string().uuid().optional(),
   pickupAddress: z.string().min(1),
   dropoffAddress: z.string().min(1),
-  pickupDate: z.string(),
-  pickupTime: z.string(),
+  pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid pickup date'),
+  pickupTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid pickup time'),
   passengerCount: z.number().min(1).max(50),
   luggageCount: z.number().min(0).max(50),
   firstName: z.string().min(1),
@@ -356,8 +357,8 @@ export async function createBooking(formData: BookingFormData) {
   // Generate booking number
   const bookingNumber = `BK${Date.now()}${Math.random().toString(36).substr(2, 5)}`.toUpperCase()
   
-  // Combine date and time for pickup datetime
-  const pickupDateTime = new Date(`${validatedData.pickupDate}T${validatedData.pickupTime}`)
+  // Combine date and time for pickup datetime (interpreted as Dubai wall-clock)
+  const pickupDateTime = bookingWallClockToUtc(validatedData.pickupDate, validatedData.pickupTime)
   
   // --- Server-side price verification ---
 

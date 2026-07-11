@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { formatCurrency } from '@/lib/business/wallet-operations';
+import { toBookingTz } from '@/lib/utils/timezone';
 
 interface BookingDetailsProps {
   booking: any;
@@ -243,10 +244,10 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                     Pickup Date & Time
                   </p>
                   <p className="text-lg font-semibold text-foreground mt-1">
-                    {format(new Date(booking.pickup_datetime), 'MMMM d, yyyy')}
+                    {format(toBookingTz(booking.pickup_datetime), 'MMMM d, yyyy')}
                   </p>
                   <p className="text-primary font-medium">
-                    {format(new Date(booking.pickup_datetime), 'h:mm a')}
+                    {format(toBookingTz(booking.pickup_datetime), 'h:mm a')}
                   </p>
                 </div>
               </div>

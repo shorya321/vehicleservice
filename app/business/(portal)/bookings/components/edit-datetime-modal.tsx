@@ -9,7 +9,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format, parse, parseISO } from 'date-fns';
+import { format, parse } from 'date-fns';
+import { toBookingTz, bookingUtcToLocalInput, bookingLocalInputToUtc } from '@/lib/utils/timezone';
 import { Clock, CalendarDays, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -69,12 +70,12 @@ export function EditDateTimeModal({
 
   // Format current datetime for display
   const currentDatetimeFormatted = format(
-    parseISO(currentDatetime),
+    toBookingTz(currentDatetime),
     'EEEE, MMMM d, yyyy h:mm a'
   );
 
   // Convert current datetime to local input format
-  const currentDatetimeLocal = format(parseISO(currentDatetime), "yyyy-MM-dd'T'HH:mm");
+  const currentDatetimeLocal = bookingUtcToLocalInput(currentDatetime);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -88,8 +89,8 @@ export function EditDateTimeModal({
     setIsSubmitting(true);
 
     try {
-      // Convert datetime-local to ISO format
-      const newDatetimeISO = new Date(values.pickup_datetime).toISOString();
+      // The datetime-local value is Dubai wall-clock, not browser-local.
+      const newDatetimeISO = bookingLocalInputToUtc(values.pickup_datetime).toISOString();
 
       const response = await fetch(`/api/business/bookings/${bookingId}/datetime`, {
         method: 'PATCH',

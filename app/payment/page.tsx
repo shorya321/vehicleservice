@@ -14,6 +14,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { HelpCircle } from 'lucide-react'
 import { BookingSummaryPrices } from './components/booking-summary-prices'
 import { format } from 'date-fns'
+import { toBookingTz } from '@/lib/utils/timezone'
 import {
   getEnabledCurrencies,
   getFeaturedCurrencies,
@@ -360,13 +361,13 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
                 <div>
                   <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Date</dt>
                   <dd className="numeric mt-1 text-[var(--text-primary)]">
-                    {format(new Date(booking.pickup_datetime), 'EEE · d MMM')}
+                    {format(toBookingTz(booking.pickup_datetime), 'EEE · d MMM')}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Time</dt>
                   <dd className="numeric mt-1 text-[var(--text-primary)]">
-                    {format(new Date(booking.pickup_datetime), 'HH:mm')}
+                    {format(toBookingTz(booking.pickup_datetime), 'HH:mm')}
                   </dd>
                 </div>
                 <div>

@@ -9,6 +9,7 @@ import { PublicLayout } from '@/components/layout/public-layout'
 import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from './actions'
 import { createClient } from '@/lib/supabase/server'
 import { toStoredPhone } from '@/lib/validation/phone'
+import { bookingToday } from '@/lib/utils/timezone'
 
 export const metadata: Metadata = {
   title: 'Checkout | Complete Your Booking',
@@ -152,7 +153,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   }
 
   // Parse date and time
-  const pickupDate = params.date || new Date().toISOString().split('T')[0]
+  const pickupDate = params.date || bookingToday()
   const pickupTime = params.time || '10:00'
   const passengers = parseInt(params.passengers || '1')
   const luggage = parseInt(params.luggage || '0')

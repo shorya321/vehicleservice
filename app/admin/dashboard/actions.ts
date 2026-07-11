@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { startOfDay, subDays, subWeeks, subMonths, startOfWeek, startOfMonth, format } from 'date-fns'
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 
 export type PeriodType = 'daily' | 'weekly' | 'monthly'
 
@@ -175,6 +176,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
+      timeZone: BOOKING_TIMEZONE,
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -192,6 +194,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
+      timeZone: BOOKING_TIMEZONE,
       month: 'short',
       day: 'numeric',
       hour: '2-digit',

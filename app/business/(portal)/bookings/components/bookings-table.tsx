@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCurrency } from '@/lib/business/wallet-operations';
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 
 interface Booking {
   id: string;
@@ -107,9 +108,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               <TableCell>{booking.vehicle_types.name}</TableCell>
               <TableCell>
                 <div className="text-sm">
-                  <p>{new Date(booking.pickup_datetime).toLocaleDateString('en-US')}</p>
+                  <p>{new Date(booking.pickup_datetime).toLocaleDateString('en-US', { timeZone: BOOKING_TIMEZONE })}</p>
                   <p className="text-muted-foreground">
                     {new Date(booking.pickup_datetime).toLocaleTimeString('en-US', {
+                      timeZone: BOOKING_TIMEZONE,
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: true,

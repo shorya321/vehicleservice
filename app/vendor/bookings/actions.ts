@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { AvailabilityService } from '@/lib/availability/service'
 import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
 import { sendDriverBookingAssignmentEmail } from '@/lib/email/services/driver-emails'
+import { toBookingTz } from '@/lib/utils/timezone'
 
 export interface VendorBooking {
   id: string
@@ -536,7 +537,7 @@ export async function acceptAndAssignResources(
         .single()
 
       const { format } = await import('date-fns')
-      const pickupDt = new Date(booking.pickupDatetime)
+      const pickupDt = toBookingTz(booking.pickupDatetime)
 
       await sendDriverBookingAssignmentEmail({
         driverName: `${driverCheck.first_name} ${driverCheck.last_name}`,

@@ -49,6 +49,7 @@ export async function sendNewBookingNotificationEmail(
       pickupLocation: data.pickupLocation,
       dropoffLocation: data.dropoffLocation,
       pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
       totalAmount: data.totalAmount,
       currency: data.currency,
       bookingDetailsUrl: data.bookingDetailsUrl,

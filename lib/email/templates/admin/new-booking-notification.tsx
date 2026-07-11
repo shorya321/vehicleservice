@@ -15,6 +15,7 @@ interface NewBookingNotificationEmailProps {
   pickupLocation: string;
   dropoffLocation: string;
   pickupDate: string;
+  pickupTime: string;
   totalAmount: number;
   currency: string;
   bookingDetailsUrl: string;
@@ -30,6 +31,7 @@ export const NewBookingNotificationEmail = ({
   pickupLocation,
   dropoffLocation,
   pickupDate,
+  pickupTime,
   totalAmount,
   currency,
   bookingDetailsUrl,
@@ -80,6 +82,9 @@ export const NewBookingNotificationEmail = ({
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
           <strong>Pickup Date:</strong> {pickupDate}
+        </Text>
+        <Text style={emailStyles.detailRow}>
+          <strong>Pickup Time:</strong> {pickupTime}
         </Text>
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.totalRow}>

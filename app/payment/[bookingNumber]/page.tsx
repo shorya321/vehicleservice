@@ -14,6 +14,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { Calendar, Clock, Users, Luggage, HelpCircle } from 'lucide-react'
 import { BookingSummaryPrices } from '../components/booking-summary-prices'
 import { format } from 'date-fns'
+import { toBookingTz } from '@/lib/utils/timezone'
 import {
   getEnabledCurrencies,
   getFeaturedCurrencies,
@@ -330,11 +331,11 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     <div className="flex flex-wrap gap-4 pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
                       <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
                         <Calendar className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                        {format(new Date(booking.pickup_datetime), 'MMM dd, yyyy')}
+                        {format(toBookingTz(booking.pickup_datetime), 'MMM dd, yyyy')}
                       </span>
                       <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
                         <Clock className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                        {format(new Date(booking.pickup_datetime), 'HH:mm')}
+                        {format(toBookingTz(booking.pickup_datetime), 'HH:mm')}
                       </span>
                       <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
                         <Users className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />

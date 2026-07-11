@@ -39,6 +39,7 @@ import {
   History
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { toBookingTz } from '@/lib/utils/timezone'
 import { formatCurrency } from '@/lib/utils'
 import { updateBookingStatus, updatePaymentStatus } from '../../actions'
 import { AssignVendorModal } from '../../components/assign-vendor-modal'
@@ -159,10 +160,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Pickup Date & Time</p>
                   <p className="font-medium">
-                    {format(new Date(booking.pickup_datetime), 'PPP')}
+                    {format(toBookingTz(booking.pickup_datetime), 'PPP')}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(booking.pickup_datetime), 'p')}
+                    {format(toBookingTz(booking.pickup_datetime), 'p')}
                   </p>
                 </div>
               </div>

@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 
 interface Booking {
   id: string;
@@ -105,11 +106,13 @@ export function BookingCard({ booking, className, index = 0 }: BookingCardProps)
   const prefersReducedMotion = useReducedMotion();
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDate = pickupDate.toLocaleDateString('en-US', {
+    timeZone: BOOKING_TIMEZONE,
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   });
   const formattedTime = pickupDate.toLocaleTimeString('en-US', {
+    timeZone: BOOKING_TIMEZONE,
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
