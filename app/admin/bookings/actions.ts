@@ -634,6 +634,31 @@ export async function updatePaymentStatus(
   return { success: true }
 }
 
+const TEST_BOOKING_PATTERN = 'TEST-%'
+
+type CountResult = { count: number | null; error: { message: string } | null }
+type RevenueResult = { data: { total_price: number | string | null }[] | null; error: { message: string } | null }
+
+function sumCounts(label: string, customer: CountResult, business: CountResult): number {
+  if (customer.error) {
+    console.error(`Error counting ${label} customer bookings:`, customer.error)
+  }
+  if (business.error) {
+    console.error(`Error counting ${label} business bookings:`, business.error)
+  }
+
+  return (customer.count ?? 0) + (business.count ?? 0)
+}
+
+function sumRevenue(result: RevenueResult): number {
+  if (result.error) {
+    console.error('Error fetching revenue data:', result.error)
+    return 0
+  }
+
+  return (result.data ?? []).reduce((sum, row) => sum + (Number(row.total_price) || 0), 0)
+}
+
 export async function getBookingStats() {
   const adminClient = createAdminClient()
 
@@ -642,85 +667,75 @@ export async function getBookingStats() {
   const todayEnd = new Date(todayStart)
   todayEnd.setDate(todayEnd.getDate() + 1)
 
-  // Add timestamp to prevent any caching
-  const timestamp = Date.now()
+  // Stats cover both booking sources, matching the unified list query.
+  const countCustomer = () =>
+    adminClient
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .not('booking_number', 'like', TEST_BOOKING_PATTERN)
 
-  // Get total bookings - excluding test bookings
-  const { count: totalBookings, error: totalError } = await adminClient
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .not('booking_number', 'like', 'TEST-%')
+  const countBusiness = () =>
+    adminClient
+      .from('business_bookings')
+      .select('*', { count: 'exact', head: true })
+      .not('booking_number', 'like', TEST_BOOKING_PATTERN)
 
-  if (totalError) {
-    console.error('Error fetching total bookings:', totalError)
-  }
+  const [
+    customerTotal,
+    businessTotal,
+    customerToday,
+    businessToday,
+    customerUpcoming,
+    businessUpcoming,
+    customerCompleted,
+    businessCompleted,
+    customerCancelled,
+    businessCancelled,
+    customerRevenue,
+    businessRevenue,
+  ] = await Promise.all([
+    countCustomer(),
+    countBusiness(),
 
-  // Get today's bookings
-  const { count: todayBookings, error: todayError } = await adminClient
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .not('booking_number', 'like', 'TEST-%')
-    .gte('created_at', todayStart.toISOString())
-    .lt('created_at', todayEnd.toISOString())
+    countCustomer()
+      .gte('created_at', todayStart.toISOString())
+      .lt('created_at', todayEnd.toISOString()),
+    countBusiness()
+      .gte('created_at', todayStart.toISOString())
+      .lt('created_at', todayEnd.toISOString()),
 
-  if (todayError) {
-    console.error('Error fetching today bookings:', todayError)
-  }
+    countCustomer()
+      .eq('booking_status', 'confirmed')
+      .gte('pickup_datetime', now.toISOString()),
+    countBusiness()
+      .eq('booking_status', 'confirmed')
+      .gte('pickup_datetime', now.toISOString()),
 
-  // Get upcoming bookings
-  const { count: upcomingBookings, error: upcomingError } = await adminClient
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .not('booking_number', 'like', 'TEST-%')
-    .eq('booking_status', 'confirmed')
-    .gte('pickup_datetime', now.toISOString())
+    countCustomer().eq('booking_status', 'completed'),
+    countBusiness().eq('booking_status', 'completed'),
 
-  if (upcomingError) {
-    console.error('Error fetching upcoming bookings:', upcomingError)
-  }
+    countCustomer().eq('booking_status', 'cancelled'),
+    countBusiness().eq('booking_status', 'cancelled'),
 
-  // Get completed bookings
-  const { count: completedBookings, error: completedError } = await adminClient
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .not('booking_number', 'like', 'TEST-%')
-    .eq('booking_status', 'completed')
-
-  if (completedError) {
-    console.error('Error fetching completed bookings:', completedError)
-  }
-
-  // Get cancelled bookings
-  const { count: cancelledBookings, error: cancelledError } = await adminClient
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .not('booking_number', 'like', 'TEST-%')
-    .eq('booking_status', 'cancelled')
-
-  if (cancelledError) {
-    console.error('Error fetching cancelled bookings:', cancelledError)
-  }
-
-  // Calculate total revenue from completed payments
-  const { data: revenueData, error: revenueError } = await adminClient
-    .from('bookings')
-    .select('total_price')
-    .not('booking_number', 'like', 'TEST-%')
-    .eq('payment_status', 'completed')
-
-  if (revenueError) {
-    console.error('Error fetching revenue data:', revenueError)
-  }
-
-  const totalRevenue = revenueData?.reduce((sum, booking) => sum + (booking.total_price || 0), 0) || 0
+    adminClient
+      .from('bookings')
+      .select('total_price')
+      .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+      .eq('payment_status', 'completed'),
+    adminClient
+      .from('business_bookings')
+      .select('total_price')
+      .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+      .eq('payment_status', 'completed'),
+  ])
 
   return {
-    total: totalBookings || 0,
-    today: todayBookings || 0,
-    upcoming: upcomingBookings || 0,
-    completed: completedBookings || 0,
-    cancelled: cancelledBookings || 0,
-    revenue: totalRevenue
+    total: sumCounts('total', customerTotal, businessTotal),
+    today: sumCounts('today', customerToday, businessToday),
+    upcoming: sumCounts('upcoming', customerUpcoming, businessUpcoming),
+    completed: sumCounts('completed', customerCompleted, businessCompleted),
+    cancelled: sumCounts('cancelled', customerCancelled, businessCancelled),
+    revenue: sumRevenue(customerRevenue) + sumRevenue(businessRevenue),
   }
 }
 
