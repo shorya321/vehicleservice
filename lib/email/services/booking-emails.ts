@@ -1,14 +1,17 @@
 'use server';
 
 import { jsx } from 'react/jsx-runtime';
-import { getResendClient, getEmailConfig } from '../config';
+import { getResendClient, getEmailConfig, getAppUrl } from '../config';
+import { sendEmail } from '../utils/send-email';
 import {
   type EmailResult,
   type BookingConfirmationEmailData,
   type BookingStatusUpdateEmailData,
+  type CustomerDriverAssignedEmailData,
 } from '../types';
 import BookingConfirmationEmail from '../templates/booking/confirmation';
 import BookingStatusUpdateEmail from '../templates/booking/status-update';
+import BookingDriverAssignedEmail from '../templates/booking/driver-assigned';
 
 /**
  * Send booking confirmation email to customer
@@ -118,4 +121,27 @@ export async function sendBookingStatusUpdateEmail(
       error: 'An unexpected error occurred while sending the email',
     };
   }
+}
+
+/**
+ * Send driver contact details to the customer once a vendor assigns a driver
+ */
+export async function sendBookingDriverAssignedEmail(
+  data: CustomerDriverAssignedEmailData
+): Promise<EmailResult> {
+  return sendEmail({
+    to: data.customerEmail,
+    subject: `Your Driver Has Been Assigned - #${data.tripNumber || data.bookingReference}`,
+    template: BookingDriverAssignedEmail,
+    templateProps: {
+      customerName: data.customerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      driverName: data.driverName,
+      driverPhone: data.driverPhone,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      accountUrl: `${getAppUrl()}/account`,
+    },
+  });
 }

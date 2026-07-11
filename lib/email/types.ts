@@ -256,3 +256,36 @@ export interface BusinessBookingStatusUpdateEmailData {
   newStatus: string;
   statusMessage?: string;
 }
+
+/**
+ * Driver contact details shared by every driver-assigned notification.
+ * Dates are pre-formatted in the booking timezone by the caller.
+ */
+export interface DriverAssignedTripDetails {
+  bookingReference: string;
+  tripNumber?: string;
+  driverName: string;
+  driverPhone: string | null;
+  pickupDate: string;
+  pickupTime: string;
+}
+
+/** Driver-assigned email for a retail customer. */
+export interface CustomerDriverAssignedEmailData extends DriverAssignedTripDetails {
+  customerName: string;
+  customerEmail: string;
+}
+
+/** Driver-assigned email for the passenger of a business booking. */
+export interface BusinessCustomerDriverAssignedEmailData extends DriverAssignedTripDetails {
+  customerName: string;
+  customerEmail: string;
+}
+
+/** Driver-assigned email for the business account that made the booking. */
+export interface BusinessDriverAssignedEmailData extends DriverAssignedTripDetails {
+  businessName: string;
+  businessEmail: string;
+  passengerName: string;
+  bookingId: string;
+}

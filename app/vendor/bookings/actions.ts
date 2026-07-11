@@ -6,6 +6,11 @@ import { revalidatePath } from 'next/cache'
 import { AvailabilityService } from '@/lib/availability/service'
 import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
 import { sendDriverBookingAssignmentEmail } from '@/lib/email/services/driver-emails'
+import { sendBookingDriverAssignedEmail } from '@/lib/email/services/booking-emails'
+import {
+  sendBusinessCustomerDriverAssignedEmail,
+  sendBusinessDriverAssignedEmail,
+} from '@/lib/email/services/business-emails'
 import { toBookingTz } from '@/lib/utils/timezone'
 
 export interface VendorBooking {
@@ -395,7 +400,7 @@ export async function acceptAndAssignResources(
   // Verify driver belongs to vendor
   const { data: driverCheck, error: driverError } = await supabase
     .from('vendor_drivers')
-    .select('id, vendor_id, first_name, last_name, email')
+    .select('id, vendor_id, first_name, last_name, email, phone')
     .eq('id', driverId)
     .single()
 
@@ -558,6 +563,64 @@ export async function acceptAndAssignResources(
     }
   } catch (driverEmailError) {
     console.error('Failed to send driver assignment email (non-critical):', driverEmailError)
+  }
+
+  // Send driver contact details to the customer (non-blocking).
+  // Business bookings notify both the passenger and the business account.
+  try {
+    const { format } = await import('date-fns')
+    const pickupDt = toBookingTz(booking.pickupDatetime)
+
+    const tripDetails = {
+      bookingReference: booking.bookingNumber,
+      tripNumber: booking.tripNumber || undefined,
+      driverName: `${driverCheck.first_name} ${driverCheck.last_name}`,
+      driverPhone: driverCheck.phone,
+      pickupDate: format(pickupDt, 'MMMM d, yyyy'),
+      pickupTime: format(pickupDt, 'h:mm a'),
+    }
+
+    if (booking.bookingType === 'customer') {
+      if (booking.customerEmail) {
+        await sendBookingDriverAssignedEmail({
+          ...tripDetails,
+          customerName: booking.customerName,
+          customerEmail: booking.customerEmail,
+        })
+      }
+    } else {
+      if (booking.customerEmail) {
+        await sendBusinessCustomerDriverAssignedEmail({
+          ...tripDetails,
+          customerName: booking.customerName,
+          customerEmail: booking.customerEmail,
+        })
+      }
+
+      const { data: businessBooking } = await adminClient
+        .from('business_bookings')
+        .select(
+          'business_account:business_accounts!business_bookings_business_account_id_fkey(business_name, business_email)'
+        )
+        .eq('id', booking.id)
+        .single()
+
+      const businessAccount = (businessBooking as any)?.business_account
+      if (businessAccount?.business_email) {
+        await sendBusinessDriverAssignedEmail({
+          ...tripDetails,
+          businessName: businessAccount.business_name,
+          businessEmail: businessAccount.business_email,
+          passengerName: booking.customerName,
+          bookingId: booking.id,
+        })
+      }
+    }
+  } catch (customerEmailError) {
+    console.error(
+      'Failed to send customer driver-assignment email (non-critical):',
+      customerEmailError
+    )
   }
 
   // Revalidate paths - don't let cache revalidation failures block the response

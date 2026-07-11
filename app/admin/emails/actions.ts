@@ -18,6 +18,9 @@ import VendorApplicationReceivedEmail from '@/lib/email/templates/vendor/applica
 import VendorApplicationApprovedEmail from '@/lib/email/templates/vendor/application-approved';
 import VendorApplicationRejectedEmail from '@/lib/email/templates/vendor/application-rejected';
 import BookingAssignedEmail from '@/lib/email/templates/vendor/booking-assigned';
+import BookingDriverAssignedEmail from '@/lib/email/templates/booking/driver-assigned';
+import BusinessCustomerDriverAssignedEmail from '@/lib/email/templates/business/customer-driver-assigned';
+import BusinessBookingDriverAssignedEmail from '@/lib/email/templates/business/booking-driver-assigned';
 
 const templateComponents = {
   welcome: WelcomeEmail,
@@ -29,6 +32,9 @@ const templateComponents = {
   vendorApproved: VendorApplicationApprovedEmail,
   vendorRejected: VendorApplicationRejectedEmail,
   vendorBookingAssigned: BookingAssignedEmail,
+  driverAssigned: BookingDriverAssignedEmail,
+  businessCustomerDriverAssigned: BusinessCustomerDriverAssignedEmail,
+  businessDriverAssigned: BusinessBookingDriverAssignedEmail,
 };
 
 interface SendTestEmailParams {

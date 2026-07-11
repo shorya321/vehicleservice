@@ -9,7 +9,10 @@ export type EmailTemplateType =
   | 'vendorReceived'
   | 'vendorApproved'
   | 'vendorRejected'
-  | 'vendorBookingAssigned';
+  | 'vendorBookingAssigned'
+  | 'driverAssigned'
+  | 'businessCustomerDriverAssigned'
+  | 'businessDriverAssigned';
 
 export interface EmailTemplate {
   id: EmailTemplateType;
@@ -124,6 +127,56 @@ export const emailTemplates: EmailTemplate[] = [
       'bookingUrl',
     ],
   },
+  {
+    id: 'driverAssigned',
+    name: 'Driver Assigned (Customer)',
+    category: 'booking',
+    description: 'Sent to the customer when a vendor assigns a driver to their booking',
+    subject: 'Your Driver Has Been Assigned - #{bookingReference}',
+    variables: [
+      'customerName',
+      'bookingReference',
+      'driverName',
+      'driverPhone',
+      'pickupDate',
+      'pickupTime',
+      'accountUrl',
+    ],
+  },
+  {
+    id: 'businessCustomerDriverAssigned',
+    name: 'Driver Assigned (Business Passenger)',
+    category: 'booking',
+    description:
+      'Sent to the passenger of a business booking when a vendor assigns a driver',
+    subject: 'Your Driver Has Been Assigned - #{bookingReference}',
+    variables: [
+      'customerName',
+      'bookingReference',
+      'driverName',
+      'driverPhone',
+      'pickupDate',
+      'pickupTime',
+    ],
+  },
+  {
+    id: 'businessDriverAssigned',
+    name: 'Driver Assigned (Business Account)',
+    category: 'booking',
+    description:
+      'Sent to the business account when a vendor assigns a driver to one of their bookings',
+    subject: 'Driver Assigned - #{bookingReference}',
+    variables: [
+      'businessName',
+      'passengerName',
+      'bookingReference',
+      'driverName',
+      'driverPhone',
+      'pickupDate',
+      'pickupTime',
+      'bookingUrl',
+    ],
+  },
 ];
 
 export const emailPreviewData: Record<EmailTemplateType, any> = {
@@ -194,6 +247,36 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     pickupDate: 'March 15, 2024',
     pickupTime: '2:30 PM',
     bookingUrl: `${getAppUrl()}/vendor/bookings`,
+  },
+  driverAssigned: {
+    customerName: 'Sarah Johnson',
+    bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062604',
+    driverName: 'Rajesh Kumar',
+    driverPhone: '+971 50 123 4567',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    accountUrl: `${getAppUrl()}/account`,
+  },
+  businessCustomerDriverAssigned: {
+    customerName: 'Sarah Johnson',
+    bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062605',
+    driverName: 'Rajesh Kumar',
+    driverPhone: '+971 50 123 4567',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+  },
+  businessDriverAssigned: {
+    businessName: 'Acme Hotel Group',
+    passengerName: 'Sarah Johnson',
+    bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062606',
+    driverName: 'Rajesh Kumar',
+    driverPhone: '+971 50 123 4567',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    bookingUrl: `${getAppUrl()}/business/bookings/sample-booking-id`,
   },
 };
 

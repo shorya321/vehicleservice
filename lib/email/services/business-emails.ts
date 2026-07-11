@@ -7,6 +7,8 @@ import type {
   BusinessCustomerDatetimeChangedEmailData,
   BusinessCustomerBookingCancelledEmailData,
   BusinessBookingStatusUpdateEmailData,
+  BusinessCustomerDriverAssignedEmailData,
+  BusinessDriverAssignedEmailData,
 } from '../types';
 import BusinessAccountApprovedEmail from '../templates/business/account-approved';
 import BusinessAccountRejectedEmail from '../templates/business/account-rejected';
@@ -17,6 +19,8 @@ import CustomerBookingConfirmationEmail from '../templates/business/customer-boo
 import CustomerDatetimeChangedEmail from '../templates/business/customer-datetime-changed';
 import CustomerBookingCancelledEmail from '../templates/business/customer-booking-cancelled';
 import BusinessBookingStatusUpdateEmail from '../templates/business/booking-status-update';
+import CustomerDriverAssignedEmail from '../templates/business/customer-driver-assigned';
+import BusinessBookingDriverAssignedEmail from '../templates/business/booking-driver-assigned';
 import NewBusinessRegistrationAdminNotificationEmail from '../templates/business/new-registration-admin-notification';
 import { getAdminEmail, getAppUrl } from '../config';
 
@@ -300,6 +304,52 @@ export async function sendBusinessCustomerBookingCancelledEmail(
       dropoffLocation: data.dropoffLocation,
       pickupDateTime: data.pickupDateTime,
       cancellationReason: data.cancellationReason,
+    },
+  });
+}
+
+/**
+ * Send driver contact details to the passenger of a business booking
+ */
+export async function sendBusinessCustomerDriverAssignedEmail(
+  data: BusinessCustomerDriverAssignedEmailData
+): Promise<EmailResult> {
+  return sendEmail({
+    to: data.customerEmail,
+    subject: `Your Driver Has Been Assigned - #${data.tripNumber || data.bookingReference}`,
+    template: CustomerDriverAssignedEmail,
+    templateProps: {
+      customerName: data.customerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      driverName: data.driverName,
+      driverPhone: data.driverPhone,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+    },
+  });
+}
+
+/**
+ * Send driver contact details to the business account that made the booking
+ */
+export async function sendBusinessDriverAssignedEmail(
+  data: BusinessDriverAssignedEmailData
+): Promise<EmailResult> {
+  return sendEmail({
+    to: data.businessEmail,
+    subject: `Driver Assigned - #${data.tripNumber || data.bookingReference}`,
+    template: BusinessBookingDriverAssignedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      passengerName: data.passengerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      driverName: data.driverName,
+      driverPhone: data.driverPhone,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
     },
   });
 }
