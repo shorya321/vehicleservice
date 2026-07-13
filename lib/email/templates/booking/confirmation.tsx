@@ -1,6 +1,7 @@
 import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
+import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
 import { emailStyles } from '../../styles/constants';
 
@@ -27,6 +28,7 @@ interface BookingConfirmationEmailProps {
   amenitiesPrice?: number;
   extras?: Array<{ label: string; quantity: number; price: number }>;
   customerNotes?: string;
+  invoiceUrl?: string;
 }
 
 export const BookingConfirmationEmail = ({
@@ -52,6 +54,7 @@ export const BookingConfirmationEmail = ({
   amenitiesPrice: _amenitiesPrice,
   extras,
   customerNotes,
+  invoiceUrl,
 }: BookingConfirmationEmailProps) => {
   const hasBookingSummary = passengerCount != null && basePrice != null;
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
@@ -179,6 +182,15 @@ export const BookingConfirmationEmail = ({
           </>
         )}
       </DetailsSection>
+
+      {invoiceUrl && (
+        <>
+          <Button href={invoiceUrl}>Download Invoice (PDF)</Button>
+          <Text style={{ ...emailStyles.text, fontSize: '13px', color: '#666666', textAlign: 'center' as const }}>
+            Keep this invoice for your records.
+          </Text>
+        </>
+      )}
 
       <Text style={emailStyles.text}>
         We&apos;ll send you updates about your booking, including vendor assignment and any changes to

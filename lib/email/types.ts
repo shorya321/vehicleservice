@@ -50,6 +50,7 @@ export interface BookingConfirmationEmailData {
   amenitiesPrice?: number;
   extras?: Array<{ label: string; quantity: number; price: number }>;
   customerNotes?: string;
+  invoiceUrl?: string;
 }
 
 export interface BookingStatusUpdateEmailData {

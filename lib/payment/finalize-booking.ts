@@ -289,6 +289,7 @@ async function sendBookingEmails(
         amenitiesPrice: emailAmenitiesPrice,
         extras: convertedExtras,
         customerNotes: updatedBooking.customer_notes ?? undefined,
+        invoiceUrl: `${getAppUrl()}/api/booking/${updatedBooking.booking_number}/invoice?currency=${emailCurrency}`,
       }).catch((err) => console.error('Failed to send customer confirmation email:', err))
     }
 

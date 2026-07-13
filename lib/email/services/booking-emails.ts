@@ -51,6 +51,7 @@ export async function sendBookingConfirmationEmail(
         amenitiesPrice: data.amenitiesPrice,
         extras: data.extras,
         customerNotes: data.customerNotes,
+        invoiceUrl: data.invoiceUrl,
       }),
     });
 

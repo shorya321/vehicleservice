@@ -9,6 +9,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { InvoiceDownloadButton } from './invoice-download-button'
 
 const formatDate = (d: Date) =>
   new Intl.DateTimeFormat('en-GB', { timeZone: BOOKING_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d)
@@ -45,6 +46,7 @@ interface Booking {
   booking_number: string
   trip_number?: string | null
   booking_status: string
+  payment_status?: string | null
   pickup_address: string
   dropoff_address: string
   pickup_datetime: string | null
@@ -289,6 +291,7 @@ export function ConfirmationContent({
   const skip = !!reduceMotion
   const formatUserPrice = (amount: number) => formatPrice(amount ?? 0, currentCurrency, exchangeRates)
   const isConverted = currentCurrency !== 'AED'
+  const isPaid = booking.payment_status === 'completed'
   const pickupDate = booking.pickup_datetime ? new Date(booking.pickup_datetime) : null
   const statusConfig = getStatusConfig(booking.booking_status)
   const copyBookingNumber = async () => {
@@ -406,6 +409,13 @@ export function ConfirmationContent({
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
               {copied ? 'Copied' : 'Copy reference'}
             </button>
+            {isPaid && (
+              <InvoiceDownloadButton
+                bookingNumber={booking.booking_number}
+                invoiceNumber={booking.trip_number || booking.booking_number}
+                className={actionBtnClass}
+              />
+            )}
 <button
               onClick={() => window.print()}
               className={`print:hidden ${actionBtnClass}`}
