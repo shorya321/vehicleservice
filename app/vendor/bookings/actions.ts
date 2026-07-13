@@ -550,8 +550,6 @@ export async function acceptAndAssignResources(
         bookingReference: booking.bookingNumber,
         tripNumber: booking.tripNumber || undefined,
         customerName: booking.customerName,
-        customerEmail: booking.customerEmail,
-        customerPhone: booking.customerPhone,
         vehicleCategory: (vehicleTypeData as any)?.vehicle_categories?.name || 'Vehicle',
         vehicleType: vehicleTypeData?.name || 'Vehicle',
         pickupLocation: booking.pickupAddress || 'TBD',
