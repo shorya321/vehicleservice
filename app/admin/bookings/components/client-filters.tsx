@@ -28,8 +28,11 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete('status')
     }
 
-    // 'upcoming' is the default, so omit it — a clean URL means upcoming
-    if (filters.timeframe && filters.timeframe !== 'upcoming') {
+    // 'upcoming' is the default, so omit it — a clean URL means upcoming.
+    // With a date range the default flips to 'all', so 'upcoming' must be spelled
+    // out there or the server can't tell it apart from "not chosen".
+    const hasDateRange = Boolean(filters.dateFrom || filters.dateTo)
+    if (filters.timeframe && (filters.timeframe !== 'upcoming' || hasDateRange)) {
       params.set('timeframe', filters.timeframe)
     } else {
       params.delete('timeframe')
@@ -51,12 +54,6 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.set('dateTo', filters.dateTo)
     } else {
       params.delete('dateTo')
-    }
-
-    if (filters.vehicleTypeId) {
-      params.set('vehicleTypeId', filters.vehicleTypeId)
-    } else {
-      params.delete('vehicleTypeId')
     }
 
     if (filters.customerId) {

@@ -23,7 +23,6 @@ interface BookingsPageProps {
     timeframe?: string
     paymentStatus?: string
     bookingType?: string
-    vehicleTypeId?: string
     dateFrom?: string
     dateTo?: string
     customerId?: string
@@ -34,15 +33,19 @@ interface BookingsPageProps {
 export default async function BookingsPage({ searchParams }: BookingsPageProps) {
   const params = await searchParams
 
+  // Defaults to upcoming: a bare /admin/bookings lands on future trips.
+  // An explicit date range replaces that default — otherwise a past range would
+  // AND with "pickup >= now()" and always come back empty.
+  const hasDateRange = Boolean(params.dateFrom || params.dateTo)
+  const timeframe = (params.timeframe as BookingFilters['timeframe'])
+    || (hasDateRange ? 'all' : 'upcoming')
+
   const filters: BookingFilters = {
     search: params.search,
     status: (params.status as BookingFilters['status']) || 'all',
-    // Defaults to upcoming: a bare /admin/bookings lands on future trips.
-    // ?timeframe=all is the explicit opt-out.
-    timeframe: (params.timeframe as BookingFilters['timeframe']) || 'upcoming',
+    timeframe,
     paymentStatus: (params.paymentStatus as BookingFilters['paymentStatus']) || 'all',
     bookingType: (params.bookingType as BookingFilters['bookingType']) || 'all',
-    vehicleTypeId: params.vehicleTypeId,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
     customerId: params.customerId,

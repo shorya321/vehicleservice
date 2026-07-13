@@ -19,7 +19,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Label } from '@/components/ui/label'
-import { Filter, X, ChevronDown, CalendarIcon, CreditCard, Car, User, Search } from 'lucide-react'
+import { Filter, X, ChevronDown, CalendarIcon, CreditCard, User, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { DateRange } from 'react-day-picker'
 import { cn } from '@/lib/utils'
@@ -28,6 +28,15 @@ import { BookingFilters } from '../actions'
 interface BookingFiltersProps {
   filters: BookingFilters
   onFiltersChange: (filters: BookingFilters) => void
+}
+
+/** The calendar speaks in local Date objects; the filters speak in `yyyy-MM-dd` Dubai days. */
+function parseFilterDay(day: string | undefined): Date | undefined {
+  if (!day) return undefined
+
+  // Legacy links may still carry a full ISO instant — keep only the day part.
+  const parsed = new Date(`${day.slice(0, 10)}T00:00:00`)
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed
 }
 
 export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFiltersProps) {
@@ -58,11 +67,10 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     }
   }, [debouncedSearch, filters, onFiltersChange])
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
-    to: filters.dateTo ? new Date(filters.dateTo) : undefined,
+    from: parseFilterDay(filters.dateFrom),
+    to: parseFilterDay(filters.dateTo),
   })
   const [paymentStatus, setPaymentStatus] = useState<string>(filters.paymentStatus || 'all')
-  const [vehicleTypeId, setVehicleTypeId] = useState<string>(filters.vehicleTypeId || '')
   const [customerId, setCustomerId] = useState<string>(filters.customerId || '')
 
   const handleStatusChange = (status: string) => {
@@ -93,7 +101,6 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     setSearchValue('')
     setDateRange(undefined)
     setPaymentStatus('all')
-    setVehicleTypeId('')
     setCustomerId('')
     onFiltersChange({
       page: 1,
@@ -107,37 +114,33 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
 
   const handleApplyAdvancedFilters = () => {
     const newFilters: BookingFilters = { ...filters, page: 1 }
-    
+
+    // Send plain Dubai calendar days — an ISO instant here would be the admin's
+    // local midnight, which shifts the day boundaries per browser timezone.
     if (dateRange?.from) {
-      newFilters.dateFrom = dateRange.from.toISOString()
+      newFilters.dateFrom = format(dateRange.from, 'yyyy-MM-dd')
+      // A single click leaves `to` empty; that means one day, not open-ended.
+      newFilters.dateTo = format(dateRange.to ?? dateRange.from, 'yyyy-MM-dd')
+      // An explicit range wins over the 'upcoming' default, which would
+      // otherwise silently AND itself in and empty out any past range.
+      newFilters.timeframe = 'all'
     } else {
       delete newFilters.dateFrom
-    }
-    
-    if (dateRange?.to) {
-      newFilters.dateTo = dateRange.to.toISOString()
-    } else {
       delete newFilters.dateTo
     }
-    
+
     if (paymentStatus && paymentStatus !== 'all') {
       newFilters.paymentStatus = paymentStatus as BookingFilters['paymentStatus']
     } else {
       newFilters.paymentStatus = 'all'
     }
-    
-    if (vehicleTypeId) {
-      newFilters.vehicleTypeId = vehicleTypeId
-    } else {
-      delete newFilters.vehicleTypeId
-    }
-    
+
     if (customerId) {
       newFilters.customerId = customerId
     } else {
       delete newFilters.customerId
     }
-    
+
     onFiltersChange(newFilters)
     setAdvancedOpen(false)
   }
@@ -151,7 +154,6 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     filters.paymentStatus && filters.paymentStatus !== 'all' ? filters.paymentStatus : null,
     filters.dateFrom,
     filters.dateTo,
-    filters.vehicleTypeId,
     filters.customerId,
   ].filter(Boolean).length
 
@@ -322,7 +324,6 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
                   onClick={() => {
                     setDateRange(undefined)
                     setPaymentStatus('all')
-                    setVehicleTypeId('')
                     setCustomerId('')
                   }}
                 >

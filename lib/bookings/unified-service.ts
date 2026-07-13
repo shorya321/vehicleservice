@@ -15,8 +15,28 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Database } from '@/lib/supabase/types';
+import { bookingWallClockToUtc, toBookingTz } from '@/lib/utils/timezone';
+import { addDays, format } from 'date-fns';
 
 export type BookingType = 'customer' | 'business';
+
+const BOOKING_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Normalises a filter value to a `yyyy-MM-dd` Dubai calendar day.
+ *
+ * Accepts the `yyyy-MM-dd` the admin filters now send, and still understands the
+ * full ISO instants older bookmarked URLs carry (resolved in Dubai, not UTC).
+ * Returns null for anything unparseable so it never reaches Postgres.
+ */
+function toBookingDay(value: string): string | null {
+  if (BOOKING_DAY_PATTERN.test(value)) return value;
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return format(toBookingTz(parsed.toISOString()), 'yyyy-MM-dd');
+}
 
 /**
  * Unified booking interface - common fields from both booking types
@@ -369,11 +389,16 @@ export async function createBookingAssignment(params: {
  */
 export interface UnifiedBookingsFilters {
   status?: string;
+  paymentStatus?: string;
   bookingType?: 'customer' | 'business' | 'all';
   /** Pickup is in the future ('upcoming') or in the past ('past'). Omit for no date bound. */
   timeframe?: 'upcoming' | 'past';
+  /** Inclusive Dubai calendar day (`yyyy-MM-dd`) the pickup must fall on or after. */
   fromDate?: string;
+  /** Inclusive Dubai calendar day (`yyyy-MM-dd`) the pickup must fall on or before. */
   toDate?: string;
+  /** Matches the customer's email (partial, case-insensitive). */
+  customerEmail?: string;
   search?: string;
   limit?: number;
   offset?: number;
@@ -451,14 +476,26 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     businessQuery = businessQuery.eq('booking_status', filters.status);
   }
 
-  if (filters?.fromDate) {
-    customerQuery = customerQuery.gte('pickup_datetime', filters.fromDate);
-    businessQuery = businessQuery.gte('pickup_datetime', filters.fromDate);
+  if (filters?.paymentStatus) {
+    customerQuery = customerQuery.eq('payment_status', filters.paymentStatus);
+    businessQuery = businessQuery.eq('payment_status', filters.paymentStatus);
   }
 
-  if (filters?.toDate) {
-    customerQuery = customerQuery.lte('pickup_datetime', filters.toDate);
-    businessQuery = businessQuery.lte('pickup_datetime', filters.toDate);
+  // The range is a pair of Dubai calendar days, so both edges are resolved as
+  // Dubai midnight and the upper bound is exclusive — otherwise the last day
+  // selected would be cut off at 00:00 and drop all of its bookings.
+  const fromDay = filters?.fromDate ? toBookingDay(filters.fromDate) : null;
+  if (fromDay) {
+    const rangeStart = bookingWallClockToUtc(fromDay, '00:00').toISOString();
+    customerQuery = customerQuery.gte('pickup_datetime', rangeStart);
+    businessQuery = businessQuery.gte('pickup_datetime', rangeStart);
+  }
+
+  const toDay = filters?.toDate ? toBookingDay(filters.toDate) : null;
+  if (toDay) {
+    const rangeEnd = addDays(bookingWallClockToUtc(toDay, '00:00'), 1).toISOString();
+    customerQuery = customerQuery.lt('pickup_datetime', rangeEnd);
+    businessQuery = businessQuery.lt('pickup_datetime', rangeEnd);
   }
 
   // Timeframe is purely a date fact, independent of booking_status.
@@ -480,9 +517,31 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     businessQuery = businessQuery.or(`customer_name.ilike.${searchPattern},booking_number.ilike.${searchPattern},trip_number.ilike.${searchPattern}`);
   }
 
+  // Customer bookings keep the email on the profile, business bookings store it
+  // inline — so the customer side needs an id lookup first.
+  let hasCustomerEmailMatches = true;
+  const customerEmail = filters?.customerEmail?.trim();
+  if (customerEmail) {
+    const emailPattern = `%${customerEmail}%`;
+
+    const { data: matchingProfiles } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('email', emailPattern);
+
+    const matchingIds = (matchingProfiles || []).map(p => p.id);
+    hasCustomerEmailMatches = matchingIds.length > 0;
+
+    if (hasCustomerEmailMatches) {
+      customerQuery = customerQuery.in('customer_id', matchingIds);
+    }
+
+    businessQuery = businessQuery.ilike('customer_email', emailPattern);
+  }
+
   // Execute queries based on filter
   const results = await Promise.all([
-    shouldFetchCustomer ? customerQuery : Promise.resolve({ data: [], count: 0 }),
+    shouldFetchCustomer && hasCustomerEmailMatches ? customerQuery : Promise.resolve({ data: [], count: 0 }),
     shouldFetchBusiness ? businessQuery : Promise.resolve({ data: [], count: 0 }),
   ]);
 

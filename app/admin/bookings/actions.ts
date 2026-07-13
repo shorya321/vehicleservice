@@ -22,9 +22,11 @@ export interface BookingFilters {
   timeframe?: 'all' | 'upcoming' | 'past'
   paymentStatus?: 'all' | 'pending' | 'processing' | 'completed' | 'failed' | 'refunded'
   bookingType?: 'all' | 'customer' | 'business'
-  vehicleTypeId?: string
+  /** Inclusive Dubai calendar day (`yyyy-MM-dd`) the pickup must fall on or after. */
   dateFrom?: string
+  /** Inclusive Dubai calendar day (`yyyy-MM-dd`) the pickup must fall on or before. */
   dateTo?: string
+  /** Customer email, matched partially and case-insensitively. */
   customerId?: string
   page?: number
   limit?: number
@@ -139,7 +141,6 @@ export async function getBookings(filters: BookingFilters = {}) {
     timeframe = 'all',
     bookingType = 'all',
     paymentStatus = 'all',
-    vehicleTypeId,
     dateFrom,
     dateTo,
     customerId,
@@ -151,17 +152,15 @@ export async function getBookings(filters: BookingFilters = {}) {
   const { bookings, totalCount } = await getUnifiedBookingsList({
     search,
     status: status !== 'all' ? status : undefined,
+    paymentStatus: paymentStatus !== 'all' ? paymentStatus : undefined,
     timeframe: timeframe !== 'all' ? timeframe : undefined,
     bookingType: bookingType !== 'all' ? bookingType as 'customer' | 'business' : undefined,
     fromDate: dateFrom,
     toDate: dateTo,
+    customerEmail: customerId,
     limit,
     offset: (page - 1) * limit,
   })
-
-  // TODO: Apply payment status and vehicle type filters
-  // These need to be added to unified service later
-  // For now, we'll return all bookings matching other criteria
 
   return {
     bookings: bookings as any[], // Type compatibility with existing BookingWithCustomer
