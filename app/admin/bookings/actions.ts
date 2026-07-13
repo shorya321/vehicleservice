@@ -18,6 +18,8 @@ import { BOOKING_TIMEZONE, toBookingTz } from '@/lib/utils/timezone'
 export interface BookingFilters {
   search?: string
   status?: 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  /** Pickup date window. Independent of booking_status. */
+  timeframe?: 'all' | 'upcoming' | 'past'
   paymentStatus?: 'all' | 'pending' | 'processing' | 'completed' | 'failed' | 'refunded'
   bookingType?: 'all' | 'customer' | 'business'
   vehicleTypeId?: string
@@ -134,6 +136,7 @@ export async function getBookings(filters: BookingFilters = {}) {
   const {
     search = '',
     status = 'all',
+    timeframe = 'all',
     bookingType = 'all',
     paymentStatus = 'all',
     vehicleTypeId,
@@ -148,6 +151,7 @@ export async function getBookings(filters: BookingFilters = {}) {
   const { bookings, totalCount } = await getUnifiedBookingsList({
     search,
     status: status !== 'all' ? status : undefined,
+    timeframe: timeframe !== 'all' ? timeframe : undefined,
     bookingType: bookingType !== 'all' ? bookingType as 'customer' | 'business' : undefined,
     fromDate: dateFrom,
     toDate: dateTo,
@@ -704,12 +708,9 @@ export async function getBookingStats() {
       .gte('created_at', todayStart.toISOString())
       .lt('created_at', todayEnd.toISOString()),
 
-    countCustomer()
-      .eq('booking_status', 'confirmed')
-      .gte('pickup_datetime', now.toISOString()),
-    countBusiness()
-      .eq('booking_status', 'confirmed')
-      .gte('pickup_datetime', now.toISOString()),
+    // Upcoming is a date fact, not a status — matches the list's timeframe=upcoming filter
+    countCustomer().gte('pickup_datetime', now.toISOString()),
+    countBusiness().gte('pickup_datetime', now.toISOString()),
 
     countCustomer().eq('booking_status', 'completed'),
     countBusiness().eq('booking_status', 'completed'),

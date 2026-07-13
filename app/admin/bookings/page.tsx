@@ -20,6 +20,7 @@ interface BookingsPageProps {
   searchParams: Promise<{
     search?: string
     status?: string
+    timeframe?: string
     paymentStatus?: string
     bookingType?: string
     vehicleTypeId?: string
@@ -36,6 +37,9 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   const filters: BookingFilters = {
     search: params.search,
     status: (params.status as BookingFilters['status']) || 'all',
+    // Defaults to upcoming: a bare /admin/bookings lands on future trips.
+    // ?timeframe=all is the explicit opt-out.
+    timeframe: (params.timeframe as BookingFilters['timeframe']) || 'upcoming',
     paymentStatus: (params.paymentStatus as BookingFilters['paymentStatus']) || 'all',
     bookingType: (params.bookingType as BookingFilters['bookingType']) || 'all',
     vehicleTypeId: params.vehicleTypeId,

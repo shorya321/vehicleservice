@@ -370,6 +370,8 @@ export async function createBookingAssignment(params: {
 export interface UnifiedBookingsFilters {
   status?: string;
   bookingType?: 'customer' | 'business' | 'all';
+  /** Pickup is in the future ('upcoming') or in the past ('past'). Omit for no date bound. */
+  timeframe?: 'upcoming' | 'past';
   fromDate?: string;
   toDate?: string;
   search?: string;
@@ -457,6 +459,19 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   if (filters?.toDate) {
     customerQuery = customerQuery.lte('pickup_datetime', filters.toDate);
     businessQuery = businessQuery.lte('pickup_datetime', filters.toDate);
+  }
+
+  // Timeframe is purely a date fact, independent of booking_status.
+  // ANDs with fromDate/toDate when both are supplied.
+  if (filters?.timeframe) {
+    const nowIso = new Date().toISOString();
+    if (filters.timeframe === 'upcoming') {
+      customerQuery = customerQuery.gte('pickup_datetime', nowIso);
+      businessQuery = businessQuery.gte('pickup_datetime', nowIso);
+    } else {
+      customerQuery = customerQuery.lt('pickup_datetime', nowIso);
+      businessQuery = businessQuery.lt('pickup_datetime', nowIso);
+    }
   }
 
   if (filters?.search) {

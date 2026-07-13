@@ -28,6 +28,13 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete('status')
     }
 
+    // 'upcoming' is the default, so omit it — a clean URL means upcoming
+    if (filters.timeframe && filters.timeframe !== 'upcoming') {
+      params.set('timeframe', filters.timeframe)
+    } else {
+      params.delete('timeframe')
+    }
+
     if (filters.paymentStatus) {
       params.set('paymentStatus', filters.paymentStatus)
     } else {

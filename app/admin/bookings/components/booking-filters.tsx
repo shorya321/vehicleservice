@@ -73,6 +73,14 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     })
   }
 
+  const handleTimeframeChange = (timeframe: string) => {
+    onFiltersChange({
+      ...filters,
+      timeframe: timeframe as BookingFilters['timeframe'],
+      page: 1
+    })
+  }
+
   const handleBookingTypeChange = (type: string) => {
     onFiltersChange({
       ...filters,
@@ -91,6 +99,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
       page: 1,
       limit: filters.limit || 10,
       status: 'all',
+      timeframe: 'upcoming',
       paymentStatus: 'all',
       bookingType: 'all'
     })
@@ -136,6 +145,8 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   const activeFilterCount = [
     filters.search,
     filters.status && filters.status !== 'all' ? filters.status : null,
+    // 'upcoming' is the default view, so it isn't an "active" filter
+    filters.timeframe && filters.timeframe !== 'upcoming' ? filters.timeframe : null,
     filters.bookingType && filters.bookingType !== 'all' ? filters.bookingType : null,
     filters.paymentStatus && filters.paymentStatus !== 'all' ? filters.paymentStatus : null,
     filters.dateFrom,
@@ -169,6 +180,17 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
             <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filters.timeframe || 'upcoming'} onValueChange={handleTimeframeChange}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="upcoming">Upcoming</SelectItem>
+            <SelectItem value="past">Past</SelectItem>
+            <SelectItem value="all">All time</SelectItem>
           </SelectContent>
         </Select>
 
