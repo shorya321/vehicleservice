@@ -44,13 +44,8 @@ export const DriverBookingUnassignedEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking #:</strong> {bookingReference}
+          <strong>Trip #:</strong> {tripNumber || bookingReference}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Customer:</strong> {customerName}

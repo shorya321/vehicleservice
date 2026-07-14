@@ -42,7 +42,7 @@ export const BusinessBookingCancelledEmail = ({
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
-      preview={`Booking Cancelled - ${bookingNumber}`}
+      preview={`Booking Cancelled - ${tripNumber || bookingNumber}`}
       heading="Booking Cancelled"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
@@ -56,13 +56,8 @@ export const BusinessBookingCancelledEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking #:</strong> {bookingNumber}
+          <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Customer:</strong> {customerName}

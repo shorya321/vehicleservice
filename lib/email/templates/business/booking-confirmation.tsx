@@ -52,7 +52,7 @@ export const BusinessBookingConfirmationEmail = ({
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
-      preview={`Booking Created - ${bookingNumber}`}
+      preview={`Booking Created - ${tripNumber || bookingNumber}`}
       heading="Booking Confirmation"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
@@ -66,13 +66,8 @@ export const BusinessBookingConfirmationEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking #:</strong> {bookingNumber}
+          <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Customer Name:</strong> {customerName}

@@ -2025,6 +2025,21 @@ export type Database = {
           },
         ]
       }
+      trip_number_registry: {
+        Row: {
+          created_at: string
+          trip_number: string
+        }
+        Insert: {
+          created_at?: string
+          trip_number: string
+        }
+        Update: {
+          created_at?: string
+          trip_number?: string
+        }
+        Relationships: []
+      }
       user_activity_logs: {
         Row: {
           action: string

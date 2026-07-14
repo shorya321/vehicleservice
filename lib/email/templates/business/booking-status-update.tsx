@@ -66,13 +66,8 @@ export const BusinessBookingStatusUpdateEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking #:</strong> {bookingNumber}
+          <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Customer:</strong> {customerName}

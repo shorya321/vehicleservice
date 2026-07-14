@@ -269,7 +269,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
 
               <dl className="mt-10 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-[var(--graphite)] pt-6 sm:grid-cols-3 text-[0.875rem]">
                 <div>
-                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Booking</dt>
+                  <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">Trip #</dt>
                   <dd className="numeric mt-1 text-[var(--gold-text)]">{booking.trip_number || booking.booking_number}</dd>
                 </div>
                 <div>
@@ -330,13 +330,14 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
                 bookingId={booking.id}
                 amount={booking.total_price}
                 bookingNumber={booking.booking_number}
+                tripNumber={booking.trip_number || booking.booking_number}
               />
             </div>
 
             <aside aria-label="Booking summary" className="lg:sticky lg:top-24 border border-[var(--graphite)] bg-[var(--black-rich)]">
               <header className="border-b border-[var(--graphite)] px-6 py-5">
                 <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                  Booking
+                  Trip #
                 </div>
                 <div className="numeric mt-1 text-[var(--gold-text)]">{booking.trip_number || booking.booking_number}</div>
                 {booking.vehicle_type && (

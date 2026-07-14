@@ -114,7 +114,10 @@ interface PaymentWrapperProps {
   clientSecret: string
   bookingId: string
   amount: number
+  /** Routing key only — drives the Stripe return_url. Never rendered. */
   bookingNumber: string
+  /** Customer-facing reference shown on screen. */
+  tripNumber: string
 }
 
 export function PaymentWrapper({
@@ -122,6 +125,7 @@ export function PaymentWrapper({
   bookingId,
   amount,
   bookingNumber,
+  tripNumber,
 }: PaymentWrapperProps) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme !== 'light'
@@ -135,6 +139,7 @@ export function PaymentWrapper({
         bookingId={bookingId}
         amount={amount}
         bookingNumber={bookingNumber}
+        tripNumber={tripNumber}
       />
     </Elements>
   )

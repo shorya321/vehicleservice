@@ -54,10 +54,13 @@ function PaymentSkeleton() {
 interface CheckoutFormProps {
   bookingId: string
   amount: number
+  /** Routing key only — drives the Stripe return_url. Never rendered. */
   bookingNumber: string
+  /** Customer-facing reference shown on screen. */
+  tripNumber: string
 }
 
-export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormProps) {
+export function CheckoutForm({ bookingId, amount, bookingNumber, tripNumber }: CheckoutFormProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const stripe = useStripe()
   const elements = useElements()
@@ -149,7 +152,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
             {formatPrice(amount, currentCurrency, exchangeRates)}
           </p>
           <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-[var(--black-warm)] rounded-[4px] text-[0.8125rem] text-[var(--text-secondary)] max-w-full">
-            Booking: <code className="font-mono text-[var(--gold-text)] truncate">{bookingNumber}</code>
+            Trip #: <code className="font-mono text-[var(--gold-text)] truncate">{tripNumber}</code>
           </span>
         </div>
 

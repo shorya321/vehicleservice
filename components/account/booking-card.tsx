@@ -60,7 +60,7 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
     <button
       onClick={onClick}
       className="w-full account-item-card text-left group"
-      aria-label={`View booking ${booking.booking_number}`}
+      aria-label={`View booking ${booking.trip_number || booking.booking_number}`}
     >
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
         {/* Left: Route Info */}

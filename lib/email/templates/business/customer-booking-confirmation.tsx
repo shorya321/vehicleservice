@@ -43,7 +43,7 @@ export const CustomerBookingConfirmationEmail = ({
 
       <InfoBox type="success">
         Your transfer has been booked by <strong>{businessName}</strong>.
-        Booking reference: <strong>#{tripNumber || bookingNumber}</strong>
+        Your trip number is <strong>#{tripNumber || bookingNumber}</strong>
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -51,13 +51,8 @@ export const CustomerBookingConfirmationEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking #:</strong> {bookingNumber}
+          <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
         {referenceNumber && (
           <Text style={emailStyles.detailRow}>

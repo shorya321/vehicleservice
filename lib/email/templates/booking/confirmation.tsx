@@ -60,7 +60,7 @@ export const BookingConfirmationEmail = ({
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
-      preview={`Booking Confirmed - ${bookingReference}`}
+      preview={`Booking Confirmed - ${tripNumber || bookingReference}`}
       heading="Booking Confirmation"
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
@@ -70,13 +70,8 @@ export const BookingConfirmationEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
+          <strong>Trip #:</strong> {tripNumber || bookingReference}
         </Text>
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
@@ -199,7 +194,7 @@ export const BookingConfirmationEmail = ({
 
       <Text style={emailStyles.text}>
         If you have any questions or need to modify your booking, please contact our support team
-        and provide your booking reference number.
+        and provide your trip number.
       </Text>
 
       <Text style={emailStyles.text}>

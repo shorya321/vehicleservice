@@ -404,10 +404,10 @@ export function ConfirmationContent({
             <button
               onClick={copyBookingNumber}
               className={actionBtnClass}
-              aria-label="Copy booking reference"
+              aria-label="Copy trip number"
             >
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-              {copied ? 'Copied' : 'Copy reference'}
+              {copied ? 'Copied' : 'Copy trip number'}
             </button>
             {isPaid && (
               <InvoiceDownloadButton

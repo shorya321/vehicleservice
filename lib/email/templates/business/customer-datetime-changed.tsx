@@ -43,13 +43,8 @@ export const CustomerDatetimeChangedEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking #:</strong> {bookingNumber}
+          <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>

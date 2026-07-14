@@ -38,7 +38,7 @@ export const NewBookingNotificationEmail = ({
 }: NewBookingNotificationEmailProps) => {
   return (
     <EmailLayout
-      preview={`New Booking Received - ${bookingReference}`}
+      preview={`New Booking Received - ${tripNumber || bookingReference}`}
       heading="New Booking Received"
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
@@ -48,13 +48,8 @@ export const NewBookingNotificationEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
+          <strong>Trip #:</strong> {tripNumber || bookingReference}
         </Text>
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>

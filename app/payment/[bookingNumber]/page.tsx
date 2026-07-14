@@ -249,7 +249,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   <div className="pt-4 border-t border-[rgba(var(--gold-rgb),0.1)]">
                     <p className="text-lg font-medium text-[var(--text-primary)] mb-3">Your Booking Details:</p>
                     <div className="space-y-1 text-sm text-[var(--text-secondary)]">
-                      <p>Booking Number: <span className="font-mono text-[var(--gold-text)]">{booking.trip_number || booking.booking_number}</span></p>
+                      <p>Trip #: <span className="font-mono text-[var(--gold-text)]">{booking.trip_number || booking.booking_number}</span></p>
                       <p>Amount: <span className="text-[var(--text-primary)]">{formatUserPrice(booking.total_price)}</span></p>
                       <p>Status: <span className="text-[var(--gold-text)]">Payment Pending</span></p>
                     </div>
@@ -296,6 +296,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   bookingId={booking.id}
                   amount={booking.total_price}
                   bookingNumber={booking.booking_number}
+                  tripNumber={booking.trip_number || booking.booking_number}
                 />
               </div>
               <aside className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24 product-entrance--sidebar" aria-label="Booking summary">

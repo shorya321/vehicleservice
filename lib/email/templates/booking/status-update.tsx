@@ -37,7 +37,7 @@ export const BookingStatusUpdateEmail = ({
 
   return (
     <EmailLayout
-      preview={`Booking Status Update - ${bookingReference}`}
+      preview={`Booking Status Update - ${tripNumber || bookingReference}`}
       heading="Booking Status Update"
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
@@ -47,13 +47,8 @@ export const BookingStatusUpdateEmail = ({
       </Text>
 
       <DetailsSection>
-        {tripNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Trip #:</strong> {tripNumber}
-          </Text>
-        )}
         <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
+          <strong>Trip #:</strong> {tripNumber || bookingReference}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Vehicle Category:</strong> {vehicleCategory}
@@ -81,7 +76,7 @@ export const BookingStatusUpdateEmail = ({
 
       <Text style={emailStyles.text}>
         If you have any questions about this status update, please don&apos;t hesitate to contact our
-        support team with your booking reference number.
+        support team with your trip number.
       </Text>
 
       <Text style={emailStyles.text}>
