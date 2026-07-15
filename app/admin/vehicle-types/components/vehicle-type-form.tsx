@@ -288,7 +288,7 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
               name="price_multiplier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Multiplier</FormLabel>
+                  <FormLabel>Guest</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -313,7 +313,7 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
               name="business_price_multiplier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Multiplier</FormLabel>
+                  <FormLabel>Business Discount</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
