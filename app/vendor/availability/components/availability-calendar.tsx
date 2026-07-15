@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, momentLocalizer, View, SlotInfo, Event as BigCalendarEvent } from 'react-big-calendar'
+import { Calendar, momentLocalizer, View, SlotInfo, Event as BigCalendarEvent, ToolbarProps } from 'react-big-calendar'
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './calendar-styles.css'
@@ -30,6 +30,7 @@ import { CalendarEvent, markResourceUnavailable, removeUnavailability, getVendor
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
 import { Car, User, Calendar as CalendarIcon, Clock, MapPin, Phone, AlertCircle } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils'
 
 const localizer = momentLocalizer(moment)
 
@@ -53,6 +54,77 @@ interface CustomEvent extends BigCalendarEvent {
 /** A booking that has already ended, or unavailability that has already elapsed. */
 function isPastEvent(event: Pick<CustomEvent, 'end'>): boolean {
   return !!event.end && event.end < new Date()
+}
+
+const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => moment().month(i).format('MMMM'))
+
+// Mirrors the SelectTrigger look (border-border, neutral text, h-9, normal case) so
+// the nav/view buttons match the Month/Year dropdowns instead of the gold outline.
+const TOOLBAR_BTN = 'inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50'
+
+/** Custom toolbar: keeps RBC's Today/Back/Next + view buttons, and adds Month/Year
+ *  dropdowns that jump straight to any month via the navigate.DATE action. */
+function CalendarToolbar({ date, view, views, onNavigate, onView }: ToolbarProps<CustomEvent, object>) {
+  const currentMonth = date.getMonth()
+  const currentYear = date.getFullYear()
+
+  // A ±5-year window, widened to always include whatever year is on screen.
+  const thisYear = new Date().getFullYear()
+  const years = (() => {
+    const start = Math.min(thisYear - 5, currentYear)
+    const end = Math.max(thisYear + 5, currentYear)
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  })()
+
+  const jumpTo = (month: number, year: number) => {
+    onNavigate('DATE', new Date(year, month, 1))
+  }
+
+  const viewNames = Array.isArray(views) ? (views as View[]) : []
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" className={TOOLBAR_BTN} onClick={() => onNavigate('TODAY')}>Today</button>
+        <button type="button" className={TOOLBAR_BTN} onClick={() => onNavigate('PREV')}>Back</button>
+        <button type="button" className={TOOLBAR_BTN} onClick={() => onNavigate('NEXT')}>Next</button>
+
+        <Select value={String(currentMonth)} onValueChange={(v) => jumpTo(Number(v), currentYear)}>
+          <SelectTrigger className="h-9 w-[150px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {MONTH_LABELS.map((label, i) => (
+              <SelectItem key={label} value={String(i)}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={String(currentYear)} onValueChange={(v) => jumpTo(currentMonth, Number(v))}>
+          <SelectTrigger className="h-9 w-[100px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        {viewNames.map((name) => (
+          <button
+            key={name}
+            type="button"
+            className={cn(TOOLBAR_BTN, view === name && 'bg-accent text-accent-foreground')}
+            onClick={() => onView(name)}
+          >
+            {name.charAt(0).toUpperCase() + name.slice(1)}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export function AvailabilityCalendar({
@@ -151,7 +223,7 @@ export function AvailabilityCalendar({
     const style: React.CSSProperties = {
       backgroundColor: event.color || '#3B82F6',
       borderRadius: '5px',
-      opacity: isPastEvent(event) ? 0.45 : 0.9,
+      opacity: isPastEvent(event) ? 0.6 : 0.9,
       color: 'white',
       border: '0px',
       display: 'block'
@@ -280,10 +352,18 @@ export function AvailabilityCalendar({
         )}
 
         {/* Legend */}
-        <div className="flex gap-4 ml-auto">
+        <div className="flex flex-wrap gap-4 ml-auto">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded" />
-            <span className="text-sm">Bookings</span>
+            <span className="text-sm">Upcoming</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-emerald-500 rounded" />
+            <span className="text-sm">Completed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-500 rounded" />
+            <span className="text-sm">Cancelled / no trip</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-red-500 rounded" />
@@ -292,15 +372,14 @@ export function AvailabilityCalendar({
         </div>
       </div>
 
-      {/* Viewing a period that has already elapsed. Bookings cannot appear here —
-          their schedule rows are deleted on completion — so say so rather than
-          letting an empty grid imply the vendor ran no trips. */}
+      {/* Viewing a period that has already elapsed. Past bookings and unavailability
+          are historical and read-only here. Full details live on the Bookings page. */}
       {isViewingPast && (
         <div className="flex items-start gap-2 rounded-lg border border-muted bg-muted/50 p-3">
           <AlertCircle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
           <p className="text-sm text-muted-foreground">
-            Showing past unavailability only. Completed and cancelled bookings are not kept on the
-            calendar — find them in{' '}
+            You&apos;re viewing past dates. Bookings and unavailability shown here are historical and
+            read-only — for full booking records see{' '}
             <Link href="/vendor/bookings" className="font-medium underline underline-offset-4">
               Bookings
             </Link>
@@ -333,6 +412,7 @@ export function AvailabilityCalendar({
           selectable
           eventPropGetter={eventStyleGetter}
           views={['month', 'week', 'day']}
+          components={{ toolbar: CalendarToolbar }}
           className="vendor-calendar"
         />
       </div>
@@ -356,6 +436,15 @@ export function AvailabilityCalendar({
                       <span className="text-sm font-medium">Booking Number:</span>
                       <span className="text-sm">{selectedEvent.details?.bookingNumber}</span>
                     </div>
+                    {selectedEvent.details?.status && (
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Status:</span>
+                        <Badge variant="secondary" className="capitalize">
+                          {String(selectedEvent.details.status).replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium">Customer:</span>

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { AvailabilityService } from '@/lib/availability/service'
+import { AvailabilityService, ESTIMATED_TRIP_DURATION_MS } from '@/lib/availability/service'
 import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
 import { sendDriverBookingAssignmentEmail } from '@/lib/email/services/driver-emails'
 import { sendBookingDriverAssignedEmail } from '@/lib/email/services/booking-emails'
@@ -510,7 +510,7 @@ export async function acceptAndAssignResources(
 
   // Create schedule entries for both driver and vehicle
   const pickupTime = new Date(booking.pickupDatetime)
-  const estimatedEndTime = new Date(pickupTime.getTime() + 2 * 60 * 60 * 1000) // Estimate 2 hours for trip
+  const estimatedEndTime = new Date(pickupTime.getTime() + ESTIMATED_TRIP_DURATION_MS)
 
   try {
     await AvailabilityService.createSchedule(
@@ -732,7 +732,7 @@ export async function checkResourceAvailabilityForBooking(
   }
 
   const pickupTime = new Date(booking.pickupDatetime)
-  const estimatedEndTime = new Date(pickupTime.getTime() + 2 * 60 * 60 * 1000) // Estimate 2 hours for trip
+  const estimatedEndTime = new Date(pickupTime.getTime() + ESTIMATED_TRIP_DURATION_MS)
 
   // Get all drivers with availability status
   const { data: drivers } = await supabase

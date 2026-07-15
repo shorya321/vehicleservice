@@ -25,6 +25,56 @@ export type ResourceSchedule = Database['public']['Tables']['resource_schedules'
 
 export type ResourceUnavailability = Database['public']['Tables']['resource_unavailability']['Row']
 
+/**
+ * A booking occupies a resource from pickup for this fixed estimate. Schedules are
+ * created at pickup → pickup + this (see bookings/actions.ts), so past events must
+ * be rendered at the same length they were originally booked at, or history would
+ * not line up with the blocks that once occupied the calendar.
+ */
+export const ESTIMATED_TRIP_DURATION_MS = 2 * 60 * 60 * 1000
+
+/**
+ * A past booking sourced from booking_assignments (the permanent record), joined to
+ * its booking / business_booking / vehicle / driver. Shaped to match the inline
+ * select in availability/actions.ts so the same event-mapping helper consumes both
+ * this and live schedules. Embedded relations come back as objects (single FK).
+ */
+export interface PastBookingAssignment {
+  id: string
+  status: string
+  booking: {
+    booking_number: string | null
+    trip_number: string | null
+    pickup_address: string | null
+    dropoff_address: string | null
+    pickup_datetime: string | null
+    customer: { full_name: string | null; phone: string | null } | null
+  } | null
+  business_booking: {
+    booking_number: string | null
+    trip_number: string | null
+    pickup_address: string | null
+    dropoff_address: string | null
+    pickup_datetime: string | null
+    customer_name: string | null
+    customer_phone: string | null
+    from_location: { name: string | null } | null
+    to_location: { name: string | null } | null
+  } | null
+  vehicle: {
+    id: string
+    make: string | null
+    model: string | null
+    registration_number: string | null
+  } | null
+  driver: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    phone: string | null
+  } | null
+}
+
 /** Why a resource is not free for a period. The two kinds are reported separately
  *  so callers can tell the vendor the truth about which one blocked them. */
 export interface AvailabilityConflicts {
@@ -209,6 +259,121 @@ export class AvailabilityService {
     }
 
     return data || []
+  }
+
+  /**
+   * Past bookings for a vendor's resources, sourced from booking_assignments — the
+   * only permanent record of a trip once it is over. resource_schedules rows are
+   * hard-deleted on completion/cancellation (removeSchedule), so getVendorSchedules
+   * can never surface history; this method fills the gap for the calendar.
+   *
+   * All assignment statuses are returned (completed, accepted, cancelled, rejected,
+   * pending) so the calendar can colour-code what actually ran vs. what fell through.
+   *
+   * pickup_datetime lives in bookings OR business_bookings, and PostgREST can only
+   * range-filter a joined column through an inner join — one query can inner-join
+   * one source — so two queries run and are unioned. Kept range-scoped (never the
+   * whole history) for the same reason getVendorSchedules clamps.
+   *
+   * Admin client is used with an explicit vendor_id filter (see the scoping note on
+   * findConflicts). Only assignments whose estimated end is strictly before today
+   * are returned, so there is zero overlap with live schedules (end >= today).
+   */
+  static async getVendorPastBookings(
+    vendorId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<PastBookingAssignment[]> {
+    const adminClient = createAdminClient()
+
+    const today = startOfBookingDayUtc()
+    // Never fetch pickups at/after today — that window belongs to live schedules.
+    const upperBound = endDate && endDate < today ? endDate : today
+    // The calendar always passes a range, so startDate is normally present; the
+    // fallback floor stops an unbounded call from scanning the vendor's whole past.
+    const lowerBound = startDate ?? new Date(upperBound.getTime() - 32 * 24 * 60 * 60 * 1000)
+
+    const customerSelect = `
+      id,
+      status,
+      booking:bookings!inner(
+        booking_number,
+        trip_number,
+        pickup_address,
+        dropoff_address,
+        pickup_datetime,
+        customer:profiles(full_name, phone)
+      ),
+      vehicle:vehicles(id, make, model, registration_number),
+      driver:vendor_drivers(id, first_name, last_name, phone)
+    `
+
+    const businessSelect = `
+      id,
+      status,
+      business_booking:business_bookings!inner(
+        booking_number,
+        trip_number,
+        pickup_address,
+        dropoff_address,
+        pickup_datetime,
+        customer_name,
+        customer_phone,
+        from_location:locations!from_location_id(name),
+        to_location:locations!to_location_id(name)
+      ),
+      vehicle:vehicles(id, make, model, registration_number),
+      driver:vendor_drivers(id, first_name, last_name, phone)
+    `
+
+    const [customerResult, businessResult] = await Promise.all([
+      adminClient
+        .from('booking_assignments')
+        .select(customerSelect)
+        .eq('vendor_id', vendorId)
+        .gte('booking.pickup_datetime', lowerBound.toISOString())
+        .lt('booking.pickup_datetime', upperBound.toISOString()),
+      adminClient
+        .from('booking_assignments')
+        .select(businessSelect)
+        .eq('vendor_id', vendorId)
+        .gte('business_booking.pickup_datetime', lowerBound.toISOString())
+        .lt('business_booking.pickup_datetime', upperBound.toISOString()),
+    ])
+
+    if (customerResult.error) {
+      console.error('Error fetching past customer bookings:', customerResult.error)
+      throw new Error('Failed to fetch past bookings')
+    }
+
+    if (businessResult.error) {
+      console.error('Error fetching past business bookings:', businessResult.error)
+      throw new Error('Failed to fetch past bookings')
+    }
+
+    // Boundary cast: PostgREST types embedded relations loosely; the select shape
+    // matches PastBookingAssignment by construction.
+    const rows = [
+      ...(customerResult.data ?? []),
+      ...(businessResult.data ?? []),
+    ] as unknown as PastBookingAssignment[]
+
+    // Keep only trips whose estimated end is before today — the exact line that
+    // prevents overlap with live schedules, and dedupe by assignment id.
+    const seen = new Set<string>()
+    const past: PastBookingAssignment[] = []
+
+    for (const row of rows) {
+      if (seen.has(row.id)) continue
+      const pickup = row.booking?.pickup_datetime ?? row.business_booking?.pickup_datetime
+      if (!pickup) continue
+      const end = new Date(new Date(pickup).getTime() + ESTIMATED_TRIP_DURATION_MS)
+      if (end >= today) continue
+      seen.add(row.id)
+      past.push(row)
+    }
+
+    return past
   }
 
   /**

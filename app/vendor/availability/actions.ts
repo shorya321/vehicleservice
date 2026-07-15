@@ -2,7 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AvailabilityService } from '@/lib/availability/service'
+import {
+  AvailabilityService,
+  ESTIMATED_TRIP_DURATION_MS,
+  type PastBookingAssignment,
+} from '@/lib/availability/service'
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
 import { revalidatePath } from 'next/cache'
 
@@ -22,6 +26,86 @@ export interface CalendarEvent {
   driverId?: string | null
   color?: string
   details?: any
+}
+
+/** Blue for upcoming bookings; past bookings are colour-coded by whether the trip
+ *  ran (green) or fell through (gray) so history reads at a glance. */
+const UPCOMING_BOOKING_COLOR = '#3B82F6'
+const PAST_RAN_COLOR = '#10B981'
+const PAST_NO_TRIP_COLOR = '#6B7280'
+
+function pastBookingColor(status: string | null): string {
+  return status === 'completed' || status === 'accepted'
+    ? PAST_RAN_COLOR
+    : PAST_NO_TRIP_COLOR
+}
+
+/**
+ * Build ONE calendar event from an assignment joined to its booking / business
+ * booking / vehicle / driver. Shared by the live-schedule path and the past-booking
+ * path so both emit an identical event shape — the client dialog, resource filter,
+ * and dimming then work on either without special-casing.
+ */
+function assignmentToCalendarEvent(
+  assignment: PastBookingAssignment,
+  start: Date,
+  end: Date,
+  status: string | null,
+  color: string
+): CalendarEvent {
+  // Normalize booking data - use business_booking if booking is null
+  const bookingData = assignment.booking || (assignment.business_booking ? {
+    booking_number: assignment.business_booking.booking_number,
+    trip_number: assignment.business_booking.trip_number,
+    pickup_address: assignment.business_booking.from_location?.name
+      ? `${assignment.business_booking.from_location.name} - ${assignment.business_booking.pickup_address}`
+      : assignment.business_booking.pickup_address,
+    dropoff_address: assignment.business_booking.to_location?.name
+      ? `${assignment.business_booking.to_location.name} - ${assignment.business_booking.dropoff_address}`
+      : assignment.business_booking.dropoff_address,
+    pickup_datetime: assignment.business_booking.pickup_datetime,
+    customer: {
+      full_name: assignment.business_booking.customer_name,
+      phone: assignment.business_booking.customer_phone
+    }
+  } : null)
+
+  return {
+    id: assignment.id, // Use assignment ID as unique event ID
+    title: `Booking #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
+    start,
+    end,
+    resourceId: assignment.id, // Use assignment ID
+    resourceType: 'booking', // Occupies a vehicle and a driver, not one resource
+    type: 'booking',
+    // Carried so the resource filter can match a booking against a specific
+    // vehicle or driver. Without these it can only ask "is it a booking?" and
+    // every booking passes every filter.
+    vehicleId: assignment.vehicle?.id ?? null,
+    driverId: assignment.driver?.id ?? null,
+    color,
+    details: {
+      bookingNumber: bookingData?.booking_number,
+      customer: bookingData?.customer?.full_name,
+      phone: bookingData?.customer?.phone,
+      pickup: bookingData?.pickup_address,
+      dropoff: bookingData?.dropoff_address,
+      status,
+      // Include both vehicle and driver details
+      vehicle: assignment.vehicle ? {
+        id: assignment.vehicle.id,
+        make: assignment.vehicle.make,
+        model: assignment.vehicle.model,
+        registrationNumber: assignment.vehicle.registration_number
+      } : null,
+      driver: assignment.driver ? {
+        id: assignment.driver.id,
+        firstName: assignment.driver.first_name,
+        lastName: assignment.driver.last_name,
+        phone: assignment.driver.phone
+      } : null
+    }
+  }
 }
 
 export async function getVendorCalendarEvents(
@@ -114,59 +198,41 @@ export async function getVendorCalendarEvents(
 
     if (!assignment) continue
 
-    // Normalize booking data - use business_booking if booking is null
-    const bookingData = assignment.booking || (assignment.business_booking ? {
-      booking_number: assignment.business_booking.booking_number,
-      trip_number: assignment.business_booking.trip_number,
-      pickup_address: assignment.business_booking.from_location?.name
-        ? `${assignment.business_booking.from_location.name} - ${assignment.business_booking.pickup_address}`
-        : assignment.business_booking.pickup_address,
-      dropoff_address: assignment.business_booking.to_location?.name
-        ? `${assignment.business_booking.to_location.name} - ${assignment.business_booking.dropoff_address}`
-        : assignment.business_booking.dropoff_address,
-      pickup_datetime: assignment.business_booking.pickup_datetime,
-      customer: {
-        full_name: assignment.business_booking.customer_name,
-        phone: assignment.business_booking.customer_phone
-      }
-    } : null)
+    events.push(
+      assignmentToCalendarEvent(
+        assignment as unknown as PastBookingAssignment,
+        new Date(firstSchedule.start_datetime),
+        new Date(firstSchedule.end_datetime),
+        firstSchedule.status,
+        UPCOMING_BOOKING_COLOR
+      )
+    )
+  }
 
-    events.push({
-      id: assignmentId, // Use assignment ID as unique event ID
-      title: `Booking #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
-      start: new Date(firstSchedule.start_datetime),
-      end: new Date(firstSchedule.end_datetime),
-      resourceId: assignmentId, // Use assignment ID
-      resourceType: 'booking', // Occupies a vehicle and a driver, not one resource
-      type: 'booking',
-      // Carried so the resource filter can match a booking against a specific
-      // vehicle or driver. Without these it can only ask "is it a booking?" and
-      // every booking passes every filter.
-      vehicleId: assignment.vehicle?.id ?? null,
-      driverId: assignment.driver?.id ?? null,
-      color: '#3B82F6', // Blue for bookings
-      details: {
-        bookingNumber: bookingData?.booking_number,
-        customer: bookingData?.customer?.full_name,
-        phone: bookingData?.customer?.phone,
-        pickup: bookingData?.pickup_address,
-        dropoff: bookingData?.dropoff_address,
-        status: firstSchedule.status,
-        // Include both vehicle and driver details
-        vehicle: assignment.vehicle ? {
-          id: assignment.vehicle.id,
-          make: assignment.vehicle.make,
-          model: assignment.vehicle.model,
-          registrationNumber: assignment.vehicle.registration_number
-        } : null,
-        driver: assignment.driver ? {
-          id: assignment.driver.id,
-          firstName: assignment.driver.first_name,
-          lastName: assignment.driver.last_name,
-          phone: assignment.driver.phone
-        } : null
-      }
-    })
+  // Past bookings: sourced from booking_assignments (the permanent record) because
+  // their resource_schedules rows are deleted on completion/cancellation. Colour is
+  // by status so completed trips (green) read differently from cancelled (gray).
+  const pastBookings = await AvailabilityService.getVendorPastBookings(
+    vendorApp.id,
+    startDate ? new Date(startDate) : undefined,
+    endDate ? new Date(endDate) : undefined
+  )
+
+  for (const pastBooking of pastBookings) {
+    const pickup = pastBooking.booking?.pickup_datetime ?? pastBooking.business_booking?.pickup_datetime
+    if (!pickup) continue
+    const start = new Date(pickup)
+    const end = new Date(start.getTime() + ESTIMATED_TRIP_DURATION_MS)
+
+    events.push(
+      assignmentToCalendarEvent(
+        pastBooking,
+        start,
+        end,
+        pastBooking.status,
+        pastBookingColor(pastBooking.status)
+      )
+    )
   }
 
   // Get unavailability periods
