@@ -68,7 +68,7 @@ export function BookingFilters() {
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="search"
-              placeholder="Booking # or customer"
+              placeholder="Trip # or customer"
               className="pl-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

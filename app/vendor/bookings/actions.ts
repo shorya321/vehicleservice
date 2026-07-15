@@ -26,7 +26,7 @@ export interface VendorBooking {
   booking: {
     id: string
     booking_number: string
-    trip_number: string
+    trip_number: string | null
     pickup_datetime: string
     pickup_address: string
     dropoff_address: string
@@ -208,6 +208,7 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
         booking: {
           id: booking.id,
           booking_number: booking.bookingNumber,
+          trip_number: booking.tripNumber,
           pickup_datetime: booking.pickupDatetime,
           pickup_address: booking.pickupAddress || '',
           dropoff_address: booking.dropoffAddress || '',
@@ -245,6 +246,7 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
     const searchLower = filters.search.toLowerCase()
     filteredBookings = filteredBookings.filter(b =>
       b.booking.booking_number.toLowerCase().includes(searchLower) ||
+      b.booking.trip_number?.toLowerCase().includes(searchLower) ||
       b.booking.customer_name?.toLowerCase().includes(searchLower) ||
       b.booking.customer_email?.toLowerCase().includes(searchLower) ||
       b.booking.customer_phone?.includes(filters.search)

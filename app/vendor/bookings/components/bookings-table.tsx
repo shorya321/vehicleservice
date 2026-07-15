@@ -98,7 +98,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">Booking #</TableHead>
+              <TableHead className="w-[120px]">Trip #</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Pickup Date/Time</TableHead>
               <TableHead>Route</TableHead>

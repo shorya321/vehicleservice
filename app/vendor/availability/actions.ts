@@ -72,7 +72,7 @@ function assignmentToCalendarEvent(
 
   return {
     id: assignment.id, // Use assignment ID as unique event ID
-    title: `Booking #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
+    title: `Trip #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
     start,
     end,
     resourceId: assignment.id, // Use assignment ID
@@ -86,6 +86,7 @@ function assignmentToCalendarEvent(
     color,
     details: {
       bookingNumber: bookingData?.booking_number,
+      tripNumber: bookingData?.trip_number,
       customer: bookingData?.customer?.full_name,
       phone: bookingData?.customer?.phone,
       pickup: bookingData?.pickup_address,

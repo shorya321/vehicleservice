@@ -433,8 +433,8 @@ export function AvailabilityCalendar({
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Booking Number:</span>
-                      <span className="text-sm">{selectedEvent.details?.bookingNumber}</span>
+                      <span className="text-sm font-medium">Trip #:</span>
+                      <span className="text-sm">{selectedEvent.details?.tripNumber || selectedEvent.details?.bookingNumber}</span>
                     </div>
                     {selectedEvent.details?.status && (
                       <div className="flex items-center gap-2">
