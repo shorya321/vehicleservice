@@ -183,7 +183,7 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
             name="passenger_count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Passengers</FormLabel>
+                <FormLabel>Guest</FormLabel>
                 <FormControl>
                   <Input
                     type="number"

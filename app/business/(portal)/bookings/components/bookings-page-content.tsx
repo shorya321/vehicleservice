@@ -553,7 +553,7 @@ export function BookingsPageContent({
                         Date
                       </span>
                       <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
-                        Customer
+                        Guest
                       </span>
                       <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
                         Route
