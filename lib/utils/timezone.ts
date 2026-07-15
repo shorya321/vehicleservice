@@ -40,6 +40,18 @@ export function bookingToday(): string {
 }
 
 /**
+ * The UTC instant at which today began in Dubai.
+ *
+ * This is the single boundary for "is this in the past?". Do not reach for
+ * `new Date()` + `setHours(0, 0, 0, 0)`: that yields midnight in whatever
+ * timezone the process happens to run in (UTC on Vercel), which is 04:00 Dubai
+ * — so anything booked in the first four hours of the Dubai day reads as past.
+ */
+export function startOfBookingDayUtc(): Date {
+  return bookingWallClockToUtc(bookingToday(), '00:00')
+}
+
+/**
  * Converts a naive `<input type="datetime-local">` value (`yyyy-MM-ddTHH:mm`),
  * read as Dubai wall-clock, into the UTC instant.
  *

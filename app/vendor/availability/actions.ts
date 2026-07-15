@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AvailabilityService } from '@/lib/availability/service'
+import { startOfBookingDayUtc } from '@/lib/utils/timezone'
 import { revalidatePath } from 'next/cache'
 
 export interface CalendarEvent {
@@ -11,8 +12,14 @@ export interface CalendarEvent {
   start: Date
   end: Date
   resourceId: string
-  resourceType: 'vehicle' | 'driver'
+  /** Unavailability blocks one resource. Bookings occupy a vehicle *and* a driver,
+   *  so they carry both ids instead (see vehicleId / driverId). */
+  resourceType: 'vehicle' | 'driver' | 'booking'
   type: 'booking' | 'unavailable'
+  /** Set on booking events only — the resources the booking actually occupies.
+   *  The resource filter needs these; resourceType alone cannot express "both". */
+  vehicleId?: string | null
+  driverId?: string | null
   color?: string
   details?: any
 }
@@ -124,22 +131,19 @@ export async function getVendorCalendarEvents(
       }
     } : null)
 
-    // Build title with vehicle and driver info
-    const vehicleInfo = assignment.vehicle
-      ? `${assignment.vehicle.make} ${assignment.vehicle.model} (${assignment.vehicle.registration_number})`
-      : 'Vehicle'
-    const driverInfo = assignment.driver
-      ? `${assignment.driver.first_name} ${assignment.driver.last_name}`
-      : 'Driver'
-
     events.push({
       id: assignmentId, // Use assignment ID as unique event ID
       title: `Booking #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
       start: new Date(firstSchedule.start_datetime),
       end: new Date(firstSchedule.end_datetime),
       resourceId: assignmentId, // Use assignment ID
-      resourceType: 'booking' as any, // Combined type
+      resourceType: 'booking', // Occupies a vehicle and a driver, not one resource
       type: 'booking',
+      // Carried so the resource filter can match a booking against a specific
+      // vehicle or driver. Without these it can only ask "is it a booking?" and
+      // every booking passes every filter.
+      vehicleId: assignment.vehicle?.id ?? null,
+      driverId: assignment.driver?.id ?? null,
       color: '#3B82F6', // Blue for bookings
       details: {
         bookingNumber: bookingData?.booking_number,
@@ -173,9 +177,25 @@ export async function getVendorCalendarEvents(
   )
 
   for (const period of unavailability) {
+    // resource_type is a plain text column guarded by a CHECK constraint, so the
+    // generated type widens it to string. Anything else is corrupt data, not a
+    // calendar event.
+    const periodResourceType: 'vehicle' | 'driver' | null =
+      period.resource_type === 'vehicle' ? 'vehicle'
+        : period.resource_type === 'driver' ? 'driver'
+        : null
+
+    if (!periodResourceType) {
+      console.error('Unavailability row with unexpected resource_type', {
+        id: period.id,
+        resourceType: period.resource_type,
+      })
+      continue
+    }
+
     // Get resource name
     let resourceName = ''
-    if (period.resource_type === 'vehicle') {
+    if (periodResourceType === 'vehicle') {
       const { data: vehicle } = await adminClient
         .from('vehicles')
         .select('make, model, registration_number')
@@ -197,7 +217,7 @@ export async function getVendorCalendarEvents(
       start: new Date(period.start_datetime),
       end: new Date(period.end_datetime),
       resourceId: period.resource_id,
-      resourceType: period.resource_type,
+      resourceType: periodResourceType,
       type: 'unavailable',
       color: '#EF4444', // Red for unavailable
       details: {
@@ -277,17 +297,40 @@ export async function markResourceUnavailable(
     throw new Error('Vendor application not found')
   }
 
-  // Check for conflicts
-  const hasConflicts = !(await AvailabilityService.checkAvailability(
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    throw new Error('Invalid unavailability period')
+  }
+
+  if (start >= end) {
+    throw new Error('Unavailability must end after it starts')
+  }
+
+  // Backdating is meaningless and it does damage: the calendar hides past rows,
+  // so a retroactive block becomes invisible while still failing every future
+  // availability check against that resource. This is the enforcement point —
+  // the calendar's own guard is only a courtesy and can be bypassed.
+  if (start < startOfBookingDayUtc()) {
+    throw new Error('Cannot mark a resource unavailable for a past date')
+  }
+
+  // Throws if availability cannot be determined, so a database failure is never
+  // reported to the vendor as a booking conflict.
+  const conflicts = await AvailabilityService.findConflicts(
     resourceId,
     resourceType,
-    new Date(startDate),
-    new Date(endDate),
-    vendorApp.id
-  ))
+    start,
+    end
+  )
 
-  if (hasConflicts) {
+  if (conflicts.schedules.length > 0) {
     throw new Error('Resource has bookings during this period')
+  }
+
+  if (conflicts.unavailability.length > 0) {
+    throw new Error('Resource is already marked unavailable for part of this period')
   }
 
   // Mark as unavailable
@@ -295,8 +338,8 @@ export async function markResourceUnavailable(
     resourceId,
     resourceType,
     vendorApp.id,
-    new Date(startDate),
-    new Date(endDate),
+    start,
+    end,
     reason,
     notes
   )
@@ -328,6 +371,24 @@ export async function removeUnavailability(unavailabilityId: string) {
 
   if (!vendorApp) {
     throw new Error('Vendor application not found')
+  }
+
+  // The past is a record, not a worklist. Deleting a maintenance window that has
+  // already happened would erase the only history of it in the product.
+  const { data: existing, error: fetchError } = await supabase
+    .from('resource_unavailability')
+    .select('start_datetime')
+    .eq('id', unavailabilityId)
+    .eq('vendor_id', vendorApp.id)
+    .single()
+
+  if (fetchError || !existing) {
+    console.error('Error loading unavailability:', fetchError)
+    throw new Error('Unavailability period not found')
+  }
+
+  if (new Date(existing.start_datetime) < startOfBookingDayUtc()) {
+    throw new Error('Past unavailability is a record and cannot be removed')
   }
 
   // Delete unavailability (RLS will ensure vendor can only delete their own)
@@ -372,15 +433,7 @@ export async function checkResourceAvailability(
     throw new Error('Vendor application not found')
   }
 
-  const isAvailable = await AvailabilityService.checkAvailability(
-    resourceId,
-    resourceType,
-    new Date(startDate),
-    new Date(endDate),
-    vendorApp.id
-  )
-
-  const conflicts = await AvailabilityService.getConflicts(
+  const { schedules, unavailability } = await AvailabilityService.findConflicts(
     resourceId,
     resourceType,
     new Date(startDate),
@@ -388,7 +441,7 @@ export async function checkResourceAvailability(
   )
 
   return {
-    available: isAvailable,
-    conflicts: conflicts
+    available: schedules.length === 0 && unavailability.length === 0,
+    conflicts: [...schedules, ...unavailability]
   }
 }

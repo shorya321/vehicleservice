@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import Link from 'next/link'
 import { Calendar, momentLocalizer, View, SlotInfo, Event as BigCalendarEvent } from 'react-big-calendar'
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -21,14 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { CalendarEvent, markResourceUnavailable, removeUnavailability, getVendorCalendarEvents } from '../actions'
+import { startOfBookingDayUtc } from '@/lib/utils/timezone'
 import { Car, User, Calendar as CalendarIcon, Clock, MapPin, Phone, AlertCircle } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const localizer = momentLocalizer(moment)
 
@@ -41,10 +42,17 @@ interface AvailabilityCalendarProps {
 interface CustomEvent extends BigCalendarEvent {
   id: string
   resourceId: string
-  resourceType: 'vehicle' | 'driver'
+  resourceType: 'vehicle' | 'driver' | 'booking'
   type: 'booking' | 'unavailable'
+  vehicleId?: string | null
+  driverId?: string | null
   color?: string
   details?: any
+}
+
+/** A booking that has already ended, or unavailability that has already elapsed. */
+function isPastEvent(event: Pick<CustomEvent, 'end'>): boolean {
+  return !!event.end && event.end < new Date()
 }
 
 export function AvailabilityCalendar({
@@ -69,99 +77,81 @@ export function AvailabilityCalendar({
   const [selectedResourceFilter, setSelectedResourceFilter] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Get current month start for navigation blocking
-  const currentMonthStart = useMemo(() => {
-    const now = new Date()
-    return new Date(now.getFullYear(), now.getMonth(), 1)
-  }, [])
+  // True when the whole visible range has already elapsed.
+  const isViewingPast = useMemo(() => {
+    const unit = view === 'month' ? 'month' : view === 'week' ? 'week' : 'day'
+    return moment(date).endOf(unit).toDate() < startOfBookingDayUtc()
+  }, [date, view])
 
   // Filter events based on selected filters
   const filteredEvents = useMemo(() => {
     let filtered = events
 
-    // Filter by resource type (vehicle/driver/all)
+    // Filter by resource type. A booking occupies a vehicle *and* a driver, so it
+    // belongs to a tab only if it actually has a resource of that kind assigned —
+    // matching on `type === 'booking'` alone would let every booking through both.
     if (filterType === 'vehicle') {
-      filtered = filtered.filter(e => {
-        // Show bookings (they have vehicles) or vehicle unavailability
-        return e.type === 'booking' || e.resourceType === 'vehicle'
-      })
+      filtered = filtered.filter(e =>
+        e.type === 'booking' ? !!e.vehicleId : e.resourceType === 'vehicle'
+      )
     } else if (filterType === 'driver') {
-      filtered = filtered.filter(e => {
-        // Show bookings (they have drivers) or driver unavailability
-        return e.type === 'booking' || e.resourceType === 'driver'
-      })
+      filtered = filtered.filter(e =>
+        e.type === 'booking' ? !!e.driverId : e.resourceType === 'driver'
+      )
     }
 
     // Filter by specific resource
     if (selectedResourceFilter !== 'all') {
-      filtered = filtered.filter(e => {
-        if (e.type === 'booking') {
-          // Check if booking involves the selected vehicle or driver
-          const vehicleId = e.details?.vehicle?.id
-          const driverId = e.details?.driver?.id
-          return vehicleId === selectedResourceFilter || driverId === selectedResourceFilter
-        } else {
-          // For unavailability events, check resourceId
-          return e.resourceId === selectedResourceFilter
-        }
-      })
+      filtered = filtered.filter(e =>
+        e.type === 'booking'
+          ? e.vehicleId === selectedResourceFilter || e.driverId === selectedResourceFilter
+          : e.resourceId === selectedResourceFilter
+      )
     }
 
     return filtered
   }, [events, filterType, selectedResourceFilter])
 
-  // Refetch events when date or view changes
-  useEffect(() => {
-    const fetchEventsForDateRange = async () => {
-      setIsLoading(true)
-      try {
-        // Calculate date range based on current view
-        let startDate: Date
-        let endDate: Date
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+  // Fetch events for the range currently on screen. Every refresh path must go
+  // through this: calling getVendorCalendarEvents() with no range loads the
+  // vendor's entire unbounded history into the current view.
+  const refetchEvents = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const unit = view === 'month' ? 'month' : view === 'week' ? 'week' : 'day'
+      const startDate = moment(date).startOf(unit).toDate()
+      const endDate = moment(date).endOf(unit).toDate()
 
-        if (view === 'month') {
-          startDate = moment(date).startOf('month').toDate()
-          endDate = moment(date).endOf('month').toDate()
-        } else if (view === 'week') {
-          startDate = moment(date).startOf('week').toDate()
-          endDate = moment(date).endOf('week').toDate()
-        } else {
-          // day view
-          startDate = moment(date).startOf('day').toDate()
-          endDate = moment(date).endOf('day').toDate()
-        }
+      const newEvents = await getVendorCalendarEvents(
+        startDate.toISOString(),
+        endDate.toISOString()
+      )
 
-        // Only fetch from today onwards (no past bookings)
-        // The server will handle this, but we pass the correct dates
-        const newEvents = await getVendorCalendarEvents(
-          startDate.toISOString(),
-          endDate.toISOString()
-        )
-
-        setEvents(newEvents.map(e => ({
-          ...e,
-          start: new Date(e.start),
-          end: new Date(e.end)
-        })))
-      } catch (error) {
-        console.error('Error fetching events:', error)
-        toast.error('Failed to load calendar events')
-      } finally {
-        setIsLoading(false)
-      }
+      setEvents(newEvents.map(e => ({
+        ...e,
+        start: new Date(e.start),
+        end: new Date(e.end)
+      })))
+    } catch (error) {
+      console.error('Error fetching events:', error)
+      toast.error('Failed to load calendar events')
+    } finally {
+      setIsLoading(false)
     }
-
-    fetchEventsForDateRange()
   }, [date, view])
 
-  // Custom event style
+  // Refetch events when date or view changes
+  useEffect(() => {
+    refetchEvents()
+  }, [refetchEvents])
+
+  // Custom event style. Past events keep their type colour but recede, so history
+  // reads as history and cannot be mistaken for something still actionable.
   const eventStyleGetter = useCallback((event: CustomEvent) => {
     const style: React.CSSProperties = {
       backgroundColor: event.color || '#3B82F6',
       borderRadius: '5px',
-      opacity: 0.9,
+      opacity: isPastEvent(event) ? 0.45 : 0.9,
       color: 'white',
       border: '0px',
       display: 'block'
@@ -176,23 +166,22 @@ export function AvailabilityCalendar({
     setShowEventDialog(true)
   }, [])
 
-  // Handle calendar navigation with past month blocking
   const handleNavigate = useCallback((newDate: Date) => {
-    const newMonthStart = new Date(newDate.getFullYear(), newDate.getMonth(), 1)
+    setDate(newDate)
+  }, [])
 
-    // Block navigation to months before current month
-    if (newMonthStart < currentMonthStart) {
-      toast.info('Past bookings are available in the Bookings History page', {
-        description: 'Calendar shows only current and upcoming bookings'
+  // Handle slot selection (for creating unavailability)
+  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+    // Courtesy guard only — markResourceUnavailable rejects past dates server-side,
+    // which is what actually prevents backdating. Uses the same Dubai boundary as
+    // the server so the UI never offers a slot the server will refuse.
+    if (slotInfo.start < startOfBookingDayUtc()) {
+      toast.info('Cannot mark unavailability for a past date', {
+        description: 'Availability can only be blocked from today onwards'
       })
       return
     }
 
-    setDate(newDate)
-  }, [currentMonthStart])
-
-  // Handle slot selection (for creating unavailability)
-  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
     setSelectedSlot(slotInfo)
     setShowUnavailableDialog(true)
   }, [])
@@ -216,13 +205,7 @@ export function AvailabilityCalendar({
         data.notes
       )
 
-      // Refresh events
-      const newEvents = await getVendorCalendarEvents()
-      setEvents(newEvents.map(e => ({
-        ...e,
-        start: new Date(e.start),
-        end: new Date(e.end)
-      })))
+      await refetchEvents()
 
       toast.success('Resource marked as unavailable')
       setShowUnavailableDialog(false)
@@ -239,19 +222,13 @@ export function AvailabilityCalendar({
     try {
       await removeUnavailability(selectedEvent.id)
 
-      // Refresh events
-      const newEvents = await getVendorCalendarEvents()
-      setEvents(newEvents.map(e => ({
-        ...e,
-        start: new Date(e.start),
-        end: new Date(e.end)
-      })))
+      await refetchEvents()
 
       toast.success('Unavailability removed')
       setShowEventDialog(false)
       setSelectedEvent(null)
-    } catch (error) {
-      toast.error('Failed to remove unavailability')
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to remove unavailability')
     }
   }
 
@@ -314,6 +291,23 @@ export function AvailabilityCalendar({
           </div>
         </div>
       </div>
+
+      {/* Viewing a period that has already elapsed. Bookings cannot appear here —
+          their schedule rows are deleted on completion — so say so rather than
+          letting an empty grid imply the vendor ran no trips. */}
+      {isViewingPast && (
+        <div className="flex items-start gap-2 rounded-lg border border-muted bg-muted/50 p-3">
+          <AlertCircle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            Showing past unavailability only. Completed and cancelled bookings are not kept on the
+            calendar — find them in{' '}
+            <Link href="/vendor/bookings" className="font-medium underline underline-offset-4">
+              Bookings
+            </Link>
+            .
+          </p>
+        </div>
+      )}
 
       {/* Calendar */}
       <div className="h-[600px] bg-background rounded-lg p-4 border relative">
@@ -448,7 +442,7 @@ export function AvailabilityCalendar({
           )}
 
           <DialogFooter>
-            {selectedEvent?.type === 'unavailable' && (
+            {selectedEvent?.type === 'unavailable' && !isPastEvent(selectedEvent) && (
               <Button variant="destructive" size="sm" onClick={handleRemoveUnavailability}>
                 Remove Unavailability
               </Button>

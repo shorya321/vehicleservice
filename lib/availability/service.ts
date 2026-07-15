@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { startOfBookingDayUtc } from '@/lib/utils/timezone'
+import type { Database } from '@/lib/supabase/types'
 
 export interface AvailabilitySlot {
   start: Date
@@ -9,15 +11,11 @@ export interface AvailabilitySlot {
   bookingId?: string
 }
 
-export interface ResourceSchedule {
-  id: string
-  vendor_id: string
-  resource_type: 'vehicle' | 'driver'
-  resource_id: string
-  booking_assignment_id?: string
-  start_datetime: string
-  end_datetime: string
-  status: string
+/**
+ * Derived from the generated Supabase row types rather than hand-written, so
+ * column nullability cannot drift out of sync with the database.
+ */
+export type ResourceSchedule = Database['public']['Tables']['resource_schedules']['Row'] & {
   booking?: {
     booking_number: string
     pickup_address: string
@@ -25,58 +23,82 @@ export interface ResourceSchedule {
   }
 }
 
-export interface ResourceUnavailability {
-  id: string
-  vendor_id: string
-  resource_type: 'vehicle' | 'driver'
-  resource_id: string
-  reason: string
-  start_datetime: string
-  end_datetime: string
-  notes?: string
+export type ResourceUnavailability = Database['public']['Tables']['resource_unavailability']['Row']
+
+/** Why a resource is not free for a period. The two kinds are reported separately
+ *  so callers can tell the vendor the truth about which one blocked them. */
+export interface AvailabilityConflicts {
+  schedules: ResourceSchedule[]
+  unavailability: ResourceUnavailability[]
 }
 
 export class AvailabilityService {
   /**
-   * Check if a resource is available for a given time period
+   * Everything that overlaps [startTime, endTime) for a resource, split by kind.
+   *
+   * Throws on query failure rather than reporting "no conflicts" or "conflicted".
+   * A database outage is not an availability answer, and callers that coerce it
+   * into one tell the vendor something untrue.
+   *
+   * Scoping note: this filters on resource_id only. It is called through the RLS
+   * client, whose policies confine the rows to the caller's own vendor. Do not
+   * switch it to the admin client without adding an explicit vendor_id filter.
+   */
+  static async findConflicts(
+    resourceId: string,
+    resourceType: 'vehicle' | 'driver',
+    startTime: Date,
+    endTime: Date
+  ): Promise<AvailabilityConflicts> {
+    const supabase = await createClient()
+
+    // Half-open overlap: touching at the boundary is not a conflict.
+    const overlaps = `and(start_datetime.lt.${endTime.toISOString()},end_datetime.gt.${startTime.toISOString()})`
+
+    const [scheduleResult, unavailabilityResult] = await Promise.all([
+      supabase
+        .from('resource_schedules')
+        .select('*')
+        .eq('resource_id', resourceId)
+        .eq('resource_type', resourceType)
+        .or(overlaps),
+      supabase
+        .from('resource_unavailability')
+        .select('*')
+        .eq('resource_id', resourceId)
+        .eq('resource_type', resourceType)
+        .or(overlaps),
+    ])
+
+    if (scheduleResult.error) {
+      console.error('Error checking schedules:', scheduleResult.error)
+      throw new Error('Could not check resource availability. Please try again.')
+    }
+
+    if (unavailabilityResult.error) {
+      console.error('Error checking unavailability:', unavailabilityResult.error)
+      throw new Error('Could not check resource availability. Please try again.')
+    }
+
+    return {
+      schedules: scheduleResult.data ?? [],
+      unavailability: unavailabilityResult.data ?? [],
+    }
+  }
+
+  /**
+   * Check if a resource is available for a given time period.
+   * Throws if availability could not be determined.
    */
   static async checkAvailability(
     resourceId: string,
     resourceType: 'vehicle' | 'driver',
     startTime: Date,
-    endTime: Date,
-    vendorId?: string
+    endTime: Date
   ): Promise<boolean> {
-    const supabase = await createClient()
+    const conflicts = await this.findConflicts(resourceId, resourceType, startTime, endTime)
 
-    // Check for existing schedules
-    const { data: schedules, error: scheduleError } = await supabase
-      .from('resource_schedules')
-      .select('*')
-      .eq('resource_id', resourceId)
-      .eq('resource_type', resourceType)
-      .or(`and(start_datetime.lt.${endTime.toISOString()},end_datetime.gt.${startTime.toISOString()})`)
-
-    if (scheduleError) {
-      console.error('Error checking schedules:', scheduleError)
-      return false
-    }
-
-    // Check for unavailability periods
-    const { data: unavailability, error: unavailError } = await supabase
-      .from('resource_unavailability')
-      .select('*')
-      .eq('resource_id', resourceId)
-      .eq('resource_type', resourceType)
-      .or(`and(start_datetime.lt.${endTime.toISOString()},end_datetime.gt.${startTime.toISOString()})`)
-
-    if (unavailError) {
-      console.error('Error checking unavailability:', unavailError)
-      return false
-    }
-
-    // Resource is available if no conflicts found
-    return (!schedules || schedules.length === 0) && (!unavailability || unavailability.length === 0)
+    return conflicts.schedules.length === 0 && conflicts.unavailability.length === 0
   }
 
   /**
@@ -105,14 +127,18 @@ export class AvailabilityService {
       .eq('vendor_id', vendorId)
       .order('start_datetime', { ascending: true })
 
-    // Get events that overlap with the date range
-    // An event overlaps if it starts on/before the range ends AND ends on/after the range starts
-    // Only show current and future bookings (hide past)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // An event overlaps the range if it starts on/before the range ends AND ends
+    // on/after the range starts.
+    //
+    // Bookings stay clamped to today-and-future on purpose. Schedule rows are
+    // hard-deleted the moment a booking completes or is cancelled (removeSchedule),
+    // so this table holds current occupancy, not history — a past window would be
+    // populated only by rows that were never cleaned up. Past trips live in
+    // booking_assignments, surfaced by the Bookings History page.
+    const today = startOfBookingDayUtc()
 
     if (startDate && endDate) {
-      // Use the later of startDate or today
+      // Never look further back than today, whatever range was asked for.
       const effectiveStartDate = startDate < today ? today : startDate
       query = query
         .lte('start_datetime', endDate.toISOString())
@@ -125,7 +151,6 @@ export class AvailabilityService {
         .lte('start_datetime', endDate.toISOString())
         .gte('end_datetime', today.toISOString())
     } else {
-      // No date range specified, show only future
       query = query.gte('end_datetime', today.toISOString())
     }
 
@@ -155,28 +180,25 @@ export class AvailabilityService {
       .eq('vendor_id', vendorId)
       .order('start_datetime', { ascending: true })
 
-    // Get events that overlap with the date range
-    // An event overlaps if it starts on/before the range ends AND ends on/after the range starts
-    // Only show current and future unavailability (hide past)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
+    // An explicit range is honoured verbatim, past included. Unlike schedules,
+    // unavailability rows are never deleted, so history here is real: past
+    // maintenance windows and driver leave are recorded nowhere else in the
+    // product, and hiding them lost the only copy.
+    //
+    // The floor below applies only when no startDate was given — those calls are
+    // unbounded backwards and would otherwise scan the vendor's whole history.
     if (startDate && endDate) {
-      // Use the later of startDate or today
-      const effectiveStartDate = startDate < today ? today : startDate
       query = query
         .lte('start_datetime', endDate.toISOString())
-        .gte('end_datetime', effectiveStartDate.toISOString())
+        .gte('end_datetime', startDate.toISOString())
     } else if (startDate) {
-      const effectiveStartDate = startDate < today ? today : startDate
-      query = query.gte('end_datetime', effectiveStartDate.toISOString())
+      query = query.gte('end_datetime', startDate.toISOString())
     } else if (endDate) {
       query = query
         .lte('start_datetime', endDate.toISOString())
-        .gte('end_datetime', today.toISOString())
+        .gte('end_datetime', startOfBookingDayUtc().toISOString())
     } else {
-      // No date range specified, show only future
-      query = query.gte('end_datetime', today.toISOString())
+      query = query.gte('end_datetime', startOfBookingDayUtc().toISOString())
     }
 
     const { data, error } = await query
@@ -335,8 +357,7 @@ export class AvailabilityService {
         resource.id,
         resourceType,
         startTime,
-        endTime,
-        vendorId
+        endTime
       )
 
       if (isAvailable) {
@@ -348,7 +369,7 @@ export class AvailabilityService {
   }
 
   /**
-   * Get conflicts for a resource in a time period
+   * Get conflicts for a resource in a time period, flattened into one list.
    */
   static async getConflicts(
     resourceId: string,
@@ -356,24 +377,13 @@ export class AvailabilityService {
     startTime: Date,
     endTime: Date
   ): Promise<Array<ResourceSchedule | ResourceUnavailability>> {
-    const supabase = await createClient()
+    const { schedules, unavailability } = await this.findConflicts(
+      resourceId,
+      resourceType,
+      startTime,
+      endTime
+    )
 
-    // Get schedule conflicts
-    const { data: schedules } = await supabase
-      .from('resource_schedules')
-      .select('*')
-      .eq('resource_id', resourceId)
-      .eq('resource_type', resourceType)
-      .or(`and(start_datetime.lt.${endTime.toISOString()},end_datetime.gt.${startTime.toISOString()})`)
-
-    // Get unavailability conflicts
-    const { data: unavailability } = await supabase
-      .from('resource_unavailability')
-      .select('*')
-      .eq('resource_id', resourceId)
-      .eq('resource_type', resourceType)
-      .or(`and(start_datetime.lt.${endTime.toISOString()},end_datetime.gt.${startTime.toISOString()})`)
-
-    return [...(schedules || []), ...(unavailability || [])]
+    return [...schedules, ...unavailability]
   }
 }
