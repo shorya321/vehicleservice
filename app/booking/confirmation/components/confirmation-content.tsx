@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
-import { Copy, Check, Printer, Info, ArrowRight } from 'lucide-react'
+import { Copy, Check, Info, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -416,14 +416,6 @@ export function ConfirmationContent({
                 className={actionBtnClass}
               />
             )}
-<button
-              onClick={() => window.print()}
-              className={`print:hidden ${actionBtnClass}`}
-              aria-label="Print confirmation"
-            >
-              <Printer className="h-3.5 w-3.5" aria-hidden="true" />
-              Print
-            </button>
           </div>
         </motion.header>
 
