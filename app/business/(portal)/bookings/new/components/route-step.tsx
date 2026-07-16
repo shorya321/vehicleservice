@@ -45,6 +45,7 @@ interface RouteStepProps {
 type RouteFormData = z.infer<typeof routeSchema>;
 
 const MAX_SEATED_GUESTS = 20;
+const MAX_INFANT_GUESTS = 4;
 
 const routeSchema = z
   .object({
@@ -61,6 +62,12 @@ const routeSchema = z
   .refine((d) => d.adults + d.children + d.infants <= MAX_SEATED_GUESTS, {
     message: `Maximum ${MAX_SEATED_GUESTS} guests`,
     path: ['children'],
+  })
+  // Mirrors the child-seat max_quantity: every infant needs a seat and the operator stocks four.
+  // Children are deliberately uncapped — over 10 they need no seat.
+  .refine((d) => d.infants <= MAX_INFANT_GUESTS, {
+    message: `Maximum ${MAX_INFANT_GUESTS} infants per booking (child seat availability)`,
+    path: ['infants'],
   });
 
 export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {

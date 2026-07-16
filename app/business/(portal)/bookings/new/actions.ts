@@ -217,10 +217,16 @@ export async function getActiveAddons(): Promise<{
   try {
     const supabase = await createClient();
 
+    // Child seats are deliberately NOT add-ons in the business flow: the Route step's Guests picker
+    // already declares children and infants, and seats are provided free. Do not "fix" this by
+    // dropping the filter — the customer checkout has no guest breakdown, so for customers the
+    // add-on is the only way to request a legally-required seat, and it keeps its own copy of this
+    // query (app/checkout/actions.ts) precisely so the two flows can differ.
     const { data, error } = await supabase
       .from('addons')
       .select('id, name, description, icon, price, pricing_type, max_quantity, category')
       .eq('is_active', true)
+      .neq('category', 'Child Safety')
       .order('display_order', { ascending: true })
       .order('name', { ascending: true });
 
@@ -240,8 +246,8 @@ export async function getActiveAddons(): Promise<{
       categoryMap.get(addon.category)!.push(addon);
     });
 
-    // Define category order
-    const categoryOrder = ['Child Safety', 'Luggage', 'Comfort'];
+    // Define category order. 'Child Safety' is excluded by the query above.
+    const categoryOrder = ['Luggage', 'Comfort'];
     const addonsByCategory: AddonsByCategory[] = [];
 
     categoryOrder.forEach((cat) => {

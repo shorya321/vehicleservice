@@ -7,7 +7,7 @@
  * Design: shadcn/ui theme-aware components
  */
 
-import { AlertCircle, Baby, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-operations';
@@ -79,15 +79,6 @@ export function ReviewStep({
   };
   const seatedCount = getSeatedCount(guests);
   const guestSummary = formatGuestSummary(guests);
-  const showChildSeatHint = guests.children + guests.infants > 0;
-  const childSeatHintSubject = [
-    guests.children > 0 &&
-      `${guests.children} child${guests.children === 1 ? '' : 'ren'}`,
-    guests.infants > 0 &&
-      `${guests.infants} infant${guests.infants === 1 ? '' : 's'}`,
-  ]
-    .filter(Boolean)
-    .join(' and ');
 
   return (
     <div className="space-y-6">
@@ -200,14 +191,6 @@ export function ReviewStep({
           </div>
           <h3 className="text-base font-semibold text-foreground">Additional Services</h3>
         </div>
-        {showChildSeatHint && !isLoadingAddons && addonsByCategory.length > 0 && (
-          <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-            <Baby className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground">
-              Travelling with {childSeatHintSubject} — consider adding a child seat below.
-            </p>
-          </div>
-        )}
         {isLoadingAddons ? (
           <div className="space-y-3">
             <Skeleton className="h-20 w-full" />

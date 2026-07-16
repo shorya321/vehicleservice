@@ -26,8 +26,15 @@ interface GuestBreakdownSelectorProps {
   value: GuestBreakdown;
   onChange: (value: GuestBreakdown) => void;
   maxSeated?: number;
+  maxInfants?: number;
   className?: string;
 }
+
+/**
+ * Mirrors the `max_quantity` on the child-seat addons: the operator stocks four, and every infant
+ * legally needs one, so more than four infants cannot be carried.
+ */
+const MAX_INFANTS = 4;
 
 const MIN_ADULTS = 1;
 const MIN_CHILDREN = 0;
@@ -112,6 +119,7 @@ export function GuestBreakdownSelector({
   value,
   onChange,
   maxSeated = 20,
+  maxInfants = MAX_INFANTS,
   className,
 }: GuestBreakdownSelectorProps) {
   const seated = getSeatedCount(value);
@@ -172,7 +180,7 @@ export function GuestBreakdownSelector({
           min={MIN_INFANTS}
           onDecrement={() => update({ infants: value.infants - 1 })}
           onIncrement={() => update({ infants: value.infants + 1 })}
-          incrementDisabled={seatsFull}
+          incrementDisabled={seatsFull || value.infants >= maxInfants}
         />
 
         <div className="flex items-center justify-between border-t border-border pt-3">
@@ -183,7 +191,8 @@ export function GuestBreakdownSelector({
         </div>
         {value.infants + value.children > 0 && (
           <p className="text-xs text-muted-foreground -mt-2">
-            Child seats are required by UAE law and occupy a seat.
+            Child seats are included free. Add each child&apos;s age in Special Instructions so we
+            bring the right one.
           </p>
         )}
       </PopoverContent>
