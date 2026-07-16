@@ -9,6 +9,8 @@ interface PriceCalculationParams {
   fromLocationId: string;
   toLocationId: string;
   vehicleTypeId: string;
+  /** Every guest (adults + children + infants) — each occupies a seat. */
+  passengerCount: number;
   selectedAddons?: Array<{ addon_id: string; quantity: number }>;
 }
 
@@ -70,13 +72,21 @@ export async function calculateBusinessBookingPrice(
   // 3. Get vehicle type multiplier
   const { data: vehicleType } = await supabase
     .from('vehicle_types')
-    .select('business_price_multiplier, price_multiplier')
+    .select('business_price_multiplier, price_multiplier, passenger_capacity')
     .eq('id', params.vehicleTypeId)
     .eq('is_active', true)
     .single();
 
   if (!vehicleType) {
     return { error: 'Vehicle type not found or inactive' };
+  }
+
+  // The vehicle search filters by capacity, but that gate is client-driven. Re-check here so a
+  // crafted or replayed request cannot book more guests than the vehicle can legally carry.
+  if (params.passengerCount > vehicleType.passenger_capacity) {
+    return {
+      error: `This vehicle seats ${vehicleType.passenger_capacity}; the booking is for ${params.passengerCount} guests.`,
+    };
   }
 
   // 4. Calculate base price

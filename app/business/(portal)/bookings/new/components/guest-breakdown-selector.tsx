@@ -4,8 +4,8 @@
  * Guest Breakdown Selector
  * Popover with Adults / Children / Infants steppers for business bookings.
  *
- * Seat semantics: adults + children consume seats; infants ride on a lap and
- * do not consume a seat. The seated total drives vehicle capacity filtering.
+ * Seat semantics: every guest occupies a seat, infants included — UAE law requires a child safety
+ * seat for under-4s, and that seat takes up a seat position. The total drives capacity filtering.
  */
 
 import { ChevronDown, Minus, Plus, Users } from 'lucide-react';
@@ -167,12 +167,12 @@ export function GuestBreakdownSelector({
         />
         <StepperRow
           label="Infants"
-          hint="Under 2 · rides on lap"
+          hint="Under 2 · needs a car seat"
           value={value.infants}
           min={MIN_INFANTS}
           onDecrement={() => update({ infants: value.infants - 1 })}
           onIncrement={() => update({ infants: value.infants + 1 })}
-          incrementDisabled={value.infants >= value.adults}
+          incrementDisabled={seatsFull}
         />
 
         <div className="flex items-center justify-between border-t border-border pt-3">
@@ -181,9 +181,9 @@ export function GuestBreakdownSelector({
             {seated}
           </span>
         </div>
-        {value.infants > 0 && (
+        {value.infants + value.children > 0 && (
           <p className="text-xs text-muted-foreground -mt-2">
-            Infants ride on a lap and do not use a seat.
+            Child seats are required by UAE law and occupy a seat.
           </p>
         )}
       </PopoverContent>

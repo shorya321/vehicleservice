@@ -16,7 +16,7 @@ interface CustomerBookingConfirmationEmailProps {
   dropoffLocation: string;
   pickupDateTime: string;
   vehicleType: string;
-  /** Seated guests (adults + children). Infants ride on a lap. */
+  /** Every guest (adults + children + infants). */
   passengerCount: number;
   adults?: number;
   children?: number;

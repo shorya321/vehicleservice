@@ -74,6 +74,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     fromLocationId: body.from_location_id,
     toLocationId: body.to_location_id,
     vehicleTypeId: body.vehicle_type_id,
+    passengerCount: body.passenger_count,
     selectedAddons: body.selected_addons?.map((a) => ({
       addon_id: a.addon_id,
       quantity: a.quantity,

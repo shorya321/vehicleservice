@@ -71,13 +71,12 @@ export function ReviewStep({
   // Calculate addons total for display
   const addonsTotal = (formData.selected_addons || []).reduce((sum, addon) => sum + addon.total_price, 0);
 
-  // Infants ride on a lap and do not consume a seat.
+  // Every guest occupies a seat, infants included.
   const guests = {
     adults: formData.adults ?? 1,
     children: formData.children ?? 0,
     infants: formData.infants ?? 0,
   };
-  const infants = guests.infants;
   const seatedCount = getSeatedCount(guests);
   const guestSummary = formatGuestSummary(guests);
   const showChildSeatHint = guests.children + guests.infants > 0;
@@ -158,7 +157,6 @@ export function ReviewStep({
             <p className="text-foreground">{guestSummary}</p>
             <p className="text-muted-foreground">
               Seats needed: {seatedCount}
-              {infants > 0 && ' · infants ride on a lap'}
             </p>
           </div>
         </div>

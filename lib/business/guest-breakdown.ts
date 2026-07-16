@@ -4,8 +4,10 @@
  * Pure logic, no React — shared by the booking wizard UI and the email templates, so the two
  * cannot drift apart.
  *
- * Seat semantics: adults + children consume seats; infants ride on a lap and do not.
- * `business_bookings.passenger_count` holds the seated total.
+ * Seat semantics: every guest occupies a seat, infants included. UAE law requires a child safety
+ * seat for under-4s and a restraint to age 10, and a child seat takes up a seat position — so an
+ * infant cannot be counted as a lap passenger the way airlines do.
+ * `business_bookings.passenger_count` holds this total.
  */
 
 export interface GuestBreakdown {
@@ -14,9 +16,9 @@ export interface GuestBreakdown {
   infants: number;
 }
 
-/** Seats consumed. Infants ride on a lap and are excluded by design. */
+/** Seats consumed. Infants included — a child seat occupies a seat position. */
 export function getSeatedCount(value: GuestBreakdown): number {
-  return value.adults + value.children;
+  return value.adults + value.children + value.infants;
 }
 
 function pluralize(count: number, singular: string, plural: string): string {

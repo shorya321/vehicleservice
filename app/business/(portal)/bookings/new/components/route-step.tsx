@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/form';
 import { BookingFormData } from './booking-wizard';
 import { GuestBreakdownSelector } from './guest-breakdown-selector';
+import { getSeatedCount } from '@/lib/business/guest-breakdown';
 import { LocationSearchAutocomplete } from '@/components/search/location-search-autocomplete';
 import type { LocationSearchResult } from '@/lib/types/location';
 
@@ -56,14 +57,10 @@ const routeSchema = z
     children: z.number().int().min(0).max(MAX_SEATED_GUESTS),
     infants: z.number().int().min(0).max(MAX_SEATED_GUESTS),
   })
-  // Infants ride on a lap, so only adults + children consume seats.
-  .refine((d) => d.adults + d.children <= MAX_SEATED_GUESTS, {
-    message: `Maximum ${MAX_SEATED_GUESTS} seated guests`,
+  // Every guest occupies a seat, infants included — a child seat takes a seat position.
+  .refine((d) => d.adults + d.children + d.infants <= MAX_SEATED_GUESTS, {
+    message: `Maximum ${MAX_SEATED_GUESTS} guests`,
     path: ['children'],
-  })
-  .refine((d) => d.infants <= d.adults, {
-    message: 'One infant per adult (lap)',
-    path: ['infants'],
   });
 
 export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
@@ -95,13 +92,12 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
     guestErrors.adults?.message;
 
   async function onSubmit(values: RouteFormData) {
-    // passenger_count stays the seated total (infants ride on a lap) so the
-    // downstream vehicle capacity filter keeps working unchanged.
-    const seatedPassengers = values.adults + values.children;
+    // passenger_count is every guest, infants included — a child seat occupies a seat position.
+    const seatedPassengers = getSeatedCount(values);
 
     onUpdate({ ...values, passenger_count: seatedPassengers });
 
-    // Seated count is passed explicitly — onUpdate only queues a state update,
+    // Seat count is passed explicitly — onUpdate only queues a state update,
     // so the wizard cannot read it back from formData yet.
     await onFetchVehicles(
       values.from_location_id,

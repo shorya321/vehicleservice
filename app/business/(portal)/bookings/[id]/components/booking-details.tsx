@@ -130,11 +130,10 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
   const hasAcceptedAssignment = assignment?.status === 'accepted' || assignment?.status === 'completed';
 
   // Guest breakdown. Pre-migration bookings fall back to the legacy passenger_count.
-  const guestInfants = booking.infants ?? 0;
   const guestSummary = formatGuestSummary({
     adults: booking.adults ?? booking.passenger_count ?? 1,
     children: booking.children ?? 0,
-    infants: guestInfants,
+    infants: booking.infants ?? 0,
   });
 
   return (
@@ -341,7 +340,6 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                     <p className="font-semibold text-foreground">{guestSummary}</p>
                     <p className="text-xs text-muted-foreground">
                       {booking.passenger_count} seat{booking.passenger_count === 1 ? '' : 's'}
-                      {guestInfants > 0 && ' · infants on lap'}
                     </p>
                   </div>
                 </div>

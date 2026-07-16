@@ -65,7 +65,7 @@ export interface BookingFormData {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
-  /** Seated guests (adults + children). Infants ride on a lap and are excluded. */
+  /** Every guest (adults + children + infants) — a child seat occupies a seat position. */
   passenger_count: number;
   adults: number;
   children: number;
