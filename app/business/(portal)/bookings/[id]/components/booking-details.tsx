@@ -8,6 +8,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatGuestSummary } from '../../new/components/guest-breakdown-selector';
 import {
   Calendar,
   MapPin,
@@ -127,6 +128,14 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
   const daysUntil = getDaysUntilPickup(booking.pickup_datetime);
   const assignment = booking.booking_assignments?.[0];
   const hasAcceptedAssignment = assignment?.status === 'accepted' || assignment?.status === 'completed';
+
+  // Guest breakdown. Pre-migration bookings fall back to the legacy passenger_count.
+  const guestInfants = booking.infants ?? 0;
+  const guestSummary = formatGuestSummary({
+    adults: booking.adults ?? booking.passenger_count ?? 1,
+    children: booking.children ?? 0,
+    infants: guestInfants,
+  });
 
   return (
     <div className="space-y-6">
@@ -328,8 +337,12 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                     <Users className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Passengers</p>
-                    <p className="font-semibold text-foreground">{booking.passenger_count} Passengers</p>
+                    <p className="text-xs text-muted-foreground">Guests</p>
+                    <p className="font-semibold text-foreground">{guestSummary}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {booking.passenger_count} seat{booking.passenger_count === 1 ? '' : 's'}
+                      {guestInfants > 0 && ' · infants on lap'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

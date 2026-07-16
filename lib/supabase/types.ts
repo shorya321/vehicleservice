@@ -911,6 +911,7 @@ export type Database = {
       }
       business_bookings: {
         Row: {
+          adults: number
           applied_multiplier: number | null
           base_price: number
           booking_number: string
@@ -918,6 +919,7 @@ export type Database = {
           business_account_id: string
           cancellation_reason: string | null
           cancelled_at: string | null
+          children: number
           created_at: string
           created_by_user_id: string
           customer_email: string
@@ -927,6 +929,7 @@ export type Database = {
           dropoff_address: string
           from_location_id: string
           id: string
+          infants: number
           passenger_count: number
           payment_status: string | null
           pickup_address: string
@@ -943,6 +946,7 @@ export type Database = {
           wallet_deduction_amount: number
         }
         Insert: {
+          adults?: number
           applied_multiplier?: number | null
           base_price: number
           booking_number: string
@@ -950,6 +954,7 @@ export type Database = {
           business_account_id: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
+          children?: number
           created_at?: string
           created_by_user_id: string
           customer_email: string
@@ -959,6 +964,7 @@ export type Database = {
           dropoff_address: string
           from_location_id: string
           id?: string
+          infants?: number
           passenger_count?: number
           payment_status?: string | null
           pickup_address: string
@@ -975,6 +981,7 @@ export type Database = {
           wallet_deduction_amount: number
         }
         Update: {
+          adults?: number
           applied_multiplier?: number | null
           base_price?: number
           booking_number?: string
@@ -982,6 +989,7 @@ export type Database = {
           business_account_id?: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
+          children?: number
           created_at?: string
           created_by_user_id?: string
           customer_email?: string
@@ -991,6 +999,7 @@ export type Database = {
           dropoff_address?: string
           from_location_id?: string
           id?: string
+          infants?: number
           passenger_count?: number
           payment_status?: string | null
           pickup_address?: string
@@ -2821,8 +2830,10 @@ export type Database = {
       }
       create_booking_with_wallet_deduction: {
         Args: {
+          p_adults?: number
           p_base_price: number
           p_business_id: string
+          p_children?: number
           p_created_by_user_id: string
           p_customer_email: string
           p_customer_name: string
@@ -2830,6 +2841,7 @@ export type Database = {
           p_customer_phone: string
           p_dropoff_address: string
           p_from_location_id: string
+          p_infants?: number
           p_passenger_count: number
           p_pickup_address: string
           p_pickup_datetime: string

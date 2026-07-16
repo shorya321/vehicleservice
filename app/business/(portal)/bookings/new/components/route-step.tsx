@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MapPin, ArrowDown, Loader2 } from 'lucide-react';
@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { BookingFormData } from './booking-wizard';
+import { GuestBreakdownSelector } from './guest-breakdown-selector';
 import { LocationSearchAutocomplete } from '@/components/search/location-search-autocomplete';
 import type { LocationSearchResult } from '@/lib/types/location';
 
@@ -33,19 +34,37 @@ interface RouteStepProps {
   formData: Partial<BookingFormData>;
   onUpdate: (data: Partial<BookingFormData>) => void;
   onNext: () => void;
-  onFetchVehicles: (fromLocationId: string, toLocationId: string) => Promise<void>;
+  onFetchVehicles: (
+    fromLocationId: string,
+    toLocationId: string,
+    seatedPassengers: number
+  ) => Promise<void>;
 }
 
 type RouteFormData = z.infer<typeof routeSchema>;
 
-const routeSchema = z.object({
-  from_location_id: z.string().min(1, 'Pickup location is required'),
-  to_location_id: z.string().min(1, 'Dropoff location is required'),
-  pickup_address: z.string().min(5, 'Pickup address is required'),
-  dropoff_address: z.string().min(5, 'Dropoff address is required'),
-  pickup_datetime: z.string().min(1, 'Pickup date and time is required'),
-  passenger_count: z.number().int().min(1).max(20),
-});
+const MAX_SEATED_GUESTS = 20;
+
+const routeSchema = z
+  .object({
+    from_location_id: z.string().min(1, 'Pickup location is required'),
+    to_location_id: z.string().min(1, 'Dropoff location is required'),
+    pickup_address: z.string().min(5, 'Pickup address is required'),
+    dropoff_address: z.string().min(5, 'Dropoff address is required'),
+    pickup_datetime: z.string().min(1, 'Pickup date and time is required'),
+    adults: z.number().int().min(1).max(MAX_SEATED_GUESTS),
+    children: z.number().int().min(0).max(MAX_SEATED_GUESTS),
+    infants: z.number().int().min(0).max(MAX_SEATED_GUESTS),
+  })
+  // Infants ride on a lap, so only adults + children consume seats.
+  .refine((d) => d.adults + d.children <= MAX_SEATED_GUESTS, {
+    message: `Maximum ${MAX_SEATED_GUESTS} seated guests`,
+    path: ['children'],
+  })
+  .refine((d) => d.infants <= d.adults, {
+    message: 'One infant per adult (lap)',
+    path: ['infants'],
+  });
 
 export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
   const form = useForm<RouteFormData>({
@@ -56,18 +75,39 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
       pickup_address: formData.pickup_address || '',
       dropoff_address: formData.dropoff_address || '',
       pickup_datetime: formData.pickup_datetime || '',
-      passenger_count: formData.passenger_count || 1,
+      adults: formData.adults ?? 1,
+      children: formData.children ?? 0,
+      infants: formData.infants ?? 0,
     },
   });
 
   const [fromInput, setFromInput] = useState(formData.from_location_name || '');
   const [toInput, setToInput] = useState(formData.to_location_name || '');
 
-  async function onSubmit(values: RouteFormData) {
-    onUpdate(values);
+  const adults = useWatch({ control: form.control, name: 'adults' });
+  const children = useWatch({ control: form.control, name: 'children' });
+  const infants = useWatch({ control: form.control, name: 'infants' });
 
-    // Fetch available vehicles for selected route
-    await onFetchVehicles(values.from_location_id, values.to_location_id);
+  const guestErrors = form.formState.errors;
+  const guestError =
+    guestErrors.children?.message ||
+    guestErrors.infants?.message ||
+    guestErrors.adults?.message;
+
+  async function onSubmit(values: RouteFormData) {
+    // passenger_count stays the seated total (infants ride on a lap) so the
+    // downstream vehicle capacity filter keeps working unchanged.
+    const seatedPassengers = values.adults + values.children;
+
+    onUpdate({ ...values, passenger_count: seatedPassengers });
+
+    // Seated count is passed explicitly — onUpdate only queues a state update,
+    // so the wizard cannot read it back from formData yet.
+    await onFetchVehicles(
+      values.from_location_id,
+      values.to_location_id,
+      seatedPassengers
+    );
 
     onNext();
   }
@@ -178,25 +218,27 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="passenger_count"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Guest</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="20"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <FormItem>
+            <FormLabel>Guests</FormLabel>
+            <FormControl>
+              <GuestBreakdownSelector
+                value={{
+                  adults: adults ?? 1,
+                  children: children ?? 0,
+                  infants: infants ?? 0,
+                }}
+                onChange={(next) => {
+                  form.setValue('adults', next.adults, { shouldValidate: true });
+                  form.setValue('children', next.children, { shouldValidate: true });
+                  form.setValue('infants', next.infants, { shouldValidate: true });
+                }}
+                maxSeated={MAX_SEATED_GUESTS}
+              />
+            </FormControl>
+            {guestError && (
+              <p className="text-sm font-medium text-destructive">{guestError}</p>
             )}
-          />
+          </FormItem>
         </div>
 
         {/* Arrow Separator */}

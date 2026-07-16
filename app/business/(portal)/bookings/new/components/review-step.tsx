@@ -7,13 +7,14 @@
  * Design: shadcn/ui theme-aware components
  */
 
-import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
+import { AlertCircle, Baby, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-operations';
 import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, ZoneInfo, AddonsByCategory } from '../actions';
 import { AddonSelection, SelectedAddon } from './addon-selection';
+import { formatGuestSummary, getSeatedCount } from './guest-breakdown-selector';
 import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/utils/timezone';
 
 interface Location {
@@ -69,6 +70,25 @@ export function ReviewStep({
 
   // Calculate addons total for display
   const addonsTotal = (formData.selected_addons || []).reduce((sum, addon) => sum + addon.total_price, 0);
+
+  // Infants ride on a lap and do not consume a seat.
+  const guests = {
+    adults: formData.adults ?? 1,
+    children: formData.children ?? 0,
+    infants: formData.infants ?? 0,
+  };
+  const infants = guests.infants;
+  const seatedCount = getSeatedCount(guests);
+  const guestSummary = formatGuestSummary(guests);
+  const showChildSeatHint = guests.children + guests.infants > 0;
+  const childSeatHintSubject = [
+    guests.children > 0 &&
+      `${guests.children} child${guests.children === 1 ? '' : 'ren'}`,
+    guests.infants > 0 &&
+      `${guests.infants} infant${guests.infants === 1 ? '' : 's'}`,
+  ]
+    .filter(Boolean)
+    .join(' and ');
 
   return (
     <div className="space-y-6">
@@ -134,8 +154,12 @@ export function ReviewStep({
             </div>
             <h3 className="text-base font-semibold text-foreground">Passengers</h3>
           </div>
-          <div className="text-sm">
-            <p className="text-foreground">{formData.passenger_count} passenger(s)</p>
+          <div className="text-sm space-y-1">
+            <p className="text-foreground">{guestSummary}</p>
+            <p className="text-muted-foreground">
+              Seats needed: {seatedCount}
+              {infants > 0 && ' · infants ride on a lap'}
+            </p>
           </div>
         </div>
       </div>
@@ -178,6 +202,14 @@ export function ReviewStep({
           </div>
           <h3 className="text-base font-semibold text-foreground">Additional Services</h3>
         </div>
+        {showChildSeatHint && !isLoadingAddons && addonsByCategory.length > 0 && (
+          <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+            <Baby className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground">
+              Travelling with {childSeatHintSubject} — consider adding a child seat below.
+            </p>
+          </div>
+        )}
         {isLoadingAddons ? (
           <div className="space-y-3">
             <Skeleton className="h-20 w-full" />

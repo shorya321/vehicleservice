@@ -46,7 +46,11 @@ export const bookingCreationSchema = z.object({
   dropoff_address: z.string().min(5, 'Dropoff address required'),
   pickup_datetime: z.string().datetime('Invalid datetime format'),
   vehicle_type_id: z.string().uuid('Invalid vehicle type ID'),
+  /** Seated guests (adults + children). Infants ride on a lap. */
   passenger_count: z.number().int().min(1).max(20),
+  adults: z.number().int().min(1).max(20),
+  children: z.number().int().min(0).max(20),
+  infants: z.number().int().min(0).max(20),
   base_price: z.number().positive('Base price must be positive'),
   total_price: z.number().positive('Total price must be positive'),
   customer_notes: z.string().max(500).optional(),
@@ -57,7 +61,20 @@ export const bookingCreationSchema = z.object({
   price_signature: z.string().min(1, 'Price signature required'),
   price_signature_timestamp: z.number().positive(),
   price_signature_nonce: z.string().min(1, 'Signature nonce required'),
-});
+})
+  // Infants ride on a lap, so only adults + children consume seats.
+  .refine((d) => d.passenger_count === d.adults + d.children, {
+    message: 'passenger_count must equal adults + children',
+    path: ['passenger_count'],
+  })
+  .refine((d) => d.adults + d.children <= 20, {
+    message: 'Maximum 20 seated guests',
+    path: ['children'],
+  })
+  .refine((d) => d.infants <= d.adults, {
+    message: 'One infant per adult (lap)',
+    path: ['infants'],
+  });
 
 export type BookingCreationInput = z.infer<typeof bookingCreationSchema>;
 

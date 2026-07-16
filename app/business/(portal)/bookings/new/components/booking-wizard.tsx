@@ -65,7 +65,11 @@ export interface BookingFormData {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  /** Seated guests (adults + children). Infants ride on a lap and are excluded. */
   passenger_count: number;
+  adults: number;
+  children: number;
+  infants: number;
   customer_notes?: string;
   reference_number?: string;
 
@@ -96,6 +100,9 @@ export function BookingWizard({
 
   const [formData, setFormData] = useState<Partial<BookingFormData>>({
     passenger_count: 1,
+    adults: 1,
+    children: 0,
+    infants: 0,
     selected_addons: [],
   });
 
@@ -134,15 +141,21 @@ export function BookingWizard({
     setFormData((prev) => ({ ...prev, ...data }));
   }
 
-  async function fetchAvailableVehicles(fromLocationId: string, toLocationId: string) {
+  async function fetchAvailableVehicles(
+    fromLocationId: string,
+    toLocationId: string,
+    seatedPassengers: number
+  ) {
     setIsLoadingVehicles(true);
     setVehicleFetchError(undefined);
 
     try {
+      // Seated count is passed in explicitly: updateFormData() above only
+      // queues a state update, so reading formData here would be stale.
       const result = await getAvailableVehicleTypesForRoute(
         fromLocationId,
         toLocationId,
-        formData.passenger_count || 1,
+        seatedPassengers || 1,
         businessAccountId
       );
 
