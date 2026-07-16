@@ -213,7 +213,11 @@ export interface BusinessCustomerBookingConfirmationEmailData {
   dropoffLocation: string;
   pickupDateTime: string;
   vehicleType: string;
+  /** Seated guests (adults + children). Infants ride on a lap. */
   passengerCount: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
   referenceNumber?: string;
   extras?: Array<{ label: string; quantity: number; price: number }>;
 }

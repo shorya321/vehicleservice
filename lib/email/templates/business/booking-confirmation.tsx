@@ -5,6 +5,7 @@ import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
+import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 
 interface BusinessBookingConfirmationEmailProps {
   businessName: string;
@@ -16,7 +17,11 @@ interface BusinessBookingConfirmationEmailProps {
   dropoffLocation: string;
   pickupDateTime: string;
   vehicleType: string;
+  /** Seated guests (adults + children). Infants ride on a lap. */
   passengerCount: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
   totalPrice: number;
   currency: string;
   walletDeducted: number;
@@ -39,6 +44,9 @@ export const BusinessBookingConfirmationEmail = ({
   pickupDateTime,
   vehicleType,
   passengerCount,
+  adults,
+  children,
+  infants,
   totalPrice,
   currency,
   walletDeducted,
@@ -50,6 +58,11 @@ export const BusinessBookingConfirmationEmail = ({
   originalCurrency,
 }: BusinessBookingConfirmationEmailProps) => {
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
+  // Older bookings predate the guest breakdown — fall back to the seated count.
+  const passengerLabel =
+    adults != null
+      ? formatGuestSummary({ adults, children: children ?? 0, infants: infants ?? 0 })
+      : passengerCount;
   return (
     <EmailLayout
       preview={`Booking Created - ${tripNumber || bookingNumber}`}
@@ -103,7 +116,7 @@ export const BusinessBookingConfirmationEmail = ({
           <strong>Vehicle:</strong> {vehicleType}
         </Text>
         <Text style={emailStyles.detailRow}>
-          <strong>Passengers:</strong> {passengerCount}
+          <strong>Passengers:</strong> {passengerLabel}
         </Text>
       </DetailsSection>
 

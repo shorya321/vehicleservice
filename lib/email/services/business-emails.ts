@@ -137,7 +137,11 @@ export interface BusinessBookingConfirmationEmailData {
   dropoffLocation: string;
   pickupDateTime: string;
   vehicleType: string;
+  /** Seated guests (adults + children). Infants ride on a lap. */
   passengerCount: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
   totalPrice: number;
   currency: string;
   walletDeducted: number;
@@ -171,6 +175,9 @@ export async function sendBusinessBookingConfirmationEmail(
       pickupDateTime: data.pickupDateTime,
       vehicleType: data.vehicleType,
       passengerCount: data.passengerCount,
+      adults: data.adults,
+      children: data.children,
+      infants: data.infants,
       totalPrice: data.totalPrice,
       currency: data.currency,
       walletDeducted: data.walletDeducted,
@@ -256,6 +263,9 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
       pickupDateTime: data.pickupDateTime,
       vehicleType: data.vehicleType,
       passengerCount: data.passengerCount,
+      adults: data.adults,
+      children: data.children,
+      infants: data.infants,
       referenceNumber: data.referenceNumber,
       extras: data.extras,
     },

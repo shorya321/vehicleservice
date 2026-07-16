@@ -14,7 +14,7 @@ import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-oper
 import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, ZoneInfo, AddonsByCategory } from '../actions';
 import { AddonSelection, SelectedAddon } from './addon-selection';
-import { formatGuestSummary, getSeatedCount } from './guest-breakdown-selector';
+import { formatGuestSummary, getSeatedCount } from '@/lib/business/guest-breakdown';
 import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/utils/timezone';
 
 interface Location {

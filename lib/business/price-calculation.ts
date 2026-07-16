@@ -91,7 +91,7 @@ export async function calculateBusinessBookingPrice(
     const addonIds = params.selectedAddons.map((a) => a.addon_id);
     const { data: dbAddons } = await supabase
       .from('addons')
-      .select('id, name, price, is_active')
+      .select('id, name, price, is_active, pricing_type, max_quantity')
       .in('id', addonIds);
 
     if (!dbAddons) {
@@ -99,7 +99,16 @@ export async function calculateBusinessBookingPrice(
     }
 
     const addonMap = new Map(
-      dbAddons.map((a: { id: string; name: string; price: number; is_active: boolean }) => [a.id, a])
+      dbAddons.map(
+        (a: {
+          id: string;
+          name: string;
+          price: number;
+          is_active: boolean;
+          pricing_type: string;
+          max_quantity: number | null;
+        }) => [a.id, a]
+      )
     );
 
     for (const selected of params.selectedAddons) {
@@ -109,6 +118,15 @@ export async function calculateBusinessBookingPrice(
       }
       if (!dbAddon.is_active) {
         return { error: `Addon ${selected.addon_id} is no longer available` };
+      }
+
+      // Enforce the addon's own quantity rule. `fixed` addons are a toggle in the UI, so their
+      // quantity is always 1; `per_unit` addons are capped at the admin-configured max_quantity.
+      // The client enforces both, so a violation here is a bug or a tampered request — reject it
+      // rather than silently rewriting it into a different order.
+      const maxAllowed = dbAddon.pricing_type === 'fixed' ? 1 : dbAddon.max_quantity ?? 1;
+      if (selected.quantity > maxAllowed) {
+        return { error: `${dbAddon.name}: maximum quantity is ${maxAllowed}` };
       }
 
       const unitPrice = dbAddon.price;

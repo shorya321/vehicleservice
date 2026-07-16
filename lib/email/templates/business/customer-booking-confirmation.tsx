@@ -4,6 +4,7 @@ import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
+import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 
 interface CustomerBookingConfirmationEmailProps {
   customerName: string;
@@ -15,7 +16,11 @@ interface CustomerBookingConfirmationEmailProps {
   dropoffLocation: string;
   pickupDateTime: string;
   vehicleType: string;
+  /** Seated guests (adults + children). Infants ride on a lap. */
   passengerCount: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
   referenceNumber?: string;
   extras?: Array<{ label: string; quantity: number; price: number }>;
 }
@@ -31,9 +36,18 @@ export const CustomerBookingConfirmationEmail = ({
   pickupDateTime,
   vehicleType,
   passengerCount,
+  adults,
+  children,
+  infants,
   referenceNumber,
   extras,
 }: CustomerBookingConfirmationEmailProps) => {
+  // Older bookings predate the guest breakdown — fall back to the seated count.
+  const passengerLabel =
+    adults != null
+      ? formatGuestSummary({ adults, children: children ?? 0, infants: infants ?? 0 })
+      : passengerCount;
+
   return (
     <EmailLayout
       preview={`Your Transfer Booking - ${tripNumber || bookingNumber}`}
@@ -74,7 +88,7 @@ export const CustomerBookingConfirmationEmail = ({
           <strong>Vehicle:</strong> {vehicleType}
         </Text>
         <Text style={emailStyles.detailRow}>
-          <strong>Passengers:</strong> {passengerCount}
+          <strong>Passengers:</strong> {passengerLabel}
         </Text>
         {customerPhone && (
           <Text style={emailStyles.detailRow}>

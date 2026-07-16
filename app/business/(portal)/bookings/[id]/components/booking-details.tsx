@@ -8,7 +8,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { formatGuestSummary } from '../../new/components/guest-breakdown-selector';
+import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import {
   Calendar,
   MapPin,
