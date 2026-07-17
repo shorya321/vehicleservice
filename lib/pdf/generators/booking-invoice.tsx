@@ -8,6 +8,8 @@
 
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { pdfStyles, pdfColors } from '../styles/constants';
+// The customer copy — never lib/business/, which the business module owns and is free to diverge.
+import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
 
 /**
  * Local overrides only — the shared pdfStyles are spaced for the multi-page wallet
@@ -127,6 +129,10 @@ export interface BookingInvoiceData {
   pickupDatetime?: string;
   vehicleTypeName?: string;
   passengerCount: number;
+  // Optional: bookings that predate the guest breakdown fall back to the plain total.
+  adults?: number;
+  children?: number;
+  infants?: number;
   luggageCount?: number;
 
   // Charges
@@ -146,6 +152,16 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
 );
 
 export const BookingInvoicePDF = (data: BookingInvoiceData) => {
+  // Mirrors the confirmation email: name the party when we know it, else the plain total.
+  const passengerLabel =
+    data.adults != null
+      ? formatGuestSummary({
+          adults: data.adults,
+          children: data.children ?? 0,
+          infants: data.infants ?? 0,
+        })
+      : String(data.passengerCount);
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -194,10 +210,12 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
             <InfoRow label="To" value={data.dropoffAddress} />
             {data.pickupDatetime && <InfoRow label="Pickup" value={data.pickupDatetime} />}
             {data.vehicleTypeName && <InfoRow label="Vehicle" value={data.vehicleTypeName} />}
-            <InfoRow
-              label="Passengers"
-              value={`${data.passengerCount}${data.luggageCount != null ? ` · ${data.luggageCount} luggage` : ''}`}
-            />
+            {/* Luggage gets its own row: formatGuestSummary already uses "·" before infants, so
+                appending "· N luggage" would give one separator two meanings. */}
+            <InfoRow label="Passengers" value={passengerLabel} />
+            {data.luggageCount != null && (
+              <InfoRow label="Luggage" value={String(data.luggageCount)} />
+            )}
           </View>
         </View>
 

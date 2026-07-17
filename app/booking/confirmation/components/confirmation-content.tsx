@@ -9,6 +9,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
 import { InvoiceDownloadButton } from './invoice-download-button'
 
 const formatDate = (d: Date) =>
@@ -51,6 +52,11 @@ interface Booking {
   dropoff_address: string
   pickup_datetime: string | null
   passenger_count: number
+  // Optional despite being NOT NULL in the DB: matches the email's `adults != null` fallback, so a
+  // caller that narrows its select degrades to the plain total instead of rendering undefined.
+  adults?: number
+  children?: number
+  infants?: number
   luggage_count: number | null
   base_price: number
   total_price: number
@@ -294,6 +300,16 @@ export function ConfirmationContent({
   const isPaid = booking.payment_status === 'completed'
   const pickupDate = booking.pickup_datetime ? new Date(booking.pickup_datetime) : null
   const statusConfig = getStatusConfig(booking.booking_status)
+  // Only worth showing when the party isn't all adults — otherwise it just restates passenger_count.
+  // Legacy bookings were backfilled to all-adults, so they render exactly as they did before.
+  const guestSummary =
+    booking.adults != null && (booking.children ?? 0) + (booking.infants ?? 0) > 0
+      ? formatGuestSummary({
+          adults: booking.adults,
+          children: booking.children ?? 0,
+          infants: booking.infants ?? 0,
+        })
+      : null
   const copyBookingNumber = async () => {
     try {
       await navigator.clipboard.writeText(booking.trip_number || booking.booking_number)
@@ -490,6 +506,11 @@ export function ConfirmationContent({
                         <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
                           {booking.passenger_count}{booking.vehicle_type ? ` / ${booking.vehicle_type.passenger_capacity}` : ''}
                         </dd>
+                        {guestSummary && (
+                          <dd className="mt-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
+                            {guestSummary}
+                          </dd>
+                        )}
                       </div>
                       <div>
                         <dt className="t-label">Bags</dt>
