@@ -155,7 +155,12 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   // Parse date and time
   const pickupDate = params.date || bookingToday()
   const pickupTime = params.time || '10:00'
-  const passengers = parseInt(params.passengers || '1')
+  // Clamp to what the vehicle can actually carry — same guard as the /checkout/[routeSlug]/
+  // [vehicleSlug] route. `|| 1` also absorbs NaN from e.g. `?passengers=abc`.
+  const passengers = Math.min(
+    Math.max(1, parseInt(params.passengers || '1') || 1),
+    vehicleType.passenger_capacity
+  )
   const luggage = parseInt(params.luggage || '0')
 
   return (

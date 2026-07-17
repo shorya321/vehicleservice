@@ -175,8 +175,14 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   // Parse date and time
   const pickupDate = sp.date || new Date().toISOString().split('T')[0]
   const pickupTime = sp.time || '10:00'
-  const passengers = parseInt(sp.passengers || '1')
-  const luggage = parseInt(sp.luggage || '0')
+  // Clamp to what the vehicle can actually carry. Search filters by capacity, so this normally only
+  // fires for stale or hand-crafted links; the stepper renders "Max N", so the reduced count is
+  // visible rather than hidden. The `|| 1` also absorbs NaN from e.g. `?passengers=abc`.
+  const passengers = Math.min(
+    Math.max(1, parseInt(sp.passengers || '1') || 1),
+    vehicleType.passenger_capacity
+  )
+  const luggage = parseInt(sp.luggage || '0') || 0
 
   return (
     <PublicLayout>

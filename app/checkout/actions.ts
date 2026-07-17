@@ -371,6 +371,16 @@ export async function createBooking(formData: BookingFormData) {
   if (!vehicleType) {
     throw new Error('Vehicle type not found or inactive')
   }
+
+  // The search filters by capacity and the checkout page clamps, but both are client-reachable.
+  // This is the authoritative gate. It runs before the booking row is inserted and well before a
+  // Stripe PaymentIntent exists (created later, on the payment page), so it cannot strand a payment.
+  if (validatedData.passengerCount > vehicleType.passenger_capacity) {
+    throw new Error(
+      `This vehicle seats ${vehicleType.passenger_capacity}; the booking is for ${validatedData.passengerCount} passengers.`
+    )
+  }
+
   const basePrice = vehicleType.price
 
   // 3b. Verify addon prices against database

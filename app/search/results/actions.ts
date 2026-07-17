@@ -504,6 +504,9 @@ async function getVehicleTypesForZoneTransfer(
       )
     `)
     .eq('is_active', true)
+    // Only show vehicles that can actually seat the party. Zero matches is handled: the caller
+    // renders <EmptyState /> when vehicleTypes is empty.
+    .gte('passenger_capacity', passengers)
     .order('passenger_capacity', { ascending: true })
 
   if (typesError || !vehicleTypesData) {
@@ -593,6 +596,9 @@ async function getVehicleTypesForRoute(
       )
     `)
     .eq('is_active', true)
+    // Only show vehicles that can actually seat the party. Zero matches is handled: the caller
+    // renders <EmptyState /> when vehicleTypes is empty.
+    .gte('passenger_capacity', passengers)
     .order('passenger_capacity', { ascending: true })
 
   if (typesError || !vehicleTypesData) {
