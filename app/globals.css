@@ -1659,6 +1659,13 @@
     flex: 0.7;
   }
 
+  /* Guests holds a summary ("2 adults, 1 child · 1 infant"), not a single number, so it needs
+     more room than --narrow, which the old numeric passengers input used. */
+  .search-bar-field--guests {
+    flex: 1;
+    min-width: 0;
+  }
+
   .search-bar-label {
     display: block;
     font-size: 0.6875rem;

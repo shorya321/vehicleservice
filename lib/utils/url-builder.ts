@@ -5,13 +5,27 @@
 export function buildSearchUrl(
   originSlug: string,
   destSlug: string,
-  params: { date: string; passengers: string | number }
+  params: {
+    date: string
+    /**
+     * Total guests (adults + children + infants). Always emitted — the results pages
+     * redirect('/') when it is missing, and existing links/bookmarks rely on it.
+     */
+    passengers: string | number
+    adults?: number
+    children?: number
+    infants?: number
+  }
 ): string {
   const routeSlug = `${originSlug}-to-${destSlug}`
   const searchParams = new URLSearchParams({
     date: params.date,
     passengers: params.passengers.toString(),
   })
+  // Optional breakdown — callers that only know a total (route cards, zone pages) omit these.
+  if (params.adults !== undefined) searchParams.set('adults', params.adults.toString())
+  if (params.children !== undefined) searchParams.set('children', params.children.toString())
+  if (params.infants !== undefined) searchParams.set('infants', params.infants.toString())
   return `/search/${routeSlug}?${searchParams.toString()}`
 }
 

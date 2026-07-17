@@ -1,7 +1,7 @@
 "use client"
 import { useCallback, useLayoutEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ArrowRight, CalendarDays, Users } from 'lucide-react'
+import { ArrowRight, CalendarDays } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { format, parse } from 'date-fns'
 import type { LocationSearchResult } from '@/lib/types/location'
@@ -9,13 +9,15 @@ import { LocationSearchAutocomplete } from '@/components/search/location-search-
 import { buildSearchUrl } from '@/lib/utils/url-builder'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { GuestSelector } from './guest-selector'
+import { getSeatedCount, type GuestBreakdown } from './guest-breakdown'
 
 export function SearchForm({ todayDate }: { todayDate: string }) {
   const router = useRouter()
 
   const [fromLocation, setFromLocation] = useState<LocationSearchResult | null>(null)
   const [toLocation, setToLocation] = useState<LocationSearchResult | null>(null)
-  const [passengers, setPassengers] = useState(2)
+  const [guests, setGuests] = useState<GuestBreakdown>({ adults: 2, children: 0, infants: 0 })
   const [selectedDate, setSelectedDate] = useState(todayDate)
   const [calendarOpen, setCalendarOpen] = useState(false)
 
@@ -52,10 +54,15 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
     if (fromLocation && toLocation) {
       router.push(buildSearchUrl(fromLocation.slug, toLocation.slug, {
         date: selectedDate,
-        passengers: passengers,
+        // `passengers` stays the total so the results pages (which redirect('/') without it) and
+        // every existing link keep working. The breakdown rides alongside.
+        passengers: getSeatedCount(guests),
+        adults: guests.adults,
+        children: guests.children,
+        infants: guests.infants,
       }))
     }
-  }, [fromLocation, passengers, router, selectedDate, toLocation])
+  }, [fromLocation, guests, router, selectedDate, toLocation])
 
   return (
     <form
@@ -156,24 +163,10 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
 
       <div className="search-bar-divider" aria-hidden />
 
-      {/* Passengers */}
-      <div className="search-bar-field search-bar-field--narrow">
-        <label htmlFor="passengers" className="search-bar-label">Passengers</label>
-        <div className="relative">
-          <Users
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-muted)]"
-            aria-hidden
-          />
-          <input
-            id="passengers"
-            type="number"
-            min={1}
-            max={20}
-            value={passengers}
-            onChange={(e) => setPassengers(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))}
-            className="search-bar-input pl-9"
-          />
-        </div>
+      {/* Guests */}
+      <div className="search-bar-field search-bar-field--guests">
+        <label htmlFor="guests" className="search-bar-label">Guests</label>
+        <GuestSelector value={guests} onChange={setGuests} />
       </div>
 
       {/* Search button */}
