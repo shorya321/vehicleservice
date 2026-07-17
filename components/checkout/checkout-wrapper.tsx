@@ -56,8 +56,6 @@ export function CheckoutWrapper({
 }: CheckoutWrapperProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
-  const [infantSeats, setInfantSeats] = useState(0)
-  const [boosterSeats, setBoosterSeats] = useState(0)
   const [currentPassengers, setCurrentPassengers] = useState(initialPassengers)
   const [currentLuggage, setCurrentLuggage] = useState(initialLuggage)
   const [pickupDate, setPickupDate] = useState(initialDate)
@@ -78,9 +76,8 @@ export function CheckoutWrapper({
   const basePrice = vehicleType.price || 50
   const extraLuggageCount = Math.max(0, currentLuggage - vehicleType.luggage_capacity)
   const extraLuggageCost = extraLuggageCount * extraItemPrices.extraLuggagePerUnit
-  const childSeatsCost = (infantSeats + boosterSeats) * extraItemPrices.childSeatPerUnit
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const totalPrice = basePrice + extraLuggageCost + childSeatsCost + addonsCost
+  const totalPrice = basePrice + extraLuggageCost + addonsCost
 
   const goNext = useCallback(() => {
     if (currentStep < TOTAL_STEPS - 1) {
@@ -96,9 +93,7 @@ export function CheckoutWrapper({
     }
   }, [currentStep])
 
-  const handleExtrasChange = (infant: number, booster: number, luggage: number) => {
-    setInfantSeats(infant)
-    setBoosterSeats(booster)
+  const handleExtrasChange = (luggage: number) => {
     setCurrentLuggage(luggage)
   }
 
@@ -155,8 +150,6 @@ export function CheckoutWrapper({
               vehicleType={vehicleType}
               passengers={currentPassengers}
               luggage={currentLuggage}
-              infantSeats={infantSeats}
-              boosterSeats={boosterSeats}
               pickupDate={pickupDate}
               pickupTime={pickupTime}
               currentStep={currentStep}
@@ -179,8 +172,6 @@ export function CheckoutWrapper({
         basePrice={basePrice}
         passengers={currentPassengers}
         luggage={currentLuggage}
-        infantSeats={infantSeats}
-        boosterSeats={boosterSeats}
         pickupDate={pickupDate}
         pickupTime={pickupTime}
         selectedAddons={selectedAddons}

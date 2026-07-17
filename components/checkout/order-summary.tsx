@@ -13,8 +13,6 @@ interface OrderSummaryProps {
   vehicleType: VehicleTypeDetails
   passengers: number
   luggage: number
-  infantSeats?: number
-  boosterSeats?: number
   pickupDate?: string
   pickupTime?: string
   currentStep?: number
@@ -56,8 +54,6 @@ export const OrderSummary = memo(function OrderSummary({
   vehicleType,
   passengers,
   luggage,
-  infantSeats = 0,
-  boosterSeats = 0,
   pickupDate,
   pickupTime,
   currentStep,
@@ -82,9 +78,8 @@ export const OrderSummary = memo(function OrderSummary({
   const basePrice = vehicleType.price || 50
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
   const extraLuggageCost = extraLuggageCount * (extraItemPrices?.extraLuggagePerUnit ?? 15)
-  const childSeatsCost = (infantSeats + boosterSeats) * (extraItemPrices?.childSeatPerUnit ?? 10)
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const subtotal = basePrice + extraLuggageCost + childSeatsCost + addonsCost
+  const subtotal = basePrice + extraLuggageCost + addonsCost
   const total = subtotal - promoDiscount
 
   const formattedDate = pickupDate
@@ -139,12 +134,6 @@ export const OrderSummary = memo(function OrderSummary({
       {/* Price Breakdown */}
       <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-2.5 text-[0.875rem]">
         <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
-        {childSeatsCost > 0 && (
-          <PriceRow
-            label={`Child seats (${infantSeats + boosterSeats})`}
-            value={formatUserPrice(childSeatsCost)}
-          />
-        )}
         {extraLuggageCost > 0 && (
           <PriceRow
             label={`Extra luggage (${extraLuggageCount})`}

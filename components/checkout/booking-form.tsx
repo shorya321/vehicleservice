@@ -36,8 +36,6 @@ const bookingSchema = z.object({
   pickupTime: z.string().min(1, 'Pickup time is required'),
   flightNumber: z.string().optional(),
   specialRequests: z.string().optional(),
-  infantSeats: z.number().min(0).max(4),
-  boosterSeats: z.number().min(0).max(4),
   luggageCount: z.number().min(0).max(50),
   extraLuggageCount: z.number().min(0),
   paymentMethod: z.enum(['card']),
@@ -72,7 +70,7 @@ interface BookingFormProps {
   direction: 1 | -1
   onGoNext: () => void
   onGoBack: () => void
-  onExtrasChange?: (infantSeats: number, boosterSeats: number, luggage: number) => void
+  onExtrasChange?: (luggage: number) => void
   onPassengersChange?: (passengers: number) => void
   onDateTimeChange?: (date: string, time: string) => void
   onAddonsChange?: (addons: OrderSummaryAddon[]) => void
@@ -127,8 +125,6 @@ export function BookingForm({
       phone: profile?.phone || user?.user_metadata?.phone || '',
       pickupDate: initialDate,
       pickupTime: initialTime,
-      infantSeats: 0,
-      boosterSeats: 0,
       luggageCount: luggage,
       extraLuggageCount: Math.max(0, luggage - vehicleType.luggage_capacity),
       paymentMethod: 'card',
@@ -139,8 +135,6 @@ export function BookingForm({
 
   const { handleSubmit, watch, setValue, trigger, formState: { errors } } = form
   const agreeToTerms = watch('agreeToTerms')
-  const infantSeats = watch('infantSeats')
-  const boosterSeats = watch('boosterSeats')
   const watchedAddons = watch('selectedAddons')
   const selectedAddons = useMemo(() => watchedAddons || [], [watchedAddons])
 
@@ -158,9 +152,9 @@ export function BookingForm({
 
   useEffect(() => {
     if (onExtrasChange) {
-      onExtrasChange(infantSeats, boosterSeats, luggage)
+      onExtrasChange(luggage)
     }
-  }, [infantSeats, boosterSeats, luggage, onExtrasChange])
+  }, [luggage, onExtrasChange])
 
   useEffect(() => {
     if (onAddonsChange) {
@@ -201,10 +195,6 @@ export function BookingForm({
         email: data.email,
         phone: data.phone,
         specialRequests: data.specialRequests,
-        childSeats: {
-          infant: data.infantSeats,
-          booster: data.boosterSeats
-        },
         extraLuggageCount: data.extraLuggageCount,
         basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,

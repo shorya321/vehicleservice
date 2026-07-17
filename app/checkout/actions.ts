@@ -318,10 +318,6 @@ const bookingSchema = z.object({
   email: z.string().email(),
   phone: phoneSchema,
   specialRequests: z.string().optional(),
-  childSeats: z.object({
-    infant: z.number().min(0).max(4),
-    booster: z.number().min(0).max(4)
-  }),
   extraLuggageCount: z.number().min(0),
   basePrice: z.number().min(0),
   agreeToTerms: z.boolean().refine(val => val === true, {
@@ -439,9 +435,7 @@ export async function createBooking(formData: BookingFormData) {
 
   const extraPrices = await getExtraItemPrices()
   const extraLuggagePrice = validatedData.extraLuggageCount * extraPrices.extraLuggagePerUnit
-  const childSeatsCount = (validatedData.childSeats?.infant || 0) + (validatedData.childSeats?.booster || 0)
-  const childSeatsPrice = childSeatsCount * extraPrices.childSeatPerUnit
-  const amenitiesPrice = extraLuggagePrice + childSeatsPrice + verifiedAddonsPrice
+  const amenitiesPrice = extraLuggagePrice + verifiedAddonsPrice
   const totalPrice = basePrice + amenitiesPrice
   
   // Get zone IDs if location IDs are provided
@@ -580,16 +574,6 @@ export async function createBooking(formData: BookingFormData) {
       amenity_type: 'extra_luggage',
       quantity: validatedData.extraLuggageCount,
       price: extraLuggagePrice,
-    })
-  }
-
-  // Add child seats if any
-  if (childSeatsCount > 0) {
-    amenities.push({
-      booking_id: booking.id,
-      amenity_type: 'child_seat',
-      quantity: childSeatsCount,
-      price: childSeatsPrice,
     })
   }
 

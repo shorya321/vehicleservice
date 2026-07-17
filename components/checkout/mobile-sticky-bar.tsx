@@ -15,8 +15,6 @@ interface MobileStickyBarProps {
   basePrice: number
   passengers: number
   luggage: number
-  infantSeats: number
-  boosterSeats: number
   pickupDate?: string
   pickupTime?: string
   selectedAddons: OrderSummaryAddon[]
@@ -36,8 +34,6 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   basePrice,
   passengers,
   luggage,
-  infantSeats,
-  boosterSeats,
   pickupDate,
   pickupTime,
   selectedAddons,
@@ -57,7 +53,6 @@ export const MobileStickyBar = memo(function MobileStickyBar({
 
   const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
   const extraLuggageCost = extraLuggageCount * (extraItemPrices?.extraLuggagePerUnit ?? 15)
-  const childSeatsCost = (infantSeats + boosterSeats) * (extraItemPrices?.childSeatPerUnit ?? 10)
 
   const formattedDate = pickupDate
     ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -139,12 +134,6 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                       <span className="text-[var(--text-secondary)]">Base fare</span>
                       <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(basePrice)}</span>
                     </div>
-                    {childSeatsCost > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Child seats ({infantSeats + boosterSeats})</span>
-                        <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(childSeatsCost)}</span>
-                      </div>
-                    )}
                     {extraLuggageCost > 0 && (
                       <div className="flex justify-between">
                         <span className="text-[var(--text-secondary)]">Extra luggage ({extraLuggageCount})</span>
