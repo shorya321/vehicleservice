@@ -20,7 +20,11 @@ interface SearchResultsPageProps {
     toZone?: string
     routeId?: string
     date?: string
+    /** Total guests. The breakdown below is optional — links that only know a total omit it. */
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
   }>
 }
 

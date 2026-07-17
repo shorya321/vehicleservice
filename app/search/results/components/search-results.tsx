@@ -4,10 +4,11 @@ import { useState, useMemo, useCallback } from 'react'
 import { SearchResult } from '../actions'
 import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
 import { EmptyState } from './empty-state'
+import { ResultsGuestPicker } from './results-guest-picker'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZonesList } from '@/components/search/zones-list'
-import { Calendar, Clock, MapPin, SlidersHorizontal, Users, X } from 'lucide-react'
+import { Calendar, Clock, MapPin, SlidersHorizontal, X } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { format } from 'date-fns'
 import { formatPrice } from '@/lib/currency/format'
@@ -38,13 +39,10 @@ interface SearchResultsProps {
   }
 }
 
-type CapacityFilter = 'any' | '1-4' | '5-8' | '9+'
-
 export function SearchResults({ results, searchParams }: SearchResultsProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const prefersReducedMotion = useReducedMotion()
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [capacityFilter, setCapacityFilter] = useState<CapacityFilter>('any')
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
   const vehicleTypes = useMemo(() => results?.vehicleTypes ?? [], [results?.vehicleTypes])
@@ -58,17 +56,17 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     return Array.from(set).sort()
   }, [vehicleTypes])
 
-  const hasActiveFilters = capacityFilter !== 'any' || selectedFeatures.length > 0
+  const hasActiveFilters = selectedFeatures.length > 0
 
+  // No capacity filter here: the Guests picker is the single party-size authority and the server
+  // already filters on `.gte('passenger_capacity', passengers)`. A client capacity filter could only
+  // ever narrow *below* the party size, i.e. to zero results.
   const filteredVehicleTypes = useMemo(() => {
     return vehicleTypes.filter(vt => {
-      if (capacityFilter === '1-4' && (vt.capacity < 1 || vt.capacity > 4)) return false
-      if (capacityFilter === '5-8' && (vt.capacity < 5 || vt.capacity > 8)) return false
-      if (capacityFilter === '9+' && vt.capacity < 9) return false
       if (selectedFeatures.length > 0 && !selectedFeatures.every(f => vt.features.includes(f))) return false
       return true
     })
-  }, [vehicleTypes, capacityFilter, selectedFeatures])
+  }, [vehicleTypes, selectedFeatures])
 
   const filteredByCategory = useMemo(() => {
     if (!hasActiveFilters) return vehicleTypesByCategory
@@ -86,8 +84,9 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     )
   }, [])
 
+  // Deliberately does not touch guests — that lives in the URL, and clearing filters must never
+  // trigger a navigation.
   const clearFilters = useCallback(() => {
-    setCapacityFilter('any')
     setSelectedFeatures([])
   }, [])
 
@@ -185,11 +184,10 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
 
           <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
             <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              Passengers
+              Guests
             </div>
-            <div className="numeric mt-1.5 flex items-center gap-1.5 text-[1rem] text-[var(--text-primary)]">
-              <Users className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-              {searchParams.passengers || '—'}
+            <div className="mt-1.5">
+              <ResultsGuestPicker searchParams={searchParams} />
             </div>
           </div>
 
@@ -212,13 +210,13 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             className={`inline-flex items-center gap-2 rounded-[4px] border px-4 py-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${hasActiveFilters ? 'border-[rgba(var(--gold-rgb),0.4)] text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-secondary)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
             aria-expanded={filtersOpen}
             aria-controls="vehicle-filters"
-            aria-label={hasActiveFilters ? `Filters (${(capacityFilter !== 'any' ? 1 : 0) + selectedFeatures.length} active)` : 'Filters'}
+            aria-label={hasActiveFilters ? `Filters (${selectedFeatures.length} active)` : 'Filters'}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
             Filters
             {hasActiveFilters && (
               <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--graphite)] text-[0.625rem] font-semibold text-[var(--text-primary)]">
-                {(capacityFilter !== 'any' ? 1 : 0) + selectedFeatures.length}
+                {selectedFeatures.length}
               </span>
             )}
           </button>
@@ -238,20 +236,6 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
                   animate={prefersReducedMotion ? undefined : "visible"}
                   variants={filterStaggerVariants}
                 >
-                  <motion.div variants={prefersReducedMotion ? undefined : filterGroupVariants}>
-                    <div className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">Capacity</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(['any', '1-4', '5-8', '9+'] as CapacityFilter[]).map(opt => (
-                        <button
-                          key={opt}
-                          onClick={() => setCapacityFilter(opt)}
-                          className={`rounded-[4px] border min-h-[44px] px-4 py-2.5 text-[0.75rem] uppercase tracking-[0.08em] transition-all duration-200 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] ${capacityFilter === opt ? 'border-[var(--gold)] bg-[rgba(var(--gold-rgb),0.15)] font-semibold text-[var(--gold-text)]' : 'border-[var(--graphite)] text-[var(--text-muted)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--text-secondary)]'}`}
-                        >
-                          {opt === 'any' ? 'Any' : opt}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
 
                   {allFeatures.length > 0 && (
                     <motion.div variants={prefersReducedMotion ? undefined : filterGroupVariants}>
@@ -305,7 +289,12 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
           </button>
         </motion.div>
       ) : (
+        // `key` on party size remounts this with fresh tab/page state. It holds currentPage and
+        // activeCategory internally and only resets them on tab/sort change, but a searchParams
+        // navigation keeps it mounted while the vehicle list changes underneath — so page 3 of 18
+        // vehicles would slice an empty window out of the new, shorter list and render a blank grid.
         <VehicleTypeCategoryTabs
+          key={searchParams.passengers}
           vehicleTypesByCategory={hasActiveFilters ? filteredByCategory : vehicleTypesByCategory}
           allVehicleTypes={hasActiveFilters ? filteredVehicleTypes : vehicleTypes}
           searchParams={searchParams}

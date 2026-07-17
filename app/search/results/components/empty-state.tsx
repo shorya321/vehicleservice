@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
+import { ResultsGuestPicker } from './results-guest-picker'
 
 interface EmptyStateProps {
   searchParams: {
@@ -10,6 +11,11 @@ interface EmptyStateProps {
     to?: string
     date?: string
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
+    originSlug?: string
+    destSlug?: string
   }
 }
 
@@ -40,6 +46,19 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
           ? `We may not have a vehicle that seats ${partySize} on this route, or the corridor may not be in the network for your selected date. Try a different date, book two vehicles for a larger group, or talk to support.`
           : 'This corridor may not be in the network for your selected date, or all vehicles are reserved. Try a different date or adjust your search.'}
       </p>
+
+      {/* An over-set party size is the most likely reason a group lands here, so let them fix it in
+          place rather than starting again from the home page. */}
+      {isGroup && (
+        <div className="mt-8 max-w-xs">
+          <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+            Guests
+          </div>
+          <div className="mt-1.5">
+            <ResultsGuestPicker searchParams={searchParams} />
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
         <Link href="/" className="btn btn-primary">

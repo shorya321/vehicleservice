@@ -31,6 +31,11 @@ interface GuestSelectorProps {
    */
   maxSeated?: number
   className?: string
+  /**
+   * Fires when the popover opens/closes. `onChange` fires on every stepper tap, so consumers whose
+   * change is expensive (e.g. a server round trip) should act on close instead.
+   */
+  onOpenChange?: (open: boolean) => void
 }
 
 interface StepperRowProps {
@@ -107,6 +112,7 @@ export function GuestSelector({
   onChange,
   maxSeated = MAX_SEATED,
   className,
+  onOpenChange,
 }: GuestSelectorProps) {
   const seated = getSeatedCount(value)
   const seatsFull = seated >= maxSeated
@@ -116,7 +122,7 @@ export function GuestSelector({
   }
 
   return (
-    <Popover>
+    <Popover onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <button
           id="guests"
