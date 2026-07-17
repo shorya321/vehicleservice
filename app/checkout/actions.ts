@@ -163,10 +163,15 @@ export async function getActiveAddons(): Promise<{
 }> {
   const supabase = await createClient()
 
+  // Child seats are not add-ons: the Guests picker already declares children and infants, and seats
+  // are provided free. Filtered here rather than deactivated in the DB on purpose —
+  // getExtraItemPrices() is a separate query that reads Child Safety pricing and filters on
+  // is_active, so deactivating the rows would silently swap real prices for its `?? 10` fallback.
   const { data, error } = await supabase
     .from('addons')
     .select('id, name, description, icon, price, pricing_type, max_quantity, category')
     .eq('is_active', true)
+    .neq('category', 'Child Safety')
     .order('display_order', { ascending: true })
     .order('name', { ascending: true })
 
@@ -186,8 +191,8 @@ export async function getActiveAddons(): Promise<{
     categoryMap.get(addon.category)!.push(addon)
   })
 
-  // Define category order
-  const categoryOrder = ['Child Safety', 'Luggage', 'Comfort']
+  // Define category order. 'Child Safety' is excluded by the query above.
+  const categoryOrder = ['Luggage', 'Comfort']
   const addonsByCategory: CheckoutAddonsByCategory[] = []
 
   categoryOrder.forEach((cat) => {
@@ -302,7 +307,11 @@ const bookingSchema = z.object({
   dropoffAddress: z.string().min(1),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid pickup date'),
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid pickup time'),
+  /** Total guests (adults + children + infants) — see the refine below. */
   passengerCount: z.number().min(1).max(50),
+  adults: z.number().min(1).max(50).optional(),
+  children: z.number().min(0).max(50).optional(),
+  infants: z.number().min(0).max(50).optional(),
   luggageCount: z.number().min(0).max(50),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
@@ -321,6 +330,20 @@ const bookingSchema = z.object({
   paymentMethod: z.enum(['card']),
   selectedAddons: z.array(selectedAddonSchema).optional(),
 })
+  // The breakdown must agree with the total. Without this a client could post
+  // `passengerCount: 1, adults: 50` — the capacity guard below only inspects passengerCount, so the
+  // contradiction would be persisted. (The business flow gets this invariant for free from its
+  // single-writer RPC; this action is a direct insert, so it must assert it itself.)
+  // Customer rule: every guest occupies a seat, infants included.
+  .refine(
+    (d) =>
+      d.adults === undefined ||
+      d.adults + (d.children ?? 0) + (d.infants ?? 0) === d.passengerCount,
+    {
+      message: 'passengerCount must equal adults + children + infants',
+      path: ['passengerCount'],
+    }
+  )
 
 export type BookingFormData = z.infer<typeof bookingSchema>
 
@@ -452,6 +475,10 @@ export async function createBooking(formData: BookingFormData) {
       dropoff_address: validatedData.dropoffAddress,
       pickup_datetime: pickupDateTime.toISOString(),
       passenger_count: validatedData.passengerCount,
+      // Bookings that predate the breakdown are all-adults; same shape as the migration's backfill.
+      adults: validatedData.adults ?? validatedData.passengerCount,
+      children: validatedData.children ?? 0,
+      infants: validatedData.infants ?? 0,
       luggage_count: validatedData.luggageCount,
       base_price: basePrice,
       amenities_price: amenitiesPrice,
@@ -476,6 +503,9 @@ export async function createBooking(formData: BookingFormData) {
       dropoff_address: validatedData.dropoffAddress,
       pickup_datetime: pickupDateTime.toISOString(),
       passenger_count: validatedData.passengerCount,
+      adults: validatedData.adults ?? validatedData.passengerCount,
+      children: validatedData.children ?? 0,
+      infants: validatedData.infants ?? 0,
       luggage_count: validatedData.luggageCount,
       base_price: basePrice,
       amenities_price: amenitiesPrice,

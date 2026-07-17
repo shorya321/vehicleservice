@@ -14,7 +14,11 @@ interface SearchRoutePageProps {
   params: Promise<{ routeSlug: string }>
   searchParams: Promise<{
     date?: string
+    /** Total guests. The breakdown below is optional — links from route cards omit it. */
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
   }>
 }
 
@@ -43,7 +47,7 @@ export async function generateMetadata({ params }: SearchRoutePageProps): Promis
 export default async function SearchRoutePage({ params, searchParams }: SearchRoutePageProps) {
   const { routeSlug } = await params
   const sp = await searchParams
-  const { date, passengers } = sp
+  const { date, passengers, adults, children, infants } = sp
 
   // Parse the route slug
   const parsed = parseRouteSlug(routeSlug)
@@ -102,12 +106,17 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
     redirect(results.redirectTo)
   }
 
-  // Pass slugs through searchParams so child components can build checkout URLs
+  // Pass slugs through searchParams so child components can build checkout URLs.
+  // The guest breakdown rides along so it survives into the checkout URL — without it the
+  // composition captured on the home page would be lost here and never reach the booking.
   const enrichedSearchParams = {
     from: resolved.type === 'location' ? resolved.origin.id : undefined,
     to: resolved.type === 'location' ? resolved.destination.id : undefined,
     date,
     passengers,
+    adults,
+    children,
+    infants,
     originSlug: parsed.origin,
     destSlug: parsed.destination,
   }

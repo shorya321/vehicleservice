@@ -10,6 +10,7 @@ import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices
 import { createClient } from '@/lib/supabase/server'
 import { toStoredPhone } from '@/lib/validation/phone'
 import { bookingToday } from '@/lib/utils/timezone'
+import { getSeatedCount, resolveGuestsForVehicle } from '@/components/home/hero/guest-breakdown'
 
 export const metadata: Metadata = {
   title: 'Checkout | Complete Your Booking',
@@ -24,7 +25,11 @@ interface CheckoutPageProps {
     to?: string
     date?: string
     time?: string
+    /** Total guests. The breakdown below is optional — route cards and old links omit it. */
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
     luggage?: string
   }>
 }
@@ -155,12 +160,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   // Parse date and time
   const pickupDate = params.date || bookingToday()
   const pickupTime = params.time || '10:00'
-  // Clamp to what the vehicle can actually carry — same guard as the /checkout/[routeSlug]/
-  // [vehicleSlug] route. `|| 1` also absorbs NaN from e.g. `?passengers=abc`.
-  const passengers = Math.min(
-    Math.max(1, parseInt(params.passengers || '1') || 1),
-    vehicleType.passenger_capacity
-  )
+  // Resolve the breakdown and the total together, clamped to the vehicle, so they can never
+  // contradict — same helper as the /checkout/[routeSlug]/[vehicleSlug] route.
+  const guests = resolveGuestsForVehicle(params, vehicleType.passenger_capacity)
+  const passengers = getSeatedCount(guests)
   const luggage = parseInt(params.luggage || '0')
 
   return (
@@ -176,6 +179,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             initialDate={pickupDate}
             initialTime={pickupTime}
             initialPassengers={passengers}
+            initialGuests={guests}
             initialLuggage={luggage}
             user={user}
             profile={profile}

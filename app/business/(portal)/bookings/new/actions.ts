@@ -217,11 +217,11 @@ export async function getActiveAddons(): Promise<{
   try {
     const supabase = await createClient();
 
-    // Child seats are deliberately NOT add-ons in the business flow: the Route step's Guests picker
-    // already declares children and infants, and seats are provided free. Do not "fix" this by
-    // dropping the filter — the customer checkout has no guest breakdown, so for customers the
-    // add-on is the only way to request a legally-required seat, and it keeps its own copy of this
-    // query (app/checkout/actions.ts) precisely so the two flows can differ.
+    // Child seats are deliberately NOT add-ons: the Guests picker already declares children and
+    // infants, and seats are provided free. The customer checkout now does the same (it keeps its
+    // own copy of this query in app/checkout/actions.ts, so the two flows stay independent).
+    // Do not "fix" this by dropping the filter — child seats are a declared, free service driven by
+    // the guest counts, not a priced line item.
     const { data, error } = await supabase
       .from('addons')
       .select('id, name, description, icon, price, pricing_type, max_quantity, category')

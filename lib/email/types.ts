@@ -45,7 +45,11 @@ export interface BookingConfirmationEmailData {
   tripNumber?: string;
   originalAmount?: number;
   originalCurrency?: string;
+  /** Total guests (adults + children + infants). */
   passengerCount?: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
   basePrice?: number;
   amenitiesPrice?: number;
   extras?: Array<{ label: string; quantity: number; price: number }>;

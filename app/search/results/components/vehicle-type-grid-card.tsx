@@ -17,6 +17,9 @@ interface VehicleTypeGridCardProps {
     to?: string
     date?: string
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
     originSlug?: string
     destSlug?: string
   }
@@ -42,16 +45,29 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
   const vehicleTypeImage = vehicleType.image || `/images/vehicle-types/${vehicleType.slug}.jpg`
   const models = vehicleModels[vehicleType.slug] || vehicleType.name
 
+  // The guest breakdown is optional: links from route cards and zone pages only know a total.
+  const toCount = (v: string | undefined) => {
+    if (v === undefined) return undefined
+    const n = parseInt(v)
+    return Number.isNaN(n) ? undefined : n
+  }
+
   const selectionUrl = searchParams.originSlug && searchParams.destSlug
     ? buildCheckoutUrl(searchParams.originSlug, searchParams.destSlug, vehicleType.slug, {
         date: searchParams.date || '',
         time: '10:00',
         passengers: searchParams.passengers || '1',
         luggage: '0',
+        adults: toCount(searchParams.adults),
+        children: toCount(searchParams.children),
+        infants: toCount(searchParams.infants),
       })
     : `/checkout?${new URLSearchParams({
         vehicleType: vehicleType.id,
-        ...searchParams,
+        // Drop undefined entries — URLSearchParams stringifies them to the literal "undefined".
+        ...Object.fromEntries(
+          Object.entries(searchParams).filter(([, v]) => v !== undefined)
+        ),
       }).toString()}`
 
   const unavailable = vehicleType.availableVehicles === 0

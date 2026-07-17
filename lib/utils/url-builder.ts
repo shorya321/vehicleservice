@@ -37,7 +37,16 @@ export function buildCheckoutUrl(
   originSlug: string,
   destSlug: string,
   vehicleSlug: string,
-  params: { date: string; time: string; passengers: string | number; luggage: string | number }
+  params: {
+    date: string
+    time: string
+    /** Total guests (adults + children + infants). Always emitted. */
+    passengers: string | number
+    luggage: string | number
+    adults?: number
+    children?: number
+    infants?: number
+  }
 ): string {
   const routeSlug = `${originSlug}-to-${destSlug}`
   const searchParams = new URLSearchParams({
@@ -46,6 +55,10 @@ export function buildCheckoutUrl(
     passengers: params.passengers.toString(),
     luggage: params.luggage.toString(),
   })
+  // Optional breakdown — callers that only know a total (SEO route pages) omit these.
+  if (params.adults !== undefined) searchParams.set('adults', params.adults.toString())
+  if (params.children !== undefined) searchParams.set('children', params.children.toString())
+  if (params.infants !== undefined) searchParams.set('infants', params.infants.toString())
   return `/checkout/${routeSlug}/${vehicleSlug}?${searchParams.toString()}`
 }
 

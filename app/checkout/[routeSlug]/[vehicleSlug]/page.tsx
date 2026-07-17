@@ -11,13 +11,18 @@ import { createClient } from '@/lib/supabase/server'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { toStoredPhone } from '@/lib/validation/phone'
 import { resolveRouteSlugs, resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
+import { getSeatedCount, resolveGuestsForVehicle } from '@/components/home/hero/guest-breakdown'
 
 interface CheckoutRoutePageProps {
   params: Promise<{ routeSlug: string; vehicleSlug: string }>
   searchParams: Promise<{
     date?: string
     time?: string
+    /** Total guests. The breakdown below is optional — route cards and old links omit it. */
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
     luggage?: string
   }>
 }
@@ -175,13 +180,11 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   // Parse date and time
   const pickupDate = sp.date || new Date().toISOString().split('T')[0]
   const pickupTime = sp.time || '10:00'
-  // Clamp to what the vehicle can actually carry. Search filters by capacity, so this normally only
-  // fires for stale or hand-crafted links; the stepper renders "Max N", so the reduced count is
-  // visible rather than hidden. The `|| 1` also absorbs NaN from e.g. `?passengers=abc`.
-  const passengers = Math.min(
-    Math.max(1, parseInt(sp.passengers || '1') || 1),
-    vehicleType.passenger_capacity
-  )
+  // Resolve the breakdown and the total together, clamped to the vehicle, so they can never
+  // contradict. Search filters by capacity, so clamping normally only fires for stale or
+  // hand-crafted links.
+  const guests = resolveGuestsForVehicle(sp, vehicleType.passenger_capacity)
+  const passengers = getSeatedCount(guests)
   const luggage = parseInt(sp.luggage || '0') || 0
 
   return (
@@ -196,6 +199,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
             initialDate={pickupDate}
             initialTime={pickupTime}
             initialPassengers={passengers}
+            initialGuests={guests}
             initialLuggage={luggage}
             user={user}
             profile={profile}

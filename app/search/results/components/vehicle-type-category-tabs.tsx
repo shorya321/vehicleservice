@@ -14,6 +14,9 @@ interface VehicleTypeCategoryTabsProps {
     to?: string
     date?: string
     passengers?: string
+    adults?: string
+    children?: string
+    infants?: string
     originSlug?: string
     destSlug?: string
   }

@@ -4,19 +4,20 @@ import { UseFormReturn } from 'react-hook-form'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
 import { ArrowRight, Briefcase, Users } from 'lucide-react'
 import { FormDatePicker } from '@/components/ui/form-date-picker'
 import { FormTimePicker } from '@/components/ui/form-time-picker'
 import { parse, format } from 'date-fns'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
+import { GuestSelector } from '@/components/home/hero/guest-selector'
+import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 
 interface TransferDetailsSectionProps {
   form: UseFormReturn<any>
   route: RouteDetails
   vehicleType: VehicleTypeDetails
-  passengers: number
-  setPassengers: (value: number) => void
+  guests: GuestBreakdown
+  setGuests: (value: GuestBreakdown) => void
   onDateTimeChange?: (date: string, time: string) => void
 }
 
@@ -24,8 +25,8 @@ export function TransferDetailsSection({
   form,
   route,
   vehicleType,
-  passengers,
-  setPassengers,
+  guests,
+  setGuests,
   onDateTimeChange
 }: TransferDetailsSectionProps) {
   const { register, formState: { errors }, watch, setValue } = form
@@ -168,38 +169,20 @@ export function TransferDetailsSection({
           <p id="flightNumber-hint" className="text-xs text-[var(--text-muted)] mt-1.5">We track your flight for delays</p>
         </div>
 
-        {/* Passengers */}
+        {/* Guests — the breakdown is the source of truth; the total is derived, so the two cannot
+            contradict. Capped at this vehicle's capacity. */}
         <div>
           <Label className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-            Passengers
+            Guests
           </Label>
-          <div className="flex items-center gap-3" role="group" aria-label="Passenger count">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)] hover:text-[var(--text-primary)]"
-              onClick={() => setPassengers(Math.max(1, passengers - 1))}
-              disabled={passengers <= 1}
-              aria-label="Decrease passenger count"
-            >
-              -
-            </Button>
-            <span className="w-12 text-center text-lg font-medium text-[var(--text-primary)] tabular-nums" aria-live="polite" aria-atomic="true">
-              {passengers}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 border-[var(--graphite)] hover:bg-[var(--charcoal)] hover:border-[var(--gold)] text-[var(--text-primary)] hover:text-[var(--text-primary)]"
-              onClick={() => setPassengers(Math.min(vehicleType.passenger_capacity, passengers + 1))}
-              disabled={passengers >= vehicleType.passenger_capacity}
-              aria-label="Increase passenger count"
-            >
-              +
-            </Button>
-            <span className="text-xs text-[var(--text-muted)] ml-2">
+          <div className="flex items-center gap-3">
+            <GuestSelector
+              value={guests}
+              onChange={setGuests}
+              maxSeated={vehicleType.passenger_capacity}
+              className="flex min-h-11 w-full max-w-xs items-center gap-2 rounded-md border border-[var(--graphite)] bg-transparent px-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[var(--gold)]"
+            />
+            <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">
               Max {vehicleType.passenger_capacity}
             </span>
           </div>

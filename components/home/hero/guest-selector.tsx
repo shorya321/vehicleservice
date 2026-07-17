@@ -25,6 +25,12 @@ const MIN_ADULTS = 1
 interface GuestSelectorProps {
   value: GuestBreakdown
   onChange: (value: GuestBreakdown) => void
+  /**
+   * Seat ceiling. The hero has no vehicle yet so it uses the fleet-wide default; checkout passes the
+   * chosen vehicle's `passenger_capacity`.
+   */
+  maxSeated?: number
+  className?: string
 }
 
 interface StepperRowProps {
@@ -96,9 +102,14 @@ function StepperRow({
   )
 }
 
-export function GuestSelector({ value, onChange }: GuestSelectorProps) {
+export function GuestSelector({
+  value,
+  onChange,
+  maxSeated = MAX_SEATED,
+  className,
+}: GuestSelectorProps) {
   const seated = getSeatedCount(value)
-  const seatsFull = seated >= MAX_SEATED
+  const seatsFull = seated >= maxSeated
 
   const update = (patch: Partial<GuestBreakdown>) => {
     onChange({ ...value, ...patch })
@@ -110,7 +121,7 @@ export function GuestSelector({ value, onChange }: GuestSelectorProps) {
         <button
           id="guests"
           type="button"
-          className="search-bar-input search-bar-date-trigger"
+          className={className ?? 'search-bar-input search-bar-date-trigger'}
           aria-label="Select guests"
         >
           <Users

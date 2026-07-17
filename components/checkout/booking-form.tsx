@@ -11,6 +11,7 @@ import { OrderSummaryAddon } from './checkout-wrapper'
 import { toast } from 'sonner'
 import { buildPaymentUrl } from '@/lib/utils/url-builder'
 import { phoneField } from '@/lib/validation/phone'
+import { getSeatedCount, type GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 
 import { TransferDetailsSection } from './form-sections/transfer-details-section'
 import { PassengerInfoSection } from './form-sections/passenger-info-section'
@@ -61,6 +62,8 @@ interface BookingFormProps {
   initialDate: string
   initialTime: string
   initialPassengers: number
+  /** Adults/children/infants behind `initialPassengers`. Already clamped to the vehicle. */
+  initialGuests: GuestBreakdown
   initialLuggage: number
   user: any
   profile: any
@@ -89,6 +92,7 @@ export function BookingForm({
   initialDate,
   initialTime,
   initialPassengers,
+  initialGuests,
   initialLuggage,
   user,
   profile,
@@ -106,7 +110,10 @@ export function BookingForm({
   const router = useRouter()
   const reduceMotion = useReducedMotion()
   const [loading, setLoading] = useState(false)
-  const [passengers, setPassengers] = useState(initialPassengers)
+  // The breakdown is the source of truth; the total is always derived from it, so the two can never
+  // contradict. `initialPassengers` is only the server-clamped seed for that derivation.
+  const [guests, setGuests] = useState<GuestBreakdown>(initialGuests)
+  const passengers = getSeatedCount(guests)
   const [luggage] = useState(initialLuggage)
   const [stepValidationAttempted, setStepValidationAttempted] = useState(false)
 
@@ -185,6 +192,9 @@ export function BookingForm({
         pickupDate: data.pickupDate,
         pickupTime: data.pickupTime,
         passengerCount: passengers,
+        adults: guests.adults,
+        children: guests.children,
+        infants: guests.infants,
         luggageCount: data.luggageCount,
         firstName: data.firstName,
         lastName: data.lastName,
@@ -258,8 +268,8 @@ export function BookingForm({
         form={form}
         route={route}
         vehicleType={vehicleType}
-        passengers={passengers}
-        setPassengers={setPassengers}
+        guests={guests}
+        setGuests={setGuests}
         onDateTimeChange={onDateTimeChange}
       />
       <PassengerInfoSection form={form} />
@@ -272,7 +282,7 @@ export function BookingForm({
       />
       <PaymentMethodSection form={form} />
     </div>,
-  ], [form, route, vehicleType, passengers, setPassengers, onDateTimeChange, addonsByCategory])
+  ], [form, route, vehicleType, guests, setGuests, onDateTimeChange, addonsByCategory])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-0" aria-label="Booking form">

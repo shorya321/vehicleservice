@@ -598,12 +598,14 @@ export type Database = {
       }
       bookings: {
         Row: {
+          adults: number
           amenities_price: number | null
           base_price: number
           booking_number: string
           booking_status: string
           cancellation_reason: string | null
           cancelled_at: string | null
+          children: number
           created_at: string | null
           currency: string | null
           customer_id: string | null
@@ -612,6 +614,7 @@ export type Database = {
           from_location_id: string | null
           from_zone_id: string | null
           id: string
+          infants: number
           luggage_count: number | null
           paid_at: string | null
           passenger_count: number
@@ -633,12 +636,14 @@ export type Database = {
           vehicle_type_id: string
         }
         Insert: {
+          adults?: number
           amenities_price?: number | null
           base_price: number
           booking_number: string
           booking_status?: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
+          children?: number
           created_at?: string | null
           currency?: string | null
           customer_id?: string | null
@@ -647,6 +652,7 @@ export type Database = {
           from_location_id?: string | null
           from_zone_id?: string | null
           id?: string
+          infants?: number
           luggage_count?: number | null
           paid_at?: string | null
           passenger_count?: number
@@ -669,11 +675,13 @@ export type Database = {
         }
         Update: {
           amenities_price?: number | null
+          adults?: number
           base_price?: number
           booking_number?: string
           booking_status?: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
+          children?: number
           created_at?: string | null
           currency?: string | null
           customer_id?: string | null
@@ -682,6 +690,7 @@ export type Database = {
           from_location_id?: string | null
           from_zone_id?: string | null
           id?: string
+          infants?: number
           luggage_count?: number | null
           paid_at?: string | null
           passenger_count?: number

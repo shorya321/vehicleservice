@@ -4,6 +4,7 @@ import EmailLayout from '../base/layout';
 import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
 import { emailStyles } from '../../styles/constants';
+import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
 
 interface BookingConfirmationEmailProps {
   customerName: string;
@@ -23,7 +24,11 @@ interface BookingConfirmationEmailProps {
   currency: string;
   originalAmount?: number;
   originalCurrency?: string;
+  /** Total guests (adults + children + infants). */
   passengerCount?: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
   basePrice?: number;
   amenitiesPrice?: number;
   extras?: Array<{ label: string; quantity: number; price: number }>;
@@ -50,6 +55,9 @@ export const BookingConfirmationEmail = ({
   originalAmount,
   originalCurrency,
   passengerCount,
+  adults,
+  children,
+  infants,
   basePrice,
   amenitiesPrice: _amenitiesPrice,
   extras,
@@ -57,6 +65,11 @@ export const BookingConfirmationEmail = ({
   invoiceUrl,
 }: BookingConfirmationEmailProps) => {
   const hasBookingSummary = passengerCount != null && basePrice != null;
+  // Bookings that predate the guest breakdown fall back to the plain total.
+  const passengerLabel =
+    adults != null
+      ? formatGuestSummary({ adults, children: children ?? 0, infants: infants ?? 0 })
+      : passengerCount;
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
@@ -96,6 +109,11 @@ export const BookingConfirmationEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Pickup Date & Time:</strong> {pickupDate} at {pickupTime}
         </Text>
+        {passengerLabel != null && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Passengers:</strong> {passengerLabel}
+          </Text>
+        )}
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
           <strong>Dropoff Location:</strong> {dropoffLocation}

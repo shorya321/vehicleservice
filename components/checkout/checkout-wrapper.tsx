@@ -5,6 +5,7 @@ import { BookingForm } from './booking-form'
 import { OrderSummary } from './order-summary'
 import { MobileStickyBar } from './mobile-sticky-bar'
 import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, ExtraItemPrices } from '@/app/checkout/actions'
+import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 
 export interface OrderSummaryAddon {
   id: string
@@ -29,6 +30,8 @@ interface CheckoutWrapperProps {
   initialDate: string
   initialTime: string
   initialPassengers: number
+  /** Adults/children/infants behind `initialPassengers`. Already clamped to the vehicle. */
+  initialGuests: GuestBreakdown
   initialLuggage: number
   user: any
   profile: any
@@ -44,6 +47,7 @@ export function CheckoutWrapper({
   initialDate,
   initialTime,
   initialPassengers,
+  initialGuests,
   initialLuggage,
   user,
   profile,
@@ -126,6 +130,7 @@ export function CheckoutWrapper({
             initialDate={initialDate}
             initialTime={initialTime}
             initialPassengers={initialPassengers}
+            initialGuests={initialGuests}
             initialLuggage={initialLuggage}
             user={user}
             profile={profile}
