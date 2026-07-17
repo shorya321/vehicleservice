@@ -15,6 +15,7 @@ import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, ZoneInfo, AddonsByCategory } from '../actions';
 import { AddonSelection, SelectedAddon } from './addon-selection';
 import { formatGuestSummary, getSeatedCount } from '@/lib/business/guest-breakdown';
+import { calculateAddonsTotal } from '@/lib/business/wizard-pricing';
 import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/utils/timezone';
 
 interface Location {
@@ -25,6 +26,8 @@ interface Location {
 
 interface ReviewStepProps {
   formData: BookingFormData;
+  /** Derived by the wizard (base + add-ons), not stored in formData — see wizard-pricing.ts. */
+  totalPrice: number;
   walletBalance: number;
   locations: Location[];
   vehicleTypes: VehicleTypeResult[];
@@ -39,6 +42,7 @@ interface ReviewStepProps {
 
 export function ReviewStep({
   formData,
+  totalPrice,
   walletBalance,
   locations,
   vehicleTypes,
@@ -56,20 +60,17 @@ export function ReviewStep({
   const toLocationName = formData.to_location_name || toLocationLookup?.name || '';
   const vehicleType = vehicleTypes.find((v) => v.id === formData.vehicle_type_id);
 
-  const hasBalance = hasSufficientBalance(walletBalance, formData.total_price);
-  const remainingBalance = walletBalance - formData.total_price;
+  const hasBalance = hasSufficientBalance(walletBalance, totalPrice);
+  const remainingBalance = walletBalance - totalPrice;
 
-  // Handle addon selection changes
+  // Handle addon selection changes. The total is derived by the wizard from selected_addons, so it
+  // is not written here — that write is what used to be undone by changing vehicle afterwards.
   const handleAddonsChange = (selectedAddons: SelectedAddon[]) => {
-    const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0);
-    onUpdate({
-      selected_addons: selectedAddons,
-      total_price: formData.base_price + addonsTotal,
-    });
+    onUpdate({ selected_addons: selectedAddons });
   };
 
   // Calculate addons total for display
-  const addonsTotal = (formData.selected_addons || []).reduce((sum, addon) => sum + addon.total_price, 0);
+  const addonsTotal = calculateAddonsTotal(formData.selected_addons);
 
   // Every guest occupies a seat, infants included.
   const guests = {
@@ -228,7 +229,7 @@ export function ReviewStep({
           )}
           <div className="flex justify-between pt-3 border-t border-border text-lg font-bold">
             <span className="text-foreground">Total:</span>
-            <span className="text-primary">{formatCurrency(formData.total_price)}</span>
+            <span className="text-primary">{formatCurrency(totalPrice)}</span>
           </div>
         </div>
       </div>
@@ -263,10 +264,10 @@ export function ReviewStep({
                 Current balance: <span className="font-semibold">{formatCurrency(walletBalance)}</span>
               </p>
               <p className="text-sm text-rose-600/80 dark:text-rose-400/80">
-                Required: <span className="font-semibold">{formatCurrency(formData.total_price)}</span>
+                Required: <span className="font-semibold">{formatCurrency(totalPrice)}</span>
               </p>
               <p className="text-sm text-rose-600/80 dark:text-rose-400/80">
-                Shortfall: <span className="font-semibold">{formatCurrency(formData.total_price - walletBalance)}</span>
+                Shortfall: <span className="font-semibold">{formatCurrency(totalPrice - walletBalance)}</span>
               </p>
             </div>
           </div>

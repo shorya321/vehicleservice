@@ -34,6 +34,7 @@ import {
 } from '../actions';
 import { SelectedAddon } from './addon-selection';
 import { bookingLocalInputToUtc } from '@/lib/utils/timezone';
+import { calculateWizardTotal } from '@/lib/business/wizard-pricing';
 
 interface Location {
   id: string;
@@ -76,9 +77,12 @@ export interface BookingFormData {
   // Addons
   selected_addons?: SelectedAddon[];
 
-  // Pricing
+  // Pricing.
+  // `base_price` is stored because it is HMAC-signed by the server quote.
+  // `total_price` is deliberately NOT here — it is derived (base + add-ons) in this component and
+  // passed down explicitly. Keeping it in state is what let a vehicle change silently wipe the
+  // add-ons total, and it would also ride the `...apiData` spread in handleSubmit unnoticed.
   base_price: number;
-  total_price: number;
 
   // Price signature (HMAC)
   price_signature: string;
@@ -141,6 +145,10 @@ export function BookingWizard({
     setFormData((prev) => ({ ...prev, ...data }));
   }
 
+  // Derived every render, so changing vehicle after picking add-ons can never drop them from the
+  // total. Mirrors the server's calculateBusinessBookingPrice (basePrice + addonsPrice).
+  const totalPrice = calculateWizardTotal(formData.base_price, formData.selected_addons);
+
   async function fetchAvailableVehicles(
     fromLocationId: string,
     toLocationId: string,
@@ -193,10 +201,13 @@ export function BookingWizard({
     setIsSubmitting(true);
 
     try {
-      // Strip display-only fields and convert datetime to ISO 8601
+      // Strip display-only fields and convert datetime to ISO 8601.
+      // total_price is derived here rather than carried in formData, so it is set explicitly —
+      // the API requires it (validators.ts: z.number().positive()).
       const { from_location_name, to_location_name, ...apiData } = formData;
       const submissionData = {
         ...apiData,
+        total_price: totalPrice,
         pickup_datetime: apiData.pickup_datetime
           ? bookingLocalInputToUtc(apiData.pickup_datetime).toISOString()
           : apiData.pickup_datetime,
@@ -282,6 +293,7 @@ export function BookingWizard({
           {currentStep === 3 && (
             <ReviewStep
               formData={formData as BookingFormData}
+              totalPrice={totalPrice}
               walletBalance={walletBalance}
               locations={locations}
               vehicleTypes={vehicleTypes}

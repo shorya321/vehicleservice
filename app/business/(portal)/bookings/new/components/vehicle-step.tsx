@@ -45,10 +45,11 @@ export function VehicleStep({
 
   function handleVehicleSelect(vehicleType: VehicleTypeResult) {
     setSelectedVehicleId(vehicleType.id);
+    // No total_price here: the wizard derives it (base + add-ons). Writing it here is what used to
+    // wipe the add-ons total when a vehicle was reselected after they were chosen.
     onUpdate({
       vehicle_type_id: vehicleType.id,
       base_price: vehicleType.price,
-      total_price: vehicleType.price,
       price_signature: vehicleType.priceSignature,
       price_signature_timestamp: vehicleType.priceSignatureTimestamp,
       price_signature_nonce: vehicleType.priceSignatureNonce,
