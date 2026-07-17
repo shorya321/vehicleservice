@@ -19,7 +19,7 @@ const benefits: Benefit[] = [
     index: "02",
     title: "Met at the door, not at a sign.",
     body: "Your chauffeur arrives at the agreed gate, terminal, or address. For airport pickups, flight tracking adjusts the meet time without you having to write.",
-    meta: "Meet-and-greet included",
+    meta: "Chauffeur at the gate",
   },
   {
     index: "03",

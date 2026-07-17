@@ -29,7 +29,7 @@ const extras: Extra[] = [
   },
   {
     index: "04",
-    title: "Meet-and-greet escort",
+    title: "Escorted from arrivals",
     body: "Chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. Default on every airport transfer.",
     meta: "Included",
   },

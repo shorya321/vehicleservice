@@ -33,12 +33,12 @@ const faqData: FaqItem[] = [
   {
     question: "How do I find my driver at the airport?",
     answer:
-      "Meet-and-greet is default. The chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. The driver's name and phone number appear on the confirmation page and again 30 minutes before pickup.",
+      "Your chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. The driver's name and phone number appear on the confirmation page and again 30 minutes before pickup.",
   },
   {
     question: "Is the price per person or per vehicle?",
     answer:
-      "Per vehicle. Up to the listed passenger and luggage capacity. Taxes, tolls, and meet-and-greet are included in the quoted total.",
+      "Per vehicle. Up to the listed passenger and luggage capacity. Taxes and tolls are included in the quoted total.",
   },
 ]
 

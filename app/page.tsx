@@ -19,7 +19,7 @@ import { getSiteSettings } from '@/lib/site-settings/server'
 
 export const metadata = {
   title: 'Infinia Transfers - Airport & City Transfers, Fixed-Price',
-  description: 'Book private airport and city transfers with fixed pricing. Meet-and-greet included, chauffeur at the gate, no surge fees.',
+  description: 'Book private airport and city transfers with fixed pricing. Chauffeur at the gate, no surge fees.',
 }
 
 export default async function HomePage() {

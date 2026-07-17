@@ -354,10 +354,6 @@ export function ConfirmationContent({
             value={formatUserPrice(addon.price)}
           />
         ))}
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-[0.875rem] text-[var(--text-secondary)]">Meet &amp; greet</dt>
-          <dd className="text-[var(--text-muted)] uppercase tracking-[0.14em] text-[0.6875rem]">Included</dd>
-        </div>
       </dl>
 
       <div className={`mt-6 flex items-baseline justify-between border-t pt-6 ${dividerClass}`}>
@@ -599,7 +595,7 @@ export function ConfirmationContent({
                   </li>
                   <li className="flex gap-4">
                     <span aria-hidden="true" className="numeric shrink-0 text-[0.75rem] font-medium text-[var(--gold-text)] tracking-[0.14em]">02</span>
-                    <span>Your chauffeur will wait up to 15 minutes past the scheduled pickup (60 minutes for airport meet-and-greet).</span>
+                    <span>Your chauffeur will wait up to 15 minutes past the scheduled pickup (60 minutes for airport pickups).</span>
                   </li>
                   <li className="flex gap-4">
                     <span aria-hidden="true" className="numeric shrink-0 text-[0.75rem] font-medium text-[var(--gold-text)] tracking-[0.14em]">03</span>

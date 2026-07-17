@@ -28,10 +28,6 @@ export function BookingSummaryPrices({ basePrice, amenitiesPrice, totalPrice }: 
             <dd className="numeric font-medium text-[var(--text-primary)]">{formatUserPrice(amenitiesPrice)}</dd>
           </div>
         )}
-        <div className="flex items-baseline justify-between">
-          <dt className="text-[var(--text-secondary)]">Meet &amp; greet</dt>
-          <dd className="text-[var(--text-muted)] uppercase tracking-[0.16em] text-[0.6875rem]">Included</dd>
-        </div>
       </dl>
 
       <div className="mt-5 flex items-baseline justify-between border-t border-[var(--graphite)] pt-5">

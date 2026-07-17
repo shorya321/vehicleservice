@@ -250,20 +250,6 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
                 </View>
               </View>
             ))}
-
-            <View style={styles.tableRow}>
-              <View style={{ width: '55%' }}>
-                <Text style={pdfStyles.tableCell}>Meet &amp; greet</Text>
-              </View>
-              <View style={{ width: '15%' }}>
-                <Text style={[pdfStyles.tableCell, pdfStyles.textCenter]}>1</Text>
-              </View>
-              <View style={{ width: '30%' }}>
-                <Text style={[pdfStyles.tableCell, pdfStyles.textRight, { color: pdfColors.textLight }]}>
-                  Included
-                </Text>
-              </View>
-            </View>
           </View>
         </View>
 

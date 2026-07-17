@@ -44,7 +44,7 @@ export function TermsContent() {
 
         <h3>Pricing</h3>
         <p>
-          All transfer prices displayed on our platform are fixed and include the vehicle, chauffeur, meet-and-greet service, fuel, tolls, and parking fees unless stated otherwise on the booking page. Prices are shown in your selected currency and converted at the prevailing exchange rate at the time of booking.
+          All transfer prices displayed on our platform are fixed and include the vehicle, chauffeur, fuel, tolls, and parking fees unless stated otherwise on the booking page. Prices are shown in your selected currency and converted at the prevailing exchange rate at the time of booking.
         </p>
 
         <h3>Booking Confirmation</h3>
@@ -87,7 +87,7 @@ export function TermsContent() {
       <section id="service-delivery" className="scroll-mt-28">
         <h2>Service Delivery</h2>
 
-        <h3>Meet-and-Greet</h3>
+        <h3>Airport Pickup</h3>
         <p>
           For airport pickups, your chauffeur will meet you in the arrivals hall with a name board. For other locations, the chauffeur will be at the agreed pickup point at the scheduled time.
         </p>

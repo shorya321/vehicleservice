@@ -42,8 +42,6 @@ export function Hero({ todayDate }: { todayDate: string }) {
             <span><span className="tabular-nums font-bold text-[var(--gold-text)]">120+</span> vehicles</span>
             <span className="hero-itinerary-separator" aria-hidden="true">|</span>
             <span><span className="tabular-nums font-bold text-[var(--gold-text)]">4.9</span><span aria-hidden="true">&#9733;</span><span className="sr-only"> star</span> rating</span>
-            <span className="hero-itinerary-separator" aria-hidden="true">|</span>
-            <span>Meet-and-greet <span className="tabular-nums font-bold text-[var(--gold-text)]">included</span></span>
           </div>
         </div>
 

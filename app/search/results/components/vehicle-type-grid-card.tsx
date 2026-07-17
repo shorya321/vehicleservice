@@ -136,7 +136,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
               {formatPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </div>
             <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              per vehicle · meet-and-greet included
+              per vehicle
             </p>
           </div>
 

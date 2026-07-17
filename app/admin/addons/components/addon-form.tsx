@@ -57,7 +57,7 @@ const ADDON_ICONS = [
   { value: 'BatteryCharging', label: 'Charging' },
   { value: 'GlassWater', label: 'Water' },
   { value: 'Newspaper', label: 'Newspaper' },
-  { value: 'HandHeart', label: 'Meet & Greet' },
+  { value: 'HandHeart', label: 'Hospitality/Welcome' },
   { value: 'FileText', label: 'Document/Sign' },
   { value: 'Zap', label: 'Priority/Fast' },
   { value: 'Clock', label: 'Time/Wait' },
