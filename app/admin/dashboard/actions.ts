@@ -2,10 +2,20 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { startOfDay, subDays, subWeeks, subMonths, startOfWeek, startOfMonth, format } from 'date-fns'
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
-
-export type PeriodType = 'daily' | 'weekly' | 'monthly'
+import { startOfDay, subDays, format } from 'date-fns'
+import { BOOKING_TIMEZONE, bookingToday } from '@/lib/utils/timezone'
+import {
+  bucketKeyForDubaiDay,
+  buildBuckets,
+  dubaiDayFromIso,
+  presetForPeriod,
+  resolveRevenueRange,
+  toUtcBounds,
+  type PeriodType,
+  type RevenueRangeInput,
+  type RevenueTrendPoint,
+  type RevenueTrendResult,
+} from '@/lib/dashboard/revenue-range'
 
 export interface DashboardMetrics {
   // Primary KPIs
@@ -63,7 +73,6 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const adminClient = createAdminClient()
   const today = startOfDay(new Date())
   const yesterday = startOfDay(subDays(new Date(), 1))
-  const sevenDaysAgo = subDays(new Date(), 7)
 
   // Fetch today's revenue and compare with yesterday
   const { data: todayBookings } = await adminClient
@@ -437,147 +446,143 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   }
 }
 
-export async function getRevenueTrend(period: PeriodType = 'daily') {
+/** PostgREST returns at most 1000 rows per request. */
+const REVENUE_PAGE_SIZE = 1000
+
+/** Safety stop so a pathological range can't page forever. */
+const REVENUE_MAX_ROWS = 50_000
+
+/**
+ * Production counts only settled revenue. Development also counts in-flight
+ * payments so a fresh local DB isn't blank — the difference is surfaced in
+ * the returned meta rather than left silent.
+ */
+function includedPaymentStatuses(): string[] {
+  return process.env.NODE_ENV === 'development'
+    ? ['completed', 'pending', 'processing']
+    : ['completed']
+}
+
+function normalizeTrendInput(input: RevenueRangeInput | PeriodType): RevenueRangeInput {
+  if (typeof input === 'string') return { preset: presetForPeriod(input) }
+  return input
+}
+
+/**
+ * Pages through every booking in the window.
+ *
+ * The previous implementation issued a single unbounded query, which PostgREST
+ * silently capped at 1000 rows — and because it ordered ascending, the rows it
+ * dropped were the most recent ones.
+ */
+async function fetchBookingsInRange(
+  adminClient: ReturnType<typeof createAdminClient>,
+  fromUtc: Date,
+  toUtcExclusive: Date,
+  statuses: string[]
+): Promise<{ rows: Array<{ total_price: number | null; created_at: string }>; truncated: boolean }> {
+  const rows: Array<{ total_price: number | null; created_at: string }> = []
+
+  for (let page = 0; page * REVENUE_PAGE_SIZE < REVENUE_MAX_ROWS; page++) {
+    const start = page * REVENUE_PAGE_SIZE
+    const { data, error } = await adminClient
+      .from('bookings')
+      .select('total_price, created_at')
+      .in('payment_status', statuses)
+      .gte('created_at', fromUtc.toISOString())
+      .lt('created_at', toUtcExclusive.toISOString())
+      .order('created_at', { ascending: true })
+      .range(start, start + REVENUE_PAGE_SIZE - 1)
+
+    if (error) throw new Error(error.message)
+    if (!data || data.length === 0) return { rows, truncated: false }
+
+    rows.push(...(data as Array<{ total_price: number | null; created_at: string }>))
+
+    if (data.length < REVENUE_PAGE_SIZE) return { rows, truncated: false }
+  }
+
+  return { rows, truncated: true }
+}
+
+export async function getRevenueTrendWithMeta(
+  input: RevenueRangeInput | PeriodType = {}
+): Promise<RevenueTrendResult> {
   const adminClient = createAdminClient()
-  let startDate: Date
-  let endDate: Date = new Date()
-  let dataPoints: number
+  const range = resolveRevenueRange(normalizeTrendInput(input), bookingToday())
+  const buckets = buildBuckets(range)
+  const statuses = includedPaymentStatuses()
 
-  switch (period) {
-    case 'daily':
-      startDate = subDays(new Date(), 7)
-      dataPoints = 7
-      break
-    case 'weekly':
-      startDate = subWeeks(new Date(), 8)
-      dataPoints = 8
-      break
-    case 'monthly':
-      startDate = subMonths(new Date(), 12)
-      dataPoints = 12
-      break
-  }
+  const emptyPoints: RevenueTrendPoint[] = buckets.map(({ date, label }) => ({
+    date,
+    label,
+    revenue: 0,
+  }))
 
-  // Get bookings based on environment
-  const isDevelopment = process.env.NODE_ENV === 'development'
+  try {
+    const { fromUtc, toUtcExclusive } = toUtcBounds(range)
 
-  const { data: revenueData, error } = await adminClient
-    .from('bookings')
-    .select('total_price, created_at, payment_status')
-    .in('payment_status', isDevelopment
-      ? ['completed', 'pending', 'processing'] // Include more statuses in dev
-      : ['completed']) // Only completed in production
-    .order('created_at')
-
-  if (error) {
-    console.error('[Revenue Trend] Error fetching bookings:', error)
-  }
-
-  // Only log in development
-  if (isDevelopment) {
-    console.log('[Revenue Trend] Fetched bookings count:', revenueData?.length || 0)
-    if (!revenueData || revenueData.length === 0) {
-      const { data: allBookings, error: allError } = await adminClient
+    const [{ rows, truncated }, { count }] = await Promise.all([
+      fetchBookingsInRange(adminClient, fromUtc, toUtcExclusive, statuses),
+      adminClient
         .from('bookings')
-        .select('total_price, created_at, payment_status')
-        .limit(10)
-      console.log('[Revenue Trend] Sample bookings in DB:', allBookings)
-      if (allError) {
-        console.error('[Revenue Trend] Error fetching all bookings:', allError)
-      }
-    } else {
-      // Log first few bookings for debugging
-      console.log('[Revenue Trend] First booking:', revenueData[0])
+        .select('id', { count: 'exact', head: true })
+        .in('payment_status', statuses),
+    ])
+
+    const totalsByBucket = new Map<string, number>()
+    for (const row of rows) {
+      if (!row.created_at) continue
+      const key = bucketKeyForDubaiDay(dubaiDayFromIso(row.created_at), range.bucket)
+      totalsByBucket.set(key, (totalsByBucket.get(key) ?? 0) + Number(row.total_price || 0))
+    }
+
+    return {
+      points: buckets.map(({ key, date, label }) => ({
+        date,
+        label,
+        revenue: totalsByBucket.get(key) ?? 0,
+      })),
+      meta: {
+        range,
+        totalRows: rows.length,
+        truncated,
+        hasAnyHistory: (count ?? 0) > 0,
+        includedPaymentStatuses: statuses,
+        error: null,
+      },
+    }
+  } catch (error: unknown) {
+    // Previously a failed query only logged and then rendered as zeros, which
+    // is indistinguishable from "no revenue". Surface it instead.
+    const message = error instanceof Error ? error.message : 'Failed to load revenue trend'
+    console.error('[Revenue Trend] Error fetching bookings:', message)
+
+    return {
+      points: emptyPoints,
+      meta: {
+        range,
+        totalRows: 0,
+        truncated: false,
+        hasAnyHistory: false,
+        includedPaymentStatuses: statuses,
+        error: message,
+      },
     }
   }
+}
 
-  const revenueTrend: Array<{ date: string; label: string; revenue: number }> = []
-
-  if (period === 'daily') {
-    // Show last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i)
-      const dateStr = date.toISOString().split('T')[0]
-
-      // Also check for future dates in case of test data
-      const dayRevenue = revenueData
-        ?.filter(b => {
-          const bookingDateStr = b.created_at.split('T')[0]
-          return bookingDateStr === dateStr
-        })
-        .reduce((sum, b) => sum + Number(b.total_price || 0), 0) || 0
-
-      revenueTrend.push({
-        date: dateStr,
-        label: format(date, 'EEE'),
-        revenue: dayRevenue
-      })
-    }
-
-    // If we have future test data, show it as well (only in development)
-    if (isDevelopment) {
-      const futureBookings = revenueData?.filter(b => {
-        const bookingDate = new Date(b.created_at)
-        return bookingDate > new Date()
-      }) || []
-
-      if (futureBookings.length > 0) {
-        console.log('[Revenue Trend] Found future-dated bookings (test data):', futureBookings.length)
-      }
-    }
-
-  } else if (period === 'weekly') {
-    // Show last 8 weeks
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i))
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekEnd.getDate() + 6)
-
-      const weekRevenue = revenueData
-        ?.filter(b => {
-          const bookingDate = new Date(b.created_at)
-          return bookingDate >= weekStart && bookingDate <= weekEnd
-        })
-        .reduce((sum, b) => sum + Number(b.total_price || 0), 0) || 0
-
-      // Only check for debug info in development
-      if (isDevelopment && weekRevenue > 0) {
-        console.log(`[Revenue Trend] Week ${8 - i}: ${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d')}, Revenue: $${weekRevenue}`)
-      }
-
-      revenueTrend.push({
-        date: weekStart.toISOString().split('T')[0],
-        label: `W${8 - i}`,
-        revenue: weekRevenue
-      })
-    }
-  } else if (period === 'monthly') {
-    // Show last 12 months
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = startOfMonth(subMonths(new Date(), i))
-      const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
-
-      const monthRevenue = revenueData
-        ?.filter(b => {
-          const bookingDate = new Date(b.created_at)
-          return bookingDate >= monthStart && bookingDate <= monthEnd
-        })
-        .reduce((sum, b) => sum + Number(b.total_price || 0), 0) || 0
-
-      // Only check for debug info in development
-      if (isDevelopment && monthRevenue > 0) {
-        console.log(`[Revenue Trend] ${format(monthStart, 'MMM yyyy')}: Revenue: $${monthRevenue}`)
-      }
-
-      revenueTrend.push({
-        date: monthStart.toISOString().split('T')[0],
-        label: format(monthStart, 'MMM'),
-        revenue: monthRevenue
-      })
-    }
-  }
-
-  return revenueTrend
+/**
+ * Backwards-compatible wrapper: returns just the points.
+ *
+ * Accepts the legacy `PeriodType` so existing callers keep working; prefer
+ * `getRevenueTrendWithMeta` for new code, which reports sparse/truncated data.
+ */
+export async function getRevenueTrend(
+  input: RevenueRangeInput | PeriodType = {}
+): Promise<RevenueTrendPoint[]> {
+  const { points } = await getRevenueTrendWithMeta(input)
+  return points
 }
 
 // Helper function to format time ago

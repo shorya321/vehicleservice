@@ -22,13 +22,23 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { cn, formatCurrency } from "@/lib/utils"
-import { getDashboardMetrics } from './actions'
+import { getDashboardMetrics, getRevenueTrendWithMeta } from './actions'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
 import { EmptyState } from '@/components/ui/empty-state'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { AnimatedCard } from '@/components/ui/animated-card'
 
-export default async function AdminDashboard() {
+interface AdminDashboardProps {
+  // Next.js 16: searchParams is a Promise and must be awaited.
+  searchParams?: Promise<{
+    preset?: string
+    from?: string
+    to?: string
+    bucket?: string
+  }>
+}
+
+export default async function AdminDashboard({ searchParams }: AdminDashboardProps) {
   const supabase = await createClient()
 
   // Check if user is authenticated and is admin
@@ -49,8 +59,13 @@ export default async function AdminDashboard() {
     redirect('/unauthorized')
   }
 
-  // Fetch dashboard metrics
-  const metrics = await getDashboardMetrics()
+  // Fetch dashboard metrics, plus the revenue trend for the requested range.
+  // No query string keeps the previous default view.
+  const rangeParams = (await searchParams) ?? {}
+  const [metrics, revenueTrend] = await Promise.all([
+    getDashboardMetrics(),
+    getRevenueTrendWithMeta(rangeParams),
+  ])
 
   return (
       <AnimatedPage>
@@ -192,7 +207,7 @@ export default async function AdminDashboard() {
           <div className="lg:col-span-8 space-y-5">
             {/* Revenue Chart */}
             <AnimatedCard delay={0.6}>
-              <RevenueChart initialData={metrics.revenueTrend} />
+              <RevenueChart points={revenueTrend.points} meta={revenueTrend.meta} />
             </AnimatedCard>
 
             {/* Recent Bookings - Timeline Style */}

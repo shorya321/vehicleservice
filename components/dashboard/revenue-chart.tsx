@@ -1,175 +1,153 @@
 'use client'
 
-import { useState, useTransition } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatCurrency, cn } from '@/lib/utils'
-import { getRevenueTrend, type PeriodType } from '@/app/admin/dashboard/actions'
-import { Skeleton } from '@/components/ui/skeleton'
+import { formatCurrency } from '@/lib/utils'
+import { RevenueRangePicker } from '@/components/dashboard/revenue-range-picker'
+import type { RevenueTrendMeta, RevenueTrendPoint } from '@/lib/dashboard/revenue-range'
 
 interface RevenueChartProps {
-  initialData: Array<{
-    date: string
-    label: string
-    revenue: number
-  }>
+  points: RevenueTrendPoint[]
+  meta: RevenueTrendMeta
 }
 
-export function RevenueChart({ initialData }: RevenueChartProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('daily')
-  const [revenueTrend, setRevenueTrend] = useState(initialData)
-  const [isPending, startTransition] = useTransition()
+const BUCKET_NOUN: Record<string, string> = {
+  day: 'daily',
+  week: 'weekly',
+  month: 'monthly',
+}
 
-  const handlePeriodChange = (period: PeriodType) => {
-    if (period === selectedPeriod) return
-
-    setSelectedPeriod(period)
-    startTransition(async () => {
-      const newData = await getRevenueTrend(period)
-      setRevenueTrend(newData)
-    })
-  }
-
-  const getDateRangeLabel = () => {
-    switch (selectedPeriod) {
-      case 'daily':
-        return 'Last 7 days performance'
-      case 'weekly':
-        return 'Last 8 weeks performance'
-      case 'monthly':
-        return 'Last 12 months performance'
-    }
-  }
-
-  const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue))
-  const totalRevenue = revenueTrend.reduce((sum, d) => sum + d.revenue, 0)
+export function RevenueChart({ points, meta }: RevenueChartProps) {
+  const { range } = meta
+  const maxRevenue = Math.max(...points.map((point) => point.revenue), 0)
+  const totalRevenue = points.reduce((sum, point) => sum + point.revenue, 0)
   const hasAnyRevenue = totalRevenue > 0
 
   return (
     <Card className="admin-card-hover">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border">
-        <div>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 border-b border-border pb-3">
+        <div className="min-w-0">
           <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
           <CardDescription className="mt-0.5">
-            {getDateRangeLabel()}
-            {hasAnyRevenue && (
-              <span className="ml-2 text-primary font-medium">
-                (Total: {formatCurrency(totalRevenue)})
-              </span>
+            {hasAnyRevenue ? (
+              <span className="font-medium text-primary">{formatCurrency(totalRevenue)}</span>
+            ) : (
+              <span>No revenue</span>
             )}
+            {/* "booked" is load-bearing: this chart buckets by when a booking
+                was sold (created_at), while other panels on this dashboard
+                show trip dates (pickup_datetime). */}
+            <span className="ml-1.5 text-muted-foreground">
+              · booked · {BUCKET_NOUN[range.bucket] ?? range.bucket}
+            </span>
           </CardDescription>
         </div>
-        <div className="admin-period-selector">
-          <button
-            className={cn(
-              "admin-period-btn",
-              selectedPeriod === 'daily' ? "admin-period-btn-active" : "admin-period-btn-inactive"
-            )}
-            onClick={() => handlePeriodChange('daily')}
-            disabled={isPending}
-          >
-            Daily
-          </button>
-          <button
-            className={cn(
-              "admin-period-btn",
-              selectedPeriod === 'weekly' ? "admin-period-btn-active" : "admin-period-btn-inactive"
-            )}
-            onClick={() => handlePeriodChange('weekly')}
-            disabled={isPending}
-          >
-            Weekly
-          </button>
-          <button
-            className={cn(
-              "admin-period-btn",
-              selectedPeriod === 'monthly' ? "admin-period-btn-active" : "admin-period-btn-inactive"
-            )}
-            onClick={() => handlePeriodChange('monthly')}
-            disabled={isPending}
-          >
-            Monthly
-          </button>
+        <div className="shrink-0">
+          <RevenueRangePicker range={range} />
         </div>
       </CardHeader>
+
       <CardContent>
-        {isPending ? (
-          <SkeletonBars count={selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12} />
-        ) : (
-          <div className="h-[250px] relative">
-            <div className="h-[200px] flex items-end justify-between gap-1 relative">
-              {revenueTrend.map((item, index) => {
-                // Calculate height with proper scaling
-                const hasRevenue = item.revenue > 0
-                let barHeight = 0
+        <div className="relative h-[250px]">
+          <div className="relative flex h-[200px] items-end justify-between gap-1">
+            {points.map((point) => {
+              const hasRevenue = point.revenue > 0
+              // Scale from a 16px floor to 160px so small non-zero values stay
+              // visible; empty buckets get a flat 8px stub. The 200px track
+              // leaves ~40px of headroom so the hover tooltip stays inside the
+              // chart instead of overlapping the header.
+              const barHeight = hasRevenue && maxRevenue > 0
+                ? 16 + (point.revenue / maxRevenue) * 144
+                : 8
 
-                if (hasRevenue && maxRevenue > 0) {
-                  // Scale from 20px minimum to 180px maximum
-                  barHeight = 20 + ((item.revenue / maxRevenue) * 160)
-                } else if (!hasRevenue) {
-                  barHeight = 8 // Minimal height for empty bars
-                }
-
-                return (
+              return (
+                <div
+                  key={point.date}
+                  className="group relative flex flex-1 flex-col items-center justify-end"
+                >
                   <div
-                    key={`${selectedPeriod}-${item.date}`}
-                    className="flex-1 flex flex-col justify-end items-center group relative"
+                    className={`
+                      w-full
+                      ${hasRevenue
+                        ? 'bg-primary hover:bg-primary/80'
+                        : 'bg-primary/30 hover:bg-primary/50'}
+                      relative rounded-t transition-all duration-200
+                    `}
+                    style={{ height: `${barHeight}px`, minHeight: '4px' }}
                   >
-                    {/* Bar */}
-                    <div
-                      className={`
-                        w-full
-                        ${hasRevenue
-                          ? 'bg-primary hover:bg-primary/80'
-                          : 'bg-primary/30 hover:bg-primary/50'}
-                        rounded-t transition-all duration-200
-                        relative
-                      `}
-                      style={{
-                        height: `${barHeight}px`,
-                        minHeight: '4px'
-                      }}
-                    >
-                      {/* Tooltip on hover */}
-                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground border px-2 py-1 rounded text-xs whitespace-nowrap z-10 shadow-md pointer-events-none">
-                        <div className="font-semibold">{item.revenue > 0 ? formatCurrency(item.revenue) : 'No revenue'}</div>
-                        <div className="text-xs opacity-75">{item.label}</div>
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border bg-popover px-2 py-1 text-xs text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+                      <div className="font-semibold">
+                        {hasRevenue ? formatCurrency(point.revenue) : 'No revenue'}
                       </div>
-                    </div>
-
-                    {/* Label below bar */}
-                    <div className="text-xs text-muted-foreground text-center mt-2">
-                      {item.label}
+                      <div className="text-xs opacity-75">{point.label}</div>
                     </div>
                   </div>
-                )
-              })}
-            </div>
 
-            {/* Show message if no revenue at all - moved outside the chart area */}
+                  <div
+                    className="mt-2 text-center text-xs text-muted-foreground"
+                    style={{ fontSize: points.length > 24 ? '0.6rem' : undefined }}
+                  >
+                    {point.label}
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        )}
-        {!isPending && !hasAnyRevenue && (
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            No revenue recorded for this period
-          </p>
-        )}
+        </div>
+
+        <ChartNotice meta={meta} hasAnyRevenue={hasAnyRevenue} />
       </CardContent>
     </Card>
   )
 }
 
-function SkeletonBars({ count }: { count: number }) {
-  const [heights] = useState(() =>
-    Array.from({ length: count }, () => Math.random() * 80 + 20)
-  )
+interface ChartNoticeProps {
+  meta: RevenueTrendMeta
+  hasAnyRevenue: boolean
+}
+
+/**
+ * Distinguishes "nothing in this range" from "nothing recorded yet" — an
+ * all-zero chart otherwise reads as broken rather than simply empty.
+ */
+function ChartNotice({ meta, hasAnyRevenue }: ChartNoticeProps) {
+  const notices: string[] = []
+
+  if (meta.error) {
+    return (
+      <p className="mt-2 text-center text-xs text-destructive">
+        Could not load revenue data. {meta.error}
+      </p>
+    )
+  }
+
+  if (!hasAnyRevenue) {
+    notices.push(
+      meta.hasAnyHistory
+        ? 'No revenue recorded in this range. Try a wider range or a different period.'
+        : 'No revenue recorded yet. Bars will appear here once bookings are paid.'
+    )
+  }
+
+  if (meta.truncated) {
+    notices.push('Showing a partial result — this range exceeds the row limit.')
+  }
+
+  if (meta.range.bucketAdjusted) {
+    notices.push(`Grouped by ${BUCKET_NOUN[meta.range.bucket]} to keep the range readable.`)
+  }
+
+  if (meta.includedPaymentStatuses.length > 1) {
+    notices.push(`Dev mode: includes ${meta.includedPaymentStatuses.join(', ')} payments.`)
+  }
+
+  if (notices.length === 0) return null
+
   return (
-    <div className="h-[200px] flex items-end justify-between gap-1">
-      {heights.slice(0, count).map((h, i) => (
-        <Skeleton
-          key={i}
-          className="flex-1 rounded-t"
-          style={{ height: `${h}%` }}
-        />
+    <div className="mt-2 space-y-1">
+      {notices.map((notice) => (
+        <p key={notice} className="text-center text-xs text-muted-foreground">
+          {notice}
+        </p>
       ))}
     </div>
   )
