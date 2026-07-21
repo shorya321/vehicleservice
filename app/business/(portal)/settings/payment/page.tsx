@@ -34,6 +34,7 @@ export default async function PaymentSettingsPage() {
       `
       id,
       business_account_id,
+      role,
       business_accounts (
         id,
         save_payment_methods,
@@ -47,6 +48,11 @@ export default async function PaymentSettingsPage() {
 
   if (!businessUser) {
     redirect('/business/login');
+  }
+
+  // Saved cards and payment settings are a billing surface - owner only.
+  if (businessUser.role !== 'owner') {
+    redirect('/business/dashboard');
   }
 
   const businessAccount = businessUser.business_accounts;

@@ -9,6 +9,8 @@ import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { getExchangeRates } from '@/lib/currency/server';
 import { convertFromAed } from '@/lib/business/wallet-operations';
+import { normalizeBusinessRole } from '@/lib/business/api-utils';
+import { restrictedToOwnBookings } from '@/lib/business/member-scope';
 import { redirect } from 'next/navigation';
 import { DashboardContent } from './components/dashboard-content';
 import type { PopularRouteData } from './components/analytics-chart';
@@ -37,6 +39,7 @@ export default async function BusinessDashboardPage() {
       `
       id,
       business_account_id,
+      role,
       business_accounts (
         id,
         business_name,
@@ -55,30 +58,41 @@ export default async function BusinessDashboardPage() {
   }
 
   const businessAccountId = businessUser.business_account_id;
-  // Stored balance is always AED; displayCurrency only changes how it is rendered.
-  const walletBalance = Number(businessUser.business_accounts.wallet_balance) || 0;
-  const displayCurrency = businessUser.business_accounts.preferred_currency || 'AED';
-  const exchangeRates = await getExchangeRates();
-  const displayBalance = convertFromAed(walletBalance, displayCurrency, exchangeRates);
+  const role = normalizeBusinessRole(businessUser.role);
+  const isOwner = role === 'owner';
   const businessName = businessUser.business_accounts.brand_name || businessUser.business_accounts.business_name;
+
+  // The wallet is the business's finances - staff never see the balance. Skip
+  // the exchange-rate lookup entirely for them so no figure can reach the
+  // client bundle at all.
+  const walletBalance = isOwner ? Number(businessUser.business_accounts.wallet_balance) || 0 : 0;
+  const displayCurrency = businessUser.business_accounts.preferred_currency || 'AED';
+  const displayBalance = isOwner
+    ? convertFromAed(walletBalance, displayCurrency, await getExchangeRates())
+    : 0;
+
+  // Every tile below is scoped to this member. Owners see the whole business;
+  // staff see only the bookings they created, so their tiles agree with the
+  // list on /business/bookings.
+  const bookingScope = restrictedToOwnBookings(role)
+    ? { business_account_id: businessAccountId, created_by_user_id: businessUser.id }
+    : { business_account_id: businessAccountId };
 
   // Get booking statistics
   const { count: totalBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', businessAccountId);
+    .match(bookingScope);
 
   const { count: pendingBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', businessAccountId)
-    .eq('booking_status', 'pending');
+    .match({ ...bookingScope, booking_status: 'pending' });
 
   const { count: completedBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', businessAccountId)
-    .eq('booking_status', 'completed');
+    .match({ ...bookingScope, booking_status: 'completed' });
 
   // Get this month's bookings
   const startOfMonth = new Date();
@@ -88,14 +102,14 @@ export default async function BusinessDashboardPage() {
   const { count: monthlyBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', businessAccountId)
+    .match(bookingScope)
     .gte('created_at', startOfMonth.toISOString());
 
   // Get recent bookings
   const { data: recentBookings } = await supabase
     .from('business_bookings')
     .select('id, booking_number, trip_number, customer_name, pickup_datetime, booking_status, total_price')
-    .eq('business_account_id', businessAccountId)
+    .match(bookingScope)
     .order('created_at', { ascending: false })
     .limit(5);
 
@@ -126,6 +140,7 @@ export default async function BusinessDashboardPage() {
       monthlyBookings={monthlyBookings || 0}
       recentBookings={recentBookings || []}
       popularRoutes={popularRoutes}
+      isOwner={isOwner}
     />
   );
 }

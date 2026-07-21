@@ -63,6 +63,11 @@ export default async function BrandingSettingsPage() {
     redirect('/business/login');
   }
 
+  // Branding is the whole tenant's identity, so only the owner may change it.
+  if (businessUser.role !== 'owner') {
+    redirect('/business/dashboard');
+  }
+
   const businessAccount = businessUser.business_accounts as {
     id: string;
     business_name: string;

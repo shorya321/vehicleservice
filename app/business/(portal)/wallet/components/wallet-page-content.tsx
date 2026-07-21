@@ -75,6 +75,11 @@ interface WalletPageContentProps {
   transactions: WalletTransaction[];
   totalTransactions: number | null;
   quickStats?: WalletQuickStatsData;
+  /**
+   * Staff can see the balance but not top it up - the top-up routes are
+   * owner-only, so showing them the button would only produce a 403.
+   */
+  canTopUp?: boolean;
 }
 
 export function WalletPageContent({
@@ -86,6 +91,7 @@ export function WalletPageContent({
   transactions,
   totalTransactions,
   quickStats,
+  canTopUp = true,
 }: WalletPageContentProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -213,8 +219,9 @@ export function WalletPageContent({
                   : 'Available for bookings'
               }
               icon={<Wallet className="h-5 w-5" />}
-              actionLabel="Add Credits"
-              onAction={handleAddCreditsClick}
+              {...(canTopUp
+                ? { actionLabel: 'Add Credits', onAction: handleAddCreditsClick }
+                : {})}
             />
           </motion.div>
           <motion.div key="payment-methods" variants={prefersReducedMotion ? undefined : staggerItem} className="h-full">

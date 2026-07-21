@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Plus, CalendarCheck } from 'lucide-react';
+import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
 import { BookingsPageContent } from './components/bookings-page-content';
 
 export const metadata: Metadata = {
@@ -30,18 +31,19 @@ export default async function BusinessBookingsPage() {
   }
 
   // Get business account
-  const { data: businessUser } = await supabase
-    .from('business_users')
-    .select('business_account_id')
-    .eq('auth_user_id', user.id)
-    .single();
+  const member = await getBusinessMember(supabase, user.id);
 
-  if (!businessUser) {
+  if (!member) {
     redirect('/business/login');
   }
 
+  // Staff only ever see the bookings they created themselves. The same scope
+  // has to be applied to the header counts below, or the totals contradict the
+  // list they are sitting above.
+  const ownBookingsOnly = restrictedToOwnBookings(member.role);
+
   // Get bookings
-  const { data: bookings } = await supabase
+  let bookingsQuery = supabase
     .from('business_bookings')
     .select(
       `
@@ -59,20 +61,37 @@ export default async function BusinessBookingsPage() {
       created_at
     `
     )
-    .eq('business_account_id', businessUser.business_account_id)
-    .order('created_at', { ascending: false });
+    .eq('business_account_id', member.businessAccountId);
+
+  if (ownBookingsOnly) {
+    bookingsQuery = bookingsQuery.eq('created_by_user_id', member.id);
+  }
+
+  const { data: bookings } = await bookingsQuery.order('created_at', { ascending: false });
 
   // Get stats for header
-  const { count: totalCount } = await supabase
+  let totalQuery = supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', businessUser.business_account_id);
+    .eq('business_account_id', member.businessAccountId);
 
-  const { count: pendingCount } = await supabase
+  if (ownBookingsOnly) {
+    totalQuery = totalQuery.eq('created_by_user_id', member.id);
+  }
+
+  const { count: totalCount } = await totalQuery;
+
+  let pendingQuery = supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', businessUser.business_account_id)
+    .eq('business_account_id', member.businessAccountId)
     .eq('booking_status', 'pending');
+
+  if (ownBookingsOnly) {
+    pendingQuery = pendingQuery.eq('created_by_user_id', member.id);
+  }
+
+  const { count: pendingCount } = await pendingQuery;
 
   return (
     <BookingsPageContent

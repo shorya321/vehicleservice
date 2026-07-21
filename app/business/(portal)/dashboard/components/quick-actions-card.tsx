@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { Plus, Wallet, CalendarCheck, Settings, ArrowRight } from 'lucide-react';
+import { Plus, Wallet, CalendarCheck, Settings, UserCircle, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
@@ -30,6 +30,7 @@ const quickActionConfig = [
   },
   {
     key: 'manageWallet',
+    ownerOnly: true,
     href: '/business/wallet',
     icon: Wallet,
     label: 'Manage Wallet',
@@ -52,6 +53,7 @@ const quickActionConfig = [
   },
   {
     key: 'settings',
+    ownerOnly: true,
     href: '/business/settings',
     icon: Settings,
     label: 'Settings',
@@ -61,7 +63,29 @@ const quickActionConfig = [
     hoverBg: 'hover:bg-violet-500/15',
     borderHover: 'hover:border-violet-500/40',
   },
+  {
+    key: 'profile',
+    staffOnly: true,
+    href: '/business/profile',
+    icon: UserCircle,
+    label: 'Profile',
+    description: 'Your name, photo & password',
+    color: 'text-violet-500',
+    bg: 'bg-violet-500/10',
+    hoverBg: 'hover:bg-violet-500/15',
+    borderHover: 'hover:border-violet-500/40',
+  },
 ];
+
+/**
+ * Owners see the business tiles; staff see their own profile instead.
+ * Presentation only - the destinations enforce access themselves.
+ */
+function visibleActions(isOwner: boolean) {
+  return quickActionConfig.filter((config) =>
+    isOwner ? !('staffOnly' in config) : !('ownerOnly' in config)
+  );
+}
 
 interface QuickActionCardItemProps {
   config: typeof quickActionConfig[0];
@@ -115,9 +139,10 @@ function QuickActionCardItem({ config }: QuickActionCardItemProps) {
 
 interface QuickActionsCardProps {
   className?: string;
+  isOwner?: boolean;
 }
 
-export function QuickActionsCard({ className }: QuickActionsCardProps) {
+export function QuickActionsCard({ className, isOwner = true }: QuickActionsCardProps) {
   const prefersReducedMotion = useReducedMotion();
 
   const itemVariants = {
@@ -164,7 +189,7 @@ export function QuickActionsCard({ className }: QuickActionsCardProps) {
             }}
             className="grid grid-cols-2 gap-3"
           >
-            {quickActionConfig.map((config) => (
+            {visibleActions(isOwner).map((config) => (
               <motion.div
                 key={config.key}
                 variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}

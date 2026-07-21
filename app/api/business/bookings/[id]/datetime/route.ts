@@ -68,7 +68,8 @@ export const PATCH = requireBusinessAuth(
           customer_name,
           customer_email,
           pickup_address,
-          dropoff_address
+          dropoff_address,
+          created_by_user_id
         `
         )
         .eq('id', bookingId)
@@ -81,6 +82,11 @@ export const PATCH = requireBusinessAuth(
       // Verify ownership
       if (booking.business_account_id !== user.businessAccountId) {
         return apiError('Unauthorized', 403);
+      }
+
+      // Staff may only reschedule bookings they created themselves.
+      if (user.role !== 'owner' && booking.created_by_user_id !== user.businessId) {
+        return apiError('Forbidden: you can only modify bookings you created', 403);
       }
 
       // Check if booking can be modified

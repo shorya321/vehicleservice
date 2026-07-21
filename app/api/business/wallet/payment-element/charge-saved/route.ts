@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import {
-  requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
   parseRequestBody,
@@ -27,7 +27,7 @@ const chargeSavedSchema = z.object({
  * POST /api/business/wallet/payment-element/charge-saved
  * Charge a saved payment method for wallet recharge
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   // Parse and validate request body
   const body = await parseRequestBody(request, chargeSavedSchema);
 

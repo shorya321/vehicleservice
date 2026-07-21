@@ -10,8 +10,15 @@ import {
 import { revalidatePath } from "next/cache"
 
 /**
- * If user is a business user, delete their business_account first.
- * This cascades all business child data (bookings, wallet, users, etc.).
+ * Clean up the business side of a user before deleting them.
+ *
+ * A business tenant can have several members (one owner plus staff), so what we
+ * remove depends on which one this is:
+ *   - staff  -> drop only their business_users row. The tenant, its wallet and
+ *               its bookings belong to the business, not to them.
+ *   - owner  -> deleting the owner tears down the whole business_accounts row
+ *               and cascades every child record, so refuse while other members
+ *               still exist rather than destroying their data by surprise.
  */
 export async function cleanupBusinessData(
   adminClient: SupabaseClient,
@@ -27,20 +34,54 @@ export async function cleanupBusinessData(
 
   const { data: businessUser } = await adminClient
     .from('business_users')
-    .select('business_account_id')
+    .select('id, role, business_account_id')
     .eq('auth_user_id', userId)
-    .single()
+    .maybeSingle()
 
-  if (businessUser?.business_account_id) {
+  if (!businessUser?.business_account_id) return {}
+
+  // Staff member: remove the membership only, leave the tenant intact.
+  if (businessUser.role !== 'owner') {
     const { error } = await adminClient
-      .from('business_accounts')
+      .from('business_users')
       .delete()
-      .eq('id', businessUser.business_account_id)
+      .eq('id', businessUser.id)
 
     if (error) {
-      console.error('Failed to delete business account:', error)
-      return { error: 'Failed to delete business account and related data' }
+      console.error('Failed to remove business team member:', error)
+      return { error: 'Failed to remove the user from their business account' }
     }
+
+    return {}
+  }
+
+  // Owner: refuse if the business still has other members, otherwise deleting
+  // one person silently wipes the whole business and everyone else's bookings.
+  const { count, error: countError } = await adminClient
+    .from('business_users')
+    .select('id', { count: 'exact', head: true })
+    .eq('business_account_id', businessUser.business_account_id)
+    .neq('id', businessUser.id)
+
+  if (countError) {
+    console.error('Failed to count business team members:', countError)
+    return { error: 'Failed to check the business account team members' }
+  }
+
+  if ((count ?? 0) > 0) {
+    return {
+      error: `This business has ${count} other team member(s). Remove them before deleting the owner.`,
+    }
+  }
+
+  const { error } = await adminClient
+    .from('business_accounts')
+    .delete()
+    .eq('id', businessUser.business_account_id)
+
+  if (error) {
+    console.error('Failed to delete business account:', error)
+    return { error: 'Failed to delete business account and related data' }
   }
 
   return {}

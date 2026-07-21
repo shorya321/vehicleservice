@@ -4,7 +4,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/lib/utils/currency-converter';
@@ -25,7 +25,7 @@ const paymentSettingsSchema = z.object({
  * GET /api/business/settings/payment
  * Get current payment settings for business account
  */
-export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
+export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const { createClient: createSupabaseClient } = await import('@/lib/supabase/server');
     const supabase = await createSupabaseClient();
@@ -58,7 +58,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
  * PATCH /api/business/settings/payment
  * Update payment settings for business account
  */
-export const PATCH = requireBusinessAuth(async (request: NextRequest, user) => {
+export const PATCH = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const body = await request.json();
 

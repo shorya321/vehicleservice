@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
 import { TransactionInvoicePDF } from '@/lib/pdf/generators/transaction-invoice';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
 import { format } from 'date-fns';
@@ -14,28 +14,21 @@ import { jsx } from 'react/jsx-runtime';
 /**
  * GET: Generate and download transaction invoice PDF
  */
-export async function GET(
+export const GET = requireBusinessOwner(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  user,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     const supabase = await createClient();
 
-    // Get authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return apiError('Unauthorized', 401);
-    }
-
-    // Get business account
+    // Get business account. The address column is `address`, not
+    // `business_address` - selecting the latter made this route always 404.
     const { data: businessAccount, error: businessError } = await supabase
       .from('business_accounts')
-      .select('id, business_name, business_email, business_phone, business_address')
-      .eq('id', user.id)
+      .select('id, business_name, business_email, business_phone, address')
+      .eq('id', user.businessAccountId)
       .single();
 
     if (businessError || !businessAccount) {
@@ -71,7 +64,7 @@ export async function GET(
       businessName: businessAccount.business_name,
       businessEmail: businessAccount.business_email,
       businessPhone: businessAccount.business_phone,
-      businessAddress: businessAccount.business_address,
+      businessAddress: businessAccount.address,
 
       // Transaction Details
       transactionId: transaction.id,
@@ -103,4 +96,4 @@ export async function GET(
     console.error('Error generating transaction invoice:', error);
     return apiError('Failed to generate transaction invoice', 500);
   }
-}
+});

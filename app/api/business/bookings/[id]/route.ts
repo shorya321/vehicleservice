@@ -41,7 +41,7 @@ export const DELETE = requireBusinessAuth(
         .select(`
           id, business_account_id, booking_status, wallet_deduction_amount,
           booking_number, trip_number, customer_name, customer_email,
-          pickup_address, dropoff_address, pickup_datetime,
+          pickup_address, dropoff_address, pickup_datetime, created_by_user_id,
           from_location:from_location_id(name),
           to_location:to_location_id(name)
         `)
@@ -54,6 +54,11 @@ export const DELETE = requireBusinessAuth(
 
       if (booking.business_account_id !== user.businessAccountId) {
         return apiError('Unauthorized', 403);
+      }
+
+      // Staff may only delete bookings they created themselves.
+      if (user.role !== 'owner' && booking.created_by_user_id !== user.businessId) {
+        return apiError('Forbidden: you can only delete bookings you created', 403);
       }
 
       // If booking has wallet deduction and is not already cancelled/refunded, refund first

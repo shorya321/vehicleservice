@@ -7,7 +7,7 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-12-18.acacia',
@@ -17,7 +17,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
  * GET /api/business/wallet/verify-payment?session_id=xxx
  * Verify checkout session and credit wallet
  */
-export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
+export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get('session_id');
 

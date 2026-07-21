@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import {
-  requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
   parseRequestBody,
@@ -23,7 +23,7 @@ const bulkDeleteSchema = z.object({
  * POST /api/business/bookings/bulk-delete
  * Delete multiple bookings permanently (with refunds if applicable)
  */
-export const POST = requireBusinessAuth(
+export const POST = requireBusinessOwner(
   async (request: NextRequest, user) => {
     // Parse and validate request body
     const body = await parseRequestBody(request, bulkDeleteSchema);

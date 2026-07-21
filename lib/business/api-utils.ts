@@ -14,6 +14,14 @@ export interface ApiResponse<T = any> {
   error?: string;
 }
 
+// Role helpers live in a dependency-free module so client components can share
+// them - this file imports next/server and the server Supabase client, so it
+// cannot be pulled into a 'use client' bundle. Re-exported here so existing
+// server-side imports keep working.
+import { normalizeBusinessRole, type BusinessRole } from './roles';
+
+export { normalizeBusinessRole, isOwnerRole, type BusinessRole } from './roles';
+
 /**
  * Authenticated business user context
  */
@@ -21,13 +29,20 @@ export interface BusinessUserContext {
   userId: string;
   businessId: string;
   businessAccountId: string;
-  role: 'owner' | 'staff';
+  role: BusinessRole;
   businessName: string;
   businessEmail: string;
 }
 
 /**
  * Get authenticated business user from session
+ *
+ * Returns null unless the member is active AND their business account is
+ * active. proxy.ts applies the same checks to /business/* page loads but does
+ * not match /api/business/*, so this is the only place API access is gated -
+ * without it, a deactivated staff member or a suspended tenant keeps working
+ * from a live session cookie.
+ *
  * @returns Business user context or null if not authenticated
  * @example
  * const user = await getAuthenticatedBusinessUser();
@@ -54,10 +69,12 @@ export async function getAuthenticatedBusinessUser(): Promise<BusinessUserContex
       id,
       business_account_id,
       role,
+      is_active,
       business_accounts (
         id,
         business_name,
-        business_email
+        business_email,
+        status
       )
     `
     )
@@ -68,13 +85,26 @@ export async function getAuthenticatedBusinessUser(): Promise<BusinessUserContex
     return null;
   }
 
+  // Deactivated members lose API access immediately, not at next login.
+  if (!businessUser.is_active) {
+    return null;
+  }
+
+  const businessAccount = Array.isArray(businessUser.business_accounts)
+    ? businessUser.business_accounts[0]
+    : businessUser.business_accounts;
+
+  if (!businessAccount || businessAccount.status !== 'active') {
+    return null;
+  }
+
   return {
     userId: user.id,
     businessId: businessUser.id,
     businessAccountId: businessUser.business_account_id,
-    role: businessUser.role,
-    businessName: businessUser.business_accounts.business_name,
-    businessEmail: businessUser.business_accounts.business_email,
+    role: normalizeBusinessRole(businessUser.role),
+    businessName: businessAccount.business_name,
+    businessEmail: businessAccount.business_email,
   };
 }
 

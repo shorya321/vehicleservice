@@ -110,7 +110,7 @@ export async function uploadBusinessAvatar(
       await adminClient.storage.from("user-uploads").remove([oldAvatarPath])
     }
 
-    revalidatePath("/business/settings")
+    revalidatePath("/business/profile")
     revalidatePath("/business")
     return {}
   } catch {
@@ -155,7 +155,7 @@ export async function deleteBusinessAvatar(): Promise<{ error?: string }> {
       await adminClient.storage.from("user-uploads").remove([storagePath])
     }
 
-    revalidatePath("/business/settings")
+    revalidatePath("/business/profile")
     revalidatePath("/business")
     return {}
   } catch {

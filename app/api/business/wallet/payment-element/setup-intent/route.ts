@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import {
   getOrCreateBusinessStripeCustomer,
   formatBusinessDetails,
@@ -19,7 +19,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
  * POST /api/business/wallet/payment-element/setup-intent
  * Create SetupIntent for saving payment method without immediate charge
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const { createClient } = await import('@/lib/supabase/server');
     const supabase = await createClient();

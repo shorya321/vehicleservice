@@ -6,7 +6,7 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { z } from 'zod';
 
 // Validation schema for notification preferences
@@ -38,7 +38,7 @@ const notificationPreferencesSchema = z.object({
 /**
  * GET: Retrieve notification preferences
  */
-export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
+export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const supabase = await createClient();
 
@@ -68,7 +68,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
 /**
  * PUT: Update notification preferences
  */
-export const PUT = requireBusinessAuth(async (request: NextRequest, user) => {
+export const PUT = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const supabase = await createClient();
 

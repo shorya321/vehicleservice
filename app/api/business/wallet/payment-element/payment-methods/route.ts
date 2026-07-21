@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -16,7 +16,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
  * GET /api/business/wallet/payment-element/payment-methods
  * List all saved payment methods for the business
  */
-export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
+export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const { createClient: createSupabaseClient } = await import('@/lib/supabase/server');
     const supabase = await createSupabaseClient();
@@ -50,7 +50,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
  * POST /api/business/wallet/payment-element/payment-methods
  * Save a new payment method after successful payment
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const body = await request.json();
     const { payment_method_id, set_as_default } = body;
@@ -196,7 +196,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
  * PATCH /api/business/wallet/payment-element/payment-methods
  * Update payment method (e.g., set as default)
  */
-export const PATCH = requireBusinessAuth(async (request: NextRequest, user) => {
+export const PATCH = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const body = await request.json();
     const { payment_method_id, set_as_default } = body;
@@ -249,7 +249,7 @@ export const PATCH = requireBusinessAuth(async (request: NextRequest, user) => {
  * DELETE /api/business/wallet/payment-element/payment-methods
  * Delete a saved payment method
  */
-export const DELETE = requireBusinessAuth(async (request: NextRequest, user) => {
+export const DELETE = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const { searchParams } = new URL(request.url);
     const paymentMethodId = searchParams.get('id');

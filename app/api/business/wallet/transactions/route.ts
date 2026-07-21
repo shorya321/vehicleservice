@@ -4,13 +4,13 @@
  */
 
 import { NextRequest } from 'next/server';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 
 /**
  * GET /api/business/wallet/transactions
  * Retrieve transactions with advanced filtering and search
  */
-export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
+export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const { createClient } = await import('@/lib/supabase/server');
     const supabase = await createClient();

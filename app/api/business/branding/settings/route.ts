@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server';
 import {
   requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
   parseRequestBody,
@@ -51,7 +52,7 @@ export const GET = requireBusinessAuth(async (request: NextRequest, user) => {
  * PUT /api/business/branding/settings
  * Update branding settings (brand_name and/or theme_config)
  */
-export const PUT = requireBusinessAuth(async (request: NextRequest, user) => {
+export const PUT = requireBusinessOwner(async (request: NextRequest, user) => {
   // Parse and validate request body
   const body = await parseRequestBody(request, brandingSettingsSchema);
 

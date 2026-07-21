@@ -5,34 +5,18 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 
 /**
  * GET: Retrieve notification history
+ *
+ * Wallet notification history is business-level, so it is owner-only. Using
+ * requireBusinessOwner also brings the is_active / account-status checks this
+ * route previously skipped by hand-rolling its own auth.
  */
-export async function GET(request: NextRequest) {
+export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     const supabase = await createClient();
-
-    // Get authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return apiError('Unauthorized', 401);
-    }
-
-    // Get business account
-    const { data: businessAccount, error: businessError } = await supabase
-      .from('business_accounts')
-      .select('id')
-      .eq('id', user.id)
-      .single();
-
-    if (businessError || !businessAccount) {
-      return apiError('Business account not found', 404);
-    }
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -52,7 +36,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('wallet_notification_history')
       .select('*', { count: 'exact' })
-      .eq('business_account_id', businessAccount.id);
+      .eq('business_account_id', user.businessAccountId);
 
     // Apply filters
     if (notificationType) {
@@ -103,4 +87,4 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching notification history:', error);
     return apiError('Failed to fetch notification history', 500);
   }
-}
+});

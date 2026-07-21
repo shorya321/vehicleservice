@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import {
-  requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
   parseRequestBody,
@@ -17,7 +17,7 @@ import { businessProfileUpdateSchema } from '@/lib/business/validators';
  * PUT /api/business/profile
  * Update business account profile
  */
-export const PUT = requireBusinessAuth(async (request: NextRequest, user) => {
+export const PUT = requireBusinessOwner(async (request: NextRequest, user) => {
   // Parse and validate request body
   const body = await parseRequestBody(request, businessProfileUpdateSchema);
 

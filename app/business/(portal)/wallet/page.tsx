@@ -36,6 +36,7 @@ export default async function BusinessWalletPage() {
       `
       id,
       business_account_id,
+      role,
       business_accounts (
         id,
         business_name,
@@ -50,6 +51,11 @@ export default async function BusinessWalletPage() {
 
   if (!businessUser) {
     redirect('/business/login');
+  }
+
+  // The wallet is the business's finances - owner only.
+  if (businessUser.role !== 'owner') {
+    redirect('/business/dashboard');
   }
 
   const businessAccount = businessUser.business_accounts;
@@ -102,6 +108,7 @@ export default async function BusinessWalletPage() {
       transactions={transactions || []}
       totalTransactions={totalTransactions}
       quickStats={quickStats}
+      canTopUp={businessUser.role === 'owner'}
     />
   );
 }

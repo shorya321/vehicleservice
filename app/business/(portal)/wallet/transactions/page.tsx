@@ -34,6 +34,7 @@ export default async function BusinessTransactionsPage() {
       `
       id,
       business_account_id,
+      role,
       business_accounts (
         id,
         business_name,
@@ -47,6 +48,11 @@ export default async function BusinessTransactionsPage() {
 
   if (!businessUser) {
     redirect('/business/login');
+  }
+
+  // Transaction history is business financial data - owner only.
+  if (businessUser.role !== 'owner') {
+    redirect('/business/dashboard');
   }
 
   const businessAccount = businessUser.business_accounts;

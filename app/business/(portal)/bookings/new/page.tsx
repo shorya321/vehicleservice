@@ -6,6 +6,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getBusinessMember } from '@/lib/business/member-scope';
 import { BookingWizard } from './components/booking-wizard';
 
 export const metadata: Metadata = {
@@ -25,33 +26,32 @@ export default async function NewBookingPage() {
     redirect('/business/login');
   }
 
-  // Get business account
-  const { data: businessUser } = await supabase
-    .from('business_users')
-    .select(
-      `
-      id,
-      business_account_id,
-      business_accounts (
-        id,
-        business_name,
-        wallet_balance
-      )
-    `
-    )
-    .eq('auth_user_id', user.id)
-    .single();
+  // Resolve the member through the shared helper so this page enforces the same
+  // deactivated-member and inactive-account rules as the rest of the portal.
+  const member = await getBusinessMember(supabase, user.id);
 
-  if (!businessUser) {
+  if (!member) {
     redirect('/business/login');
   }
 
-  // Get locations for selection
-  const { data: locations } = await supabase
-    .from('locations')
-    .select('id, name, city, location_types(icon_name, name)')
-    .eq('is_active', true)
-    .order('name');
+  // Staff create bookings against the business wallet, so both roles see the
+  // balance here - this is the one place it is shown to staff.
+  const [{ data: account }, { data: locations }] = await Promise.all([
+    supabase
+      .from('business_accounts')
+      .select('wallet_balance')
+      .eq('id', member.businessAccountId)
+      .single(),
+    supabase
+      .from('locations')
+      .select('id, name, city, location_types(icon_name, name)')
+      .eq('is_active', true)
+      .order('name'),
+  ]);
+
+  if (!account) {
+    redirect('/business/login');
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -63,9 +63,9 @@ export default async function NewBookingPage() {
 
       {/* Booking Wizard */}
       <BookingWizard
-        businessUserId={businessUser.id}
-        businessAccountId={businessUser.business_account_id}
-        walletBalance={businessUser.business_accounts.wallet_balance}
+        businessUserId={member.id}
+        businessAccountId={member.businessAccountId}
+        walletBalance={account.wallet_balance}
         locations={locations || []}
       />
     </div>

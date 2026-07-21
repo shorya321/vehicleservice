@@ -57,7 +57,7 @@ export const POST = requireBusinessAuth(
       // Verify booking belongs to this business
       const { data: booking, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
-        .select('business_account_id, booking_status')
+        .select('business_account_id, booking_status, created_by_user_id')
         .eq('id', bookingId)
         .single();
 
@@ -67,6 +67,11 @@ export const POST = requireBusinessAuth(
 
       if (booking.business_account_id !== user.businessAccountId) {
         return apiError('Unauthorized', 403);
+      }
+
+      // Staff may only cancel bookings they created themselves.
+      if (user.role !== 'owner' && booking.created_by_user_id !== user.businessId) {
+        return apiError('Forbidden: you can only cancel bookings you created', 403);
       }
 
       // Call atomic cancellation function

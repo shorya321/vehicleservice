@@ -258,3 +258,85 @@ export const bookingDatetimeModificationSchema = z.object({
 });
 
 export type BookingDatetimeModificationInput = z.infer<typeof bookingDatetimeModificationSchema>;
+
+/**
+ * Team Member Creation Schema
+ * Owners add staff members who can create bookings for customers.
+ * 'role' is deliberately absent - staff is the only role this endpoint creates.
+ */
+export const teamMemberCreateSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    full_name: z
+      .string()
+      .min(2, 'Full name must be at least 2 characters')
+      .max(100, 'Full name must be 100 characters or less'),
+    password_option: z.enum(['generate', 'custom']),
+    password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  })
+  .refine((data) => data.password_option !== 'custom' || !!data.password, {
+    message: 'Password is required when setting one manually',
+    path: ['password'],
+  });
+
+export type TeamMemberCreateInput = z.infer<typeof teamMemberCreateSchema>;
+
+/**
+ * Team Member Update Schema
+ * Only activation state is mutable - roles are fixed at creation.
+ */
+export const teamMemberUpdateSchema = z.object({
+  member_id: z.string().uuid('Invalid member id'),
+  is_active: z.boolean(),
+});
+
+export type TeamMemberUpdateInput = z.infer<typeof teamMemberUpdateSchema>;
+
+/**
+ * Team Member Delete Schema
+ * Permanent removal of a staff member. Only offered for members who have not
+ * created any bookings - anyone with booking history must be deactivated
+ * instead, so their bookings keep their attribution.
+ */
+export const teamMemberDeleteSchema = z.object({
+  member_id: z.string().uuid('Invalid member id'),
+});
+
+export type TeamMemberDeleteInput = z.infer<typeof teamMemberDeleteSchema>;
+
+/**
+ * Member Profile Schema
+ * A member editing their OWN display name. Business-level details live in
+ * businessProfileUpdateSchema / PUT /api/business/profile (owner only).
+ */
+export const memberProfileUpdateSchema = z.object({
+  full_name: z
+    .string()
+    .trim()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be 100 characters or less'),
+});
+
+export type MemberProfileUpdateInput = z.infer<typeof memberProfileUpdateSchema>;
+
+/**
+ * Change Password Schema
+ * The target is always the session user - there is deliberately no user id
+ * field, so this can never be pointed at somebody else's account.
+ */
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, 'Current password is required'),
+    new_password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      // bcrypt silently truncates beyond 72 bytes - without this cap a user
+      // could set a password whose tail is ignored.
+      .max(72, 'Password must be 72 characters or less'),
+  })
+  .refine((data) => data.new_password !== data.current_password, {
+    message: 'New password must be different from your current password',
+    path: ['new_password'],
+  });
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

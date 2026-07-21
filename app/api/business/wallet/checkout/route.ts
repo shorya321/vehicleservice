@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import {
-  requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
   parseRequestBody,
@@ -25,7 +25,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
  * POST /api/business/wallet/checkout
  * Create Stripe Checkout session for wallet recharge
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   // Parse and validate request body
   const body = await parseRequestBody(request, walletRechargeSchema);
 

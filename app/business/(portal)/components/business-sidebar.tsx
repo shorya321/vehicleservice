@@ -24,9 +24,12 @@ import {
   X,
   Bell,
   Globe,
+  Users,
+  UserCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBusinessInitials } from '@/lib/business/branding-utils';
+import { normalizeBusinessRole } from '@/lib/business/roles';
 import { useSidebar } from '@/components/business/sidebar-context';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Button } from '@/components/ui/button';
@@ -45,6 +48,8 @@ interface SidebarNavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
+  /** When true, only the business account owner sees this item. */
+  ownerOnly?: boolean;
 }
 
 interface NavGroup {
@@ -61,6 +66,11 @@ const navGroups: NavGroup[] = [
         href: '/business/dashboard',
         icon: LayoutDashboard,
       },
+      {
+        title: 'Profile',
+        href: '/business/profile',
+        icon: UserCircle,
+      },
     ],
   },
   {
@@ -75,6 +85,13 @@ const navGroups: NavGroup[] = [
         title: 'Wallet',
         href: '/business/wallet',
         icon: Wallet,
+        ownerOnly: true,
+      },
+      {
+        title: 'Team',
+        href: '/business/team',
+        icon: Users,
+        ownerOnly: true,
       },
     ],
   },
@@ -85,21 +102,27 @@ const navGroups: NavGroup[] = [
         title: 'Branding',
         href: '/business/settings/branding',
         icon: Palette,
+        ownerOnly: true,
       },
       {
-        title: 'Notifications',
+        // The business's wallet alert thresholds - NOT a member's own inbox,
+        // which lives at /business/notifications behind the header bell.
+        title: 'Wallet Alerts',
         href: '/business/settings/notifications',
         icon: Bell,
+        ownerOnly: true,
       },
       {
         title: 'Domain',
         href: '/business/domain',
         icon: Globe,
+        ownerOnly: true,
       },
       {
         title: 'Settings',
         href: '/business/settings',
         icon: Settings,
+        ownerOnly: true,
       },
     ],
   },
@@ -112,6 +135,24 @@ interface BusinessSidebarProps {
   primaryColor?: string | null;
   secondaryColor?: string | null;
   accentColor?: string | null;
+  /** business_users.role of the signed-in member. Anything but 'owner' is staff. */
+  role?: string | null;
+}
+
+/**
+ * Hide owner-only entries from staff.
+ *
+ * This is presentation only - the pages and API routes do their own checks.
+ * Never treat a hidden nav item as an access control boundary.
+ */
+function visibleNavGroups(role?: string | null): NavGroup[] {
+  if (normalizeBusinessRole(role) === 'owner') {
+    return navGroups;
+  }
+
+  return navGroups
+    .map((group) => ({ ...group, items: group.items.filter((item) => !item.ownerOnly) }))
+    .filter((group) => group.items.length > 0);
 }
 
 function useIsMobile(breakpoint = 768) {
@@ -312,6 +353,7 @@ interface SidebarContentProps {
   onToggle: () => void;
   closeMobile: () => void;
   isPathActive: (href: string) => boolean;
+  groups: NavGroup[];
 }
 
 function SidebarContent({
@@ -325,6 +367,7 @@ function SidebarContent({
   onToggle,
   closeMobile,
   isPathActive,
+  groups,
 }: SidebarContentProps) {
   return (
     <LayoutGroup>
@@ -376,7 +419,7 @@ function SidebarContent({
       />
 
       <ScrollArea className="relative z-10 flex-1 px-3 pb-4">
-        {navGroups.map((group, groupIndex) => (
+        {groups.map((group, groupIndex) => (
           <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
             <AnimatePresence>
               {(!isCollapsed || isMobileView) && (
@@ -456,6 +499,7 @@ export function BusinessSidebar({
   businessName,
   brandName,
   logoUrl,
+  role,
 }: BusinessSidebarProps) {
   const pathname = usePathname();
   const [logoError, setLogoError] = useState(false);
@@ -463,6 +507,7 @@ export function BusinessSidebar({
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
+  const groups = visibleNavGroups(role);
   const displayName = brandName || businessName;
   const initials = getBusinessInitials(businessName);
   const sidebarWidth = isCollapsed ? 72 : 256;
@@ -487,6 +532,7 @@ export function BusinessSidebar({
           <TooltipProvider delayDuration={0}>
             <div className="relative flex flex-col h-full overflow-hidden">
               <SidebarContent
+                groups={groups}
                 isMobileView
                 displayName={displayName}
                 initials={initials}
@@ -520,6 +566,7 @@ export function BusinessSidebar({
         )}
       >
         <SidebarContent
+          groups={groups}
           displayName={displayName}
           initials={initials}
           logoUrl={logoUrl}

@@ -8,7 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import dns from 'dns';
 import { promisify } from 'util';
 import {
-  requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
 } from '@/lib/business/api-utils';
@@ -21,7 +21,7 @@ const resolveCname = promisify(dns.resolveCname);
  * POST /api/business/domain/verify
  * Verify DNS configuration for custom domain
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

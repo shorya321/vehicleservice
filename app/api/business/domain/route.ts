@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import {
-  requireBusinessAuth,
+  requireBusinessOwner,
   apiSuccess,
   apiError,
   parseRequestBody,
@@ -21,7 +21,7 @@ import {
  * POST /api/business/domain
  * Configure custom domain for business account
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   // Parse and validate request body
   const body = await parseRequestBody(request, customDomainSchema);
 
@@ -95,7 +95,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
  * DELETE /api/business/domain
  * Remove custom domain configuration
  */
-export const DELETE = requireBusinessAuth(async (request: NextRequest, user) => {
+export const DELETE = requireBusinessOwner(async (request: NextRequest, user) => {
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

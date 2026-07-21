@@ -16,6 +16,8 @@ interface BusinessPortalContentProps {
   children: ReactNode;
   userEmail: string;
   contactPersonName: string | null;
+  /** business_users.role of the signed-in member. */
+  role?: string | null;
   businessName: string;
   brandName?: string | null;
   logoUrl?: string | null;
@@ -29,6 +31,7 @@ export function BusinessPortalContent({
   children,
   userEmail,
   contactPersonName,
+  role,
   businessName,
   brandName,
   logoUrl,
@@ -65,6 +68,7 @@ export function BusinessPortalContent({
       <BusinessHeader
         userEmail={userEmail}
         contactPersonName={contactPersonName}
+        role={role}
         businessName={businessName}
         brandName={brandName}
         logoUrl={logoUrl}

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ArrowLeft } from 'lucide-react';
+import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
 import { BookingDetails } from './components/booking-details';
 import { CancelBookingButton } from './components/cancel-booking-button';
 import { EditDateTimeButton } from '../components/edit-datetime-button';
@@ -41,23 +42,26 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
   }
 
   // Get business account
-  const { data: businessUser } = await supabase
-    .from('business_users')
-    .select('business_account_id')
-    .eq('auth_user_id', user.id)
-    .single();
+  const member = await getBusinessMember(supabase, user.id);
 
-  if (!businessUser) {
+  if (!member) {
     redirect('/business/login');
   }
 
   // Get booking details without joins
-  const { data: booking, error: bookingError } = await supabase
+  let bookingQuery = supabase
     .from('business_bookings')
     .select('*')
     .eq('id', id)
-    .eq('business_account_id', businessUser.business_account_id)
-    .single();
+    .eq('business_account_id', member.businessAccountId);
+
+  // Staff can only open bookings they created. Without this the detail page is
+  // reachable for any of the business's bookings by guessing the id.
+  if (restrictedToOwnBookings(member.role)) {
+    bookingQuery = bookingQuery.eq('created_by_user_id', member.id);
+  }
+
+  const { data: booking, error: bookingError } = await bookingQuery.single();
 
   if (bookingError || !booking) {
     notFound();

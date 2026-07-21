@@ -4,7 +4,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { createClient } from '@supabase/supabase-js';
 
 // Constants
@@ -16,7 +16,7 @@ const STORAGE_BUCKET = 'business-logos';
  * POST /api/business/branding/upload
  * Upload business logo to Supabase Storage
  */
-export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
+export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     // Parse multipart form data
     const formData = await request.formData();
@@ -119,7 +119,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
  * DELETE /api/business/branding/upload
  * Delete business logo
  */
-export const DELETE = requireBusinessAuth(async (request: NextRequest, user) => {
+export const DELETE = requireBusinessOwner(async (request: NextRequest, user) => {
   try {
     // Create Supabase admin client
     const supabaseAdmin = createClient(

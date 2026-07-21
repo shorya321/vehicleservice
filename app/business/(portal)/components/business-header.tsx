@@ -13,6 +13,7 @@ import { motion } from 'motion/react';
 import {
   LogOut,
   Settings,
+  UserCircle,
   Palette,
   ChevronDown,
   Menu,
@@ -21,6 +22,7 @@ import {
   Search,
 } from 'lucide-react';
 import { BusinessCommandPalette } from './business-command-palette';
+import { normalizeBusinessRole } from '@/lib/business/roles';
 import { useCommandPalette } from '@/lib/business/command-palette/use-command-palette';
 import {
   DropdownMenu,
@@ -44,6 +46,8 @@ interface BusinessHeaderProps {
   userEmail: string;
   contactPersonName: string | null;
   avatarUrl?: string | null;
+  /** business_users.role of the signed-in member. */
+  role?: string | null;
 
   // Branding props
   businessName: string;
@@ -56,6 +60,7 @@ interface BusinessHeaderProps {
 
 export function BusinessHeader({
   userEmail,
+  role,
   contactPersonName,
   avatarUrl,
   businessName,
@@ -74,6 +79,7 @@ export function BusinessHeader({
   // Display values
   const displayName = brandName || businessName;
   const displayPersonName = contactPersonName || 'User';
+  const isOwner = normalizeBusinessRole(role) === 'owner';
 
   const getInitials = (name: string) => {
     return name
@@ -195,36 +201,50 @@ export function BusinessHeader({
 
             {/* Quick Actions */}
             <DropdownMenuItem
-              onClick={() => router.push('/business/wallet')}
+              onClick={() => router.push('/business/profile')}
               className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
             >
-              <Wallet className="mr-2 h-4 w-4 text-primary" />
-              <span>Wallet</span>
+              <UserCircle className="mr-2 h-4 w-4 text-primary" />
+              <span>Profile</span>
             </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => router.push('/business/settings')}
-              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
-            >
-              <Settings className="mr-2 h-4 w-4 text-primary" />
-              <span>Account Settings</span>
-            </DropdownMenuItem>
+            {/* Business-level destinations - owner only. Staff would just be
+                redirected back to the dashboard. */}
+            {isOwner && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => router.push('/business/wallet')}
+                  className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
+                >
+                  <Wallet className="mr-2 h-4 w-4 text-primary" />
+                  <span>Wallet</span>
+                </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => router.push('/business/settings/branding')}
-              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
-            >
-              <Palette className="mr-2 h-4 w-4 text-primary" />
-              <span>Branding</span>
-            </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push('/business/settings')}
+                  className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
+                >
+                  <Settings className="mr-2 h-4 w-4 text-primary" />
+                  <span>Account Settings</span>
+                </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => router.push('/business/domain')}
-              className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
-            >
-              <Globe className="mr-2 h-4 w-4 text-primary" />
-              <span>Custom Domain</span>
-            </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push('/business/settings/branding')}
+                  className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
+                >
+                  <Palette className="mr-2 h-4 w-4 text-primary" />
+                  <span>Branding</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => router.push('/business/domain')}
+                  className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer"
+                >
+                  <Globe className="mr-2 h-4 w-4 text-primary" />
+                  <span>Custom Domain</span>
+                </DropdownMenuItem>
+              </>
+            )}
 
             <DropdownMenuSeparator className="!bg-border" />
 
@@ -241,7 +261,7 @@ export function BusinessHeader({
       </div>
 
       {/* Command Palette */}
-      <BusinessCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      <BusinessCommandPalette open={commandOpen} onOpenChange={setCommandOpen} role={role} />
     </motion.header>
   );
 }

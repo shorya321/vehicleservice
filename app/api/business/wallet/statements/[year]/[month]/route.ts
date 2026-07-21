@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { apiError } from '@/lib/business/api-utils';
+import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
 import { MonthlyStatementPDF } from '@/lib/pdf/generators/monthly-statement';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -14,22 +14,14 @@ import { jsx } from 'react/jsx-runtime';
 /**
  * GET: Generate and download monthly statement PDF
  */
-export async function GET(
+export const GET = requireBusinessOwner(async (
   request: NextRequest,
-  { params }: { params: Promise<{ year: string; month: string }> }
-) {
+  user,
+  context: { params: Promise<{ year: string; month: string }> }
+) => {
   try {
-    const { year: yearParam, month: monthParam } = await params;
+    const { year: yearParam, month: monthParam } = await context.params;
     const supabase = await createClient();
-
-    // Get authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return apiError('Unauthorized', 401);
-    }
 
     // Validate year and month parameters
     const year = parseInt(yearParam);
@@ -39,11 +31,12 @@ export async function GET(
       return apiError('Invalid year or month parameter', 400);
     }
 
-    // Get business account
+    // Get business account. The address column is `address`, not
+    // `business_address` - selecting the latter made this route always 404.
     const { data: businessAccount, error: businessError } = await supabase
       .from('business_accounts')
-      .select('id, business_name, business_email, business_phone, business_address, currency')
-      .eq('id', user.id)
+      .select('id, business_name, business_email, business_phone, address, currency')
+      .eq('id', user.businessAccountId)
       .single();
 
     if (businessError || !businessAccount) {
@@ -114,7 +107,7 @@ export async function GET(
       businessName: businessAccount.business_name,
       businessEmail: businessAccount.business_email,
       businessPhone: businessAccount.business_phone,
-      businessAddress: businessAccount.business_address,
+      businessAddress: businessAccount.address,
 
       // Statement Period
       statementMonth: format(statementDate, 'MMMM'),
@@ -152,4 +145,4 @@ export async function GET(
     console.error('Error generating monthly statement:', error);
     return apiError('Failed to generate monthly statement', 500);
   }
-}
+});

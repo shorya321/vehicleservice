@@ -930,7 +930,7 @@ export type Database = {
           cancelled_at: string | null
           children: number
           created_at: string
-          created_by_user_id: string
+          created_by_user_id: string | null
           customer_email: string
           customer_name: string
           customer_notes: string | null
@@ -1000,7 +1000,7 @@ export type Database = {
           cancelled_at?: string | null
           children?: number
           created_at?: string
-          created_by_user_id?: string
+          created_by_user_id?: string | null
           customer_email?: string
           customer_name?: string
           customer_notes?: string | null
@@ -1067,6 +1067,8 @@ export type Database = {
           auth_user_id: string
           business_account_id: string
           created_at: string
+          email: string | null
+          full_name: string | null
           id: string
           is_active: boolean
           role: string
@@ -1076,6 +1078,8 @@ export type Database = {
           auth_user_id: string
           business_account_id: string
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           is_active?: boolean
           role?: string
@@ -1085,6 +1089,8 @@ export type Database = {
           auth_user_id?: string
           business_account_id?: string
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           is_active?: boolean
           role?: string

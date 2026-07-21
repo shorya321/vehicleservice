@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { normalizeBusinessRole } from '@/lib/business/roles';
 import {
   Command,
   CommandDialog,
@@ -34,15 +35,28 @@ import {
   FileText,
   Search,
   ArrowRight,
+  UserCircle,
 } from 'lucide-react';
 
 interface BusinessCommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** business_users.role of the signed-in member. Anything but 'owner' is staff. */
+  role?: string | null;
+}
+
+interface PaletteItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  shortcut: string;
+  description?: string;
+  /** When true, only the business account owner sees this entry. */
+  ownerOnly?: boolean;
 }
 
 // Navigation items for the business portal
-const navigationItems = [
+const navigationItems: PaletteItem[] = [
   {
     name: 'Dashboard',
     href: '/business/dashboard',
@@ -56,19 +70,28 @@ const navigationItems = [
     shortcut: 'B',
   },
   {
+    name: 'Profile',
+    href: '/business/profile',
+    icon: UserCircle,
+    shortcut: 'P',
+  },
+  {
     name: 'Wallet',
+    ownerOnly: true,
     href: '/business/wallet',
     icon: Wallet,
     shortcut: 'W',
   },
   {
     name: 'Settings',
+    ownerOnly: true,
     href: '/business/settings',
     icon: Settings,
     shortcut: 'S',
   },
   {
     name: 'Branding',
+    ownerOnly: true,
     href: '/business/settings/branding',
     icon: Paintbrush,
     shortcut: '',
@@ -81,6 +104,7 @@ const navigationItems = [
   },
   {
     name: 'Domain',
+    ownerOnly: true,
     href: '/business/domain',
     icon: Globe,
     shortcut: '',
@@ -88,7 +112,7 @@ const navigationItems = [
 ];
 
 // Quick actions
-const quickActions = [
+const quickActions: PaletteItem[] = [
   {
     name: 'Create New Booking',
     href: '/business/bookings/new',
@@ -98,6 +122,7 @@ const quickActions = [
   },
   {
     name: 'Add Wallet Credits',
+    ownerOnly: true,
     href: '/business/wallet',
     icon: CreditCard,
     shortcut: '',
@@ -105,6 +130,7 @@ const quickActions = [
   },
   {
     name: 'View Transactions',
+    ownerOnly: true,
     href: '/business/wallet/transactions',
     icon: FileText,
     shortcut: '',
@@ -112,9 +138,20 @@ const quickActions = [
   },
 ];
 
+/**
+ * Hide owner-only entries from staff.
+ * Presentation only - the pages and API routes enforce access themselves.
+ */
+function visibleFor(role: string | null | undefined, items: PaletteItem[]): PaletteItem[] {
+  return normalizeBusinessRole(role) === 'owner'
+    ? items
+    : items.filter((item) => !item.ownerOnly);
+}
+
 export function BusinessCommandPalette({
   open,
   onOpenChange,
+  role,
 }: BusinessCommandPaletteProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -168,7 +205,7 @@ export function BusinessCommandPalette({
 
           {/* Quick Actions */}
           <CommandGroup heading="Quick Actions">
-            {quickActions.map((action) => (
+            {visibleFor(role, quickActions).map((action) => (
               <CommandItem
                 key={action.href}
                 value={action.name}
@@ -200,7 +237,7 @@ export function BusinessCommandPalette({
 
           {/* Navigation */}
           <CommandGroup heading="Navigation">
-            {navigationItems.map((item) => (
+            {visibleFor(role, navigationItems).map((item) => (
               <CommandItem
                 key={item.href}
                 value={item.name}

@@ -56,12 +56,11 @@ export default async function BusinessSettingsPage() {
     redirect('/business/login');
   }
 
-  // Get user avatar from profiles table
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('avatar_url')
-    .eq('id', user.id)
-    .single();
+  // Everything here is business-level configuration. Per-member concerns
+  // (name, photo, password) live at /business/profile, which staff can reach.
+  if (businessUser.role !== 'owner') {
+    redirect('/business/dashboard');
+  }
 
   const businessAccount = businessUser.business_accounts;
 
@@ -70,8 +69,6 @@ export default async function BusinessSettingsPage() {
       businessAccountId={businessAccount.id}
       businessAccount={businessAccount}
       userRole={businessUser.role}
-      avatarUrl={profile?.avatar_url ?? null}
-      contactPersonName={businessAccount.contact_person_name}
     />
   );
 }

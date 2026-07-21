@@ -12,7 +12,7 @@ import { uploadBusinessAvatar, deleteBusinessAvatar } from '../actions/avatar'
 
 interface AvatarUploadProps {
   currentAvatarUrl: string | null
-  contactPersonName: string | null
+  displayName: string | null
 }
 
 function getInitials(name: string): string {
@@ -24,14 +24,14 @@ function getInitials(name: string): string {
     .substring(0, 2)
 }
 
-export function AvatarUpload({ currentAvatarUrl, contactPersonName }: AvatarUploadProps) {
+export function AvatarUpload({ currentAvatarUrl, displayName }: AvatarUploadProps) {
   const router = useRouter()
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const displayName = contactPersonName || 'User'
+  const resolvedName = displayName || 'User'
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -125,10 +125,10 @@ export function AvatarUpload({ currentAvatarUrl, contactPersonName }: AvatarUplo
           <div className="relative group">
             <Avatar className="h-24 w-24 ring-2 ring-primary/20">
               {previewUrl && (
-                <AvatarImage src={previewUrl} alt={displayName} />
+                <AvatarImage src={previewUrl} alt={resolvedName} />
               )}
               <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-2xl font-semibold">
-                {getInitials(displayName)}
+                {getInitials(resolvedName)}
               </AvatarFallback>
             </Avatar>
             <button

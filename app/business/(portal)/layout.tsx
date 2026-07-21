@@ -15,6 +15,7 @@ import { BusinessSidebar } from './components/business-sidebar';
 import { SidebarProvider } from '@/components/business/sidebar-context';
 import { BusinessThemeProvider } from '@/lib/business/theme-provider';
 import { BusinessPortalContent } from './components/business-portal-content';
+import { normalizeBusinessRole } from '@/lib/business/api-utils';
 import { parseThemeConfig } from '@/lib/business/branding-utils';
 
 // Import business-specific design system
@@ -45,6 +46,8 @@ export default async function BusinessPortalLayout({
       `
       id,
       role,
+      full_name,
+      email,
       business_accounts (
         business_name,
         business_email,
@@ -65,9 +68,9 @@ export default async function BusinessPortalLayout({
   // Get user avatar from profiles table
   const { data: profile } = await supabase
     .from('profiles')
-    .select('avatar_url')
+    .select('avatar_url, full_name')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   // Extract branding for convenience
   const branding = businessUser.business_accounts as {
@@ -81,6 +84,18 @@ export default async function BusinessPortalLayout({
 
   // Parse theme config with defaults
   const themeConfig = parseThemeConfig(branding.theme_config);
+
+  // The header shows the SIGNED-IN MEMBER, not the business. Falling back to
+  // contact_person_name / business_email is only correct for the owner - doing
+  // it for staff showed every one of them the owner's identity as their own.
+  const isOwner = normalizeBusinessRole(businessUser.role) === 'owner';
+  const memberEmail = businessUser.email || user.email || branding.business_email;
+  const memberName =
+    businessUser.full_name ||
+    profile?.full_name ||
+    (isOwner ? branding.contact_person_name : null) ||
+    memberEmail.split('@')[0] ||
+    'User';
 
   return (
     <BusinessThemeProvider
@@ -105,12 +120,14 @@ export default async function BusinessPortalLayout({
             primaryColor={themeConfig.accent.primary}
             secondaryColor={themeConfig.accent.secondary}
             accentColor={themeConfig.accent.tertiary}
+            role={businessUser.role}
           />
 
           {/* Main Content Area - with dynamic margin based on sidebar state */}
           <BusinessPortalContent
-            userEmail={branding.business_email}
-            contactPersonName={branding.contact_person_name}
+            userEmail={memberEmail}
+            contactPersonName={memberName}
+            role={businessUser.role}
             businessName={branding.business_name}
             brandName={branding.brand_name}
             logoUrl={branding.logo_url}

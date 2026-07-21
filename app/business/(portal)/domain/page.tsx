@@ -42,6 +42,7 @@ export default async function CustomDomainPage() {
       `
       id,
       business_account_id,
+      role,
       business_accounts (
         id,
         business_name,
@@ -57,6 +58,11 @@ export default async function CustomDomainPage() {
 
   if (!businessUser) {
     redirect('/business/login');
+  }
+
+  // Domain changes affect every member's sign-in, so they stay with the owner.
+  if (businessUser.role !== 'owner') {
+    redirect('/business/dashboard');
   }
 
   const businessAccount = businessUser.business_accounts;

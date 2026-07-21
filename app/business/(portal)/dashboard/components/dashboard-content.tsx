@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { Plus, Settings } from 'lucide-react';
+import { Plus, Settings, UserCircle } from 'lucide-react';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Button } from '@/components/ui/button';
 import { WalletHeroCard } from './wallet-hero-card';
@@ -43,6 +43,8 @@ interface DashboardContentProps {
   monthlyBookings: number;
   recentBookings: RecentBooking[];
   popularRoutes: PopularRouteData[];
+  /** Staff never see the business wallet. */
+  isOwner: boolean;
 }
 
 export function DashboardContent({
@@ -56,6 +58,7 @@ export function DashboardContent({
   monthlyBookings,
   recentBookings,
   popularRoutes,
+  isOwner,
 }: DashboardContentProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -85,6 +88,7 @@ export function DashboardContent({
         greeting={getGreeting()}
         businessName={businessName}
         prefersReducedMotion={prefersReducedMotion}
+        isOwner={isOwner}
       />
 
       {/* Main Analytics Grid */}
@@ -96,13 +100,15 @@ export function DashboardContent({
       >
         {/* Left Column - Main Stats */}
         <div className="lg:col-span-8 space-y-5">
-          {/* Wallet Hero Card */}
-          <WalletHeroCard
-            walletBalance={walletBalance}
-            displayBalance={displayBalance}
-            displayCurrency={displayCurrency}
-            className="col-span-full"
-          />
+          {/* Wallet Hero Card - the business's finances, owner only */}
+          {isOwner && (
+            <WalletHeroCard
+              walletBalance={walletBalance}
+              displayBalance={displayBalance}
+              displayCurrency={displayCurrency}
+              className="col-span-full"
+            />
+          )}
 
           {/* Stats Grid */}
           <StatsGrid
@@ -122,7 +128,7 @@ export function DashboardContent({
           <PopularRoutesCard routes={popularRoutes} />
 
           {/* Quick Actions */}
-          <QuickActionsCard />
+          <QuickActionsCard isOwner={isOwner} />
 
           {/* Premium Features */}
           <PremiumFeaturesCard />
@@ -140,9 +146,10 @@ interface DashboardHeaderProps {
   greeting: string;
   businessName: string;
   prefersReducedMotion: boolean;
+  isOwner: boolean;
 }
 
-function DashboardHeader({ greeting, businessName, prefersReducedMotion }: DashboardHeaderProps) {
+function DashboardHeader({ greeting, businessName, prefersReducedMotion, isOwner }: DashboardHeaderProps) {
   return (
     <motion.div
       initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
@@ -176,12 +183,20 @@ function DashboardHeader({ greeting, businessName, prefersReducedMotion }: Dashb
         transition={{ duration: 0.4, delay: 0.3 }}
         className="flex items-center gap-3"
       >
-        {/* Settings Button */}
+        {/* Settings is business configuration (owner). Staff get their own
+            profile instead, so the header keeps a secondary action. */}
         <Button asChild variant="ghost" className="hidden sm:flex border border-border bg-card/80 backdrop-blur-sm text-foreground/80 hover:border-primary/30 hover:bg-primary/5">
-          <Link href="/business/settings">
-            <Settings className="h-4 w-4 mr-2 text-primary" />
-            Settings
-          </Link>
+          {isOwner ? (
+            <Link href="/business/settings">
+              <Settings className="h-4 w-4 mr-2 text-primary" />
+              Settings
+            </Link>
+          ) : (
+            <Link href="/business/profile">
+              <UserCircle className="h-4 w-4 mr-2 text-primary" />
+              Profile
+            </Link>
+          )}
         </Button>
 
         <Button asChild className="rounded-xl shadow-sm hover:shadow-lg">
