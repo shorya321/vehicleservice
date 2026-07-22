@@ -2,10 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { bookingWallClockToUtc, toBookingTz } from '@/lib/utils/timezone'
 import { getCurrentVendorContext, getCurrentVendorId } from '@/lib/vendor/get-vendor-id'
 import {
+  BOOKING_STATUS_LABELS,
   OCCUPYING_BOOKING_STATUSES,
   directBookingMutationSchema,
   firstIssueMessage,
@@ -13,6 +15,13 @@ import {
   type DirectBookingMutationInput,
   type DirectBookingStatus,
 } from '@/lib/vendor/direct-bookings/schema'
+import { getDirectBookingEmailPayload } from '@/lib/vendor/direct-bookings/email-payload'
+import {
+  sendDirectBookingCustomerCancelledEmail,
+  sendDirectBookingCustomerConfirmationEmail,
+  sendDirectBookingCustomerStatusUpdateEmail,
+  sendDirectBookingDriverAssignmentEmail,
+} from '@/lib/email/services/direct-booking-emails'
 import { normalizePhone } from '@/lib/validation/phone'
 import { format } from 'date-fns'
 
@@ -114,6 +123,198 @@ function releasesResources(status: string): boolean {
   return !OCCUPYING_BOOKING_STATUSES.includes(
     status as (typeof OCCUPYING_BOOKING_STATUSES)[number]
   )
+}
+
+// ---------------------------------------------------------------------------
+// Notification dispatch
+//
+// Every function below is best-effort and must stay that way. A booking write
+// that succeeded must never be reported as failed because mail failed, so each
+// helper swallows its own errors and none is awaited inside a mutation's happy
+// path. `sendEmail` already returns rather than throws, but these guards do not
+// rely on that.
+// ---------------------------------------------------------------------------
+
+/** Stamps notification bookkeeping. Failure here is logged and otherwise ignored. */
+async function markNotified(
+  id: string,
+  patch: { confirmation_sent_at?: string; last_notified_status?: string }
+): Promise<void> {
+  try {
+    const admin = createAdminClient()
+    await admin.from('vendor_direct_bookings').update(patch).eq('id', id)
+  } catch (error) {
+    console.error('Failed to stamp direct booking notification state:', error)
+  }
+}
+
+/**
+ * Emails the customer and the assigned driver about a newly recorded booking.
+ *
+ * Sends nothing for a booking created straight into cancelled or completed —
+ * back-dated record entry is a normal use of this module and the customer should
+ * not receive a confirmation for a trip that already ended or never ran.
+ */
+async function notifyBookingCreated(id: string): Promise<void> {
+  try {
+    const payload = await getDirectBookingEmailPayload(id)
+    if (!payload) return
+
+    if (releasesResources(payload.status)) return
+    if (payload.confirmationSentAt) return
+
+    const replyTo = payload.vendor.businessEmail ?? undefined
+    const vendorPhone = payload.vendor.businessPhone ?? undefined
+
+    if (payload.customerEmail) {
+      void sendDirectBookingCustomerConfirmationEmail({
+        customerEmail: payload.customerEmail,
+        customerName: payload.customerName,
+        bookingReference: payload.reference,
+        statusLabel: payload.statusLabel,
+        vehicleLabel: payload.vehicleLabel,
+        vehicleRegistration: payload.vehicleRegistration,
+        driverName: payload.driverName,
+        driverPhone: payload.driverPhone ?? undefined,
+        pickupLocation: payload.pickupLocation,
+        dropoffLocation: payload.dropoffLocation ?? undefined,
+        pickupDate: payload.pickupDate,
+        pickupTime: payload.pickupTime,
+        returnDate: payload.returnDate,
+        returnTime: payload.returnTime,
+        totalAmount: payload.totalAmount,
+        amountPaid: payload.amountPaid,
+        balanceDue: payload.balanceDue,
+        currency: payload.currency,
+        paymentStatusLabel: payload.paymentStatusLabel,
+        paymentMethodLabel: payload.paymentMethodLabel ?? undefined,
+        customerNotes: payload.customerNotes ?? undefined,
+        vendorName: payload.vendor.businessName,
+        vendorPhone,
+        replyTo,
+      }).catch((error) =>
+        console.error('Failed to send direct booking customer confirmation:', error)
+      )
+    }
+
+    if (payload.driverEmail) {
+      void sendDirectBookingDriverAssignmentEmail({
+        driverEmail: payload.driverEmail,
+        driverName: payload.driverName,
+        bookingReference: payload.reference,
+        customerName: payload.customerName,
+        vehicleLabel: payload.vehicleLabel,
+        vehicleRegistration: payload.vehicleRegistration,
+        pickupLocation: payload.pickupLocation,
+        dropoffLocation: payload.dropoffLocation ?? undefined,
+        pickupDate: payload.pickupDate,
+        pickupTime: payload.pickupTime,
+        returnDate: payload.returnDate,
+        returnTime: payload.returnTime,
+        vendorName: payload.vendor.businessName,
+        vendorPhone,
+        replyTo,
+      }).catch((error) =>
+        console.error('Failed to send direct booking driver assignment:', error)
+      )
+    }
+
+    await markNotified(id, {
+      confirmation_sent_at: new Date().toISOString(),
+      last_notified_status: payload.status,
+    })
+  } catch (error) {
+    console.error('Direct booking create notification failed:', error)
+  }
+}
+
+/**
+ * Emails the customer that the booking changed status.
+ *
+ * `previousStatus` comes from a read taken before the write — without it a
+ * re-save that changed nothing would be indistinguishable from a real move.
+ */
+async function notifyStatusChanged(id: string, previousStatus: string): Promise<void> {
+  try {
+    const payload = await getDirectBookingEmailPayload(id)
+    if (!payload) return
+    if (payload.status === previousStatus) return
+    if (payload.lastNotifiedStatus === payload.status) return
+    if (!payload.customerEmail) return
+
+    const replyTo = payload.vendor.businessEmail ?? undefined
+    const vendorPhone = payload.vendor.businessPhone ?? undefined
+    const previousLabel =
+      BOOKING_STATUS_LABELS[previousStatus as DirectBookingStatus] ?? previousStatus
+
+    if (payload.status === 'cancelled') {
+      void sendDirectBookingCustomerCancelledEmail({
+        customerEmail: payload.customerEmail,
+        customerName: payload.customerName,
+        bookingReference: payload.reference,
+        vehicleLabel: payload.vehicleLabel,
+        pickupDate: payload.pickupDate,
+        pickupTime: payload.pickupTime,
+        vendorName: payload.vendor.businessName,
+        vendorPhone,
+        replyTo,
+      }).catch((error) =>
+        console.error('Failed to send direct booking cancellation:', error)
+      )
+    } else {
+      void sendDirectBookingCustomerStatusUpdateEmail({
+        customerEmail: payload.customerEmail,
+        customerName: payload.customerName,
+        bookingReference: payload.reference,
+        previousStatusLabel: previousLabel,
+        newStatusLabel: payload.statusLabel,
+        vehicleLabel: payload.vehicleLabel,
+        pickupDate: payload.pickupDate,
+        pickupTime: payload.pickupTime,
+        vendorName: payload.vendor.businessName,
+        vendorPhone,
+        replyTo,
+      }).catch((error) =>
+        console.error('Failed to send direct booking status update:', error)
+      )
+    }
+
+    await markNotified(id, { last_notified_status: payload.status })
+  } catch (error) {
+    console.error('Direct booking status notification failed:', error)
+  }
+}
+
+/** Emails a driver who has just been assigned to an existing booking. */
+async function notifyDriverReassigned(id: string): Promise<void> {
+  try {
+    const payload = await getDirectBookingEmailPayload(id)
+    if (!payload) return
+    if (releasesResources(payload.status)) return
+    if (!payload.driverEmail) return
+
+    void sendDirectBookingDriverAssignmentEmail({
+      driverEmail: payload.driverEmail,
+      driverName: payload.driverName,
+      bookingReference: payload.reference,
+      customerName: payload.customerName,
+      vehicleLabel: payload.vehicleLabel,
+      vehicleRegistration: payload.vehicleRegistration,
+      pickupLocation: payload.pickupLocation,
+      dropoffLocation: payload.dropoffLocation ?? undefined,
+      pickupDate: payload.pickupDate,
+      pickupTime: payload.pickupTime,
+      returnDate: payload.returnDate,
+      returnTime: payload.returnTime,
+      vendorName: payload.vendor.businessName,
+      vendorPhone: payload.vendor.businessPhone ?? undefined,
+      replyTo: payload.vendor.businessEmail ?? undefined,
+    }).catch((error) =>
+      console.error('Failed to send direct booking driver reassignment:', error)
+    )
+  } catch (error) {
+    console.error('Direct booking driver notification failed:', error)
+  }
 }
 
 /**
@@ -367,13 +568,25 @@ export async function createDirectBooking(
         vendor_id: vendorId,
         created_by: userId,
       })
-      .select('id')
+      // reference_number is generated by a BEFORE INSERT trigger; read it back so
+      // notification emails can quote it without a second round trip.
+      .select('id, reference_number')
       .single()
 
     if (error) throw error
 
     revalidatePath(REVALIDATE_PATH)
-    return { success: true, id: data.id }
+
+    // The booking is committed. Everything from here is best-effort: the result
+    // is fixed before dispatch and notifyBookingCreated absorbs its own errors,
+    // so no mail problem can turn a saved booking into a reported failure.
+    const result: ActionResult = {
+      success: true,
+      id: data.id,
+      reference_number: data.reference_number,
+    }
+    await notifyBookingCreated(data.id).catch(() => {})
+    return result
   } catch (error: unknown) {
     // The database is the real guarantee. If a conflicting booking landed between
     // the check above and this insert, the exclusion constraint or the cross-table
@@ -421,6 +634,16 @@ export async function updateDirectBooking(
       if (message) return { error: message }
     }
 
+    // Read before the write: the update is a blind overwrite, so without this
+    // there is no way to tell a real change from a re-save of identical values.
+    // Failure here must not block the edit, so it degrades to "no notification".
+    const { data: previous } = await supabase
+      .from('vendor_direct_bookings')
+      .select('booking_status, driver_id')
+      .eq('id', id)
+      .eq('vendor_id', vendorId)
+      .maybeSingle()
+
     const { error } = await supabase
       .from('vendor_direct_bookings')
       .update(toRowPayload(parsed.data))
@@ -430,6 +653,16 @@ export async function updateDirectBooking(
     if (error) throw error
 
     revalidatePath(REVALIDATE_PATH)
+
+    if (previous) {
+      if (previous.booking_status !== parsed.data.booking_status) {
+        await notifyStatusChanged(id, previous.booking_status).catch(() => {})
+      }
+      if (previous.driver_id !== parsed.data.driver_id) {
+        await notifyDriverReassigned(id).catch(() => {})
+      }
+    }
+
     return { success: true }
   } catch (error: unknown) {
     if (isOverlapError(error)) {
@@ -457,6 +690,15 @@ export async function updateDirectBookingStatus(
 
     const vendorId = await getCurrentVendorId()
 
+    // This action holds only an id and a status, so the previous value has to be
+    // read before the write for the notification to say what changed.
+    const { data: previous } = await supabase
+      .from('vendor_direct_bookings')
+      .select('booking_status')
+      .eq('id', id)
+      .eq('vendor_id', vendorId)
+      .maybeSingle()
+
     const { error } = await supabase
       .from('vendor_direct_bookings')
       .update({ booking_status: status })
@@ -466,6 +708,11 @@ export async function updateDirectBookingStatus(
     if (error) throw error
 
     revalidatePath(REVALIDATE_PATH)
+
+    if (previous && previous.booking_status !== status) {
+      await notifyStatusChanged(id, previous.booking_status).catch(() => {})
+    }
+
     return { success: true }
   } catch (error: unknown) {
     // Reviving a cancelled or completed booking re-arms the overlap rules, so this

@@ -40,6 +40,10 @@ import BookingAssignedEmail from '@/lib/email/templates/vendor/booking-assigned'
 import BookingDriverAssignedEmail from '@/lib/email/templates/booking/driver-assigned';
 import BusinessCustomerDriverAssignedEmail from '@/lib/email/templates/business/customer-driver-assigned';
 import BusinessBookingDriverAssignedEmail from '@/lib/email/templates/business/booking-driver-assigned';
+import DirectBookingCustomerConfirmationEmail from '@/lib/email/templates/direct-booking/customer-confirmation';
+import DirectBookingCustomerStatusUpdateEmail from '@/lib/email/templates/direct-booking/customer-status-update';
+import DirectBookingCustomerCancelledEmail from '@/lib/email/templates/direct-booking/customer-cancelled';
+import DirectBookingDriverAssignmentEmail from '@/lib/email/templates/direct-booking/driver-assignment';
 
 const templateComponents: Record<EmailTemplateType, any> = {
   welcome: WelcomeEmail,
@@ -54,6 +58,10 @@ const templateComponents: Record<EmailTemplateType, any> = {
   driverAssigned: BookingDriverAssignedEmail,
   businessCustomerDriverAssigned: BusinessCustomerDriverAssignedEmail,
   businessDriverAssigned: BusinessBookingDriverAssignedEmail,
+  directBookingCustomerConfirmation: DirectBookingCustomerConfirmationEmail,
+  directBookingCustomerStatusUpdate: DirectBookingCustomerStatusUpdateEmail,
+  directBookingCustomerCancelled: DirectBookingCustomerCancelledEmail,
+  directBookingDriverAssignment: DirectBookingDriverAssignmentEmail,
 };
 
 type PreviewMode = 'desktop' | 'mobile';
@@ -69,6 +77,9 @@ export function EmailManagementClient() {
   const authTemplates = emailTemplates.filter((t) => t.category === 'auth');
   const bookingTemplates = emailTemplates.filter((t) => t.category === 'booking');
   const vendorTemplates = emailTemplates.filter((t) => t.category === 'vendor');
+  const directBookingTemplates = emailTemplates.filter(
+    (t) => t.category === 'direct-booking'
+  );
 
   // Get current template info
   const currentTemplate = getTemplateById(selectedTemplate);
@@ -175,6 +186,17 @@ export function EmailManagementClient() {
                   <SelectGroup>
                     <SelectLabel>Vendor</SelectLabel>
                     {vendorTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {template.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Direct Bookings</SelectLabel>
+                    {directBookingTemplates.map((template) => (
                       <SelectItem key={template.id} value={template.id}>
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4" />

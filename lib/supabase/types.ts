@@ -2369,6 +2369,7 @@ export type Database = {
           amount_paid: number
           booking_status: string
           cancellation_reason: string | null
+          confirmation_sent_at: string | null
           created_at: string | null
           created_by: string
           currency: string
@@ -2380,6 +2381,7 @@ export type Database = {
           dropoff_location: string | null
           id: string
           internal_notes: string | null
+          last_notified_status: string | null
           payment_method: string | null
           payment_status: string
           pickup_datetime: string
@@ -2395,6 +2397,7 @@ export type Database = {
           amount_paid?: number
           booking_status?: string
           cancellation_reason?: string | null
+          confirmation_sent_at?: string | null
           created_at?: string | null
           created_by: string
           currency?: string
@@ -2406,6 +2409,7 @@ export type Database = {
           dropoff_location?: string | null
           id?: string
           internal_notes?: string | null
+          last_notified_status?: string | null
           payment_method?: string | null
           payment_status?: string
           pickup_datetime: string
@@ -2421,6 +2425,7 @@ export type Database = {
           amount_paid?: number
           booking_status?: string
           cancellation_reason?: string | null
+          confirmation_sent_at?: string | null
           created_at?: string | null
           created_by?: string
           currency?: string
@@ -2432,6 +2437,7 @@ export type Database = {
           dropoff_location?: string | null
           id?: string
           internal_notes?: string | null
+          last_notified_status?: string | null
           payment_method?: string | null
           payment_status?: string
           pickup_datetime?: string

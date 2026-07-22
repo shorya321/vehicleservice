@@ -12,12 +12,19 @@ export type EmailTemplateType =
   | 'vendorBookingAssigned'
   | 'driverAssigned'
   | 'businessCustomerDriverAssigned'
-  | 'businessDriverAssigned';
+  | 'businessDriverAssigned'
+  | 'directBookingCustomerConfirmation'
+  | 'directBookingCustomerStatusUpdate'
+  | 'directBookingCustomerCancelled'
+  | 'directBookingDriverAssignment';
+
+/** Named so the category union has one definition rather than two literals to keep in step. */
+export type EmailTemplateCategory = 'auth' | 'booking' | 'vendor' | 'direct-booking';
 
 export interface EmailTemplate {
   id: EmailTemplateType;
   name: string;
-  category: 'auth' | 'booking' | 'vendor';
+  category: EmailTemplateCategory;
   description: string;
   subject: string;
   variables: string[];
@@ -177,6 +184,93 @@ export const emailTemplates: EmailTemplate[] = [
       'bookingUrl',
     ],
   },
+  {
+    id: 'directBookingCustomerConfirmation',
+    name: 'Direct Booking Confirmation',
+    category: 'direct-booking',
+    description: 'Sent to the customer when a vendor records an offline booking',
+    subject: 'Booking Confirmed - {bookingReference}',
+    variables: [
+      'customerName',
+      'bookingReference',
+      'statusLabel',
+      'vehicleLabel',
+      'vehicleRegistration',
+      'driverName',
+      'driverPhone',
+      'pickupLocation',
+      'dropoffLocation',
+      'pickupDate',
+      'pickupTime',
+      'returnDate',
+      'returnTime',
+      'totalAmount',
+      'amountPaid',
+      'balanceDue',
+      'currency',
+      'paymentStatusLabel',
+      'paymentMethodLabel',
+      'customerNotes',
+      'vendorName',
+      'vendorPhone',
+    ],
+  },
+  {
+    id: 'directBookingCustomerStatusUpdate',
+    name: 'Direct Booking Status Update',
+    category: 'direct-booking',
+    description: 'Sent to the customer when an offline booking changes status',
+    subject: 'Booking Update - {bookingReference}',
+    variables: [
+      'customerName',
+      'bookingReference',
+      'previousStatusLabel',
+      'newStatusLabel',
+      'vehicleLabel',
+      'pickupDate',
+      'pickupTime',
+      'vendorName',
+      'vendorPhone',
+    ],
+  },
+  {
+    id: 'directBookingCustomerCancelled',
+    name: 'Direct Booking Cancelled',
+    category: 'direct-booking',
+    description: 'Sent to the customer when a vendor cancels an offline booking',
+    subject: 'Booking Cancelled - {bookingReference}',
+    variables: [
+      'customerName',
+      'bookingReference',
+      'vehicleLabel',
+      'pickupDate',
+      'pickupTime',
+      'vendorName',
+      'vendorPhone',
+    ],
+  },
+  {
+    id: 'directBookingDriverAssignment',
+    name: 'Direct Booking Driver Assignment',
+    category: 'direct-booking',
+    description: 'Sent to the driver assigned to an offline booking',
+    subject: 'Trip Assignment - #{bookingReference}',
+    variables: [
+      'driverName',
+      'bookingReference',
+      'customerName',
+      'vehicleLabel',
+      'vehicleRegistration',
+      'pickupLocation',
+      'dropoffLocation',
+      'pickupDate',
+      'pickupTime',
+      'returnDate',
+      'returnTime',
+      'vendorName',
+      'vendorPhone',
+    ],
+  },
 ];
 
 export const emailPreviewData: Record<EmailTemplateType, any> = {
@@ -278,6 +372,65 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     pickupTime: '2:30 PM',
     bookingUrl: `${getAppUrl()}/business/bookings/sample-booking-id`,
   },
+  directBookingCustomerConfirmation: {
+    customerName: 'Sarah Johnson',
+    bookingReference: 'DB-20240315-0042',
+    statusLabel: 'Confirmed',
+    vehicleLabel: 'Toyota Land Cruiser (2023)',
+    vehicleRegistration: 'DXB A 12345',
+    driverName: 'Rajesh Kumar',
+    driverPhone: '+971 50 123 4567',
+    pickupLocation: 'Dubai International Airport (DXB)',
+    dropoffLocation: 'Burj Khalifa, Downtown Dubai',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    returnDate: 'March 18, 2024',
+    returnTime: '11:00 AM',
+    totalAmount: 1200,
+    amountPaid: 500,
+    balanceDue: 700,
+    currency: 'AED',
+    paymentStatusLabel: 'Partially Paid',
+    paymentMethodLabel: 'Cash',
+    customerNotes: 'Requested a child seat',
+    vendorName: 'Ahmed Transportation LLC',
+    vendorPhone: '+971 4 555 0100',
+  },
+  directBookingCustomerStatusUpdate: {
+    customerName: 'Sarah Johnson',
+    bookingReference: 'DB-20240315-0042',
+    previousStatusLabel: 'Pending',
+    newStatusLabel: 'Confirmed',
+    vehicleLabel: 'Toyota Land Cruiser (2023)',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    vendorName: 'Ahmed Transportation LLC',
+    vendorPhone: '+971 4 555 0100',
+  },
+  directBookingCustomerCancelled: {
+    customerName: 'Sarah Johnson',
+    bookingReference: 'DB-20240315-0042',
+    vehicleLabel: 'Toyota Land Cruiser (2023)',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    vendorName: 'Ahmed Transportation LLC',
+    vendorPhone: '+971 4 555 0100',
+  },
+  directBookingDriverAssignment: {
+    driverName: 'Rajesh Kumar',
+    bookingReference: 'DB-20240315-0042',
+    customerName: 'Sarah Johnson',
+    vehicleLabel: 'Toyota Land Cruiser (2023)',
+    vehicleRegistration: 'DXB A 12345',
+    pickupLocation: 'Dubai International Airport (DXB)',
+    dropoffLocation: 'Burj Khalifa, Downtown Dubai',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    returnDate: 'March 18, 2024',
+    returnTime: '11:00 AM',
+    vendorName: 'Ahmed Transportation LLC',
+    vendorPhone: '+971 4 555 0100',
+  },
 };
 
 export function getTemplateById(id: EmailTemplateType): EmailTemplate | undefined {
@@ -288,6 +441,6 @@ export function getTemplatePreviewData(id: EmailTemplateType): any {
   return emailPreviewData[id] || {};
 }
 
-export function getTemplatesByCategory(category: 'auth' | 'booking' | 'vendor'): EmailTemplate[] {
+export function getTemplatesByCategory(category: EmailTemplateCategory): EmailTemplate[] {
   return emailTemplates.filter((template) => template.category === category);
 }

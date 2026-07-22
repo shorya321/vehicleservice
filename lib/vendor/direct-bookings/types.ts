@@ -68,4 +68,9 @@ export type DirectBookingActionResult = {
   success?: boolean
   error?: string
   id?: string
+  /**
+   * The `DB-YYYYMMDD-NNNN` reference the insert trigger generates. Only returned
+   * by create, where it is read back so notification emails can quote it.
+   */
+  reference_number?: string
 }

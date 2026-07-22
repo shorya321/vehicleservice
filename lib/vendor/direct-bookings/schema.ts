@@ -80,12 +80,14 @@ export const directBookingFormSchema = z
   .object({
     customer_name: z.string().trim().min(2, 'Customer name is required'),
     customer_phone: phoneField,
+    // Required: the confirmation email is the point of this module, and a booking
+    // saved without an address leaves the customer silently uncontacted.
+    // `.min(1)` runs first so a blank field reads "required" rather than "invalid".
     customer_email: z
       .string()
       .trim()
-      .email('Enter a valid email')
-      .optional()
-      .or(z.literal('')),
+      .min(1, 'Customer email is required')
+      .email('Enter a valid email'),
     customer_notes: optionalText,
 
     vehicle_id: z.string().uuid('Select a vehicle'),

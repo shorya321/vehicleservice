@@ -328,7 +328,7 @@ export function DirectBookingForm({
               name="customer_email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email (optional)</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="jane@example.com" {...field} />
                   </FormControl>

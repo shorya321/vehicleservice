@@ -21,6 +21,10 @@ import BookingAssignedEmail from '@/lib/email/templates/vendor/booking-assigned'
 import BookingDriverAssignedEmail from '@/lib/email/templates/booking/driver-assigned';
 import BusinessCustomerDriverAssignedEmail from '@/lib/email/templates/business/customer-driver-assigned';
 import BusinessBookingDriverAssignedEmail from '@/lib/email/templates/business/booking-driver-assigned';
+import DirectBookingCustomerConfirmationEmail from '@/lib/email/templates/direct-booking/customer-confirmation';
+import DirectBookingCustomerStatusUpdateEmail from '@/lib/email/templates/direct-booking/customer-status-update';
+import DirectBookingCustomerCancelledEmail from '@/lib/email/templates/direct-booking/customer-cancelled';
+import DirectBookingDriverAssignmentEmail from '@/lib/email/templates/direct-booking/driver-assignment';
 
 const templateComponents = {
   welcome: WelcomeEmail,
@@ -35,6 +39,10 @@ const templateComponents = {
   driverAssigned: BookingDriverAssignedEmail,
   businessCustomerDriverAssigned: BusinessCustomerDriverAssignedEmail,
   businessDriverAssigned: BusinessBookingDriverAssignedEmail,
+  directBookingCustomerConfirmation: DirectBookingCustomerConfirmationEmail,
+  directBookingCustomerStatusUpdate: DirectBookingCustomerStatusUpdateEmail,
+  directBookingCustomerCancelled: DirectBookingCustomerCancelledEmail,
+  directBookingDriverAssignment: DirectBookingDriverAssignmentEmail,
 };
 
 interface SendTestEmailParams {

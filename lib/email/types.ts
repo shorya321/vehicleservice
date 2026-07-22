@@ -296,3 +296,106 @@ export interface BusinessDriverAssignedEmailData extends DriverAssignedTripDetai
   passengerName: string;
   bookingId: string;
 }
+
+// ---------------------------------------------------------------------------
+// Vendor direct bookings (offline / phone reservations)
+//
+// These are sent on the vendor's behalf, not the platform's, so each carries
+// vendor identity for the sign-off and reply-to.
+//
+// None of them declares `internalNotes` or `cancellationReason`: the booking
+// form promises the vendor "Only your team sees this", so a customer-facing
+// template must not be able to receive them. Leaving the fields off the type
+// makes passing one a compile error rather than a matter of care.
+// ---------------------------------------------------------------------------
+
+/** Vendor identity shared by every direct-booking notification. */
+export interface DirectBookingVendorIdentity {
+  vendorName: string;
+  vendorPhone?: string;
+}
+
+/** Trip facts shared by the customer-facing direct-booking emails. */
+export interface DirectBookingTripDetails extends DirectBookingVendorIdentity {
+  bookingReference: string;
+  customerName: string;
+  vehicleLabel: string;
+  vehicleRegistration: string;
+  driverName: string;
+  driverPhone?: string;
+  pickupLocation: string;
+  dropoffLocation?: string;
+  pickupDate: string;
+  pickupTime: string;
+  returnDate: string;
+  returnTime: string;
+}
+
+/** Sent to the customer when a vendor records a new offline booking. */
+export interface DirectBookingCustomerConfirmationEmailData extends DirectBookingTripDetails {
+  customerEmail: string;
+  statusLabel: string;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
+  currency: string;
+  paymentStatusLabel: string;
+  paymentMethodLabel?: string;
+  /** The customer's own request. Never the vendor's internal notes. */
+  customerNotes?: string;
+  /** Vendor's reply-to, when they have one on file. */
+  replyTo?: string;
+}
+
+/** Sent to the customer when the booking moves between statuses. */
+export interface DirectBookingCustomerStatusUpdateEmailData extends DirectBookingVendorIdentity {
+  customerName: string;
+  customerEmail: string;
+  bookingReference: string;
+  previousStatusLabel: string;
+  newStatusLabel: string;
+  vehicleLabel: string;
+  pickupDate: string;
+  pickupTime: string;
+  replyTo?: string;
+}
+
+/**
+ * Sent to the customer when the booking is cancelled.
+ *
+ * Carries no reason: `cancellation_reason` is the vendor's own record, written
+ * in the third person about the customer ("Customer cancelled", "no-show"), and
+ * echoing it back would disclose an internal judgement.
+ */
+export interface DirectBookingCustomerCancelledEmailData extends DirectBookingVendorIdentity {
+  customerName: string;
+  customerEmail: string;
+  bookingReference: string;
+  vehicleLabel: string;
+  pickupDate: string;
+  pickupTime: string;
+  replyTo?: string;
+}
+
+/**
+ * Sent to the driver when they are assigned to an offline booking.
+ *
+ * Carries no customer phone number on purpose: the driver is not given the
+ * passenger's contact details, and the vendor stays the intermediary. The
+ * template directs the driver to the vendor for anything they need.
+ */
+export interface DirectBookingDriverAssignmentEmailData extends DirectBookingVendorIdentity {
+  driverName: string;
+  driverEmail: string;
+  bookingReference: string;
+  customerName: string;
+  vehicleLabel: string;
+  vehicleRegistration: string;
+  pickupLocation: string;
+  dropoffLocation?: string;
+  pickupDate: string;
+  pickupTime: string;
+  returnDate: string;
+  returnTime: string;
+  replyTo?: string;
+}

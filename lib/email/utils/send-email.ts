@@ -11,6 +11,12 @@ interface SendEmailParams {
   subject: string;
   template: React.ComponentType<any>;
   templateProps: Record<string, any>;
+  /**
+   * Overrides the global reply-to for mail sent on someone else's behalf —
+   * a vendor's own address on a direct-booking notification, for example.
+   * Omit to keep the platform default.
+   */
+  replyTo?: string;
 }
 
 /**
@@ -22,6 +28,7 @@ export async function sendEmail({
   subject,
   template,
   templateProps,
+  replyTo,
 }: SendEmailParams): Promise<EmailResult> {
   try {
     const resend = getResendClient();
@@ -33,7 +40,7 @@ export async function sendEmail({
     const { data: emailData, error } = await resend.emails.send({
       from: emailConfig.from,
       to,
-      replyTo: emailConfig.replyTo,
+      replyTo: replyTo || emailConfig.replyTo,
       subject,
       react: reactElement,
       text: plainText,
