@@ -18,8 +18,8 @@ import { getDirectBooking, getVendorFleetOptions } from '../../actions'
 import { DirectBookingForm } from '../../components/direct-booking-form'
 
 export const metadata: Metadata = {
-  title: 'Edit Direct Booking - Vendor Portal',
-  description: 'Update a direct booking',
+  title: 'Edit Offline Booking - Vendor Portal',
+  description: 'Update an offline booking',
 }
 
 interface EditDirectBookingPageProps {
@@ -93,11 +93,11 @@ export default async function EditDirectBookingPage({
         <Button variant="ghost" size="icon" asChild>
           <Link href="/vendor/direct-bookings">
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back to direct bookings</span>
+            <span className="sr-only">Back to offline bookings</span>
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Direct Booking</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Offline Booking</h1>
           <p className="text-muted-foreground font-mono text-sm">
             {booking.reference_number}
           </p>
