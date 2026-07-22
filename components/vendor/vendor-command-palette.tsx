@@ -19,6 +19,7 @@ import {
   Car,
   Users,
   Calendar,
+  ClipboardPlus,
   BarChart3,
   Search,
   ArrowRight,
@@ -36,11 +37,13 @@ const navigationItems = [
   { name: 'Vehicles', href: '/vendor/vehicles', icon: Car, shortcut: 'V' },
   { name: 'Drivers', href: '/vendor/drivers', icon: Users, shortcut: '' },
   { name: 'Bookings', href: '/vendor/bookings', icon: Calendar, shortcut: 'B' },
+  { name: 'Direct Bookings', href: '/vendor/direct-bookings', icon: ClipboardPlus, shortcut: '' },
   { name: 'Availability', href: '/vendor/availability', icon: BarChart3, shortcut: '' },
 ];
 
 const quickActions = [
   { name: 'View Bookings', href: '/vendor/bookings', icon: Calendar, shortcut: 'B', description: 'View and manage your bookings' },
+  { name: 'New Direct Booking', href: '/vendor/direct-bookings/new', icon: ClipboardPlus, shortcut: '', description: 'Record an offline or phone booking' },
   { name: 'My Vehicles', href: '/vendor/vehicles', icon: Car, shortcut: '', description: 'Manage your vehicle fleet' },
   { name: 'Check Availability', href: '/vendor/availability', icon: BarChart3, shortcut: '', description: 'View and update availability' },
 ];

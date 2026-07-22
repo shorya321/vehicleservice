@@ -2364,6 +2364,109 @@ export type Database = {
           },
         ]
       }
+      vendor_direct_bookings: {
+        Row: {
+          amount_paid: number
+          booking_status: string
+          cancellation_reason: string | null
+          created_at: string | null
+          created_by: string
+          currency: string
+          customer_email: string | null
+          customer_name: string
+          customer_notes: string | null
+          customer_phone: string
+          driver_id: string
+          dropoff_location: string | null
+          id: string
+          internal_notes: string | null
+          payment_method: string | null
+          payment_status: string
+          pickup_datetime: string
+          pickup_location: string
+          reference_number: string
+          return_datetime: string
+          total_price: number
+          updated_at: string | null
+          vehicle_id: string
+          vendor_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          booking_status?: string
+          cancellation_reason?: string | null
+          created_at?: string | null
+          created_by: string
+          currency?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_notes?: string | null
+          customer_phone: string
+          driver_id: string
+          dropoff_location?: string | null
+          id?: string
+          internal_notes?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          pickup_datetime: string
+          pickup_location: string
+          reference_number?: string
+          return_datetime: string
+          total_price: number
+          updated_at?: string | null
+          vehicle_id: string
+          vendor_id: string
+        }
+        Update: {
+          amount_paid?: number
+          booking_status?: string
+          cancellation_reason?: string | null
+          created_at?: string | null
+          created_by?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_notes?: string | null
+          customer_phone?: string
+          driver_id?: string | null
+          dropoff_location?: string | null
+          id?: string
+          internal_notes?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          pickup_datetime?: string
+          pickup_location?: string
+          reference_number?: string
+          return_datetime?: string | null
+          total_price?: number
+          updated_at?: string | null
+          vehicle_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_direct_bookings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_direct_bookings_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_direct_bookings_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_drivers: {
         Row: {
           address: string | null
