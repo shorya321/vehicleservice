@@ -24,8 +24,8 @@ import { ClientFilters } from './components/client-filters'
 import { DirectBookingsTable } from './components/direct-bookings-table'
 
 export const metadata: Metadata = {
-  title: 'Direct Bookings - Vendor Portal',
-  description: 'Record and manage bookings taken directly from customers',
+  title: 'Offline Bookings - Vendor Portal',
+  description: 'Record and manage bookings taken offline from customers',
 }
 
 interface DirectBookingsPageProps {
@@ -90,16 +90,16 @@ export default async function VendorDirectBookingsPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Direct Bookings</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Offline Bookings</h1>
           <p className="text-muted-foreground">
-            Bookings you took directly from customers — kept separate from your
+            Bookings you took offline from customers — kept separate from your
             platform bookings
           </p>
         </div>
         <Button asChild size="sm">
           <Link href="/vendor/direct-bookings/new">
             <Plus className="mr-2 h-4 w-4" />
-            New Direct Booking
+            New Offline Booking
           </Link>
         </Button>
       </div>
@@ -132,7 +132,7 @@ export default async function VendorDirectBookingsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Direct Bookings</CardTitle>
+          <CardTitle>All Offline Bookings</CardTitle>
           <CardDescription>
             Offline and phone bookings recorded by your team
           </CardDescription>
@@ -183,7 +183,7 @@ export default async function VendorDirectBookingsPage({
           ) : (
             <div className="text-center py-8">
               <ClipboardPlus className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-2 text-sm font-medium">No direct bookings found</h3>
+              <h3 className="mt-2 text-sm font-medium">No offline bookings found</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 {hasFilters
                   ? 'Try adjusting your filters'
@@ -194,7 +194,7 @@ export default async function VendorDirectBookingsPage({
                   <Button asChild size="sm">
                     <Link href="/vendor/direct-bookings/new">
                       <Plus className="mr-2 h-4 w-4" />
-                      New Direct Booking
+                      New Offline Booking
                     </Link>
                   </Button>
                 </div>

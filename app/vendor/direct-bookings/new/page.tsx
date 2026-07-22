@@ -10,8 +10,8 @@ import { getVendorFleetOptions } from '../actions'
 import { DirectBookingForm } from '../components/direct-booking-form'
 
 export const metadata: Metadata = {
-  title: 'New Direct Booking - Vendor Portal',
-  description: 'Record a booking taken directly from a customer',
+  title: 'New Offline Booking - Vendor Portal',
+  description: 'Record a booking taken offline from a customer',
 }
 
 export default async function NewDirectBookingPage() {
@@ -36,13 +36,13 @@ export default async function NewDirectBookingPage() {
         <Button variant="ghost" size="icon" asChild>
           <Link href="/vendor/direct-bookings">
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back to direct bookings</span>
+            <span className="sr-only">Back to offline bookings</span>
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Direct Booking</h1>
+          <h1 className="text-3xl font-bold tracking-tight">New Offline Booking</h1>
           <p className="text-muted-foreground">
-            Record a booking a customer made with you directly
+            Record a booking a customer made with you offline
           </p>
         </div>
       </div>

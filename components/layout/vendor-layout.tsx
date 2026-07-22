@@ -93,8 +93,13 @@ const navGroups: NavGroup[] = [
       },
       { name: "Drivers", href: "/vendor/drivers", icon: Users },
       { name: "Bookings", href: "/vendor/bookings", icon: Calendar },
-      { name: "Direct Bookings", href: "/vendor/direct-bookings", icon: ClipboardPlus },
       { name: "Availability", href: "/vendor/availability", icon: BarChart3 },
+    ]
+  },
+  {
+    label: 'Offline Bookings',
+    items: [
+      { name: "Direct Bookings", href: "/vendor/direct-bookings", icon: ClipboardPlus },
     ]
   },
 ]
