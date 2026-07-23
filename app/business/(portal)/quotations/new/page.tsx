@@ -9,11 +9,11 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserRound } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PortalSectionCard } from '@/app/business/(portal)/components/ui/section-card';
+import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { NewQuotationForm } from './components/new-quotation-form';
 
 export const metadata: Metadata = {
@@ -43,33 +43,31 @@ export default async function NewQuotationPage() {
   const currency = account?.preferred_currency || account?.currency || 'AED';
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon">
-          <Link href="/business/quotations" aria-label="Back to quotations">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">New Quotation</h1>
-          <p className="text-sm text-muted-foreground">
-            Start with who it is for. You will add trips next.
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader
+        title="New Quotation"
+        breadcrumb={
+          <nav className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+            <Link
+              href="/business/quotations"
+              className="flex items-center gap-1.5 transition-colors hover:text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Quotations</span>
+            </Link>
+          </nav>
+        }
+        description={
+          <>
+            Start with who it is for. You will add trips next. Quoted in {currency} — the
+            exchange rate is locked now, so a PDF you have already sent never changes value.
+          </>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer &amp; terms</CardTitle>
-          <CardDescription>
-            Quoted in {currency}. The exchange rate is locked now, so a PDF you have already
-            sent never changes value.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <NewQuotationForm currency={currency} />
-        </CardContent>
-      </Card>
+      <PortalSectionCard title="Customer &amp; terms" icon={UserRound}>
+        <NewQuotationForm currency={currency} />
+      </PortalSectionCard>
     </div>
   );
 }

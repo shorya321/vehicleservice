@@ -20,13 +20,16 @@ import {
   Loader2,
   Lock,
   CalendarClock,
+  MapPin,
+  Receipt,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PortalSectionCard } from '@/app/business/(portal)/components/ui/section-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { formatAmount } from '@/lib/currency/format';
+// Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
+import { formatCurrency } from '@/lib/business/wallet-operations';
 import { quotationTotals, applyMarkup } from '@/lib/business/quotations/pricing';
 import { updateQuotation } from '../../../mutations';
 import { TripEditorSheet } from './trip-editor-sheet';
@@ -82,7 +85,7 @@ export function QuotationBuilder({
     defaultMarkupPct
   );
 
-  const inCurrency = (aed: number) => formatAmount(aed * exchangeRate, currency);
+  const inCurrency = (aed: number) => formatCurrency(aed * exchangeRate, currency);
 
   /** A converted trip is immutable — the wallet has been charged and a booking exists. */
   const isLocked = (trip: QuotationTripDraft) => Boolean(trip.converted_booking_id);
@@ -180,9 +183,11 @@ export function QuotationBuilder({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Trips</CardTitle>
+        <PortalSectionCard
+          title="Trips"
+          icon={MapPin}
+          bodyClassName="space-y-3 p-5"
+          action={
             <Button
               size="sm"
               onClick={() => {
@@ -194,8 +199,8 @@ export function QuotationBuilder({
               <Plus className="mr-2 h-4 w-4" />
               Add trip
             </Button>
-          </CardHeader>
-          <CardContent className="space-y-3">
+          }
+        >
             {trips.length === 0 && (
               <p className="py-8 text-center text-sm text-muted-foreground">
                 No trips yet. Add the first one to start pricing.
@@ -205,7 +210,10 @@ export function QuotationBuilder({
             {trips.map((trip, index) => {
               const locked = isLocked(trip);
               return (
-                <div key={trip.id ?? `new-${index}`} className="rounded-lg border p-3">
+                <div
+                  key={trip.id ?? `new-${index}`}
+                  className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/40"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -223,9 +231,11 @@ export function QuotationBuilder({
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 truncate font-medium">
-                        {trip.from_location_name ?? trip.pickup_address} »{' '}
-                        {trip.to_location_name ?? trip.dropoff_address}
+                      <div className="mt-1 break-words font-medium text-foreground">
+                        {trip.from_location_name ?? trip.pickup_address}
+                      </div>
+                      <div className="break-words text-muted-foreground">
+                        → {trip.to_location_name ?? trip.dropoff_address}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {trip.vehicle_type_name ?? 'Vehicle'} · {trip.passenger_count} guest
@@ -233,7 +243,7 @@ export function QuotationBuilder({
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    <div className="shrink-0 whitespace-nowrap text-right">
                       <div className="font-semibold tabular-nums">
                         {inCurrency(
                           trip.price_mode === 'manual'
@@ -247,7 +257,7 @@ export function QuotationBuilder({
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground tabular-nums">
-                        cost {formatAmount(trip.net_total_aed, 'AED')}
+                        cost {formatCurrency(trip.net_total_aed, 'AED')}
                       </div>
                     </div>
                   </div>
@@ -301,16 +311,11 @@ export function QuotationBuilder({
                 </div>
               );
             })}
-          </CardContent>
-        </Card>
+        </PortalSectionCard>
       </div>
 
       <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Pricing</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <PortalSectionCard title="Pricing" icon={Receipt} bodyClassName="space-y-4 p-5">
             <div className="space-y-1">
               <Label htmlFor="default-markup">Default markup %</Label>
               <Input
@@ -351,13 +356,13 @@ export function QuotationBuilder({
                   <span className="tabular-nums">-{inCurrency(totals.discountAed)}</span>
                 </div>
               )}
-              <div className="flex justify-between border-t pt-2 text-base font-semibold">
+              <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
                 <span>Total</span>
                 <span className="tabular-nums">{inCurrency(totals.totalSellAed)}</span>
               </div>
-              <div className="rounded-md border border-dashed p-2 text-xs text-muted-foreground">
-                Internal — cost {formatAmount(totals.subtotalNetAed, 'AED')} · margin{' '}
-                {formatAmount(totals.marginAed, 'AED')}
+              <div className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
+                Internal — cost {formatCurrency(totals.subtotalNetAed, 'AED')} · margin{' '}
+                {formatCurrency(totals.marginAed, 'AED')}
                 {totals.marginPct !== null ? ` (${totals.marginPct}%)` : ''}
               </div>
             </div>
@@ -366,8 +371,7 @@ export function QuotationBuilder({
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save quotation
             </Button>
-          </CardContent>
-        </Card>
+        </PortalSectionCard>
       </div>
 
       <TripEditorSheet

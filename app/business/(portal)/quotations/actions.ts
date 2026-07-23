@@ -20,6 +20,7 @@ import type {
   QuotationListRow,
   QuotationWithItems,
   QuotationItemWithAddons,
+  QuotationStats,
 } from '@/lib/business/quotations/types';
 
 /** Columns the list needs. Narrow on purpose — the list never renders trip detail. */
@@ -190,13 +191,7 @@ export async function getQuotation(id: string): Promise<QuotationWithItems | nul
 }
 
 /** Headline counts for the list page. */
-export async function getQuotationStats(): Promise<{
-  total: number;
-  draft: number;
-  sent: number;
-  accepted: number;
-  expired: number;
-}> {
+export async function getQuotationStats(): Promise<QuotationStats> {
   const supabase = await createClient();
   const {
     data: { user },

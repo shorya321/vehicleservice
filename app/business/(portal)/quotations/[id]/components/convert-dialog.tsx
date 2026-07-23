@@ -14,6 +14,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, AlertTriangle, ArrowRight, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+// The business Dialog, not the shared one: components/ui/dialog paints DialogContent
+// bg-luxury-darkGray/95 + text-luxury-pearl, which is the public site's skin and ignores the
+// portal's light/dark theme entirely.
 import {
   Dialog,
   DialogContent,
@@ -21,8 +24,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { formatAmount } from '@/lib/currency/format';
+} from '@/components/business/ui/dialog';
+// Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
+import { formatCurrency } from '@/lib/business/wallet-operations';
 import type { QuotationPreflightResult } from '@/lib/business/quotations/types';
 
 interface ConvertDialogProps {
@@ -137,7 +141,10 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
                 {preflight.lines.map((line) => {
                   const moved = Math.abs(line.netAedFresh - line.netAedStored) > 0.01;
                   return (
-                    <div key={line.itemId} className="rounded-md border p-2 text-sm">
+                    <div
+                      key={line.itemId}
+                      className="rounded-lg border border-border p-3 text-sm"
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 break-words">
                           <div>{line.pickup}</div>
@@ -146,10 +153,10 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
                         <span className="shrink-0 tabular-nums">
                           {moved && (
                             <span className="mr-1 text-muted-foreground line-through">
-                              {formatAmount(line.netAedStored, 'AED')}
+                              {formatCurrency(line.netAedStored, 'AED')}
                             </span>
                           )}
-                          {formatAmount(line.netAedFresh, 'AED')}
+                          {formatCurrency(line.netAedFresh, 'AED')}
                         </span>
                       </div>
                       {line.error && (
@@ -157,7 +164,7 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
                       )}
                       {line.belowCost && !line.error && (
                         <p className="mt-1 text-amber-600 dark:text-amber-400">
-                          Cost now exceeds the {formatAmount(line.sellAed, 'AED')} you quoted.
+                          Cost now exceeds the {formatCurrency(line.sellAed, 'AED')} you quoted.
                         </p>
                       )}
                     </div>
@@ -165,13 +172,13 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
                 })}
               </div>
 
-              <div className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-3 text-sm">
                 <span className="flex items-center gap-2">
                   <Wallet className="h-4 w-4" />
                   Wallet charge
                 </span>
                 <span className="font-semibold tabular-nums">
-                  {formatAmount(preflight.totalNetAed, 'AED')}
+                  {formatCurrency(preflight.totalNetAed, 'AED')}
                 </span>
               </div>
 
@@ -191,7 +198,7 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
               )}
 
               {blocked && (
-                <div className="space-y-1 break-words rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                <div className="space-y-1 break-words rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
                   {preflight.blockingErrors.map((error) => (
                     <p key={error}>{error}</p>
                   ))}
@@ -206,7 +213,7 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
             </Button>
             <Button onClick={confirm} disabled={!preflight || blocked || converting || loading}>
               {converting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {preflight ? `Charge ${formatAmount(preflight.totalNetAed, 'AED')}` : 'Confirm'}
+              {preflight ? `Charge ${formatCurrency(preflight.totalNetAed, 'AED')}` : 'Confirm'}
             </Button>
           </DialogFooter>
         </DialogContent>

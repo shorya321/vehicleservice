@@ -156,6 +156,18 @@ export interface QuotationTripDraft {
   converted_booking_number?: string | null;
 }
 
+/**
+ * List-page counters. `expired` is derived from valid_until rather than stored, so it is
+ * computed server-side against Asia/Dubai and can exceed nothing else in the set.
+ */
+export interface QuotationStats {
+  total: number;
+  draft: number;
+  sent: number;
+  accepted: number;
+  expired: number;
+}
+
 /** Per-line outcome of a conversion run. */
 export interface QuotationConversionLineResult {
   itemId: string;

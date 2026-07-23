@@ -13,8 +13,8 @@ import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
-import { Button } from '@/components/ui/button';
 import { canEditHeader, normalizeQuotationStatus } from '@/lib/business/quotations/status';
+import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { getQuotation } from '../../actions';
 import { QuotationBuilder } from './components/quotation-builder';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
@@ -99,22 +99,24 @@ export default async function EditQuotationPage({ params }: PageProps) {
   }));
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon">
-          <Link href={`/business/quotations/${id}`} aria-label="Back to quotation">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {quotation.quotation_number}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {quotation.customer_name} · quoted in {quotation.currency}
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Edit Quotation"
+        breadcrumb={
+          <nav className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+            <Link
+              href={`/business/quotations/${id}`}
+              className="flex items-center gap-1.5 transition-colors hover:text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Quotation</span>
+            </Link>
+            <span className="text-muted-foreground/50">/</span>
+            <span className="font-medium text-foreground">{quotation.quotation_number}</span>
+          </nav>
+        }
+        description={`${quotation.customer_name} · quoted in ${quotation.currency}`}
+      />
 
       <QuotationBuilder
         quotationId={quotation.id}

@@ -15,9 +15,10 @@ import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
 import { bookingToday } from '@/lib/utils/timezone';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { getQuotations, getQuotationStats } from './actions';
 import { QuotationFilters } from './components/quotation-filters';
+import { QuotationStats } from './components/quotation-stats';
 import { QuotationsTable } from './components/quotations-table';
 import type { QuotationFilters as Filters } from '@/lib/business/quotations/types';
 
@@ -59,91 +60,38 @@ export default async function BusinessQuotationsPage({ searchParams }: PageProps
 
   // Resolved server-side so "expired" is judged in Asia/Dubai, not the viewer's timezone.
   const today = bookingToday();
-  const totalPages = Math.max(1, Math.ceil(result.total / result.limit));
-
-  const buildPageHref = (target: number) => {
-    const next = new URLSearchParams();
-    if (filters.search) next.set('search', filters.search);
-    if (filters.status && filters.status !== 'all') next.set('status', filters.status);
-    if (target > 1) next.set('page', String(target));
-    const query = next.toString();
-    return query ? `/business/quotations?${query}` : '/business/quotations';
-  };
-
-  const summary = [
-    { label: 'Total', value: stats.total },
-    { label: 'Draft', value: stats.draft },
-    { label: 'Sent', value: stats.sent },
-    { label: 'Accepted', value: stats.accepted },
-    { label: 'Expired', value: stats.expired },
-  ];
+  // Drives the empty state's copy: "nothing matched" reads very differently from "nothing yet".
+  const hasFilters = Boolean(filters.search) || Boolean(filters.status && filters.status !== 'all');
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Quotations</h1>
-          <p className="text-sm text-muted-foreground">
-            Price one or more trips and share a single PDF with your customer.
-          </p>
-        </div>
-        <Button asChild>
+    <div className="pb-12 space-y-6">
+      <PageHeader
+        title="Quotations"
+        description="Price one or more trips and share a single PDF with your customer."
+      />
+
+      <QuotationStats stats={stats} />
+
+      {/* Filters and the primary action share a row, as on the bookings list. */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <QuotationFilters className="flex-1" />
+        <Button asChild className="gap-2 lg:w-auto">
           <Link href="/business/quotations/new">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             New Quotation
           </Link>
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {summary.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-              <div className="mt-1 text-2xl font-semibold tabular-nums">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <QuotationFilters />
-
-      <QuotationsTable rows={result.rows} today={today} />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {result.page} of {totalPages} · {result.total} quotation
-            {result.total === 1 ? '' : 's'}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              asChild={result.page > 1}
-              variant="outline"
-              size="sm"
-              disabled={result.page <= 1}
-            >
-              {result.page > 1 ? (
-                <Link href={buildPageHref(result.page - 1)}>Previous</Link>
-              ) : (
-                <span>Previous</span>
-              )}
-            </Button>
-            <Button
-              asChild={result.page < totalPages}
-              variant="outline"
-              size="sm"
-              disabled={result.page >= totalPages}
-            >
-              {result.page < totalPages ? (
-                <Link href={buildPageHref(result.page + 1)}>Next</Link>
-              ) : (
-                <span>Next</span>
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Pagination lives inside the table card, as it does on the bookings list. */}
+      <QuotationsTable
+        rows={result.rows}
+        today={today}
+        total={result.total}
+        page={result.page}
+        limit={result.limit}
+        hasFilters={hasFilters}
+      />
     </div>
   );
 }

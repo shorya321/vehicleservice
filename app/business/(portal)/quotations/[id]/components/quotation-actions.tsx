@@ -23,6 +23,11 @@ interface QuotationActionsProps {
   /** The PDF needs at least one trip to render. */
   hasTrips: boolean;
   canEdit: boolean;
+  /**
+   * Demoted to 'outline' when Convert is on screen, so the header carries exactly one filled
+   * button. Defaults to the leading role for callers that render this on its own.
+   */
+  downloadVariant?: 'default' | 'outline';
 }
 
 export function QuotationActions({
@@ -31,6 +36,7 @@ export function QuotationActions({
   status,
   hasTrips,
   canEdit,
+  downloadVariant = 'default',
 }: QuotationActionsProps) {
   const router = useRouter();
   const [downloading, setDownloading] = useState(false);
@@ -76,7 +82,11 @@ export function QuotationActions({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button onClick={handleDownload} disabled={downloading || !hasTrips}>
+      <Button
+        variant={downloadVariant}
+        onClick={handleDownload}
+        disabled={downloading || !hasTrips}
+      >
         {downloading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (

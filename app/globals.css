@@ -1815,6 +1815,17 @@
   }
 
   /* ── Luxury Calendar Popover ── */
+
+  /* Both pickers portal to <body>. A modal Radix dialog (the trip editor Sheet, z-index 1001)
+     sets pointer-events:none on <body> and paints above z-50, so a popover opened from inside
+     one renders behind the panel and swallows every click. Radix puts the positioning wrapper
+     outside the reach of the content's className, so the escape has to happen here. */
+  [data-radix-popper-content-wrapper]:has(> .luxury-calendar-popover),
+  [data-radix-popper-content-wrapper]:has(> .luxury-time-popover) {
+    z-index: 1002 !important;
+    pointer-events: auto !important;
+  }
+
   .luxury-calendar-popover {
     background: var(--black-warm) !important;
     border: 1px solid color-mix(in oklch, var(--graphite) 70%, var(--gold) 30%) !important;

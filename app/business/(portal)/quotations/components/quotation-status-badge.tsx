@@ -44,7 +44,12 @@ export function QuotationStatusBadge({ status, className }: QuotationStatusBadge
   return (
     <Badge
       variant="outline"
-      className={cn('font-medium', STATUS_CLASSES[status], className)}
+      className={cn(
+        // Pill shape matches the booking status badge, so the two lists read as one product.
+        'rounded-full border px-2.5 py-0.5 text-xs font-medium',
+        STATUS_CLASSES[status],
+        className
+      )}
     >
       {QUOTATION_STATUS_LABELS[status]}
     </Badge>

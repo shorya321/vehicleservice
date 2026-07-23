@@ -17,7 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
-import { formatAmount } from '@/lib/currency/format';
+// Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
+import { formatCurrency } from '@/lib/business/wallet-operations';
 import {
   applyMarkup,
   marginPct,
@@ -91,10 +92,10 @@ export function MarkupInput({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border p-3">
+    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">Cost</span>
-        <span className="tabular-nums">{formatAmount(netAed, 'AED')}</span>
+        <span className="tabular-nums">{formatCurrency(netAed, 'AED')}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -151,11 +152,11 @@ export function MarkupInput({
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t pt-2 text-sm">
+      <div className="flex items-center justify-between border-t border-border pt-2 text-sm">
         <span className="text-muted-foreground">
           Margin{margin !== null ? ` (${margin}%)` : ''}
         </span>
-        <span className="tabular-nums">{formatAmount(displaySell - netAed, 'AED')}</span>
+        <span className="tabular-nums">{formatCurrency(displaySell - netAed, 'AED')}</span>
       </div>
 
       {belowCost && (
@@ -167,7 +168,7 @@ export function MarkupInput({
 
       {currency !== 'AED' && (
         <p className="text-xs text-muted-foreground">
-          Customer sees {formatAmount(displaySell * exchangeRate, currency)} at the locked rate.
+          Customer sees {formatCurrency(displaySell * exchangeRate, currency)} at the locked rate.
         </p>
       )}
     </div>

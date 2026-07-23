@@ -16,11 +16,14 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { format, parse } from 'date-fns';
+import { CalendarDays, Loader2, MessageSquare, User } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+// The portal's date control — same one the booking wizard and the wallet filters use.
+import { FormDatePicker } from '@/components/ui/form-date-picker';
 import {
   Form,
   FormControl,
@@ -30,6 +33,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { FieldGroup } from '../../components/field-group';
 import { createQuotation } from '../../mutations';
 
 /**
@@ -53,6 +57,9 @@ const formSchema = z.object({
 });
 
 type FormValues = z.input<typeof formSchema>;
+
+/** Midnight today — a quotation that expires in the past is not a quotation. */
+const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 
 interface NewQuotationFormProps {
   /** Business display currency; the AED rate is frozen against it at creation. */
@@ -97,127 +104,165 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <FieldGroup title="Customer Information" icon={User} tone="bg-primary/10 text-primary">
+          {/* items-start so a two-line description under one field cannot stretch its neighbour. */}
+          <div className="grid items-start gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="customer_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Customer name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ahmed Khan" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="customer_company"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Khan Tours" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="customer_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email (optional)</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="ahmed@example.com" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Required later to convert this into bookings.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="customer_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+971501234567" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Required later to convert this into bookings.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </FieldGroup>
+
+        <FieldGroup
+          title="Quotation Terms"
+          icon={CalendarDays}
+          tone="bg-sky-500/10 text-sky-500"
+        >
+          <div className="grid items-start gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="valid_until"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valid until (optional)</FormLabel>
+                  <FormControl>
+                    {/* The field stays a 'yyyy-MM-dd' string, so the schema and the server
+                        action are untouched — only the control changes. */}
+                    <FormDatePicker
+                      value={
+                        field.value
+                          ? parse(field.value, 'yyyy-MM-dd', new Date())
+                          : undefined
+                      }
+                      onChange={(date) =>
+                        field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                      }
+                      disabled={(date) => date < startOfToday()}
+                      placeholder="Select date"
+                      clearable
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    After this date the quotation shows as expired.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="default_markup_pct"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Default markup %</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.1" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Applied to every trip unless you override it. Internal only — never shown on
+                    the PDF.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
-            name="customer_name"
+            name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Customer name</FormLabel>
+                <FormLabel>Title (optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ahmed Khan" {...field} />
+                  <Input placeholder="March itinerary — Khan family" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </FieldGroup>
 
+        <FieldGroup
+          title="Optional Information"
+          icon={MessageSquare}
+          tone="bg-violet-500/10 text-violet-500"
+        >
           <FormField
             control={form.control}
-            name="customer_company"
+            name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company (optional)</FormLabel>
+                <FormLabel>Notes for the customer</FormLabel>
                 <FormControl>
-                  <Input placeholder="Khan Tours" {...field} />
+                  <Textarea rows={3} placeholder="Anything to appear on the PDF…" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </FieldGroup>
 
-          <FormField
-            control={form.control}
-            name="customer_email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email (optional)</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="ahmed@example.com" {...field} />
-                </FormControl>
-                <FormDescription>Required later to convert this into bookings.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customer_phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone (optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="+971501234567" {...field} />
-                </FormControl>
-                <FormDescription>Required later to convert this into bookings.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="valid_until"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Valid until (optional)</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="default_markup_pct"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Default markup %</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.1" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Applied to every trip unless you override it. Internal only — never shown on
-                  the PDF.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title (optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="March itinerary — Khan family" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes for the customer (optional)</FormLabel>
-              <FormControl>
-                <Textarea rows={3} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-between gap-2">
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>

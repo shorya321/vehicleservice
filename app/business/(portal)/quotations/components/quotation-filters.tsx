@@ -10,16 +10,19 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Search, X } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+// The portal keeps its own Select so the trigger matches Input styling — the same one the
+// bookings filter row uses.
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/app/business/(portal)/components/ui/select';
 import {
   QUOTATION_STATUSES,
   QUOTATION_STATUS_LABELS,
@@ -27,7 +30,11 @@ import {
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-export function QuotationFilters() {
+interface QuotationFiltersProps {
+  className?: string;
+}
+
+export function QuotationFilters({ className }: QuotationFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -69,7 +76,7 @@ export function QuotationFilters() {
   const hasFilters = Boolean(urlSearch) || status !== 'all';
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className={cn('flex flex-col gap-3 sm:flex-row sm:items-center', className)}>
       <div className="relative flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -83,6 +90,7 @@ export function QuotationFilters() {
 
       <Select value={status} onValueChange={(value) => apply({ status: value })}>
         <SelectTrigger className="sm:w-52" aria-label="Filter by status">
+          <Filter className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>
