@@ -2,7 +2,9 @@
  * Business Team Page
  * Owners manage the staff members who create bookings on the business's behalf.
  *
- * Design System: Premium B2B experience with refined luxury aesthetic
+ * Design System: Clean shadcn with Gold Accent — the business portal's own system, NOT the
+ * public site's luxury palette. Anything imported from @/components/ui must be checked for
+ * hard-coded luxury-* classes before use.
  */
 
 import { Metadata } from 'next';

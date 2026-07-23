@@ -16,6 +16,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+// The business Dialog, not the shared one: components/ui/dialog paints DialogContent
+// bg-luxury-darkGray/95 + text-luxury-pearl, which is the public site's skin and ignores the
+// portal's light/dark theme — including on the generated-password panel below.
 import {
   Dialog,
   DialogContent,
@@ -23,7 +26,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/business/ui/dialog';
 
 type PasswordOption = 'generate' | 'custom';
 
@@ -123,7 +126,7 @@ export function AddStaffDialog({ open, onOpenChange, onCreated }: AddStaffDialog
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex items-center gap-2 rounded-md border bg-muted/50 p-3">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 p-3">
               <code className="flex-1 break-all font-mono text-sm">{generatedPassword}</code>
               <Button type="button" variant="ghost" size="sm" onClick={handleCopy}>
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
