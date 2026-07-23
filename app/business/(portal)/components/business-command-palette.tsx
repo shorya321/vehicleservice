@@ -70,6 +70,12 @@ const navigationItems: PaletteItem[] = [
     shortcut: 'B',
   },
   {
+    name: 'Quotations',
+    href: '/business/quotations',
+    icon: FileText,
+    shortcut: 'Q',
+  },
+  {
     name: 'Profile',
     href: '/business/profile',
     icon: UserCircle,
@@ -119,6 +125,13 @@ const quickActions: PaletteItem[] = [
     icon: Plus,
     shortcut: 'N',
     description: 'Start a new transfer booking',
+  },
+  {
+    name: 'New Quotation',
+    href: '/business/quotations/new',
+    icon: Plus,
+    shortcut: '',
+    description: 'Price one or more trips as a single PDF',
   },
   {
     name: 'Add Wallet Credits',

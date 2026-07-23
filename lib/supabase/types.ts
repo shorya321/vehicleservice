@@ -1062,6 +1062,314 @@ export type Database = {
           },
         ]
       }
+      business_quotation_item_addons: {
+        Row: {
+          addon_id: string
+          created_at: string
+          id: string
+          item_id: string
+          name_snapshot: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          addon_id: string
+          created_at?: string
+          id?: string
+          item_id: string
+          name_snapshot: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          addon_id?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          name_snapshot?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_quotation_item_addons_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_quotation_item_addons_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "business_quotation_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_quotation_items: {
+        Row: {
+          adults: number
+          business_account_id: string
+          children: number
+          conversion_error: string | null
+          conversion_nonce: string
+          converted_at: string | null
+          converted_booking_id: string | null
+          converted_booking_number: string | null
+          created_at: string
+          description: string | null
+          dropoff_address: string
+          from_location_id: string
+          id: string
+          infants: number
+          markup_percent: number | null
+          net_addons_price_aed: number
+          net_base_price_aed: number
+          net_quoted_at: string | null
+          net_total_aed: number
+          passenger_count: number
+          pickup_address: string
+          pickup_datetime: string | null
+          price_mode: string
+          quotation_id: string
+          sell_total_aed: number
+          sort_order: number
+          to_location_id: string
+          updated_at: string
+          vehicle_type_id: string
+        }
+        Insert: {
+          adults?: number
+          business_account_id: string
+          children?: number
+          conversion_error?: string | null
+          conversion_nonce?: string
+          converted_at?: string | null
+          converted_booking_id?: string | null
+          converted_booking_number?: string | null
+          created_at?: string
+          description?: string | null
+          dropoff_address: string
+          from_location_id: string
+          id?: string
+          infants?: number
+          markup_percent?: number | null
+          net_addons_price_aed?: number
+          net_base_price_aed?: number
+          net_quoted_at?: string | null
+          net_total_aed?: number
+          passenger_count?: number
+          pickup_address: string
+          pickup_datetime?: string | null
+          price_mode?: string
+          quotation_id: string
+          sell_total_aed?: number
+          sort_order?: number
+          to_location_id: string
+          updated_at?: string
+          vehicle_type_id: string
+        }
+        Update: {
+          adults?: number
+          business_account_id?: string
+          children?: number
+          conversion_error?: string | null
+          conversion_nonce?: string
+          converted_at?: string | null
+          converted_booking_id?: string | null
+          converted_booking_number?: string | null
+          created_at?: string
+          description?: string | null
+          dropoff_address?: string
+          from_location_id?: string
+          id?: string
+          infants?: number
+          markup_percent?: number | null
+          net_addons_price_aed?: number
+          net_base_price_aed?: number
+          net_quoted_at?: string | null
+          net_total_aed?: number
+          passenger_count?: number
+          pickup_address?: string
+          pickup_datetime?: string | null
+          price_mode?: string
+          quotation_id?: string
+          sell_total_aed?: number
+          sort_order?: number
+          to_location_id?: string
+          updated_at?: string
+          vehicle_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bqi_quotation_fk"
+            columns: ["quotation_id", "business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_quotations"
+            referencedColumns: ["id", "business_account_id"]
+          },
+          {
+            foreignKeyName: "business_quotation_items_converted_booking_id_fkey"
+            columns: ["converted_booking_id"]
+            isOneToOne: true
+            referencedRelation: "business_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_quotation_items_from_location_id_fkey"
+            columns: ["from_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_quotation_items_to_location_id_fkey"
+            columns: ["to_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_quotation_items_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_quotation_number_counters: {
+        Row: {
+          business_account_id: string
+          last_seq: number
+          month_year: string
+        }
+        Insert: {
+          business_account_id: string
+          last_seq?: number
+          month_year: string
+        }
+        Update: {
+          business_account_id?: string
+          last_seq?: number
+          month_year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_quotation_number_counters_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_quotations: {
+        Row: {
+          accepted_at: string | null
+          business_account_id: string
+          converted_at: string | null
+          converting_started_at: string | null
+          created_at: string
+          created_by_user_id: string | null
+          currency: string
+          customer_company: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          default_markup_pct: number
+          discount_aed: number
+          exchange_rate: number
+          id: string
+          notes: string | null
+          quotation_number: string
+          rejected_at: string | null
+          status: string
+          subtotal_net_aed: number
+          subtotal_sell_aed: number
+          terms: string | null
+          title: string | null
+          total_sell_aed: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          business_account_id: string
+          converted_at?: string | null
+          converting_started_at?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          currency?: string
+          customer_company?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          default_markup_pct?: number
+          discount_aed?: number
+          exchange_rate?: number
+          id?: string
+          notes?: string | null
+          quotation_number?: string
+          rejected_at?: string | null
+          status?: string
+          subtotal_net_aed?: number
+          subtotal_sell_aed?: number
+          terms?: string | null
+          title?: string | null
+          total_sell_aed?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          business_account_id?: string
+          converted_at?: string | null
+          converting_started_at?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          currency?: string
+          customer_company?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          default_markup_pct?: number
+          discount_aed?: number
+          exchange_rate?: number
+          id?: string
+          notes?: string | null
+          quotation_number?: string
+          rejected_at?: string | null
+          status?: string
+          subtotal_net_aed?: number
+          subtotal_sell_aed?: number
+          terms?: string | null
+          title?: string | null
+          total_sell_aed?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_quotations_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_quotations_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "business_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_users: {
         Row: {
           auth_user_id: string
@@ -2916,7 +3224,11 @@ export type Database = {
         Returns: number
       }
       cancel_business_booking_with_refund: {
-        Args: { p_booking_id: string; p_cancellation_reason: string }
+        Args: {
+          p_booking_id: string
+          p_cancellation_reason: string
+          p_refund_amount?: number
+        }
         Returns: {
           new_balance: number
           refund_amount: number

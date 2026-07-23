@@ -26,6 +26,7 @@ import {
   Globe,
   Users,
   UserCircle,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBusinessInitials } from '@/lib/business/branding-utils';
@@ -80,6 +81,13 @@ const navGroups: NavGroup[] = [
         title: 'Bookings',
         href: '/business/bookings',
         icon: CalendarCheck,
+      },
+      {
+        // No ownerOnly: staff build quotations too. Scope is enforced in the queries -
+        // hiding a nav item is presentation, never an access boundary.
+        title: 'Quotations',
+        href: '/business/quotations',
+        icon: FileText,
       },
       {
         title: 'Wallet',
