@@ -61,29 +61,17 @@ export const DELETE = requireBusinessAuth(
         return apiError('Forbidden: you can only delete bookings you created', 403);
       }
 
-      // If booking has wallet deduction and is not already cancelled/refunded, refund first
-      const needsRefund =
-        booking.wallet_deduction_amount > 0 &&
-        !['cancelled', 'refunded'].includes(booking.booking_status);
-
-      if (needsRefund) {
-        // Refund the wallet amount
-        const { error: refundError } = await supabaseAdmin.rpc(
-          'add_wallet_balance',
-          {
-            p_business_account_id: user.businessAccountId,
-            p_amount: booking.wallet_deduction_amount,
-            p_transaction_type: 'refund',
-            p_description: `Refund for deleted booking`,
-            p_reference_id: bookingId,
-          }
-        );
-
-        if (refundError) {
-          console.error('Refund error during delete:', refundError);
-          // Continue with deletion even if refund fails
-        }
-      }
+      // Deleting NEVER moves money. Refunds belong to cancellation alone, where the published
+      // 24-hour policy is applied (see getCancellationRefund + the cancel route).
+      //
+      // This previously called an RPC named `add_wallet_balance` that has never existed in the
+      // database — the real function is `add_to_wallet`. The error was logged, deletion
+      // continued regardless, and the response still reported `refunded: true`, so the money
+      // silently vanished. The guard was also wrong: it omitted 'completed', so once the call
+      // was corrected it would have refunded already-delivered trips.
+      //
+      // Removing the refund entirely fixes both, and makes the ordering question moot: with no
+      // money moving there is nothing to keep atomic with the delete.
 
       // Send customer cancellation email BEFORE deletion (data won't exist after)
       if (booking.customer_email) {
@@ -134,12 +122,11 @@ export const DELETE = requireBusinessAuth(
             p_category: 'booking',
             p_type: 'booking_deleted',
             p_title: `Booking Deleted - #${booking.trip_number || booking.booking_number}`,
-            p_message: `Booking for ${booking.customer_name} deleted.${needsRefund ? ` ${businessAccount?.currency || 'AED'} ${booking.wallet_deduction_amount.toFixed(2)} refunded.` : ''}`,
+            p_message: `Booking for ${booking.customer_name} deleted. No refund is issued on deletion — cancel a booking to release its refund.`,
             p_data: {
               booking_number: booking.booking_number,
               trip_number: booking.trip_number,
-              refunded: needsRefund,
-              refund_amount: needsRefund ? booking.wallet_deduction_amount : 0,
+              refunded: false,
             },
             p_link: '/business/bookings',
           }).then(({ error: notifError }) => {
@@ -156,13 +143,24 @@ export const DELETE = requireBusinessAuth(
 
       if (deleteError) {
         console.error('Delete booking error:', deleteError);
+
+        // A booking created from a quotation is protected by an ON DELETE RESTRICT foreign key,
+        // which surfaces here as 23503. Without this it reads as a generic server error.
+        if (deleteError.code === '23503') {
+          return apiError(
+            'This booking was created from a quotation. Remove it from that quotation before deleting.',
+            409
+          );
+        }
+
         return apiError('Failed to delete booking', 500);
       }
 
       return apiSuccess({
         message: 'Booking deleted successfully',
-        refunded: needsRefund,
-        refund_amount: needsRefund ? booking.wallet_deduction_amount : 0,
+        // Deletion never refunds — see the note above. Reported explicitly so no caller infers
+        // otherwise, as the previous response wrongly did.
+        refunded: false,
       });
     } catch (error) {
       console.error('Delete booking API error:', error);

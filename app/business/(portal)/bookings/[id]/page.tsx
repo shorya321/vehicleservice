@@ -162,7 +162,14 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                 pickupDatetime={booking.pickup_datetime}
               />
             )}
-            {canCancel && <CancelBookingButton bookingId={id} />}
+            {canCancel && (
+              <CancelBookingButton
+                bookingId={id}
+                bookingStatus={booking.booking_status}
+                pickupDatetime={booking.pickup_datetime}
+                walletDeductionAmount={Number(booking.wallet_deduction_amount)}
+              />
+            )}
           </div>
         )}
       </div>

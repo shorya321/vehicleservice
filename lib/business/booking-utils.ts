@@ -89,6 +89,104 @@ export function getModificationEligibility(booking: {
 }
 
 /**
+ * Free-cancellation window, in hours before pickup.
+ *
+ * Not an invented number: it is the policy already published to customers in
+ * app/contact/components/contact-faq.tsx ("free cancellation up to 24 hours before your
+ * scheduled pickup") and already enforced for consumers in app/account/booking-actions.ts.
+ * The business module simply never implemented it. It also matches the airport-transfer norm.
+ */
+export const CANCELLATION_FREE_HOURS = 24;
+
+/**
+ * Statuses whose money is already settled and can never be refunded.
+ *
+ * Mirrors the guard inside the cancel_business_booking_with_refund database function. The
+ * important member is 'completed': the trip was delivered, so the money is earned. The delete
+ * routes historically omitted it, which would have refunded delivered trips.
+ */
+export const NON_REFUNDABLE_STATUSES = ['cancelled', 'completed', 'refunded'] as const;
+
+export interface CancellationRefund {
+  /** AED, rounded to 2dp to match the numeric(10,2) wallet columns. */
+  refundAmount: number;
+  refundPercent: 0 | 100;
+  withinFreeWindow: boolean;
+  /** Fractional hours; negative once pickup has passed. */
+  hoursUntilPickup: number;
+  /** Customer-facing explanation, shown before the user confirms. */
+  reason: string;
+}
+
+/**
+ * How much of a booking's wallet deduction comes back if it is cancelled right now.
+ *
+ * Two tiers, matching the published policy:
+ *   >= 24h before pickup -> 100%
+ *   <  24h before pickup ->   0%   (cancellation still permitted; the vendor is released)
+ *
+ * Settled statuses always return 0 regardless of timing.
+ *
+ * Deliberately compares two absolute instants, so it is timezone-independent — "24 hours
+ * before pickup" is a duration, not a wall-clock time, and needs no Asia/Dubai conversion.
+ *
+ * Pure and dependency-light so the API route and the UI derive the SAME number rather than
+ * each computing their own.
+ */
+export function getCancellationRefund(booking: {
+  booking_status: string;
+  pickup_datetime: string;
+  wallet_deduction_amount: number;
+}): CancellationRefund {
+  const deduction = Number(booking.wallet_deduction_amount) || 0;
+  // Round once, here, so callers never re-derive and drift from the stored value.
+  const fullRefund = Math.round((deduction + Number.EPSILON) * 100) / 100;
+
+  const pickupMs = parseISO(booking.pickup_datetime).getTime();
+  const hoursUntilPickup = Number.isNaN(pickupMs)
+    ? 0
+    : (pickupMs - Date.now()) / (1000 * 60 * 60);
+
+  const none = (reason: string): CancellationRefund => ({
+    refundAmount: 0,
+    refundPercent: 0,
+    withinFreeWindow: false,
+    hoursUntilPickup,
+    reason,
+  });
+
+  if (
+    NON_REFUNDABLE_STATUSES.includes(
+      booking.booking_status as (typeof NON_REFUNDABLE_STATUSES)[number]
+    )
+  ) {
+    return none(
+      booking.booking_status === 'completed'
+        ? 'No refund — this trip has already been completed.'
+        : `No refund — this booking is already ${booking.booking_status}.`
+    );
+  }
+
+  if (fullRefund <= 0) {
+    return none('No refund — nothing was charged to your wallet for this booking.');
+  }
+
+  if (hoursUntilPickup < CANCELLATION_FREE_HOURS) {
+    return none(
+      `No refund — cancellations are free up to ${CANCELLATION_FREE_HOURS} hours before pickup, and this booking is inside that window.`
+    );
+  }
+
+  return {
+    refundAmount: fullRefund,
+    refundPercent: 100,
+    withinFreeWindow: true,
+    hoursUntilPickup,
+    reason: 'Full refund — this is more than 24 hours before pickup.',
+  };
+}
+
+/**
  * Validate that a new pickup datetime is valid for modification
  * @param newDatetime - The proposed new pickup datetime
  * @returns Object with isValid boolean and error message if invalid

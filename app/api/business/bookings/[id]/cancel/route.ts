@@ -12,6 +12,7 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { bookingCancellationSchema } from '@/lib/business/validators';
+import { getCancellationRefund } from '@/lib/business/booking-utils';
 import {
   BUSINESS_BASE_CURRENCY,
   convertFromAed,
@@ -57,7 +58,10 @@ export const POST = requireBusinessAuth(
       // Verify booking belongs to this business
       const { data: booking, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
-        .select('business_account_id, booking_status, created_by_user_id')
+        // pickup_datetime + wallet_deduction_amount drive the refund tier below.
+        .select(
+          'business_account_id, booking_status, created_by_user_id, pickup_datetime, wallet_deduction_amount'
+        )
         .eq('id', bookingId)
         .single();
 
@@ -74,12 +78,23 @@ export const POST = requireBusinessAuth(
         return apiError('Forbidden: you can only cancel bookings you created', 403);
       }
 
+      // Apply the published policy: free cancellation up to 24h before pickup, no refund
+      // inside that window. Computed SERVER-side from the stored booking — never from
+      // anything the client sent — and passed to the RPC, which clamps it to the original
+      // deduction as a second line of defence.
+      const refund = getCancellationRefund({
+        booking_status: booking.booking_status,
+        pickup_datetime: booking.pickup_datetime,
+        wallet_deduction_amount: booking.wallet_deduction_amount,
+      });
+
       // Call atomic cancellation function
       const { data: result, error } = await supabaseAdmin.rpc(
         'cancel_business_booking_with_refund',
         {
           p_booking_id: bookingId,
           p_cancellation_reason: body.cancellation_reason,
+          p_refund_amount: refund.refundAmount,
         }
       );
 
@@ -216,6 +231,11 @@ export const POST = requireBusinessAuth(
         message: 'Booking cancelled successfully',
         refund_amount: formatCurrency(refundAmount),
         new_balance: formatCurrency(newBalance),
+        // The policy outcome, so the UI states what actually happened rather than assuming a
+        // cancellation always returns money.
+        refunded: refundAmount > 0,
+        refund_reason: refund.reason,
+        within_free_window: refund.withinFreeWindow,
       });
     } catch (error) {
       console.error('Cancel booking API error:', error);

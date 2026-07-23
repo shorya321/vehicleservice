@@ -20,16 +20,32 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { getCancellationRefund } from '@/lib/business/booking-utils';
+import { formatCurrency } from '@/lib/business/wallet-operations';
 
 interface CancelBookingButtonProps {
   bookingId: string;
+  bookingStatus: string;
+  pickupDatetime: string;
+  walletDeductionAmount: number;
 }
 
-export function CancelBookingButton({ bookingId }: CancelBookingButtonProps) {
+export function CancelBookingButton({
+  bookingId,
+  bookingStatus,
+  pickupDatetime,
+  walletDeductionAmount,
+}: CancelBookingButtonProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const refund = getCancellationRefund({
+    booking_status: bookingStatus,
+    pickup_datetime: pickupDatetime,
+    wallet_deduction_amount: walletDeductionAmount,
+  });
 
   async function handleCancel() {
     if (cancellationReason.trim().length < 10) {
@@ -54,8 +70,12 @@ export function CancelBookingButton({ bookingId }: CancelBookingButtonProps) {
         throw new Error(result.error || 'Failed to cancel booking');
       }
 
+      // Report what actually happened. A cancellation inside the free-cancellation window
+      // returns nothing, and claiming otherwise is exactly the failure this work removed.
       toast.success('Booking cancelled', {
-        description: `Refund of ${result.data.refund_amount} has been credited to your wallet.`,
+        description: result.data.refunded
+          ? `Refund of ${result.data.refund_amount} has been credited to your wallet.`
+          : result.data.refund_reason,
       });
 
       setIsDialogOpen(false);
@@ -95,8 +115,27 @@ export function CancelBookingButton({ bookingId }: CancelBookingButtonProps) {
 
         {/* Description */}
         <p className="text-sm text-muted-foreground mb-4">
-          Are you sure you want to cancel this booking? The amount will be refunded to your wallet.
+          Are you sure you want to cancel this booking?
         </p>
+
+        {/* What the refund will actually be, stated BEFORE confirming. Uses the same pure
+            helper the server uses, so the preview cannot disagree with the outcome. */}
+        <div
+          className={`mb-4 rounded-lg border p-3 text-sm ${
+            refund.refundAmount > 0
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+          }`}
+        >
+          {refund.refundAmount > 0 ? (
+            <>
+              <strong>{formatCurrency(refund.refundAmount)}</strong> will be returned to your
+              wallet.
+            </>
+          ) : (
+            refund.reason
+          )}
+        </div>
 
         {/* Cancellation Reason */}
         <div className="space-y-2 mb-6">

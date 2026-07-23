@@ -76,6 +76,7 @@ interface Booking {
   pickup_datetime: string;
   booking_status: string;
   total_price: number;
+  wallet_deduction_amount: number;
   from_locations: { name: string; city: string } | null;
   to_locations: { name: string; city: string } | null;
   vehicle_types: { name: string } | null;
@@ -208,6 +209,26 @@ export function BookingsPageContent({
   const currentPageBookingIds = paginatedBookings.map((b) => b.id);
   const isAllSelected = paginatedBookings.length > 0 && currentPageBookingIds.every((id) => selectedBookings.has(id));
   const isSomeSelected = selectedBookings.size > 0 && !isAllSelected;
+
+  /**
+   * Money that would be lost by the pending delete.
+   * Settled statuses hold nothing: cancelled/refunded already returned it, and a completed
+   * trip earned it. Mirrors NON_REFUNDABLE_STATUSES in lib/business/booking-utils.
+   */
+  const forfeitAmount = (() => {
+    const holdsMoney = (b: Booking) =>
+      Number(b.wallet_deduction_amount) > 0 &&
+      !['cancelled', 'completed', 'refunded'].includes(b.booking_status);
+
+    if (bookingToDelete) {
+      const target = bookings.find((b) => b.id === bookingToDelete);
+      return target && holdsMoney(target) ? Number(target.wallet_deduction_amount) : 0;
+    }
+
+    return bookings
+      .filter((b) => selectedBookings.has(b.id) && holdsMoney(b))
+      .reduce((sum, b) => sum + Number(b.wallet_deduction_amount), 0);
+  })();
 
   // Delete handlers
   const handleDeleteSingle = async (bookingId: string) => {
@@ -687,9 +708,19 @@ export function BookingsPageContent({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {bookingToDelete
-                ? 'Are you sure you want to delete this booking? This action cannot be undone. If the booking was charged, the amount will be refunded to your wallet.'
-                : `Are you sure you want to delete ${selectedBookings.size} booking(s)? This action cannot be undone. Any charged amounts will be refunded to your wallet.`}
+                ? 'Are you sure you want to delete this booking? This action cannot be undone.'
+                : `Are you sure you want to delete ${selectedBookings.size} booking(s)? This action cannot be undone.`}
             </AlertDialogDescription>
+            {/* Deleting does NOT refund - refunds come from cancelling, under the 24-hour
+                policy. Saying so here is the only thing standing between a stray click and
+                money the business never gets back. */}
+            {forfeitAmount > 0 && (
+              <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
+                {bookingToDelete ? 'This booking still holds ' : 'These bookings still hold '}
+                <strong>{formatCurrency(forfeitAmount)}</strong>. Deleting forfeits it — cancel
+                instead if you want the amount refunded.
+              </div>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>

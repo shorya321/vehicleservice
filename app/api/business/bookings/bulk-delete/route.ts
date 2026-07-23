@@ -77,36 +77,11 @@ export const POST = requireBusinessOwner(
         return apiError('Unauthorized: Some bookings do not belong to your account', 403);
       }
 
-      // Calculate total refund amount
-      let totalRefund = 0;
-      const bookingsNeedingRefund = bookings.filter((b) => {
-        const needsRefund =
-          b.wallet_deduction_amount > 0 &&
-          !['cancelled', 'refunded'].includes(b.booking_status);
-        if (needsRefund) {
-          totalRefund += b.wallet_deduction_amount;
-        }
-        return needsRefund;
-      });
-
-      // Process refunds if needed
-      if (totalRefund > 0) {
-        const { error: refundError } = await supabaseAdmin.rpc(
-          'add_wallet_balance',
-          {
-            p_business_account_id: user.businessAccountId,
-            p_amount: totalRefund,
-            p_transaction_type: 'refund',
-            p_description: `Bulk refund for ${bookingsNeedingRefund.length} deleted booking(s)`,
-            p_reference_id: null,
-          }
-        );
-
-        if (refundError) {
-          console.error('Bulk refund error:', refundError);
-          // Continue with deletion even if refund fails
-        }
-      }
+      // Deleting NEVER moves money — refunds belong to cancellation alone, under the published
+      // 24-hour policy. This previously issued one aggregate refund through an RPC named
+      // `add_wallet_balance` that has never existed (the real one is `add_to_wallet`), logged
+      // the failure, deleted anyway, and still reported `total_refund`. It also omitted
+      // 'completed' from its guard, so a corrected call would have refunded delivered trips.
 
       // Send customer cancellation emails BEFORE deletion (fire-and-forget)
       const { data: businessAccount } = await supabaseAdmin
@@ -157,14 +132,24 @@ export const POST = requireBusinessOwner(
 
       if (deleteError) {
         console.error('Bulk delete error:', deleteError);
+
+        // At least one booking came from a quotation and is held by an ON DELETE RESTRICT
+        // foreign key. Nothing was deleted — the statement is all-or-nothing.
+        if (deleteError.code === '23503') {
+          return apiError(
+            'One or more of these bookings was created from a quotation. Remove them from their quotation before deleting.',
+            409
+          );
+        }
+
         return apiError('Failed to delete bookings', 500);
       }
 
       return apiSuccess({
         message: `Successfully deleted ${bookings.length} booking(s)`,
         deleted_count: bookings.length,
-        refunded_count: bookingsNeedingRefund.length,
-        total_refund: totalRefund,
+        // Deletion never refunds — see the note above.
+        refunded: false,
       });
     } catch (error) {
       console.error('Bulk delete API error:', error);

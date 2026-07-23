@@ -55,6 +55,7 @@ export default async function BusinessBookingsPage() {
       pickup_datetime,
       booking_status,
       total_price,
+      wallet_deduction_amount,
       from_locations:from_location_id (name, city),
       to_locations:to_location_id (name, city),
       vehicle_types (name),
