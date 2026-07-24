@@ -134,6 +134,25 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       return apiError('Failed to link user to business account', 500);
     }
 
+    // Enrich the profile row created by the handle_new_user trigger. The trigger
+    // only reads full_name/phone metadata keys (which business signup doesn't send)
+    // and never sets email_verified, so name/phone stay empty and the admin UI shows
+    // the user as unverified even though email_confirm was true. Non-fatal on error.
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        full_name: data.contact_person_name,
+        phone: data.business_phone,
+        email_verified: true,
+        email_verified_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', authUser.user.id);
+
+    if (profileError) {
+      console.error('Failed to enrich business profile:', profileError);
+    }
+
     // NOTE: Auto sign-in removed - pending accounts cannot login until approved by admin
     // Users will see "pending approval" message when they try to login
 

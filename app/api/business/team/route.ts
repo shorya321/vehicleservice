@@ -138,6 +138,23 @@ export const POST = requireBusinessOwner(async (request: Request, user) => {
     return apiError('Failed to add the staff member', 500);
   }
 
+  // The handle_new_user trigger never sets profiles.email_verified, so staff show
+  // as unverified in the admin UI despite email_confirm being true. Mark verified.
+  // Non-fatal: the staff account is already created and linked. (full_name is set
+  // by the trigger from body.full_name metadata; staff have no phone field.)
+  const { error: staffProfileError } = await adminClient
+    .from('profiles')
+    .update({
+      email_verified: true,
+      email_verified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', authData.user.id);
+
+  if (staffProfileError) {
+    console.error('Failed to mark staff profile verified:', staffProfileError);
+  }
+
   return apiSuccess(
     {
       member,

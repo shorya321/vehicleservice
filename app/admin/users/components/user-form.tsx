@@ -320,6 +320,7 @@ export function UserForm({ user, mode, businessProfile }: UserFormProps) {
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="customer">Customer</SelectItem>
                   <SelectItem value="vendor">Vendor</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
                 </SelectContent>
               </Select>
             </div>
