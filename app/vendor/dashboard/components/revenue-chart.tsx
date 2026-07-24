@@ -6,6 +6,7 @@ import { formatCurrency, cn } from '@/lib/utils'
 import { getVendorRevenueTrend, type PeriodType } from '../actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DollarSign } from 'lucide-react'
+import { CustomRangeButton } from './custom-range-button'
 
 interface RevenueChartProps {
   initialData: Array<{
@@ -15,14 +16,24 @@ interface RevenueChartProps {
   }>
 }
 
+const PERIODS: PeriodType[] = ['daily', 'weekly', 'monthly']
+const PERIOD_LABELS: Record<PeriodType, string> = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+}
+
 export function RevenueChart({ initialData }: RevenueChartProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('daily')
+  const [mode, setMode] = useState<'preset' | 'custom'>('preset')
+  const [customLabel, setCustomLabel] = useState('')
   const [revenueTrend, setRevenueTrend] = useState(initialData)
   const [isPending, startTransition] = useTransition()
 
   const handlePeriodChange = (period: PeriodType) => {
-    if (period === selectedPeriod) return
+    if (mode === 'preset' && period === selectedPeriod) return
 
+    setMode('preset')
     setSelectedPeriod(period)
     startTransition(async () => {
       const newData = await getVendorRevenueTrend(period)
@@ -30,7 +41,17 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
     })
   }
 
+  const handleCustomApply = (from: string, to: string) => {
+    setMode('custom')
+    setCustomLabel(`${from} – ${to}`)
+    startTransition(async () => {
+      const newData = await getVendorRevenueTrend({ from, to })
+      setRevenueTrend(newData)
+    })
+  }
+
   const getDateRangeLabel = () => {
+    if (mode === 'custom') return `${customLabel} performance`
     switch (selectedPeriod) {
       case 'daily':
         return 'Last 7 days performance'
@@ -53,7 +74,7 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
             <DollarSign className="h-4 w-4 text-emerald-500" />
           </div>
           <div>
-            <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
+            <CardTitle className="text-base font-semibold">Fulfilled Booking Value</CardTitle>
             <CardDescription className="mt-0.5">
               {getDateRangeLabel()}
               {hasAnyRevenue && (
@@ -65,45 +86,36 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
           </div>
         </div>
         <div className="admin-period-selector">
-          <button
-            className={cn(
-              "admin-period-btn",
-              selectedPeriod === 'daily' ? "admin-period-btn-active" : "admin-period-btn-inactive"
-            )}
-            onClick={() => handlePeriodChange('daily')}
+          {PERIODS.map((period) => (
+            <button
+              key={period}
+              className={cn(
+                "admin-period-btn",
+                mode === 'preset' && selectedPeriod === period
+                  ? "admin-period-btn-active"
+                  : "admin-period-btn-inactive"
+              )}
+              onClick={() => handlePeriodChange(period)}
+              disabled={isPending}
+            >
+              {PERIOD_LABELS[period]}
+            </button>
+          ))}
+          <CustomRangeButton
+            active={mode === 'custom'}
+            label={customLabel}
+            onApply={handleCustomApply}
             disabled={isPending}
-          >
-            Daily
-          </button>
-          <button
-            className={cn(
-              "admin-period-btn",
-              selectedPeriod === 'weekly' ? "admin-period-btn-active" : "admin-period-btn-inactive"
-            )}
-            onClick={() => handlePeriodChange('weekly')}
-            disabled={isPending}
-          >
-            Weekly
-          </button>
-          <button
-            className={cn(
-              "admin-period-btn",
-              selectedPeriod === 'monthly' ? "admin-period-btn-active" : "admin-period-btn-inactive"
-            )}
-            onClick={() => handlePeriodChange('monthly')}
-            disabled={isPending}
-          >
-            Monthly
-          </button>
+          />
         </div>
       </CardHeader>
       <CardContent className="pt-4">
         {isPending ? (
-          <SkeletonBars count={selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12} />
+          <SkeletonBars count={mode === 'custom' ? (revenueTrend.length || 7) : selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12} />
         ) : (
           <div className="h-[250px] relative">
             <div className="h-[200px] flex items-end justify-between gap-1 relative">
-              {revenueTrend.map((item, index) => {
+              {revenueTrend.map((item) => {
                 // Calculate height with proper scaling
                 const hasRevenue = item.revenue > 0
                 let barHeight = 0
@@ -117,7 +129,7 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
 
                 return (
                   <div
-                    key={`${selectedPeriod}-${item.date}`}
+                    key={`${mode}-${selectedPeriod}-${item.date}`}
                     className="flex-1 flex flex-col justify-end items-center group relative"
                   >
                     {/* Bar */}

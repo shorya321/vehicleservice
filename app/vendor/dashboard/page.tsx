@@ -18,9 +18,9 @@ import {
   DollarSign,
 } from "lucide-react"
 import Link from "next/link"
-import { getVendorDashboardStats, getRecentBusinessActivities, getAnalyticsData, getVendorRevenueTrend, getVendorBookingTrend } from "./actions"
+import { getVendorDashboardStats, getRecentBusinessActivities, getAnalyticsData, getVendorRevenueTrend, getVendorBookingPipeline } from "./actions"
 import { RevenueChart } from "./components/revenue-chart"
-import { BookingGrowthChart } from "./components/booking-growth-chart"
+import { BookingPipelineChart } from "./components/booking-pipeline-chart"
 import { DriverPerformance } from "./components/driver-performance"
 
 export default async function VendorDashboard() {
@@ -39,9 +39,9 @@ export default async function VendorDashboard() {
   const activities = await getRecentBusinessActivities()
   const analytics = await getAnalyticsData()
 
-  // Fetch initial chart data with default 'daily' period
+  // Fetch initial chart data
   const initialRevenueTrend = await getVendorRevenueTrend('daily')
-  const initialBookingTrend = await getVendorBookingTrend('daily')
+  const bookingPipeline = await getVendorBookingPipeline()
 
   return (
     <AnimatedPage>
@@ -124,7 +124,7 @@ export default async function VendorDashboard() {
             <Card className="admin-card-hover">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-sm font-medium text-muted-foreground">This Month Revenue</span>
+                  <span className="text-sm font-medium text-muted-foreground">Fulfilled Value (Month)</span>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
                     <DollarSign className="h-4 w-4 text-amber-500" />
                   </div>
@@ -134,7 +134,7 @@ export default async function VendorDashboard() {
                     ${stats.monthlyRevenue.toLocaleString()}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Completed bookings</p>
+                <p className="text-xs text-muted-foreground">Gross value, completed jobs</p>
               </CardContent>
             </Card>
           </AnimatedCard>
@@ -167,7 +167,7 @@ export default async function VendorDashboard() {
             <RevenueChart initialData={initialRevenueTrend} />
           </div>
           <div className="lg:col-span-6">
-            <BookingGrowthChart initialData={initialBookingTrend} />
+            <BookingPipelineChart data={bookingPipeline} />
           </div>
         </div>
 

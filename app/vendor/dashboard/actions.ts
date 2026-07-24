@@ -2,9 +2,28 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { subDays, subWeeks, subMonths, startOfWeek, startOfMonth, format } from 'date-fns'
+import { bookingToday } from '@/lib/utils/timezone'
+import {
+  resolveRevenueRange,
+  buildBuckets,
+  toUtcBounds,
+  bucketKeyForDubaiDay,
+  dubaiDayFromIso,
+  presetForPeriod,
+  type RevenueRangeInput,
+} from '@/lib/dashboard/revenue-range'
 
 export type PeriodType = 'daily' | 'weekly' | 'monthly'
+
+/**
+ * Accepts the legacy `PeriodType` (from the Daily/Weekly/Monthly buttons) or a
+ * `RevenueRangeInput` (from the Custom calendar), normalising both to the input
+ * shape the pure range engine understands.
+ */
+function normalizeTrendInput(input: RevenueRangeInput | PeriodType): RevenueRangeInput {
+  if (typeof input === 'string') return { preset: presetForPeriod(input) }
+  return input
+}
 
 export interface VendorDashboardStats {
   totalVehicles: number
@@ -297,7 +316,9 @@ export interface DriverPerformanceData {
   hasRatings: boolean
 }
 
-export async function getVendorRevenueTrend(period: PeriodType = 'daily'): Promise<Array<{ date: string; label: string; revenue: number }>> {
+export async function getVendorRevenueTrend(
+  input: RevenueRangeInput | PeriodType = 'daily'
+): Promise<Array<{ date: string; label: string; revenue: number }>> {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -318,20 +339,24 @@ export async function getVendorRevenueTrend(period: PeriodType = 'daily'): Promi
     return []
   }
 
-  // Determine date range based on period
-  const isDevelopment = process.env.NODE_ENV === 'development'
+  // Resolve the requested preset or custom range into concrete Dubai-day bounds.
+  const range = resolveRevenueRange(normalizeTrendInput(input), bookingToday())
+  const buckets = buildBuckets(range)
+  const { fromUtc, toUtcExclusive } = toUtcBounds(range)
 
-  // Get all completed assignments for this vendor
+  // Completed assignments for this vendor within the range (DB-level filter).
   const { data: completedAssignments } = await adminClient
     .from('booking_assignments')
     .select('booking_id, business_booking_id, completed_at')
     .eq('vendor_id', vendorApp.id)
     .eq('status', 'completed')
-    .not('completed_at', 'is', null)
+    .gte('completed_at', fromUtc.toISOString())
+    .lt('completed_at', toUtcExclusive.toISOString())
 
+  // buildBuckets yields every bucket (incl. empty ones), so bars still render
+  // for a range with no completed work.
   if (!completedAssignments || completedAssignments.length === 0) {
-    // Return empty trend data with correct structure
-    return generateEmptyTrend(period)
+    return buckets.map(({ date, label }) => ({ date, label, revenue: 0 }))
   }
 
   // Fetch booking amounts
@@ -374,76 +399,42 @@ export async function getVendorRevenueTrend(period: PeriodType = 'daily'): Promi
     })
   }
 
-  const revenueTrend: Array<{ date: string; label: string; revenue: number }> = []
-
-  if (period === 'daily') {
-    // Show last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i)
-      const dateStr = date.toISOString().split('T')[0]
-
-      const dayRevenue = Array.from(bookingAmounts.values())
-        .filter(b => b.date.split('T')[0] === dateStr)
-        .reduce((sum, b) => sum + b.amount, 0)
-
-      revenueTrend.push({
-        date: dateStr,
-        label: format(date, 'EEE'),
-        revenue: dayRevenue
-      })
-    }
-  } else if (period === 'weekly') {
-    // Show last 8 weeks
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i))
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekEnd.getDate() + 6)
-
-      const weekRevenue = Array.from(bookingAmounts.values())
-        .filter(b => {
-          const bookingDate = new Date(b.date)
-          return bookingDate >= weekStart && bookingDate <= weekEnd
-        })
-        .reduce((sum, b) => sum + b.amount, 0)
-
-      revenueTrend.push({
-        date: weekStart.toISOString().split('T')[0],
-        label: `W${8 - i}`,
-        revenue: weekRevenue
-      })
-    }
-  } else if (period === 'monthly') {
-    // Show last 12 months
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = startOfMonth(subMonths(new Date(), i))
-      const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
-
-      const monthRevenue = Array.from(bookingAmounts.values())
-        .filter(b => {
-          const bookingDate = new Date(b.date)
-          return bookingDate >= monthStart && bookingDate <= monthEnd
-        })
-        .reduce((sum, b) => sum + b.amount, 0)
-
-      revenueTrend.push({
-        date: monthStart.toISOString().split('T')[0],
-        label: format(monthStart, 'MMM'),
-        revenue: monthRevenue
-      })
-    }
+  // Aggregate amounts into buckets, keyed by the Dubai day of `completed_at`.
+  const totalsByBucket = new Map<string, number>()
+  for (const { amount, date } of Array.from(bookingAmounts.values())) {
+    const key = bucketKeyForDubaiDay(dubaiDayFromIso(date), range.bucket)
+    totalsByBucket.set(key, (totalsByBucket.get(key) ?? 0) + amount)
   }
 
-  return revenueTrend
+  return buckets.map(({ key, date, label }) => ({
+    date,
+    label,
+    revenue: totalsByBucket.get(key) ?? 0,
+  }))
 }
 
-export async function getVendorBookingTrend(period: PeriodType = 'daily'): Promise<Array<{ date: string; label: string; bookings: number }>> {
+export interface BookingPipeline {
+  pending: number
+  upcoming: number
+  completed: number
+  cancelled: number
+}
+
+/**
+ * Current distribution of the vendor's assigned jobs by status — the vendor's
+ * real workflow (accept → dispatch → complete). `pending` is the actionable
+ * queue; `rejected` is folded into `cancelled` as terminal noise.
+ */
+export async function getVendorBookingPipeline(): Promise<BookingPipeline> {
+  const empty: BookingPipeline = { pending: 0, upcoming: 0, completed: 0, cancelled: 0 }
+
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    return []
+    return empty
   }
 
   // Get vendor application
@@ -454,149 +445,34 @@ export async function getVendorBookingTrend(period: PeriodType = 'daily'): Promi
     .single()
 
   if (!vendorApp) {
-    return []
+    return empty
   }
 
-  // Get all completed assignments for this vendor
-  const { data: completedAssignments } = await adminClient
+  const { data: assignments } = await adminClient
     .from('booking_assignments')
-    .select('id, completed_at')
+    .select('status')
     .eq('vendor_id', vendorApp.id)
-    .eq('status', 'completed')
-    .not('completed_at', 'is', null)
 
-  if (!completedAssignments || completedAssignments.length === 0) {
-    return generateEmptyBookingTrend(period)
-  }
-
-  const bookingTrend: Array<{ date: string; label: string; bookings: number }> = []
-
-  if (period === 'daily') {
-    // Show last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i)
-      const dateStr = date.toISOString().split('T')[0]
-
-      const dayBookings = completedAssignments.filter(a =>
-        a.completed_at?.split('T')[0] === dateStr
-      ).length
-
-      bookingTrend.push({
-        date: dateStr,
-        label: format(date, 'EEE'),
-        bookings: dayBookings
-      })
-    }
-  } else if (period === 'weekly') {
-    // Show last 8 weeks
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i))
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekEnd.getDate() + 6)
-
-      const weekBookings = completedAssignments.filter(a => {
-        if (!a.completed_at) return false
-        const bookingDate = new Date(a.completed_at)
-        return bookingDate >= weekStart && bookingDate <= weekEnd
-      }).length
-
-      bookingTrend.push({
-        date: weekStart.toISOString().split('T')[0],
-        label: `W${8 - i}`,
-        bookings: weekBookings
-      })
-    }
-  } else if (period === 'monthly') {
-    // Show last 12 months
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = startOfMonth(subMonths(new Date(), i))
-      const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
-
-      const monthBookings = completedAssignments.filter(a => {
-        if (!a.completed_at) return false
-        const bookingDate = new Date(a.completed_at)
-        return bookingDate >= monthStart && bookingDate <= monthEnd
-      }).length
-
-      bookingTrend.push({
-        date: monthStart.toISOString().split('T')[0],
-        label: format(monthStart, 'MMM'),
-        bookings: monthBookings
-      })
+  const pipeline: BookingPipeline = { ...empty }
+  for (const a of assignments ?? []) {
+    switch (a.status) {
+      case 'pending':
+        pipeline.pending += 1
+        break
+      case 'accepted':
+        pipeline.upcoming += 1
+        break
+      case 'completed':
+        pipeline.completed += 1
+        break
+      case 'cancelled':
+      case 'rejected':
+        pipeline.cancelled += 1
+        break
     }
   }
 
-  return bookingTrend
-}
-
-function generateEmptyTrend(period: PeriodType): Array<{ date: string; label: string; revenue: number }> {
-  const result: Array<{ date: string; label: string; revenue: number }> = []
-
-  if (period === 'daily') {
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i)
-      result.push({
-        date: date.toISOString().split('T')[0],
-        label: format(date, 'EEE'),
-        revenue: 0
-      })
-    }
-  } else if (period === 'weekly') {
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i))
-      result.push({
-        date: weekStart.toISOString().split('T')[0],
-        label: `W${8 - i}`,
-        revenue: 0
-      })
-    }
-  } else if (period === 'monthly') {
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = startOfMonth(subMonths(new Date(), i))
-      result.push({
-        date: monthStart.toISOString().split('T')[0],
-        label: format(monthStart, 'MMM'),
-        revenue: 0
-      })
-    }
-  }
-
-  return result
-}
-
-function generateEmptyBookingTrend(period: PeriodType): Array<{ date: string; label: string; bookings: number }> {
-  const result: Array<{ date: string; label: string; bookings: number }> = []
-
-  if (period === 'daily') {
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i)
-      result.push({
-        date: date.toISOString().split('T')[0],
-        label: format(date, 'EEE'),
-        bookings: 0
-      })
-    }
-  } else if (period === 'weekly') {
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i))
-      result.push({
-        date: weekStart.toISOString().split('T')[0],
-        label: `W${8 - i}`,
-        bookings: 0
-      })
-    }
-  } else if (period === 'monthly') {
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = startOfMonth(subMonths(new Date(), i))
-      result.push({
-        date: monthStart.toISOString().split('T')[0],
-        label: format(monthStart, 'MMM'),
-        bookings: 0
-      })
-    }
-  }
-
-  return result
+  return pipeline
 }
 
 export async function getAnalyticsData(): Promise<{
