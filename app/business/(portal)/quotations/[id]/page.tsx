@@ -9,7 +9,17 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, EyeOff, FileText, MapPin, Pencil, Receipt } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  EyeOff,
+  FileText,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  Receipt,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
 import { bookingToday } from '@/lib/utils/timezone';
@@ -27,6 +37,7 @@ import {
   normalizeQuotationStatus,
   canEditHeader,
   canConvert,
+  missingConversionContact,
 } from '@/lib/business/quotations/status';
 import { quotationTotals } from '@/lib/business/quotations/pricing';
 import { getQuotation } from '../actions';
@@ -87,6 +98,19 @@ export default async function QuotationDetailPage({ params }: PageProps) {
 
   const inCurrency = (aed: number) => formatCurrency(aed * rate, currency);
   const displayed = displayStatus(status, quotation.valid_until, bookingToday());
+
+  // The same check preflightConversion runs, surfaced here so the blocker is discovered while
+  // there is still time to fix it — not inside the convert dialog after the customer has
+  // already accepted. Deliberately silent on `draft`: quoting from a name alone is the
+  // supported workflow, and nagging during drafting would defeat it.
+  const contactIssues = missingConversionContact(
+    quotation.customer_email,
+    quotation.customer_phone
+  );
+  const warnMissingContact =
+    contactIssues.length > 0 &&
+    (status === 'sent' || status === 'accepted' || status === 'partially_converted');
+  const missingClass = 'text-amber-600 dark:text-amber-400';
 
   return (
     <div className="space-y-6">
@@ -150,6 +174,26 @@ export default async function QuotationDetailPage({ params }: PageProps) {
               {quotation.customer_company ? ` · ${quotation.customer_company}` : ''}
               {quotation.valid_until ? ` · valid until ${fmtDate(quotation.valid_until)}` : ''}
             </p>
+            {/* Contact details were previously invisible on this page, so a business could not
+                see what the convert dialog was going to complain about. */}
+            <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <span
+                className={`inline-flex min-w-0 items-center gap-1.5 ${
+                  quotation.customer_email ? 'text-muted-foreground' : missingClass
+                }`}
+              >
+                <Mail className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{quotation.customer_email ?? 'No email'}</span>
+              </span>
+              <span
+                className={`inline-flex min-w-0 items-center gap-1.5 ${
+                  quotation.customer_phone ? 'text-muted-foreground' : missingClass
+                }`}
+              >
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{quotation.customer_phone ?? 'No phone'}</span>
+              </span>
+            </p>
           </div>
         </div>
         <div className="shrink-0 text-left sm:text-right">
@@ -161,6 +205,33 @@ export default async function QuotationDetailPage({ params }: PageProps) {
           </p>
         </div>
       </div>
+
+      {warnMissingContact && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className={`mt-0.5 h-5 w-5 shrink-0 ${missingClass}`} />
+            <div className="min-w-0 space-y-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                  Contact details needed before this can become bookings
+                </p>
+                <ul className="space-y-0.5 text-sm text-amber-700/90 dark:text-amber-300/90">
+                  {contactIssues.map((issue) => (
+                    <li key={issue}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+              {editable && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/business/quotations/${quotation.id}/edit`}>
+                    Add contact details
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">

@@ -126,6 +126,40 @@ export function canDelete(status: QuotationStatus, hasConvertedLines: boolean): 
 }
 
 /**
+ * E.164, the one definition of a bookable phone number for the quotation module.
+ *
+ * Owned here rather than in schema.ts because both the save-time schema and the
+ * conversion gate need it, and status.ts is the module both sides may import. When the two
+ * had separate copies they drifted: a number stored under a laxer rule became unconvertible
+ * later, with nothing the business could do about it.
+ */
+export const CONTACT_PHONE_RE = /^\+?[1-9]\d{1,14}$/;
+
+/**
+ * Why a quotation's contact details block conversion. Empty array means convertible.
+ *
+ * business_bookings.customer_email and customer_phone are NOT NULL, but the quotation
+ * columns are nullable on purpose — an offline quote often starts from a phone call with
+ * nothing but a name. This is where that asymmetry is paid for.
+ *
+ * Order matters: these are pushed ahead of the per-trip errors in preflightConversion, so
+ * the first element is what the conversion API returns as its 409 message.
+ */
+export function missingConversionContact(
+  email: string | null | undefined,
+  phone: string | null | undefined
+): string[] {
+  const reasons: string[] = [];
+  if (!email) {
+    reasons.push('Add a customer email before converting — bookings require one');
+  }
+  if (!phone || !CONTACT_PHONE_RE.test(phone)) {
+    reasons.push('Add a valid customer phone before converting — bookings require one');
+  }
+  return reasons;
+}
+
+/**
  * Whether the locked FX rate should be refreshed on save.
  *
  * Only while the quotation is still a draft. Once it has been sent, the customer is holding a

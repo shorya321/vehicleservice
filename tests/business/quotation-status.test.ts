@@ -15,6 +15,7 @@ import {
   canConvert,
   canDelete,
   shouldRelockExchangeRate,
+  missingConversionContact,
 } from '@/lib/business/quotations/status';
 
 describe('normalizeQuotationStatus', () => {
@@ -124,5 +125,48 @@ describe('shouldRelockExchangeRate', () => {
   it('never re-rates a quotation the customer is already holding', () => {
     expect(shouldRelockExchangeRate('sent')).toBe(false);
     expect(shouldRelockExchangeRate('accepted')).toBe(false);
+  });
+});
+
+/**
+ * The one gate that decides whether a quotation can become bookings at all:
+ * business_bookings.customer_email and customer_phone are NOT NULL while the quotation
+ * columns are nullable on purpose. Both the conversion preflight and the edit page's warning
+ * read this, so a change here moves what businesses are told AND what the API refuses.
+ */
+describe('missingConversionContact', () => {
+  it('passes a complete pair', () => {
+    expect(missingConversionContact('ahmed@example.com', '+971501234567')).toEqual([]);
+  });
+
+  it('accepts E.164 with and without the leading plus', () => {
+    expect(missingConversionContact('a@b.com', '971501234567')).toEqual([]);
+  });
+
+  it('names the missing email only', () => {
+    expect(missingConversionContact(null, '+971501234567')).toEqual([
+      'Add a customer email before converting — bookings require one',
+    ]);
+  });
+
+  it('rejects a local-format number that is not bookable', () => {
+    // Leading zero — the shape a UAE number is usually written in, and the reason the
+    // save-time schema and this gate must share one regex.
+    expect(missingConversionContact('a@b.com', '0501234567')).toEqual([
+      'Add a valid customer phone before converting — bookings require one',
+    ]);
+  });
+
+  it('reports both reasons when nothing was captured, email first', () => {
+    // Order is load-bearing: preflight pushes these ahead of the per-trip errors, so the
+    // first element becomes the conversion API's 409 message.
+    expect(missingConversionContact(null, null)).toEqual([
+      'Add a customer email before converting — bookings require one',
+      'Add a valid customer phone before converting — bookings require one',
+    ]);
+  });
+
+  it('treats an empty string the same as absent', () => {
+    expect(missingConversionContact('', '')).toHaveLength(2);
   });
 });

@@ -4,15 +4,12 @@
  * Note the asymmetry with bookings: a quotation may be SAVED with only a customer name,
  * because an offline quote often starts from a phone call with nothing else known. Email and
  * phone only become mandatory at CONVERSION, where bookingCreationSchema requires them.
- * That gate lives in convert.ts — keeping it out of here is what lets a business start
- * quoting before they have the customer's details.
+ * That gate is missingConversionContact in status.ts — keeping it out of here is what lets a
+ * business start quoting before they have the customer's details.
  */
 
 import { z } from 'zod';
-import { QUOTATION_STATUSES } from './status';
-
-/** Same shape the booking path enforces, so a quotation can never hold an unbookable number. */
-const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+import { CONTACT_PHONE_RE, QUOTATION_STATUSES } from './status';
 
 /** Optional free-text that should be treated as absent when blank. */
 const optionalText = (max: number) =>
@@ -37,7 +34,8 @@ export const quotationHeaderSchema = z.object({
   customer_phone: z
     .string()
     .trim()
-    .regex(phoneRegex, 'Invalid phone number')
+    // Shared with the conversion gate, so a number accepted here is never rejected later.
+    .regex(CONTACT_PHONE_RE, 'Invalid phone number')
     .optional()
     .or(z.literal('').transform(() => undefined)),
 

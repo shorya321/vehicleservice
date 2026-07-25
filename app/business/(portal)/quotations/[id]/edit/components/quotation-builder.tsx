@@ -33,6 +33,8 @@ import { formatCurrency } from '@/lib/business/wallet-operations';
 import { quotationTotals, applyMarkup } from '@/lib/business/quotations/pricing';
 import { updateQuotation } from '../../../mutations';
 import { TripEditorSheet } from './trip-editor-sheet';
+import { CustomerDetailsCard } from './customer-details-card';
+import type { QuotationCustomerDraft } from './customer-details-card';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
 
 interface QuotationBuilderProps {
@@ -40,7 +42,10 @@ interface QuotationBuilderProps {
   businessAccountId: string;
   currency: string;
   exchangeRate: number;
-  /** Header fields the builder can change; the rest are edited on the detail page. */
+  /**
+   * The whole header. The builder edits the customer block, the default markup and the
+   * discount; everything else is passed straight back through so nothing is lost on save.
+   */
   header: {
     customer_name: string;
     customer_company?: string;
@@ -70,6 +75,15 @@ export function QuotationBuilder({
   const [trips, setTrips] = useState<QuotationTripDraft[]>(initialTrips);
   const [defaultMarkupPct, setDefaultMarkupPct] = useState(header.default_markup_pct);
   const [discountAed, setDiscountAed] = useState(header.discount_aed);
+
+  // Contact details are editable here because they are mandatory at conversion but optional
+  // at creation, and this is the only screen that can supply them afterwards.
+  const [customer, setCustomer] = useState<QuotationCustomerDraft>({
+    customer_name: header.customer_name,
+    customer_company: header.customer_company ?? '',
+    customer_email: header.customer_email ?? '',
+    customer_phone: header.customer_phone ?? '',
+  });
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -137,9 +151,25 @@ export function QuotationBuilder({
       // rejects that explicitly rather than silently ignoring it.
       const editable = trips.filter((t) => !isLocked(t));
 
+      // Trimmed here, not just by the schema: customer_email/phone fall back to
+      // `.or(z.literal(''))` to mean "absent", and that literal is matched against the RAW
+      // input — so a whitespace-only field would be rejected as invalid rather than cleared.
+      const customerPayload: QuotationCustomerDraft = {
+        customer_name: customer.customer_name.trim(),
+        customer_company: customer.customer_company.trim(),
+        customer_email: customer.customer_email.trim(),
+        customer_phone: customer.customer_phone.trim(),
+      };
+
       const result = await updateQuotation(
         quotationId,
-        { ...header, currency, default_markup_pct: defaultMarkupPct, discount_aed: discountAed },
+        {
+          ...header,
+          ...customerPayload,
+          currency,
+          default_markup_pct: defaultMarkupPct,
+          discount_aed: discountAed,
+        },
         editable.map((trip, index) => ({
           id: trip.id,
           sort_order: index,
@@ -183,6 +213,10 @@ export function QuotationBuilder({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
+        {/* No `disabled` prop: the page redirects to the read-only view when
+            canEditHeader is false, so reaching this component already means editable. */}
+        <CustomerDetailsCard value={customer} onChange={setCustomer} />
+
         <PortalSectionCard
           title="Trips"
           icon={MapPin}

@@ -20,6 +20,7 @@ import crypto from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 import { roundAed } from './pricing';
+import { missingConversionContact } from './status';
 import type { QuotationRepriceLine, QuotationPreflightResult } from './types';
 
 /**
@@ -75,8 +76,6 @@ export function repriceToken(quotationId: string, lines: QuotationRepriceLine[])
   return crypto.createHash('sha256').update(`${quotationId}|${payload}`).digest('hex');
 }
 
-const PHONE_RE = /^\+?[1-9]\d{1,14}$/;
-
 /**
  * Dry-run the whole conversion. Creates nothing.
  *
@@ -105,13 +104,11 @@ export async function preflightConversion(
   }
 
   // bookingCreationSchema requires both, but a quotation may legitimately be saved without
-  // them — an offline quote often starts from a name alone.
-  if (!quotation.customer_email) {
-    blockingErrors.push('Add a customer email before converting — bookings require one');
-  }
-  if (!quotation.customer_phone || !PHONE_RE.test(quotation.customer_phone)) {
-    blockingErrors.push('Add a valid customer phone before converting — bookings require one');
-  }
+  // them — an offline quote often starts from a name alone. The edit page's customer card is
+  // where a business fixes this; the detail page warns before they get here.
+  blockingErrors.push(
+    ...missingConversionContact(quotation.customer_email, quotation.customer_phone)
+  );
 
   const earliest = new Date(Date.now() + MIN_LEAD_HOURS * 60 * 60 * 1000);
   let totalNetAed = 0;
