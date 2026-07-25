@@ -247,7 +247,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 <TableHead>Type</TableHead>
                 <TableHead>Date & Time</TableHead>
                 <TableHead>Route</TableHead>
-                <TableHead>Vehicle</TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Payment</TableHead>
@@ -258,7 +257,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="h-[400px] p-0">
+                  <TableCell colSpan={10} className="h-[400px] p-0">
                     <EmptyState
                       icon={Car}
                       title="No Bookings Found"
@@ -317,14 +316,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           <span className="truncate">{booking.dropoff_address}</span>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {booking.vehicle_type?.name && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Car className="h-4 w-4 text-muted-foreground" />
-                          {booking.vehicle_type.name}
-                        </div>
-                      )}
                     </TableCell>
                     <TableCell>
                       {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
