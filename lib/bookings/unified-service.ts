@@ -558,13 +558,30 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   // Manually fetch customer profiles for customer bookings
   let customerBookings: any[] = [];
   if (customerResult.data && customerResult.data.length > 0) {
-    const customerIds = customerResult.data.map((b: any) => b.customer_id);
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, phone')
-      .in('id', customerIds);
+    // customer_id is ON DELETE SET NULL, so a deleted customer leaves nulls here.
+    // Passing one through produces `id=in.(null)`, which PostgREST rejects with a
+    // 400 - and since the error was swallowed, every booking on the page then fell
+    // back to "Unknown". Drop the nulls and skip the query when nothing is left.
+    const customerIds = Array.from(
+      new Set(customerResult.data.map((b: any) => b.customer_id).filter(Boolean))
+    );
 
-    const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+    let profiles: { id: string; full_name: string | null; email: string | null; phone: string | null }[] = [];
+
+    if (customerIds.length > 0) {
+      const { data, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone')
+        .in('id', customerIds);
+
+      if (profilesError) {
+        console.error('Failed to load booking customers:', profilesError);
+      }
+
+      profiles = data ?? [];
+    }
+
+    const profilesMap = new Map(profiles.map(p => [p.id, p]));
 
     customerBookings = customerResult.data.map((b: any) => {
       const profile = profilesMap.get(b.customer_id);

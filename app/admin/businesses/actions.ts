@@ -195,12 +195,47 @@ export async function deleteBusinessAction(businessId: string) {
       }
     }
 
+    // business_quotation_items.converted_booking_id is ON DELETE RESTRICT, and
+    // RESTRICT is enforced immediately - so it aborts the account delete even
+    // though those very items are also being cascaded away (via quotations).
+    // Detach the links first; both sides are about to be removed regardless.
+    const { data: accountBookings } = await supabaseAdmin
+      .from('business_bookings')
+      .select('id')
+      .eq('business_account_id', businessId);
+
+    const bookingIds = (accountBookings ?? []).map((b) => b.id);
+
+    if (bookingIds.length > 0) {
+      // bqi_conversion_stamp requires converted_booking_id and converted_at to be
+      // null together, so both have to be cleared in the same update.
+      const { error: detachError } = await supabaseAdmin
+        .from('business_quotation_items')
+        .update({ converted_booking_id: null, converted_at: null })
+        .in('converted_booking_id', bookingIds);
+
+      if (detachError) {
+        console.error('Failed to detach quotation items from bookings:', detachError);
+        return {
+          success: false,
+          error: 'Could not unlink this business’s quotations from its bookings. Please try again.',
+        };
+      }
+    }
+
     const { error: deleteError } = await supabaseAdmin
       .from('business_accounts')
       .delete()
       .eq('id', businessId);
 
     if (deleteError) {
+      console.error('Failed to delete business account:', deleteError);
+      if (deleteError.code === '23503') {
+        return {
+          success: false,
+          error: 'This business still has records linked from elsewhere and cannot be deleted yet.',
+        };
+      }
       return { success: false, error: deleteError.message };
     }
 
