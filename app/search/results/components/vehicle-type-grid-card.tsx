@@ -26,24 +26,14 @@ interface VehicleTypeGridCardProps {
   index?: number
 }
 
-const vehicleModels: Record<string, string> = {
-  'economy-sedan': 'Toyota Etios, Maruti Swift',
-  'sedan': 'Honda City, Maruti Ciaz',
-  'luxury-sedan': 'Mercedes E-Class, BMW 5 Series',
-  'suv': 'Toyota Innova, Mahindra XUV',
-  'luxury-suv': 'Audi Q7, BMW X5',
-  'minivan': 'Toyota Hiace, Tempo Traveller',
-  'van': 'Force Traveller',
-  'minibus': '20-Seater Bus',
-  'bus': '35-Seater Bus, 45-Seater Bus',
-}
-
 export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: VehicleTypeGridCardProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = useReducedMotion()
   const [imageError, setImageError] = useState(false)
   const vehicleTypeImage = vehicleType.image || `/images/vehicle-types/${vehicleType.slug}.jpg`
-  const models = vehicleModels[vehicleType.slug] || vehicleType.name
+  // Vehicle type names are model names, so the subtitle shows the description instead
+  // of repeating the heading.
+  const subtitle = vehicleType.description?.trim() || ''
 
   // The guest breakdown is optional: links from route cards and zone pages only know a total.
   const toCount = (v: string | undefined) => {
@@ -107,9 +97,11 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           {vehicleType.name}
         </h3>
 
-        <p className="mt-1.5 line-clamp-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
-          {models}
-        </p>
+        {subtitle && (
+          <p className="mt-1.5 line-clamp-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
+            {subtitle}
+          </p>
+        )}
 
         <p className="mt-2 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-secondary)]">
           Free cancellation
