@@ -29,6 +29,7 @@ import {
   bulkSendVerificationEmails
 } from "../actions"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,13 +133,31 @@ export function BulkActionsBar({
     try {
       if (confirmAction.type === 'delete') {
         const result = await bulkDeleteUsers(selectedUserIds)
-        if (!result.error) {
+
+        if (result.error) {
+          // Nothing was deleted - say why instead of silently closing.
+          toast.error(result.error)
+        } else {
+          const deletedCount = result.deletedCount ?? selectedUserIds.length
+          const failed = result.failed ?? []
+
+          if (failed.length > 0) {
+            toast.warning(
+              `${deletedCount} user${deletedCount !== 1 ? 's' : ''} deleted, ${failed.length} could not be deleted`,
+              { description: failed[0].reason }
+            )
+          } else {
+            toast.success(`${deletedCount} user${deletedCount !== 1 ? 's' : ''} deleted`)
+          }
+
           onClearSelection()
           router.refresh()
         }
       } else if (confirmAction.type === 'suspend') {
         const result = await bulkUpdateUserStatus(selectedUserIds, 'suspended')
-        if (!result.error) {
+        if (result.error) {
+          toast.error(result.error)
+        } else {
           onClearSelection()
           router.refresh()
         }

@@ -8,11 +8,18 @@ import {
 } from "@/lib/vehicles/server-storage"
 import { revalidatePath } from "next/cache"
 import { logUserActivity } from "./user-activity.actions"
-import { cleanupBusinessData } from "./user-delete.actions"
+import { cleanupBusinessData, findDeletionBlockers } from "./user-delete.actions"
+
+// Not exported: files with 'use server' may only export async functions.
+interface BulkDeleteUsersResult {
+  error?: string
+  deletedCount?: number
+  failed?: { id: string; reason: string }[]
+}
 
 export async function bulkDeleteUsers(
   userIds: string[]
-): Promise<{ error?: string }> {
+): Promise<BulkDeleteUsersResult> {
   const supabaseAdmin = createAdminClient()
   const supabase = await createClient()
 
@@ -40,15 +47,30 @@ export async function bulkDeleteUsers(
     // only record of the image URLs.
     const imageUrlsByUser = await getVehicleImageUrlsForUsers(deletableIds)
     const deletedIds: string[] = []
+    const failed: { id: string; reason: string }[] = []
 
     // Delete users from auth (this will cascade to profiles)
     for (const userId of deletableIds) {
-      // Clean up business data before auth deletion
-      await cleanupBusinessData(supabaseAdmin, userId)
+      // Report what is pinning this user instead of attempting a delete that
+      // the database will reject with an opaque foreign key error.
+      const blockers = await findDeletionBlockers(supabaseAdmin, userId)
+      if (blockers.length > 0) {
+        failed.push({ id: userId, reason: `Still linked to: ${blockers.join(', ')}` })
+        continue
+      }
+
+      // Clean up business data before auth deletion. Its refusal (for example an
+      // owner whose business still has other members) must stop this delete.
+      const bizCleanup = await cleanupBusinessData(supabaseAdmin, userId)
+      if (bizCleanup.error) {
+        failed.push({ id: userId, reason: bizCleanup.error })
+        continue
+      }
 
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
       if (error) {
         console.error(`Failed to delete user ${userId}:`, error)
+        failed.push({ id: userId, reason: error.message })
         continue
       }
 
@@ -59,7 +81,12 @@ export async function bulkDeleteUsers(
     await removeVehicleImages(deletedIds.flatMap((userId) => imageUrlsByUser.get(userId) ?? []))
 
     revalidatePath('/admin/users')
-    return {}
+
+    if (deletedIds.length === 0) {
+      return { error: failed[0]?.reason ?? 'No users were deleted' }
+    }
+
+    return { deletedCount: deletedIds.length, failed }
   } catch (error) {
     console.error('Bulk delete error:', error)
     return { error: 'Failed to delete users' }
