@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { uploadBlogImage } from '../posts/actions/upload'
+import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
 
 export interface BlogCategoryFilters {
   search?: string
@@ -159,6 +160,15 @@ export async function updateBlogCategory(id: string, data: BlogCategoryFormData)
   await requireAdmin()
   const supabase = await createClient()
 
+  // Read the current image before overwriting it, so the old storage object can
+  // be cleaned up once the update commits. The form only sends back
+  // `existingImage` when the image is unchanged, so it can't be relied on here.
+  const { data: existing } = await supabase
+    .from('blog_categories')
+    .select('image_url')
+    .eq('id', id)
+    .single()
+
   let imageUrl = data.existingImage || null
   if (data.imageBase64) {
     const uploadResult = await uploadBlogImage(`categories/${data.slug}`, data.imageBase64)
@@ -182,6 +192,20 @@ export async function updateBlogCategory(id: string, data: BlogCategoryFormData)
   if (error) {
     console.error('[Blog] Error updating category:', error)
     throw new Error(error.message)
+  }
+
+  // Only after the row commits, and only if nothing else still points at it.
+  // Legacy uploads used a fixed per-slug path, so an old URL could in principle
+  // be shared by a duplicated record.
+  if (existing?.image_url && existing.image_url !== imageUrl) {
+    const { count } = await supabase
+      .from('blog_categories')
+      .select('id', { count: 'exact', head: true })
+      .eq('image_url', existing.image_url)
+
+    if (count === 0) {
+      await deleteAdminImageByUrl(existing.image_url, 'vehicles')
+    }
   }
 
   revalidatePath('/admin/blog/categories')

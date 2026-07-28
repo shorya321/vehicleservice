@@ -1,5 +1,7 @@
 "use server"
 
+import { randomUUID } from "node:crypto"
+
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function uploadCategoryImage(
@@ -21,14 +23,18 @@ export async function uploadCategoryImage(
     
     // Convert base64 to buffer
     const buffer = Buffer.from(base64Data, 'base64')
-    const fileName = `categories/${categorySlug}/category-image.${fileExt}`
-    
-    // Delete old image if exists (upsert will overwrite)
-    const { data, error } = await adminSupabase.storage
+
+    // Unique key per upload: a stable path would keep the public URL identical
+    // across re-uploads, so the next/image optimizer and the Supabase CDN would
+    // both keep serving the previous image. The caller deletes the old object.
+    const fileName = `categories/${categorySlug}/${randomUUID()}.${fileExt}`
+
+    const { error } = await adminSupabase.storage
       .from('vehicles')
       .upload(fileName, buffer, {
         contentType: mimeType,
-        upsert: true
+        upsert: false,
+        cacheControl: '31536000, immutable'
       })
 
     if (error) {

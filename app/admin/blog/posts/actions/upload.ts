@@ -1,5 +1,7 @@
 "use server"
 
+import { randomUUID } from "node:crypto"
+
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function uploadBlogImage(
@@ -19,13 +21,18 @@ export async function uploadBlogImage(
     const fileExt = mimeType.split('/')[1] || 'jpg'
 
     const buffer = Buffer.from(base64Data, 'base64')
-    const fileName = `blog/${slug}/featured.${fileExt}`
+
+    // Unique key per upload: a stable path would keep the public URL identical
+    // across re-uploads, so the next/image optimizer and the Supabase CDN would
+    // both keep serving the previous image. The caller deletes the old object.
+    const fileName = `blog/${slug}/${randomUUID()}.${fileExt}`
 
     const { error } = await adminSupabase.storage
       .from('vehicles')
       .upload(fileName, buffer, {
         contentType: mimeType,
-        upsert: true,
+        upsert: false,
+        cacheControl: '31536000, immutable',
       })
 
     if (error) {

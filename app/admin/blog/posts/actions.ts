@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { uploadBlogImage } from './actions/upload'
+import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
 
 export interface BlogPostFilters {
   search?: string
@@ -259,10 +260,13 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
 
   const readingTime = data.content ? calculateReadingTime(data.content) : 1
 
-  // Get existing post to check if publishing for the first time
+  // Get existing post to check if publishing for the first time, and to pick up
+  // the previous image so its storage object can be cleaned up after the update.
+  // The form only sends back `existingImage` when the image is unchanged, so it
+  // can't be relied on here.
   const { data: existing } = await supabase
     .from('blog_posts')
-    .select('status, published_at')
+    .select('status, published_at, featured_image_url')
     .eq('id', id)
     .single()
 
@@ -293,6 +297,20 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
   if (error) {
     console.error('[Blog] Error updating post:', error)
     throw new Error(error.message)
+  }
+
+  // Only after the row commits, and only if nothing else still points at it.
+  // Legacy uploads used a fixed per-slug path, so an old URL could in principle
+  // be shared by a duplicated record.
+  if (existing?.featured_image_url && existing.featured_image_url !== imageUrl) {
+    const { count } = await supabase
+      .from('blog_posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('featured_image_url', existing.featured_image_url)
+
+    if (count === 0) {
+      await deleteAdminImageByUrl(existing.featured_image_url, 'vehicles')
+    }
   }
 
   // Replace tags
