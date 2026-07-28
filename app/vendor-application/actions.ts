@@ -73,8 +73,10 @@ export async function updateVendorApplication(
       swift_code: values.swiftCode || null,
     }
 
-    // Update the application
-    const { error: updateError } = await supabase
+    // Update the application.
+    // The status filter is repeated here so the write is scoped in SQL, not only by
+    // the read-then-write check above (which races an admin approving concurrently).
+    const { data: updated, error: updateError } = await supabase
       .from("vendor_applications")
       .update({
         business_name: values.businessName,
@@ -90,10 +92,19 @@ export async function updateVendorApplication(
         updated_at: new Date().toISOString(),
       })
       .eq("id", applicationId)
+      .eq("status", "pending")
+      .select("id")
 
     if (updateError) {
       console.error("Update error:", updateError)
       return { error: "Failed to update application" }
+    }
+
+    // A zero-row update is not an error in PostgREST, so without this check an
+    // RLS-blocked write would report success and silently discard the changes.
+    if (!updated || updated.length === 0) {
+      console.error("Update matched no rows for application", applicationId)
+      return { error: "Your changes could not be saved. Please refresh and try again." }
     }
 
     revalidatePath("/vendor-application")
