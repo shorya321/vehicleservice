@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { VendorApplicationActions } from "./components/vendor-application-actions"
 import {
   Building2,
@@ -23,7 +24,7 @@ import {
   BanknoteIcon,
 } from "lucide-react"
 import Link from "next/link"
-import { format } from "date-fns"
+import { format, formatDistanceToNow } from "date-fns"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -76,6 +77,15 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
 
   const status = application.status as keyof typeof statusConfig
   const StatusIcon = statusConfig[status].icon
+
+  // `update_updated_at_column` bumps updated_at on every write, including admin
+  // approve/reject — so for approved/rejected rows it just means "when it was
+  // reviewed". Only while pending does a later updated_at prove the applicant
+  // edited after submitting. The 1s tolerance absorbs insert-time jitter between
+  // the two column defaults.
+  const editedAfterSubmission =
+    status === 'pending' &&
+    new Date(application.updated_at).getTime() - new Date(application.created_at).getTime() > 1000
 
   return (
       <div className="space-y-6">
@@ -163,6 +173,19 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                       </p>
                     </div>
                   </div>
+
+                  {editedAfterSubmission && (
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">Last Edited</p>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(application.updated_at), 'PPP p')}{" "}
+                          ({formatDistanceToNow(new Date(application.updated_at), { addSuffix: true })})
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -444,8 +467,21 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   Review and take action on this application
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <VendorApplicationActions applicationId={id} />
+              <CardContent className="space-y-4">
+                {editedAfterSubmission && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Edited after submission</AlertTitle>
+                    <AlertDescription>
+                      The applicant changed this application after submitting it. Review the
+                      details above as they stand now before approving or rejecting.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <VendorApplicationActions
+                  applicationId={id}
+                  expectedUpdatedAt={application.updated_at}
+                />
               </CardContent>
             </Card>
           )}

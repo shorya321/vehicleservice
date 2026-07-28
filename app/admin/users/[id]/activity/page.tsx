@@ -116,6 +116,7 @@ function formatAction(action: string): string {
     'email_verified': 'Email verified',
     'two_factor_enabled': '2FA enabled',
     'two_factor_disabled': '2FA disabled',
+    'vendor_application_edited': 'Vendor application edited',
   }
   
   return actionMap[action] || action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -126,6 +127,10 @@ function formatDetails(details: any): string {
     return details
   }
   
+  if (Array.isArray(details.changed_fields)) {
+    return `Changed: ${details.changed_fields.map((f: string) => f.replace(/_/g, ' ')).join(', ')}`
+  }
+
   if (details.new_status) {
     return `Changed to ${details.new_status}`
   }

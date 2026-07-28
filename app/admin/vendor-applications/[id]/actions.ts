@@ -9,11 +9,19 @@ import { getAppUrl } from '@/lib/email/config';
 
 interface ApproveApplicationData {
   applicationId: string;
+  /**
+   * The `updated_at` value the admin actually reviewed, passed straight through as
+   * the raw string from Supabase. The RPC refuses to act if the applicant has edited
+   * since. Never wrap this in `new Date()` — that truncates to milliseconds and every
+   * comparison would fail.
+   */
+  expectedUpdatedAt: string;
   adminNotes?: string;
 }
 
 interface RejectApplicationData {
   applicationId: string;
+  expectedUpdatedAt: string;
   rejectionReason: string;
   adminNotes?: string;
 }
@@ -36,6 +44,7 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     // Call RPC to approve application
     const { data: rpcData, error: rpcError } = await supabase.rpc('approve_vendor_application', {
       p_application_id: data.applicationId,
+      p_expected_updated_at: data.expectedUpdatedAt,
       p_admin_notes: data.adminNotes,
     });
 
@@ -92,6 +101,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     // Call RPC to reject application
     const { data: rpcData, error: rpcError } = await supabase.rpc('reject_vendor_application', {
       p_application_id: data.applicationId,
+      p_expected_updated_at: data.expectedUpdatedAt,
       p_rejection_reason: data.rejectionReason,
       p_admin_notes: data.adminNotes,
     });

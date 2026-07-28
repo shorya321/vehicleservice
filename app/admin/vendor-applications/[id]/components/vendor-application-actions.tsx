@@ -19,9 +19,14 @@ import { approveVendorApplication, rejectVendorApplication } from "../actions"
 
 interface VendorApplicationActionsProps {
   applicationId: string
+  /** The `updated_at` this page rendered. The RPC refuses to act on stale data. */
+  expectedUpdatedAt: string
 }
 
-export function VendorApplicationActions({ applicationId }: VendorApplicationActionsProps) {
+/** The applicant edited the application after this page was rendered. */
+const isStaleReviewError = (message: string) => message.startsWith("This application was edited")
+
+export function VendorApplicationActions({ applicationId, expectedUpdatedAt }: VendorApplicationActionsProps) {
   const router = useRouter()
   const [isApproving, setIsApproving] = useState(false)
   const [isRejecting, setIsRejecting] = useState(false)
@@ -35,11 +40,14 @@ export function VendorApplicationActions({ applicationId }: VendorApplicationAct
     try {
       const result = await approveVendorApplication({
         applicationId,
+        expectedUpdatedAt,
         adminNotes: adminNotes || undefined,
       })
 
       if (result.error) {
         toast.error(result.error)
+        // Pull in the applicant's changes so the admin reviews current details.
+        if (isStaleReviewError(result.error)) router.refresh()
         return
       }
 
@@ -65,12 +73,17 @@ export function VendorApplicationActions({ applicationId }: VendorApplicationAct
     try {
       const result = await rejectVendorApplication({
         applicationId,
+        expectedUpdatedAt,
         rejectionReason,
         adminNotes: adminNotes || undefined,
       })
 
       if (result.error) {
         toast.error(result.error)
+        if (isStaleReviewError(result.error)) {
+          setShowRejectDialog(false)
+          router.refresh()
+        }
         return
       }
 

@@ -3216,7 +3216,11 @@ export type Database = {
         Returns: Json
       }
       approve_vendor_application: {
-        Args: { p_admin_notes?: string; p_application_id: string }
+        Args: {
+          p_admin_notes?: string
+          p_application_id: string
+          p_expected_updated_at: string
+        }
         Returns: Json
       }
       calculate_distance_km: {
@@ -3682,6 +3686,7 @@ export type Database = {
         Args: {
           p_admin_notes?: string
           p_application_id: string
+          p_expected_updated_at: string
           p_rejection_reason: string
         }
         Returns: Json
