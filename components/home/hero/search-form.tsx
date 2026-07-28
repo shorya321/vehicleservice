@@ -166,7 +166,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
       {/* Guests */}
       <div className="search-bar-field search-bar-field--guests">
         <label htmlFor="guests" className="search-bar-label">Guests</label>
-        <GuestSelector value={guests} onChange={setGuests} />
+        <GuestSelector value={guests} onChange={setGuests} showChevron />
       </div>
 
       {/* Search button */}

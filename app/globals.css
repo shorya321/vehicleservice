@@ -1814,6 +1814,27 @@
     text-align: left;
   }
 
+  /* Dropdown affordance on the Guests trigger. The trigger has no `justify-content`, so the
+     chevron needs `margin-left: auto` to reach the right edge. Rotation keys off the `data-state`
+     Radix already sets on the trigger button. */
+  .search-bar-chevron {
+    margin-left: auto;
+    transition: transform var(--duration-fast) var(--ease-luxury);
+  }
+
+  /* Also used by the search-results trip-summary card, whose trigger is styled through its own
+     className and carries no `.search-bar-date-trigger` — hence the trigger-agnostic selector. The
+     child combinator keeps this from reaching any other Radix `data-state` element. */
+  [data-state='open'] > .search-bar-chevron {
+    transform: rotate(180deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .search-bar-chevron {
+      transition: none;
+    }
+  }
+
   /* ── Luxury Calendar Popover ── */
 
   /* Both pickers portal to <body>. A modal Radix dialog (the trip editor Sheet, z-index 1001)

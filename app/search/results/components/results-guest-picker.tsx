@@ -92,6 +92,7 @@ export function ResultsGuestPicker({ searchParams, className }: ResultsGuestPick
       <GuestSelector
         value={guests}
         onChange={setGuests}
+        showChevron
         // Commit on close rather than per stepper tap — GuestSelector fires onChange on every click,
         // and each commit is a full server round trip.
         onOpenChange={(open) => {

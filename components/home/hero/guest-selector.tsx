@@ -12,7 +12,7 @@
  * shadcn, not the luxury CSS vars used here.
  */
 
-import { Minus, Plus, Users } from 'lucide-react'
+import { ChevronDown, Minus, Plus, Users } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { formatGuestSummary, getSeatedCount, type GuestBreakdown } from './guest-breakdown'
 
@@ -31,6 +31,12 @@ interface GuestSelectorProps {
    */
   maxSeated?: number
   className?: string
+  /**
+   * Renders a trailing chevron so the trigger reads as a dropdown. Opt-in because this picker is
+   * also used by the search-results header and checkout, which style the trigger through their own
+   * `className` and were deliberately left unchanged.
+   */
+  showChevron?: boolean
   /**
    * Fires when the popover opens/closes. `onChange` fires on every stepper tap, so consumers whose
    * change is expensive (e.g. a server round trip) should act on close instead.
@@ -112,6 +118,7 @@ export function GuestSelector({
   onChange,
   maxSeated = MAX_SEATED,
   className,
+  showChevron = false,
   onOpenChange,
 }: GuestSelectorProps) {
   const seated = getSeatedCount(value)
@@ -134,7 +141,13 @@ export function GuestSelector({
             className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
             aria-hidden
           />
-          <span className="truncate">{formatGuestSummary(value)}</span>
+          <span className="min-w-0 truncate">{formatGuestSummary(value)}</span>
+          {showChevron && (
+            <ChevronDown
+              className="search-bar-chevron w-4 h-4 shrink-0 text-[var(--text-muted)]"
+              aria-hidden
+            />
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent
