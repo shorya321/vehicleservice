@@ -17,22 +17,76 @@ export interface UploadImageOptions {
   path: string
 }
 
-function getErrorMessage(error: unknown, fallback: string): string {
+/**
+ * Nothing in this module is cancellable — neither `canvas.toBlob` nor the
+ * Supabase storage client accepts an `AbortSignal`. These bounds exist so a
+ * stalled step surfaces an error instead of leaving the caller's spinner
+ * running forever; the underlying request may still be in flight.
+ */
+const OPTIMIZE_TIMEOUT_MS = 15_000
+const UPLOAD_TIMEOUT_MS = 60_000
+const DELETE_TIMEOUT_MS = 10_000
+
+export function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback
+}
+
+/** Rejects with `message` if `promise` has not settled within `ms`. */
+export async function withTimeout<T>(
+  promise: PromiseLike<T>,
+  ms: number,
+  message: string
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/** Resolves with `fallback` if `promise` has not settled within `ms`. */
+async function withTimeoutFallback<T>(
+  promise: PromiseLike<T>,
+  ms: number,
+  fallback: T
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), ms)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 /**
  * Downscales and re-encodes an image on the client before upload.
  *
  * Always emits image/jpeg, which every bucket in this project whitelists.
- * Falls back to the original file if the canvas is unavailable or encoding
- * fails, so a browser quirk degrades quality rather than blocking the upload.
+ * Falls back to the original file if the canvas is unavailable, if encoding
+ * fails, or if encoding stalls, so a browser quirk degrades quality rather
+ * than blocking the upload. The stall case is real: `canvas.toBlob` is not
+ * guaranteed to invoke its callback once the canvas exceeds the platform's
+ * maximum area (iOS Safari gives up around 16.7 MP), which a large phone
+ * photo hits, and without the bound the returned promise never settles.
  */
 export async function optimizeImage(
   file: File,
   { maxWidth = 1920, maxHeight = 1920, quality = 0.85 }: OptimizeImageOptions = {}
 ): Promise<File> {
-  return new Promise((resolve, reject) => {
+  const encoded = new Promise<File>((resolve, reject) => {
     const reader = new FileReader()
 
     reader.onload = (event) => {
@@ -84,6 +138,8 @@ export async function optimizeImage(
     reader.onerror = () => reject(new Error('Failed to read file'))
     reader.readAsDataURL(file)
   })
+
+  return withTimeoutFallback(encoded, OPTIMIZE_TIMEOUT_MS, file)
 }
 
 /** Uploads a file straight from the browser to Supabase Storage. */
@@ -94,11 +150,15 @@ export async function uploadImage(
   try {
     const supabase = createClient()
 
-    const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: file.type,
-    })
+    const { data, error } = await withTimeout(
+      supabase.storage.from(bucket).upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type,
+      }),
+      UPLOAD_TIMEOUT_MS,
+      'Upload timed out. Check your connection and try again.'
+    )
 
     if (error) {
       return { url: null, error: error.message }
@@ -127,7 +187,11 @@ export async function deleteImageByUrl(
     }
 
     const supabase = createClient()
-    const { error } = await supabase.storage.from(bucket).remove([path])
+    const { error } = await withTimeout(
+      supabase.storage.from(bucket).remove([path]),
+      DELETE_TIMEOUT_MS,
+      'Delete timed out'
+    )
 
     return { error: error ? error.message : null }
   } catch (error: unknown) {

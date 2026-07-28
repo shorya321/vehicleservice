@@ -8,6 +8,8 @@ import {
   firstIssueMessage,
   type AdminVehicleMutationInput,
 } from "@/lib/vehicles/schema"
+import { resolveLuggageCapacity } from "@/lib/vehicles/capacity"
+import { loadValidatedVehicleType } from "@/lib/vehicles/type-validation"
 
 /** Postgres unique_violation. */
 const UNIQUE_VIOLATION = '23505'
@@ -214,6 +216,12 @@ export async function createAdminVehicle(formData: AdminVehicleFormData) {
     return { error: authError }
   }
 
+  const typeCheck = await loadValidatedVehicleType(supabase, vehicle)
+
+  if ('error' in typeCheck) {
+    return { error: typeCheck.error }
+  }
+
   const { data, error } = await supabase
     .from('vehicles')
     .insert([{
@@ -227,7 +235,7 @@ export async function createAdminVehicle(formData: AdminVehicleFormData) {
       fuel_type: vehicle.fuel_type || null,
       transmission: vehicle.transmission || null,
       seats: vehicle.seats || null,
-      luggage_capacity: vehicle.luggage_capacity || 2,
+      luggage_capacity: resolveLuggageCapacity(vehicle.luggage_capacity, typeCheck.type),
       is_available: vehicle.is_available,
       primary_image_url: vehicle.primaryImageUrl,
     }])
@@ -259,6 +267,12 @@ export async function updateAdminVehicle(id: string, formData: AdminVehicleFormD
     return { error: authError }
   }
 
+  const typeCheck = await loadValidatedVehicleType(supabase, vehicle)
+
+  if ('error' in typeCheck) {
+    return { error: typeCheck.error }
+  }
+
   // Read the stored image rather than trusting the client's copy of it.
   const { data: existing, error: fetchError } = await supabase
     .from('vehicles')
@@ -284,7 +298,7 @@ export async function updateAdminVehicle(id: string, formData: AdminVehicleFormD
       fuel_type: vehicle.fuel_type || null,
       transmission: vehicle.transmission || null,
       seats: vehicle.seats || null,
-      luggage_capacity: vehicle.luggage_capacity || 2,
+      luggage_capacity: resolveLuggageCapacity(vehicle.luggage_capacity, typeCheck.type),
       is_available: vehicle.is_available,
       primary_image_url: vehicle.primaryImageUrl,
     })

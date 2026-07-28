@@ -9,6 +9,8 @@ import {
   vehicleMutationSchema,
   type VehicleMutationInput,
 } from "@/lib/vehicles/schema"
+import { resolveLuggageCapacity } from "@/lib/vehicles/capacity"
+import { loadValidatedVehicleType } from "@/lib/vehicles/type-validation"
 import { revalidatePath } from "next/cache"
 
 /** Postgres unique_violation. */
@@ -244,6 +246,12 @@ export async function createVehicle(
   const vehicle = parsed.data
   const supabase = await createClient()
 
+  const typeCheck = await loadValidatedVehicleType(supabase, vehicle)
+
+  if ('error' in typeCheck) {
+    return { error: typeCheck.error }
+  }
+
   try {
     const { error } = await supabase.from('vehicles').insert({
       business_id: businessId,
@@ -256,7 +264,7 @@ export async function createVehicle(
       fuel_type: vehicle.fuel_type || null,
       transmission: vehicle.transmission || null,
       seats: vehicle.seats || null,
-      luggage_capacity: vehicle.luggage_capacity || 2,
+      luggage_capacity: resolveLuggageCapacity(vehicle.luggage_capacity, typeCheck.type),
       is_available: vehicle.is_available,
       primary_image_url: vehicle.primaryImageUrl,
     })
@@ -288,6 +296,12 @@ export async function updateVehicle(
   const vehicle = parsed.data
   const supabase = await createClient()
 
+  const typeCheck = await loadValidatedVehicleType(supabase, vehicle)
+
+  if ('error' in typeCheck) {
+    return { error: typeCheck.error }
+  }
+
   try {
     // Read the stored image rather than trusting the client's copy of it.
     const { data: existing, error: fetchError } = await supabase
@@ -314,7 +328,7 @@ export async function updateVehicle(
         fuel_type: vehicle.fuel_type || null,
         transmission: vehicle.transmission || null,
         seats: vehicle.seats || null,
-        luggage_capacity: vehicle.luggage_capacity || 2,
+        luggage_capacity: resolveLuggageCapacity(vehicle.luggage_capacity, typeCheck.type),
         is_available: vehicle.is_available,
         primary_image_url: vehicle.primaryImageUrl,
       })

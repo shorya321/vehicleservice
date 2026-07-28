@@ -36,3 +36,18 @@ export async function uploadVehicleImage({
 export async function deleteVehicleImage(url: string): Promise<{ error: string | null }> {
   return deleteImageByUrl(url, VEHICLE_BUCKET)
 }
+
+/**
+ * Fire-and-forget variant for form error paths.
+ *
+ * The vehicle row was not written, so the orphaned object is cosmetic — never
+ * make the vendor wait on the cleanup, and never let it reject into a handler
+ * that has already reported the real failure.
+ */
+export function rollbackVehicleImage(url: string | null): void {
+  if (!url) {
+    return
+  }
+
+  void deleteVehicleImage(url).catch(() => {})
+}

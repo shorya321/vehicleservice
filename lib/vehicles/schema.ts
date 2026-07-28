@@ -1,5 +1,7 @@
 import * as z from 'zod'
 
+import { capacityIssues, type CapacityInput, type TypeCapacity } from './capacity'
+
 const currentYear = new Date().getFullYear()
 
 /**
@@ -20,8 +22,19 @@ export const vehicleFormSchema = z.object({
   vehicle_type_id: z.string().min(1, 'Vehicle type is required'),
   fuel_type: z.enum(['petrol', 'diesel', 'electric', 'hybrid']).optional(),
   transmission: z.enum(['manual', 'automatic']).optional(),
-  seats: z.number().min(1).max(20).optional(),
-  luggage_capacity: z.number().min(0).max(20).optional(),
+  // Both fields start at 0 on a blank form, so these messages are what a vendor
+  // sees when they submit without filling seats in. Zod's stock wording
+  // ("Number must be greater than or equal to 1") is not good enough for that.
+  seats: z
+    .number()
+    .min(1, 'Enter the number of seats')
+    .max(20, 'Seats cannot exceed 20')
+    .optional(),
+  luggage_capacity: z
+    .number()
+    .min(0, 'Luggage capacity cannot be negative')
+    .max(20, 'Luggage capacity cannot exceed 20')
+    .optional(),
   is_available: z.boolean(),
 })
 
@@ -38,6 +51,34 @@ const primaryImageUrl = z.string().url('Invalid image URL').nullable()
 
 export const vehicleMutationSchema = vehicleFormSchema.extend({ primaryImageUrl })
 export const adminVehicleMutationSchema = adminVehicleFormSchema.extend({ primaryImageUrl })
+
+/**
+ * The capacity ceiling depends on the vehicle type that is currently selected,
+ * so it cannot live in the static schema. The forms rebuild their resolver
+ * whenever the loaded type list changes; the server actions look the type up
+ * themselves rather than trusting the client's copy of it.
+ */
+function capacityRefinement(types: readonly TypeCapacity[]) {
+  const byId = new Map(types.map((type) => [type.id, type]))
+
+  return (values: CapacityInput, ctx: z.RefinementCtx): void => {
+    for (const issue of capacityIssues(values, byId.get(values.vehicle_type_id))) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [issue.path],
+        message: issue.message,
+      })
+    }
+  }
+}
+
+export function buildVehicleFormSchema(types: readonly TypeCapacity[]) {
+  return vehicleFormSchema.superRefine(capacityRefinement(types))
+}
+
+export function buildAdminVehicleFormSchema(types: readonly TypeCapacity[]) {
+  return adminVehicleFormSchema.superRefine(capacityRefinement(types))
+}
 
 export type VehicleFormValues = z.infer<typeof vehicleFormSchema>
 export type AdminVehicleFormValues = z.infer<typeof adminVehicleFormSchema>

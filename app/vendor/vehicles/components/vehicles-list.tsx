@@ -113,7 +113,7 @@ export function VehiclesList({ vehicles, businessId }: VehiclesListProps) {
               </div>
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{vehicle.seats || 5} seats</span>
+                <span>{vehicle.seats ? `${vehicle.seats} seats` : '— seats'}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Fuel className="h-4 w-4 text-muted-foreground" />

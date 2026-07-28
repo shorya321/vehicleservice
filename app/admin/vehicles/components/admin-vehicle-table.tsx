@@ -256,7 +256,7 @@ export function AdminVehicleTable({
               <TableCell>
                 <div className="flex items-center">
                   <Users className="h-3 w-3 text-muted-foreground mr-1" />
-                  <span>{vehicle.seats || 5}</span>
+                  <span>{vehicle.seats ?? '—'}</span>
                 </div>
               </TableCell>
               <TableCell>

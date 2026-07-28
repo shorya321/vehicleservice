@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -13,13 +13,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Vehicle, VehicleType } from "@/lib/types/vehicle"
 import { VehicleCategory } from "@/lib/types/vehicle-category"
-import { vehicleFormSchema, type VehicleFormValues } from "@/lib/vehicles/schema"
-import { deleteVehicleImage, uploadVehicleImage } from "@/lib/vehicles/image-upload"
+import { buildVehicleFormSchema, type VehicleFormValues } from "@/lib/vehicles/schema"
+import { typeLuggageCapacity } from "@/lib/vehicles/capacity"
+import { toOptionalNumber } from "@/lib/vehicles/form-input"
+import { rollbackVehicleImage, uploadVehicleImage } from "@/lib/vehicles/image-upload"
+import { getErrorMessage, withTimeout } from "@/lib/storage/image-upload"
 import { createVehicle, updateVehicle, getVehicleCategories, getVehicleTypesByCategory } from "../actions"
 import { Loader2, Save, Check } from "lucide-react"
 import { ImageUpload } from "./image-upload"
 
 const currentYear = new Date().getFullYear()
+
+/** Upper bound on the save round-trip, so the form can never hang on it. */
+const SAVE_TIMEOUT_MS = 30_000
 
 interface VehicleFormProps {
   businessId: string
@@ -37,8 +43,12 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
   const [loadingVehicleTypes, setLoadingVehicleTypes] = useState(true)
 
+  // Rebuilt whenever the loaded types change, because the seats and luggage
+  // ceilings come from the type the vendor selects.
+  const formSchema = useMemo(() => buildVehicleFormSchema(vehicleTypes), [vehicleTypes])
+
   const form = useForm<VehicleFormValues>({
-    resolver: zodResolver(vehicleFormSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       make: initialData?.make || "",
       model: initialData?.model || "",
@@ -48,13 +58,22 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
       vehicle_type_id: initialData?.vehicle_type_id || "",
       fuel_type: initialData?.fuel_type as any || 'petrol',
       transmission: initialData?.transmission as any || 'manual',
-      seats: initialData?.seats || 5,
-      luggage_capacity: initialData?.luggage_capacity || 2,
+      // A blank form starts at 0 rather than guessing 5 seats and 2 bags. The
+      // limit shown under each field tells the vendor the ceiling once they
+      // pick a type; nothing is pre-filled on their behalf. An existing vehicle
+      // keeps whatever is stored, and a stored null stays blank.
+      seats: initialData ? (initialData.seats ?? undefined) : 0,
+      luggage_capacity: initialData ? (initialData.luggage_capacity ?? undefined) : 0,
       is_available: initialData?.is_available ?? true,
     },
   })
 
   const watchedCategoryId = form.watch('category_id')
+  const watchedVehicleTypeId = form.watch('vehicle_type_id')
+
+  const selectedType = vehicleTypes.find((type) => type.id === watchedVehicleTypeId)
+  const maxSeats = selectedType?.passenger_capacity
+  const maxLuggage = selectedType ? typeLuggageCapacity(selectedType) : undefined
 
   useEffect(() => {
     async function loadData() {
@@ -140,6 +159,7 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
     // Action body, which Next.js caps at 1 MB. Tracked so it can be rolled back
     // if the save then fails.
     let uploadedImageUrl: string | null = null
+    let succeeded = false
 
     try {
       let primaryImageUrl = initialData?.primary_image_url || null
@@ -162,28 +182,40 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
 
       const formData = { ...values, primaryImageUrl }
 
-      const result = initialData
-        ? await updateVehicle(initialData.id, businessId, formData)
-        : await createVehicle(businessId, formData)
+      // Bounded because a Server Action POST that never answers — a stalled
+      // connection, or a redirect issued by the proxy on an expired session —
+      // otherwise leaves this await pending and the button stuck on "Saving...".
+      const result = await withTimeout(
+        initialData
+          ? updateVehicle(initialData.id, businessId, formData)
+          : createVehicle(businessId, formData),
+        SAVE_TIMEOUT_MS,
+        "Saving timed out. Check your connection and try again."
+      )
 
       if (result.error) {
-        if (uploadedImageUrl) {
-          await deleteVehicleImage(uploadedImageUrl)
-        }
+        // Toast first: the rollback is best-effort cleanup, and awaiting it
+        // here would let a slow delete swallow the error the vendor needs.
         toast.error(result.error)
+        rollbackVehicleImage(uploadedImageUrl)
         return
       }
 
       toast.success(initialData ? "Vehicle updated" : "Vehicle added to fleet")
+      // Left loading on purpose: the button stays disabled until the vehicles
+      // list finishes rendering, so a second click can't resubmit and trip the
+      // registration-number unique constraint on the row just written.
+      succeeded = true
       router.push('/vendor/vehicles')
     } catch (error) {
-      if (uploadedImageUrl) {
-        await deleteVehicleImage(uploadedImageUrl)
-      }
-      toast.error("An unexpected error occurred")
+      toast.error(getErrorMessage(error, "An unexpected error occurred"))
+      rollbackVehicleImage(uploadedImageUrl)
     } finally {
       setUploadingImages(false)
-      setIsLoading(false)
+
+      if (!succeeded) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -308,8 +340,13 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vehicle Type</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      // Switching to a smaller type must re-flag seats and
+                      // luggage that were already entered, not wait for submit.
+                      void form.trigger(['seats', 'luggage_capacity'])
+                    }}
                     defaultValue={field.value}
                     disabled={!form.watch('category_id') || loadingVehicleTypes}
                   >
@@ -396,13 +433,20 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
                   <FormItem>
                     <FormLabel>Number of Seats</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="5"
-                        {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
+                      <Input
+                        type="number"
+                        min={1}
+                        max={maxSeats}
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(toOptionalNumber(e.target.valueAsNumber))}
                       />
                     </FormControl>
+                    {selectedType && (
+                      <FormDescription>
+                        Up to {maxSeats} for {selectedType.name}
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -415,15 +459,19 @@ export function VehicleForm({ businessId, initialData }: VehicleFormProps) {
                   <FormItem>
                     <FormLabel>Luggage Capacity</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="2"
-                        {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
+                      <Input
+                        type="number"
+                        min={0}
+                        max={maxLuggage}
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(toOptionalNumber(e.target.valueAsNumber))}
                       />
                     </FormControl>
                     <FormDescription>
-                      Number of luggage pieces
+                      {selectedType
+                        ? `Number of luggage pieces, up to ${maxLuggage} for ${selectedType.name}`
+                        : 'Number of luggage pieces'}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
