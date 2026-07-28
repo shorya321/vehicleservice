@@ -41,14 +41,16 @@ import {
   MapPin,
   Car,
   CreditCard,
+  Building2,
   User,
   UserPlus,
   Mail,
   Phone,
   RefreshCw,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
@@ -59,6 +61,14 @@ import { EmptyState } from '@/components/ui/empty-state'
 
 interface BookingsTableProps {
   bookings: BookingWithCustomer[]
+}
+
+const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
+  pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  accepted: 'bg-green-50 text-green-700 border-green-200',
+  completed: 'bg-green-50 text-green-700 border-green-200',
+  rejected: 'bg-red-50 text-red-700 border-red-200',
+  cancelled: 'bg-red-50 text-red-700 border-red-200',
 }
 
 export function BookingsTable({ bookings }: BookingsTableProps) {
@@ -138,6 +148,26 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       <Badge variant="secondary" className="text-xs">
         <User className="h-3 w-3 mr-1" />
         Business
+      </Badge>
+    )
+  }
+
+  const getAssignmentStatusBadge = (status?: string | null) => {
+    // Handle undefined/null status
+    if (!status) {
+      return (
+        <Badge variant="outline" className="text-xs font-normal">
+          Unknown
+        </Badge>
+      )
+    }
+
+    return (
+      <Badge
+        variant="outline"
+        className={cn('text-xs font-normal', ASSIGNMENT_STATUS_STYLES[status])}
+      >
+        {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     )
   }
@@ -271,8 +301,18 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     key={booking.id}
                     className="cursor-pointer"
                     onClick={(e) => {
-                      // Prevent row click if dialog is open or clicking on interactive elements
-                      if ((e.target as HTMLElement).closest('.no-row-click') || statusUpdateId) {
+                      // Prevent row click if a dialog is open or the click came from an
+                      // interactive element. Dropdown menus and dialogs render through a
+                      // React portal, so their clicks bubble up the React tree into this
+                      // handler even though they are not DOM descendants of the row.
+                      const el = e.target as HTMLElement
+                      if (
+                        el.closest('.no-row-click') ||
+                        el.closest('[role="menuitem"]') ||
+                        el.closest('[role="alertdialog"]') ||
+                        statusUpdateId ||
+                        deleteBookingId
+                      ) {
                         return
                       }
                       router.push(`/admin/bookings/${booking.id}`)
@@ -318,50 +358,41 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {booking.booking_assignments && booking.booking_assignments.length > 0 ? (
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {booking.booking_assignments[0].vendor?.business_name}
+                      {(() => {
+                        const assignment = booking.booking_assignments?.[0]
+
+                        if (!assignment) {
+                          return (
+                            <Badge variant="outline" className="text-xs">
+                              Unassigned
                             </Badge>
-                            {/* Assignment Status Badge */}
-                            {booking.booking_assignments[0].status === 'pending' && (
-                              <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                                Pending
-                              </Badge>
-                            )}
-                            {booking.booking_assignments[0].status === 'accepted' && (
-                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                Accepted
-                              </Badge>
-                            )}
-                            {booking.booking_assignments[0].status === 'rejected' && (
-                              <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                                Rejected
-                              </Badge>
-                            )}
-                            {booking.booking_assignments[0].status === 'completed' && (
-                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                Completed
-                              </Badge>
-                            )}
+                          )
+                        }
+
+                        const vendorName = assignment.vendor?.business_name || 'Unknown Vendor'
+
+                        return (
+                          <div className="flex items-start gap-2 max-w-[200px]">
+                            <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <div className="min-w-0 space-y-1">
+                              <div className="font-medium text-sm truncate" title={vendorName}>
+                                {vendorName}
+                              </div>
+                              <div>{getAssignmentStatusBadge(assignment.status)}</div>
+                              {assignment.status === 'accepted' && assignment.driver && (
+                                <div className="text-xs text-muted-foreground truncate">
+                                  Driver: {assignment.driver.first_name} {assignment.driver.last_name}
+                                </div>
+                              )}
+                              {assignment.status === 'accepted' && assignment.vehicle && (
+                                <div className="text-xs text-muted-foreground truncate">
+                                  Vehicle: {assignment.vehicle.registration_number}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].driver && (
-                            <span className="text-xs text-muted-foreground">
-                              Driver: {booking.booking_assignments[0].driver.first_name} {booking.booking_assignments[0].driver.last_name}
-                            </span>
-                          )}
-                          {booking.booking_assignments[0].status === 'accepted' && booking.booking_assignments[0].vehicle && (
-                            <span className="text-xs text-muted-foreground">
-                              Vehicle: {booking.booking_assignments[0].vehicle.registration_number}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
-                          Unassigned
-                        </Badge>
-                      )}
+                        )
+                      })()}
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(booking.booking_status)}
@@ -407,7 +438,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           
                           {booking.booking_status !== 'confirmed' && (
                             <DropdownMenuItem
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 setStatusUpdateId(booking.id)
                                 setNewStatus('confirmed')
                                 setStatusUpdateBookingType(booking.bookingType || 'customer')
@@ -420,7 +452,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           
                           {booking.booking_status !== 'completed' && (
                             <DropdownMenuItem
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 setStatusUpdateId(booking.id)
                                 setNewStatus('completed')
                                 setStatusUpdateBookingType(booking.bookingType || 'customer')
@@ -433,7 +466,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           
                           {booking.booking_status !== 'cancelled' && (
                             <DropdownMenuItem
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 setStatusUpdateId(booking.id)
                                 setNewStatus('cancelled')
                                 setStatusUpdateBookingType(booking.bookingType || 'customer')
@@ -450,7 +484,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           
                           {booking.payment_status !== 'completed' && (
                             <DropdownMenuItem
-                              onClick={() => handleUpdatePaymentStatus(booking.id, 'completed')}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleUpdatePaymentStatus(booking.id, 'completed')
+                              }}
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
                               Mark Paid
@@ -459,7 +496,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           
                           {booking.payment_status === 'completed' && (
                             <DropdownMenuItem
-                              onClick={() => handleUpdatePaymentStatus(booking.id, 'refunded')}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleUpdatePaymentStatus(booking.id, 'refunded')
+                              }}
                             >
                               <RefreshCw className="mr-2 h-4 w-4" />
                               Process Refund
@@ -482,7 +522,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
 
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation()
                               setDeleteBookingId(booking.id)
                               setDeleteBookingType(booking.bookingType || 'customer')
                             }}
@@ -518,13 +559,26 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               disabled={isUpdating}
               className={newStatus === 'cancelled' ? 'bg-destructive text-destructive-foreground' : ''}
             >
-              {isUpdating ? 'Updating...' : 'Update Status'}
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Status'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!deleteBookingId} onOpenChange={() => setDeleteBookingId(null)}>
+      <AlertDialog
+        open={!!deleteBookingId}
+        onOpenChange={(open) => {
+          // Keep the dialog up while the delete is in flight so the spinner stays visible.
+          if (!open && !isDeleting) setDeleteBookingId(null)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Booking</AlertDialogTitle>
@@ -541,7 +595,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Deleting...' : 'Delete Booking'}
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Booking'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

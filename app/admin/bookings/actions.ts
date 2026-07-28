@@ -898,46 +898,67 @@ export async function deleteBooking(
       .from('booking_assignments')
       .select('id')
       .eq(fieldName, bookingId)
-      .single()
+      .maybeSingle()
 
     if (assignment) {
       const { AvailabilityService } = await import('@/lib/availability/service')
       await AvailabilityService.removeSchedule(assignment.id)
     }
 
-    // Delete related records
-    await adminClient
+    // Delete related records. These are all ON DELETE CASCADE at the database
+    // level, so they are belt-and-braces - log failures for diagnostics but do
+    // not abort, since the cascade will handle them anyway.
+    const logChildError = (table: string, error: unknown) => {
+      if (error) console.error(`Error clearing ${table} for booking ${bookingId}:`, error)
+    }
+
+    const { error: assignmentsError } = await adminClient
       .from('booking_assignments')
       .delete()
       .eq(fieldName, bookingId)
+    logChildError('booking_assignments', assignmentsError)
 
     if (bookingType === 'customer') {
-      await adminClient
+      const { error: passengersError } = await adminClient
         .from('booking_passengers')
         .delete()
         .eq('booking_id', bookingId)
+      logChildError('booking_passengers', passengersError)
 
-      await adminClient
+      const { error: amenitiesError } = await adminClient
         .from('booking_amenities')
         .delete()
         .eq('booking_id', bookingId)
+      logChildError('booking_amenities', amenitiesError)
     } else {
-      await adminClient
+      const { error: addonsError } = await adminClient
         .from('business_booking_addons')
         .delete()
         .eq('business_booking_id', bookingId)
+      logChildError('business_booking_addons', addonsError)
     }
 
-    // Delete the booking itself
+    // Delete the booking itself. Select the deleted rows back so a delete that
+    // matched nothing is reported as a failure instead of a silent success.
     const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
-    const { error } = await adminClient
+    const { data: deletedRows, error } = await adminClient
       .from(tableName)
       .delete()
       .eq('id', bookingId)
+      .select('id')
 
     if (error) {
       console.error('Error deleting booking:', error)
-      return { error: 'Failed to delete booking' }
+      if (error.code === '23503') {
+        return {
+          error: 'This booking was created from a quotation. Remove it from its quotation before deleting.'
+        }
+      }
+      return { error: `Failed to delete booking: ${error.message}` }
+    }
+
+    if (!deletedRows || deletedRows.length === 0) {
+      return { error: 'Booking not found or already deleted' }
     }
 
     revalidatePath('/admin/bookings')
@@ -948,28 +969,49 @@ export async function deleteBooking(
   }
 }
 
-export async function bulkDeleteBookings(bookingIds: string[]) {
+// Not exported: files with 'use server' may only export async functions.
+interface BulkDeleteBookingsResult {
+  success?: boolean
+  deletedCount?: number
+  failed?: { id: string; reason: string }[]
+  error?: string
+}
+
+export async function bulkDeleteBookings(
+  bookingIds: string[]
+): Promise<BulkDeleteBookingsResult> {
   const adminClient = createAdminClient()
 
   try {
+    const deleted: string[] = []
+    const failed: { id: string; reason: string }[] = []
+
     for (const bookingId of bookingIds) {
       // Try customer booking first
       const { data: customerBooking } = await adminClient
         .from('bookings')
         .select('id')
         .eq('id', bookingId)
-        .single()
+        .maybeSingle()
 
       const bookingType: 'customer' | 'business' = customerBooking ? 'customer' : 'business'
       const result = await deleteBooking(bookingId, bookingType)
 
       if (result.error) {
         console.error(`Failed to delete booking ${bookingId}:`, result.error)
+        failed.push({ id: bookingId, reason: result.error })
+      } else {
+        deleted.push(bookingId)
       }
     }
 
     revalidatePath('/admin/bookings')
-    return { success: true }
+
+    if (deleted.length === 0) {
+      return { error: failed[0]?.reason ?? 'No bookings were deleted' }
+    }
+
+    return { success: true, deletedCount: deleted.length, failed }
   } catch (err) {
     console.error('Error bulk deleting bookings:', err)
     return { error: 'Failed to delete some bookings' }

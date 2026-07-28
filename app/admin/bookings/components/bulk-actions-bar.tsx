@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { X, CheckCircle, XCircle, FileDown, Trash2, ChevronDown } from 'lucide-react'
+import { X, CheckCircle, XCircle, FileDown, Trash2, ChevronDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { bulkUpdateBookingStatus, bulkDeleteBookings, exportBookingsToCSV } from '../actions'
 import {
@@ -83,7 +83,20 @@ export function BulkActionsBar({
       if (result.error) {
         toast.error(result.error)
       } else {
-        toast.success(`${selectedCount} booking${selectedCount !== 1 ? 's' : ''} deleted`)
+        // Report what actually happened - some bookings can be blocked by the
+        // database (for example, a B2B booking still linked to a quotation).
+        const deletedCount = result.deletedCount ?? selectedCount
+        const failed = result.failed ?? []
+
+        if (failed.length > 0) {
+          toast.warning(
+            `${deletedCount} booking${deletedCount !== 1 ? 's' : ''} deleted, ${failed.length} could not be deleted`,
+            { description: failed[0].reason }
+          )
+        } else {
+          toast.success(`${deletedCount} booking${deletedCount !== 1 ? 's' : ''} deleted`)
+        }
+
         onClearSelection()
         router.refresh()
       }
@@ -146,7 +159,13 @@ export function BulkActionsBar({
         </DropdownMenu>
       </div>
 
-      <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+      <AlertDialog
+        open={!!confirmAction}
+        onOpenChange={(open) => {
+          // Keep the dialog up while the bulk action is in flight so the spinner stays visible.
+          if (!open && !isUpdating) setConfirmAction(null)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -175,7 +194,18 @@ export function BulkActionsBar({
               disabled={isUpdating}
               className={confirmAction === 'cancel' || confirmAction === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
             >
-              {isUpdating ? 'Processing...' : confirmAction === 'confirm' ? 'Confirm All' : confirmAction === 'delete' ? 'Delete All' : 'Cancel All'}
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {confirmAction === 'delete' ? 'Deleting...' : 'Processing...'}
+                </>
+              ) : confirmAction === 'confirm' ? (
+                'Confirm All'
+              ) : confirmAction === 'delete' ? (
+                'Delete All'
+              ) : (
+                'Cancel All'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
