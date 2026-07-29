@@ -107,7 +107,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           Free cancellation
         </p>
         <p className="mt-1 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-          15 min free waiting included
+          45 min free waiting included
         </p>
 
         <dl className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[var(--graphite)] pt-4">

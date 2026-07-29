@@ -95,7 +95,7 @@ export function TermsContent() {
         <h3>Waiting Time</h3>
         <ul>
           <li><strong>Airport pickups:</strong> 60 minutes of free waiting time from the actual flight landing time (we track your flight)</li>
-          <li><strong>All other pickups:</strong> 15 minutes of free waiting time from the scheduled pickup time</li>
+          <li><strong>All other pickups:</strong> 45 minutes of free waiting time from the scheduled pickup time</li>
         </ul>
         <p>
           After the free waiting period, additional charges may apply. Your chauffeur or our support team will attempt to contact you before departing.
