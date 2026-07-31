@@ -14,6 +14,7 @@ import {
   CreditCard,
   Palette,
   Bell,
+  FileText,
   Globe,
   ChevronRight,
   Settings,
@@ -74,6 +75,14 @@ const settingsLinks = [
     description: 'Configure email and wallet notification preferences',
     colorClass: 'border-l-primary',
     iconColorClass: 'bg-primary/10 text-primary',
+  },
+  {
+    href: '/business/settings/quotations',
+    icon: FileText,
+    title: 'Quotation Settings',
+    description: 'Set the prefix used for your quotation numbers',
+    colorClass: 'border-l-amber-500',
+    iconColorClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
   },
   {
     href: '/business/domain',

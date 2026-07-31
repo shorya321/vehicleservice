@@ -139,6 +139,25 @@ export const businessProfileUpdateSchema = z.object({
 export type BusinessProfileUpdateInput = z.infer<typeof businessProfileUpdateSchema>;
 
 /**
+ * Quotation Numbering Settings Schema
+ *
+ * Mirrors the ba_quotation_prefix_format CHECK constraint on business_accounts
+ * (20260731_business_quotation_number_prefix.sql). Deliberately has no
+ * .transform() so the resolver's input and output types stay identical for
+ * react-hook-form; callers uppercase the value before validating.
+ */
+export const QUOTATION_PREFIX_REGEX = /^[A-Z0-9]{2,6}$/;
+
+export const businessQuotationSettingsSchema = z.object({
+  quotation_number_prefix: z
+    .string()
+    .trim()
+    .regex(QUOTATION_PREFIX_REGEX, 'Use 2-6 letters or digits, e.g. ACME'),
+});
+
+export type BusinessQuotationSettingsInput = z.infer<typeof businessQuotationSettingsSchema>;
+
+/**
  * Pagination Schema
  */
 export const paginationSchema = z.object({

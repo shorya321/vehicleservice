@@ -785,6 +785,7 @@ export type Database = {
           notification_preferences: Json | null
           payment_element_enabled: boolean | null
           preferred_currency: string | null
+          quotation_number_prefix: string
           save_payment_methods: boolean | null
           spending_limits_enabled: boolean | null
           status: string
@@ -823,6 +824,7 @@ export type Database = {
           notification_preferences?: Json | null
           payment_element_enabled?: boolean | null
           preferred_currency?: string | null
+          quotation_number_prefix?: string
           save_payment_methods?: boolean | null
           spending_limits_enabled?: boolean | null
           status?: string
@@ -861,6 +863,7 @@ export type Database = {
           notification_preferences?: Json | null
           payment_element_enabled?: boolean | null
           preferred_currency?: string | null
+          quotation_number_prefix?: string
           save_payment_methods?: boolean | null
           spending_limits_enabled?: boolean | null
           status?: string
