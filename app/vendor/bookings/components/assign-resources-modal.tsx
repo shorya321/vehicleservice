@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
 import {
   Dialog,
   DialogContent,
@@ -18,12 +19,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Loader2, User, Car, CheckCircle, XCircle, AlertCircle, Calendar, Plus } from 'lucide-react'
 import { getVendorDrivers, getVendorVehicles, acceptAndAssignResources, checkResourceAvailabilityForBooking } from '../actions'
 import { QuickAddDriverModal } from './quick-add-driver-modal'
+import {
+  DEFAULT_TRIP_DURATION_HOURS,
+  MAX_TRIP_DURATION_HOURS,
+  MIN_TRIP_DURATION_HOURS,
+  tripEndFrom,
+} from '@/lib/vendor/bookings/duration'
+import { toBookingTz } from '@/lib/utils/timezone'
 import Link from 'next/link'
 
 interface AssignResourcesModalProps {
@@ -73,27 +82,74 @@ export function AssignResourcesModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showQuickAddDriver, setShowQuickAddDriver] = useState(false)
+  // How long this booking holds the vehicle and driver. Both are released for other
+  // bookings once the window ends, so the vendor sets it to the real length of the job.
+  const [durationHours, setDurationHours] = useState<number>(DEFAULT_TRIP_DURATION_HOURS)
+  const [durationInput, setDurationInput] = useState<string>(String(DEFAULT_TRIP_DURATION_HOURS))
+  const [pickupIso, setPickupIso] = useState<string | null>(null)
 
-  const loadResources = useCallback(async () => {
+  const loadResources = useCallback(async (hours: number) => {
     setIsLoading(true)
     try {
-      const availabilityData = await checkResourceAvailabilityForBooking(assignmentId)
+      const availabilityData = await checkResourceAvailabilityForBooking(assignmentId, hours)
       setDrivers(availabilityData.drivers)
       setVehicles(availabilityData.vehicles)
+      setPickupIso(availabilityData.bookingTime)
+
+      // A longer window can turn a chosen driver or vehicle busy. Dropping the selection
+      // here stops the vendor submitting one the server would reject anyway.
+      setSelectedDriverId((current) =>
+        current && !availabilityData.drivers.some((d) => d.id === current && d.availability?.available)
+          ? ''
+          : current
+      )
+      setSelectedVehicleId((current) =>
+        current && !availabilityData.vehicles.some((v) => v.id === current && v.availability?.available)
+          ? ''
+          : current
+      )
     } catch (error) {
-      toast.error('Failed to load resources')
+      toast.error(error instanceof Error ? error.message : 'Failed to load resources')
       console.error(error)
     } finally {
       setIsLoading(false)
     }
   }, [assignmentId])
 
+  // First open loads immediately; later duration edits are debounced so typing "12" does
+  // not fire a check for "1" as well.
+  const hasLoadedRef = useRef(false)
+
   useEffect(() => {
-    loadResources()
-  }, [loadResources])
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true
+      loadResources(durationHours)
+      return
+    }
+
+    const timer = setTimeout(() => loadResources(durationHours), 400)
+    return () => clearTimeout(timer)
+  }, [loadResources, durationHours])
+
+  const handleDurationChange = (raw: string) => {
+    setDurationInput(raw)
+
+    const parsed = Number.parseInt(raw, 10)
+    if (Number.isNaN(parsed)) return
+    if (parsed < MIN_TRIP_DURATION_HOURS || parsed > MAX_TRIP_DURATION_HOURS) return
+
+    setDurationHours(parsed)
+  }
+
+  // Snap the box back to the value actually in use if the vendor left it empty or invalid.
+  const handleDurationBlur = () => setDurationInput(String(durationHours))
+
+  const releaseAtLabel = pickupIso
+    ? format(toBookingTz(tripEndFrom(new Date(pickupIso), durationHours).toISOString()), 'd MMM yyyy, HH:mm')
+    : null
 
   const handleDriverCreated = async (driver: { id: string; first_name: string; last_name: string }) => {
-    await loadResources()
+    await loadResources(durationHours)
     setSelectedDriverId(driver.id)
   }
 
@@ -105,12 +161,25 @@ export function AssignResourcesModal({
 
     setIsSaving(true)
     try {
-      await acceptAndAssignResources(assignmentId, selectedDriverId, selectedVehicleId)
-      toast.success('Resources assigned successfully')
+      const result = await acceptAndAssignResources(
+        assignmentId,
+        selectedDriverId,
+        selectedVehicleId,
+        durationHours
+      )
+
+      if (result?.warning) {
+        toast.warning(result.warning)
+      } else {
+        toast.success(`Assigned. Released ${releaseAtLabel ? `on ${releaseAtLabel}` : 'after the booking window'}.`)
+      }
+
       router.refresh()
       onClose()
     } catch (error) {
-      toast.error('Failed to assign resources')
+      // The action names what is blocking (a busy driver or vehicle), so show it rather
+      // than a generic failure.
+      toast.error(error instanceof Error ? error.message : 'Failed to assign resources')
       console.error(error)
     } finally {
       setIsSaving(false)
@@ -138,6 +207,27 @@ export function AssignResourcesModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="duration">Booking duration (hours)</Label>
+            <Input
+              id="duration"
+              type="number"
+              inputMode="numeric"
+              min={MIN_TRIP_DURATION_HOURS}
+              max={MAX_TRIP_DURATION_HOURS}
+              step={1}
+              value={durationInput}
+              onChange={(e) => handleDurationChange(e.target.value)}
+              onBlur={handleDurationBlur}
+              disabled={isSaving}
+            />
+            <p className="text-xs text-muted-foreground">
+              {releaseAtLabel
+                ? `Vehicle and driver stay booked until ${releaseAtLabel}, then free up for other bookings.`
+                : `Vehicle and driver stay booked for this long from pickup (${MIN_TRIP_DURATION_HOURS}–${MAX_TRIP_DURATION_HOURS} hours).`}
+            </p>
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="driver">Select Driver</Label>

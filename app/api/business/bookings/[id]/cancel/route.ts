@@ -13,6 +13,7 @@ import {
 } from '@/lib/business/api-utils';
 import { bookingCancellationSchema } from '@/lib/business/validators';
 import { getCancellationRefund } from '@/lib/business/booking-utils';
+import { closeActiveAssignments } from '@/lib/bookings/unified-service';
 import {
   BUSINESS_BASE_CURRENCY,
   convertFromAed,
@@ -112,6 +113,19 @@ export const POST = requireBusinessAuth(
       // Extract refund details from result
       const refundAmount = result?.[0]?.refund_amount || 0;
       const newBalance = result?.[0]?.new_balance || 0;
+
+      // The RPC owns the booking row and the wallet refund atomically, but knows nothing
+      // about vendor assignments — so close them here and release the vehicle and driver.
+      // Deliberately after the RPC: a cleanup failure must not undo a completed refund.
+      const { error: closeError } = await closeActiveAssignments({
+        businessBookingId: bookingId,
+        outcome: 'cancelled',
+        reason: body.cancellation_reason || 'Cancelled by business',
+      });
+
+      if (closeError) {
+        console.error('Failed to close assignment after business cancellation:', closeError);
+      }
 
       // Get booking details for email
       const { data: cancelledBooking } = await supabaseAdmin

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
+import { tripEndFrom } from '@/lib/vendor/bookings/duration'
 import type { Database } from '@/lib/supabase/types'
 
 export interface AvailabilitySlot {
@@ -26,22 +27,19 @@ export type ResourceSchedule = Database['public']['Tables']['resource_schedules'
 export type ResourceUnavailability = Database['public']['Tables']['resource_unavailability']['Row']
 
 /**
- * A booking occupies a resource from pickup for this fixed estimate. Schedules are
- * created at pickup → pickup + this (see bookings/actions.ts), so past events must
- * be rendered at the same length they were originally booked at, or history would
- * not line up with the blocks that once occupied the calendar.
- */
-export const ESTIMATED_TRIP_DURATION_MS = 2 * 60 * 60 * 1000
-
-/**
  * A past booking sourced from booking_assignments (the permanent record), joined to
  * its booking / business_booking / vehicle / driver. Shaped to match the inline
  * select in availability/actions.ts so the same event-mapping helper consumes both
  * this and live schedules. Embedded relations come back as objects (single FK).
+ *
+ * `estimated_duration_hours` is carried because a past trip's schedule rows are deleted
+ * on completion: the calendar has to redraw the block from the duration the vendor
+ * actually chose, or history would not line up with what once occupied the calendar.
  */
 export interface PastBookingAssignment {
   id: string
   status: string
+  estimated_duration_hours: number | null
   booking: {
     booking_number: string | null
     trip_number: string | null
@@ -296,6 +294,7 @@ export class AvailabilityService {
     const customerSelect = `
       id,
       status,
+      estimated_duration_hours,
       booking:bookings!inner(
         booking_number,
         trip_number,
@@ -311,6 +310,7 @@ export class AvailabilityService {
     const businessSelect = `
       id,
       status,
+      estimated_duration_hours,
       business_booking:business_bookings!inner(
         booking_number,
         trip_number,
@@ -367,7 +367,7 @@ export class AvailabilityService {
       if (seen.has(row.id)) continue
       const pickup = row.booking?.pickup_datetime ?? row.business_booking?.pickup_datetime
       if (!pickup) continue
-      const end = new Date(new Date(pickup).getTime() + ESTIMATED_TRIP_DURATION_MS)
+      const end = tripEndFrom(new Date(pickup), row.estimated_duration_hours)
       if (end >= today) continue
       seen.add(row.id)
       past.push(row)
@@ -462,6 +462,39 @@ export class AvailabilityService {
     }
 
     return true
+  }
+
+  /**
+   * Move an existing hold's window when the vendor changes the booking duration.
+   *
+   * Returns the number of rows moved — normally two, one for the vehicle and one for the
+   * driver. Zero means the assignment has no hold at all, which happens for bookings
+   * accepted while `createSchedule` failures were being swallowed; the caller recreates
+   * the rows in that case rather than silently leaving the resources free.
+   */
+  static async updateScheduleWindow(
+    assignmentId: string,
+    startTime: Date,
+    endTime: Date
+  ): Promise<number> {
+    const adminClient = createAdminClient()
+
+    const { data, error } = await adminClient
+      .from('resource_schedules')
+      .update({
+        start_datetime: startTime.toISOString(),
+        end_datetime: endTime.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('booking_assignment_id', assignmentId)
+      .select('id')
+
+    if (error) {
+      console.error('Error updating schedule window:', error)
+      throw new Error('Could not update the booking duration. Please try again.')
+    }
+
+    return data?.length ?? 0
   }
 
   /**

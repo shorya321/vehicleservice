@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
+import { closeActiveAssignments } from "@/lib/bookings/unified-service"
 import type { BookingFiltersData } from "./schemas"
 
 export interface BookingFilters {
@@ -187,16 +188,52 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
     return { error: "Bookings can only be cancelled 24+ hours before pickup" }
   }
 
-  const { error } = await supabase
+  const cancelledAt = new Date().toISOString()
+
+  // Written with the admin client on purpose. `bookings` has SELECT policies for customers
+  // but no UPDATE policy, so the RLS client silently matched zero rows and returned no
+  // error — the booking stayed confirmed while the UI reported success. Authorisation is
+  // enforced above in code: the caller is authenticated, owns this booking, it is still
+  // cancellable, and pickup is more than 24h away.
+  const adminClient = createAdminClient()
+
+  const { data: cancelled, error } = await adminClient
     .from("bookings")
-    .update({ booking_status: "cancelled", updated_at: new Date().toISOString() })
+    .update({
+      booking_status: "cancelled",
+      cancelled_at: cancelledAt,
+      cancellation_reason: "Cancelled by customer",
+      updated_at: cancelledAt,
+    })
     .eq("id", bookingId)
+    .eq("customer_id", user.id) // belt-and-braces: the ownership check, restated in SQL
+    .select("id")
 
   if (error) {
     console.error("Cancel booking error:", error)
     return { error: "Failed to cancel booking" }
   }
 
+  if (!cancelled || cancelled.length === 0) {
+    console.error("Cancel booking affected no rows:", { bookingId, userId: user.id })
+    return { error: "Failed to cancel booking" }
+  }
+
+  // Close the vendor's assignment and release the vehicle and driver. Without this the
+  // resources stay blocked in resource_schedules for a trip that is no longer happening.
+  const { error: closeError } = await closeActiveAssignments({
+    bookingId,
+    outcome: "cancelled",
+    reason: "Cancelled by customer",
+  })
+
+  if (closeError) {
+    // The booking is already cancelled; surfacing a failure here would be misleading.
+    console.error("Failed to close assignment after customer cancellation:", closeError)
+  }
+
   revalidatePath("/account")
+  revalidatePath("/vendor/bookings")
+  revalidatePath("/vendor/availability")
   return {}
 }

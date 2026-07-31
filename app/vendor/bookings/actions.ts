@@ -3,8 +3,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { AvailabilityService, ESTIMATED_TRIP_DURATION_MS } from '@/lib/availability/service'
+import { AvailabilityService } from '@/lib/availability/service'
 import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
+import { parseDurationHours, tripEndFrom } from '@/lib/vendor/bookings/duration'
+import {
+  findResourceConflicts,
+  getBusyResourceWindows,
+} from '@/lib/vendor/direct-bookings/availability'
 import { sendDriverBookingAssignmentEmail } from '@/lib/email/services/driver-emails'
 import { sendBookingDriverAssignedEmail } from '@/lib/email/services/booking-emails'
 import {
@@ -22,6 +27,8 @@ export interface VendorBooking {
   status: string
   assigned_at: string
   accepted_at: string | null
+  /** Hours the vehicle and driver are held from pickup. Null on assignments never accepted. */
+  estimated_duration_hours: number | null
   notes: string | null
   booking: {
     id: string
@@ -121,6 +128,7 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
       status,
       assigned_at,
       accepted_at,
+      estimated_duration_hours,
       notes,
       driver:vendor_drivers(
         id,
@@ -204,6 +212,7 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
         status: assignment.status,
         assigned_at: assignment.assigned_at,
         accepted_at: assignment.accepted_at,
+        estimated_duration_hours: assignment.estimated_duration_hours,
         notes: assignment.notes,
         booking: {
           id: booking.id,
@@ -359,8 +368,11 @@ export async function getVendorVehicles() {
 export async function acceptAndAssignResources(
   assignmentId: string,
   driverId: string,
-  vehicleId: string
+  vehicleId: string,
+  durationHours?: number
 ) {
+  // Never trust the browser's number: the database CHECK is the last line, not the first.
+  const holdHours = parseDurationHours(durationHours)
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -452,7 +464,7 @@ export async function acceptAndAssignResources(
   // Verify assignment belongs to vendor
   const { data: assignmentCheck, error: assignmentError } = await adminClient
     .from('booking_assignments')
-    .select('vendor_id')
+    .select('vendor_id, status')
     .eq('id', assignmentId)
     .single()
 
@@ -474,6 +486,15 @@ export async function acceptAndAssignResources(
     throw new Error('This assignment does not belong to your vendor account')
   }
 
+  // 'accepted' is allowed as well as 'pending': "Change Assignment" re-runs this action to
+  // swap the driver or vehicle on a job the vendor already took. Anything else is closed,
+  // and accepting it from a stale tab would re-book resources for a dead booking.
+  if (assignmentCheck.status !== 'pending' && assignmentCheck.status !== 'accepted') {
+    throw new Error(
+      `This booking is no longer open (${assignmentCheck.status}). Refresh your bookings list.`
+    )
+  }
+
   console.log('Assignment validation successful:', {
     assignmentId,
     vendorId: vendorApp.id,
@@ -483,6 +504,34 @@ export async function acceptAndAssignResources(
     vehicle: `${vehicleCheck.make} ${vehicleCheck.model}`
   })
 
+  // The hold this acceptance creates: pickup → pickup + the hours the vendor chose.
+  const pickupTime = new Date(booking.pickupDatetime)
+  const estimatedEndTime = tripEndFrom(pickupTime, holdHours)
+
+  // Nothing at the database level stops the same driver or vehicle being held twice —
+  // resource_schedules has no exclusion constraint — so the overlap is checked here, before
+  // anything is written. Excluding this assignment lets a vendor re-assign or re-time a
+  // booking without it blocking itself.
+  const conflicts = await findResourceConflicts({
+    vendorId: vendorApp.id,
+    vehicleId,
+    driverId,
+    start: pickupTime,
+    end: estimatedEndTime,
+    excludeAssignmentId: assignmentId,
+  })
+
+  if (conflicts.vehicle.length > 0 || conflicts.driver.length > 0) {
+    const blocking = [
+      conflicts.vehicle[0] && `Vehicle is busy: ${conflicts.vehicle[0].label}`,
+      conflicts.driver[0] && `Driver is busy: ${conflicts.driver[0].label}`,
+    ].filter(Boolean)
+
+    throw new Error(
+      `${blocking.join('. ')}. Pick another driver or vehicle, or shorten the duration.`
+    )
+  }
+
   // Update assignment
   const { error } = await supabase
     .from('booking_assignments')
@@ -490,7 +539,8 @@ export async function acceptAndAssignResources(
       driver_id: driverId,
       vehicle_id: vehicleId,
       status: 'accepted',
-      accepted_at: new Date().toISOString()
+      accepted_at: new Date().toISOString(),
+      estimated_duration_hours: holdHours
     })
     .eq('id', assignmentId)
     .eq('vendor_id', vendorApp.id) // Ensure vendor can only update their own assignments
@@ -510,12 +560,16 @@ export async function acceptAndAssignResources(
     throw new Error(`Failed to accept and assign resources: ${error.message}`)
   }
 
-  // Create schedule entries for both driver and vehicle
-  const pickupTime = new Date(booking.pickupDatetime)
-  const estimatedEndTime = new Date(pickupTime.getTime() + ESTIMATED_TRIP_DURATION_MS)
+  // Create schedule entries for both driver and vehicle.
+  //
+  // Deliberately non-fatal: the assignment row is already accepted, so throwing here would
+  // tell the vendor the acceptance failed when it did not. But a booking holding nothing is
+  // exactly the double-booking this feature exists to prevent, so the failure is reported
+  // back and surfaced as a warning instead of being swallowed.
+  let scheduleWarning: string | undefined
 
   try {
-    await AvailabilityService.createSchedule(
+    const created = await AvailabilityService.createSchedule(
       assignmentId,
       vendorApp.id,
       vehicleId,
@@ -523,9 +577,15 @@ export async function acceptAndAssignResources(
       pickupTime,
       estimatedEndTime
     )
+
+    if (!created) {
+      scheduleWarning =
+        'Booking accepted, but the vehicle and driver could not be reserved. Set the duration again from the bookings list.'
+    }
   } catch (scheduleError) {
     console.error('Error creating schedule:', scheduleError)
-    // Schedule creation failure is not critical, continue
+    scheduleWarning =
+      'Booking accepted, but the vehicle and driver could not be reserved. Set the duration again from the bookings list.'
   }
 
   // Send driver assignment email (non-blocking)
@@ -643,7 +703,12 @@ export async function acceptAndAssignResources(
     })
   }
 
-  return { success: true }
+  return {
+    success: true,
+    durationHours: holdHours,
+    releaseAt: estimatedEndTime.toISOString(),
+    warning: scheduleWarning,
+  }
 }
 
 export async function rejectAssignment(
@@ -672,6 +737,25 @@ export async function rejectAssignment(
 
   // Get booking details using unified service
   const booking = await getBookingFromAssignment(assignmentId)
+
+  // Only an untouched assignment can be rejected. Rejecting one that was already accepted,
+  // cancelled or completed from a stale tab would rewrite a closed record.
+  const { data: rejectCheck } = await adminClient
+    .from('booking_assignments')
+    .select('status')
+    .eq('id', assignmentId)
+    .eq('vendor_id', vendorApp.id)
+    .single()
+
+  if (!rejectCheck) {
+    throw new Error('Assignment not found. Please refresh and try again.')
+  }
+
+  if (rejectCheck.status !== 'pending') {
+    throw new Error(
+      `This booking can no longer be rejected (${rejectCheck.status}). Refresh your bookings list.`
+    )
+  }
 
   // Update assignment with rejection details
   const { error } = await supabase
@@ -704,8 +788,10 @@ export async function rejectAssignment(
 }
 
 export async function checkResourceAvailabilityForBooking(
-  assignmentId: string
+  assignmentId: string,
+  durationHours?: number
 ) {
+  const holdHours = parseDurationHours(durationHours)
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -734,7 +820,7 @@ export async function checkResourceAvailabilityForBooking(
   }
 
   const pickupTime = new Date(booking.pickupDatetime)
-  const estimatedEndTime = new Date(pickupTime.getTime() + ESTIMATED_TRIP_DURATION_MS)
+  const estimatedEndTime = tripEndFrom(pickupTime, holdHours)
 
   // Get all drivers with availability status
   const { data: drivers } = await supabase
@@ -758,79 +844,228 @@ export async function checkResourceAvailabilityForBooking(
     .eq('business_id', vendorApp.id)
     .eq('category_id', bookingCategoryId)
 
-  // Check availability for each driver
-  const driversWithAvailability = await Promise.all(
-    (drivers || []).map(async (driver) => {
-      // Check for conflicts in resource_schedules
-      const { data: schedules } = await supabase
-        .from('resource_schedules')
-        .select('*')
-        .eq('resource_id', driver.id)
-        .eq('resource_type', 'driver')
-        .gte('end_datetime', pickupTime.toISOString())
-        .lte('start_datetime', estimatedEndTime.toISOString())
+  // Every busy window for the whole fleet in one batched read, from the module that also
+  // backs direct bookings — so "busy" means the same thing on both sides, including direct
+  // bookings, which the old per-resource queries here never looked at. This assignment is
+  // excluded so re-assigning or re-timing a booking is not blocked by its own hold.
+  const busyWindows = await getBusyResourceWindows({
+    vendorId: vendorApp.id,
+    resourceIds: [
+      ...(drivers || []).map((driver) => driver.id),
+      ...(vehicles || []).map((vehicle) => vehicle.id),
+    ],
+    start: pickupTime,
+    end: estimatedEndTime,
+    excludeAssignmentId: assignmentId,
+  })
 
-      // Check for unavailability periods
-      const { data: unavailability } = await supabase
-        .from('resource_unavailability')
-        .select('*')
-        .eq('resource_id', driver.id)
-        .eq('resource_type', 'driver')
-        .gte('end_datetime', pickupTime.toISOString())
-        .lte('start_datetime', estimatedEndTime.toISOString())
+  const conflictsByResource = new Map<string, typeof busyWindows>()
+  for (const window of busyWindows) {
+    const existing = conflictsByResource.get(window.resourceId)
+    if (existing) {
+      existing.push(window)
+    } else {
+      conflictsByResource.set(window.resourceId, [window])
+    }
+  }
 
-      const isAvailable = !driver.is_available ? false :
-                          (schedules?.length === 0 && unavailability?.length === 0)
+  const driversWithAvailability = (drivers || []).map((driver) => {
+    const conflicts = conflictsByResource.get(driver.id) ?? []
 
-      return {
-        ...driver,
-        availability: {
-          available: isAvailable,
-          conflicts: [...(schedules || []), ...(unavailability || [])]
-        }
-      }
-    })
-  )
+    return {
+      ...driver,
+      availability: {
+        // Flag first, exactly as before: a driver not flagged available is never offered.
+        available: !driver.is_available ? false : conflicts.length === 0,
+        conflicts,
+      },
+    }
+  })
 
-  // Check availability for each vehicle
-  const vehiclesWithAvailability = await Promise.all(
-    (vehicles || []).map(async (vehicle) => {
-      // Check for conflicts in resource_schedules
-      const { data: schedules } = await supabase
-        .from('resource_schedules')
-        .select('*')
-        .eq('resource_id', vehicle.id)
-        .eq('resource_type', 'vehicle')
-        .gte('end_datetime', pickupTime.toISOString())
-        .lte('start_datetime', estimatedEndTime.toISOString())
+  const vehiclesWithAvailability = (vehicles || []).map((vehicle) => {
+    const conflicts = conflictsByResource.get(vehicle.id) ?? []
 
-      // Check for unavailability periods
-      const { data: unavailability } = await supabase
-        .from('resource_unavailability')
-        .select('*')
-        .eq('resource_id', vehicle.id)
-        .eq('resource_type', 'vehicle')
-        .gte('end_datetime', pickupTime.toISOString())
-        .lte('start_datetime', estimatedEndTime.toISOString())
-
-      const isAvailable = !vehicle.is_available ? false :
-                          (schedules?.length === 0 && unavailability?.length === 0)
-
-      return {
-        ...vehicle,
-        availability: {
-          available: isAvailable,
-          conflicts: [...(schedules || []), ...(unavailability || [])]
-        }
-      }
-    })
-  )
+    return {
+      ...vehicle,
+      availability: {
+        available: !vehicle.is_available ? false : conflicts.length === 0,
+        conflicts,
+      },
+    }
+  })
 
   return {
+    durationHours: holdHours,
     bookingTime: pickupTime.toISOString(),
     estimatedEndTime: estimatedEndTime.toISOString(),
     drivers: driversWithAvailability,
     vehicles: vehiclesWithAvailability
+  }
+}
+
+/**
+ * Change how long an already-accepted booking holds its vehicle and driver.
+ *
+ * A trip that runs longer than the vendor first estimated would otherwise release both
+ * resources on time and let them be taken by another booking. This moves the hold's end
+ * instead, and refuses when another job already occupies the extended window.
+ */
+export async function updateAssignmentDuration(
+  assignmentId: string,
+  durationHours: number
+) {
+  const holdHours = parseDurationHours(durationHours)
+  const supabase = await createClient()
+  const adminClient = createAdminClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+
+  const { data: vendorApp } = await supabase
+    .from('vendor_applications')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!vendorApp) {
+    throw new Error('Vendor application not found')
+  }
+
+  const { data: assignment, error: assignmentError } = await adminClient
+    .from('booking_assignments')
+    .select('id, vendor_id, status, driver_id, vehicle_id, completed_at, cancelled_at, estimated_duration_hours')
+    .eq('id', assignmentId)
+    .single()
+
+  if (assignmentError || !assignment) {
+    console.error('Assignment lookup failed for duration change:', {
+      assignmentId,
+      error: assignmentError,
+    })
+    throw new Error('Assignment not found. Please refresh and try again.')
+  }
+
+  if (assignment.vendor_id !== vendorApp.id) {
+    console.error('Assignment ownership mismatch on duration change:', {
+      assignmentId,
+      assignmentVendorId: assignment.vendor_id,
+      currentVendorId: vendorApp.id,
+    })
+    throw new Error('This assignment does not belong to your vendor account')
+  }
+
+  if (assignment.status !== 'accepted') {
+    throw new Error('Only an accepted booking can have its duration changed.')
+  }
+
+  if (assignment.completed_at || assignment.cancelled_at) {
+    throw new Error('This booking is already closed, so its resources are already free.')
+  }
+
+  if (!assignment.driver_id || !assignment.vehicle_id) {
+    throw new Error('Assign a driver and vehicle before setting the duration.')
+  }
+
+  const booking = await getBookingFromAssignment(assignmentId)
+
+  if (!booking) {
+    throw new Error('Booking not found')
+  }
+
+  const pickupTime = new Date(booking.pickupDatetime)
+  const releaseAt = tripEndFrom(pickupTime, holdHours)
+
+  // Only *other* jobs may block an extension — this booking's own hold is excluded.
+  const conflicts = await findResourceConflicts({
+    vendorId: vendorApp.id,
+    vehicleId: assignment.vehicle_id,
+    driverId: assignment.driver_id,
+    start: pickupTime,
+    end: releaseAt,
+    excludeAssignmentId: assignmentId,
+  })
+
+  if (conflicts.vehicle.length > 0 || conflicts.driver.length > 0) {
+    const blocking = [
+      conflicts.vehicle[0] && `Vehicle is busy: ${conflicts.vehicle[0].label}`,
+      conflicts.driver[0] && `Driver is busy: ${conflicts.driver[0].label}`,
+    ].filter(Boolean)
+
+    throw new Error(`${blocking.join('. ')}. Choose a shorter duration.`)
+  }
+
+  const previousHours = assignment.estimated_duration_hours
+
+  const { error: durationError } = await supabase
+    .from('booking_assignments')
+    .update({ estimated_duration_hours: holdHours })
+    .eq('id', assignmentId)
+    .eq('vendor_id', vendorApp.id)
+
+  if (durationError) {
+    console.error('Failed to store booking duration:', {
+      message: durationError.message,
+      assignmentId,
+      holdHours,
+    })
+    throw new Error('Could not save the new duration. Please try again.')
+  }
+
+  try {
+    const moved = await AvailabilityService.updateScheduleWindow(
+      assignmentId,
+      pickupTime,
+      releaseAt
+    )
+
+    // No rows means this booking never got a hold — accepted back when schedule failures
+    // were swallowed. Create it now rather than leaving the resources free.
+    if (moved === 0) {
+      const created = await AvailabilityService.createSchedule(
+        assignmentId,
+        vendorApp.id,
+        assignment.vehicle_id,
+        assignment.driver_id,
+        pickupTime,
+        releaseAt
+      )
+
+      if (!created) {
+        throw new Error('Could not reserve the vehicle and driver for the new window.')
+      }
+    }
+  } catch (scheduleError) {
+    // The stored duration must not claim a window the calendar does not hold, so put it back.
+    await supabase
+      .from('booking_assignments')
+      .update({ estimated_duration_hours: previousHours })
+      .eq('id', assignmentId)
+      .eq('vendor_id', vendorApp.id)
+
+    console.error('Failed to move schedule window:', { assignmentId, error: scheduleError })
+    throw scheduleError instanceof Error
+      ? scheduleError
+      : new Error('Could not update the booking duration. Please try again.')
+  }
+
+  try {
+    revalidatePath('/vendor/bookings')
+    revalidatePath('/vendor/availability')
+    revalidatePath('/admin/bookings')
+    revalidatePath(`/admin/bookings/${booking.id}`)
+  } catch (revalidationError) {
+    console.error('Cache revalidation error (non-critical):', {
+      error: revalidationError,
+      assignmentId,
+    })
+  }
+
+  return {
+    success: true,
+    durationHours: holdHours,
+    releaseAt: releaseAt.toISOString(),
   }
 }
 
@@ -865,7 +1100,7 @@ export async function completeBooking(assignmentId: string) {
   // Verify this assignment belongs to the vendor
   const { data: assignment, error: assignmentError } = await adminClient
     .from('booking_assignments')
-    .select('vendor_id')
+    .select('vendor_id, status')
     .eq('id', assignmentId)
     .single()
 
@@ -875,6 +1110,14 @@ export async function completeBooking(assignmentId: string) {
 
   if (assignment.vendor_id !== vendorApp.id) {
     throw new Error('Unauthorized: This assignment does not belong to your vendor account')
+  }
+
+  // Only a job the vendor actually took can be completed. Completing a cancelled one from a
+  // stale tab would flip the booking back to completed after it was called off.
+  if (assignment.status !== 'accepted') {
+    throw new Error(
+      `This booking can no longer be completed (${assignment.status}). Refresh your bookings list.`
+    )
   }
 
   // Update booking status to completed (handle both customer and business bookings)

@@ -29,7 +29,8 @@ import {
   Car,
   User,
   Phone,
-  UserCheck
+  UserCheck,
+  Clock
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -38,6 +39,8 @@ import { toast } from 'sonner'
 import { VendorBooking, completeBooking } from '../actions'
 import { AssignResourcesModal } from './assign-resources-modal'
 import { RejectAssignmentModal } from './reject-assignment-modal'
+import { ChangeDurationModal } from './change-duration-modal'
+import { tripEndFrom } from '@/lib/vendor/bookings/duration'
 
 interface BookingsTableProps {
   bookings: VendorBooking[]
@@ -52,6 +55,12 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [rejectModalData, setRejectModalData] = useState<{
     assignmentId: string
     bookingNumber: string
+  } | null>(null)
+  const [durationModalData, setDurationModalData] = useState<{
+    assignmentId: string
+    bookingNumber: string
+    pickupDatetime: string
+    currentHours: number | null
   } | null>(null)
   const [isCompleting, setIsCompleting] = useState(false)
 
@@ -74,13 +83,15 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       accepted: 'default',
       completed: 'secondary',
       rejected: 'destructive',
+      cancelled: 'destructive',
       pending: 'outline',
     }
-    
+
     const icons: Record<string, React.ReactNode> = {
       accepted: <CheckCircle className="h-3 w-3 mr-1" />,
       completed: <CheckCircle className="h-3 w-3 mr-1" />,
       rejected: <XCircle className="h-3 w-3 mr-1" />,
+      cancelled: <XCircle className="h-3 w-3 mr-1" />,
       pending: <Calendar className="h-3 w-3 mr-1" />,
     }
     
@@ -219,6 +230,22 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             {assignment.vehicle.make} {assignment.vehicle.model}
                           </span>
                         </div>
+                        {assignment.status === 'accepted' && assignment.booking?.pickup_datetime && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">
+                              Free {format(
+                                toBookingTz(
+                                  tripEndFrom(
+                                    new Date(assignment.booking.pickup_datetime),
+                                    assignment.estimated_duration_hours
+                                  ).toISOString()
+                                ),
+                                'MMM dd, HH:mm'
+                              )}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <Badge variant="outline" className="text-xs">
@@ -291,6 +318,17 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                               <UserCheck className="mr-2 h-4 w-4" />
                               Change Assignment
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setDurationModalData({
+                                assignmentId: assignment.id,
+                                bookingNumber: assignment.booking.trip_number || assignment.booking.booking_number,
+                                pickupDatetime: assignment.booking.pickup_datetime,
+                                currentHours: assignment.estimated_duration_hours
+                              })}
+                            >
+                              <Clock className="mr-2 h-4 w-4" />
+                              Change Duration
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleCompleteBooking(
@@ -328,6 +366,16 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           assignmentId={rejectModalData.assignmentId}
           bookingNumber={rejectModalData.bookingNumber}
           onClose={() => setRejectModalData(null)}
+        />
+      )}
+
+      {durationModalData && (
+        <ChangeDurationModal
+          assignmentId={durationModalData.assignmentId}
+          bookingNumber={durationModalData.bookingNumber}
+          pickupDatetime={durationModalData.pickupDatetime}
+          currentHours={durationModalData.currentHours}
+          onClose={() => setDurationModalData(null)}
         />
       )}
     </>

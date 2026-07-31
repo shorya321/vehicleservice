@@ -423,6 +423,7 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           driver_id: string | null
+          estimated_duration_hours: number | null
           id: string
           notes: string | null
           rejected_at: string | null
@@ -443,6 +444,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           driver_id?: string | null
+          estimated_duration_hours?: number | null
           id?: string
           notes?: string | null
           rejected_at?: string | null
@@ -463,6 +465,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           driver_id?: string | null
+          estimated_duration_hours?: number | null
           id?: string
           notes?: string | null
           rejected_at?: string | null

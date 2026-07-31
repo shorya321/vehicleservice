@@ -87,7 +87,8 @@ async function loadBusyWindows(
   resourceIds: string[],
   start: Date,
   end: Date,
-  excludeDirectBookingId?: string
+  excludeDirectBookingId?: string,
+  excludeAssignmentId?: string
 ): Promise<BusyWindow[]> {
   if (resourceIds.length === 0) return []
 
@@ -96,12 +97,22 @@ async function loadBusyWindows(
   const endIso = end.toISOString()
 
   // Chained filters are ANDed: existing.start < new.end AND existing.end > new.start.
-  const schedulesQuery = supabase
+  let schedulesQuery = supabase
     .from('resource_schedules')
     .select('resource_id, start_datetime, end_datetime')
     .in('resource_id', resourceIds)
     .lt('start_datetime', endIso)
     .gt('end_datetime', startIso)
+
+  // An assignment must not be reported as blocking itself — the online flow re-checks a
+  // window for the very booking that already holds it, when the vendor changes its
+  // duration or swaps the driver. Written as an explicit OR because `neq` alone would
+  // also drop rows whose booking_assignment_id is NULL.
+  if (excludeAssignmentId) {
+    schedulesQuery = schedulesQuery.or(
+      `booking_assignment_id.is.null,booking_assignment_id.neq.${excludeAssignmentId}`
+    )
+  }
 
   const unavailabilityQuery = supabase
     .from('resource_unavailability')
@@ -188,15 +199,25 @@ export async function findResourceConflicts(params: {
   start: Date
   end: Date
   excludeDirectBookingId?: string
+  excludeAssignmentId?: string
 }): Promise<ResourceConflicts> {
-  const { vendorId, vehicleId, driverId, start, end, excludeDirectBookingId } = params
+  const {
+    vendorId,
+    vehicleId,
+    driverId,
+    start,
+    end,
+    excludeDirectBookingId,
+    excludeAssignmentId,
+  } = params
 
   const windows = await loadBusyWindows(
     vendorId,
     [vehicleId, driverId],
     start,
     end,
-    excludeDirectBookingId
+    excludeDirectBookingId,
+    excludeAssignmentId
   )
 
   const toConflict = (w: BusyWindow): ResourceConflict => ({
@@ -210,6 +231,46 @@ export async function findResourceConflicts(params: {
     vehicle: windows.filter((w) => w.resourceId === vehicleId).map(toConflict),
     driver: windows.filter((w) => w.resourceId === driverId).map(toConflict),
   }
+}
+
+/** A busy window, tagged with the resource it belongs to. */
+export interface ResourceBusyWindow extends ResourceConflict {
+  resourceId: string
+}
+
+/**
+ * Busy windows for an arbitrary set of resources, in one round trip per source.
+ *
+ * The online accept flow needs the same "what is busy" answer as the direct-booking form
+ * but renders its own richer option rows (make/model/seats, driver licence), so it takes
+ * the windows and does its own shaping rather than going through `getFleetAvailability`
+ * and its flat labels.
+ */
+export async function getBusyResourceWindows(params: {
+  vendorId: string
+  resourceIds: string[]
+  start: Date
+  end: Date
+  excludeAssignmentId?: string
+}): Promise<ResourceBusyWindow[]> {
+  const { vendorId, resourceIds, start, end, excludeAssignmentId } = params
+
+  const windows = await loadBusyWindows(
+    vendorId,
+    resourceIds,
+    start,
+    end,
+    undefined,
+    excludeAssignmentId
+  )
+
+  return windows.map((w) => ({
+    resourceId: w.resourceId,
+    source: w.source,
+    label: describe(w),
+    start: w.start,
+    end: w.end,
+  }))
 }
 
 export interface FleetOption {

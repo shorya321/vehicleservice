@@ -4,10 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   AvailabilityService,
-  ESTIMATED_TRIP_DURATION_MS,
   type PastBookingAssignment,
 } from '@/lib/availability/service'
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
+import { tripEndFrom } from '@/lib/vendor/bookings/duration'
 import { revalidatePath } from 'next/cache'
 
 export interface CalendarEvent {
@@ -223,7 +223,7 @@ export async function getVendorCalendarEvents(
     const pickup = pastBooking.booking?.pickup_datetime ?? pastBooking.business_booking?.pickup_datetime
     if (!pickup) continue
     const start = new Date(pickup)
-    const end = new Date(start.getTime() + ESTIMATED_TRIP_DURATION_MS)
+    const end = tripEndFrom(start, pastBooking.estimated_duration_hours)
 
     events.push(
       assignmentToCalendarEvent(

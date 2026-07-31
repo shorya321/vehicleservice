@@ -275,8 +275,111 @@ export interface CancelledAssignment {
 }
 
 /**
+ * Close every still-open assignment for a booking and free the resources it held.
+ *
+ * A booking that is cancelled or completed must not leave its assignment reading as live:
+ * the vendor calendar colours a past `accepted` trip green ("it ran"), the vendor pipeline
+ * files it under Upcoming, and the vehicle and driver stay blocked in `resource_schedules`
+ * for other bookings. Every cancel path funnels through here so that cannot drift again.
+ *
+ * Closes ALL rows in ('pending','accepted') rather than one. The partial unique index that
+ * was supposed to guarantee a single active assignment per booking does not exist in the
+ * database, so a reassigned booking really can have several — which is exactly why the
+ * `.single()` this replaces returned null and skipped the cleanup entirely.
+ *
+ * `driver_id` / `vehicle_id` are deliberately left in place: they are the audit trail, and
+ * two notification triggers watch those columns for changes.
+ *
+ * Never throws. Cleanup failing must not fail the cancellation the user asked for — the
+ * caller logs the error and carries on.
+ */
+export async function closeActiveAssignments(params: {
+  bookingId?: string;
+  businessBookingId?: string;
+  outcome: 'cancelled' | 'completed';
+  reason?: string;
+}): Promise<{ closed: CancelledAssignment[]; error: any }> {
+  const supabase = createAdminClient();
+
+  let query = supabase
+    .from('booking_assignments')
+    .select('id, vendor_id, driver_id, vehicle_id, status')
+    .in('status', ['pending', 'accepted']);
+
+  // Both ids are supplied by the bulk path, which is table-agnostic; match either.
+  if (params.bookingId && params.businessBookingId) {
+    query = query.or(
+      `booking_id.eq.${params.bookingId},business_booking_id.eq.${params.businessBookingId}`
+    );
+  } else if (params.bookingId) {
+    query = query.eq('booking_id', params.bookingId);
+  } else if (params.businessBookingId) {
+    query = query.eq('business_booking_id', params.businessBookingId);
+  } else {
+    return { closed: [], error: null };
+  }
+
+  const { data: existing, error: fetchError } = await query;
+
+  if (fetchError) {
+    console.error('Error fetching active assignments:', fetchError);
+    return { closed: [], error: fetchError };
+  }
+
+  if (!existing || existing.length === 0) {
+    return { closed: [], error: null };
+  }
+
+  const now = new Date().toISOString();
+
+  // `updated_at` is set explicitly — there is no trigger maintaining it on this table.
+  const patch =
+    params.outcome === 'cancelled'
+      ? {
+          status: 'cancelled',
+          cancelled_at: now,
+          cancellation_reason: params.reason || 'Booking cancelled',
+          updated_at: now,
+        }
+      : {
+          status: 'completed',
+          completed_at: now,
+          updated_at: now,
+        };
+
+  const ids = existing.map((row) => row.id);
+
+  const { error: updateError } = await supabase
+    .from('booking_assignments')
+    .update(patch)
+    .in('id', ids);
+
+  if (updateError) {
+    console.error('Error closing active assignments:', updateError);
+    return { closed: [], error: updateError };
+  }
+
+  // Release the vehicle and driver. A 'pending' assignment never held a schedule, so this
+  // is a no-op for those rows.
+  const { AvailabilityService } = await import('@/lib/availability/service');
+
+  for (const id of ids) {
+    try {
+      await AvailabilityService.removeSchedule(id);
+    } catch (scheduleError) {
+      console.error('Error freeing resources for assignment:', { id, scheduleError });
+    }
+  }
+
+  return { closed: existing as CancelledAssignment[], error: null };
+}
+
+/**
  * Cancel any active (pending/accepted) assignment for a booking.
  * Preserves the old record for audit trail by setting status to 'cancelled'.
+ *
+ * Thin wrapper over closeActiveAssignments, kept for the reassignment path, which wants a
+ * single row back to notify the outgoing vendor.
  *
  * @returns The cancelled assignment row (for notification/cleanup), or null if none existed
  */
@@ -285,47 +388,18 @@ export async function cancelActiveAssignment(params: {
   businessBookingId?: string;
   cancellationReason?: string;
 }): Promise<{ cancelledAssignment: CancelledAssignment | null; error: any }> {
-  const supabase = createAdminClient();
+  const { closed, error } = await closeActiveAssignments({
+    bookingId: params.bookingId,
+    businessBookingId: params.businessBookingId,
+    outcome: 'cancelled',
+    reason: params.cancellationReason || 'Reassigned to another vendor',
+  });
 
-  let query = supabase
-    .from('booking_assignments')
-    .select('id, vendor_id, driver_id, vehicle_id, status')
-    .in('status', ['pending', 'accepted']);
-
-  if (params.bookingId) {
-    query = query.eq('booking_id', params.bookingId);
-  } else if (params.businessBookingId) {
-    query = query.eq('business_booking_id', params.businessBookingId);
-  } else {
-    return { cancelledAssignment: null, error: null };
+  if (error) {
+    return { cancelledAssignment: null, error };
   }
 
-  const { data: existing, error: fetchError } = await query.maybeSingle();
-
-  if (fetchError) {
-    console.error('Error fetching active assignment:', fetchError);
-    return { cancelledAssignment: null, error: fetchError };
-  }
-
-  if (!existing) {
-    return { cancelledAssignment: null, error: null };
-  }
-
-  const { error: updateError } = await supabase
-    .from('booking_assignments')
-    .update({
-      status: 'cancelled',
-      cancelled_at: new Date().toISOString(),
-      cancellation_reason: params.cancellationReason || 'Reassigned to another vendor',
-    })
-    .eq('id', existing.id);
-
-  if (updateError) {
-    console.error('Error cancelling active assignment:', updateError);
-    return { cancelledAssignment: null, error: updateError };
-  }
-
-  return { cancelledAssignment: existing as CancelledAssignment, error: null };
+  return { cancelledAssignment: closed[0] ?? null, error: null };
 }
 
 /**

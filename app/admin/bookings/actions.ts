@@ -3,7 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getUnifiedBookingsList, createBookingAssignment, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
+import { getUnifiedBookingsList, createBookingAssignment, closeActiveAssignments, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
 import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/email/services/vendor-emails'
 import { sendDriverBookingUnassignmentEmail } from '@/lib/email/services/driver-emails'
 import {
@@ -453,32 +453,20 @@ export async function updateBookingStatus(
     throw new Error('Failed to update booking status')
   }
 
-  // Free vehicle and driver resources when booking is completed or cancelled
+  // Close the assignment and free vehicle and driver when the booking is completed or
+  // cancelled. Handled by the shared helper so cancelling writes the assignment status too,
+  // and so a booking with more than one assignment row (any booking that was reassigned) is
+  // still cleaned up — the `.single()` this replaces returned null for those and silently
+  // left the driver and vehicle blocked.
   if (status === 'completed' || status === 'cancelled') {
-    // Use correct field based on booking type
-    const fieldName = bookingType === 'customer' ? 'booking_id' : 'business_booking_id'
-    const { data: assignment } = await adminClient
-      .from('booking_assignments')
-      .select('id, driver_id, vendor_id')
-      .eq(fieldName, bookingId)
-      .single()
+    const { closed } = await closeActiveAssignments({
+      bookingId: bookingType === 'customer' ? bookingId : undefined,
+      businessBookingId: bookingType === 'business' ? bookingId : undefined,
+      outcome: status,
+      reason: cancellationReason || 'Cancelled by admin',
+    })
 
-    if (assignment) {
-      // Update assignment status to completed with timestamp
-      if (status === 'completed') {
-        await adminClient
-          .from('booking_assignments')
-          .update({
-            status: 'completed',
-            completed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', assignment.id)
-      }
-
-      const { AvailabilityService } = await import('@/lib/availability/service')
-      await AvailabilityService.removeSchedule(assignment.id)
-
+    for (const assignment of closed) {
       // Notify driver of booking cancellation (non-blocking)
       if (status === 'cancelled' && assignment.driver_id) {
         try {
@@ -839,6 +827,24 @@ export async function bulkUpdateBookingStatus(
 
   if (error && bizError) {
     throw new Error('Failed to bulk update booking status')
+  }
+
+  // Close assignments and free vehicles/drivers. Bulk cancel previously touched neither, so
+  // every resource stayed blocked. Ids are passed for both booking types because this action
+  // is table-agnostic — it fires the same update at `bookings` and `business_bookings`.
+  if (status === 'cancelled') {
+    for (const bookingId of bookingIds) {
+      const { error: closeError } = await closeActiveAssignments({
+        bookingId,
+        businessBookingId: bookingId,
+        outcome: 'cancelled',
+        reason: 'Bulk cancellation by admin',
+      })
+
+      if (closeError) {
+        console.error('Failed to close assignments during bulk cancel:', { bookingId, closeError })
+      }
+    }
   }
 
   // Send notifications for business bookings (fire-and-forget)

@@ -532,7 +532,11 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Assignment status: {assignment.status}
+                    {assignment.status === 'cancelled'
+                      ? 'This service provider assignment was cancelled.'
+                      : assignment.status === 'rejected'
+                        ? 'The service provider declined this booking. A new one will be assigned.'
+                        : 'No service provider is currently assigned to this booking.'}
                   </p>
                 )}
               </div>

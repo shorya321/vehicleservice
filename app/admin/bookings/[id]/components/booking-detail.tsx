@@ -100,7 +100,14 @@ export function BookingDetail({ booking }: BookingDetailProps) {
     
     setIsUpdating(true)
     try {
-      await updateBookingStatus(booking.id, statusToUpdate)
+      // The booking type must be passed: without it the action defaults to
+      // `business_bookings` and a customer booking's status is written to the wrong table.
+      await updateBookingStatus(
+        booking.id,
+        statusToUpdate,
+        booking.bookingType || 'customer',
+        statusToUpdate === 'cancelled' ? 'Cancelled by admin' : undefined
+      )
       toast.success(`Booking status updated to ${statusToUpdate}`)
       router.refresh()
     } catch (error) {
