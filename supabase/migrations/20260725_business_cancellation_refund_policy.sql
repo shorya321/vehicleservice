@@ -20,7 +20,7 @@
 --              The status guard is deliberately untouched: 'completed' stays non-refundable
 --              because the trip was delivered and the money is earned.
 --
---              Safe to extend — the function has exactly one caller,
+--              Safe to extend. The function has exactly one caller,
 --              app/api/business/bookings/[id]/cancel/route.ts.
 --
 --              Backward compatible: the new parameter has a DEFAULT, so the old 2-argument call

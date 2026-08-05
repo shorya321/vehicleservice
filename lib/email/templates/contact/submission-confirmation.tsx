@@ -23,8 +23,7 @@ export const ContactConfirmationEmail = ({
       <Text style={emailStyles.text}>Dear {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for reaching out to Infinia Transfers. We have received your
-        message and our team will get back to you shortly.
+        We&apos;ve received your message and will get back to you shortly.
       </Text>
 
       <DetailsSection>
@@ -38,7 +37,7 @@ export const ContactConfirmationEmail = ({
 
       <Text style={emailStyles.text}>
         We typically respond within 24 hours during business days. If your
-        matter is urgent, please don&apos;t hesitate to call us directly.
+        matter is urgent, call us directly.
       </Text>
 
       <Text style={emailStyles.text}>

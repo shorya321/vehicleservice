@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 /* ============================================
-   INFINIA — Dual-Theme Design System
+   INFINIA: Dual-Theme Design System
    Light mode = :root | Dark mode = .dark
    ============================================ */
 
 :root {
-  /* Surface Scale — Light Mode (warm off-whites, gold-tinted) */
+  /* Surface Scale: Light Mode (warm off-whites, gold-tinted) */
   --black-void: #faf9f7;
   --black-rich: #f3f1ee;
   --black-warm: #eae7e2;
@@ -16,11 +16,11 @@
   --charcoal-light: #d0ccc5;
   --graphite: #c4c0b9;
 
-  /* Theme-invariant — always near-black, for text/icons on gold backgrounds (DESIGN.md: Onyx) */
+  /* Theme-invariant: always near-black, for text/icons on gold backgrounds (DESIGN.md: Onyx) */
   --onyx: #050506;
   --onyx-rgb: 5, 5, 6;
 
-  /* Gold Spectrum — Brand constant, identical both themes */
+  /* Gold Spectrum: Brand constant, identical both themes */
   --gold-pale: #f4ece0;
   --gold-cream: #e8d9c5;
   --gold-light: #d4c4a8;
@@ -29,7 +29,7 @@
   --gold-deep: #a68b5b;
   --gold-dark: #8b7349;
 
-  /* Gold text — darkened in light mode for WCAG AA (≥5:1 on --charcoal card bg, ≥6:1 on --black-void) */
+  /* Gold text: darkened in light mode for WCAG AA (≥5:1 on --charcoal card bg, ≥6:1 on --black-void) */
   --gold-text: #6b5530;
   --gold-text-hover: #5a4625;
   --gold-text-rgb: 107, 85, 48;
@@ -38,14 +38,14 @@
   --rose-subtle: rgba(198, 156, 136, 0.08);
   --rose-glow: rgba(198, 156, 136, 0.15);
 
-  /* Dropdown surfaces — light: warm white, dark: charcoal */
+  /* Dropdown surfaces: light: warm white, dark: charcoal */
   --dropdown-surface: #f8f6f3;
   --dropdown-surface-hover: #eae7e2;
 
-  /* Absolute — warm white per DESIGN.md, same both themes */
+  /* Absolute: warm white per DESIGN.md, same both themes */
   --bone: #f8f6f3;
 
-  /* Text Colors — Light Mode */
+  /* Text Colors: Light Mode */
   --text-primary: #1a1917;
   --text-secondary: #5c5955;
   --text-muted: #625e5b;
@@ -84,7 +84,7 @@
   --duration-normal: 400ms;
   --duration-slow: 800ms;
 
-  /* Tailwind CSS Variables (HSL format) — Light Mode */
+  /* Tailwind CSS Variables (HSL format): Light Mode */
   --background: 36 14% 97%;
   --foreground: 40 8% 10%;
   --card: 36 10% 86%;
@@ -108,14 +108,14 @@
   --radius: 0.5rem;
   --reading-bg: #ffffff;
 
-  /* Account layout tokens — light mode */
+  /* Account layout tokens: light mode */
   --border-default: rgba(var(--charcoal-rgb), 0.3);
   --border-subtle: rgba(var(--charcoal-rgb), 0.15);
   --border-accent: rgba(var(--gold-rgb), 0.15);
   --shadow-card: 0 1px 3px rgba(var(--charcoal-rgb), 0.08), 0 1px 2px rgba(var(--charcoal-rgb), 0.04);
   --shadow-card-hover: 0 4px 12px rgba(var(--charcoal-rgb), 0.1), 0 2px 4px rgba(var(--charcoal-rgb), 0.06);
 
-  /* Semantic status tokens — light mode */
+  /* Semantic status tokens: light mode */
   --status-confirmed-bg: rgba(59, 130, 246, 0.12);
   --status-confirmed-text: #2563eb;
   --status-confirmed-border: rgba(59, 130, 246, 0.25);
@@ -141,7 +141,7 @@
   --overlay-bg: rgba(var(--charcoal-rgb), 0.8);
 }
 
-/* Dark mode — original luxury palette */
+/* Dark mode: original luxury palette */
 .dark {
   --black-void: #050506;
   --black-rich: #100f0e;
@@ -198,14 +198,14 @@
   --radius: 0.5rem;
   --reading-bg: #1a1918;
 
-  /* Account layout tokens — dark mode */
+  /* Account layout tokens: dark mode */
   --border-default: rgba(var(--gold-rgb), 0.12);
   --border-subtle: rgba(var(--gold-rgb), 0.06);
   --border-accent: rgba(var(--gold-rgb), 0.25);
   --shadow-card: none;
   --shadow-card-hover: 0 10px 20px -5px rgba(var(--gold-rgb), 0.15), 0 4px 8px -4px rgba(var(--gold-rgb), 0.1);
 
-  /* Semantic status tokens — dark mode */
+  /* Semantic status tokens: dark mode */
   --status-confirmed-bg: rgba(96, 165, 250, 0.2);
   --status-confirmed-text: #60a5fa;
   --status-confirmed-border: rgba(96, 165, 250, 0.3);
@@ -466,7 +466,7 @@
     transform: rotate(45deg);
   }
 
-  /* Gold accent text — solid color. Gradient background-clip on text is banned. */
+  /* Gold accent text: solid color. Gradient background-clip on text is banned. */
   .gold-text {
     color: var(--gold-text);
   }
@@ -1823,7 +1823,7 @@
   }
 
   /* Also used by the search-results trip-summary card, whose trigger is styled through its own
-     className and carries no `.search-bar-date-trigger` — hence the trigger-agnostic selector. The
+     className and carries no `.search-bar-date-trigger`, hence the trigger-agnostic selector. The
      child combinator keeps this from reaching any other Radix `data-state` element. */
   [data-state='open'] > .search-bar-chevron {
     transform: rotate(180deg);
@@ -1957,9 +1957,16 @@
     background: transparent;
   }
 
-  .time-option:hover:not([data-selected="true"]) {
+  .time-option:hover:not(:disabled):not([data-selected="true"]) {
     background: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
+  }
+
+  /* Times before the picker's minTime. :hover is still delivered to disabled buttons in
+     some browsers, hence the :not(:disabled) on the hover rules above and below. */
+  .time-option:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
   }
 
   .time-option[data-selected="true"] {
@@ -1993,7 +2000,7 @@
     font-family: var(--font-body);
   }
 
-  .luxury-time-popover .time-option:hover:not([data-selected="true"]) {
+  .luxury-time-popover .time-option:hover:not(:disabled):not([data-selected="true"]) {
     background: rgba(var(--gold-rgb), 0.12);
     color: var(--gold-cream);
   }
@@ -2247,7 +2254,7 @@
     color: var(--gold-text);
   }
 
-  /* Header CTA — wipe-fill hover */
+  /* Header CTA: wipe-fill hover */
   .btn-cta-header {
     position: relative;
     font-size: 0.75rem;
@@ -2658,7 +2665,7 @@
 }
 
 /* ============================================
-   BLOG CARD SURFACE — luxury-card DNA, 8px radius
+   BLOG CARD SURFACE: luxury-card DNA, 8px radius
    ============================================ */
 .blog-card-surface {
   background-color: var(--charcoal);
@@ -2687,7 +2694,7 @@
 }
 
 /* ============================================
-   BLOG ARTICLE HEADER — Full-width above grid
+   BLOG ARTICLE HEADER: Full-width above grid
    ============================================ */
 .blog-article-header {
   max-width: 900px;
@@ -2697,7 +2704,7 @@
 }
 
 /* ============================================
-   BLOG ARTICLE LAYOUT — 65/35 Split
+   BLOG ARTICLE LAYOUT: 65/35 Split
    ============================================ */
 .blog-article-layout {
   max-width: 75ch;
@@ -2840,7 +2847,7 @@
 }
 
 /* ============================================
-   CHECKOUT PAGE — EDITORIAL OPEN LAYOUT
+   CHECKOUT PAGE: EDITORIAL OPEN LAYOUT
    ============================================ */
 
 /* ── Form Sections: flat, no card wrappers ── */
@@ -3073,7 +3080,7 @@
   color: var(--text-muted);
 }
 
-/* ── Service Cards (interactive — keep card styling) ── */
+/* ── Service Cards (interactive: keep card styling) ── */
 .checkout-services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -3200,6 +3207,84 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--text-primary);
+}
+
+/* Per-seat child ages. Rendered inside a service card once a child seat is selected. One field
+   per unit, so a quantity of 2 asks for two ages. */
+.checkout-service-ages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.checkout-service-age-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 8.5rem;
+  flex: 1 1 8.5rem;
+}
+
+.checkout-service-age-label {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.checkout-service-age-select {
+  /* Matches .checkout-quantity-btn's touch target so the row lines up on mobile. */
+  min-height: 44px;
+  width: 100%;
+  padding: 0 0.625rem;
+  border: 1px solid var(--graphite);
+  border-radius: 4px;
+  background-color: var(--charcoal);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.checkout-service-age-select:hover {
+  border-color: var(--gold);
+}
+
+.checkout-service-age-select:focus-visible {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 25%, transparent);
+}
+
+.checkout-service-age-select[aria-invalid='true'] {
+  border-color: var(--destructive);
+}
+
+.checkout-service-age-error {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  color: var(--destructive);
+}
+
+/* Fit advisory: the chosen age sits outside this seat's typical range. Deliberately amber rather
+   than --destructive: it sits directly beneath the blocking "Required" error and must not read as
+   another thing preventing checkout. It never blocks. */
+.checkout-service-age-hint {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: #d08700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .checkout-service-age-hint {
+    color: #e8b339;
+  }
 }
 
 .checkout-service-checkbox {
@@ -3459,7 +3544,7 @@
   }
 }
 
-/* Checkout Buttons — matches DESIGN.md §5 */
+/* Checkout Buttons: matches DESIGN.md §5 */
 .checkout-btn-primary {
   position: relative;
   display: inline-flex;
@@ -3522,7 +3607,7 @@
   }
 }
 
-/* Product-layer entrance — CSS equivalent of Framer Motion [0.16,1,0.3,1] / 0.5s.
+/* Product-layer entrance: CSS equivalent of Framer Motion [0.16,1,0.3,1] / 0.5s.
    Static server-rendered elements needing entrance parity with animated siblings.
    Interactive/reactive animation → Framer Motion. Static entrance → this class. */
 @keyframes productEntrance {
@@ -3580,7 +3665,7 @@
   outline-offset: 2px;
 }
 
-/* Vendor form — validation error entrance */
+/* Vendor form: validation error entrance */
 @keyframes vendorErrorIn {
   from {
     opacity: 0;
@@ -3598,7 +3683,7 @@
   }
 }
 
-/* Checkout Checkbox — visible checkmark on checked state */
+/* Checkout Checkbox: visible checkmark on checked state */
 .checkout-checkbox {
   appearance: none;
   width: 1rem;
@@ -3871,7 +3956,7 @@
   color: var(--gold-text);
 }
 
-/* Item Card Pattern — aligned with luxury-card vocabulary */
+/* Item Card Pattern: aligned with luxury-card vocabulary */
 .account-item-card {
   padding: var(--space-lg);
   background: linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.5) 0%, rgba(var(--warm-rgb), 0.3) 100%);
@@ -3886,7 +3971,7 @@
   box-shadow: 0 10px 24px -8px rgba(var(--gold-rgb), 0.18);
 }
 
-/* Account Eyebrow — editorial label with gold rule */
+/* Account Eyebrow: editorial label with gold rule */
 .account-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -4241,13 +4326,13 @@
   }
 }
 
-/* Auth-scoped headline — product register scale, not marketing Display. */
+/* Auth-scoped headline: product register scale, not marketing Display. */
 .auth-page .editorial-headline {
   font-size: clamp(1.75rem, 3vw, 2.5rem);
   line-height: 1.15;
 }
 
-/* Auth hero beat — Title role for stronger contrast with body (1.31:1). */
+/* Auth hero beat: Title role for stronger contrast with body (1.31:1). */
 .auth-beat-title {
   font-family: var(--font-body);
   font-size: 1.0625rem;
@@ -4264,7 +4349,7 @@
   color: var(--text-secondary);
 }
 
-/* Auth secondary body — helper text, terms, links inside forms. */
+/* Auth secondary body: helper text, terms, links inside forms. */
 .auth-body-sm {
   font-family: var(--font-body);
   font-weight: 400;
@@ -4272,7 +4357,7 @@
   line-height: 1.6;
 }
 
-/* Auth alert text — sits between Body and Label. */
+/* Auth alert text: sits between Body and Label. */
 .auth-alert-text {
   font-family: var(--font-body);
   font-weight: 400;
@@ -4280,7 +4365,7 @@
   line-height: 1.5;
 }
 
-/* Auth hint — Label-scale for field hints and micro-copy. */
+/* Auth hint: Label-scale for field hints and micro-copy. */
 .auth-hint {
   font-family: var(--font-body);
   font-weight: 400;
@@ -4289,7 +4374,7 @@
   color: var(--text-muted);
 }
 
-/* Auth label-link — navigational labels like "back to sign in". */
+/* Auth label-link: navigational labels like "back to sign in". */
 .auth-label-link {
   font-family: var(--font-body);
   font-size: 0.75rem;
@@ -4298,7 +4383,7 @@
   text-transform: uppercase;
 }
 
-/* Auth inline link — gold accent links inside body text. */
+/* Auth inline link: gold accent links inside body text. */
 .auth-text-link {
   color: var(--gold-text);
   transition: color var(--duration-fast) var(--ease-luxury);
@@ -4307,7 +4392,7 @@
   color: var(--gold-text-hover);
 }
 
-/* Auth alert boxes — error and success feedback. */
+/* Auth alert boxes: error and success feedback. */
 .auth-alert-error {
   display: flex;
   align-items: flex-start;
@@ -4349,7 +4434,7 @@
   border-color: var(--graphite);
 }
 
-/* Hero panel beat dividers — gold-tinted in light mode */
+/* Hero panel beat dividers: gold-tinted in light mode */
 .auth-hero-panel li {
   border-top-color: rgba(198, 170, 136, 0.2);
 }
@@ -4422,13 +4507,13 @@
 }
 
 /* ============================================
-   Composed Itinerary — Editorial Layer
+   Composed Itinerary: Editorial Layer
    Added in customer-frontend redesign (2026-05).
    See DESIGN.md (Creative North Star).
    ============================================ */
 
 @layer components {
-  /* Hairline divider — 1px graphite rule used between editorial blocks. */
+  /* Hairline divider: 1px graphite rule used between editorial blocks. */
   .hairline {
     height: 1px;
     background-color: var(--graphite);
@@ -4441,14 +4526,14 @@
     border: 0;
   }
 
-  /* Numeric helper — tabular figures + half-step weight bump. */
+  /* Numeric helper: tabular figures + half-step weight bump. */
   .numeric {
     font-variant-numeric: tabular-nums lining-nums;
     font-weight: 500;
     letter-spacing: 0;
   }
 
-  /* Editorial eyebrow — quiet, ledger-style label. */
+  /* Editorial eyebrow: quiet, ledger-style label. */
   .editorial-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -4492,7 +4577,7 @@
     color: var(--text-primary);
   }
 
-  /* Promoted section title — for the 2-3 highest-value mid-page sections. */
+  /* Promoted section title: for the 2-3 highest-value mid-page sections. */
   .editorial-section-title--promoted {
     font-family: var(--font-body);
     font-weight: 600;
@@ -4502,7 +4587,7 @@
     color: var(--text-primary);
   }
 
-  /* Editorial body copy — 75ch line length cap, generous leading. */
+  /* Editorial body copy: 75ch line length cap, generous leading. */
   .editorial-body {
     font-family: var(--font-body);
     font-weight: 400;
@@ -4513,7 +4598,7 @@
     max-width: 65ch;
   }
 
-  /* Itinerary Block — signature product typography pattern. */
+  /* Itinerary Block: signature product typography pattern. */
   .itinerary-block {
     display: grid;
     grid-template-columns: 1fr;
@@ -4556,7 +4641,7 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* Numeric chip — for prices, counts, durations rendered inline. */
+  /* Numeric chip: for prices, counts, durations rendered inline. */
   .numeric-chip {
     display: inline-flex;
     align-items: baseline;
@@ -4580,7 +4665,7 @@
     color: var(--text-muted);
   }
 
-  /* Editorial section wrapper — replaces alternating bg-luxury-* sections. */
+  /* Editorial section wrapper: replaces alternating bg-luxury-* sections. */
   .editorial-section {
     position: relative;
     padding-top: clamp(4rem, 9vw, 7rem);
@@ -4605,7 +4690,7 @@
     padding-bottom: clamp(5rem, 12vw, 9rem);
   }
 
-  /* Editorial pull-quote — testimonial style. */
+  /* Editorial pull-quote: testimonial style. */
   .pullquote {
     font-family: var(--font-body);
     font-weight: 500;
@@ -4626,7 +4711,7 @@
     color: var(--text-muted);
   }
 
-  /* Editorial inline list — replaces identical-card-grid anti-pattern. */
+  /* Editorial inline list: replaces identical-card-grid anti-pattern. */
   .editorial-list {
     list-style: none;
     padding: 0;
@@ -4682,7 +4767,7 @@
     color: var(--text-muted);
   }
 
-  /* Editorial feature grid — compact 2-col alternative to editorial-list. */
+  /* Editorial feature grid: compact 2-col alternative to editorial-list. */
   .editorial-feature-grid {
     list-style: none;
     padding: 0;
@@ -4720,7 +4805,7 @@
     }
   }
 
-  /* Editorial action — text link replacing card-CTA. */
+  /* Editorial action: text link replacing card-CTA. */
   .editorial-action {
     display: inline-flex;
     align-items: center;
@@ -4757,12 +4842,12 @@
 }
 
 /* ============================================
-   Canonical Type Ramp — DESIGN.md roles.
+   Canonical Type Ramp: DESIGN.md roles.
    Use these utilities in JSX in place of ad-hoc
    text-* / tracking-* / font-weight combos.
    ============================================ */
 @layer components {
-  /* Display — peak typographic moment. One per surface.
+  /* Display: peak typographic moment. One per surface.
      Hero titles, confirmation hero. */
   .t-display {
     font-family: var(--font-body);
@@ -4773,7 +4858,7 @@
     color: var(--text-primary);
   }
 
-  /* Headline — section titles, page H1 inside the booking flow. */
+  /* Headline: section titles, page H1 inside the booking flow. */
   .t-headline {
     font-family: var(--font-body);
     font-weight: 400;
@@ -4783,7 +4868,7 @@
     color: var(--text-primary);
   }
 
-  /* Subhead — smaller serif title for card heroes, blog cards. */
+  /* Subhead: smaller serif title for card heroes, blog cards. */
   .t-subhead {
     font-family: var(--font-body);
     font-weight: 400;
@@ -4793,7 +4878,7 @@
     color: var(--text-primary);
   }
 
-  /* Title — Outfit 500, card titles, form section labels. */
+  /* Title: Outfit 500, card titles, form section labels. */
   .t-title {
     font-family: var(--font-body);
     font-weight: 500;
@@ -4803,7 +4888,7 @@
     color: var(--text-primary);
   }
 
-  /* Body — default paragraph and description copy. */
+  /* Body: default paragraph and description copy. */
   .t-body {
     font-family: var(--font-body);
     font-weight: 400;
@@ -4813,7 +4898,7 @@
     color: var(--text-secondary);
   }
 
-  /* Meta — smaller secondary text. Captions, helper, list-row support. */
+  /* Meta: smaller secondary text. Captions, helper, list-row support. */
   .t-meta {
     font-family: var(--font-body);
     font-weight: 400;
@@ -4822,7 +4907,7 @@
     color: var(--text-secondary);
   }
 
-  /* Numeric — prices, times, distances, durations, counts.
+  /* Numeric: prices, times, distances, durations, counts.
      Tabular figs + half-step weight bump per The Numerals-Are-Display Rule. */
   .t-numeric {
     font-family: var(--font-body);
@@ -4832,7 +4917,7 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* Price — large numeric display (order total, hero price). */
+  /* Price: large numeric display (order total, hero price). */
   .t-price {
     font-family: var(--font-body);
     font-weight: 500;
@@ -4843,7 +4928,7 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* Label — uppercase eyebrow / status chip / step indicator. */
+  /* Label: uppercase eyebrow / status chip / step indicator. */
   .t-label {
     font-family: var(--font-body);
     font-weight: 500;
@@ -4868,7 +4953,7 @@
 
 @layer components {
 
-  /* Header CTA — drop pill in favour of editorial 4px corners. */
+  /* Header CTA: drop pill in favour of editorial 4px corners. */
   .btn-cta-header {
     border-radius: 4px !important;
     padding: 0.6rem 1.25rem !important;
@@ -4880,7 +4965,7 @@
     border-radius: 0 !important;
   }
 
-  /* Header — quiet down ambient gradient + blur for editorial cleanliness. */
+  /* Header: quiet down ambient gradient + blur for editorial cleanliness. */
   .nav-luxury {
     background: transparent !important;
     backdrop-filter: none !important;
@@ -4898,14 +4983,14 @@
     border-bottom-color: var(--graphite) !important;
   }
 
-  /* Section-divider — kill diamond icon decoration. */
+  /* Section-divider: kill diamond icon decoration. */
   .section-divider {
     display: none !important;
   }
 }
 
 /* ============================================
-   BLOG HERO — Entrance Animations + Glow
+   BLOG HERO: Entrance Animations + Glow
    ============================================ */
 @keyframes blog-hero-reveal {
   from { opacity: 0; transform: translate3d(0, 18px, 0); }
@@ -4971,11 +5056,11 @@
 }
 
 /* ═══════════════════════════════════════════════
-   Blog Redesign — Featured Hero, Magazine Grid,
+   Blog Redesign: Featured Hero, Magazine Grid,
    Reading Column, Related Scroll, Floating Share
    ═══════════════════════════════════════════════ */
 
-/* Featured Hero — full-width image with overlay text */
+/* Featured Hero: full-width image with overlay text */
 .blog-featured-hero {
   position: relative;
   width: 100%;
@@ -5034,7 +5119,7 @@
   margin: 0 auto;
 }
 
-/* Article Hero — Entrance Animations */
+/* Article Hero: Entrance Animations */
 @keyframes article-hero-image {
   from { opacity: 0; transform: scale(1.04); }
   to { opacity: 1; transform: scale(1); }
@@ -5080,7 +5165,7 @@
   }
 }
 
-/* Overlay Card — image + gradient + text overlaid */
+/* Overlay Card: image + gradient + text overlaid */
 .blog-overlay-card {
   position: relative;
   overflow: hidden;
@@ -5137,7 +5222,7 @@
   z-index: 1;
 }
 
-/* Reading Column — distinct bg for article body */
+/* Reading Column: distinct bg for article body */
 .blog-reading-column {
   background-color: var(--reading-bg);
 }
@@ -5148,7 +5233,7 @@
   padding: clamp(2.5rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
 }
 
-/* Pull Quote — gold borders */
+/* Pull Quote: gold borders */
 .blog-pull-quote {
   border-top: 3px solid var(--gold);
   border-bottom: 3px solid var(--gold);
@@ -5160,7 +5245,7 @@
   border-color: var(--gold-text);
 }
 
-/* Related Posts — horizontal scroll */
+/* Related Posts: horizontal scroll */
 .blog-related-scroll {
   display: flex;
   gap: 1.5rem;
@@ -5203,7 +5288,7 @@
   }
 }
 
-/* Floating Share — desktop sidebar + mobile bottom bar */
+/* Floating Share: desktop sidebar + mobile bottom bar */
 .blog-floating-share {
   position: fixed;
   left: max(1.5rem, calc((100vw - 75ch) / 2 - 5rem));
@@ -5246,7 +5331,7 @@
   }
 }
 
-/* Category Hero — warm-tinted bg */
+/* Category Hero: warm-tinted bg */
 .blog-category-hero {
   position: relative;
   background: var(--black-warm);
@@ -5263,7 +5348,7 @@
   pointer-events: none;
 }
 
-/* Tag Hero — compact */
+/* Tag Hero: compact */
 .blog-tag-hero {
   position: relative;
   overflow: hidden;
@@ -5285,7 +5370,7 @@
 }
 
 /* ============================================
-   BLOG FEATURED SPREAD — editorial hero
+   BLOG FEATURED SPREAD: editorial hero
    ============================================ */
 .blog-featured-spread {
   border-radius: 8px;
@@ -5322,7 +5407,7 @@
 }
 
 /* ============================================
-   BLOG — LIGHT MODE OVERRIDES
+   BLOG: LIGHT MODE OVERRIDES
    ============================================ */
 .light .blog-card-surface {
   background-color: var(--black-warm);
@@ -5469,7 +5554,7 @@
 }
 
 /* ═══════════════════════════════════════════════
-   ARTICLE PAGE — Editorial Masthead Redesign
+   ARTICLE PAGE: Editorial Masthead Redesign
    Typography-first, magazine reading experience
    ═══════════════════════════════════════════════ */
 

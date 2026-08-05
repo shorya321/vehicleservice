@@ -5,7 +5,7 @@
  *
  * Two rules govern this file:
  *
- * 1. It receives PRE-FORMATTED strings and never re-derives an amount — the same discipline
+ * 1. It receives PRE-FORMATTED strings and never re-derives an amount. The same discipline
  *    documented in booking-invoice.tsx. Currency conversion, rounding and date formatting all
  *    happen in lib/business/quotations/pdf-payload.ts.
  *
@@ -119,7 +119,7 @@ export interface QuotationPdfLineItem {
   when: string;
   vehicle: string;
   guests: string;
-  /** Addons NAMED without prices — itemising invites line-by-line haggling. */
+  /** Addons NAMED without prices. Itemising invites line-by-line haggling. */
   addons?: string;
   notes?: string;
   amount: string;
@@ -169,12 +169,12 @@ export const QuotationPDF = (data: QuotationPdfData) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header — logo when we have a drawable one, otherwise a typographic wordmark.
+        {/* Header. Logo when we have a drawable one, otherwise a typographic wordmark.
             resolveBrandLogo() returns null for SVG/webp, which @react-pdf cannot draw. */}
         <View style={styles.header}>
           <View>
             {data.logo ? (
-              // @react-pdf's Image is a PDF primitive, not an HTML <img> — no alt prop exists.
+              // @react-pdf's Image is a PDF primitive, not an HTML <img>, no alt prop exists.
               // eslint-disable-next-line jsx-a11y/alt-text
               <Image style={styles.logo} src={data.logo} />
             ) : (
@@ -242,7 +242,7 @@ export const QuotationPDF = (data: QuotationPdfData) => {
           ))}
         </View>
 
-        {/* Totals — wrap={false} because a grand total orphaned from its subtotal is the
+        {/* Totals. Wrap={false} because a grand total orphaned from its subtotal is the
             worst possible outcome on a document being negotiated over. */}
         <View style={styles.summaryBox} wrap={false}>
           <View style={styles.summaryRow}>

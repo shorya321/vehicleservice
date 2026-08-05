@@ -6,7 +6,7 @@
  * Opening the dialog runs a PREFLIGHT (GET) which creates nothing: it re-prices every trip and
  * checks every wallet rule, so the business sees the true cost and any blocker before a single
  * booking exists. Confirming posts back the repriceToken, which binds the confirmation to the
- * exact figures shown — otherwise prices could move between review and purchase.
+ * exact figures shown. Otherwise prices could move between review and purchase.
  */
 
 import { useState } from 'react';
@@ -131,7 +131,7 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
           {loading && (
             <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Re-pricing every trip…
+              Re-pricing every trip...
             </div>
           )}
 

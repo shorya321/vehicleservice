@@ -4,7 +4,7 @@
  * Priced proposals covering one or more trips, shared with the customer as a single PDF.
  * No booking exists and no money moves until a quotation is converted.
  *
- * Filtering and pagination are done in SQL by getQuotations — see actions.ts.
+ * Filtering and pagination are done in SQL by getQuotations. See actions.ts.
  */
 
 import { Metadata } from 'next';

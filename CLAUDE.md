@@ -39,15 +39,15 @@ npx supabase gen types typescript --project-id <project-id> > lib/supabase/types
 
 These 9 rules are **mandatory** for every task. Follow them in order:
 
-1. **Prompt Enhancement** — Use `prompt-engineering-patterns` skill to improve every user prompt before executing
-2. **Pre-Code Guidelines** — Use `karpathy-guidelines` skill before writing or editing any code
-3. **Next.js Code** — Load `next-best-practices`, `vercel-composition-patterns`, and `vercel-react-best-practices` skills before writing any Next.js code
-4. **Code Search** — Use Narsil MCP (LSP-based) for thorough code searching (`mcp__narsil-mcp__search_code`, `mcp__narsil-mcp__find_symbols`, etc.)
-5. **Post-Edit Error Handling** — Use `error-handling-patterns` skill after editing code
-6. **Post-Edit Type & Lint Check** — Run `npx tsc --noEmit` and `npm run lint` after editing or writing code
-7. **Supabase Work** — Use `supabase-postgres-best-practices` skill when working with Supabase MCP
-8. **Documentation & Research** — Use Ref MCP (`mcp__Ref`) AND Exa MCP (`mcp__exa`) simultaneously to gather latest information before coding
-9. **Browser Testing** — Use `agent-browser` skill after all changes for end-to-end browser testing
+1. **Prompt Enhancement**: Use `prompt-engineering-patterns` skill to improve every user prompt before executing
+2. **Pre-Code Guidelines**: Use `karpathy-guidelines` skill before writing or editing any code
+3. **Next.js Code**: Load `next-best-practices`, `vercel-composition-patterns`, and `vercel-react-best-practices` skills before writing any Next.js code
+4. **Code Search**: Use Narsil MCP (LSP-based) for thorough code searching (`mcp__narsil-mcp__search_code`, `mcp__narsil-mcp__find_symbols`, etc.)
+5. **Post-Edit Error Handling**: Use `error-handling-patterns` skill after editing code
+6. **Post-Edit Type & Lint Check**: Run `npx tsc --noEmit` and `npm run lint` after editing or writing code
+7. **Supabase Work**: Use `supabase-postgres-best-practices` skill when working with Supabase MCP
+8. **Documentation & Research**: Use Ref MCP (`mcp__Ref`) AND Exa MCP (`mcp__exa`) simultaneously to gather latest information before coding
+9. **Browser Testing**: Use `agent-browser` skill after all changes for end-to-end browser testing
 
 ## Commands
 
@@ -113,7 +113,7 @@ Server Components for data fetching (default)
 Client Components only for interactivity ('use client')
 Compose Shadcn UI components rather than raw HTML
 TypeScript interfaces for all component props
-Page/layout `params` and `searchParams` are `Promise<>` in Next.js 16 — must be awaited
+Page/layout `params` and `searchParams` are `Promise<>` in Next.js 16. Must be awaited
 
 #### Database Patterns
 Normalized relational structure with foreign keys
@@ -162,9 +162,9 @@ Consistent spacing and typography scale
 #### Performance Optimization
 Use `next/dynamic` for lazy loading with proper loading UI fallbacks
 Optimize images with Next.js Image component
-Use `useCallback`/`useMemo` sparingly — React 19 compiler handles most memoization automatically
+Use `useCallback`/`useMemo` sparingly: React 19 compiler handles most memoization automatically
 Implement pagination for large data sets
-Project uses `unstable_cache` from `next/cache` — the modern `'use cache'` directive requires `experimental.dynamicIO` which is not yet enabled
+Project uses `unstable_cache` from `next/cache`. The modern `'use cache'` directive requires `experimental.dynamicIO` which is not yet enabled
 
 ### Security Considerations
 Environment variables for sensitive keys

@@ -31,7 +31,7 @@ export function RefreshRatesButton() {
           toast.success(result.message || 'Exchange rates updated from live API')
         } else if (result.source === 'fallback') {
           setLastResult('error')
-          toast.warning('Using cached rates — live API unavailable', {
+          toast.warning('Using cached rates: live API unavailable', {
             description: 'Rates were not updated. Try again later.',
             duration: 6000,
           })

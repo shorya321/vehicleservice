@@ -77,7 +77,7 @@ export const POST = requireBusinessOwner(
         return apiError('Unauthorized: Some bookings do not belong to your account', 403);
       }
 
-      // Deleting NEVER moves money — refunds belong to cancellation alone, under the published
+      // Deleting NEVER moves money. Refunds belong to cancellation alone, under the published
       // 24-hour policy. This previously issued one aggregate refund through an RPC named
       // `add_wallet_balance` that has never existed (the real one is `add_to_wallet`), logged
       // the failure, deleted anyway, and still reported `total_refund`. It also omitted
@@ -134,7 +134,7 @@ export const POST = requireBusinessOwner(
         console.error('Bulk delete error:', deleteError);
 
         // At least one booking came from a quotation and is held by an ON DELETE RESTRICT
-        // foreign key. Nothing was deleted — the statement is all-or-nothing.
+        // foreign key. Nothing was deleted. The statement is all-or-nothing.
         if (deleteError.code === '23503') {
           return apiError(
             'One or more of these bookings was created from a quotation. Remove them from their quotation before deleting.',
@@ -148,7 +148,7 @@ export const POST = requireBusinessOwner(
       return apiSuccess({
         message: `Successfully deleted ${bookings.length} booking(s)`,
         deleted_count: bookings.length,
-        // Deletion never refunds — see the note above.
+        // Deletion never refunds. See the note above.
         refunded: false,
       });
     } catch (error) {

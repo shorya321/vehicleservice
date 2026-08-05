@@ -155,7 +155,7 @@ describe('resolveRevenueRange presets', () => {
 
     expect(range.from).toBe('2026-01-01')
     expect(range.to).toBe(TODAY)
-    expect(buildBuckets(range)).toHaveLength(7) // Jan–Jul, not 12
+    expect(buildBuckets(range)).toHaveLength(7) // Jan-Jul, not 12
   })
 
   it('falls back to the default for a future or unknown preset', () => {

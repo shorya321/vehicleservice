@@ -21,18 +21,17 @@ export const VendorApplicationApprovedEmail = ({
 }: VendorApplicationApprovedEmailProps) => {
   return (
     <EmailLayout
-      preview="Congratulations! Your Vendor Application Approved"
+      preview="Your vendor application is approved"
       heading="Welcome to Infinia Transfers!"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <InfoBox type="success">
-        🎉 <strong>Congratulations!</strong> Your vendor application has been approved!
+        <strong>Your vendor application has been approved.</strong>
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        We&apos;re excited to have you join our network of trusted vehicle service providers. Your
-        application (Reference: {applicationReference}) has been carefully reviewed and approved.
+        Your application (Reference: {applicationReference}) is approved. You&apos;re now part of our vendor network.
       </Text>
 
       <Text style={emailStyles.text}>
@@ -72,12 +71,11 @@ export const VendorApplicationApprovedEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        If you have any questions or need assistance getting started, our vendor support team is
-        here to help. Don&apos;t hesitate to reach out!
+        Vendor support can help you get started. Contact them any time.
       </Text>
 
       <Text style={emailStyles.text}>
-        We look forward to a successful partnership!
+        Welcome aboard.
         <br />
         <br />
         Best regards,

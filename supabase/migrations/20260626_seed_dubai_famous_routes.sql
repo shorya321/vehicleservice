@@ -1,7 +1,7 @@
 -- ============================================================
 -- Seed 10 famous Dubai transfer routes between 3 zones:
 -- Downtown & DIFC, Dubai Marina & JBR, Palm Jumeirah
--- Uses EXISTING locations only — no new data created
+-- Uses EXISTING locations only, no new data created
 -- ============================================================
 
 -- Step 1: Delete all existing routes

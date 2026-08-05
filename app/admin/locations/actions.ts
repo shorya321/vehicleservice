@@ -157,7 +157,7 @@ export async function updateLocation(id: string, data: Partial<LocationFormData>
     throw new Error('Forbidden: Admin access required')
   }
 
-  // Prepare update data — exclude old type field
+  // Prepare update data. Exclude old type field
   const { type: _type, ...cleanData } = data as Record<string, unknown>
   const updateData: Record<string, unknown> = { ...cleanData }
 

@@ -5,6 +5,7 @@ import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
 import { emailStyles } from '../../styles/constants';
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
+import { formatChildAges } from '@/lib/utils/child-ages';
 
 interface BookingConfirmationEmailProps {
   customerName: string;
@@ -31,7 +32,7 @@ interface BookingConfirmationEmailProps {
   infants?: number;
   basePrice?: number;
   amenitiesPrice?: number;
-  extras?: Array<{ label: string; quantity: number; price: number }>;
+  extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
   customerNotes?: string;
   invoiceUrl?: string;
 }
@@ -79,7 +80,7 @@ export const BookingConfirmationEmail = ({
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
       <Text style={emailStyles.text}>
-        Great news! Your booking has been confirmed. Here are your booking details:
+        Your booking is confirmed. Here are the details:
       </Text>
 
       <DetailsSection>
@@ -140,7 +141,7 @@ export const BookingConfirmationEmail = ({
                 {extras && extras.length > 0 && extras.map((extra, index) => (
                   <tr key={index}>
                     <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333' }}>
-                      {extra.label}{extra.quantity > 1 ? ` x${extra.quantity}` : ''}
+                      {extra.label}{extra.quantity > 1 ? ` x${extra.quantity}` : ''}{formatChildAges(extra.childAges)}
                     </td>
                     <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333', textAlign: 'right' as const }}>
                       {currency} {extra.price.toFixed(2)}
@@ -211,12 +212,11 @@ export const BookingConfirmationEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        If you have any questions or need to modify your booking, please contact our support team
-        and provide your trip number.
+        To change this booking or ask a question, contact support with your trip number.
       </Text>
 
       <Text style={emailStyles.text}>
-        Thank you for choosing Infinia Transfers!
+        Thanks for booking with Infinia Transfers.
         <br />
         <br />
         Best regards,

@@ -3,7 +3,7 @@
 /**
  * Team counters, in the portal's stat-card style.
  *
- * Every counter is derived from the roster the page already fetched — no extra query. Colours
+ * Every counter is derived from the roster the page already fetched, no extra query. Colours
  * mirror the status pills below them, so "Deactivated" means the same thing whether it is read
  * off a counter or off a row.
  */

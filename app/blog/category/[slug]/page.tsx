@@ -88,7 +88,7 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
         </div>
       </section>
 
-      {/* Featured Spread — page 1 only, matching category */}
+      {/* Featured Spread. Page 1 only, matching category */}
       {featuredPost && (
         <section className="bg-[var(--black-void)] pt-[clamp(2rem,5vw,3.5rem)]">
           <div className="luxury-container">

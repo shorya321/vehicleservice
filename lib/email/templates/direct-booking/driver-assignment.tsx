@@ -8,12 +8,12 @@ import { emailStyles } from '../../styles/constants';
 /**
  * Tells a driver they have been given an offline job.
  *
- * Assignment is unilateral in this module — there is no accept step and no
- * driver portal — so this email is the driver's only notice.
+ * Assignment is unilateral in this module. There is no accept step and no
+ * driver portal, so this email is the driver's only notice.
  *
  * Deliberately carries neither the customer's phone number nor any pricing. The
  * passenger's contact details stay with the vendor, and what the customer paid
- * is the vendor's business — the driver is pointed at the vendor for both.
+ * is the vendor's business. The driver is pointed at the vendor for both.
  */
 interface DirectBookingDriverAssignmentEmailProps {
   driverName: string;

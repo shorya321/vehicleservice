@@ -42,7 +42,7 @@ export function BookingPipelineChart({ data }: BookingPipelineChartProps) {
             <CardDescription className="mt-0.5">Current status of your jobs</CardDescription>
           </div>
         </div>
-        {/* Pending is the actionable queue — surface it as a link to the jobs page. */}
+        {/* Pending is the actionable queue. Surface it as a link to the jobs page. */}
         <Link
           href="/vendor/bookings"
           className={cn(

@@ -24,7 +24,7 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
 
   // Results are filtered by vehicle capacity, so an empty result for a group is just as likely to be
   // "no vehicle big enough" as "route not served on this date". Name both rather than blaming the
-  // date, which is all this used to say. Deliberately fleet-agnostic — no hardcoded max capacity.
+  // date, which is all this used to say. Deliberately fleet-agnostic, no hardcoded max capacity.
   const partySize = Math.max(1, parseInt(searchParams.passengers || '1') || 1)
   const isGroup = partySize > 1
 

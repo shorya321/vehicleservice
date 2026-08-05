@@ -71,6 +71,8 @@ export type Database = {
       addons: {
         Row: {
           category: string
+          child_age_max: number | null
+          child_age_min: number | null
           created_at: string | null
           description: string | null
           display_order: number | null
@@ -81,10 +83,13 @@ export type Database = {
           name: string
           price: number
           pricing_type: string
+          requires_child_age: boolean
           updated_at: string | null
         }
         Insert: {
           category: string
+          child_age_max?: number | null
+          child_age_min?: number | null
           created_at?: string | null
           description?: string | null
           display_order?: number | null
@@ -95,10 +100,13 @@ export type Database = {
           name: string
           price?: number
           pricing_type?: string
+          requires_child_age?: boolean
           updated_at?: string | null
         }
         Update: {
           category?: string
+          child_age_max?: number | null
+          child_age_min?: number | null
           created_at?: string | null
           description?: string | null
           display_order?: number | null
@@ -109,6 +117,7 @@ export type Database = {
           name?: string
           price?: number
           pricing_type?: string
+          requires_child_age?: boolean
           updated_at?: string | null
         }
         Relationships: []
@@ -371,6 +380,7 @@ export type Database = {
           addon_id: string | null
           amenity_type: string
           booking_id: string | null
+          child_ages: number[] | null
           created_at: string | null
           id: string
           price: number
@@ -380,6 +390,7 @@ export type Database = {
           addon_id?: string | null
           amenity_type: string
           booking_id?: string | null
+          child_ages?: number[] | null
           created_at?: string | null
           id?: string
           price: number
@@ -389,6 +400,7 @@ export type Database = {
           addon_id?: string | null
           amenity_type?: string
           booking_id?: string | null
+          child_ages?: number[] | null
           created_at?: string | null
           id?: string
           price?: number
@@ -883,6 +895,7 @@ export type Database = {
         Row: {
           addon_id: string
           business_booking_id: string
+          child_ages: number[] | null
           created_at: string | null
           id: string
           quantity: number
@@ -892,6 +905,7 @@ export type Database = {
         Insert: {
           addon_id: string
           business_booking_id: string
+          child_ages?: number[] | null
           created_at?: string | null
           id?: string
           quantity?: number
@@ -901,6 +915,7 @@ export type Database = {
         Update: {
           addon_id?: string
           business_booking_id?: string
+          child_ages?: number[] | null
           created_at?: string | null
           id?: string
           quantity?: number
@@ -1071,6 +1086,7 @@ export type Database = {
       business_quotation_item_addons: {
         Row: {
           addon_id: string
+          child_ages: number[] | null
           created_at: string
           id: string
           item_id: string
@@ -1081,6 +1097,7 @@ export type Database = {
         }
         Insert: {
           addon_id: string
+          child_ages?: number[] | null
           created_at?: string
           id?: string
           item_id: string
@@ -1091,6 +1108,7 @@ export type Database = {
         }
         Update: {
           addon_id?: string
+          child_ages?: number[] | null
           created_at?: string
           id?: string
           item_id?: string

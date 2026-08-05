@@ -192,8 +192,8 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
 
       const formData = { ...values, primaryImageUrl }
 
-      // Bounded because a Server Action POST that never answers — a stalled
-      // connection, or a redirect issued by the proxy on an expired session —
+      // Bounded because a Server Action POST that never answers. A stalled
+      // connection, or a redirect issued by the proxy on an expired session,
       // otherwise leaves this await pending and the button stuck on "Saving...".
       const result = await withTimeout(
         initialData
@@ -576,7 +576,7 @@ export function AdminVehicleForm({ initialData, vendors }: AdminVehicleFormProps
           <CardHeader>
             <CardTitle>Vehicle Images</CardTitle>
             <CardDescription>
-              Add photos to showcase the vehicle
+              Add photos of the vehicle
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

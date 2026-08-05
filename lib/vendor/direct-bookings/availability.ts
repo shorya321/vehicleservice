@@ -7,12 +7,12 @@ import { toBookingTz } from '@/lib/utils/timezone'
  * Conflict detection for direct bookings, across BOTH booking systems.
  *
  * Where online occupancy actually lives: not in `bookings` or `booking_assignments`
- * but in `resource_schedules` — a polymorphic table (`resource_type` 'vehicle'|'driver',
+ * but in `resource_schedules`. A polymorphic table (`resource_type` 'vehicle'|'driver',
  * `resource_id`) written at one moment only, when a vendor accepts an online booking
  * and names a driver and vehicle. Customer and B2B bookings both flow through that
  * path, so reading `resource_schedules` covers both at once.
  *
- * Overlap is HALF-OPEN — `existing.start < new.end AND existing.end > new.start` —
+ * Overlap is HALF-OPEN: `existing.start < new.end AND existing.end > new.start`,
  * so a job ending at 16:00 does not collide with one starting at 16:00. This matches
  * `AvailabilityService.findConflicts` and the database exclusion constraints. Do not
  * copy the closed-interval `gte`/`lte` variant in `app/vendor/bookings/actions.ts`;
@@ -52,8 +52,8 @@ function formatWindow(start: string, end: string): string {
   const sameDay = format(s, 'yyyy-MM-dd') === format(e, 'yyyy-MM-dd')
 
   return sameDay
-    ? `${format(s, 'dd MMM')} ${format(s, 'HH:mm')}–${format(e, 'HH:mm')}`
-    : `${format(s, 'dd MMM HH:mm')} – ${format(e, 'dd MMM HH:mm')}`
+    ? `${format(s, 'dd MMM')} ${format(s, 'HH:mm')}-${format(e, 'HH:mm')}`
+    : `${format(s, 'dd MMM HH:mm')} - ${format(e, 'dd MMM HH:mm')}`
 }
 
 function describe(window: BusyWindow): string {
@@ -73,12 +73,12 @@ function describe(window: BusyWindow): string {
  * Every busy window touching [start, end) for the given resources, from all three
  * sources, in one round trip per source.
  *
- * `resourceIds` covers vehicles and drivers together — `resource_id` in the schedule
+ * `resourceIds` covers vehicles and drivers together, `resource_id` in the schedule
  * tables is an untyped uuid, and uuids do not collide across tables, so a single
  * `.in()` is safe and saves a query.
  *
  * Errors throw. A failed query must never be silently read as "available", nor as
- * "unavailable" — the latter is a live bug in the online flow, where a dropped
+ * "unavailable". The latter is a live bug in the online flow, where a dropped
  * `error` makes `schedules?.length === 0` evaluate `undefined === 0` and every
  * resource shows as busy the moment the database hiccups.
  */
@@ -104,7 +104,7 @@ async function loadBusyWindows(
     .lt('start_datetime', endIso)
     .gt('end_datetime', startIso)
 
-  // An assignment must not be reported as blocking itself — the online flow re-checks a
+  // An assignment must not be reported as blocking itself. The online flow re-checks a
   // window for the very booking that already holds it, when the vendor changes its
   // duration or swaps the driver. Written as an explicit OR because `neq` alone would
   // also drop rows whose booking_assignment_id is NULL.
@@ -337,7 +337,7 @@ export async function getFleetAvailability(
 
   const busyBy = new Map<string, BusyWindow>()
   for (const window of windows) {
-    // Keep the earliest conflict — it is the most useful one to name.
+    // Keep the earliest conflict. It is the most useful one to name.
     const existing = busyBy.get(window.resourceId)
     if (!existing || window.start < existing.start) {
       busyBy.set(window.resourceId, window)
@@ -349,7 +349,7 @@ export async function getFleetAvailability(
       const busy = busyBy.get(vehicle.id)
       const label = `${vehicle.make} ${vehicle.model}${
         vehicle.year ? ` (${vehicle.year})` : ''
-      } — ${vehicle.registration_number}`
+      }, ${vehicle.registration_number}`
 
       if (vehicle.is_available === false) {
         return { id: vehicle.id, label, available: false, reason: 'marked out of service' }
@@ -365,7 +365,7 @@ export async function getFleetAvailability(
 
     drivers: drivers.map((driver) => {
       const busy = busyBy.get(driver.id)
-      const label = `${driver.first_name} ${driver.last_name} — ${driver.phone}`
+      const label = `${driver.first_name} ${driver.last_name}, ${driver.phone}`
 
       if (driver.is_active === false) {
         return { id: driver.id, label, available: false, reason: 'inactive' }

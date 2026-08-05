@@ -180,7 +180,7 @@ export class AvailabilityService {
     //
     // Bookings stay clamped to today-and-future on purpose. Schedule rows are
     // hard-deleted the moment a booking completes or is cancelled (removeSchedule),
-    // so this table holds current occupancy, not history — a past window would be
+    // so this table holds current occupancy, not history. A past window would be
     // populated only by rows that were never cleaned up. Past trips live in
     // booking_assignments, surfaced by the Bookings History page.
     const today = startOfBookingDayUtc()
@@ -233,7 +233,7 @@ export class AvailabilityService {
     // maintenance windows and driver leave are recorded nowhere else in the
     // product, and hiding them lost the only copy.
     //
-    // The floor below applies only when no startDate was given — those calls are
+    // The floor below applies only when no startDate was given. Those calls are
     // unbounded backwards and would otherwise scan the vendor's whole history.
     if (startDate && endDate) {
       query = query
@@ -260,7 +260,7 @@ export class AvailabilityService {
   }
 
   /**
-   * Past bookings for a vendor's resources, sourced from booking_assignments — the
+   * Past bookings for a vendor's resources, sourced from booking_assignments. The
    * only permanent record of a trip once it is over. resource_schedules rows are
    * hard-deleted on completion/cancellation (removeSchedule), so getVendorSchedules
    * can never surface history; this method fills the gap for the calendar.
@@ -269,8 +269,8 @@ export class AvailabilityService {
    * pending) so the calendar can colour-code what actually ran vs. what fell through.
    *
    * pickup_datetime lives in bookings OR business_bookings, and PostgREST can only
-   * range-filter a joined column through an inner join — one query can inner-join
-   * one source — so two queries run and are unioned. Kept range-scoped (never the
+   * range-filter a joined column through an inner join. One query can inner-join
+   * one source, so two queries run and are unioned. Kept range-scoped (never the
    * whole history) for the same reason getVendorSchedules clamps.
    *
    * Admin client is used with an explicit vendor_id filter (see the scoping note on
@@ -285,7 +285,7 @@ export class AvailabilityService {
     const adminClient = createAdminClient()
 
     const today = startOfBookingDayUtc()
-    // Never fetch pickups at/after today — that window belongs to live schedules.
+    // Never fetch pickups at/after today. That window belongs to live schedules.
     const upperBound = endDate && endDate < today ? endDate : today
     // The calendar always passes a range, so startDate is normally present; the
     // fallback floor stops an unbounded call from scanning the vendor's whole past.
@@ -358,7 +358,7 @@ export class AvailabilityService {
       ...(businessResult.data ?? []),
     ] as unknown as PastBookingAssignment[]
 
-    // Keep only trips whose estimated end is before today — the exact line that
+    // Keep only trips whose estimated end is before today. The exact line that
     // prevents overlap with live schedules, and dedupe by assignment id.
     const seen = new Set<string>()
     const past: PastBookingAssignment[] = []
@@ -467,7 +467,7 @@ export class AvailabilityService {
   /**
    * Move an existing hold's window when the vendor changes the booking duration.
    *
-   * Returns the number of rows moved — normally two, one for the vehicle and one for the
+   * Returns the number of rows moved. Normally two, one for the vehicle and one for the
    * driver. Zero means the assignment has no hold at all, which happens for bookings
    * accepted while `createSchedule` failures were being swallowed; the caller recreates
    * the rows in that case rather than silently leaving the resources free.

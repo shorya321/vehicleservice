@@ -153,7 +153,7 @@ export function TeamPageContent({
         transition={{ duration: 0.3, delay: 0.2 }}
       >
         {/* The header counts every row in the table below it. The staff-only figure is a
-            different fact and lives in its own prompt beneath the roster — previously the two
+            different fact and lives in its own prompt beneath the roster. Previously the two
             were conflated, so a solo owner read "No staff members yet" directly above a table
             containing themselves. */}
         <PortalSectionCard
@@ -171,7 +171,7 @@ export function TeamPageContent({
             <Table>
               {/* TableHeader's own `[&_tr]:border-luxury-gold/20` is a descendant rule, so it
                   outranks a border class set on the row and tailwind-merge cannot see the
-                  conflict — it has to be neutralised here, on the same element. */}
+                  conflict. It has to be neutralised here, on the same element. */}
               <TableHeader className="[&_tr]:border-border">
                 <TableRow className="border-border hover:bg-muted/50">
                   <TableHead className={HEAD_CLASS}>Name</TableHead>
@@ -196,12 +196,12 @@ export function TeamPageContent({
                       className="group border-border border-l-2 border-l-transparent transition-all duration-150 hover:border-l-primary hover:bg-muted/50"
                     >
                       <TableCell className="font-medium text-foreground">
-                        {member.full_name || '—'}
+                        {member.full_name || '-'}
                         {isSelf && (
                           <span className="ml-2 text-xs text-muted-foreground">(you)</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{member.email || '—'}</TableCell>
+                      <TableCell className="text-muted-foreground">{member.email || '-'}</TableCell>
                       <TableCell className="text-foreground">
                         <Badge
                           variant="outline"
@@ -218,7 +218,7 @@ export function TeamPageContent({
                       <TableCell className="text-right text-foreground">
                         {/* Owners have no permitted actions, so they get no trigger at all. */}
                         {isOwner ? (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">-</span>
                         ) : (
                           <TeamMemberActions
                             member={member}
@@ -305,7 +305,7 @@ export function TeamPageContent({
               {isRemoving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Removing…
+                  Removing...
                 </>
               ) : (
                 <>

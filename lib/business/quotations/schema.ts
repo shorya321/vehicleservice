@@ -4,7 +4,7 @@
  * Note the asymmetry with bookings: a quotation may be SAVED with only a customer name,
  * because an offline quote often starts from a phone call with nothing else known. Email and
  * phone only become mandatory at CONVERSION, where bookingCreationSchema requires them.
- * That gate is missingConversionContact in status.ts — keeping it out of here is what lets a
+ * That gate is missingConversionContact in status.ts. Keeping it out of here is what lets a
  * business start quoting before they have the customer's details.
  */
 
@@ -23,7 +23,7 @@ const optionalText = (max: number) =>
 export const quotationHeaderSchema = z.object({
   customer_name: z.string().trim().min(2, 'Customer name required').max(100),
   customer_company: optionalText(150),
-  // Validated only when present — see the file header.
+  // Validated only when present. See the file header.
   customer_email: z
     .string()
     .trim()
@@ -63,13 +63,35 @@ export const quotationHeaderSchema = z.object({
 
 export type QuotationHeaderInput = z.infer<typeof quotationHeaderSchema>;
 
-export const quotationAddonSchema = z.object({
-  addon_id: z.string().uuid('Invalid addon ID'),
-  name_snapshot: z.string().min(1).max(150),
-  quantity: z.number().int().min(1).max(10),
-  unit_price: z.number().min(0),
-  total_price: z.number().min(0),
-});
+export const quotationAddonSchema = z
+  .object({
+    addon_id: z.string().uuid('Invalid addon ID'),
+    name_snapshot: z.string().min(1).max(150),
+    quantity: z.number().int().min(1).max(10),
+    unit_price: z.number().min(0),
+    total_price: z.number().min(0),
+    /**
+     * One age per seat (years, 0 = under 1) for addons whose `requires_child_age` is set.
+     *
+     * `nullish`, not `optional`: the DB column is nullable and non-child addons are written as
+     * explicit NULL, so a saved quotation reloaded for editing carries null back through here.
+     * Accepting only `undefined` rejected every trip that had a non-child add-on on it.
+     *
+     * The DB CHECK on business_quotation_item_addons enforces the same length rule, so a bad row
+     * cannot be stored even if this schema is bypassed.
+     */
+    child_ages: z.array(z.number().int().min(0).max(12)).max(20).nullish(),
+  })
+  // Mirrors bqia_total. The DB has always enforced it; without this the operator only found out
+  // at save time, with a raw Postgres error.
+  .refine((a) => Math.abs(a.total_price - Math.round(a.unit_price * a.quantity * 100) / 100) < 0.01, {
+    message: 'Addon total must equal unit price x quantity',
+    path: ['total_price'],
+  })
+  .refine((a) => a.child_ages == null || a.child_ages.length === a.quantity, {
+    message: 'One child age is required per seat',
+    path: ['child_ages'],
+  });
 
 export const quotationTripSchema = z
   .object({
@@ -85,7 +107,7 @@ export const quotationTripSchema = z
     // rather than letting the business discover it at conversion.
     //
     // `offset: true` is REQUIRED, not cosmetic. PostgREST returns timestamptz as
-    // "2026-08-15T04:30:00+00:00", and bare z.string().datetime() accepts only a "Z" suffix —
+    // "2026-08-15T04:30:00+00:00", and bare z.string().datetime() accepts only a "Z" suffix,
     // so re-saving any quotation that already had a dated trip failed with
     // "Invalid datetime format". Creating worked (the client sends toISOString()), which is
     // why this only ever bit on EDIT.
@@ -114,7 +136,7 @@ export const quotationTripSchema = z
     markup_percent: z.number().min(-100).max(1000).nullable().default(null),
   })
   // Mirrors the bqi_pax_consistent CHECK and the identical .refine() on
-  // bookingCreationSchema. Every guest occupies a seat, infants included — UAE law requires
+  // bookingCreationSchema. Every guest occupies a seat, infants included. UAE law requires
   // a child safety seat for under-4s and that seat takes a position.
   .refine((d) => d.passenger_count === d.adults + d.children + d.infants, {
     message: 'passenger_count must equal adults + children + infants',
@@ -153,7 +175,7 @@ export const quotationStatusChangeSchema = z.object({
 
 /**
  * Conversion request. The token binds the confirmation to the exact figures the user was
- * shown — without it, a bare boolean would let prices move between the diff and the confirm,
+ * shown, without it, a bare boolean would let prices move between the diff and the confirm,
  * and the business would buy at a price they never saw.
  */
 export const quotationConvertSchema = z.object({

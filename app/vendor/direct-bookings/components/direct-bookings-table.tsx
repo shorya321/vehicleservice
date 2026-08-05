@@ -54,7 +54,7 @@ interface DirectBookingsTableProps {
   bookings: DirectBookingRow[]
 }
 
-/** Stored UTC, displayed as Dubai wall-clock — never via raw `new Date()`. */
+/** Stored UTC, displayed as Dubai wall-clock, never via raw `new Date()`. */
 function formatPickup(iso: string): string {
   return format(toBookingTz(iso), 'dd MMM yyyy, HH:mm')
 }
@@ -197,14 +197,14 @@ export function DirectBookingsTable({ bookings }: DirectBookingsTableProps) {
                       </div>
                     </>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell>
                   {booking.driver ? (
                     `${booking.driver.first_name} ${booking.driver.last_name}`
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell>

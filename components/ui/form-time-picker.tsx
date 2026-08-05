@@ -18,6 +18,12 @@ interface FormTimePickerProps {
   className?: string
   popoverClassName?: string
   minuteStep?: number
+  /**
+   * Earliest selectable time as "HH:mm". Hours below it are disabled, and within the
+   * boundary hour the minutes below it are too. Omit for no lower bound. Every existing
+   * caller does, and renders exactly as before.
+   */
+  minTime?: string
   id?: string
   "aria-required"?: boolean | "true" | "false"
   "aria-invalid"?: boolean | "true" | "false"
@@ -44,6 +50,7 @@ export function FormTimePicker({
   className,
   popoverClassName = "luxury-time-popover",
   minuteStep = 5,
+  minTime,
   id,
   ...ariaProps
 }: FormTimePickerProps) {
@@ -56,6 +63,18 @@ export function FormTimePicker({
   const selectedHour = value ? parseInt(value.split(":")[0], 10) : -1
   const selectedMinute = value ? parseInt(value.split(":")[1], 10) : -1
 
+  // -1 means "no bound", so every comparison below is false and nothing is disabled.
+  const [minHour, minMinute] = React.useMemo(() => {
+    if (!minTime) return [-1, -1]
+    const [h, m] = minTime.split(":").map((part) => parseInt(part, 10))
+    return Number.isNaN(h) || Number.isNaN(m) ? [-1, -1] : [h, m]
+  }, [minTime])
+
+  const isHourDisabled = (hour: number) => minHour >= 0 && hour < minHour
+  // Only the boundary hour is partially blocked; later hours allow every minute.
+  const isMinuteDisabled = (minute: number) =>
+    minHour >= 0 && selectedHour === minHour && minute < minMinute
+
   React.useEffect(() => {
     if (!open) return
     requestAnimationFrame(() => {
@@ -67,12 +86,18 @@ export function FormTimePicker({
   }, [open])
 
   const handleHourSelect = (hour: number) => {
-    const min = selectedMinute >= 0 ? selectedMinute : 0
+    if (isHourDisabled(hour)) return
+    let min = selectedMinute >= 0 ? selectedMinute : 0
+    // Moving to the boundary hour with an earlier minute already selected would emit a
+    // time below minTime, so clamp up instead of letting it through.
+    if (hour === minHour && min < minMinute) min = minMinute
     onChange(`${pad(hour)}:${pad(min)}`)
   }
 
   const handleMinuteSelect = (minute: number) => {
+    if (isMinuteDisabled(minute)) return
     const hr = selectedHour >= 0 ? selectedHour : 0
+    if (isHourDisabled(hr)) return
     onChange(`${pad(hr)}:${pad(minute)}`)
     setOpen(false)
   }
@@ -108,6 +133,7 @@ export function FormTimePicker({
                     key={h}
                     type="button"
                     className="time-option"
+                    disabled={isHourDisabled(h)}
                     data-selected={h === selectedHour ? "true" : undefined}
                     onClick={() => handleHourSelect(h)}
                   >
@@ -127,6 +153,7 @@ export function FormTimePicker({
                     key={m}
                     type="button"
                     className="time-option"
+                    disabled={isMinuteDisabled(m)}
                     data-selected={m === selectedMinute ? "true" : undefined}
                     onClick={() => handleMinuteSelect(m)}
                   >

@@ -44,7 +44,7 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
       return apiError('Payment not completed', 400);
     }
 
-    // Extract payment details — credit the actually-charged total (fils -> AED),
+    // Extract payment details. Credit the actually-charged total (fils -> AED),
     // not the client-supplied metadata amount.
     const amount = (session.amount_total ?? 0) / 100;
     const metadataAmount = parseFloat(session.metadata?.amount || '0');

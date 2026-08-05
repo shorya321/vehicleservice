@@ -69,7 +69,7 @@ export function MarkupInput({
   function setPercent(value: string) {
     const pct = Number(value);
     if (!Number.isFinite(pct)) return;
-    // Typing a percentage PINS the line — it stops tracking the quotation default.
+    // Typing a percentage PINS the line. It stops tracking the quotation default.
     onChange({
       price_mode: 'markup',
       markup_percent: pct,
@@ -127,7 +127,7 @@ export function MarkupInput({
       <div className="flex flex-wrap items-center gap-2">
         {priceMode === 'inherited' && (
           <Badge variant="secondary" className="font-normal">
-            {defaultMarkupPct}% — quotation default
+            {defaultMarkupPct}% (quotation default)
           </Badge>
         )}
         {priceMode === 'markup' && (

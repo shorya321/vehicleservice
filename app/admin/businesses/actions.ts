@@ -218,7 +218,7 @@ export async function deleteBusinessAction(businessId: string) {
         console.error('Failed to detach quotation items from bookings:', detachError);
         return {
           success: false,
-          error: 'Could not unlink this business’s quotations from its bookings. Please try again.',
+          error: "Could not unlink this business's quotations from its bookings. Please try again.",
         };
       }
     }

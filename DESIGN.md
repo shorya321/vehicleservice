@@ -113,14 +113,14 @@ components:
 
 **Creative North Star: "The Composed Itinerary"**
 
-The system is a dark, editorially-disciplined surface for a booking product that treats every traveller fact — origin, destination, time, vehicle class, passenger count, bag count, price — as typographic material. Black-warm grounds, vellum-gold accents, TT Commons Pro at varying weights and scales. The vocabulary is taken from luggage tags, ledger pages, and itinerary cards rather than rideshare apps or chauffeur marketing.
+The system is a dark, editorially-disciplined surface for a booking product that treats every traveller fact (origin, destination, time, vehicle class, passenger count, bag count, price) as typographic material. Black-warm grounds, vellum-gold accents, TT Commons Pro at varying weights and scales. The vocabulary is taken from luggage tags, ledger pages, and itinerary cards rather than rideshare apps or chauffeur marketing.
 
-This system rejects the first-order category reflex of "luxury transport → black + gold gradient banner + stock sedan photo." It commits to dark, but uses the gold as a typographic and edge accent — never as a fill on large surfaces. Numbers are treated as display elements. Spacing is generous on brand surfaces, dense on product surfaces. Motion is restrained: ease-out exponential curves, short durations, no bounce, no parallax inside the booking flow.
+This system rejects the first-order category reflex of "luxury transport → black + gold gradient banner + stock sedan photo." It commits to dark, but uses the gold as a typographic and edge accent, never as a fill on large surfaces. Numbers are treated as display elements. Spacing is generous on brand surfaces, dense on product surfaces. Motion is restrained: ease-out exponential curves, short durations, no bounce, no parallax inside the booking flow.
 
 The same tokens render the marketing home (brand register) and the booking journey (product register). Density and motion budget differ per surface; tokens do not.
 
 **Key Characteristics:**
-- Dark-warm grounds tinted toward gold (chroma never zero) — never `#000`, never `#fff`.
+- Dark-warm grounds tinted toward gold (chroma never zero), never `#000`, never `#fff`.
 - Single geometric sans (TT Commons Pro) at committed weight and scale contrasts, with generous body line-height.
 - Vellum gold as a typographic detail and edge stroke, **not** as a fill on more than ~10% of any surface.
 - Numbers (prices, times, distances, durations) carry tabular figures and a slight weight bump.
@@ -149,31 +149,31 @@ A warm-cold dark palette, tinted, with a single accent family used like a maker'
 
 ### Named Rules
 
-**The One Voice Rule.** Vellum Gold covers ≤10% of any composed surface — numerals, focus rings, button fills, edge accents. Its rarity is the point. Anything more than that and the page becomes the category cliché.
+**The One Voice Rule.** Vellum Gold covers ≤10% of any composed surface. Numerals, focus rings, button fills, edge accents. Its rarity is the point. Anything more than that and the page becomes the category cliché.
 
 **The Tinted Neutral Rule.** Every neutral tints warm-toward-gold (a trace of chroma in the same hue family as Vellum Gold). Pure greyscale is forbidden. Pure black (`#000`) and pure white (`#fff`) are forbidden.
 
-**The No-Gradient-Text Rule.** Background-clipped gradient on type is forbidden. Emphasis lives in weight, size, and color contrast — never in a gradient fill.
+**The No-Gradient-Text Rule.** Background-clipped gradient on type is forbidden. Emphasis lives in weight, size, and color contrast, never in a gradient fill.
 
 ## 3. Typography
 
 **Primary Font:** TT Commons Pro (with Inter, system-ui, sans-serif fallback)
-**Numeric Font:** TT Commons Pro with `font-variant-numeric: tabular-nums lining-nums` — numbers are aligned vertically and weighted up half a step.
+**Numeric Font:** TT Commons Pro with `font-variant-numeric: tabular-nums lining-nums`. Numbers are aligned vertically and weighted up half a step.
 
-**Character:** A single geometric sans used at committed weight and scale contrasts. Display sizes run heavy (600) for authority; body runs light (400) for readability. Hierarchy lives in size jumps and weight steps, not in font-family switching. The result reads editorial first, technical second — never SaaS, never rideshare. Emphasis comes from gold color and weight contrast.
+**Character:** A single geometric sans used at committed weight and scale contrasts. Display sizes run heavy (600) for authority; body runs light (400) for readability. Hierarchy lives in size jumps and weight steps, not in font-family switching. The result reads editorial first, technical second, never SaaS, never rideshare. Emphasis comes from gold color and weight contrast.
 
 ### Hierarchy
 
 - **Display** (TT Commons Pro 600, `clamp(2.75rem, 6vw, 5rem)`, line-height 1.05): hero titles, peak-moment headlines (confirmation page, hero), once per surface.
 - **Headline** (TT Commons Pro 600, `clamp(1.75rem, 3vw, 2.5rem)`, line-height 1.15): section titles, page H1 inside the booking flow.
 - **Title** (TT Commons Pro 500, `1.125rem`, line-height 1.35): card titles, form section labels, list-item primary lines.
-- **Body** (TT Commons Pro 400, `1rem`, line-height 1.7, max line length 65–75ch): paragraph text, descriptions, helper copy.
+- **Body** (TT Commons Pro 400, `1rem`, line-height 1.7, max line length 65-75ch): paragraph text, descriptions, helper copy.
 - **Numeric** (TT Commons Pro 500, `1rem`, tabular figures): prices, durations, distances, passenger counts, bag counts, vehicle counts. Numbers are first-class citizens, not body text.
 - **Label** (TT Commons Pro 500, `0.75rem`, letter-spacing 0.12em, uppercase): eyebrows, status pills, step indicators.
 
 ### Named Rules
 
-**The Numerals-Are-Display Rule.** Any number a traveller reads to make a decision (prices, times, distances, durations, capacities) gets the Numeric role — tabular figures, half-step weight bump, sized large enough to read across a phone at arm's length. Numbers shrunk into body copy are forbidden.
+**The Numerals-Are-Display Rule.** Any number a traveller reads to make a decision (prices, times, distances, durations, capacities) gets the Numeric role. Tabular figures, half-step weight bump, sized large enough to read across a phone at arm's length. Numbers shrunk into body copy are forbidden.
 
 **The Line-Length Rule.** Body copy caps at 75ch. Never run paragraphs the full width of a desktop container without a measure cap.
 
@@ -189,7 +189,7 @@ The system is **flat-by-tone**. Depth is conveyed by stepping through neutrals (
 
 **The Flat-By-Tone Rule.** Cards do not float. They sit on a darker ground and rise by tone, not by drop shadow. The only shadow allowed under a default-state surface is the gold ambient on an interactive accent.
 
-**The No-Nested-Card Rule.** Cards never contain cards. If you need to group elements inside a card, use a hairline divider or a tone step — never another rounded surface.
+**The No-Nested-Card Rule.** Cards never contain cards. If you need to group elements inside a card, use a hairline divider or a tone step, never another rounded surface.
 
 ## 5. Components
 
@@ -197,7 +197,7 @@ The system is **flat-by-tone**. Depth is conveyed by stepping through neutrals (
 
 - **Shape:** lightly rounded (`4px`). Never pill, never square-corner, never large-radius (≥16px).
 - **Primary:** Vellum Gold fill, Onyx text, uppercase optional, weight 500, padding `14px 28px`. Hover: deepen to `vellum-gold-deep`, lift `translateY(-2px)`, gold ambient shadow appears.
-- **Secondary / Ghost:** transparent fill, 1px Vellum Gold border, Vellum Gold text. Hover: Slate Velvet Raised background, Linen Gold Pale text. The border stays the same color through hover — only the fill darkens.
+- **Secondary / Ghost:** transparent fill, 1px Vellum Gold border, Vellum Gold text. Hover: Slate Velvet Raised background, Linen Gold Pale text. The border stays the same color through hover. Only the fill darkens.
 - **Tertiary / Link:** text-only, Vellum Gold, underline-from-zero on hover (`background-image` underline, not `text-decoration`).
 - **Focus:** 2px Vellum Gold outline with 2px offset on every variant. Never `outline: none`.
 
@@ -218,7 +218,7 @@ The system is **flat-by-tone**. Depth is conveyed by stepping through neutrals (
 
 ### Chips / Pills
 
-- **Numeric chip** (price ribbon, passenger count, bag count): Warm Black fill, Linen Gold Pale numeral, 1px Graphite border, 4px radius. Tabular figures. No icon to the left of a number — the number is the icon.
+- **Numeric chip** (price ribbon, passenger count, bag count): Warm Black fill, Linen Gold Pale numeral, 1px Graphite border, 4px radius. Tabular figures. No icon to the left of a number. The number is the icon.
 - **Status pill** (booking status, vehicle class): Slate Velvet Raised fill, Vellum Gold text, Label type, 4px radius, padding `4px 10px`.
 
 ### Navigation
@@ -228,7 +228,7 @@ The system is **flat-by-tone**. Depth is conveyed by stepping through neutrals (
 
 ### Signature: The Itinerary Block
 
-A horizontal arrangement of [origin] → [destination] / [date] · [time] / [vehicle class] · [passenger count] · [bag count] / [price]. Each segment is its own typographic unit separated by hairline rules or 1ch of whitespace. No icons. The segments form the visual identity of the booking flow — every step (search summary, vehicle card, order summary, confirmation) re-uses this block, scaled and weighted differently.
+A horizontal arrangement of [origin] → [destination] / [date] · [time] / [vehicle class] · [passenger count] · [bag count] / [price]. Each segment is its own typographic unit separated by hairline rules or 1ch of whitespace. No icons. The segments form the visual identity of the booking flow. Every step (search summary, vehicle card, order summary, confirmation) re-uses this block, scaled and weighted differently.
 
 ## 6. Do's and Don'ts
 
@@ -240,7 +240,7 @@ A horizontal arrangement of [origin] → [destination] / [date] · [time] / [veh
 - **Do** convey depth with tone steps (onyx → obsidian → warm-black → slate-velvet → slate-velvet-raised) and 1px hairline borders. Shadows only for hover on accent CTAs.
 - **Do** honor `prefers-reduced-motion` on every entrance animation. Restrained ease-out, short durations, no bounce.
 - **Do** reuse the Itinerary Block pattern across search summary, vehicle card, order summary, and confirmation. The product's typographic identity lives there.
-- **Do** keep body line-length at 65–75ch.
+- **Do** keep body line-length at 65-75ch.
 - **Do** size primary tap targets ≥44px on mobile.
 
 ### Don't:

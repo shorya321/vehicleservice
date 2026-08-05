@@ -148,7 +148,7 @@ export interface BusinessBookingConfirmationEmailData {
   newBalance: number;
   bookingUrl: string;
   referenceNumber?: string;
-  extras?: Array<{ label: string; quantity: number; price: number }>;
+  extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
   /** The AED amount actually charged, when `currency` is a converted display currency. */
   originalAmount?: number;
   originalCurrency?: string;

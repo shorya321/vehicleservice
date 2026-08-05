@@ -75,10 +75,16 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
     toLocationId: body.to_location_id,
     vehicleTypeId: body.vehicle_type_id,
     passengerCount: body.passenger_count,
+    // Prices from the client are deliberately dropped and re-derived; child_ages is carried through
+    // because it is data, not a price, and the DB flag decides whether it is required at all.
     selectedAddons: body.selected_addons?.map((a) => ({
       addon_id: a.addon_id,
       quantity: a.quantity,
+      child_ages: a.child_ages,
     })),
+    // Needed to cap child seats at the declared children + infants.
+    children: body.children,
+    infants: body.infants,
   });
 
   if ('error' in priceResult) {
@@ -234,6 +240,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         quantity: addon.quantity,
         unit_price: addon.unit_price,
         total_price: addon.total_price,
+        child_ages: addon.child_ages,
       }));
 
       const { error: addonsError } = await supabaseAdmin
@@ -241,8 +248,32 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         .insert(addonRecords);
 
       if (addonsError) {
+        // A child seat is a legally-required item the driver has to physically bring, and the
+        // wallet has ALREADY been charged for it by create_booking_with_wallet_deduction. Losing
+        // that row silently is not acceptable the way losing "In-Car WiFi" is.
+        const hasChildSeat = priceResult.verifiedAddons.some((a) => a.child_ages !== null);
+
+        if (hasChildSeat) {
+          console.error(
+            'OPS ALERT: booking created and wallet charged, but child-seat addons failed to save',
+            {
+              bookingId,
+              businessAccountId: user.businessAccountId,
+              addons: priceResult.verifiedAddons.map((a) => ({ name: a.name, qty: a.quantity })),
+              error: addonsError,
+            }
+          );
+          // The booking row is committed and the wallet is debited, so there is nothing to roll
+          // back. The error must say so explicitly, or the business retries and pays twice.
+          return apiError(
+            `Your booking was created and charged (reference ${bookingId}), but the child seat could ` +
+              `not be recorded. Do not rebook. Contact support with this reference so the seat is added.`,
+            500
+          );
+        }
+
         console.error('Failed to save booking addons:', addonsError);
-        // Don't fail the booking, addons are supplementary
+        // Non-child addons stay non-fatal: they are supplementary and the booking still stands.
       }
     }
 
@@ -317,6 +348,9 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         label: addon.name,
         quantity: addon.quantity,
         price: addon.total_price,
+        // Undefined rather than null so the templates can treat it as simply absent. Survives the
+        // currency conversion below, which spreads each entry.
+        childAges: addon.child_ages ?? undefined,
       }));
 
       // The owner email is rendered in the business's preferred currency, with the AED

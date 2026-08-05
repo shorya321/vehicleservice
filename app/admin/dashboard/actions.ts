@@ -454,7 +454,7 @@ const REVENUE_MAX_ROWS = 50_000
 
 /**
  * Production counts only settled revenue. Development also counts in-flight
- * payments so a fresh local DB isn't blank — the difference is surfaced in
+ * payments so a fresh local DB isn't blank. The difference is surfaced in
  * the returned meta rather than left silent.
  */
 function includedPaymentStatuses(): string[] {
@@ -472,7 +472,7 @@ function normalizeTrendInput(input: RevenueRangeInput | PeriodType): RevenueRang
  * Pages through every booking in the window.
  *
  * The previous implementation issued a single unbounded query, which PostgREST
- * silently capped at 1000 rows — and because it ordered ascending, the rows it
+ * silently capped at 1000 rows, and because it ordered ascending, the rows it
  * dropped were the most recent ones.
  */
 async function fetchBookingsInRange(

@@ -59,7 +59,7 @@ export function FormDatePicker({
           "disabled:cursor-not-allowed disabled:opacity-50",
           !value && "text-muted-foreground",
           // Room for the clear button, which is layered over the trigger rather than nested
-          // inside it — a button inside a button is invalid markup.
+          // inside it. A button inside a button is invalid markup.
           showClear && "pr-10",
           className
         )}

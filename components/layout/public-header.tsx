@@ -185,7 +185,7 @@ export function PublicHeader({
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Currency Selector — mounted guard prevents Radix useId hydration mismatch */}
+            {/* Currency Selector. Mounted guard prevents Radix useId hydration mismatch */}
             {mounted && allCurrencies.length > 1 && (
               <CurrencySelector className="scale-90 sm:scale-100 origin-right" />
             )}
@@ -271,7 +271,7 @@ export function PublicHeader({
                 Sign In
               </Link>
             ) : null}
-            {/* Book Transfer CTA — desktop only */}
+            {/* Book Transfer CTA. Desktop only */}
             <Link
               href="/#services"
               className="btn-cta-header hidden lg:block"

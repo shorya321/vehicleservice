@@ -86,7 +86,7 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
         </div>
       </div>
 
-      {/* Featured Spread — page 1 only */}
+      {/* Featured Spread. Page 1 only */}
       {featuredPost && (
         <section className="bg-[var(--black-void)] pt-[clamp(2rem,5vw,3.5rem)]">
           <div className="luxury-container">

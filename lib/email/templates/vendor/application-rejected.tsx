@@ -25,13 +25,12 @@ export const VendorApplicationRejectedEmail = ({
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for your interest in becoming a vendor partner with Infinia Transfers. We&apos;ve
-        completed our review of your application (Reference: {applicationReference}).
+        We&apos;ve completed our review of your application (Reference: {applicationReference}).
       </Text>
 
       <Section style={rejectionBox}>
         <Text style={rejectionText}>
-          After careful consideration, we&apos;re unable to approve your vendor application at this time.
+          We can&apos;t approve your vendor application.
         </Text>
       </Section>
 
@@ -44,9 +43,7 @@ export const VendorApplicationRejectedEmail = ({
       </Section>
 
       <Text style={emailStyles.text}>
-        We understand this may be disappointing. This decision doesn&apos;t necessarily reflect on the
-        quality of your services but may be due to factors such as service area coverage, fleet
-        requirements, or current vendor capacity in your region.
+        This is usually about service area coverage, fleet requirements or vendor capacity in your region rather than the quality of your service.
       </Text>
 
       {reapplyUrl && (
@@ -56,9 +53,7 @@ export const VendorApplicationRejectedEmail = ({
           </Text>
 
           <Text style={emailStyles.text}>
-            Yes! If you believe you can address the concerns mentioned above, you&apos;re welcome to
-            submit a new application after 30 days. Please ensure that your resubmission addresses
-            the feedback provided.
+            Yes. You can submit a new application after 30 days. Address the feedback above when you do.
           </Text>
 
           <Button href={reapplyUrl}>Submit New Application</Button>
@@ -71,8 +66,7 @@ export const VendorApplicationRejectedEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        We appreciate your interest in partnering with Infinia Transfers and wish you all the best in
-        your business endeavors.
+        Thanks for your interest in working with us.
       </Text>
 
       <Text style={emailStyles.text}>

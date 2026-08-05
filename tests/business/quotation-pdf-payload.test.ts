@@ -124,7 +124,7 @@ describe('net cost never leaks into the PDF payload', () => {
     expect(keys).not.toContain('cost');
   });
 
-  it('does not leak addon prices — addons are named only', () => {
+  it('does not leak addon prices. Addons are named only', () => {
     const data = build(
       quotation({
         items: [
@@ -145,6 +145,68 @@ describe('net cost never leaks into the PDF payload', () => {
 
     expect(data.lineItems[0].addons).toBe('Meet & Greet');
     expect(data.lineItems[0].addons).not.toContain('150');
+  });
+
+  it('names child seats with their ages, still without prices', () => {
+    // The PDF is the ONLY artefact the end customer ever sees (there is no quotation email and
+    // no share link), so the seats have to be checkable against their children. An age carries
+    // no pricing information, so this does not weaken the no-itemising rule above.
+    const data = build(
+      quotation({
+        items: [
+          item({
+            addons: [
+              {
+                addon_id: 'a-1',
+                name_snapshot: 'Infant Car Seat',
+                quantity: 1,
+                unit_price: 10,
+                total_price: 10,
+                child_ages: [0],
+              },
+              {
+                addon_id: 'a-2',
+                name_snapshot: 'Booster Seat',
+                quantity: 2,
+                unit_price: 8,
+                total_price: 16,
+                child_ages: [6, 9],
+              },
+            ],
+          }),
+        ],
+      })
+    );
+
+    expect(data.lineItems[0].addons).toBe(
+      'Infant Car Seat (age under 1), Booster Seat (ages 6, 9)'
+    );
+    // The prices behind those seats must still never appear.
+    expect(data.lineItems[0].addons).not.toContain('10');
+    expect(data.lineItems[0].addons).not.toContain('16');
+  });
+
+  it('leaves a non-child addon unchanged when child_ages is null', () => {
+    const data = build(
+      quotation({
+        items: [
+          item({
+            addons: [
+              {
+                addon_id: 'a-1',
+                name_snapshot: 'In-Car WiFi',
+                quantity: 1,
+                unit_price: 8,
+                total_price: 8,
+                child_ages: null,
+              },
+            ],
+          }),
+        ],
+      })
+    );
+
+    expect(data.lineItems[0].addons).toBe('In-Car WiFi');
   });
 });
 
@@ -235,7 +297,7 @@ describe('document metadata', () => {
 
   it('marks an undated trip rather than printing an invalid date', () => {
     const data = build(quotation({ items: [item({ pickup_datetime: null })] }));
-    expect(data.lineItems[0].when).toBe('—');
+    expect(data.lineItems[0].when).toBe('-');
   });
 
   it('omits "Updated" on a quotation that was never revised', () => {

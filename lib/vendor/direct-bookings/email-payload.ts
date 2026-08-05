@@ -22,7 +22,7 @@ import {
  * the time it dispatches an email, and the vendor's own RLS grant does not cover
  * the `vendor_applications` row this joins for sender identity.
  *
- * Not a `'use server'` module — it exports types, which that directive forbids
+ * Not a `'use server'` module. It exports types, which that directive forbids
  * at runtime while tsc stays silent (see the note in the actions file).
  */
 
@@ -40,7 +40,7 @@ export interface DirectBookingEmailVendor {
  *
  * Deliberately excludes `internal_notes` and `cancellation_reason`. The form
  * promises the vendor "Only your team sees this", so those fields must not be
- * reachable from a customer-facing template — omitting them here makes passing
+ * reachable from a customer-facing template. Omitting them here makes passing
  * one a type error rather than a matter of care.
  *
  * Dates arrive pre-formatted in Asia/Dubai, matching the house convention that

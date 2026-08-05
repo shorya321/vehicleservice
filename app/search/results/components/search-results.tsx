@@ -84,7 +84,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
     )
   }, [])
 
-  // Deliberately does not touch guests — that lives in the URL, and clearing filters must never
+  // Deliberately does not touch guests. That lives in the URL, and clearing filters must never
   // trigger a navigation.
   const clearFilters = useCallback(() => {
     setSelectedFeatures([])
@@ -178,7 +178,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             </div>
             <div className="numeric mt-1.5 flex items-center gap-1.5 text-[1rem] text-[var(--text-primary)]">
               <Calendar className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-              {searchParams.date ? format(new Date(searchParams.date), 'EEE · d MMM yyyy') : '—'}
+              {searchParams.date ? format(new Date(searchParams.date), 'EEE · d MMM yyyy') : '-'}
             </div>
           </div>
 
@@ -291,7 +291,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       ) : (
         // `key` on party size remounts this with fresh tab/page state. It holds currentPage and
         // activeCategory internally and only resets them on tab/sort change, but a searchParams
-        // navigation keeps it mounted while the vehicle list changes underneath — so page 3 of 18
+        // navigation keeps it mounted while the vehicle list changes underneath, so page 3 of 18
         // vehicles would slice an empty window out of the new, shorter list and render a blank grid.
         <VehicleTypeCategoryTabs
           key={searchParams.passengers}

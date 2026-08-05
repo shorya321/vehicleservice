@@ -43,7 +43,7 @@ BEGIN
   END IF;
 END $$;
 
--- 2. Partial unique index — the DB-level idempotency gate.
+-- 2. Partial unique index. The DB-level idempotency gate.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_wallet_tx_stripe_pi
   ON wallet_transactions (stripe_payment_intent_id)
   WHERE stripe_payment_intent_id IS NOT NULL;
@@ -120,7 +120,7 @@ BEGIN
     RETURN v_current;
   END IF;
 
-  -- A new transaction row was recorded — apply the balance change.
+  -- A new transaction row was recorded. Apply the balance change.
   UPDATE business_accounts
   SET wallet_balance = v_new_balance,
       updated_at = NOW()

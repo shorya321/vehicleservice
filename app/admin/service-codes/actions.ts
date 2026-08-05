@@ -209,7 +209,7 @@ export async function deleteServiceCode(
   if (count && count > 0) {
     return {
       success: false,
-      error: `Cannot delete — code "${code}" is used by ${count} trip number sequence(s). Deactivate instead.`,
+      error: `Cannot delete: code "${code}" is used by ${count} trip number sequence(s). Deactivate instead.`,
     }
   }
 

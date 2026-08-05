@@ -384,6 +384,7 @@ export async function getBookingDetails(bookingId: string) {
         quantity,
         unit_price,
         total_price,
+        child_ages,
         addon:addon_id(id, name, category, icon, description)
       `)
       .eq('business_booking_id', bookingId)
@@ -401,11 +402,15 @@ export async function getBookingDetails(bookingId: string) {
     bookingType: 'business' as const,
     booking_assignments: businessAssignments,
     booking_passengers: [], // Business bookings don't have passengers table
+    // Business addons are reshaped into the customer-side booking_amenities shape so one admin UI
+    // renders both. child_ages must be carried across too, or B2B child seats would show without
+    // their ages while B2C ones show with them.
     booking_amenities: businessAddons.map(addon => ({
       id: addon.id,
       amenity_type: 'addon',
       quantity: addon.quantity,
       price: addon.total_price,
+      child_ages: addon.child_ages,
       addon: addon.addon,
     })),
     // Map business_account to customer field for compatibility
@@ -456,7 +461,7 @@ export async function updateBookingStatus(
   // Close the assignment and free vehicle and driver when the booking is completed or
   // cancelled. Handled by the shared helper so cancelling writes the assignment status too,
   // and so a booking with more than one assignment row (any booking that was reassigned) is
-  // still cleaned up — the `.single()` this replaces returned null for those and silently
+  // still cleaned up. The `.single()` this replaces returned null for those and silently
   // left the driver and vehicle blocked.
   if (status === 'completed' || status === 'cancelled') {
     const { closed } = await closeActiveAssignments({
@@ -695,7 +700,7 @@ export async function getBookingStats() {
       .gte('created_at', todayStart.toISOString())
       .lt('created_at', todayEnd.toISOString()),
 
-    // Upcoming is a date fact, not a status — matches the list's timeframe=upcoming filter
+    // Upcoming is a date fact, not a status. Matches the list's timeframe=upcoming filter
     countCustomer().gte('pickup_datetime', now.toISOString()),
     countBusiness().gte('pickup_datetime', now.toISOString()),
 
@@ -831,7 +836,7 @@ export async function bulkUpdateBookingStatus(
 
   // Close assignments and free vehicles/drivers. Bulk cancel previously touched neither, so
   // every resource stayed blocked. Ids are passed for both booking types because this action
-  // is table-agnostic — it fires the same update at `bookings` and `business_bookings`.
+  // is table-agnostic. It fires the same update at `bookings` and `business_bookings`.
   if (status === 'cancelled') {
     for (const bookingId of bookingIds) {
       const { error: closeError } = await closeActiveAssignments({

@@ -18,7 +18,7 @@ export interface UploadImageOptions {
 }
 
 /**
- * Nothing in this module is cancellable — neither `canvas.toBlob` nor the
+ * Nothing in this module is cancellable. Neither `canvas.toBlob` nor the
  * Supabase storage client accepts an `AbortSignal`. These bounds exist so a
  * stalled step surfaces an error instead of leaving the caller's spinner
  * running forever; the underlying request may still be in flight.

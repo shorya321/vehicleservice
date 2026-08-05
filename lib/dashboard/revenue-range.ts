@@ -13,7 +13,7 @@
 
 const MS_PER_DAY = 86_400_000
 
-/** Asia/Dubai is a fixed +04:00 with no DST — see `lib/utils/timezone.ts`. */
+/** Asia/Dubai is a fixed +04:00 with no DST. See `lib/utils/timezone.ts`. */
 const DUBAI_OFFSET_MS = 4 * 60 * 60 * 1000
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -61,7 +61,7 @@ export interface RevenueBucket {
  * Chart-facing result types.
  *
  * These live here rather than in `app/admin/dashboard/actions.ts` because a
- * `'use server'` module may only export async functions — exporting types from
+ * `'use server'` module may only export async functions. Exporting types from
  * it breaks the server-action compiler.
  */
 export interface RevenueTrendPoint {
@@ -218,7 +218,7 @@ function formatBucketLabel(day: string, unit: BucketUnit, crossesYear: boolean):
 }
 
 /**
- * Every bucket in the range, including empty ones — so gaps render as zero
+ * Every bucket in the range, including empty ones, so gaps render as zero
  * bars rather than silently disappearing from the chart.
  */
 export function buildBuckets(range: RevenueRange): RevenueBucket[] {
@@ -297,12 +297,12 @@ function windowForPreset(preset: string, today: string): PresetWindow | null {
 }
 
 function describeRange(from: string, to: string): string {
-  return `${formatBucketLabel(from, 'day', true)} – ${formatBucketLabel(to, 'day', true)}`
+  return `${formatBucketLabel(from, 'day', true)} - ${formatBucketLabel(to, 'day', true)}`
 }
 
 /**
  * Resolves URL params into a concrete range. Invalid or missing input always
- * degrades to the default preset rather than throwing — this is read-only
+ * degrades to the default preset rather than throwing. This is read-only
  * dashboard state driven by a user-editable query string.
  *
  * `today` is injectable so the logic stays testable without faking the clock.
@@ -319,7 +319,7 @@ export function resolveRevenueRange(input: RevenueRangeInput, today: string): Re
   let label: string
 
   // A wholly-future custom range has no bookings by definition, so fall back
-  // rather than render an empty chart. Only reachable by editing the URL — the
+  // rather than render an empty chart. Only reachable by editing the URL. The
   // calendar disables future dates.
   const customIsUsable =
     isValidDay(input.from) && isValidDay(input.to)
@@ -331,7 +331,7 @@ export function resolveRevenueRange(input: RevenueRangeInput, today: string): Re
     const [start, end] =
       input.from! <= input.to! ? [input.from!, input.to!] : [input.to!, input.from!]
     from = start
-    // Revenue is booked, never scheduled — there is nothing after today.
+    // Revenue is booked, never scheduled. There is nothing after today.
     to = end > today ? today : end
     preset = 'custom'
     label = describeRange(from, to)
@@ -354,7 +354,7 @@ export function resolveRevenueRange(input: RevenueRangeInput, today: string): Re
   const bucket = fitBucket(from, to, desiredBucket)
 
   // `month` is the coarsest unit, so a range wide enough to exceed MAX_BUCKETS
-  // in months can't be fixed by coarsening — trim the window instead.
+  // in months can't be fixed by coarsening. Trim the window instead.
   if (bucketCount(from, to, bucket) > MAX_BUCKETS) {
     from = startOfMonth(addMonths(to, -(MAX_BUCKETS - 1)))
     label = describeRange(from, to)

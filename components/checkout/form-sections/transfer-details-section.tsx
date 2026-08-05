@@ -169,7 +169,7 @@ export function TransferDetailsSection({
           <p id="flightNumber-hint" className="text-xs text-[var(--text-muted)] mt-1.5">We track your flight for delays</p>
         </div>
 
-        {/* Guests — the breakdown is the source of truth; the total is derived, so the two cannot
+        {/* Guests. The breakdown is the source of truth; the total is derived, so the two cannot
             contradict. Capped at this vehicle's capacity. */}
         <div>
           <Label className="mb-2.5 block text-[var(--text-secondary)] text-sm">

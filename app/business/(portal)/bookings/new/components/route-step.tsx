@@ -58,13 +58,13 @@ const routeSchema = z
     children: z.number().int().min(0).max(MAX_SEATED_GUESTS),
     infants: z.number().int().min(0).max(MAX_SEATED_GUESTS),
   })
-  // Every guest occupies a seat, infants included — a child seat takes a seat position.
+  // Every guest occupies a seat, infants included. A child seat takes a seat position.
   .refine((d) => d.adults + d.children + d.infants <= MAX_SEATED_GUESTS, {
     message: `Maximum ${MAX_SEATED_GUESTS} guests`,
     path: ['children'],
   })
   // Mirrors the child-seat max_quantity: every infant needs a seat and the operator stocks four.
-  // Children are deliberately uncapped — over 10 they need no seat.
+  // Children are deliberately uncapped. Over 10 they need no seat.
   .refine((d) => d.infants <= MAX_INFANT_GUESTS, {
     message: `Maximum ${MAX_INFANT_GUESTS} infants per booking (child seat availability)`,
     path: ['infants'],
@@ -99,12 +99,12 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
     guestErrors.adults?.message;
 
   async function onSubmit(values: RouteFormData) {
-    // passenger_count is every guest, infants included — a child seat occupies a seat position.
+    // passenger_count is every guest, infants included. A child seat occupies a seat position.
     const seatedPassengers = getSeatedCount(values);
 
     onUpdate({ ...values, passenger_count: seatedPassengers });
 
-    // Seat count is passed explicitly — onUpdate only queues a state update,
+    // Seat count is passed explicitly. onUpdate only queues a state update,
     // so the wizard cannot read it back from formData yet.
     await onFetchVehicles(
       values.from_location_id,
@@ -305,7 +305,7 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading Vehicles…
+                Loading Vehicles...
               </>
             ) : (
               'Continue to Vehicle Selection'

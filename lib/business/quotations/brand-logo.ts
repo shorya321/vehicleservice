@@ -5,7 +5,7 @@
  *
  * 1. lib/business/branding-utils.ts validateLogoFile() accepts image/svg+xml and image/webp,
  *    but @react-pdf/renderer's <Image> supports PNG and JPEG only. A business that uploaded
- *    an SVG would get a crashed or silently blank PDF header — on a document they are about
+ *    an SVG would get a crashed or silently blank PDF header. On a document they are about
  *    to send a customer, which is worse than a visible fallback.
  *
  * 2. Handing @react-pdf a remote URL makes it fetch during render, which is flaky and can
@@ -51,7 +51,7 @@ function detectFormat(buffer: Buffer): 'png' | 'jpg' | null {
 
 /**
  * Fetch and validate a logo for PDF embedding.
- * Returns null whenever the logo cannot be drawn — never throws.
+ * Returns null whenever the logo cannot be drawn, never throws.
  */
 export async function resolveBrandLogo(
   logoUrl: string | null | undefined
@@ -83,7 +83,7 @@ export async function resolveBrandLogo(
       return null;
     }
 
-    // Trust the declared length when present, but re-check the real buffer below — a missing
+    // Trust the declared length when present, but re-check the real buffer below. A missing
     // or lying Content-Length must not let an oversized image through.
     const declaredLength = Number(response.headers.get('content-length') ?? '0');
     if (declaredLength > MAX_LOGO_BYTES) return null;

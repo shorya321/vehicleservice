@@ -195,7 +195,7 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
         </form>
       </ContentSection>
 
-      {/* Danger Zone — flat charcoal region, not a card */}
+      {/* Danger Zone. Flat charcoal region, not a card */}
       <div className="mt-16 rounded-lg bg-[var(--charcoal)] p-6">
         <div className="flex items-center gap-3 mb-4">
           <Trash2 className="w-5 h-5 text-[var(--error-text)]" />

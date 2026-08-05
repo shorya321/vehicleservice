@@ -18,7 +18,7 @@ interface CheckoutRoutePageProps {
   searchParams: Promise<{
     date?: string
     time?: string
-    /** Total guests. The breakdown below is optional — route cards and old links omit it. */
+    /** Total guests. The breakdown below is optional. Route cards and old links omit it. */
     passengers?: string
     adults?: string
     children?: string

@@ -75,8 +75,7 @@ export const BookingStatusUpdateEmail = ({
       )}
 
       <Text style={emailStyles.text}>
-        If you have any questions about this status update, please don&apos;t hesitate to contact our
-        support team with your trip number.
+        Contact support with your trip number if you have questions about this update.
       </Text>
 
       <Text style={emailStyles.text}>

@@ -85,7 +85,7 @@ export default async function BecomeVendorPage() {
           {/* Two-column grid on desktop, single column on mobile/tablet */}
           <div className="lg:grid lg:grid-cols-[2fr_3fr] lg:gap-16 xl:gap-20">
 
-            {/* Left Column — Persuasion (sticky on desktop) */}
+            {/* Left Column. Persuasion (sticky on desktop) */}
             <div className="lg:sticky lg:top-28 lg:self-start mb-10 lg:mb-0 motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
               <h1 className="editorial-section-title--promoted [text-wrap:balance] mb-4">
                 Partner with Infinia
@@ -94,7 +94,7 @@ export default async function BecomeVendorPage() {
                 List your vehicles on our premium transfer platform and grow your business with access to high-value bookings.
               </p>
 
-              {/* Benefits — typographic, no card wrappers */}
+              {/* Benefits. Typographic, no card wrappers */}
               <div className="space-y-6 mb-10">
                 {benefits.map((benefit) => (
                   <div key={benefit.number} className="flex gap-4">
@@ -129,7 +129,7 @@ export default async function BecomeVendorPage() {
               </div>
             </div>
 
-            {/* Right Column — Application Form */}
+            {/* Right Column. Application Form */}
             <div className="motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500 [animation-delay:150ms] [animation-fill-mode:backwards]">
               <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-text-rgb),0.2)] rounded-lg p-6 md:p-8">
                 <div className="mb-8">

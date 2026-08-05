@@ -18,8 +18,7 @@ export const VerificationEmail = ({ name, verificationUrl }: VerificationEmailPr
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        We need to verify your email address to complete your account setup and ensure the
-        security of your account.
+        Verify your email address to finish setting up your account and keep it secure.
       </Text>
 
       <Text style={emailStyles.text}>

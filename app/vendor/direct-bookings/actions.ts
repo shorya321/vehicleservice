@@ -46,7 +46,7 @@ const REVALIDATE_PATH = '/vendor/direct-bookings'
 
 /**
  * The row shape shared by create and update. `vendor_id` and `created_by` are
- * added by the callers from the session — never from `input`.
+ * added by the callers from the session, never from `input`.
  */
 /** The UTC window a booking occupies. Both ends are required. */
 function toWindow(input: DirectBookingMutationInput): { start: Date; end: Date } {
@@ -84,7 +84,7 @@ function toRowPayload(input: DirectBookingMutationInput) {
 }
 
 /**
- * Confirms the chosen vehicle — and driver, when given — belong to this vendor.
+ * Confirms the chosen vehicle (and driver, when given) belong to this vendor.
  *
  * A foreign key only proves the row exists, not who owns it. The database has a
  * matching trigger as the real backstop; this exists so the vendor gets a clean
@@ -94,7 +94,7 @@ function toRowPayload(input: DirectBookingMutationInput) {
 /**
  * Turns a set of conflicts into one sentence naming what is blocking.
  *
- * Deliberately specific — "Vehicle unavailable" leaves the vendor guessing, while
+ * Deliberately specific, "Vehicle unavailable" leaves the vendor guessing, while
  * naming the clashing booking and its hours lets them fix it themselves.
  */
 function conflictMessage(conflicts: {
@@ -151,7 +151,7 @@ async function markNotified(
 /**
  * Emails the customer and the assigned driver about a newly recorded booking.
  *
- * Sends nothing for a booking created straight into cancelled or completed —
+ * Sends nothing for a booking created straight into cancelled or completed,
  * back-dated record entry is a normal use of this module and the customer should
  * not receive a confirmation for a trip that already ended or never ran.
  */
@@ -231,7 +231,7 @@ async function notifyBookingCreated(id: string): Promise<void> {
 /**
  * Emails the customer that the booking changed status.
  *
- * `previousStatus` comes from a read taken before the write — without it a
+ * `previousStatus` comes from a read taken before the write, without it a
  * re-save that changed nothing would be indistinguishable from a real move.
  */
 async function notifyStatusChanged(id: string, previousStatus: string): Promise<void> {
@@ -318,7 +318,7 @@ async function notifyDriverReassigned(id: string): Promise<void> {
 }
 
 /**
- * Message for a conflict the database caught that the pre-check missed — i.e. a
+ * Message for a conflict the database caught that the pre-check missed, i.e. a
  * competing booking was committed in the moment between them.
  *
  * The trigger's own message names the clashing window, so prefer it; the exclusion
@@ -368,7 +368,7 @@ async function assertFleetOwnership(
 }
 
 /**
- * Paginated list. Filtering and paging both happen in SQL — the online bookings
+ * Paginated list. Filtering and paging both happen in SQL. The online bookings
  * view filters in JS after hydration, which silently breaks its own pagination.
  */
 export async function getDirectBookings(
@@ -685,7 +685,7 @@ export async function updateDirectBookingStatus(
 
   try {
     if (status === 'cancelled') {
-      return { error: 'Open the booking to cancel it — a reason is required' }
+      return { error: 'Open the booking to cancel it. A reason is required.' }
     }
 
     const vendorId = await getCurrentVendorId()

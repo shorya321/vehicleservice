@@ -16,13 +16,11 @@ export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
       heading={`Welcome to Infinia Transfers, ${name}!`}
     >
       <Text style={emailStyles.text}>
-        Thank you for creating an account with Infinia Transfers. We&apos;re excited to have you on
-        board!
+        Thanks for creating an Infinia Transfers account.
       </Text>
 
       <Text style={emailStyles.text}>
-        To get started and access all features, please verify your email address by clicking
-        the button below:
+        Verify your email address to finish setting up your account:
       </Text>
 
       <Button href={verificationUrl}>Verify Email Address</Button>

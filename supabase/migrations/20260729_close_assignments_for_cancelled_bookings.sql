@@ -14,7 +14,7 @@
 -- PART 1: schema catch-up
 -- ---------------------------------------------------------------------------
 -- The app has written booking_assignments.completed_at and status='completed' for a long
--- time, but no migration ever added the column or widened the CHECK — the live database was
+-- time, but no migration ever added the column or widened the CHECK. The live database was
 -- changed out of band. A fresh environment built from this directory would break on the
 -- first completed booking. Both statements are idempotent.
 
@@ -32,7 +32,7 @@ ALTER TABLE public.booking_assignments
 -- PART 2: backfill assignments left open on cancelled bookings
 -- ---------------------------------------------------------------------------
 -- The notification trigger is disabled for the backfill only. Without this, every historical
--- cancellation would fire a fresh "Assignment Cancelled" notification at the vendor — months
+-- cancellation would fire a fresh "Assignment Cancelled" notification at the vendor. Months
 -- of dead bookings landing in their bell at once.
 --
 -- Only this one trigger needs disabling: the other six on the table key on

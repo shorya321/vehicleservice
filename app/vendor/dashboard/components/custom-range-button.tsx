@@ -26,14 +26,14 @@ function parseDay(day: string | undefined): Date | undefined {
 }
 
 /**
- * A "Custom" pill that opens a 2-month range calendar. Local draft state only —
- * no URL — so each chart keeps its own independent range.
+ * A "Custom" pill that opens a 2-month range calendar. Local draft state only,
+ * no URL, so each chart keeps its own independent range.
  */
 export function CustomRangeButton({ active, label, onApply, disabled }: CustomRangeButtonProps) {
   const [open, setOpen] = useState(false)
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(undefined)
 
-  // Last selectable day in Dubai terms — completed work never exists in the
+  // Last selectable day in Dubai terms. Completed work never exists in the
   // future, and browser-local midnight would let a future Dubai day through.
   const lastSelectableDay = parseDay(bookingToday())
 
@@ -45,7 +45,7 @@ export function CustomRangeButton({ active, label, onApply, disabled }: CustomRa
 
   const handleApply = () => {
     if (!draftRange?.from) return
-    // Plain Dubai calendar days — an ISO instant here would be the viewer's
+    // Plain Dubai calendar days. An ISO instant here would be the viewer's
     // local midnight, which shifts day boundaries per browser timezone.
     const from = format(draftRange.from, 'yyyy-MM-dd')
     // A single click leaves `to` empty; that means one day, not open-ended.
@@ -70,7 +70,7 @@ export function CustomRangeButton({ active, label, onApply, disabled }: CustomRa
       </PopoverTrigger>
       <PopoverContent
         // A 2-month calendar is taller than the space below the trigger, so
-        // Radix flips it upward — cap the height so it can never run past the
+        // Radix flips it upward. Cap the height so it can never run past the
         // viewport edge whichever way it opens.
         className="luxury-calendar-popover max-h-[80vh] w-auto overflow-y-auto p-0"
         align="end"

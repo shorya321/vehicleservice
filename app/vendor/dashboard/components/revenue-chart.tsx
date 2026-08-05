@@ -43,7 +43,7 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
 
   const handleCustomApply = (from: string, to: string) => {
     setMode('custom')
-    setCustomLabel(`${from} – ${to}`)
+    setCustomLabel(`${from} - ${to}`)
     startTransition(async () => {
       const newData = await getVendorRevenueTrend({ from, to })
       setRevenueTrend(newData)

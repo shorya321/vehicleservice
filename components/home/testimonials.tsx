@@ -40,7 +40,7 @@ function pickQuote(review: ReviewLike): string {
 function pickAttribution(review: ReviewLike): string {
   const name = review.customer_name || review.customerName || review.name || "Anonymous"
   const place = review.location || review.city || review.route
-  return place ? `${name} — ${place}` : name
+  return place ? `${name}, ${place}` : name
 }
 
 export async function Testimonials() {

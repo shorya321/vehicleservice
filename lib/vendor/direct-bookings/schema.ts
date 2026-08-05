@@ -4,7 +4,7 @@ import { phoneField } from '@/lib/validation/phone'
 
 /**
  * Shared between the vendor form and the server actions, following the
- * `lib/vehicles/schema.ts` precedent — the drivers module validates only on the
+ * `lib/vehicles/schema.ts` precedent. The drivers module validates only on the
  * client and reads raw FormData on the server, which is the pattern to avoid.
  */
 
@@ -19,7 +19,7 @@ export const BOOKING_STATUSES = [
 /**
  * Statuses in which a booking still holds its vehicle and driver.
  *
- * The complement — cancelled and completed — releases them. Kept as an explicit
+ * The complement (cancelled and completed) releases them. Kept as an explicit
  * allow-list rather than a NOT IN so the intent is stated positively and a status
  * added later cannot silently start occupying resources. Mirrors the
  * `booking_status NOT IN ('cancelled','completed')` predicate on the database's
@@ -72,7 +72,7 @@ const optionalText = z
 
 /**
  * Date and time are separate fields because the project has no combined
- * datetime picker — the checkout and business flows both pair FormDatePicker
+ * datetime picker. The checkout and business flows both pair FormDatePicker
  * with FormTimePicker. They are joined and converted from Asia/Dubai wall-clock
  * to UTC in the server action, never here.
  */
@@ -95,7 +95,7 @@ export const directBookingFormSchema = z
     // reserve one, so the driver's time could be double-sold.
     driver_id: z.string().uuid('Select a driver'),
 
-    // Return is required too — without a guaranteed end time the booking has no
+    // Return is required too, without a guaranteed end time the booking has no
     // window, and overlap cannot be computed against it.
     pickup_date: dateField,
     pickup_time: timeField,
@@ -156,7 +156,7 @@ export const directBookingFormSchema = z
 export type DirectBookingFormValues = z.infer<typeof directBookingFormSchema>
 
 /**
- * The server parses this same shape. `vendor_id` is deliberately absent — it is
+ * The server parses this same shape. `vendor_id` is deliberately absent. It is
  * resolved from the session, never accepted from the client.
  */
 export const directBookingMutationSchema = directBookingFormSchema

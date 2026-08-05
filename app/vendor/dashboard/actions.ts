@@ -421,7 +421,7 @@ export interface BookingPipeline {
 }
 
 /**
- * Current distribution of the vendor's assigned jobs by status — the vendor's
+ * Current distribution of the vendor's assigned jobs by status. The vendor's
  * real workflow (accept → dispatch → complete). `pending` is the actionable
  * queue; `rejected` is folded into `cancelled` as terminal noise.
  */

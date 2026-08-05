@@ -6,7 +6,7 @@
  * Filtering and pagination happen IN SQL, following app/vendor/direct-bookings rather than
  * the business bookings list, which fetches every row and filters in JavaScript.
  *
- * A 'use server' module may only export async functions — a type exported from here would
+ * A 'use server' module may only export async functions. A type exported from here would
  * break at runtime while tsc stays silent. All shapes live in lib/business/quotations/types.
  */
 
@@ -23,7 +23,7 @@ import type {
   QuotationStats,
 } from '@/lib/business/quotations/types';
 
-/** Columns the list needs. Narrow on purpose — the list never renders trip detail. */
+/** Columns the list needs. Narrow on purpose. The list never renders trip detail. */
 const LIST_COLUMNS = `
   id, quotation_number, customer_name, customer_company, status, valid_until,
   currency, exchange_rate, total_sell_aed, created_at, updated_at, created_by_user_id
@@ -124,7 +124,7 @@ export async function getQuotations(
 
 /**
  * One quotation with its trips and addons.
- * Returns null when it does not exist OR the member may not see it — the caller should
+ * Returns null when it does not exist OR the member may not see it. The caller should
  * notFound() either way, so an id cannot be probed for existence.
  */
 export async function getQuotation(id: string): Promise<QuotationWithItems | null> {
@@ -165,7 +165,7 @@ export async function getQuotation(id: string): Promise<QuotationWithItems | nul
   if (itemIds.length > 0) {
     const { data: addonRows } = await supabase
       .from('business_quotation_item_addons')
-      .select('item_id, addon_id, name_snapshot, quantity, unit_price, total_price')
+      .select('item_id, addon_id, name_snapshot, quantity, unit_price, total_price, child_ages')
       .in('item_id', itemIds);
 
     for (const row of addonRows ?? []) {
@@ -176,6 +176,7 @@ export async function getQuotation(id: string): Promise<QuotationWithItems | nul
         quantity: row.quantity,
         unit_price: Number(row.unit_price),
         total_price: Number(row.total_price),
+        child_ages: row.child_ages,
       });
       addonsByItem.set(row.item_id, list);
     }
@@ -232,4 +233,60 @@ export async function getQuotationStats(): Promise<QuotationStats> {
   }
 
   return stats;
+}
+
+/**
+ * The addon catalogue for the trip editor's Extras block.
+ *
+ * A third copy of this query, alongside app/checkout/actions.ts and
+ * app/business/(portal)/bookings/new/actions.ts. The duplication is deliberate and matches the
+ * rest of the quotations module: each flow owns its own read so a change to one can never
+ * silently alter the others. Returns QuotationAddonOption (lib/business/quotations/types.ts),
+ * this file is 'use server', so it must not export the type itself.
+ */
+export async function getQuotationAddonOptions(): Promise<{
+  addons: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    icon: string;
+    price: number;
+    category: string;
+    pricing_type: 'fixed' | 'per_unit';
+    max_quantity: number | null;
+    requires_child_age: boolean;
+    child_age_min: number | null;
+    child_age_max: number | null;
+  }>;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('addons')
+    .select('id, name, description, icon, price, category, pricing_type, max_quantity, requires_child_age, child_age_min, child_age_max')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching quotation addons:', error);
+    return { addons: [], error: error.message };
+  }
+
+  return {
+    addons: (data ?? []).map((a) => ({
+      id: a.id,
+      name: a.name,
+      description: a.description,
+      icon: a.icon,
+      price: Number(a.price),
+      category: a.category,
+      pricing_type: a.pricing_type as 'fixed' | 'per_unit',
+      max_quantity: a.max_quantity,
+      requires_child_age: a.requires_child_age,
+      child_age_min: a.child_age_min,
+      child_age_max: a.child_age_max,
+    })),
+  };
 }

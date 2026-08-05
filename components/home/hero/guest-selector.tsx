@@ -8,7 +8,7 @@
  *
  * NOTE: the business portal has its own equivalent at
  * `app/business/(portal)/bookings/new/components/guest-breakdown-selector.tsx`. The two are kept
- * separate on purpose — the business module is independent of the customer flow and is themed for
+ * separate on purpose. The business module is independent of the customer flow and is themed for
  * shadcn, not the luxury CSS vars used here.
  */
 
@@ -166,7 +166,7 @@ export function GuestSelector({
         />
         <StepperRow
           label="Children"
-          hint="Age 2–11 · needs a seat"
+          hint="Age 2-11 · needs a seat"
           value={value.children}
           min={0}
           onDecrement={() => update({ children: value.children - 1 })}
@@ -191,7 +191,7 @@ export function GuestSelector({
         </div>
         {value.children + value.infants > 0 && (
           <p className="-mt-2 text-xs text-[var(--text-muted)]">
-            Child seats are included free — just ask when you book.
+            Add a child seat at checkout. We&apos;ll ask each child&apos;s age so we bring the right one.
           </p>
         )}
       </PopoverContent>

@@ -179,7 +179,7 @@ export function AssignVendorModal({
                         {matching.length > 0 && (
                           <>
                             <div className="px-2 py-1.5 text-xs font-semibold text-emerald-600">
-                              Recommended — has matching vehicle
+                              Recommended: has matching vehicle
                             </div>
                             {matching.map((vendor) => (
                               <SelectItem key={vendor.id} value={vendor.id}>

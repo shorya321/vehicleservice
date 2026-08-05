@@ -65,7 +65,7 @@ export const DELETE = requireBusinessAuth(
       // 24-hour policy is applied (see getCancellationRefund + the cancel route).
       //
       // This previously called an RPC named `add_wallet_balance` that has never existed in the
-      // database — the real function is `add_to_wallet`. The error was logged, deletion
+      // database. The real function is `add_to_wallet`. The error was logged, deletion
       // continued regardless, and the response still reported `refunded: true`, so the money
       // silently vanished. The guard was also wrong: it omitted 'completed', so once the call
       // was corrected it would have refunded already-delivered trips.
@@ -122,7 +122,7 @@ export const DELETE = requireBusinessAuth(
             p_category: 'booking',
             p_type: 'booking_deleted',
             p_title: `Booking Deleted - #${booking.trip_number || booking.booking_number}`,
-            p_message: `Booking for ${booking.customer_name} deleted. No refund is issued on deletion — cancel a booking to release its refund.`,
+            p_message: `Booking for ${booking.customer_name} deleted. No refund is issued on deletion. Cancel a booking to release its refund.`,
             p_data: {
               booking_number: booking.booking_number,
               trip_number: booking.trip_number,
@@ -158,7 +158,7 @@ export const DELETE = requireBusinessAuth(
 
       return apiSuccess({
         message: 'Booking deleted successfully',
-        // Deletion never refunds — see the note above. Reported explicitly so no caller infers
+        // Deletion never refunds. See the note above. Reported explicitly so no caller infers
         // otherwise, as the previous response wrongly did.
         refunded: false,
       });

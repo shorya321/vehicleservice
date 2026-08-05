@@ -160,7 +160,7 @@ export function AvailabilityCalendar({
     let filtered = events
 
     // Filter by resource type. A booking occupies a vehicle *and* a driver, so it
-    // belongs to a tab only if it actually has a resource of that kind assigned —
+    // belongs to a tab only if it actually has a resource of that kind assigned,
     // matching on `type === 'booking'` alone would let every booking through both.
     if (filterType === 'vehicle') {
       filtered = filtered.filter(e =>
@@ -244,7 +244,7 @@ export function AvailabilityCalendar({
 
   // Handle slot selection (for creating unavailability)
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    // Courtesy guard only — markResourceUnavailable rejects past dates server-side,
+    // Courtesy guard only. markResourceUnavailable rejects past dates server-side,
     // which is what actually prevents backdating. Uses the same Dubai boundary as
     // the server so the UI never offers a slot the server will refuse.
     if (slotInfo.start < startOfBookingDayUtc()) {
@@ -379,7 +379,7 @@ export function AvailabilityCalendar({
           <AlertCircle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
           <p className="text-sm text-muted-foreground">
             You&apos;re viewing past dates. Bookings and unavailability shown here are historical and
-            read-only — for full booking records see{' '}
+            read-only. For full booking records see{' '}
             <Link href="/vendor/bookings" className="font-medium underline underline-offset-4">
               Bookings
             </Link>

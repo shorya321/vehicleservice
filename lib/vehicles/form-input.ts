@@ -3,7 +3,7 @@
  * the optional schema fields optional.
  *
  * The forms previously used `parseInt(value) || undefined`, which also swallowed
- * a legitimate 0 — so a vendor could never record a vehicle that takes no
+ * a legitimate 0, so a vendor could never record a vehicle that takes no
  * luggage.
  */
 export function toOptionalNumber(value: number): number | undefined {

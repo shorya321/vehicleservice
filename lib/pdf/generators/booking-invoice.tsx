@@ -2,17 +2,17 @@
  * Booking Invoice PDF Generator
  * Generates customer-facing PDF invoices for confirmed B2C transfer bookings.
  *
- * All currency conversion and formatting is done by the caller — this component
+ * All currency conversion and formatting is done by the caller. This component
  * receives pre-formatted strings so the document never re-derives an amount.
  */
 
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { pdfStyles, pdfColors } from '../styles/constants';
-// The customer copy — never lib/business/, which the business module owns and is free to diverge.
+// The customer copy, never lib/business/, which the business module owns and is free to diverge.
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
 
 /**
- * Local overrides only — the shared pdfStyles are spaced for the multi-page wallet
+ * Local overrides only. The shared pdfStyles are spaced for the multi-page wallet
  * statements and push this invoice onto a second page. Kept local so the business
  * wallet PDFs are unaffected.
  */
@@ -107,7 +107,7 @@ export interface BookingInvoiceLineItem {
 }
 
 export interface BookingInvoiceData {
-  // Reference — trip number is the only reference shown to the customer
+  // Reference. Trip number is the only reference shown to the customer
   invoiceNumber: string;
   issuedDate: string;
   paymentMethod?: string;
@@ -219,7 +219,7 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
           </View>
         </View>
 
-        {/* Charges — wrap={false} keeps the table from splitting across pages */}
+        {/* Charges. Wrap={false} keeps the table from splitting across pages */}
         <View style={styles.section} wrap={false}>
           <Text style={pdfStyles.sectionTitle}>Charges</Text>
           <View style={styles.table}>

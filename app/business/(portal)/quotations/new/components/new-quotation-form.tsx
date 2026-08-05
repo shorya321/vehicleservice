@@ -4,7 +4,7 @@
  * Start a quotation.
  *
  * Only the header is captured here. The row is created immediately as a draft and the user
- * is sent to the detail page to add trips — which means a half-built quotation is never lost
+ * is sent to the detail page to add trips, which means a half-built quotation is never lost
  * to a closed tab, and the quotation number exists from the first moment.
  *
  * Email and phone are optional at this stage: an offline quote often begins with nothing but
@@ -22,7 +22,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-// The portal's date control — same one the booking wizard and the wallet filters use.
+// The portal's date control. Same one the booking wizard and the wallet filters use.
 import { FormDatePicker } from '@/components/ui/form-date-picker';
 import {
   Form,
@@ -58,7 +58,7 @@ const formSchema = z.object({
 
 type FormValues = z.input<typeof formSchema>;
 
-/** Midnight today — a quotation that expires in the past is not a quotation. */
+/** Midnight today. A quotation that expires in the past is not a quotation. */
 const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 
 interface NewQuotationFormProps {
@@ -185,7 +185,7 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
                   <FormLabel>Valid until (optional)</FormLabel>
                   <FormControl>
                     {/* The field stays a 'yyyy-MM-dd' string, so the schema and the server
-                        action are untouched — only the control changes. */}
+                        action are untouched. Only the control changes. */}
                     <FormDatePicker
                       value={
                         field.value
@@ -218,7 +218,7 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
                     <Input type="number" step="0.1" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Applied to every trip unless you override it. Internal only — never shown on
+                    Applied to every trip unless you override it. Internal only. Never shown on
                     the PDF.
                   </FormDescription>
                   <FormMessage />
@@ -234,7 +234,7 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
               <FormItem>
                 <FormLabel>Title (optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="March itinerary — Khan family" {...field} />
+                  <Input placeholder="March itinerary for the Khan family" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -254,7 +254,7 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
               <FormItem>
                 <FormLabel>Notes for the customer</FormLabel>
                 <FormControl>
-                  <Textarea rows={3} placeholder="Anything to appear on the PDF…" {...field} />
+                  <Textarea rows={3} placeholder="Anything to appear on the PDF..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

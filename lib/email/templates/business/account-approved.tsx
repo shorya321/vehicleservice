@@ -19,7 +19,7 @@ export const BusinessAccountApprovedEmail = ({
 }: BusinessAccountApprovedEmailProps) => {
   return (
     <EmailLayout
-      preview="Your Business Account Has Been Approved!"
+      preview="Your business account is approved"
       heading="Welcome to Infinia Transfers!"
     >
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
@@ -29,8 +29,7 @@ export const BusinessAccountApprovedEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        We&apos;re excited to have your business join our platform. You can now access all features
-        and start managing your bookings.
+        Your business is now on the platform. You can start managing bookings.
       </Text>
 
       <Text style={emailStyles.text}>
@@ -41,7 +40,7 @@ export const BusinessAccountApprovedEmail = ({
         items={[
           'Access your business dashboard',
           'Create and manage bookings for your customers',
-          'Top up your wallet for seamless transactions',
+          'Top up your wallet to pay for bookings',
           'Track your booking history and analytics',
           'Manage your business profile and settings',
         ]}
@@ -59,7 +58,7 @@ export const BusinessAccountApprovedEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        If you have any questions or need assistance, our support team is here to help.
+        Contact support if you need help.
       </Text>
 
       <Text style={emailStyles.text}>

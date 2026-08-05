@@ -8,7 +8,7 @@ export function buildSearchUrl(
   params: {
     date: string
     /**
-     * Total guests (adults + children + infants). Always emitted — the results pages
+     * Total guests (adults + children + infants). Always emitted. The results pages
      * redirect('/') when it is missing, and existing links/bookmarks rely on it.
      */
     passengers: string | number
@@ -22,7 +22,7 @@ export function buildSearchUrl(
     date: params.date,
     passengers: params.passengers.toString(),
   })
-  // Optional breakdown — callers that only know a total (route cards, zone pages) omit these.
+  // Optional breakdown. Callers that only know a total (route cards, zone pages) omit these.
   if (params.adults !== undefined) searchParams.set('adults', params.adults.toString())
   if (params.children !== undefined) searchParams.set('children', params.children.toString())
   if (params.infants !== undefined) searchParams.set('infants', params.infants.toString())
@@ -55,7 +55,7 @@ export function buildCheckoutUrl(
     passengers: params.passengers.toString(),
     luggage: params.luggage.toString(),
   })
-  // Optional breakdown — callers that only know a total (SEO route pages) omit these.
+  // Optional breakdown. Callers that only know a total (SEO route pages) omit these.
   if (params.adults !== undefined) searchParams.set('adults', params.adults.toString())
   if (params.children !== undefined) searchParams.set('children', params.children.toString())
   if (params.infants !== undefined) searchParams.set('infants', params.infants.toString())

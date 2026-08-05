@@ -199,7 +199,7 @@ async function main() {
     const slug = csvZoneIdToSlug(csvZoneId)
     const uuid = slugToUuid.get(slug)
     if (!uuid) {
-      throw new Error(`Zone slug "${slug}" not found after insert — data mismatch!`)
+      throw new Error(`Zone slug "${slug}" not found after insert. Data mismatch!`)
     }
     csvZoneIdToUuid.set(csvZoneId, uuid)
   }
@@ -477,7 +477,7 @@ async function main() {
     for (const fb of failedBatches) {
       console.log(`    Insert batch ${fb.batchNum}: ${fb.error}`)
     }
-    console.log('\n  Script is idempotent — re-run to retry failed batches.')
+    console.log('\n  Script is idempotent. Re-run to retry failed batches.')
   }
 
   console.log('\n=== Done ===')

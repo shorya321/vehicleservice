@@ -1,7 +1,7 @@
 /**
  * Team page loading state.
  *
- * Shaped to the real page — header, 4-up stat row, roster card — so the layout does not jump
+ * Shaped to the real page (header, 4-up stat row, roster card) so the layout does not jump
  * when the data lands. Follows the quotations/loading.tsx idiom (Skeleton on bg-muted/50).
  */
 

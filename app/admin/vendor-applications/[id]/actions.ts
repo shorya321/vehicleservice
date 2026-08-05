@@ -12,7 +12,7 @@ interface ApproveApplicationData {
   /**
    * The `updated_at` value the admin actually reviewed, passed straight through as
    * the raw string from Supabase. The RPC refuses to act if the applicant has edited
-   * since. Never wrap this in `new Date()` — that truncates to milliseconds and every
+   * since. Never wrap this in `new Date()`. That truncates to milliseconds and every
    * comparison would fail.
    */
   expectedUpdatedAt: string;

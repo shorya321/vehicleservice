@@ -145,7 +145,7 @@ export function useLocationSearch(
           setPopularResults(data as unknown as LocationSearchResult[])
         }
       } catch {
-        // Non-critical — popular locations are optional
+        // Non-critical. Popular locations are optional
       }
     }
     fetchPopular()

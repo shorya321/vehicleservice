@@ -17,7 +17,7 @@ export type VehicleTypeCheckResult = { type: TypeCapacity } | { error: string }
  * Server-side gate for the vendor and admin vehicle writes.
  *
  * The forms carry the type's capacities in their own state, so the client can
- * report a breach immediately — but the client's copy is not evidence. This
+ * report a breach immediately, but the client's copy is not evidence. This
  * re-reads the type from the database and rejects anything that exceeds it,
  * which is what actually protects the data.
  *

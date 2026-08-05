@@ -12,7 +12,7 @@ interface SendEmailParams {
   template: React.ComponentType<any>;
   templateProps: Record<string, any>;
   /**
-   * Overrides the global reply-to for mail sent on someone else's behalf —
+   * Overrides the global reply-to for mail sent on someone else's behalf,
    * a vendor's own address on a direct-booking notification, for example.
    * Omit to keep the platform default.
    */

@@ -7,7 +7,7 @@
  * status.ts, and persistence in persist.ts. A 'use server' module may only export async
  * functions, so no types or constants are exported from here.
  *
- * Every function returns a result object and never throws — the calling components rely on
+ * Every function returns a result object and never throws. The calling components rely on
  * that, matching app/vendor/direct-bookings/actions.ts.
  */
 

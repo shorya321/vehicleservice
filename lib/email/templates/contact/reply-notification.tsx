@@ -27,8 +27,7 @@ export const ContactReplyEmail = ({
       <Text style={messageStyle}>{replyMessage}</Text>
 
       <Text style={emailStyles.text}>
-        If you have any further questions, please don&apos;t hesitate to reply
-        to this email or contact us directly.
+        Reply to this email or contact us directly if you have more questions.
       </Text>
 
       <Text style={emailStyles.text}>

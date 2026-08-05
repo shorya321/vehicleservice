@@ -80,8 +80,8 @@ export const POST = requireBusinessAuth(
       }
 
       // Apply the published policy: free cancellation up to 24h before pickup, no refund
-      // inside that window. Computed SERVER-side from the stored booking — never from
-      // anything the client sent — and passed to the RPC, which clamps it to the original
+      // inside that window. Computed SERVER-side from the stored booking, never from
+      // anything the client sent, and passed to the RPC, which clamps it to the original
       // deduction as a second line of defence.
       const refund = getCancellationRefund({
         booking_status: booking.booking_status,
@@ -115,7 +115,7 @@ export const POST = requireBusinessAuth(
       const newBalance = result?.[0]?.new_balance || 0;
 
       // The RPC owns the booking row and the wallet refund atomically, but knows nothing
-      // about vendor assignments — so close them here and release the vehicle and driver.
+      // about vendor assignments, so close them here and release the vehicle and driver.
       // Deliberately after the RPC: a cleanup failure must not undo a completed refund.
       const { error: closeError } = await closeActiveAssignments({
         businessBookingId: bookingId,

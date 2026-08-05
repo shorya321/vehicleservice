@@ -74,7 +74,7 @@ export function QuotationSettingsForm({ initialPrefix }: QuotationSettingsFormPr
       }
 
       toast.success('Quotation settings updated', {
-        description: `New quotations will be numbered ${values.quotation_number_prefix}…`,
+        description: `New quotations will be numbered ${values.quotation_number_prefix}...`,
       });
 
       router.refresh();

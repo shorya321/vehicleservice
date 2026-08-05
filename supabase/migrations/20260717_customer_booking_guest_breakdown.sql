@@ -13,8 +13,8 @@
 --              an infant cannot be counted as a lap passenger the way airlines do.
 --
 --              NOTE: 20260716_business_booking_guest_breakdown.sql's header describes the older
---              lap-infant model ("seated = adults + children"). That comment is stale history —
---              b104df7 changed the rule — and in any case the business and customer modules are
+--              lap-infant model ("seated = adults + children"). That comment is stale history,
+--              b104df7 changed the rule, and in any case the business and customer modules are
 --              deliberately independent and free to diverge. Do not "reconcile" the two by editing
 --              either. The customer rule is the one stated above, enforced by a zod refine in
 --              app/checkout/actions.ts.
@@ -26,7 +26,7 @@
 --
 --              No RPC section, unlike the business migration: `passenger_count` appears exactly once
 --              in this table's SQL (the CREATE TABLE). No trigger, view, RLS policy or function
---              touches it — createBooking does a direct .insert(), so it is the only writer.
+--              touches it. createBooking does a direct .insert(), so it is the only writer.
 --
 --              Backfill: existing rows get adults = passenger_count, children = 0, infants = 0, which
 --              reconciles exactly with the legacy meaning of passenger_count (every row was adults).

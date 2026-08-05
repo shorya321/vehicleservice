@@ -13,8 +13,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-operations';
 import { BookingFormData } from './booking-wizard';
 import { VehicleTypeResult, ZoneInfo, AddonsByCategory } from '../actions';
-import { AddonSelection, SelectedAddon } from './addon-selection';
+import { AddonSelection, SelectedAddon, childAgesComplete } from './addon-selection';
 import { formatGuestSummary, getSeatedCount } from '@/lib/business/guest-breakdown';
+import { formatChildAges } from '@/lib/business/format-child-ages';
 import { calculateAddonsTotal } from '@/lib/business/wizard-pricing';
 import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/utils/timezone';
 
@@ -26,7 +27,7 @@ interface Location {
 
 interface ReviewStepProps {
   formData: BookingFormData;
-  /** Derived by the wizard (base + add-ons), not stored in formData — see wizard-pricing.ts. */
+  /** Derived by the wizard (base + add-ons), not stored in formData. See wizard-pricing.ts. */
   totalPrice: number;
   walletBalance: number;
   locations: Location[];
@@ -64,13 +65,14 @@ export function ReviewStep({
   const remainingBalance = walletBalance - totalPrice;
 
   // Handle addon selection changes. The total is derived by the wizard from selected_addons, so it
-  // is not written here — that write is what used to be undone by changing vehicle afterwards.
+  // is not written here. That write is what used to be undone by changing vehicle afterwards.
   const handleAddonsChange = (selectedAddons: SelectedAddon[]) => {
     onUpdate({ selected_addons: selectedAddons });
   };
 
   // Calculate addons total for display
   const addonsTotal = calculateAddonsTotal(formData.selected_addons);
+  const agesComplete = childAgesComplete(formData.selected_addons ?? []);
 
   // Every guest occupies a seat, infants included.
   const guests = {
@@ -202,6 +204,8 @@ export function ReviewStep({
             addonsByCategory={addonsByCategory}
             selectedAddons={formData.selected_addons || []}
             onAddonsChange={handleAddonsChange}
+            // Guests are chosen on the Route step; child seats are capped against them here.
+            childSeatCapacity={(formData.children ?? 0) + (formData.infants ?? 0)}
           />
         ) : (
           <p className="text-sm text-muted-foreground">No additional services available.</p>
@@ -227,6 +231,25 @@ export function ReviewStep({
               <span className="text-foreground font-medium">{formatCurrency(addonsTotal)}</span>
             </div>
           )}
+          {/* Named per line so the ages the driver needs are visible before confirming. */}
+          {(formData.selected_addons ?? [])
+            .filter((s) => s.requires_child_age)
+            .map((s) => {
+              const name = addonsByCategory
+                .flatMap((c) => c.addons)
+                .find((a) => a.id === s.addon_id)?.name;
+              const ages = (s.child_ages ?? []).filter((a): a is number => a !== null);
+              return (
+                <div key={s.addon_id} className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {name ?? 'Child seat'}
+                    {s.quantity > 1 ? ` ×${s.quantity}` : ''}
+                    {formatChildAges(ages)}
+                  </span>
+                  <span className="text-muted-foreground">{formatCurrency(s.total_price)}</span>
+                </div>
+              );
+            })}
           <div className="flex justify-between pt-3 border-t border-border text-lg font-bold">
             <span className="text-foreground">Total:</span>
             <span className="text-primary">{formatCurrency(totalPrice)}</span>
@@ -274,12 +297,20 @@ export function ReviewStep({
         </div>
       )}
 
+      {/* A child seat without an age is rejected by the API, and by then the wallet has already
+          been debited by the RPC, so it has to be caught before submit, not after. */}
+      {!agesComplete && (
+        <p className="text-sm text-destructive" role="alert">
+          Select an age for each child seat before confirming.
+        </p>
+      )}
+
       {/* Actions */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
           Back
         </Button>
-        <Button type="button" onClick={onSubmit} disabled={!hasBalance || isSubmitting}>
+        <Button type="button" onClick={onSubmit} disabled={!hasBalance || isSubmitting || !agesComplete}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

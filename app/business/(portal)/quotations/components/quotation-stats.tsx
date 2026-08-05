@@ -6,7 +6,7 @@
  * Client-only because the entrance animation is: the counts themselves are resolved on the
  * server and passed in, so nothing here re-queries.
  *
- * Colours deliberately mirror app/business/(portal)/quotations/components/quotation-status-badge.tsx —
+ * Colours deliberately mirror app/business/(portal)/quotations/components/quotation-status-badge.tsx,
  * a status means the same thing whether it is read off a pill or off a counter.
  */
 

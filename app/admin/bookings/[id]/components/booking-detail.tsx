@@ -41,6 +41,7 @@ import {
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { formatCurrency } from '@/lib/utils'
+import { formatChildAges } from '@/lib/utils/child-ages'
 import { updateBookingStatus, updatePaymentStatus } from '../../actions'
 import { AssignVendorModal } from '../../components/assign-vendor-modal'
 import { toast } from 'sonner'
@@ -600,6 +601,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                       amenity.amenity_type === 'extra_luggage' ? 'Extra Luggage' :
                       'Additional Service')}
                     {amenity.quantity > 1 ? ` x${amenity.quantity}` : ''}
+                    {formatChildAges(amenity.child_ages)}
                   </span>
                   <span className="font-medium">{formatCurrency(amenity.price)}</span>
                 </div>

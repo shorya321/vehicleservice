@@ -28,7 +28,7 @@ export function formatCurrency(amount: number, currency: string = 'AED'): string
 /**
  * Convert an AED amount into the business's display currency.
  *
- * Display only — never persist the result. Stored balances, booking prices and Stripe
+ * Display only, never persist the result. Stored balances, booking prices and Stripe
  * charges stay in AED. Callers load `rates` server-side with `getExchangeRates()` from
  * `@/lib/currency/server` and pass them down; that module is server-only, so it must not
  * be imported here.

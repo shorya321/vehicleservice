@@ -203,7 +203,7 @@ export function VehicleTable({
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3 text-muted-foreground" />
-                    <span>{vehicle.seats ?? '—'}</span>
+                    <span>{vehicle.seats ?? '-'}</span>
                   </div>
                 </TableCell>
                 <TableCell>

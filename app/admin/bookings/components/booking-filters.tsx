@@ -34,7 +34,7 @@ interface BookingFiltersProps {
 function parseFilterDay(day: string | undefined): Date | undefined {
   if (!day) return undefined
 
-  // Legacy links may still carry a full ISO instant — keep only the day part.
+  // Legacy links may still carry a full ISO instant. Keep only the day part.
   const parsed = new Date(`${day.slice(0, 10)}T00:00:00`)
   return Number.isNaN(parsed.getTime()) ? undefined : parsed
 }
@@ -115,7 +115,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   const handleApplyAdvancedFilters = () => {
     const newFilters: BookingFilters = { ...filters, page: 1 }
 
-    // Send plain Dubai calendar days — an ISO instant here would be the admin's
+    // Send plain Dubai calendar days. An ISO instant here would be the admin's
     // local midnight, which shifts the day boundaries per browser timezone.
     if (dateRange?.from) {
       newFilters.dateFrom = format(dateRange.from, 'yyyy-MM-dd')

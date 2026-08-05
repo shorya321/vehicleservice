@@ -7,7 +7,7 @@
  */
 
 /**
- * Stored statuses. `expired` is deliberately NOT one of them — nothing would transition a row
+ * Stored statuses. `expired` is deliberately NOT one of them. Nothing would transition a row
  * into it without a scheduled job, so expiry is derived from valid_until at read time.
  */
 export const QUOTATION_STATUSES = [
@@ -46,7 +46,7 @@ export function normalizeQuotationStatus(status: unknown): QuotationStatus {
 /**
  * Expiry is derived, never stored.
  *
- * Only an outstanding quotation can expire — once a customer has accepted, or any line has
+ * Only an outstanding quotation can expire. Once a customer has accepted, or any line has
  * been converted, the validity window has served its purpose and showing "Expired" would be
  * actively misleading.
  *
@@ -75,7 +75,7 @@ export function displayStatus(
  * Header editing (customer, terms, discount, default markup).
  *
  * Locked only while a conversion is in flight or complete. `sent` and `accepted` both stay
- * editable — customers routinely renegotiate after saying yes, and forcing a brand-new
+ * editable. Customers routinely renegotiate after saying yes, and forcing a brand-new
  * quotation for a changed pickup time is the kind of friction that pushes people back to
  * WhatsApp.
  */
@@ -106,7 +106,7 @@ export function canAddLines(status: QuotationStatus): boolean {
 /**
  * Whether a conversion may start.
  *
- * `partially_converted` is included so a run interrupted by a timeout can be resumed — the
+ * `partially_converted` is included so a run interrupted by a timeout can be resumed. The
  * per-line conversion_nonce makes that retry safe against double-charging.
  * `converting` is excluded here, but the real guard is the conditional UPDATE in the route;
  * this only decides whether to show the button.
@@ -116,7 +116,7 @@ export function canConvert(status: QuotationStatus): boolean {
 }
 
 /**
- * Deleting is blocked once any line has become a booking — the link between a booking and the
+ * Deleting is blocked once any line has become a booking. The link between a booking and the
  * quotation it came from is the only audit trail of why that money moved. The FK is RESTRICT,
  * so the database refuses regardless; this exists so the UI can fail cleanly first.
  */
@@ -139,7 +139,7 @@ export const CONTACT_PHONE_RE = /^\+?[1-9]\d{1,14}$/;
  * Why a quotation's contact details block conversion. Empty array means convertible.
  *
  * business_bookings.customer_email and customer_phone are NOT NULL, but the quotation
- * columns are nullable on purpose — an offline quote often starts from a phone call with
+ * columns are nullable on purpose. An offline quote often starts from a phone call with
  * nothing but a name. This is where that asymmetry is paid for.
  *
  * Order matters: these are pushed ahead of the per-trip errors in preflightConversion, so
@@ -151,10 +151,10 @@ export function missingConversionContact(
 ): string[] {
   const reasons: string[] = [];
   if (!email) {
-    reasons.push('Add a customer email before converting — bookings require one');
+    reasons.push('Add a customer email before converting. Bookings require one.');
   }
   if (!phone || !CONTACT_PHONE_RE.test(phone)) {
-    reasons.push('Add a valid customer phone before converting — bookings require one');
+    reasons.push('Add a valid customer phone before converting. Bookings require one.');
   }
   return reasons;
 }

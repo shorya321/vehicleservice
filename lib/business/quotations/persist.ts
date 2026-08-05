@@ -163,9 +163,16 @@ export async function saveQuotationTrips({
       itemId = data.id;
     }
 
-    // Addons are replaced wholesale — simpler than diffing, and the child rows carry no
+    // Addons are replaced wholesale. Simpler than diffing, and the child rows carry no
     // state worth preserving beyond the snapshot itself.
-    await supabase.from('business_quotation_item_addons').delete().eq('item_id', itemId);
+    const { error: addonDeleteError } = await supabase
+      .from('business_quotation_item_addons')
+      .delete()
+      .eq('item_id', itemId);
+    // Previously unchecked. A failed delete followed by a successful insert trips
+    // bqia_unique (item_id, addon_id) and surfaces as a confusing "Failed to save trip
+    // extras" on a row the operator did not touch, so fail on the real cause instead.
+    if (addonDeleteError) return { error: 'Failed to update trip extras', lines: [] };
 
     if (trip.addons.length > 0) {
       const { error } = await supabase.from('business_quotation_item_addons').insert(
@@ -176,6 +183,7 @@ export async function saveQuotationTrips({
           quantity: addon.quantity,
           unit_price: roundAed(addon.unit_price),
           total_price: roundAed(addon.total_price),
+          child_ages: addon.child_ages ?? null,
         }))
       );
       if (error) return { error: 'Failed to save trip extras', lines: [] };

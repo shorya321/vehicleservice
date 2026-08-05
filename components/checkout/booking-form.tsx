@@ -25,7 +25,36 @@ const selectedAddonSchema = z.object({
   quantity: z.number().min(1).max(10),
   unit_price: z.number().min(0),
   total_price: z.number().min(0),
+  // Nullable at the element level on purpose: a half-filled seat must still parse, so that the
+  // friendlier array-level message below is what the customer sees rather than a raw type error.
+  child_ages: z.array(z.number().int().min(0).max(12).nullable()).optional(),
+  requires_child_age: z.boolean().optional(),
 })
+
+/**
+ * The child-age rule lives on the ARRAY field, not on `bookingSchema`. An object-level `.refine()`
+ * only runs once every field parses, and `agreeToTerms` is false until the customer ticks it, so a
+ * schema-level refine would be skipped for the entire time the error actually needs to be visible.
+ */
+const selectedAddonsField = z
+  .array(selectedAddonSchema)
+  .superRefine((addons, ctx) => {
+    for (const a of addons) {
+      if (!a.requires_child_age) continue
+      const ages = a.child_ages ?? []
+      if (ages.length !== a.quantity || ages.some(v => v === null)) {
+        // Empty path => the issue attaches to `selectedAddons` itself, which is what
+        // StepErrorSummary reads (errors[name]?.message) and what trigger() targets.
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [],
+          message: 'Select an age for each child seat',
+        })
+        return
+      }
+    }
+  })
+  .optional()
 
 const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -42,14 +71,16 @@ const bookingSchema = z.object({
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
   }),
-  selectedAddons: z.array(selectedAddonSchema).optional(),
+  selectedAddons: selectedAddonsField,
 })
 
 type BookingFormData = z.infer<typeof bookingSchema>
 
 const STEP_FIELDS: Record<number, (keyof BookingFormData)[]> = {
   0: ['pickupDate', 'pickupTime', 'firstName', 'lastName', 'email', 'phone'],
-  1: ['paymentMethod'],
+  // `selectedAddons` carries the child-age rule, so it has to be gated here or a seat with a
+  // missing age would sail through to the server and come back as a thrown error.
+  1: ['paymentMethod', 'selectedAddons'],
 }
 
 const TOTAL_STEPS = 2
@@ -199,7 +230,17 @@ export function BookingForm({
         basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,
         paymentMethod: data.paymentMethod,
-        selectedAddons: data.selectedAddons,
+        // Narrow to the server's contract: superRefine has already guaranteed every age is filled
+        // in, and `requires_child_age` is a local rendering hint the server re-derives from the DB.
+        selectedAddons: data.selectedAddons?.map(a => ({
+          addon_id: a.addon_id,
+          quantity: a.quantity,
+          unit_price: a.unit_price,
+          total_price: a.total_price,
+          ...(a.child_ages
+            ? { child_ages: a.child_ages.filter((v): v is number => v !== null) }
+            : {}),
+        })),
       })
 
       if (result.success) {
@@ -210,7 +251,10 @@ export function BookingForm({
     } finally {
       setLoading(false)
     }
-  }, [vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, basePrice, router])
+    // `guests` must be listed even though `passengers` is derived from it: the derivation is lossy.
+    // Swapping an adult for a child leaves the seated total unchanged, so without `guests` here the
+    // closure keeps a stale breakdown and posts the wrong adults/children/infants split.
+  }, [vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, guests, basePrice, router])
 
   const handleContinue = useCallback(async () => {
     const fields = STEP_FIELDS[currentStep] || []
@@ -222,8 +266,13 @@ export function BookingForm({
     onGoNext()
   }, [currentStep, trigger, onGoNext])
 
+  // Without an onInvalid handler a rejected submit does nothing at all. StepErrorSummary only
+  // renders once `stepValidationAttempted` is set, which until now only "Continue" ever did. That
+  // left both a missing child age and an unticked terms box failing silently on the final step.
+  const onInvalid = useCallback(() => setStepValidationAttempted(true), [])
+
   const formMethodsRef = useRef({
-    submit: handleSubmit(onSubmit),
+    submit: handleSubmit(onSubmit, onInvalid),
     isSubmitting: loading,
     agreeToTerms,
     setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value),
@@ -231,7 +280,7 @@ export function BookingForm({
     handleContinue,
   })
   formMethodsRef.current = {
-    submit: handleSubmit(onSubmit),
+    submit: handleSubmit(onSubmit, onInvalid),
     isSubmitting: loading,
     agreeToTerms,
     setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value),
@@ -269,13 +318,14 @@ export function BookingForm({
         form={form}
         vehicleType={vehicleType}
         addonsByCategory={addonsByCategory}
+        guests={guests}
       />
       <PaymentMethodSection form={form} />
     </div>,
   ], [form, route, vehicleType, guests, setGuests, onDateTimeChange, addonsByCategory])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-0" aria-label="Booking form">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-0" aria-label="Booking form">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={currentStep}

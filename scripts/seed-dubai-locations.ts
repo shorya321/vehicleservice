@@ -225,7 +225,7 @@ async function main() {
     for (const fb of failedBatches) {
       console.log(`    Batch ${fb.batchNum}: ${fb.error}`)
     }
-    console.log('\n  Script is idempotent — re-run to retry failed batches.')
+    console.log('\n  Script is idempotent. Re-run to retry failed batches.')
   }
 
   console.log('\n=== Done ===')

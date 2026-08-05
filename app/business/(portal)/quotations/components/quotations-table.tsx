@@ -3,12 +3,12 @@
 /**
  * Quotation list table.
  *
- * Rows are already filtered, sorted and paginated by the server — this renders what it is
+ * Rows are already filtered, sorted and paginated by the server. This renders what it is
  * given and never re-filters in the client. Paging is URL-driven for the same reason the
  * filters are: a page is a shareable address, not component state.
  *
  * The shadcn <Table> primitive in components/ui is skinned for the PUBLIC site (gold headers,
- * pearl text), so every Table* here carries semantic overrides — the same treatment
+ * pearl text), so every Table* here carries semantic overrides. The same treatment
  * wallet/transactions/components/transactions-list.tsx applies.
  */
 
@@ -54,7 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/app/business/(portal)/components/ui/alert-dialog';
-// Business empty state — the shared one paints text-luxury-pearl, which is invisible on the
+// Business empty state. The shared one paints text-luxury-pearl, which is invisible on the
 // portal's light theme.
 import { EmptyState } from '@/components/business/ui/empty-state';
 import { PortalSectionCard } from '@/app/business/(portal)/components/ui/section-card';
@@ -84,7 +84,7 @@ interface QuotationsTableProps {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '-';
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -92,7 +92,7 @@ function formatDate(iso: string | null): string {
   }).format(new Date(iso));
 }
 
-/** Elided pager, matching the bookings list: 1 … 4 5 6 … 12. */
+/** Elided pager, matching the bookings list: 1 ... 4 5 6 ... 12. */
 function pageNumbers(current: number, totalPages: number): (number | string)[] {
   if (totalPages <= 5) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -224,7 +224,7 @@ export function QuotationsTable({
                 <Table>
                   {/* TableHeader's own `[&_tr]:border-luxury-gold/20` is a descendant rule, so
                       it outranks a border class set on the row and tailwind-merge cannot see
-                      the conflict — it has to be neutralised here, on the same element. */}
+                      the conflict. It has to be neutralised here, on the same element. */}
                   <TableHeader className="[&_tr]:border-border">
                     <TableRow className="border-border hover:bg-muted/50">
                       <TableHead className={HEAD_CLASS}>Number</TableHead>
@@ -293,7 +293,7 @@ export function QuotationsTable({
                               </DropdownMenuItem>
                               {/* No preventDefault: suppressing the close left the menu open
                                   through the whole PDF fetch, and painted behind the delete
-                                  dialog. Radix closing normally is safe here — the portal's
+                                  dialog. Radix closing normally is safe here. The portal's
                                   AlertDialog clears the `pointer-events: none` this pairing
                                   would otherwise strand on <body>. */}
                               <DropdownMenuItem

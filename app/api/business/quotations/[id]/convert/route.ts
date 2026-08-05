@@ -1,8 +1,8 @@
 /**
  * Quotation -> Bookings conversion API.
  *
- * GET  — preflight only. Re-prices every trip and checks every wallet rule. Creates nothing.
- * POST — takes the lock, re-runs preflight, then converts trip by trip.
+ * GET. Preflight only. Re-prices every trip and checks every wallet rule. Creates nothing.
+ * POST. Takes the lock, re-runs preflight, then converts trip by trip.
  *
  * Ordering matters: lock, then preflight, then loop. Preflighting outside the lock would let
  * two tabs both pass and then both convert.
@@ -63,17 +63,22 @@ async function loadForConversion(
     .order('sort_order', { ascending: true });
 
   const itemIds = (items ?? []).map((i) => i.id);
-  const addonsByItem = new Map<string, Array<{ addon_id: string; quantity: number }>>();
+  const addonsByItem = new Map<
+    string,
+    Array<{ addon_id: string; quantity: number; child_ages: number[] | null }>
+  >();
 
   if (itemIds.length > 0) {
     const { data: addonRows } = await admin
       .from('business_quotation_item_addons')
-      .select('item_id, addon_id, quantity')
+      // Prices are intentionally not selected. Conversion re-prices from the live addons table.
+      // child_ages is, because it is the operator's data and dies with the quotation otherwise.
+      .select('item_id, addon_id, quantity, child_ages')
       .in('item_id', itemIds);
 
     for (const row of addonRows ?? []) {
       const list = addonsByItem.get(row.item_id) ?? [];
-      list.push({ addon_id: row.addon_id, quantity: row.quantity });
+      list.push({ addon_id: row.addon_id, quantity: row.quantity, child_ages: row.child_ages });
       addonsByItem.set(row.item_id, list);
     }
   }
@@ -130,7 +135,7 @@ export const POST = requireBusinessAuth(async (
     }
 
     // Take the lock FIRST. Each attempt is a single conditional UPDATE whose rowcount we
-    // inspect — a read-then-write would not be a lock at all.
+    // inspect. A read-then-write would not be a lock at all.
     //
     // Deliberately TWO .eq() updates rather than one .or(): PostgREST cannot resolve a column
     // referenced in or() when the same UPDATE also SETs that column, and fails with

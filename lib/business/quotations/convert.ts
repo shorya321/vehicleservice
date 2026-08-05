@@ -30,7 +30,7 @@ import type { QuotationRepriceLine, QuotationPreflightResult } from './types';
  */
 const MIN_LEAD_HOURS = 2;
 
-/** Postgres unique_violation — how a duplicate conversion attempt announces itself. */
+/** Postgres unique_violation. How a duplicate conversion attempt announces itself. */
 export const UNIQUE_VIOLATION = '23505';
 
 export interface ConvertibleItem {
@@ -49,7 +49,12 @@ export interface ConvertibleItem {
   sell_total_aed: number;
   conversion_nonce: string;
   converted_booking_id: string | null;
-  addons: Array<{ addon_id: string; quantity: number }>;
+  /**
+   * Prices are deliberately NOT carried: conversion re-prices from the live addons table.
+   * `child_ages` IS carried. It is data the operator needs, not a price, and there is nowhere
+   * else for it to come from once the quotation row is left behind.
+   */
+  addons: Array<{ addon_id: string; quantity: number; child_ages: number[] | null }>;
 }
 
 export interface ConvertibleQuotation {
@@ -80,7 +85,7 @@ export function repriceToken(quotationId: string, lines: QuotationRepriceLine[])
  * Dry-run the whole conversion. Creates nothing.
  *
  * Turns partial failure from an expected outcome into an infrastructure-only one. It is not a
- * reservation — deduct_from_wallet holds its FOR UPDATE only for its own call — but it closes
+ * reservation (deduct_from_wallet holds its FOR UPDATE only for its own call) but it closes
  * every deterministic failure.
  */
 export async function preflightConversion(
@@ -104,7 +109,7 @@ export async function preflightConversion(
   }
 
   // bookingCreationSchema requires both, but a quotation may legitimately be saved without
-  // them — an offline quote often starts from a name alone. The edit page's customer card is
+  // them. An offline quote often starts from a name alone. The edit page's customer card is
   // where a business fixes this; the detail page warns before they get here.
   blockingErrors.push(
     ...missingConversionContact(quotation.customer_email, quotation.customer_phone)
@@ -130,12 +135,18 @@ export async function preflightConversion(
       toLocationId: item.to_location_id,
       vehicleTypeId: item.vehicle_type_id,
       passengerCount: item.passenger_count,
-      selectedAddons: item.addons,
+      selectedAddons: item.addons.map((a) => ({
+        addon_id: a.addon_id,
+        quantity: a.quantity,
+        child_ages: a.child_ages ?? undefined,
+      })),
+      children: item.children,
+      infants: item.infants,
     });
 
     if ('error' in priced) {
       // Covers a deactivated zone price, an inactive or shrunken vehicle, and a deactivated
-      // or deleted addon — all of which can happen while a quotation sits unanswered.
+      // or deleted addon. All of which can happen while a quotation sits unanswered.
       error = error ?? priced.error;
       lines.push({
         itemId: item.id,

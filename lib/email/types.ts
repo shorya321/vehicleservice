@@ -52,7 +52,11 @@ export interface BookingConfirmationEmailData {
   infants?: number;
   basePrice?: number;
   amenitiesPrice?: number;
-  extras?: Array<{ label: string; quantity: number; price: number }>;
+  /**
+   * `childAges` carries one age per seat for child-seat add-ons (see booking_amenities.child_ages).
+   * Optional so every existing producer and consumer of `extras` still type-checks.
+   */
+  extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
   customerNotes?: string;
   invoiceUrl?: string;
 }
@@ -223,7 +227,12 @@ export interface BusinessCustomerBookingConfirmationEmailData {
   children?: number;
   infants?: number;
   referenceNumber?: string;
-  extras?: Array<{ label: string; quantity: number; price: number }>;
+  /**
+   * Kept structurally separate from the customer-flow `extras` above on purpose. The business
+   * module is independent, and the end-customer variant deliberately hides prices. `childAges`
+   * carries one age per seat for child-seat add-ons.
+   */
+  extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
 }
 
 export interface BusinessCustomerDatetimeChangedEmailData {

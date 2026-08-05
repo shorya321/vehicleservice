@@ -40,7 +40,7 @@ describe('isQuotationExpired', () => {
     expect(isQuotationExpired('sent', '2026-07-22', '2026-07-22')).toBe(false);
   });
 
-  it('never expires once accepted or converted — the window has served its purpose', () => {
+  it('never expires once accepted or converted. The window has served its purpose', () => {
     expect(isQuotationExpired('accepted', '2026-07-01', '2026-07-22')).toBe(false);
     expect(isQuotationExpired('converted', '2026-07-01', '2026-07-22')).toBe(false);
     expect(isQuotationExpired('partially_converted', '2026-07-01', '2026-07-22')).toBe(false);
@@ -57,7 +57,7 @@ describe('isQuotationExpired', () => {
 });
 
 describe('canEditHeader', () => {
-  it('allows editing a sent or accepted quotation — customers renegotiate after saying yes', () => {
+  it('allows editing a sent or accepted quotation. Customers renegotiate after saying yes', () => {
     expect(canEditHeader('draft')).toBe(true);
     expect(canEditHeader('sent')).toBe(true);
     expect(canEditHeader('accepted')).toBe(true);
@@ -145,15 +145,15 @@ describe('missingConversionContact', () => {
 
   it('names the missing email only', () => {
     expect(missingConversionContact(null, '+971501234567')).toEqual([
-      'Add a customer email before converting — bookings require one',
+      'Add a customer email before converting. Bookings require one.',
     ]);
   });
 
   it('rejects a local-format number that is not bookable', () => {
-    // Leading zero — the shape a UAE number is usually written in, and the reason the
+    // Leading zero. The shape a UAE number is usually written in, and the reason the
     // save-time schema and this gate must share one regex.
     expect(missingConversionContact('a@b.com', '0501234567')).toEqual([
-      'Add a valid customer phone before converting — bookings require one',
+      'Add a valid customer phone before converting. Bookings require one.',
     ]);
   });
 
@@ -161,8 +161,8 @@ describe('missingConversionContact', () => {
     // Order is load-bearing: preflight pushes these ahead of the per-trip errors, so the
     // first element becomes the conversion API's 409 message.
     expect(missingConversionContact(null, null)).toEqual([
-      'Add a customer email before converting — bookings require one',
-      'Add a valid customer phone before converting — bookings require one',
+      'Add a customer email before converting. Bookings require one.',
+      'Add a valid customer phone before converting. Bookings require one.',
     ]);
   });
 

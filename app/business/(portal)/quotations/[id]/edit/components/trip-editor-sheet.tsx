@@ -7,13 +7,13 @@
  * is tolerable once, but 4 gated steps x 5 trips is 20 forced navigations with no way to see
  * what you have already priced. Vehicle selection appears once the route and guests are valid.
  *
- * Only the action FUNCTIONS are imported from the bookings module — never its types. That file
+ * Only the action FUNCTIONS are imported from the bookings module, never its types. That file
  * is 'use server', and a type exported from one breaks at runtime while tsc stays silent.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { format, parse } from 'date-fns';
-import { Car, Loader2, MapPin, Receipt, Users } from 'lucide-react';
+import { Car, Loader2, MapPin, Package, Receipt, Users } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -38,10 +38,11 @@ import { bookingLocalInputToUtc, bookingUtcToLocalInput } from '@/lib/utils/time
 import { getAvailableVehicleTypesForRoute } from '../../../../bookings/new/actions';
 import { roundAed, applyMarkup } from '@/lib/business/quotations/pricing';
 import { MarkupInput } from './markup-input';
+import { AddonPicker, addonsReadyToSave, toPersistableAddons, type DraftAddon } from './addon-picker';
 import type { LocationSearchResult } from '@/lib/types/location';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
 
-/** Local shape for a vehicle option — declared here, not imported from the 'use server' module. */
+/** Local shape for a vehicle option. Declared here, not imported from the 'use server' module. */
 interface VehicleOption {
   id: string;
   name: string;
@@ -86,6 +87,27 @@ const emptyTrip = (): QuotationTripDraft => ({
   markup_percent: null,
 });
 
+/**
+ * `hhmm` rounded up to the next `stepMinutes` boundary. The earliest slot still bookable
+ * today. The step matches FormTimePicker's default `minuteStep`, so what this returns is
+ * always an option the picker actually offers.
+ *
+ * Rounding past 23:55 clamps rather than rolling into tomorrow: the operator picked today,
+ * so the sheet must not move the day under them. In those last few minutes nothing is
+ * genuinely bookable and the past-pickup hint says so.
+ */
+function nextTimeSlot(hhmm: string, stepMinutes = 5): string {
+  const [h, m] = hhmm.split(':').map((part) => parseInt(part, 10));
+  if (Number.isNaN(h) || Number.isNaN(m)) return '12:00';
+
+  const rounded = Math.ceil(m / stepMinutes) * stepMinutes;
+  const hour = rounded >= 60 ? h + 1 : h;
+  const minute = rounded >= 60 ? 0 : rounded;
+
+  if (hour > 23) return '23:55';
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 export function TripEditorSheet({
   open,
   onOpenChange,
@@ -103,6 +125,16 @@ export function TripEditorSheet({
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
 
+  /**
+   * "Now" in Dubai wall-clock as 'yyyy-MM-ddTHH:mm', the lower bound for the two pickers.
+   *
+   * Read in an effect rather than during render: reading the clock while rendering risks a
+   * server/client hydration mismatch, and a value captured once would go stale on a portal
+   * left open across midnight. Re-reading on `open` refreshes it every time the sheet is
+   * used. Null until mounted, which disables the bound rather than guessing it.
+   */
+  const [nowLocal, setNowLocal] = useState<string | null>(null);
+
   // Guards against an out-of-order response overwriting a newer one.
   const requestSeq = useRef(0);
 
@@ -113,6 +145,7 @@ export function TripEditorSheet({
     setFromQuery(next.from_location_name ?? next.pickup_address ?? '');
     setToQuery(next.to_location_name ?? next.dropoff_address ?? '');
     setVehicles([]);
+    setNowLocal(bookingUtcToLocalInput(new Date().toISOString()));
   }, [open, trip]);
 
   const patch = useCallback((updates: Partial<QuotationTripDraft>) => {
@@ -163,13 +196,18 @@ export function TripEditorSheet({
     return () => clearTimeout(timer);
   }, [open, routeReady, draft.from_location_id, draft.to_location_id, draft.passenger_count, businessAccountId]);
 
-  function selectVehicle(vehicle: VehicleOption) {
-    const netBase = roundAed(vehicle.price);
-    const netTotal = roundAed(netBase + draft.net_addons_price_aed);
-    patch({
-      vehicle_type_id: vehicle.id,
-      vehicle_type_name: vehicle.name,
-      net_base_price_aed: netBase,
+  /**
+   * The three money fields that must move together.
+   *
+   * `bqi_amounts` asserts net_total_aed = ROUND(net_base_price_aed + net_addons_price_aed, 2), so
+   * writing an addon total without rewriting net_total_aed makes the row unsaveable. Both the
+   * vehicle picker and the extras picker go through here for exactly that reason.
+   */
+  function pricingPatch(netBase: number, netAddons: number) {
+    const netTotal = roundAed(netBase + netAddons);
+    return {
+      net_base_price_aed: roundAed(netBase),
+      net_addons_price_aed: roundAed(netAddons),
       net_total_aed: netTotal,
       // Recompute the sell price unless it was typed by hand.
       sell_total_aed:
@@ -179,6 +217,22 @@ export function TripEditorSheet({
               netTotal,
               draft.price_mode === 'markup' ? draft.markup_percent ?? 0 : defaultMarkupPct
             ),
+    };
+  }
+
+  function selectVehicle(vehicle: VehicleOption) {
+    patch({
+      vehicle_type_id: vehicle.id,
+      vehicle_type_name: vehicle.name,
+      ...pricingPatch(vehicle.price, draft.net_addons_price_aed),
+    });
+  }
+
+  function setAddons(addons: DraftAddon[]) {
+    const netAddons = addons.reduce((sum, a) => sum + a.total_price, 0);
+    patch({
+      addons: addons as QuotationTripDraft['addons'],
+      ...pricingPatch(draft.net_base_price_aed, netAddons),
     });
   }
 
@@ -192,12 +246,41 @@ export function TripEditorSheet({
     draft.pickup_datetime ? bookingUtcToLocalInput(draft.pickup_datetime) : ''
   ).split('T');
 
+  // Both bounds come from the same Dubai wall-clock string, so the date and the time
+  // controls can never disagree about where "now" is.
+  const [todayStr = '', nowTimeStr = ''] = (nowLocal ?? '').split('T');
+
+  /**
+   * Earliest month the calendar may navigate to.
+   *
+   * Normally the current month. An already-saved quotation can legitimately hold a past
+   * pickup, though, and clamping to this month would hide that date from the calendar
+   * entirely, so fall back to the selected month when it is older. The `disabled`
+   * predicate still stops a past day from being picked.
+   */
+  const calendarStartMonth = todayStr
+    ? parse(
+        (pickupDateStr && pickupDateStr < todayStr ? pickupDateStr : todayStr).slice(0, 7),
+        'yyyy-MM',
+        new Date()
+      )
+    : undefined;
+
+  // A pickup already in the past. Either loaded from an old quotation, or left behind by
+  // the sheet sitting open past the chosen time. Surfaced as a hint, never a save block.
+  const pickupInPast = Boolean(
+    nowLocal && draft.pickup_datetime && bookingUtcToLocalInput(draft.pickup_datetime) < nowLocal
+  );
+
   const canSave =
     routeReady &&
     guestsValid &&
     Boolean(draft.vehicle_type_id) &&
     draft.pickup_address.trim().length >= 5 &&
-    draft.dropoff_address.trim().length >= 5;
+    draft.dropoff_address.trim().length >= 5 &&
+    // A child seat without an age fails the zod schema and the DB CHECK; block it here so the
+    // operator sees which field is missing instead of a save-time error.
+    addonsReadyToSave(draft.addons as DraftAddon[]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -207,7 +290,7 @@ export function TripEditorSheet({
         <SheetHeader className="shrink-0">
           <SheetTitle>{trip ? 'Edit trip' : 'Add trip'}</SheetTitle>
           <SheetDescription>
-            Pick the route and guests first — vehicles and pricing appear once those are set.
+            Pick the route and guests first. Vehicles and pricing appear once those are set.
           </SheetDescription>
         </SheetHeader>
 
@@ -270,7 +353,7 @@ export function TripEditorSheet({
 
               {/* Dubai wall-clock in, Dubai wall-clock out. `new Date(value)` would resolve
                   the input in the BROWSER's timezone and `.toISOString()` would redisplay it
-                  as UTC — so an operator in India typing 10:00 saw it flip to 04:30 and the
+                  as UTC, so an operator in India typing 10:00 saw it flip to 04:30 and the
                   trip was stored 1.5h off. Bookings run on Asia/Dubai; these helpers pin to it,
                   exactly as the booking wizard does. Splitting the field into a date and a time
                   control does not change that: both halves are recombined into the same
@@ -291,14 +374,26 @@ export function TripEditorSheet({
                           return;
                         }
                         const d = format(date, 'yyyy-MM-dd');
+                        // Noon rather than midnight when only a date is chosen, matching the
+                        // booking wizard. Except on today, where noon is already gone by
+                        // the afternoon and would stamp a past pickup the operator never
+                        // typed. A time they DID choose is always kept, so moving a trip
+                        // between days never discards it.
+                        const fallbackTime =
+                          d === todayStr && nowTimeStr ? nextTimeSlot(nowTimeStr) : '12:00';
                         patch({
                           pickup_datetime: bookingLocalInputToUtc(
-                            // Noon rather than midnight when only a date is chosen, matching
-                            // the booking wizard.
-                            `${d}T${pickupTimeStr || '12:00'}`
+                            `${d}T${pickupTimeStr || fallbackTime}`
                           ).toISOString(),
                         });
                       }}
+                      // Compared as 'yyyy-MM-dd' strings: the calendar hands back a
+                      // browser-local Date, so comparing Date objects against a Dubai
+                      // instant would drift by the operator's offset.
+                      disabled={(date) =>
+                        Boolean(todayStr) && format(date, 'yyyy-MM-dd') < todayStr
+                      }
+                      startMonth={calendarStartMonth}
                       placeholder="Select date"
                       clearable
                     />
@@ -316,12 +411,21 @@ export function TripEditorSheet({
                           ).toISOString(),
                         });
                       }}
+                      // Only today's times need a floor; any later day is fully open.
+                      minTime={
+                        pickupDateStr && pickupDateStr === todayStr ? nowTimeStr : undefined
+                      }
                       isDisabled={!pickupDateStr}
                       placeholder="Select time"
                       id="pickup-time"
                     />
                   </div>
                 </div>
+                {pickupInPast && (
+                  <p className="text-xs text-destructive">
+                    This pickup time has already passed, so it cannot be turned into a booking.
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   Leave empty to quote without a date. Undated trips cannot be turned into
                   bookings later.
@@ -345,7 +449,7 @@ export function TripEditorSheet({
                         const next = { ...draft, [key]: value };
                         patch({
                           [key]: value,
-                          // Every guest occupies a seat, infants included — the DB CHECK and
+                          // Every guest occupies a seat, infants included. The DB CHECK and
                           // the booking validator both require this to hold exactly.
                           passenger_count: next.adults + next.children + next.infants,
                         });
@@ -355,12 +459,12 @@ export function TripEditorSheet({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                {draft.passenger_count} seat{draft.passenger_count === 1 ? '' : 's'} — infants
+                {draft.passenger_count} seat{draft.passenger_count === 1 ? '' : 's'}. Infants are
                 included, as each needs a child seat.
               </p>
             </FieldGroup>
 
-            {/* Vehicle — disclosed only once the route is valid */}
+            {/* Vehicle. Disclosed only once the route is valid */}
             <FieldGroup title="Vehicle" icon={Car} tone="bg-violet-500/10 text-violet-500">
               {!routeReady ? (
                 <p className="text-sm text-muted-foreground">
@@ -369,7 +473,7 @@ export function TripEditorSheet({
               ) : loadingVehicles ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Pricing this route…
+                  Pricing this route...
                 </div>
               ) : vehicles.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -397,7 +501,7 @@ export function TripEditorSheet({
                             {vehicle.category} · up to {vehicle.capacity} guests
                           </div>
                         </div>
-                        {/* Cost, not the sell price — this is the internal builder. */}
+                        {/* Cost, not the sell price. This is the internal builder. */}
                         <div className="text-right text-sm tabular-nums text-muted-foreground">
                           cost {formatCurrency(vehicle.price, 'AED')}
                         </div>
@@ -408,13 +512,30 @@ export function TripEditorSheet({
               )}
             </FieldGroup>
 
-            {/* Pricing — disclosed only once a vehicle is chosen */}
+            {/* Extras. Disclosed once a vehicle is chosen, since the price only means something
+                alongside a base fare. Child seats are capped by the Guests block above. */}
+            {draft.vehicle_type_id && (
+              <FieldGroup
+                title="Extras"
+                icon={Package}
+                tone="bg-amber-500/10 text-amber-500"
+                description="Added to the trip's net cost. The customer sees the names, not the prices."
+              >
+                <AddonPicker
+                  value={draft.addons as DraftAddon[]}
+                  onChange={setAddons}
+                  childSeatCapacity={draft.children + draft.infants}
+                />
+              </FieldGroup>
+            )}
+
+            {/* Pricing. Disclosed only once a vehicle is chosen */}
             {draft.vehicle_type_id && (
               <FieldGroup
                 title="Price"
                 icon={Receipt}
                 tone="bg-emerald-500/10 text-emerald-500"
-                description="Internal — the customer only ever sees the sell price."
+                description="Internal. The customer only ever sees the sell price."
               >
                   <MarkupInput
                     netAed={draft.net_total_aed}
@@ -432,7 +553,7 @@ export function TripEditorSheet({
                       id="trip-note"
                       value={draft.description ?? ''}
                       onChange={(e) => patch({ description: e.target.value || null })}
-                      placeholder="Return leg — date to be confirmed"
+                      placeholder="Return leg, date to be confirmed"
                     />
                   </div>
               </FieldGroup>
@@ -447,7 +568,12 @@ export function TripEditorSheet({
           <Button
             disabled={!canSave}
             onClick={() => {
-              onSave(draft);
+              // Drop the picker's draft-only fields (nullable ages, the requires_child_age hint)
+              // so what leaves the sheet matches quotationAddonSchema and the DB column exactly.
+              onSave({
+                ...draft,
+                addons: toPersistableAddons(draft.addons as DraftAddon[]),
+              });
               onOpenChange(false);
             }}
           >

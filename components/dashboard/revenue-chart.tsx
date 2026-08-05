@@ -106,7 +106,7 @@ interface ChartNoticeProps {
 }
 
 /**
- * Distinguishes "nothing in this range" from "nothing recorded yet" — an
+ * Distinguishes "nothing in this range" from "nothing recorded yet". An
  * all-zero chart otherwise reads as broken rather than simply empty.
  */
 function ChartNotice({ meta, hasAnyRevenue }: ChartNoticeProps) {
@@ -129,7 +129,7 @@ function ChartNotice({ meta, hasAnyRevenue }: ChartNoticeProps) {
   }
 
   if (meta.truncated) {
-    notices.push('Showing a partial result — this range exceeds the row limit.')
+    notices.push('Showing a partial result. This range exceeds the row limit.')
   }
 
   if (meta.range.bucketAdjusted) {

@@ -114,6 +114,18 @@ export interface CheckoutAddon {
   pricing_type: 'fixed' | 'per_unit'
   max_quantity: number
   category: string
+  /**
+   * Admin-configured (see the addons table). When true the picker asks for one child age per unit
+   * and caps the combined quantity of all such addons at children + infants. Re-read from the DB in
+   * createBooking. The client's copy is a rendering hint only.
+   */
+  requires_child_age: boolean
+  /**
+   * Typical age range for this seat. Both null = no fit check. Drives an advisory hint only. The
+   * age dropdown still offers the full range, because a mismatch is the signal worth surfacing.
+   */
+  child_age_min: number | null
+  child_age_max: number | null
 }
 
 export interface CheckoutAddonsByCategory {
@@ -163,15 +175,16 @@ export async function getActiveAddons(): Promise<{
 }> {
   const supabase = await createClient()
 
-  // Child seats are not add-ons: the Guests picker already declares children and infants, and seats
-  // are provided free. Filtered here rather than deactivated in the DB on purpose —
-  // getExtraItemPrices() is a separate query that reads Child Safety pricing and filters on
-  // is_active, so deactivating the rows would silently swap real prices for its `?? 10` fallback.
+  // Child seats used to be filtered out here on the theory that they were free and implied by the
+  // Guests picker. They are now sold like any other add-on, so nothing is excluded by category.
+  // Instead, `requires_child_age` (admin-configured per addon) drives the behaviour: the picker
+  // hides those addons unless the booking declares children or infants, caps their combined
+  // quantity at children + infants, and collects one age per seat. createBooking re-reads the flag
+  // from the DB and re-applies the cap, so the client is never trusted for either.
   const { data, error } = await supabase
     .from('addons')
-    .select('id, name, description, icon, price, pricing_type, max_quantity, category')
+    .select('id, name, description, icon, price, pricing_type, max_quantity, category, requires_child_age, child_age_min, child_age_max')
     .eq('is_active', true)
-    .neq('category', 'Child Safety')
     .order('display_order', { ascending: true })
     .order('name', { ascending: true })
 
@@ -191,8 +204,9 @@ export async function getActiveAddons(): Promise<{
     categoryMap.get(addon.category)!.push(addon)
   })
 
-  // Define category order. 'Child Safety' is excluded by the query above.
-  const categoryOrder = ['Luggage', 'Comfort']
+  // Child seats lead: they are the only legally-required extra, and the picker hides the whole
+  // group when the booking has no children or infants.
+  const categoryOrder = ['Child Safety', 'Luggage', 'Comfort']
   const addonsByCategory: CheckoutAddonsByCategory[] = []
 
   categoryOrder.forEach((cat) => {
@@ -290,12 +304,17 @@ export async function getVehicleType(
   }
 }
 
-// Selected addon schema for checkout
+// Selected addon schema for checkout.
+// `requires_child_age` is deliberately NOT declared: the client sends it as a rendering hint and
+// zod's default object stripping drops it, so a forged `false` can never skip the age requirement.
+// The flag is re-read from the addons table below.
 const selectedAddonSchema = z.object({
   addon_id: z.string().uuid(),
   quantity: z.number().min(1).max(10),
   unit_price: z.number().min(0),
   total_price: z.number().min(0),
+  /** One age per seat, in years, 0 = under 1. Length must equal `quantity`. Asserted server-side. */
+  child_ages: z.array(z.number().int().min(0).max(12)).max(20).optional(),
 })
 
 // Booking creation schema
@@ -307,7 +326,7 @@ const bookingSchema = z.object({
   dropoffAddress: z.string().min(1),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid pickup date'),
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid pickup time'),
-  /** Total guests (adults + children + infants) — see the refine below. */
+  /** Total guests (adults + children + infants). See the refine below. */
   passengerCount: z.number().min(1).max(50),
   adults: z.number().min(1).max(50).optional(),
   children: z.number().min(0).max(50).optional(),
@@ -327,7 +346,7 @@ const bookingSchema = z.object({
   selectedAddons: z.array(selectedAddonSchema).optional(),
 })
   // The breakdown must agree with the total. Without this a client could post
-  // `passengerCount: 1, adults: 50` — the capacity guard below only inspects passengerCount, so the
+  // `passengerCount: 1, adults: 50`. The capacity guard below only inspects passengerCount, so the
   // contradiction would be persisted. (The business flow gets this invariant for free from its
   // single-writer RPC; this action is a direct insert, so it must assert it itself.)
   // Customer rule: every guest occupies a seat, infants included.
@@ -402,34 +421,69 @@ export async function createBooking(formData: BookingFormData) {
 
   const basePrice = vehicleType.price
 
-  // 3b. Verify addon prices against database
+  // 3b. Verify addon prices against database.
+  // Everything the client sent about an addon is re-derived here: price, per-addon quantity cap,
+  // whether it needs child ages, and how many such seats the guest breakdown permits. This runs
+  // before the booking row is inserted and long before a Stripe PaymentIntent exists, so a
+  // rejection can never strand a payment.
   let verifiedAddonsPrice = 0
+  // addon_id -> DB row, reused by the booking_amenities insert further down so the prices written
+  // there come from the same read that was verified (it used to re-query and could disagree).
+  const addonMap = new Map<string, { id: string; name: string; price: number; max_quantity: number | null; requires_child_age: boolean }>()
   if (validatedData.selectedAddons && validatedData.selectedAddons.length > 0) {
     const addonIds = validatedData.selectedAddons.map(a => a.addon_id)
     const { data: dbAddons, error: addonError } = await adminClient
       .from('addons')
-      .select('id, price')
+      .select('id, name, price, max_quantity, requires_child_age')
       .in('id', addonIds)
+      // An addon deactivated while the customer sat on the checkout page must not be sellable.
+      .eq('is_active', true)
 
     if (addonError || !dbAddons) {
       throw new Error('Failed to verify addon prices')
     }
 
-    const addonPriceMap = new Map(dbAddons.map(a => [a.id, a.price]))
+    for (const a of dbAddons) addonMap.set(a.id, a)
+
+    let ageSeatsRequested = 0
 
     for (const addon of validatedData.selectedAddons) {
-      const dbPrice = addonPriceMap.get(addon.addon_id)
-      if (dbPrice === undefined) {
+      const db = addonMap.get(addon.addon_id)
+      if (!db) {
         throw new Error(`Addon ${addon.addon_id} not found`)
       }
-      if (Math.abs(addon.unit_price - dbPrice) > 0.01) {
+      if (Math.abs(addon.unit_price - db.price) > 0.01) {
         throw new Error(`Addon price mismatch for ${addon.addon_id}`)
       }
-      const expectedTotal = dbPrice * addon.quantity
+      const expectedTotal = db.price * addon.quantity
       if (Math.abs(addon.total_price - expectedTotal) > 0.01) {
         throw new Error(`Addon total mismatch for ${addon.addon_id}`)
       }
+      if (db.max_quantity != null && addon.quantity > db.max_quantity) {
+        throw new Error(`${db.name}: maximum ${db.max_quantity} per booking`)
+      }
+
+      if (db.requires_child_age) {
+        // One age per seat. The DB CHECK enforces this too, but failing here keeps a bad payload
+        // from ever reaching the insert. Where the error is swallowed as non-critical.
+        const ages = addon.child_ages ?? []
+        if (ages.length !== addon.quantity) {
+          throw new Error(`${db.name}: one child age is required per seat`)
+        }
+        ageSeatsRequested += addon.quantity
+      }
+
       verifiedAddonsPrice += expectedTotal
+    }
+
+    // Authoritative version of the picker's cap. `passengerCount === adults + children + infants`
+    // is already asserted by the schema refine, so this cannot be widened by inflating the
+    // breakdown. Doing so would fail that refine or the vehicle capacity guard above.
+    const childSeatCapacity = (validatedData.children ?? 0) + (validatedData.infants ?? 0)
+    if (ageSeatsRequested > childSeatCapacity) {
+      throw new Error(
+        `You selected ${ageSeatsRequested} child seat(s) but the booking has ${childSeatCapacity} child/infant guest(s).`
+      )
     }
   }
 
@@ -530,7 +584,7 @@ export async function createBooking(formData: BookingFormData) {
       .eq('id', booking.id)
 
     if (sigError) {
-      // Signature storage failed — delete the booking to prevent unsigned payments
+      // Signature storage failed. Delete the booking to prevent unsigned payments
       await adminClient.from('bookings').delete().eq('id', booking.id)
       throw new Error('Failed to secure booking signature')
     }
@@ -565,6 +619,7 @@ export async function createBooking(formData: BookingFormData) {
     quantity: number
     price: number
     addon_id?: string
+    child_ages?: number[] | null
   }> = []
 
   // Add extra luggage if any
@@ -577,26 +632,22 @@ export async function createBooking(formData: BookingFormData) {
     })
   }
 
-  // Add selected addons with addon_id reference (use DB-verified prices)
+  // Add selected addons with addon_id reference. Prices come from `addonMap`, populated by the
+  // verification step above. The same read that was checked, rather than a second query that
+  // could return something different.
   if (validatedData.selectedAddons && validatedData.selectedAddons.length > 0) {
-    // Re-fetch addon prices for amenity records
-    const addonIds = validatedData.selectedAddons.map(a => a.addon_id)
-    const { data: dbAddonsForAmenities } = await adminClient
-      .from('addons')
-      .select('id, price')
-      .in('id', addonIds)
-    const addonPriceMap = new Map(
-      (dbAddonsForAmenities || []).map(a => [a.id, a.price])
-    )
-
     for (const addon of validatedData.selectedAddons) {
-      const dbPrice = addonPriceMap.get(addon.addon_id) ?? addon.unit_price
+      const db = addonMap.get(addon.addon_id)
+      const dbPrice = db?.price ?? addon.unit_price
       amenities.push({
         booking_id: booking.id,
         amenity_type: 'addon',
         quantity: addon.quantity,
         price: dbPrice * addon.quantity,
-        addon_id: addon.addon_id
+        addon_id: addon.addon_id,
+        // NULL for every non-child addon and every pre-existing row, so display code that does not
+        // select this column is unaffected. Keyed off the DB flag, never the client's copy.
+        child_ages: db?.requires_child_age ? (addon.child_ages ?? null) : null,
       })
     }
   }

@@ -192,7 +192,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
 
   // Written with the admin client on purpose. `bookings` has SELECT policies for customers
   // but no UPDATE policy, so the RLS client silently matched zero rows and returned no
-  // error — the booking stayed confirmed while the UI reported success. Authorisation is
+  // error. The booking stayed confirmed while the UI reported success. Authorisation is
   // enforced above in code: the caller is authenticated, owns this booking, it is still
   // cancellable, and pickup is more than 24h away.
   const adminClient = createAdminClient()

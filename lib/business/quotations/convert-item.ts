@@ -3,7 +3,7 @@
  *
  * Idempotency without touching lib/security/booking-hmac.ts:
  *
- * create_booking_with_wallet_deduction does not VERIFY the price signature — it only stores
+ * create_booking_with_wallet_deduction does not VERIFY the price signature. It only stores
  * it (verification lives in the booking API route, which is guarding against a tampering
  * *client*; here the server computed the price itself one line earlier). And
  * business_bookings.price_signature_nonce carries a partial UNIQUE index.
@@ -12,7 +12,7 @@
  * and because deduct_from_wallet runs BEFORE the INSERT inside the same plpgsql transaction
  * and re-raises on error, the wallet debit rolls back with it. We then recover by looking the
  * existing booking up by nonce. That closes the window where a request dies after the RPC
- * commits but before converted_booking_id is stamped — which would otherwise double-charge.
+ * commits but before converted_booking_id is stamped, which would otherwise double-charge.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -50,7 +50,13 @@ export async function convertQuotationItem({
     toLocationId: item.to_location_id,
     vehicleTypeId: item.vehicle_type_id,
     passengerCount: item.passenger_count,
-    selectedAddons: item.addons,
+    selectedAddons: item.addons.map((a) => ({
+      addon_id: a.addon_id,
+      quantity: a.quantity,
+      child_ages: a.child_ages ?? undefined,
+    })),
+    children: item.children,
+    infants: item.infants,
   });
 
   if ('error' in priced) {
@@ -78,7 +84,7 @@ export async function convertQuotationItem({
     p_customer_notes: `Converted from quotation ${quotation.quotation_number}`,
     p_reference_number: quotation.quotation_number,
     // Not a real HMAC: the server computed this price itself, so there is nothing to
-    // authenticate. The nonce is what matters — it is the idempotency key.
+    // authenticate. The nonce is what matters. It is the idempotency key.
     p_price_signature: `quotation:${item.id}`,
     p_price_signature_timestamp: Date.now(),
     p_price_signature_nonce: item.conversion_nonce,
@@ -120,8 +126,10 @@ export async function convertQuotationItem({
 
   const bookingNumber = booking?.booking_number ?? null;
 
-  // Addons mirror the booking API's own post-create step. Non-fatal: the booking exists and
-  // the wallet is charged, so failing the whole conversion over a missing extra would be worse.
+  // Addons mirror the booking API's own post-create step. Non-fatal for ordinary extras: the
+  // booking exists and the wallet is charged, so failing the whole conversion over a missing WiFi
+  // line would be worse. A CHILD SEAT is different. It is legally required, already paid for, and
+  // something the driver has to physically bring, so that case is surfaced as a failed line.
   if (priced.verifiedAddons.length > 0) {
     const { error: addonError } = await admin.from('business_booking_addons').insert(
       priced.verifiedAddons.map((addon) => ({
@@ -130,9 +138,28 @@ export async function convertQuotationItem({
         quantity: addon.quantity,
         unit_price: addon.unit_price,
         total_price: addon.total_price,
+        child_ages: addon.child_ages,
       }))
     );
-    if (addonError) console.error('Failed to attach addons to converted booking:', addonError);
+    if (addonError) {
+      const hasChildSeat = priced.verifiedAddons.some((a) => a.child_ages !== null);
+      console.error('Failed to attach addons to converted booking:', addonError);
+      if (hasChildSeat) {
+        // The booking row and the wallet debit are already committed, so this reports rather than
+        // rolls back. stampConverted below is skipped, leaving the line visibly unconverted.
+        console.error('OPS ALERT: converted booking is missing its child-seat addons', {
+          bookingId,
+          quotationItemId: item.id,
+        });
+        return {
+          itemId: item.id,
+          status: 'failed',
+          error:
+            `Booking ${bookingNumber} was created and charged, but the child seat could not be recorded. ` +
+            `Do not re-convert. Contact support with this booking number.`,
+        };
+      }
+    }
   }
 
   await stampConverted(admin, item.id, bookingId as string, bookingNumber);

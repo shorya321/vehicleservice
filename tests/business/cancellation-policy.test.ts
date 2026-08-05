@@ -67,7 +67,7 @@ describe('settled statuses are never refundable, whatever the timing', () => {
     expect(r.refundPercent).toBe(0);
   });
 
-  it('explains a completed trip specifically — it was delivered, not merely closed', () => {
+  it('explains a completed trip specifically. It was delivered, not merely closed', () => {
     const r = getCancellationRefund(booking(240, { booking_status: 'completed' }));
     expect(r.reason).toMatch(/completed/i);
   });

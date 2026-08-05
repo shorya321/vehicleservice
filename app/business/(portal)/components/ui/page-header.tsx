@@ -9,7 +9,7 @@
  * component so Server Component pages can animate their header without becoming client
  * components themselves.
  *
- * `breadcrumb` and `actions` are rendered as passed — a Server Component may hand React
+ * `breadcrumb` and `actions` are rendered as passed. A Server Component may hand React
  * elements (including <Link>s) straight through.
  */
 

@@ -4,7 +4,7 @@
  * Guest Breakdown Selector
  * Popover with Adults / Children / Infants steppers for business bookings.
  *
- * Seat semantics: every guest occupies a seat, infants included — UAE law requires a child safety
+ * Seat semantics: every guest occupies a seat, infants included. UAE law requires a child safety
  * seat for under-4s, and that seat takes up a seat position. The total drives capacity filtering.
  */
 
@@ -166,7 +166,7 @@ export function GuestBreakdownSelector({
         />
         <StepperRow
           label="Children"
-          hint="Age 2–11 · needs a seat"
+          hint="Age 2-11 · needs a seat"
           value={value.children}
           min={MIN_CHILDREN}
           onDecrement={() => update({ children: value.children - 1 })}
@@ -191,8 +191,8 @@ export function GuestBreakdownSelector({
         </div>
         {value.infants + value.children > 0 && (
           <p className="text-xs text-muted-foreground -mt-2">
-            Child seats are included free. Add each child&apos;s age in Special Instructions so we
-            bring the right one.
+            Add a child seat under Extras on the Review step. You&apos;ll enter each child&apos;s age
+            there so we bring the right one.
           </p>
         )}
       </PopoverContent>

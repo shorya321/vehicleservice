@@ -25,7 +25,7 @@ interface CheckoutPageProps {
     to?: string
     date?: string
     time?: string
-    /** Total guests. The breakdown below is optional — route cards and old links omit it. */
+    /** Total guests. The breakdown below is optional. Route cards and old links omit it. */
     passengers?: string
     adults?: string
     children?: string
@@ -161,7 +161,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const pickupDate = params.date || bookingToday()
   const pickupTime = params.time || '10:00'
   // Resolve the breakdown and the total together, clamped to the vehicle, so they can never
-  // contradict — same helper as the /checkout/[routeSlug]/[vehicleSlug] route.
+  // contradict. Same helper as the /checkout/[routeSlug]/[vehicleSlug] route.
   const guests = resolveGuestsForVehicle(params, vehicleType.passenger_capacity)
   const passengers = getSeatedCount(guests)
   const luggage = parseInt(params.luggage || '0')

@@ -49,9 +49,7 @@ export const BusinessAccountRejectedEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        If you believe this decision was made in error or if you have additional information
-        that might help us reconsider your application, please don&apos;t hesitate to contact our
-        support team.
+        Contact support if you think this decision was made in error, or if you have information that would change it.
       </Text>
 
       <Text style={emailStyles.text}>

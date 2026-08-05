@@ -42,7 +42,7 @@ UPDATE business_bookings
 --
 -- Body copied verbatim from 20260710_business_booking_confirm_on_wallet_payment.sql (the
 -- definition that wins at runtime). Only diffs: 3 new params + 3 INSERT columns/values.
--- booking_status = 'confirmed' is preserved — regressing it to 'pending' would leave
+-- booking_status = 'confirmed' is preserved. Regressing it to 'pending' would leave
 -- wallet-paid business bookings stuck forever.
 
 DROP FUNCTION IF EXISTS public.create_booking_with_wallet_deduction(

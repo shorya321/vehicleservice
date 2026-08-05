@@ -5,7 +5,7 @@
  *
  * Most traffic doesn't come through the hero search: route cards, zone pages and ads all link in
  * with a hardcoded `passengers=2` and no breakdown. Without this, the first place a family can say
- * "we're 5" is checkout — where the picker is already capped by the vehicle they just chose, so
+ * "we're 5" is checkout. Where the picker is already capped by the vehicle they just chose, so
  * they hit a dead end and have to start over from the home page.
  *
  * Changing the party size has to re-run the SERVER filter (`.gte('passenger_capacity', passengers)`),
@@ -49,7 +49,7 @@ export function ResultsGuestPicker({ searchParams, className }: ResultsGuestPick
     (next: GuestBreakdown) => {
       const total = getSeatedCount(next)
       if (total === Number(searchParams.passengers) && next.adults === Number(searchParams.adults)) {
-        return // nothing changed — don't spend a round trip
+        return // nothing changed. Don't spend a round trip
       }
 
       // `passengers` and the breakdown must be written together: resolveGuestsForVehicle discards a
@@ -67,7 +67,7 @@ export function ResultsGuestPicker({ searchParams, className }: ResultsGuestPick
           router.push(buildSearchUrl(searchParams.originSlug, searchParams.destSlug, params))
           return
         }
-        // /search/results has no slugs — buildSearchUrl would produce /search/undefined-to-undefined.
+        // /search/results has no slugs. buildSearchUrl would produce /search/undefined-to-undefined.
         // Preserve whatever params that route arrived with and override the guest ones.
         const qs = new URLSearchParams(
           Object.entries(searchParams).filter(
@@ -93,7 +93,7 @@ export function ResultsGuestPicker({ searchParams, className }: ResultsGuestPick
         value={guests}
         onChange={setGuests}
         showChevron
-        // Commit on close rather than per stepper tap — GuestSelector fires onChange on every click,
+        // Commit on close rather than per stepper tap. GuestSelector fires onChange on every click,
         // and each commit is a full server round trip.
         onOpenChange={(open) => {
           if (!open) commit(guests)

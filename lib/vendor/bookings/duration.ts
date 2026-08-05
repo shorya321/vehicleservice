@@ -13,7 +13,7 @@ import * as z from 'zod'
  * resources instead of freeing them into a double booking.
  *
  * Shared deliberately between the client modals and the server actions, following the
- * `lib/vendor/direct-bookings/schema.ts` precedent — one definition of the limits, so the
+ * `lib/vendor/direct-bookings/schema.ts` precedent. One definition of the limits, so the
  * input and the action cannot drift apart.
  */
 
@@ -23,7 +23,7 @@ export const MAX_TRIP_DURATION_HOURS = 24
 
 /**
  * Whole hours only. Server actions must parse untrusted input through this rather than
- * trusting the number the browser sent — the database CHECK is the last line, not the first.
+ * trusting the number the browser sent. The database CHECK is the last line, not the first.
  */
 export const durationHoursSchema = z
   .number({ message: 'Enter how many hours to hold the vehicle and driver' })
@@ -35,7 +35,7 @@ export const durationHoursSchema = z
  * Validate an incoming duration, falling back to the default when nothing was supplied.
  *
  * `undefined` and `null` mean "caller did not choose" and get the default. A value that was
- * supplied but is out of range throws — silently clamping it would hold the resources for a
+ * supplied but is out of range throws. Silently clamping it would hold the resources for a
  * period the vendor never agreed to.
  */
 export function parseDurationHours(hours?: number | null): number {

@@ -1,7 +1,7 @@
 /**
  * Quotation list loading state.
  *
- * Shaped to the real page — header, 4-up stat row, filter bar, table card — so the layout does
+ * Shaped to the real page (header, 4-up stat row, filter bar, table card) so the layout does
  * not jump when the data lands. Follows the dashboard-skeletons.tsx idiom (Skeleton on
  * bg-muted/50).
  */
@@ -17,7 +17,7 @@ export default function QuotationsLoading() {
         <Skeleton className="h-5 w-96 max-w-full rounded bg-muted/50" />
       </div>
 
-      {/* Stat row — 4-up, matching QuotationStats */}
+      {/* Stat row, 4-up, matching QuotationStats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 5 }).map((_, index) => (
           <div

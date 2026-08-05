@@ -717,7 +717,7 @@ export function BookingsPageContent({
             {forfeitAmount > 0 && (
               <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
                 {bookingToDelete ? 'This booking still holds ' : 'These bookings still hold '}
-                <strong>{formatCurrency(forfeitAmount)}</strong>. Deleting forfeits it — cancel
+                <strong>{formatCurrency(forfeitAmount)}</strong>. Deleting forfeits it. Cancel
                 instead if you want the amount refunded.
               </div>
             )}

@@ -31,7 +31,7 @@ describe('calculateWizardTotal', () => {
     expect(calculateWizardTotal(basePrice, addons)).toBe(serverTotal)
   })
 
-  it('survives a vehicle change with addons already selected — the bug this fixes', () => {
+  it('survives a vehicle change with addons already selected. The bug this fixes', () => {
     const addons = [{ total_price: 15 }]
     // Vehicle A, addons picked.
     expect(calculateWizardTotal(100, addons)).toBe(115)

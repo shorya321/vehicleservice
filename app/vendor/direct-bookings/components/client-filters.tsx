@@ -27,7 +27,7 @@ export function ClientFilters({ initialFilters }: { initialFilters: DirectBookin
   const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState(initialFilters.search ?? '')
 
-  /** Any filter change resets to page 1 — otherwise page 3 of the old result set
+  /** Any filter change resets to page 1. Otherwise page 3 of the old result set
    *  can land outside the new one and render empty. */
   function apply(changes: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString())

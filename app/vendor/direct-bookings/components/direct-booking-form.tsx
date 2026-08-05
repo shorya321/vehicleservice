@@ -55,7 +55,7 @@ import {
   updateDirectBooking,
 } from '../actions'
 
-/** Sentinel for "not set" — Radix Select cannot hold an empty string value. */
+/** Sentinel for "not set". Radix Select cannot hold an empty string value. */
 const NONE = 'none'
 
 /** Availability is re-queried as the vendor types; wait for them to settle first. */
@@ -125,7 +125,7 @@ export function DirectBookingForm({
 
   const windowComplete = Boolean(pickupDate && pickupTime && returnDate && returnTime)
 
-  // Availability can only be answered once the whole window exists — it is checked
+  // Availability can only be answered once the whole window exists. It is checked
   // over pickup→return, not at the pickup instant, so a booking that swallows an
   // existing one is still caught.
   useEffect(() => {
@@ -147,7 +147,7 @@ export function DirectBookingForm({
         bookingId
       )
 
-      // A newer request has already been issued — discard this answer.
+      // A newer request has already been issued. Discard this answer.
       if (seq !== requestSeq.current) return
 
       setIsCheckingAvailability(false)
@@ -203,7 +203,7 @@ export function DirectBookingForm({
       }
 
       toast.success(mode === 'edit' ? 'Booking updated' : 'Booking created', {
-        description: `${values.customer_name} — ${values.pickup_location}`,
+        description: `${values.customer_name}, ${values.pickup_location}`,
       })
 
       router.push('/vendor/direct-bookings')
@@ -244,7 +244,7 @@ export function DirectBookingForm({
 
   function resourcePlaceholder(noun: string): string {
     if (!windowComplete) return 'Choose pickup and return first'
-    if (isCheckingAvailability) return 'Checking availability…'
+    if (isCheckingAvailability) return 'Checking availability...'
     if (availabilityError) return 'Availability unavailable'
     return `Select a ${noun}`
   }
@@ -267,7 +267,7 @@ export function DirectBookingForm({
     availability?.vehicles,
     fleet.vehicles.map((v) => ({
       id: v.id,
-      label: `${v.make} ${v.model}${v.year ? ` (${v.year})` : ''} — ${v.registration_number}`,
+      label: `${v.make} ${v.model}${v.year ? ` (${v.year})` : ''}, ${v.registration_number}`,
     }))
   )
 
@@ -275,7 +275,7 @@ export function DirectBookingForm({
     availability?.drivers,
     fleet.drivers.map((d) => ({
       id: d.id,
-      label: `${d.first_name} ${d.last_name} — ${d.phone}`,
+      label: `${d.first_name} ${d.last_name}, ${d.phone}`,
     }))
   )
 
@@ -286,8 +286,8 @@ export function DirectBookingForm({
           <CardHeader>
             <CardTitle>Customer</CardTitle>
             <CardDescription>
-              Who the booking is for. These details are stored on the booking itself —
-              no customer account is created.
+              Who the booking is for. These details are stored on the booking itself.
+              No customer account is created.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
@@ -496,7 +496,7 @@ export function DirectBookingForm({
                           disabled={!vehicle.available}
                         >
                           {vehicle.label}
-                          {!vehicle.available && vehicle.reason ? ` — busy: ${vehicle.reason}` : ''}
+                          {!vehicle.available && vehicle.reason ? `, busy: ${vehicle.reason}` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -530,13 +530,13 @@ export function DirectBookingForm({
                           disabled={!driver.available}
                         >
                           {driver.label}
-                          {!driver.available && driver.reason ? ` — busy: ${driver.reason}` : ''}
+                          {!driver.available && driver.reason ? `, busy: ${driver.reason}` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    {isCheckingAvailability ? 'Checking availability…' : ' '}
+                    {isCheckingAvailability ? 'Checking availability...' : ' '}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -549,7 +549,7 @@ export function DirectBookingForm({
           <CardHeader>
             <CardTitle>Pricing &amp; Status</CardTitle>
             <CardDescription>
-              Amounts are in AED. Payment is recorded here for your own tracking — no
+              Amounts are in AED. Payment is recorded here for your own tracking. No
               payment is processed.
             </CardDescription>
           </CardHeader>

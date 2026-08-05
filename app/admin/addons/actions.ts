@@ -15,6 +15,17 @@ export interface Addon {
   is_active: boolean
   category: string
   display_order: number
+  /**
+   * When true, every booking flow asks for one child age per selected unit and caps the total at
+   * the booking's children + infants. Drives child seats without hardcoding the category string.
+   */
+  requires_child_age: boolean
+  /**
+   * Typical age range this addon suits. Both null = no fit check. Drives a NON-BLOCKING warning
+   * when the customer enters an age outside it, never a hard validation.
+   */
+  child_age_min: number | null
+  child_age_max: number | null
   created_at: string
   updated_at: string
 }
@@ -110,6 +121,9 @@ export interface AddonFormData {
   category: string
   display_order?: number
   is_active: boolean
+  requires_child_age: boolean
+  child_age_min: number | null
+  child_age_max: number | null
 }
 
 export async function createAddon(data: AddonFormData) {
@@ -127,7 +141,10 @@ export async function createAddon(data: AddonFormData) {
       max_quantity: data.max_quantity,
       category: data.category,
       display_order: data.display_order || 0,
-      is_active: data.is_active
+      is_active: data.is_active,
+      requires_child_age: data.requires_child_age ?? false,
+      child_age_min: data.child_age_min ?? null,
+      child_age_max: data.child_age_max ?? null
     })
 
   if (error) {
@@ -153,6 +170,9 @@ export async function updateAddon(id: string, data: AddonFormData) {
       category: data.category,
       display_order: data.display_order || 0,
       is_active: data.is_active,
+      requires_child_age: data.requires_child_age ?? false,
+      child_age_min: data.child_age_min ?? null,
+      child_age_max: data.child_age_max ?? null,
       updated_at: new Date().toISOString()
     })
     .eq('id', id)

@@ -4,7 +4,7 @@
  *
  * The .select() below deliberately omits every net_* column. Combined with the narrow
  * QuotationPdfSource type, the business's internal cost cannot reach this document even by
- * accident — passing one would not compile.
+ * accident. Passing one would not compile.
  *
  * Uses the cookie-scoped client rather than the service-role client, so RLS enforces tenant
  * and creator scoping in addition to the explicit checks here.
@@ -85,16 +85,21 @@ export const GET = requireBusinessAuth(async (
 
     const itemIds = items.map((i) => i.id);
 
-    // Names only - addon PRICES are never rendered, so they are never selected.
+    // Names and child ages only - addon PRICES are never rendered, so they are never selected.
+    // The ages ARE shown: the customer needs to confirm the seats match their children, and an
+    // age carries no pricing information.
     const { data: addonRows } = await supabase
       .from('business_quotation_item_addons')
-      .select('item_id, name_snapshot')
+      .select('item_id, name_snapshot, child_ages')
       .in('item_id', itemIds);
 
-    const addonsByItem = new Map<string, Array<{ name_snapshot: string }>>();
+    const addonsByItem = new Map<
+      string,
+      Array<{ name_snapshot: string; child_ages: number[] | null }>
+    >();
     for (const row of addonRows ?? []) {
       const list = addonsByItem.get(row.item_id) ?? [];
-      list.push({ name_snapshot: row.name_snapshot });
+      list.push({ name_snapshot: row.name_snapshot, child_ages: row.child_ages });
       addonsByItem.set(row.item_id, list);
     }
 

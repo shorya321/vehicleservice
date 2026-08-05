@@ -2,7 +2,7 @@
  * Quotation row shapes and view models.
  *
  * These live here rather than in the server-action modules because a 'use server' file may
- * only export async functions — a type exported from one breaks at runtime while tsc stays
+ * only export async functions. A type exported from one breaks at runtime while tsc stays
  * silent. app/business/(portal)/bookings/new/actions.ts does exactly that with
  * VehicleTypeResult, AddonItem and friends, so the quotation feature declares its own
  * structurally-compatible shapes below and imports only the *functions* from that module.
@@ -30,6 +30,11 @@ export interface QuotationItemAddon {
   quantity: number;
   unit_price: number;
   total_price: number;
+  /**
+   * One age per seat for child-seat addons; null/absent otherwise. Carried through conversion into
+   * business_booking_addons. It is the operator's data, and the quotation row is left behind.
+   */
+  child_ages?: number[] | null;
 }
 
 /** One trip, with its addons resolved. */
@@ -43,7 +48,7 @@ export interface QuotationWithItems extends QuotationRow {
 }
 
 /**
- * Denormalised row for the list page. Kept deliberately narrow — the list never needs the
+ * Denormalised row for the list page. Kept deliberately narrow. The list never needs the
  * per-trip detail, and selecting it for 50 rows is wasted bandwidth.
  */
 export interface QuotationListRow {
@@ -94,7 +99,7 @@ export interface QuotationActionResult {
  * Vehicle option as returned by getAvailableVehicleTypesForRoute().
  *
  * Declared locally on purpose (see the file header). Only the fields the quotation builder
- * actually consumes are listed — the HMAC signature fields that action also returns are
+ * actually consumes are listed. The HMAC signature fields that action also returns are
  * irrelevant here, because a quotation is not a booking and re-prices at conversion anyway.
  */
 export interface QuotationVehicleOption {
@@ -115,14 +120,24 @@ export interface QuotationVehicleGroup {
   vehicleTypes: QuotationVehicleOption[];
 }
 
-/** Addon option as returned by getActiveAddons(). Declared locally for the same reason. */
+/**
+ * Addon option as returned by getQuotationAddonOptions(). Declared locally for the same reason:
+ * that action lives in a 'use server' module, which may only export async functions.
+ */
 export interface QuotationAddonOption {
   id: string;
   name: string;
+  description: string | null;
+  icon: string;
   price: number;
   category: string;
-  pricing_type: string;
+  pricing_type: 'fixed' | 'per_unit';
   max_quantity: number | null;
+  /** Drives the child-seat behaviour: one age per unit, capped at children + infants. */
+  requires_child_age: boolean;
+  /** Typical age range for this seat. Both null = no fit check. Advisory only. */
+  child_age_min: number | null;
+  child_age_max: number | null;
 }
 
 /** A trip as the builder holds it in memory, before it is persisted. */
@@ -186,12 +201,12 @@ export interface QuotationConversionResult {
 
 /**
  * A single line's repricing diff, surfaced before any booking is created.
- * `netAedFresh` is authoritative — the stored figure is only ever an estimate, because price
+ * `netAedFresh` is authoritative. The stored figure is only ever an estimate, because price
  * signatures expire after 30 minutes.
  */
 export interface QuotationRepriceLine {
   itemId: string;
-  /** Both addresses joined — kept for blocking-error messages, which are single strings. */
+  /** Both addresses joined. Kept for blocking-error messages, which are single strings. */
   label: string;
   pickup: string;
   dropoff: string;

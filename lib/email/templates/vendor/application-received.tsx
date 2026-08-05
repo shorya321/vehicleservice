@@ -24,8 +24,7 @@ export const VendorApplicationReceivedEmail = ({
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <Text style={emailStyles.text}>
-        Thank you for submitting your vendor application to Infinia Transfers! We&apos;ve successfully
-        received your application and wanted to confirm receipt.
+        We&apos;ve received your vendor application.
       </Text>
 
       <DetailsSection>
@@ -42,8 +41,7 @@ export const VendorApplicationReceivedEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        Our team will carefully review your application, which typically takes 3-5 business days.
-        We&apos;ll assess your:
+        Review takes 3-5 business days. We&apos;ll assess your:
       </Text>
 
       <List
@@ -66,7 +64,7 @@ export const VendorApplicationReceivedEmail = ({
       </Text>
 
       <Text style={emailStyles.text}>
-        If you have any questions in the meantime, feel free to contact our vendor support team.
+        Contact vendor support if you have questions in the meantime.
       </Text>
 
       <Text style={emailStyles.text}>

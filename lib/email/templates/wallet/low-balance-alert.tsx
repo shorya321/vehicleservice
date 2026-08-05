@@ -30,7 +30,7 @@ export const LowBalanceAlertEmail = ({
 
       <InfoBox variant="warning">
         <Text style={emailStyles.text}>
-          <strong>Your wallet balance is running low!</strong>
+          <strong>Your wallet balance is running low.</strong>
           <br />
           Current balance: <strong>{formatCurrency(currentBalance, currency)}</strong>
           <br />
@@ -57,8 +57,7 @@ export const LowBalanceAlertEmail = ({
       </DetailsSection>
 
       <Text style={emailStyles.text}>
-        You can add funds to your wallet by visiting your wallet dashboard. We recommend maintaining a
-        balance above your threshold to ensure uninterrupted service.
+        Add funds from your wallet dashboard. Keeping the balance above your threshold avoids interrupted service.
       </Text>
 
       <Text style={emailStyles.text}>

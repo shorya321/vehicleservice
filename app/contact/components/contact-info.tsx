@@ -84,7 +84,7 @@ export function ContactInfo() {
         </a>
       </div>
 
-      {/* Contact detail list — responsive via internal class toggles */}
+      {/* Contact detail list. Responsive via internal class toggles */}
       <h2 className="hidden lg:block text-[1.125rem] font-medium text-[var(--text-primary)] mb-6 [text-wrap:balance]">
         Contact details
       </h2>

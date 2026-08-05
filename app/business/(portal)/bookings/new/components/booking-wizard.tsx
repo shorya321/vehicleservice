@@ -66,7 +66,7 @@ export interface BookingFormData {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
-  /** Every guest (adults + children + infants) — a child seat occupies a seat position. */
+  /** Every guest (adults + children + infants). A child seat occupies a seat position. */
   passenger_count: number;
   adults: number;
   children: number;
@@ -79,7 +79,7 @@ export interface BookingFormData {
 
   // Pricing.
   // `base_price` is stored because it is HMAC-signed by the server quote.
-  // `total_price` is deliberately NOT here — it is derived (base + add-ons) in this component and
+  // `total_price` is deliberately NOT here. It is derived (base + add-ons) in this component and
   // passed down explicitly. Keeping it in state is what let a vehicle change silently wipe the
   // add-ons total, and it would also ride the `...apiData` spread in handleSubmit unnoticed.
   base_price: number;
@@ -202,7 +202,7 @@ export function BookingWizard({
 
     try {
       // Strip display-only fields and convert datetime to ISO 8601.
-      // total_price is derived here rather than carried in formData, so it is set explicitly —
+      // total_price is derived here rather than carried in formData, so it is set explicitly,
       // the API requires it (validators.ts: z.number().positive()).
       const { from_location_name, to_location_name, ...apiData } = formData;
       const submissionData = {
@@ -211,6 +211,18 @@ export function BookingWizard({
         pickup_datetime: apiData.pickup_datetime
           ? bookingLocalInputToUtc(apiData.pickup_datetime).toISOString()
           : apiData.pickup_datetime,
+        // Narrow add-ons to the API's contract. The Review step blocks submission until every
+        // child seat has an age, so the nulls are already gone; `requires_child_age` is a local
+        // rendering hint and the API re-reads the real flag from the addons table.
+        selected_addons: apiData.selected_addons?.map((a) => ({
+          addon_id: a.addon_id,
+          quantity: a.quantity,
+          unit_price: a.unit_price,
+          total_price: a.total_price,
+          ...(a.child_ages
+            ? { child_ages: a.child_ages.filter((v): v is number => v !== null) }
+            : {}),
+        })),
       };
 
       const response = await fetch('/api/business/bookings', {

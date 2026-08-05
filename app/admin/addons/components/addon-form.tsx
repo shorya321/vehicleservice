@@ -41,7 +41,33 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required"),
   display_order: z.coerce.number().optional(),
   is_active: z.boolean(),
+  requires_child_age: z.boolean(),
+  // Blank means "no fit check". Kept nullable rather than optional so clearing a previously-set
+  // band round-trips as an explicit null instead of silently keeping the old value.
+  child_age_min: z.coerce.number().int().min(0).max(12).nullable(),
+  child_age_max: z.coerce.number().int().min(0).max(12).nullable(),
 })
+  // Mirrors the addons_child_age_band_valid CHECK so the operator gets a field error instead of a
+  // raw Postgres message on save.
+  .superRefine((d, ctx) => {
+    const hasMin = d.child_age_min !== null
+    const hasMax = d.child_age_max !== null
+    if (hasMin !== hasMax) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Set both ends of the range, or leave both blank',
+        path: [hasMin ? 'child_age_max' : 'child_age_min'],
+      })
+      return
+    }
+    if (hasMin && hasMax && d.child_age_min! > d.child_age_max!) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Must be greater than or equal to the lower age',
+        path: ['child_age_max'],
+      })
+    }
+  })
 
 type FormData = z.infer<typeof formSchema>
 
@@ -100,10 +126,14 @@ export function AddonForm({ addon }: AddonFormProps) {
       category: addon?.category || "Comfort",
       display_order: addon?.display_order || 0,
       is_active: addon?.is_active ?? true,
+      requires_child_age: addon?.requires_child_age ?? false,
+      child_age_min: addon?.child_age_min ?? null,
+      child_age_max: addon?.child_age_max ?? null,
     },
   })
 
   const watchPricingType = form.watch('pricing_type')
+  const watchRequiresChildAge = form.watch('requires_child_age')
   const watchIcon = form.watch('icon')
   const watchPrice = Number(form.watch('price')) || 0
   const watchMaxQuantity = Number(form.watch('max_quantity')) || 1
@@ -369,6 +399,90 @@ export function AddonForm({ addon }: AddonFormProps) {
             </div>
           </div>
         </div>
+
+        <FormField
+          control={form.control}
+          name="requires_child_age"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Requires child age</FormLabel>
+                <FormDescription>
+                  Ask for one child&apos;s age per unit selected, and limit the number of units to the
+                  children and infants on the booking. Use this for child seats.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {/* Only meaningful for an addon that asks for an age at all. */}
+        {watchRequiresChildAge && (
+          <div className="rounded-lg border p-4 space-y-3">
+            <div className="space-y-0.5">
+              <p className="text-base font-medium">Typical age range</p>
+              <p className="text-sm text-muted-foreground">
+                Warns the customer when the age they enter doesn&apos;t suit this seat. The warning is
+                advisory only. It never blocks a booking, because weight matters more than age and a
+                child can legitimately fall outside the range. Leave both blank to skip the check.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="child_age_min"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>From age</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="12"
+                        placeholder="e.g., 4"
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === '' ? null : e.target.value)
+                        }
+                      />
+                    </FormControl>
+                    <FormDescription>0 means under 1 year</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="child_age_max"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>To age</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="12"
+                        placeholder="e.g., 11"
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === '' ? null : e.target.value)
+                        }
+                      />
+                    </FormControl>
+                    <FormDescription>Up to 12</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
 
         <FormField
           control={form.control}

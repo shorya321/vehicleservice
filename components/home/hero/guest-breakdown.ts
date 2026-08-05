@@ -4,12 +4,12 @@
  * Pure logic, no React.
  *
  * NOTE: `lib/business/guest-breakdown.ts` holds an equivalent copy for the business portal. The
- * duplication is DELIBERATE — the business module is kept independent of the customer flow, so the
+ * duplication is DELIBERATE. The business module is kept independent of the customer flow, so the
  * two are free to diverge (different caps, different seat rules) without one breaking the other.
  * Do not "de-duplicate" these into a shared module.
  *
  * Seat semantics: every guest occupies a seat, infants included. UAE law requires a child safety
- * seat for under-4s and a restraint to age 10, and a child seat takes up a seat position — so an
+ * seat for under-4s and a restraint to age 10, and a child seat takes up a seat position, so an
  * infant cannot be counted as a lap passenger the way airlines do.
  */
 
@@ -19,7 +19,7 @@ export interface GuestBreakdown {
   infants: number;
 }
 
-/** Seats consumed. Infants included — a child seat occupies a seat position. */
+/** Seats consumed. Infants included. A child seat occupies a seat position. */
 export function getSeatedCount(value: GuestBreakdown): number {
   return value.adults + value.children + value.infants;
 }
@@ -64,7 +64,7 @@ export function resolveGuestsForVehicle(
       }
     : { adults: total, children: 0, infants: 0 }
 
-  // A breakdown that disagrees with the stated total is untrustworthy — prefer the total.
+  // A breakdown that disagrees with the stated total is untrustworthy. Prefer the total.
   if (hasBreakdown && getSeatedCount(candidate) !== total) {
     return { adults: Math.min(total, passengerCapacity), children: 0, infants: 0 }
   }

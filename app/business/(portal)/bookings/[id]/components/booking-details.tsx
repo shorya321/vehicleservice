@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { formatCurrency } from '@/lib/business/wallet-operations';
+import { formatChildAges } from '@/lib/business/format-child-ages';
 import { toBookingTz } from '@/lib/utils/timezone';
 
 interface BookingDetailsProps {
@@ -625,6 +626,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                       <span className="text-muted-foreground">
                         {item.addon?.name || 'Add-on'}
                         {item.quantity > 1 && ` (×${item.quantity})`}
+                        {formatChildAges(item.child_ages)}
                       </span>
                       <span className="font-medium text-foreground">{formatCurrency(item.total_price)}</span>
                     </div>

@@ -3,14 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 /**
  * Resolves the `vendor_applications.id` for the signed-in user.
  *
- * There is no `vendors` table in this schema — the approved application row *is*
+ * There is no `vendors` table in this schema. The approved application row *is*
  * the vendor entity, so every vendor-scoped query keys off this id rather than
  * the auth user id.
  *
  * Each vendor module currently carries its own private copy of this lookup and
  * they have drifted: `app/vendor/bookings/actions.ts` omits the `approved` check
- * and reaches for the service-role client. This is the canonical version —
- * modelled on `app/vendor/drivers/actions.ts` — and new modules should import it.
+ * and reaches for the service-role client. This is the canonical version,
+ * modelled on `app/vendor/drivers/actions.ts`, and new modules should import it.
  * The existing copies are intentionally left alone; consolidating them would mean
  * editing the live online-booking path.
  *

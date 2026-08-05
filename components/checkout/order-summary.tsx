@@ -182,7 +182,7 @@ export const OrderSummary = memo(function OrderSummary({
         )}
       </div>
 
-      {/* Promo Code — compact toggle */}
+      {/* Promo Code. Compact toggle */}
       <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-4">
         <button
           type="button"

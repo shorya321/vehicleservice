@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Quotation builder — list of trips with a sheet editor per trip.
+ * Quotation builder. List of trips with a sheet editor per trip.
  *
  * List-first rather than a wizard: the running total stays visible while you work, which is
  * the entire point of quoting several trips together.
@@ -101,7 +101,7 @@ export function QuotationBuilder({
 
   const inCurrency = (aed: number) => formatCurrency(aed * exchangeRate, currency);
 
-  /** A converted trip is immutable — the wallet has been charged and a booking exists. */
+  /** A converted trip is immutable. The wallet has been charged and a booking exists. */
   const isLocked = (trip: QuotationTripDraft) => Boolean(trip.converted_booking_id);
 
   function upsertTrip(trip: QuotationTripDraft) {
@@ -147,13 +147,13 @@ export function QuotationBuilder({
 
   function handleSave() {
     startSaving(async () => {
-      // Converted trips are owned by the server and must not be resubmitted — persist.ts
+      // Converted trips are owned by the server and must not be resubmitted. Persist.ts
       // rejects that explicitly rather than silently ignoring it.
       const editable = trips.filter((t) => !isLocked(t));
 
       // Trimmed here, not just by the schema: customer_email/phone fall back to
       // `.or(z.literal(''))` to mean "absent", and that literal is matched against the RAW
-      // input — so a whitespace-only field would be rejected as invalid rather than cleared.
+      // input, so a whitespace-only field would be rejected as invalid rather than cleared.
       const customerPayload: QuotationCustomerDraft = {
         customer_name: customer.customer_name.trim(),
         customer_company: customer.customer_company.trim(),
@@ -395,7 +395,7 @@ export function QuotationBuilder({
                 <span className="tabular-nums">{inCurrency(totals.totalSellAed)}</span>
               </div>
               <div className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
-                Internal — cost {formatCurrency(totals.subtotalNetAed, 'AED')} · margin{' '}
+                Internal: cost {formatCurrency(totals.subtotalNetAed, 'AED')} · margin{' '}
                 {formatCurrency(totals.marginAed, 'AED')}
                 {totals.marginPct !== null ? ` (${totals.marginPct}%)` : ''}
               </div>

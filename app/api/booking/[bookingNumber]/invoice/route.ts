@@ -98,7 +98,7 @@ export async function GET(
     const currency =
       requested && enabledCurrencies.some((c) => c.code === requested) ? requested : 'AED';
 
-    // Prices are always stored in AED — conversion is display-only.
+    // Prices are always stored in AED. Conversion is display-only.
     const toDisplay = (amountAed: number) => formatPrice(amountAed ?? 0, currency, exchangeRates);
 
     const primaryPassenger =
@@ -110,7 +110,7 @@ export async function GET(
         quantity: 1,
         amount: toDisplay(booking.base_price),
       },
-      // booking_amenities.price is the LINE TOTAL, not a unit price — never multiply by quantity.
+      // booking_amenities.price is the LINE TOTAL, not a unit price, never multiply by quantity.
       ...(booking.booking_amenities ?? []).map((amenity) => {
         const addon = amenity.addon as unknown as { name: string } | null;
         const label =
@@ -159,7 +159,7 @@ export async function GET(
       luggageCount: booking.luggage_count ?? undefined,
 
       lineItems,
-      // The total is printed from total_price verbatim — never recomputed from line items.
+      // The total is printed from total_price verbatim, never recomputed from line items.
       totalDisplay: toDisplay(booking.total_price),
       totalAed: formatAmount(booking.total_price ?? 0, 'AED'),
       showAedNote: currency !== 'AED',

@@ -57,7 +57,7 @@ export default async function EditDirectBookingPage({
   ])
 
   // getDirectBooking already scopes by vendor, so a miss means "not yours" or
-  // "does not exist" — both are a 404 from the vendor's point of view.
+  // "does not exist". Both are a 404 from the vendor's point of view.
   if (!booking) {
     notFound()
   }

@@ -224,7 +224,7 @@ export function AssignResourcesModal({
             <p className="text-xs text-muted-foreground">
               {releaseAtLabel
                 ? `Vehicle and driver stay booked until ${releaseAtLabel}, then free up for other bookings.`
-                : `Vehicle and driver stay booked for this long from pickup (${MIN_TRIP_DURATION_HOURS}–${MAX_TRIP_DURATION_HOURS} hours).`}
+                : `Vehicle and driver stay booked for this long from pickup (${MIN_TRIP_DURATION_HOURS}-${MAX_TRIP_DURATION_HOURS} hours).`}
             </p>
           </div>
 

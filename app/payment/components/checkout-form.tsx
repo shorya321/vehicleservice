@@ -54,7 +54,7 @@ function PaymentSkeleton() {
 interface CheckoutFormProps {
   bookingId: string
   amount: number
-  /** Routing key only — drives the Stripe return_url. Never rendered. */
+  /** Routing key only. Drives the Stripe return_url. Never rendered. */
   bookingNumber: string
   /** Customer-facing reference shown on screen. */
   tripNumber: string

@@ -127,7 +127,7 @@ export interface CancellationRefund {
  *
  * Settled statuses always return 0 regardless of timing.
  *
- * Deliberately compares two absolute instants, so it is timezone-independent — "24 hours
+ * Deliberately compares two absolute instants, so it is timezone-independent, "24 hours
  * before pickup" is a duration, not a wall-clock time, and needs no Asia/Dubai conversion.
  *
  * Pure and dependency-light so the API route and the UI derive the SAME number rather than
@@ -162,18 +162,18 @@ export function getCancellationRefund(booking: {
   ) {
     return none(
       booking.booking_status === 'completed'
-        ? 'No refund — this trip has already been completed.'
-        : `No refund — this booking is already ${booking.booking_status}.`
+        ? 'No refund. This trip has already been completed.'
+        : `No refund. This booking is already ${booking.booking_status}.`
     );
   }
 
   if (fullRefund <= 0) {
-    return none('No refund — nothing was charged to your wallet for this booking.');
+    return none('No refund. Nothing was charged to your wallet for this booking.');
   }
 
   if (hoursUntilPickup < CANCELLATION_FREE_HOURS) {
     return none(
-      `No refund — cancellations are free up to ${CANCELLATION_FREE_HOURS} hours before pickup, and this booking is inside that window.`
+      `No refund. Cancellations are free up to ${CANCELLATION_FREE_HOURS} hours before pickup, and this booking is inside that window.`
     );
   }
 
@@ -182,7 +182,7 @@ export function getCancellationRefund(booking: {
     refundPercent: 100,
     withinFreeWindow: true,
     hoursUntilPickup,
-    reason: 'Full refund — this is more than 24 hours before pickup.',
+    reason: 'Full refund. This is more than 24 hours before pickup.',
   };
 }
 

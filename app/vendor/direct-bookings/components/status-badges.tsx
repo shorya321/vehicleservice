@@ -7,7 +7,7 @@ import {
 } from '@/lib/vendor/direct-bookings/schema'
 
 /**
- * Local badge mappers, matching how every other list in this codebase does it —
+ * Local badge mappers, matching how every other list in this codebase does it,
  * there is no shared StatusBadge component, and inventing one here would mean
  * reconciling ten slightly different existing mappings.
  */

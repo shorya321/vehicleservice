@@ -89,7 +89,7 @@ export function ChangeDurationModal({
         <DialogHeader>
           <DialogTitle>Change booking duration</DialogTitle>
           <DialogDescription>
-            Booking #{bookingNumber} — currently held until {releaseLabel(initialHours)}
+            Booking #{bookingNumber}, currently held until {releaseLabel(initialHours)}
           </DialogDescription>
         </DialogHeader>
 

@@ -20,7 +20,7 @@ export interface CalendarEvent {
    *  so they carry both ids instead (see vehicleId / driverId). */
   resourceType: 'vehicle' | 'driver' | 'booking'
   type: 'booking' | 'unavailable'
-  /** Set on booking events only — the resources the booking actually occupies.
+  /** Set on booking events only. The resources the booking actually occupies.
    *  The resource filter needs these; resourceType alone cannot express "both". */
   vehicleId?: string | null
   driverId?: string | null
@@ -43,7 +43,7 @@ function pastBookingColor(status: string | null): string {
 /**
  * Build ONE calendar event from an assignment joined to its booking / business
  * booking / vehicle / driver. Shared by the live-schedule path and the past-booking
- * path so both emit an identical event shape — the client dialog, resource filter,
+ * path so both emit an identical event shape. The client dialog, resource filter,
  * and dimming then work on either without special-casing.
  */
 function assignmentToCalendarEvent(
@@ -377,7 +377,7 @@ export async function markResourceUnavailable(
 
   // Backdating is meaningless and it does damage: the calendar hides past rows,
   // so a retroactive block becomes invisible while still failing every future
-  // availability check against that resource. This is the enforcement point —
+  // availability check against that resource. This is the enforcement point,
   // the calendar's own guard is only a courtesy and can be bypassed.
   if (start < startOfBookingDayUtc()) {
     throw new Error('Cannot mark a resource unavailable for a past date')

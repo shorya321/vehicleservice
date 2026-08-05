@@ -15,8 +15,8 @@ export interface SiteFlags {
  * immediately.
  *
  * Fail behavior is asymmetric by design:
- * - `maintenanceMode` fails OPEN (`false`) — a DB hiccup never locks out the site.
- * - `blockIndexing` fails SAFE (`true`) — a DB hiccup never exposes demo content
+ * - `maintenanceMode` fails OPEN (`false`). A DB hiccup never locks out the site.
+ * - `blockIndexing` fails SAFE (`true`). A DB hiccup never exposes demo content
  *   to crawlers. Matches the missing-key default in `parseSiteSettings`.
  */
 export async function readSiteFlags(
@@ -40,7 +40,7 @@ export async function readSiteFlags(
 
     return {
       maintenanceMode: config.maintenance_mode === true,
-      // Only an explicit `false` unblocks — anything else (missing/error) blocks.
+      // Only an explicit `false` unblocks. Anything else (missing/error) blocks.
       blockIndexing: config.block_search_indexing !== false,
     }
   } catch (error) {

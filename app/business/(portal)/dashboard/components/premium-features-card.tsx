@@ -62,7 +62,7 @@ export function PremiumFeaturesCard({ className }: PremiumFeaturesCardProps) {
             Premium Features
           </span>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            Unlock advanced analytics, custom branding, and priority support
+            Get advanced analytics and custom branding
           </p>
           <Button
             variant="outline"

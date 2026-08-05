@@ -4,7 +4,7 @@
  * This module is the leak barrier. It is the ONLY constructor of QuotationPdfData, it reads
  * sell_total_aed and never touches the net_* columns, and QuotationPdfData has no field a
  * cost could be assigned to. Any future attempt to print margin would have to change this
- * file, the type, and the layout — which is the point.
+ * file, the type, and the layout, which is the point.
  *
  * It is also where every currency conversion, rounding and date format happens, so the
  * document itself never derives a number.
@@ -21,7 +21,7 @@ import type { QuotationPdfData, QuotationPdfLineItem } from '@/lib/pdf/generator
  *
  * Deliberately NOT QuotationWithItems: by excluding the net_* columns from the input type,
  * the route's .select() can omit them and the compiler enforces that the cost never even
- * enters the function. That is the third layer of the leak barrier — the first two being the
+ * enters the function. That is the third layer of the leak barrier. The first two being the
  * absent fields on QuotationPdfData and this file never reading a cost.
  */
 export interface QuotationPdfSourceItem {
@@ -39,7 +39,8 @@ export interface QuotationPdfSourceItem {
   description: string | null;
   /** The sell price. The only money on this type. */
   sell_total_aed: number;
-  addons: Array<{ name_snapshot: string }>;
+  /** Names and child ages only, never prices. See the addon mapping below. */
+  addons: Array<{ name_snapshot: string; child_ages?: number[] | null }>;
 }
 
 export interface QuotationPdfSource {
@@ -64,9 +65,9 @@ export interface QuotationPdfSource {
  * Route separator.
  *
  * NOT "→" (U+2192). @react-pdf's built-in Helvetica uses WinAnsi encoding, which has no
- * glyph for it — the arrow silently renders as a stray apostrophe on the customer's document.
+ * glyph for it. The arrow silently renders as a stray apostrophe on the customer's document.
  * "»" (U+00BB) is in WinAnsi, reads directionally, and needs no font registration.
- * "—" and "·" used elsewhere in this file are both WinAnsi and render correctly.
+ * "-" and "·" used elsewhere in this file are both WinAnsi and render correctly.
  */
 const ROUTE_ARROW = '»';
 
@@ -92,7 +93,7 @@ function roundTo(amount: number, decimals: number): number {
 }
 
 function formatDateTime(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '-';
   return new Intl.DateTimeFormat('en-GB', {
     timeZone: BOOKING_TIMEZONE,
     weekday: 'short',
@@ -106,7 +107,7 @@ function formatDateTime(iso: string | null): string {
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '-';
   return new Intl.DateTimeFormat('en-GB', {
     timeZone: BOOKING_TIMEZONE,
     day: '2-digit',
@@ -115,7 +116,7 @@ function formatDate(iso: string | null): string {
   }).format(new Date(iso));
 }
 
-/** "2 adults, 1 child" — infants named separately since each still occupies a seat. */
+/** "2 adults, 1 child". Infants named separately since each still occupies a seat. */
 function guestSummary(item: QuotationPdfSourceItem): string {
   const parts: string[] = [];
   if (item.adults > 0) parts.push(`${item.adults} adult${item.adults === 1 ? '' : 's'}`);
@@ -174,7 +175,18 @@ export function buildQuotationPdfData({
     const to = locationNames[item.to_location_id] ?? item.dropoff_address;
 
     // Addons are NAMED without prices: itemising a quotation invites line-by-line haggling.
-    const addonNames = item.addons.map((a: { name_snapshot: string }) => a.name_snapshot).filter(Boolean);
+    // Child ages are appended because the customer has to be able to check the seats match their
+    // children. An age reveals nothing about cost. Plain "(age 6)" rather than any arrow or
+    // symbol: @react-pdf's Helvetica renders several of those as stray glyphs (see ROUTE_ARROW).
+    const addonNames = item.addons
+      .map((a: { name_snapshot: string; child_ages?: number[] | null }) => {
+        if (!a.name_snapshot) return '';
+        const ages = a.child_ages ?? [];
+        if (ages.length === 0) return a.name_snapshot;
+        const parts = ages.map((age) => (age === 0 ? 'under 1' : String(age)));
+        return `${a.name_snapshot} (${parts.length === 1 ? 'age' : 'ages'} ${parts.join(', ')})`;
+      })
+      .filter(Boolean);
 
     return {
       label: `Trip ${index + 1} of ${ordered.length}`,

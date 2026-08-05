@@ -1,7 +1,7 @@
 /**
  * Edit a quotation's trips and pricing.
  *
- * Editing stays open through `sent` and `accepted` — customers renegotiate after saying yes,
+ * Editing stays open through `sent` and `accepted`. Customers renegotiate after saying yes,
  * and forcing a brand-new quotation for a changed pickup time is the kind of friction that
  * pushes people back to WhatsApp. Only a conversion in flight closes it, and individual trips
  * lock as soon as they become real bookings.

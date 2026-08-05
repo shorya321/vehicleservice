@@ -92,7 +92,7 @@ export default async function VendorDirectBookingsPage({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Offline Bookings</h1>
           <p className="text-muted-foreground">
-            Bookings you took offline from customers — kept separate from your
+            Bookings you took offline from customers, kept separate from your
             platform bookings
           </p>
         </div>

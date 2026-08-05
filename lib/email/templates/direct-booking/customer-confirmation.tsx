@@ -9,7 +9,7 @@ import { emailStyles, statusColors } from '../../styles/constants';
  * Confirmation for a booking a vendor recorded offline.
  *
  * Written in the vendor's voice: the customer dealt with the vendor directly and
- * has no platform account, no login, and no link to follow — so every fact they
+ * has no platform account, no login, and no link to follow, so every fact they
  * need is inline.
  *
  * Deliberately has no prop for the vendor's internal notes or cancellation
@@ -81,7 +81,7 @@ export const DirectBookingCustomerConfirmationEmail = ({
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
       <Text style={emailStyles.text}>
-        {vendorName} has recorded your booking. Here are the details — please keep this
+        {vendorName} has recorded your booking. Here are the details. Please keep this
         email for your records.
       </Text>
 

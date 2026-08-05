@@ -197,8 +197,18 @@ export interface AddonItem {
   icon: string;
   price: number;
   pricing_type: 'fixed' | 'per_unit';
-  max_quantity: number;
+  /** Nullable in the DB. A null means "no per-addon cap". Do not treat it as 0. */
+  max_quantity: number | null;
   category: string;
+  /**
+   * Admin-configured. When true the picker asks for one child age per unit and caps the combined
+   * quantity of all such addons at children + infants. Re-read from the DB during price
+   * verification, so the client's copy is a rendering hint only.
+   */
+  requires_child_age: boolean;
+  /** Typical age range for this seat. Both null = no fit check. Advisory only. */
+  child_age_min: number | null;
+  child_age_max: number | null;
 }
 
 export interface AddonsByCategory {
@@ -217,16 +227,17 @@ export async function getActiveAddons(): Promise<{
   try {
     const supabase = await createClient();
 
-    // Child seats are deliberately NOT add-ons: the Guests picker already declares children and
-    // infants, and seats are provided free. The customer checkout now does the same (it keeps its
-    // own copy of this query in app/checkout/actions.ts, so the two flows stay independent).
-    // Do not "fix" this by dropping the filter — child seats are a declared, free service driven by
-    // the guest counts, not a priced line item.
+    // Child seats used to be filtered out here on the theory that they were free and implied by the
+    // Guests picker. They are now sold like any other add-on, so nothing is excluded by category.
+    // `requires_child_age` (admin-configured per addon) drives the behaviour instead: the picker
+    // hides those addons unless the booking declares children or infants, caps their combined
+    // quantity at children + infants, and collects one age per seat.
+    // The customer checkout keeps its own copy of this query in app/checkout/actions.ts. The two
+    // flows stay independent, so changing one never silently changes the other.
     const { data, error } = await supabase
       .from('addons')
-      .select('id, name, description, icon, price, pricing_type, max_quantity, category')
+      .select('id, name, description, icon, price, pricing_type, max_quantity, category, requires_child_age, child_age_min, child_age_max')
       .eq('is_active', true)
-      .neq('category', 'Child Safety')
       .order('display_order', { ascending: true })
       .order('name', { ascending: true });
 
@@ -246,8 +257,9 @@ export async function getActiveAddons(): Promise<{
       categoryMap.get(addon.category)!.push(addon);
     });
 
-    // Define category order. 'Child Safety' is excluded by the query above.
-    const categoryOrder = ['Luggage', 'Comfort'];
+    // Child seats lead: they are the only legally-required extra, and the picker hides the whole
+    // group when the booking has no children or infants.
+    const categoryOrder = ['Child Safety', 'Luggage', 'Comfort'];
     const addonsByCategory: AddonsByCategory[] = [];
 
     categoryOrder.forEach((cat) => {

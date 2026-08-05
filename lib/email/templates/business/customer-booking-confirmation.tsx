@@ -5,6 +5,7 @@ import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
+import { formatChildAges } from '@/lib/business/format-child-ages';
 
 interface CustomerBookingConfirmationEmailProps {
   customerName: string;
@@ -22,7 +23,7 @@ interface CustomerBookingConfirmationEmailProps {
   children?: number;
   infants?: number;
   referenceNumber?: string;
-  extras?: Array<{ label: string; quantity: number; price: number }>;
+  extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
 }
 
 export const CustomerBookingConfirmationEmail = ({
@@ -42,7 +43,7 @@ export const CustomerBookingConfirmationEmail = ({
   referenceNumber,
   extras,
 }: CustomerBookingConfirmationEmailProps) => {
-  // Older bookings predate the guest breakdown — fall back to the seated count.
+  // Older bookings predate the guest breakdown. Fall back to the seated count.
   const passengerLabel =
     adults != null
       ? formatGuestSummary({ adults, children: children ?? 0, infants: infants ?? 0 })
@@ -100,8 +101,10 @@ export const CustomerBookingConfirmationEmail = ({
             <Hr style={emailStyles.hr} />
             {extras.map((extra, index) => (
               <Text key={index} style={emailStyles.detailRow}>
+                {/* Prices stay hidden here. The end customer books through the business, not us. */}
                 <strong>Extra:</strong> {extra.label}
                 {extra.quantity > 1 ? ` x${extra.quantity}` : ''}
+                {formatChildAges(extra.childAges)}
               </Text>
             ))}
           </>

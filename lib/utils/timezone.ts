@@ -7,7 +7,7 @@ import { format } from 'date-fns'
  */
 export const BOOKING_TIMEZONE = 'Asia/Dubai'
 
-/** Asia/Dubai observes no DST — the offset is permanently +04:00. */
+/** Asia/Dubai observes no DST. The offset is permanently +04:00. */
 const BOOKING_UTC_OFFSET = '+04:00'
 
 /**
@@ -45,7 +45,7 @@ export function bookingToday(): string {
  * This is the single boundary for "is this in the past?". Do not reach for
  * `new Date()` + `setHours(0, 0, 0, 0)`: that yields midnight in whatever
  * timezone the process happens to run in (UTC on Vercel), which is 04:00 Dubai
- * — so anything booked in the first four hours of the Dubai day reads as past.
+ *, so anything booked in the first four hours of the Dubai day reads as past.
  */
 export function startOfBookingDayUtc(): Date {
   return bookingWallClockToUtc(bookingToday(), '00:00')

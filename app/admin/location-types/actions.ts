@@ -195,7 +195,7 @@ export async function deleteLocationType(
   if (count && count > 0) {
     return {
       success: false,
-      error: `Cannot delete — ${count} location(s) use this type. Reassign them first or deactivate instead.`,
+      error: `Cannot delete: ${count} location(s) use this type. Reassign them first or deactivate instead.`,
     }
   }
 

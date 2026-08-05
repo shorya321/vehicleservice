@@ -34,7 +34,7 @@ export function Pagination({
     >
       <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
         <span className="numeric text-[var(--text-secondary)]">
-          {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, totalItems)}
+          {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}
         </span>{" "}
         of{" "}
         <span className="numeric text-[var(--text-secondary)]">{totalItems}</span>

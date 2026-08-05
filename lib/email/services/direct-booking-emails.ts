@@ -19,7 +19,7 @@ import DirectBookingDriverAssignmentEmail from '../templates/direct-booking/driv
  * These go out in the vendor's voice, so each accepts an optional `replyTo` the
  * caller sets to the vendor's own address when one is on file.
  *
- * Every function returns an `EmailResult` and never throws — `sendEmail` swallows
+ * Every function returns an `EmailResult` and never throws, `sendEmail` swallows
  * both Resend errors and configuration errors. Callers still dispatch these
  * un-awaited so a slow send cannot delay a booking write.
  */

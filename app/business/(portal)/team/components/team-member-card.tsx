@@ -50,10 +50,10 @@ export function TeamMemberCard({
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-foreground">
-                {member.full_name || '—'}
+                {member.full_name || '-'}
                 {isSelf && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
               </p>
-              <p className="truncate text-xs text-muted-foreground">{member.email || '—'}</p>
+              <p className="truncate text-xs text-muted-foreground">{member.email || '-'}</p>
             </div>
             {/* Owners have no permitted actions, so they get no trigger at all. */}
             {!isOwner && (

@@ -234,7 +234,7 @@ export async function replyToSubmission(id: string, message: string) {
     })
   } catch (emailError) {
     console.error('[Contact Admin] Error sending reply email:', emailError)
-    // Don't throw — the status is already updated
+    // Don't throw. The status is already updated
   }
 
   revalidatePath('/admin/contact')

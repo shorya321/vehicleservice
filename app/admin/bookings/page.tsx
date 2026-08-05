@@ -34,7 +34,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   const params = await searchParams
 
   // Defaults to upcoming: a bare /admin/bookings lands on future trips.
-  // An explicit date range replaces that default — otherwise a past range would
+  // An explicit date range replaces that default. Otherwise a past range would
   // AND with "pickup >= now()" and always come back empty.
   const hasDateRange = Boolean(params.dateFrom || params.dateTo)
   const timeframe = (params.timeframe as BookingFilters['timeframe'])

@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       {/* Typographic Masthead */}
       <ArticleMasthead post={post} />
 
-      {/* Floating Share — desktop sidebar + mobile bottom bar */}
+      {/* Floating Share. Desktop sidebar + mobile bottom bar */}
       <FloatingShare
         url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`}
         title={post.title}
@@ -87,7 +87,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       {/* Article Body */}
       <div className="article-page__body">
         <div className="article-page__body-inner">
-          {/* Featured Image — contained within reading column */}
+          {/* Featured Image. Contained within reading column */}
           {post.featured_image_url && (
             <BlogMotionSection className="article-page__featured-image" withScale>
               <div className="article-page__featured-image-inner">

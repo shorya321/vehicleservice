@@ -54,7 +54,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
       })
     : `/checkout?${new URLSearchParams({
         vehicleType: vehicleType.id,
-        // Drop undefined entries — URLSearchParams stringifies them to the literal "undefined".
+        // Drop undefined entries. URLSearchParams stringifies them to the literal "undefined".
         ...Object.fromEntries(
           Object.entries(searchParams).filter(([, v]) => v !== undefined)
         ),
@@ -64,7 +64,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
 
   return (
     <motion.article
-      aria-label={unavailable ? `${vehicleType.name} — sold out` : vehicleType.name}
+      aria-label={unavailable ? `${vehicleType.name}, sold out` : vehicleType.name}
       className={`vehicle-card-surface group flex h-full flex-col rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] bg-[var(--charcoal)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${unavailable ? 'opacity-50' : 'hover:-translate-y-1 hover:border-[rgba(var(--gold-rgb),0.25)] hover:shadow-[0_12px_24px_-6px_rgba(var(--gold-rgb),0.15),0_4px_10px_-4px_rgba(var(--gold-rgb),0.1)]'}`}
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}

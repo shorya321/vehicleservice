@@ -40,7 +40,7 @@ export interface QuotationTotals {
  * 287.49999999999994, and the DB columns are numeric(12,2). Rounding at every boundary keeps
  * the stored row, the on-screen figure and the PDF from disagreeing by fractions.
  *
- * Uses an epsilon nudge because JS `Math.round(1.005 * 100) / 100` gives 1 — the classic
+ * Uses an epsilon nudge because JS `Math.round(1.005 * 100) / 100` gives 1. The classic
  * float-representation trap that would round a half-fils the wrong way.
  */
 export function roundAed(amount: number): number {
@@ -50,7 +50,7 @@ export function roundAed(amount: number): number {
 
 /**
  * Apply a percentage markup to a net cost.
- * A negative percentage is permitted — a business may deliberately quote below cost.
+ * A negative percentage is permitted. A business may deliberately quote below cost.
  */
 export function applyMarkup(netAed: number, markupPercent: number): number {
   if (!Number.isFinite(netAed) || netAed < 0) return 0;
@@ -66,8 +66,8 @@ export function applyMarkup(netAed: number, markupPercent: number): number {
  * Which percentage actually governs a line.
  *
  * `inherited` follows the quotation default and keeps following it as that default changes.
- * `markup` is pinned to the line. `manual` has no percentage at all — the sell price was
- * typed directly — so it returns null and callers must not derive a price from it.
+ * `markup` is pinned to the line. `manual` has no percentage at all. The sell price was
+ * typed directly, so it returns null and callers must not derive a price from it.
  */
 export function resolveMarkupPct(
   line: Pick<QuotationPricedLine, 'price_mode' | 'markup_percent'>,
@@ -81,7 +81,7 @@ export function resolveMarkupPct(
 /**
  * The sell price for a line.
  *
- * For `manual`, the stored sell price is authoritative and is returned untouched — this is
+ * For `manual`, the stored sell price is authoritative and is returned untouched. This is
  * what makes a manual override survive a change to the quotation's default markup.
  */
 export function lineSellPrice(line: QuotationPricedLine, defaultMarkupPct: number): number {
@@ -101,7 +101,7 @@ export function marginPct(netAed: number, sellAed: number): number | null {
  *
  * The sum is taken over ALREADY-ROUNDED line prices. Summing raw values and rounding once at
  * the end would produce a document whose visible column does not add up to its visible total
- * — the single most embarrassing failure mode for a document a customer is negotiating over.
+ *. The single most embarrassing failure mode for a document a customer is negotiating over.
  */
 export function quotationTotals(
   lines: QuotationPricedLine[],

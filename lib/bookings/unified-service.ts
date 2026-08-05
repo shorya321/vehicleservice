@@ -284,13 +284,13 @@ export interface CancelledAssignment {
  *
  * Closes ALL rows in ('pending','accepted') rather than one. The partial unique index that
  * was supposed to guarantee a single active assignment per booking does not exist in the
- * database, so a reassigned booking really can have several — which is exactly why the
+ * database, so a reassigned booking really can have several, which is exactly why the
  * `.single()` this replaces returned null and skipped the cleanup entirely.
  *
  * `driver_id` / `vehicle_id` are deliberately left in place: they are the audit trail, and
  * two notification triggers watch those columns for changes.
  *
- * Never throws. Cleanup failing must not fail the cancellation the user asked for — the
+ * Never throws. Cleanup failing must not fail the cancellation the user asked for. The
  * caller logs the error and carries on.
  */
 export async function closeActiveAssignments(params: {
@@ -332,7 +332,7 @@ export async function closeActiveAssignments(params: {
 
   const now = new Date().toISOString();
 
-  // `updated_at` is set explicitly — there is no trigger maintaining it on this table.
+  // `updated_at` is set explicitly. There is no trigger maintaining it on this table.
   const patch =
     params.outcome === 'cancelled'
       ? {
@@ -556,7 +556,7 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   }
 
   // The range is a pair of Dubai calendar days, so both edges are resolved as
-  // Dubai midnight and the upper bound is exclusive — otherwise the last day
+  // Dubai midnight and the upper bound is exclusive. Otherwise the last day
   // selected would be cut off at 00:00 and drop all of its bookings.
   const fromDay = filters?.fromDate ? toBookingDay(filters.fromDate) : null;
   if (fromDay) {
@@ -592,7 +592,7 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   }
 
   // Customer bookings keep the email on the profile, business bookings store it
-  // inline — so the customer side needs an id lookup first.
+  // inline, so the customer side needs an id lookup first.
   let hasCustomerEmailMatches = true;
   const customerEmail = filters?.customerEmail?.trim();
   if (customerEmail) {

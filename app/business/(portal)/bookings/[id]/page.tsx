@@ -105,6 +105,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
         quantity,
         unit_price,
         total_price,
+        child_ages,
         addon:addon_id(id, name, category, icon, description)
       `)
       .eq('business_booking_id', id),

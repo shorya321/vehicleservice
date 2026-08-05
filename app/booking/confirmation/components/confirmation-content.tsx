@@ -10,6 +10,7 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
+import { formatChildAges } from '@/lib/utils/child-ages'
 import { InvoiceDownloadButton } from './invoice-download-button'
 
 const formatDate = (d: Date) =>
@@ -31,6 +32,8 @@ interface BookingAmenity {
   quantity: number | null
   price: number
   addon_id: string | null
+  /** One age per seat on child-seat add-ons; null everywhere else. */
+  child_ages: number[] | null
   addon: { id: string; name: string; icon: string | null } | null
 }
 
@@ -300,7 +303,7 @@ export function ConfirmationContent({
   const isPaid = booking.payment_status === 'completed'
   const pickupDate = booking.pickup_datetime ? new Date(booking.pickup_datetime) : null
   const statusConfig = getStatusConfig(booking.booking_status)
-  // Only worth showing when the party isn't all adults — otherwise it just restates passenger_count.
+  // Only worth showing when the party isn't all adults. Otherwise it just restates passenger_count.
   // Legacy bookings were backfilled to all-adults, so they render exactly as they did before.
   const guestSummary =
     booking.adults != null && (booking.children ?? 0) + (booking.infants ?? 0) > 0
@@ -350,7 +353,7 @@ export function ConfirmationContent({
         {addons.map((addon, idx) => (
           <SummaryRow
             key={`addon-${idx}`}
-            label={`${addon.addon?.name || 'Add-on'}${(addon.quantity ?? 1) > 1 ? ` × ${addon.quantity}` : ''}`}
+            label={`${addon.addon?.name || 'Add-on'}${(addon.quantity ?? 1) > 1 ? ` × ${addon.quantity}` : ''}${formatChildAges(addon.child_ages)}`}
             value={formatUserPrice(addon.price)}
           />
         ))}
@@ -635,7 +638,7 @@ export function ConfirmationContent({
             </motion.div>
           </div>
 
-          {/* Pricing sidebar — desktop only */}
+          {/* Pricing sidebar. Desktop only */}
           {statusConfig.showPricing && (
             <aside
               className="hidden lg:block w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24"

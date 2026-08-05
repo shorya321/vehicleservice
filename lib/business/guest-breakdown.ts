@@ -1,11 +1,11 @@
 /**
  * Guest breakdown helpers for business bookings.
  *
- * Pure logic, no React — shared by the booking wizard UI and the email templates, so the two
+ * Pure logic, no React. Shared by the booking wizard UI and the email templates, so the two
  * cannot drift apart.
  *
  * Seat semantics: every guest occupies a seat, infants included. UAE law requires a child safety
- * seat for under-4s and a restraint to age 10, and a child seat takes up a seat position — so an
+ * seat for under-4s and a restraint to age 10, and a child seat takes up a seat position, so an
  * infant cannot be counted as a lap passenger the way airlines do.
  * `business_bookings.passenger_count` holds this total.
  */
@@ -16,7 +16,7 @@ export interface GuestBreakdown {
   infants: number;
 }
 
-/** Seats consumed. Infants included — a child seat occupies a seat position. */
+/** Seats consumed. Infants included. A child seat occupies a seat position. */
 export function getSeatedCount(value: GuestBreakdown): number {
   return value.adults + value.children + value.infants;
 }

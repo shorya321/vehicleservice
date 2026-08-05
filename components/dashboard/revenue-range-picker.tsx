@@ -28,14 +28,14 @@ function parseDay(day: string | undefined): Date | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed
 }
 
-/** Compact range summary for the Custom pill, e.g. "8 Jul – 17 Jul". */
+/** Compact range summary for the Custom pill, e.g. "8 Jul - 17 Jul". */
 function summariseRange(range: RevenueRange): string {
   const from = parseDay(range.from)
   const to = parseDay(range.to)
   if (!from || !to) return 'Custom'
 
   const pattern = range.crossesYear ? 'd MMM yy' : 'd MMM'
-  return `${format(from, pattern)} – ${format(to, pattern)}`
+  return `${format(from, pattern)} - ${format(to, pattern)}`
 }
 
 export function RevenueRangePicker({ range }: RevenueRangePickerProps) {
@@ -50,7 +50,7 @@ export function RevenueRangePicker({ range }: RevenueRangePickerProps) {
   // router.replace re-renders this component without remounting it.
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(undefined)
 
-  // Last selectable day in Dubai terms — booked revenue never exists after
+  // Last selectable day in Dubai terms. Booked revenue never exists after
   // today, and browser-local midnight would let a future Dubai day through.
   const lastSelectableDay = parseDay(bookingToday())
 
@@ -68,7 +68,7 @@ export function RevenueRangePicker({ range }: RevenueRangePickerProps) {
     const params = new URLSearchParams(searchParams.toString())
     mutate(params)
     startTransition(() => {
-      // replace, not push — switching range shouldn't fill the back button.
+      // replace, not push. Switching range shouldn't fill the back button.
       router.replace(`${pathname}?${params.toString()}`, { scroll: false })
     })
   }
@@ -85,7 +85,7 @@ export function RevenueRangePicker({ range }: RevenueRangePickerProps) {
 
   const handleApplyCustomRange = () => {
     if (!draftRange?.from) return
-    // Plain Dubai calendar days — an ISO instant here would be the admin's
+    // Plain Dubai calendar days. An ISO instant here would be the admin's
     // local midnight, which shifts day boundaries per browser timezone.
     const from = format(draftRange.from, 'yyyy-MM-dd')
     // A single click leaves `to` empty; that means one day, not open-ended.
@@ -133,7 +133,7 @@ export function RevenueRangePicker({ range }: RevenueRangePickerProps) {
         </PopoverTrigger>
         <PopoverContent
           // A 2-month calendar is taller than the space below the trigger, so
-          // Radix flips it upward — cap the height so it can never run past
+          // Radix flips it upward. Cap the height so it can never run past
           // the viewport edge whichever way it opens.
           className="luxury-calendar-popover max-h-[80vh] w-auto overflow-y-auto p-0"
           align="end"
@@ -144,7 +144,7 @@ export function RevenueRangePicker({ range }: RevenueRangePickerProps) {
           <Calendar
             autoFocus
             mode="range"
-            // Open on the current month — a 12-month preset would otherwise
+            // Open on the current month. A 12-month preset would otherwise
             // land the view a year back.
             defaultMonth={lastSelectableDay}
             endMonth={lastSelectableDay}

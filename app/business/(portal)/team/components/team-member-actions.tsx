@@ -4,7 +4,7 @@
  * Row actions for one team member.
  *
  * A MoreHorizontal dropdown, matching the bookings and quotations lists. Previously these were
- * two inline buttons, one of which rendered filled — a roster of deactivated staff showed a
+ * two inline buttons, one of which rendered filled. A roster of deactivated staff showed a
  * column of competing primaries, and the "has bookings" constraint dangled as loose text under
  * them.
  *
@@ -62,13 +62,13 @@ export function TeamMemberActions({
           ) : (
             <UserCheck className="mr-2 h-4 w-4" />
           )}
-          {isPending ? 'Saving…' : member.is_active ? 'Deactivate' : 'Reactivate'}
+          {isPending ? 'Saving...' : member.is_active ? 'Deactivate' : 'Reactivate'}
         </DropdownMenuItem>
 
         {/* Also no preventDefault. Suppressing the close left the menu painted behind the
             confirm dialog. Letting Radix close it is safe here because the portal's own
             AlertDialog clears the `pointer-events: none` this pairing otherwise strands on
-            <body> — see app/business/(portal)/components/ui/alert-dialog.tsx. */}
+            <body>. See app/business/(portal)/components/ui/alert-dialog.tsx. */}
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
           disabled={memberBookings > 0 || isPending}
@@ -82,7 +82,7 @@ export function TeamMemberActions({
             learns the constraint at the point of the attempt. */}
         {memberBookings > 0 && (
           <p className="px-2 py-1.5 text-xs text-muted-foreground">
-            Has {memberBookings} booking{memberBookings === 1 ? '' : 's'} — deactivate instead.
+            Has {memberBookings} booking{memberBookings === 1 ? '' : 's'}, so deactivate instead.
           </p>
         )}
       </DropdownMenuContent>

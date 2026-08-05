@@ -508,8 +508,8 @@ export async function acceptAndAssignResources(
   const pickupTime = new Date(booking.pickupDatetime)
   const estimatedEndTime = tripEndFrom(pickupTime, holdHours)
 
-  // Nothing at the database level stops the same driver or vehicle being held twice —
-  // resource_schedules has no exclusion constraint — so the overlap is checked here, before
+  // Nothing at the database level stops the same driver or vehicle being held twice,
+  // resource_schedules has no exclusion constraint, so the overlap is checked here, before
   // anything is written. Excluding this assignment lets a vendor re-assign or re-time a
   // booking without it blocking itself.
   const conflicts = await findResourceConflicts({
@@ -845,7 +845,7 @@ export async function checkResourceAvailabilityForBooking(
     .eq('category_id', bookingCategoryId)
 
   // Every busy window for the whole fleet in one batched read, from the module that also
-  // backs direct bookings — so "busy" means the same thing on both sides, including direct
+  // backs direct bookings, so "busy" means the same thing on both sides, including direct
   // bookings, which the old per-resource queries here never looked at. This assignment is
   // excluded so re-assigning or re-timing a booking is not blocked by its own hold.
   const busyWindows = await getBusyResourceWindows({
@@ -977,7 +977,7 @@ export async function updateAssignmentDuration(
   const pickupTime = new Date(booking.pickupDatetime)
   const releaseAt = tripEndFrom(pickupTime, holdHours)
 
-  // Only *other* jobs may block an extension — this booking's own hold is excluded.
+  // Only *other* jobs may block an extension. This booking's own hold is excluded.
   const conflicts = await findResourceConflicts({
     vendorId: vendorApp.id,
     vehicleId: assignment.vehicle_id,
@@ -1020,7 +1020,7 @@ export async function updateAssignmentDuration(
       releaseAt
     )
 
-    // No rows means this booking never got a hold — accepted back when schedule failures
+    // No rows means this booking never got a hold. Accepted back when schedule failures
     // were swallowed. Create it now rather than leaving the resources free.
     if (moved === 0) {
       const created = await AvailabilityService.createSchedule(

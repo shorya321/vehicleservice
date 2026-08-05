@@ -9,9 +9,17 @@ interface PriceCalculationParams {
   fromLocationId: string;
   toLocationId: string;
   vehicleTypeId: string;
-  /** Every guest (adults + children + infants) — each occupies a seat. */
+  /** Every guest (adults + children + infants). Each occupies a seat. */
   passengerCount: number;
-  selectedAddons?: Array<{ addon_id: string; quantity: number }>;
+  selectedAddons?: Array<{ addon_id: string; quantity: number; child_ages?: number[] }>;
+  /**
+   * The child/infant split behind `passengerCount`. Required whenever a selected addon has
+   * `requires_child_age`. Child seats are capped at children + infants. Optional so the callers
+   * that never sell child seats (price previews) need no change; omitting it when a child seat IS
+   * selected is rejected outright rather than silently skipping the cap.
+   */
+  children?: number;
+  infants?: number;
 }
 
 interface VerifiedAddon {
@@ -20,6 +28,8 @@ interface VerifiedAddon {
   quantity: number;
   unit_price: number;
   total_price: number;
+  /** One age per seat for child-seat addons; null for everything else. */
+  child_ages: number[] | null;
 }
 
 interface PriceCalculationResult {
@@ -101,7 +111,7 @@ export async function calculateBusinessBookingPrice(
     const addonIds = params.selectedAddons.map((a) => a.addon_id);
     const { data: dbAddons } = await supabase
       .from('addons')
-      .select('id, name, price, is_active, pricing_type, max_quantity')
+      .select('id, name, price, is_active, pricing_type, max_quantity, requires_child_age')
       .in('id', addonIds);
 
     if (!dbAddons) {
@@ -117,9 +127,13 @@ export async function calculateBusinessBookingPrice(
           is_active: boolean;
           pricing_type: string;
           max_quantity: number | null;
+          requires_child_age: boolean;
         }) => [a.id, a]
       )
     );
+
+    // Counts seats across every age-requiring addon, checked against children + infants below.
+    let ageSeatsRequested = 0;
 
     for (const selected of params.selectedAddons) {
       const dbAddon = addonMap.get(selected.addon_id);
@@ -132,11 +146,26 @@ export async function calculateBusinessBookingPrice(
 
       // Enforce the addon's own quantity rule. `fixed` addons are a toggle in the UI, so their
       // quantity is always 1; `per_unit` addons are capped at the admin-configured max_quantity.
-      // The client enforces both, so a violation here is a bug or a tampered request — reject it
+      // The client enforces both, so a violation here is a bug or a tampered request. Reject it
       // rather than silently rewriting it into a different order.
       const maxAllowed = dbAddon.pricing_type === 'fixed' ? 1 : dbAddon.max_quantity ?? 1;
       if (selected.quantity > maxAllowed) {
         return { error: `${dbAddon.name}: maximum quantity is ${maxAllowed}` };
+      }
+
+      // Child seats need one age per seat. Checked here rather than only at the insert, because
+      // the insert runs after the wallet has already been debited by the RPC.
+      let childAges: number[] | null = null;
+      if (dbAddon.requires_child_age) {
+        const ages = selected.child_ages ?? [];
+        if (ages.length !== selected.quantity) {
+          return { error: `${dbAddon.name}: one child age is required per seat` };
+        }
+        if (ages.some((age) => !Number.isInteger(age) || age < 0 || age > 12)) {
+          return { error: `${dbAddon.name}: child age must be between 0 and 12` };
+        }
+        childAges = ages;
+        ageSeatsRequested += selected.quantity;
       }
 
       const unitPrice = dbAddon.price;
@@ -149,7 +178,22 @@ export async function calculateBusinessBookingPrice(
         quantity: selected.quantity,
         unit_price: unitPrice,
         total_price: totalAddonPrice,
+        child_ages: childAges,
       });
+    }
+
+    if (ageSeatsRequested > 0) {
+      // A caller that sells child seats must tell us the breakdown. Failing loudly beats silently
+      // skipping the cap for a caller that simply forgot to pass it.
+      if (params.children === undefined || params.infants === undefined) {
+        return { error: 'Guest breakdown (children and infants) is required to book a child seat' };
+      }
+      const childSeatCapacity = params.children + params.infants;
+      if (ageSeatsRequested > childSeatCapacity) {
+        return {
+          error: `${ageSeatsRequested} child seat(s) selected but the booking has ${childSeatCapacity} child/infant guest(s)`,
+        };
+      }
     }
   }
 

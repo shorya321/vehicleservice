@@ -54,7 +54,7 @@ describe('applyMarkup', () => {
     expect(applyMarkup(340, 0)).toBe(340);
   });
 
-  it('allows a negative markup — a business may deliberately quote below cost', () => {
+  it('allows a negative markup. A business may deliberately quote below cost', () => {
     expect(applyMarkup(100, -10)).toBe(90);
   });
 

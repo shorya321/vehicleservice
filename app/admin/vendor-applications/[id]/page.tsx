@@ -79,7 +79,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
   const StatusIcon = statusConfig[status].icon
 
   // `update_updated_at_column` bumps updated_at on every write, including admin
-  // approve/reject — so for approved/rejected rows it just means "when it was
+  // approve/reject, so for approved/rejected rows it just means "when it was
   // reviewed". Only while pending does a later updated_at prove the applicant
   // edited after submitting. The 1s tolerance absorbs insert-time jitter between
   // the two column defaults.

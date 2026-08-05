@@ -2,7 +2,7 @@
  * Business Portal Section Card
  * SCOPE: Business module ONLY
  *
- * The card shell every portal detail screen already draws by hand — see the Route Details card
+ * The card shell every portal detail screen already draws by hand. See the Route Details card
  * in bookings/[id]/components/booking-details.tsx. Extracted so new screens inherit the same
  * header strip, radius and border instead of falling back to a plain shadcn <Card>, which is
  * how the quotation pages ended up looking like a different product.
@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 interface PortalSectionCardProps {
   title: string;
   icon?: LucideIcon;
-  /** Rendered at the right of the header strip — a button, a count, a badge. */
+  /** Rendered at the right of the header strip. A button, a count, a badge. */
   action?: ReactNode;
   children: ReactNode;
   className?: string;

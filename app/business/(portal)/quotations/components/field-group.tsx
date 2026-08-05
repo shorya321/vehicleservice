@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 interface FieldGroupProps {
   title: string;
   icon: LucideIcon;
-  /** Tailwind classes for the icon bubble — background and foreground together. */
+  /** Tailwind classes for the icon bubble. Background and foreground together. */
   tone: string;
   /** Optional one-liner under the title. */
   description?: ReactNode;

@@ -40,7 +40,7 @@ export async function deleteVehicleImage(url: string): Promise<{ error: string |
 /**
  * Fire-and-forget variant for form error paths.
  *
- * The vehicle row was not written, so the orphaned object is cosmetic — never
+ * The vehicle row was not written, so the orphaned object is cosmetic, never
  * make the vendor wait on the cleanup, and never let it reject into a handler
  * that has already reported the real failure.
  */

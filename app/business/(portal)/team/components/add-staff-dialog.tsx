@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 // The business Dialog, not the shared one: components/ui/dialog paints DialogContent
 // bg-luxury-darkGray/95 + text-luxury-pearl, which is the public site's skin and ignores the
-// portal's light/dark theme — including on the generated-password panel below.
+// portal's light/dark theme, including on the generated-password panel below.
 import {
   Dialog,
   DialogContent,
@@ -226,7 +226,7 @@ export function AddStaffDialog({ open, onOpenChange, onCreated }: AddStaffDialog
                 Cancel
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Adding…' : 'Add staff member'}
+                {submitting ? 'Adding...' : 'Add staff member'}
               </Button>
             </DialogFooter>
           </form>

@@ -3,7 +3,7 @@
 /**
  * Customer contact details, editable after the quotation exists.
  *
- * Why this exists: the create form marks email and phone "(optional)" on purpose — an
+ * Why this exists: the create form marks email and phone "(optional)" on purpose. An
  * offline quote often starts from a phone call with nothing but a name. But
  * business_bookings.customer_email and customer_phone are NOT NULL, so
  * missingConversionContact blocks conversion without them. Before this card there was no
@@ -12,7 +12,7 @@
  * the quotation number along with every priced trip.
  *
  * Uncontrolled-style plain inputs rather than react-hook-form, matching the rest of the
- * builder — the builder owns the state and submits the whole header in one go.
+ * builder. The builder owns the state and submits the whole header in one go.
  */
 
 import { User } from 'lucide-react';
@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CONTACT_PHONE_RE } from '@/lib/business/quotations/status';
 
-/** The four header columns this card owns. Deliberately no wider — see QuotationBuilder. */
+/** The four header columns this card owns. Deliberately no wider. See QuotationBuilder. */
 export interface QuotationCustomerDraft {
   customer_name: string;
   customer_company: string;
@@ -32,7 +32,7 @@ export interface QuotationCustomerDraft {
 interface CustomerDetailsCardProps {
   value: QuotationCustomerDraft;
   onChange: (next: QuotationCustomerDraft) => void;
-  /** Mirrors canEditHeader — a converting or converted quotation is frozen. */
+  /** Mirrors canEditHeader. A converting or converted quotation is frozen. */
   disabled?: boolean;
 }
 

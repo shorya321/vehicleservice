@@ -1,5 +1,5 @@
 /**
- * Quotation detail — the INTERNAL view.
+ * Quotation detail. The INTERNAL view.
  *
  * Unlike the PDF, this page deliberately shows net cost and margin: it is the business's own
  * screen, and the whole point of the markup model is that they can see what they are making.
@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { PortalSectionCard } from '@/app/business/(portal)/components/ui/section-card';
 import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { Separator } from '@/components/ui/separator';
-// Business empty state — the shared one paints text-luxury-pearl over bg-luxury-gold/10, which
+// Business empty state. The shared one paints text-luxury-pearl over bg-luxury-gold/10, which
 // is the public site's palette and unreadable on the portal's light theme.
 import { EmptyState } from '@/components/business/ui/empty-state';
 import {
@@ -40,6 +40,7 @@ import {
   missingConversionContact,
 } from '@/lib/business/quotations/status';
 import { quotationTotals } from '@/lib/business/quotations/pricing';
+import { formatChildAges } from '@/lib/business/format-child-ages';
 import { getQuotation } from '../actions';
 import { QuotationStatusBadge } from '../components/quotation-status-badge';
 import { QuotationActions } from './components/quotation-actions';
@@ -60,7 +61,7 @@ const fmtDate = (iso: string | null) =>
         month: 'short',
         year: 'numeric',
       }).format(new Date(iso))
-    : '—';
+    : '-';
 
 export default async function QuotationDetailPage({ params }: PageProps) {
   const { id } = await params;
@@ -82,7 +83,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
   const currency = quotation.currency;
   const rate = Number(quotation.exchange_rate) || 1;
   const editable = canEditHeader(status);
-  // Gate unchanged — only the button hierarchy below reads it.
+  // Gate unchanged. Only the button hierarchy below reads it.
   const showConvert = canConvert(status) && quotation.items.length > 0;
 
   const totals = quotationTotals(
@@ -100,7 +101,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
   const displayed = displayStatus(status, quotation.valid_until, bookingToday());
 
   // The same check preflightConversion runs, surfaced here so the blocker is discovered while
-  // there is still time to fix it — not inside the convert dialog after the customer has
+  // there is still time to fix it, not inside the convert dialog after the customer has
   // already accepted. Deliberately silent on `draft`: quoting from a name alone is the
   // supported workflow, and nagging during drafting would defeat it.
   const contactIssues = missingConversionContact(
@@ -156,7 +157,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
         }
       />
 
-      {/* Status hero — the one line that answers "where is this quotation?" without reading on. */}
+      {/* Status hero. The one line that answers "where is this quotation?" without reading on. */}
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
@@ -269,7 +270,10 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                       </div>
                       {item.addons.length > 0 && (
                         <div className="mt-1 text-sm text-muted-foreground">
-                          Includes: {item.addons.map((a) => a.name_snapshot).join(', ')}
+                          Includes:{' '}
+                          {item.addons
+                            .map((a) => `${a.name_snapshot}${formatChildAges(a.child_ages)}`)
+                            .join(', ')}
                         </div>
                       )}
                     </div>
@@ -278,7 +282,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                       <div className="font-semibold tabular-nums">
                         {inCurrency(Number(item.sell_total_aed))}
                       </div>
-                      {/* Internal — never reaches the PDF. */}
+                      {/* Internal, never reaches the PDF. */}
                       <div className="text-xs text-muted-foreground tabular-nums">
                         cost {formatCurrency(Number(item.net_total_aed), 'AED')}
                       </div>
@@ -319,7 +323,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
             <div className="mt-4 rounded-md border border-dashed border-border p-3">
               <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <EyeOff className="h-3.5 w-3.5 shrink-0" />
-                Internal — not shown to the customer
+                Internal, not shown to the customer
               </div>
               <div className="flex justify-between gap-3 text-sm">
                 <span className="text-muted-foreground">Total cost</span>

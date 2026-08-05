@@ -29,6 +29,12 @@ export const selectedAddonSchema = z.object({
   quantity: z.number().int().min(1).max(10),
   unit_price: z.number().min(0, 'Unit price cannot be negative').optional(),
   total_price: z.number().min(0, 'Total price cannot be negative').optional(),
+  /**
+   * One age per seat (years, 0 = under 1) for addons whose `requires_child_age` is set. The
+   * requirement itself is re-read from the DB in calculateBusinessBookingPrice, which also asserts
+   * the length matches `quantity` and caps the total against children + infants.
+   */
+  child_ages: z.array(z.number().int().min(0).max(12)).max(20).optional(),
 });
 
 export type SelectedAddonInput = z.infer<typeof selectedAddonSchema>;
@@ -46,7 +52,7 @@ export const bookingCreationSchema = z.object({
   dropoff_address: z.string().min(5, 'Dropoff address required'),
   pickup_datetime: z.string().datetime('Invalid datetime format'),
   vehicle_type_id: z.string().uuid('Invalid vehicle type ID'),
-  /** Every guest (adults + children + infants) — a child seat occupies a seat position. */
+  /** Every guest (adults + children + infants). A child seat occupies a seat position. */
   passenger_count: z.number().int().min(1).max(20),
   adults: z.number().int().min(1).max(20),
   children: z.number().int().min(0).max(20),
@@ -62,7 +68,7 @@ export const bookingCreationSchema = z.object({
   price_signature_timestamp: z.number().positive(),
   price_signature_nonce: z.string().min(1, 'Signature nonce required'),
 })
-  // Every guest occupies a seat, infants included — UAE law requires a child safety seat for
+  // Every guest occupies a seat, infants included. UAE law requires a child safety seat for
   // under-4s, and that seat takes up a seat position.
   .refine((d) => d.passenger_count === d.adults + d.children + d.infants, {
     message: 'passenger_count must equal adults + children + infants',

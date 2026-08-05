@@ -10,8 +10,8 @@ import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 
 const DT_LONG: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }
 const DT_SHORT: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
-// Pickup-time formats only — pinned to the booking timezone. DT_LONG/DT_SHORT
-// above format audit timestamps (created_at, paid_at, …) and stay viewer-local.
+// Pickup-time formats only. Pinned to the booking timezone. DT_LONG/DT_SHORT
+// above format audit timestamps (created_at, paid_at, ...) and stay viewer-local.
 const DT_DATE: Intl.DateTimeFormatOptions = { timeZone: BOOKING_TIMEZONE, weekday: "long", month: "long", day: "numeric", year: "numeric" }
 const DT_TIME: Intl.DateTimeFormatOptions = { timeZone: BOOKING_TIMEZONE, hour: "2-digit", minute: "2-digit" }
 
@@ -213,7 +213,7 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
                 <InfoItem icon={<Calendar className="w-4 h-4" />} label="Date" value={formattedDate} />
                 <InfoItem icon={<Clock className="w-4 h-4" />} label="Time" value={formattedTime} />
                 <InfoItem icon={<Users className="w-4 h-4" />} label="Passengers" value={booking.passenger_count} />
-                <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Luggage" value={booking.luggage_count ?? "—"} />
+                <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Luggage" value={booking.luggage_count ?? "-"} />
               </div>
             </div>
           </Section>

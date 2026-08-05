@@ -150,7 +150,7 @@ export async function finalizeBookingPayment(
 
 /**
  * Sends the customer confirmation email (currency-converted) and the admin
- * notification email. Errors are swallowed/logged — email failure must never
+ * notification email. Errors are swallowed/logged. Email failure must never
  * fail a paid booking.
  */
 async function sendBookingEmails(
@@ -227,7 +227,7 @@ async function sendBookingEmails(
 
     const { data: amenities } = await adminClient
       .from('booking_amenities')
-      .select('amenity_type, quantity, price, addon:addons(name)')
+      .select('amenity_type, quantity, price, child_ages, addon:addons(name)')
       .eq('booking_id', bookingId)
 
     const amenityLabels: Record<string, string> = {
@@ -245,6 +245,9 @@ async function sendBookingEmails(
         label,
         quantity: a.quantity || 1,
         price: a.price,
+        // Undefined rather than null for non-child add-ons: the email template treats it as absent.
+        // Survives the currency conversion below, which spreads each entry.
+        childAges: a.child_ages ?? undefined,
       }
     })
 

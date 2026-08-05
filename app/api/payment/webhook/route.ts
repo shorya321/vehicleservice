@@ -29,12 +29,12 @@ const bookingWebhookSecret = process.env.STRIPE_BOOKING_WEBHOOK_SECRET || webhoo
 
 export async function POST(request: NextRequest) {
   if (!stripe) {
-    console.error('Stripe not configured — payment webhook cannot run')
+    console.error('Stripe not configured. Payment webhook cannot run.')
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
   }
 
   if (!bookingWebhookSecret) {
-    console.error('Booking webhook secret not configured — cannot verify signatures')
+    console.error('Booking webhook secret not configured. Cannot verify signatures.')
     return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
   }
 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (err) {
-    // Never surface a 500 for a verified event we simply failed to process —
+    // Never surface a 500 for a verified event we simply failed to process,
     // Stripe would retry, but the finalizer is idempotent so that is safe.
     console.error('Payment webhook processing error:', err)
   }

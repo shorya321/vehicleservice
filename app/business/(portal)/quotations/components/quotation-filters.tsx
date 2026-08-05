@@ -4,7 +4,7 @@
  * Quotation list filters.
  *
  * State lives in the URL rather than component state, so filtered views are shareable,
- * survive a refresh, and drive the SERVER query — the list is filtered and paginated in SQL,
+ * survive a refresh, and drive the SERVER query. The list is filtered and paginated in SQL,
  * not in JavaScript over a fully-fetched array.
  */
 
@@ -14,7 +14,7 @@ import { Search, Filter, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-// The portal keeps its own Select so the trigger matches Input styling — the same one the
+// The portal keeps its own Select so the trigger matches Input styling. The same one the
 // bookings filter row uses.
 import {
   Select,

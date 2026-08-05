@@ -1,8 +1,8 @@
 -- Drop the dead `extra_type` enum
 -- Date: 2026-07-16
 -- Description: `extra_type` was never wired up to anything. It carried labels for services that
---              were never built — meet_greet, nameplate_service, extra_wait_time, priority_pickup,
---              wifi_hotspot — alongside duplicates of real addons rows (child_seat, premium_water,
+--              were never built. meet_greet, nameplate_service, extra_wait_time, priority_pickup,
+--              wifi_hotspot, alongside duplicates of real addons rows (child_seat, premium_water,
 --              newspapers, phone_charger).
 --
 --              Verified unused before dropping:

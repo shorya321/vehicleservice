@@ -59,7 +59,7 @@ export default async function NewQuotationPage() {
         }
         description={
           <>
-            Start with who it is for. You will add trips next. Quoted in {currency} — the
+            Start with who it is for. You will add trips next. Quoted in {currency}. The
             exchange rate is locked now, so a PDF you have already sent never changes value.
           </>
         }

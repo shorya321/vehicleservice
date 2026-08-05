@@ -36,6 +36,7 @@ async function getBookingDetails(bookingNumber: string) {
         quantity,
         price,
         addon_id,
+        child_ages,
         addon:addons (
           id,
           name,

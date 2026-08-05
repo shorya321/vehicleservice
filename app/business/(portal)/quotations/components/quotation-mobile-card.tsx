@@ -3,7 +3,7 @@
 /**
  * One quotation, as a card.
  *
- * The desktop table is unreadable below `md` — seven columns of addresses and money do not
+ * The desktop table is unreadable below `md`. Seven columns of addresses and money do not
  * survive a 375px viewport. Mirrors MobileBookingCard in
  * app/business/(portal)/bookings/components/bookings-page-content.tsx so the two lists behave
  * identically on a phone.
@@ -109,7 +109,7 @@ export function QuotationMobileCard({
                 <DropdownMenuItem asChild>
                   <Link href={`/business/quotations/${row.id}`}>View</Link>
                 </DropdownMenuItem>
-                {/* No preventDefault — see the note in quotations-table.tsx: suppressing the
+                {/* No preventDefault. See the note in quotations-table.tsx: suppressing the
                     close leaves the menu open through the fetch and behind the delete dialog. */}
                 <DropdownMenuItem
                   onSelect={() => onDownload()}

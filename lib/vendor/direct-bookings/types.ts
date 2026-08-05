@@ -2,7 +2,7 @@
  * Row shapes returned by the direct-booking server actions.
  *
  * These deliberately live here rather than in `app/vendor/direct-bookings/actions.ts`.
- * A `'use server'` module may only export async functions — exporting a type from
+ * A `'use server'` module may only export async functions. Exporting a type from
  * one compiles cleanly but breaks the app at runtime, on an unrelated route, in a
  * way `tsc --noEmit` will not surface.
  */

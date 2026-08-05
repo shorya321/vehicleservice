@@ -117,7 +117,7 @@ export function SignupLayout({ children }: { children: ReactNode }) {
     <SplitScreenAuthLayout
       brandConfig={{
         tagline: 'Start Your\nJourney',
-        description: 'Create your business account and unlock premium transfer services.',
+        description: 'Create your business account to start booking transfers.',
       }}
       formMaxWidth="lg"
     >

@@ -49,10 +49,10 @@ const base = (over: Partial<QuotationPdfData> = {}): QuotationPdfData => ({
     {
       label: 'Trip 3 of 3',
       route: 'Burj Al Arab » DXB Terminal 3',
-      when: '—',
+      when: '-',
       vehicle: 'Luxury Sedan',
       guests: '2 adults',
-      notes: 'Return leg — date to be confirmed',
+      notes: 'Return leg, date to be confirmed',
       amount: '880.00 AED',
     },
   ],
@@ -97,7 +97,7 @@ async function main() {
     lineItems: [base().lineItems[0]], subtotalDisplay: '1,020.00 AED', totalDisplay: '1,020.00 AED',
   })));
 
-  // 20 is the DB item cap — exercises the wrap={false} page-break path.
+  // 20 is the DB item cap. Exercises the wrap={false} page-break path.
   const many = Array.from({ length: 20 }, (_, i) => ({
     label: `Trip ${i + 1} of 20`,
     route: `Origin Location ${i + 1} » Destination Location ${i + 1}`,
