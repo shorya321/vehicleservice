@@ -209,6 +209,34 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   )
 }
 
+function Field({
+  label,
+  value,
+  sub,
+  numeric = false,
+  className,
+}: {
+  label: string
+  value: React.ReactNode
+  sub?: string
+  numeric?: boolean
+  className?: string
+}) {
+  return (
+    <div className={`min-w-0 ${className ?? ''}`}>
+      <dt className="t-label">{label}</dt>
+      <dd
+        className={`${numeric ? 'numeric ' : ''}mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)] break-words`}
+      >
+        {value}
+      </dd>
+      {sub && (
+        <dd className="mt-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">{sub}</dd>
+      )}
+    </div>
+  )
+}
+
 function CardMotion({
   children,
   skip,
@@ -444,71 +472,49 @@ export function ConfirmationContent({
               <div className={cardBodyClass}>
                 <dl>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                    <div>
-                      <dt className="t-label">From</dt>
-                      <dd className="mt-1.5 text-[1.125rem] font-medium leading-tight text-[var(--text-primary)] break-words">
-                        {booking.pickup_address}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="t-label">To</dt>
-                      <dd className="mt-1.5 text-[1.125rem] font-medium leading-tight text-[var(--text-primary)] break-words">
-                        {booking.dropoff_address}
-                      </dd>
-                    </div>
+                    <Field label="From" value={booking.pickup_address} />
+                    <Field label="To" value={booking.dropoff_address} />
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-[rgba(var(--gold-rgb),0.06)]">
-                    <div className="flex flex-wrap gap-x-8 gap-y-5">
-                      <div>
-                        <dt className="t-label">Date</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
-                          {pickupDate ? formatDate(pickupDate) : 'TBC'}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="t-label">Pickup</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
-                          {pickupDate ? formatTime(pickupDate) : 'TBC'}
-                        </dd>
-                      </div>
-                      {booking.vehicle_type && (
-                        <div className="flex items-start gap-3">
-                          {booking.vehicle_type.image_url && (
-                            <Image
-                              src={booking.vehicle_type.image_url}
-                              alt={booking.vehicle_type.name}
-                              width={80}
-                              height={48}
-                              className="mt-1.5 rounded object-contain w-12 h-8 lg:w-[72px] lg:h-12"
-                            />
-                          )}
-                          <div>
-                            <dt className="t-label">Vehicle</dt>
-                            <dd className="mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
-                              {booking.vehicle_type.name}
-                            </dd>
-                          </div>
-                        </div>
-                      )}
-                      <div>
-                        <dt className="t-label">Passengers</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
-                          {booking.passenger_count}{booking.vehicle_type ? ` / ${booking.vehicle_type.passenger_capacity}` : ''}
-                        </dd>
-                        {guestSummary && (
-                          <dd className="mt-1 text-[0.8125rem] leading-snug text-[var(--text-muted)]">
-                            {guestSummary}
-                          </dd>
-                        )}
-                      </div>
-                      <div>
-                        <dt className="t-label">Bags included</dt>
-                        <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
-                          {booking.vehicle_type ? booking.vehicle_type.luggage_capacity : '—'}
-                        </dd>
-                      </div>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                      <Field
+                        label="Date"
+                        value={pickupDate ? formatDate(pickupDate) : 'TBC'}
+                        numeric
+                      />
+                      <Field
+                        label="Pickup"
+                        value={pickupDate ? formatTime(pickupDate) : 'TBC'}
+                        numeric
+                      />
+                      <Field
+                        label="Passengers"
+                        value={`${booking.passenger_count}${booking.vehicle_type ? ` / ${booking.vehicle_type.passenger_capacity}` : ''}`}
+                        sub={guestSummary || undefined}
+                        numeric
+                      />
+                      <Field
+                        label="Bags included"
+                        value={booking.vehicle_type ? booking.vehicle_type.luggage_capacity : '—'}
+                        numeric
+                      />
                     </div>
+
+                    {booking.vehicle_type && (
+                      <div className="mt-6 flex items-start gap-3">
+                        {booking.vehicle_type.image_url && (
+                          <Image
+                            src={booking.vehicle_type.image_url}
+                            alt={booking.vehicle_type.name}
+                            width={80}
+                            height={48}
+                            className="mt-1.5 rounded object-contain w-12 h-8 lg:w-[72px] lg:h-12 shrink-0"
+                          />
+                        )}
+                        <Field label="Vehicle" value={booking.vehicle_type.name} />
+                      </div>
+                    )}
                   </div>
                 </dl>
               </div>
@@ -521,21 +527,17 @@ export function ConfirmationContent({
                   <h2 id="passenger-heading" className="t-label">Passenger Details</h2>
                 </div>
                 <div className={cardBodyClass}>
-                  <dl className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4">
-                    <div>
-                      <dt className="t-label">Name</dt>
-                      <dd className="mt-1.5 font-medium text-[var(--text-primary)] truncate">
-                        {primaryPassenger.first_name} {primaryPassenger.last_name}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="t-label">Email</dt>
-                      <dd className="mt-1.5 font-medium text-[var(--text-primary)] break-all">{primaryPassenger.email}</dd>
-                    </div>
-                    <div>
-                      <dt className="t-label">Phone</dt>
-                      <dd className="numeric mt-1.5 font-medium text-[var(--text-primary)] break-words">{primaryPassenger.phone}</dd>
-                    </div>
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                    <Field
+                      label="Name"
+                      value={`${primaryPassenger.first_name} ${primaryPassenger.last_name}`}
+                    />
+                    <Field label="Phone" value={primaryPassenger.phone} numeric />
+                    <Field
+                      label="Email"
+                      value={primaryPassenger.email}
+                      className="sm:col-span-2"
+                    />
                   </dl>
                 </div>
               </CardMotion>
