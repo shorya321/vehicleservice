@@ -17,6 +17,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createIsolatedClient } from '@supabase/supabase-js';
 import { changePasswordSchema } from '@/lib/business/validators';
 import { checkAttempt, resetAttempts } from '@/lib/business/rate-limit';
+import { activityLogger } from '@/lib/business/activity/log';
 
 const MAX_ATTEMPTS = 5;
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
@@ -110,6 +111,12 @@ export const POST = requireBusinessAuth(async (request: Request, user) => {
       userId: user.userId,
     });
   }
+
+  // Neither password is recorded, in any form.
+  await activityLogger(user, request)('security.password_changed', {
+    entity: { id: user.businessId, label: user.memberEmail ?? authUser.email },
+    metadata: { other_sessions_revoked: true },
+  });
 
   return apiSuccess({
     message: 'Password updated. You have been signed out on other devices.',

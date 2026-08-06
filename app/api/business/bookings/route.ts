@@ -22,6 +22,7 @@ import { getExchangeRates } from '@/lib/currency/server';
 import { BUSINESS_BASE_CURRENCY, convertFromAed } from '@/lib/business/wallet-operations';
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
+import { activityLogger } from '@/lib/business/activity/log';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 
 /**
@@ -140,6 +141,41 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
 
     if (error) {
       console.error('Booking creation error:', error);
+
+      // Rejections cannot be logged from inside the money functions: they
+      // RAISE, which rolls the whole transaction back and takes any log row
+      // with it. This is the only place a refusal can be recorded, and it is
+      // the row that answers "why did my staff say they could not book".
+      const rejectionReason = error.message.includes('Insufficient wallet balance')
+        ? 'insufficient_balance'
+        : error.message.includes('spending limit exceeded')
+          ? 'spending_limit_exceeded'
+          : error.message.includes('Wallet is frozen')
+            ? 'wallet_frozen'
+            : error.message.includes('not active')
+              ? 'account_not_active'
+              : null;
+
+      if (rejectionReason) {
+        await activityLogger(user, request)('wallet.payment_rejected', {
+          amount: verifiedTotalPrice,
+          currency: 'AED',
+          metadata: {
+            reason_code: rejectionReason,
+            // A curated sentence, never error.message: that string can carry the
+            // exact balance and limits, and it is not written for an owner.
+            reason_public:
+              rejectionReason === 'insufficient_balance'
+                ? 'The wallet balance was not enough to cover this booking'
+                : rejectionReason === 'spending_limit_exceeded'
+                  ? 'A spending limit set on this wallet was reached'
+                  : rejectionReason === 'wallet_frozen'
+                    ? 'The wallet is frozen'
+                    : 'The business account is not active',
+            attempted_by_label: user.memberName ?? user.memberEmail ?? 'A team member',
+          },
+        });
+      }
 
       // Check for insufficient balance error
       if (error.message.includes('Insufficient wallet balance')) {

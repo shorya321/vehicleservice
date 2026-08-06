@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/email/services/auth-emails';
+import { logBusinessActivity } from '@/lib/business/activity/log';
+import { maskEmail } from '@/lib/business/activity/mask';
 
 /**
  * Business Forgot Password API
@@ -161,6 +163,17 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // One of the highest value security rows an owner can see: "a reset was
+    // requested for this address, from this IP". The token itself is never
+    // recorded - it is the credential.
+    await logBusinessActivity({
+      businessAccountId: userBusinessId,
+      action: 'security.password_reset_requested',
+      actor: { type: 'business_user', name: 'Unknown' },
+      request,
+      metadata: { email_masked: maskEmail(email), requested_via: hostname },
+    });
 
     // STEP 5: Build reset link with domain context
     const protocol = hostname.includes('localhost') ? 'http' : 'https';

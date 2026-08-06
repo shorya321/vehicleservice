@@ -7,11 +7,47 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
+import { logBusinessActivity } from '@/lib/business/activity/log';
+import { maskEmail } from '@/lib/business/activity/mask';
+import type { BusinessActivityAction } from '@/lib/business/activity/catalog';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 });
+
+/**
+ * Record a sign in attempt that never reached a session.
+ *
+ * The tenant is resolved from the email so the owner can see attempts against
+ * their account. This must never change the response or its timing, otherwise
+ * the log turns the endpoint into an email enumeration oracle: resolution
+ * failure is silent and the caller always returns the same generic error.
+ */
+async function logFailedAttempt(
+  request: NextRequest,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+  action: BusinessActivityAction,
+  reasonCode: string
+): Promise<void> {
+  try {
+    const { data } = await supabase.rpc('get_business_user_by_email', { p_email: email });
+    const match = Array.isArray(data) ? data[0] : null;
+    if (!match?.business_account_id) return;
+
+    await logBusinessActivity({
+      businessAccountId: match.business_account_id,
+      action,
+      actor: { type: 'business_user', name: 'Unknown', authUserId: match.auth_user_id ?? null },
+      request,
+      // The attempted password is never recorded, in any form.
+      metadata: { email_masked: maskEmail(email), reason_code: reasonCode },
+    });
+  } catch {
+    // A failure here must not affect the sign in response.
+  }
+}
 
 /**
  * POST /api/business/auth/login
@@ -37,6 +73,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   });
 
   if (authError || !authData.user) {
+    await logFailedAttempt(request, supabase, email, 'security.login_failed', 'invalid_credentials');
     return apiError('Invalid email or password', 401);
   }
 
@@ -77,6 +114,20 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   // Check if business user is active
   if (!businessUser.is_active) {
+    // Higher signal than a mistyped password: a deactivated member is still
+    // trying to get in, and the tenant is known for certain here.
+    await logBusinessActivity({
+      businessAccountId: businessUser.business_account_id,
+      action: 'security.login_failed',
+      actor: {
+        type: 'business_user',
+        name: 'Unknown',
+        authUserId: authData.user.id,
+        businessUserId: businessUser.id,
+      },
+      request,
+      metadata: { email_masked: maskEmail(email), reason_code: 'member_deactivated' },
+    });
     await supabase.auth.signOut();
     return apiError('Your account has been deactivated', 403);
   }
@@ -85,6 +136,21 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const accountStatus = businessUser.business_accounts.status;
 
   if (accountStatus !== 'active') {
+    await logBusinessActivity({
+      businessAccountId: businessUser.business_account_id,
+      action: 'security.login_failed',
+      actor: {
+        type: 'business_user',
+        name: 'Unknown',
+        authUserId: authData.user.id,
+        businessUserId: businessUser.id,
+      },
+      request,
+      metadata: {
+        email_masked: maskEmail(email),
+        reason_code: `account_${accountStatus}`,
+      },
+    });
     await supabase.auth.signOut();
 
     const statusMessages: Record<string, { message: string; code: number }> = {
@@ -184,6 +250,23 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       return apiError('Invalid domain for business login', 403);
     }
   }
+
+  // Logged only once every check has passed, so a row here always means a
+  // usable session was handed out.
+  await logBusinessActivity({
+    businessAccountId: businessUser.business_account_id,
+    action: 'security.login_succeeded',
+    actor: {
+      type: 'business_user',
+      name: authData.user.user_metadata?.full_name || authData.user.email || 'A team member',
+      authUserId: authData.user.id,
+      businessUserId: businessUser.id,
+      role: businessUser.role,
+      email: authData.user.email ?? null,
+    },
+    request,
+    metadata: { email_masked: maskEmail(authData.user.email) },
+  });
 
   return apiSuccess({
     user: {

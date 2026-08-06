@@ -12,8 +12,18 @@ import { normalizeBusinessRole } from './roles';
 export interface BusinessMember {
   /** business_users.id - this is what created_by_user_id points at, NOT auth.users.id */
   id: string;
+  /** auth.users.id, kept so the activity log can attribute a row to the person. */
+  authUserId: string;
   businessAccountId: string;
   role: BusinessRole;
+  /**
+   * The member's own name and email. Both columns are nullable and were only
+   * backfilled by 20260720_business_staff_users.sql, so older rows can be null.
+   * The activity log snapshots these at write time so a row survives the auth
+   * user being hard-deleted by DELETE /api/business/team.
+   */
+  name: string | null;
+  email: string | null;
 }
 
 /**
@@ -40,7 +50,9 @@ export async function getBusinessMember(
 ): Promise<BusinessMember | null> {
   const { data, error } = await supabase
     .from('business_users')
-    .select('id, business_account_id, role, is_active, business_accounts (status)')
+    .select(
+      'id, auth_user_id, business_account_id, role, is_active, full_name, email, business_accounts (status)'
+    )
     .eq('auth_user_id', authUserId)
     .single();
 
@@ -58,7 +70,10 @@ export async function getBusinessMember(
 
   return {
     id: data.id,
+    authUserId: data.auth_user_id ?? authUserId,
     businessAccountId: data.business_account_id,
     role: normalizeBusinessRole(data.role),
+    name: data.full_name ?? null,
+    email: data.email ?? null,
   };
 }

@@ -13,6 +13,7 @@ import {
   apiError,
 } from '@/lib/business/api-utils';
 import { getVercelCNAMEAsync } from '@/lib/business/domain-utils';
+import { activityLogger } from '@/lib/business/activity/log';
 
 const resolveTxt = promisify(dns.resolveTxt);
 const resolveCname = promisify(dns.resolveCname);
@@ -98,6 +99,13 @@ export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
         console.error('Failed to update verification status:', updateError);
         return apiError('Verification successful but failed to update status', 500);
       }
+
+      // Logged here rather than by the business_accounts settings trigger,
+      // because verification is a DNS outcome, not just a column flip.
+      await activityLogger(user, request)('settings.domain_verified', {
+        entity: { id: user.businessAccountId, label: customDomain },
+        metadata: { domain: customDomain, verified_at: new Date().toISOString() },
+      });
 
       // Add domain to Vercel for automatic deployment routing
       const { addDomainToVercel, isVercelConfigured } = await import('@/lib/vercel/api');

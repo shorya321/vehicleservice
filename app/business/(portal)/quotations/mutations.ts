@@ -14,6 +14,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
+import { logBusinessActivity } from '@/lib/business/activity/log';
+import type { BusinessMember } from '@/lib/business/member-scope';
 import { getExchangeRates } from '@/lib/currency/server';
 import {
   quotationHeaderSchema,
@@ -37,6 +39,25 @@ import { z } from 'zod';
 
 const LIST_PATH = '/business/quotations';
 
+/**
+ * Actor snapshot for the activity log.
+ *
+ * Not exported: a 'use server' module may only export async functions, and this
+ * is a plain helper. Server actions have no Request, so the writer falls back to
+ * headers() for ip and user agent.
+ */
+function memberActor(member: BusinessMember) {
+  return {
+    type: 'business_user' as const,
+    // Undefined when unknown, so the RPC resolves the real name from profiles.
+    name: member.name || member.email || undefined,
+    authUserId: member.authUserId,
+    businessUserId: member.id,
+    role: member.role,
+    email: member.email,
+  };
+}
+
 /** Resolve the caller and the quotation they are allowed to act on. */
 async function loadScoped(id: string) {
   const supabase = await createClient();
@@ -50,7 +71,12 @@ async function loadScoped(id: string) {
 
   const { data: quotation } = await supabase
     .from('business_quotations')
-    .select('id, status, currency, default_markup_pct, discount_aed, created_by_user_id')
+    // quotation_number and customer_name are selected so the activity log can
+    // snapshot a readable label: a deleted quotation must still read as
+    // "QT-0007 for Acme" rather than a bare uuid.
+    .select(
+      'id, status, currency, default_markup_pct, discount_aed, created_by_user_id, quotation_number, customer_name, total_sell_aed'
+    )
     .eq('id', id)
     .eq('business_account_id', member.businessAccountId)
     .maybeSingle();
@@ -107,6 +133,18 @@ export async function createQuotation(input: unknown): Promise<QuotationActionRe
       console.error('Error creating quotation:', error);
       return { error: 'Failed to create quotation' };
     }
+
+    await logBusinessActivity({
+      businessAccountId: member.businessAccountId,
+      action: 'quotation.created',
+      actor: memberActor(member),
+      entity: { id: data.id, label: data.quotation_number },
+      metadata: {
+        client_name: header.customer_name,
+        client_clause: ` for ${header.customer_name}`,
+        currency: header.currency,
+      },
+    });
 
     revalidatePath(LIST_PATH);
     return { success: true, id: data.id, quotation_number: data.quotation_number };
@@ -181,6 +219,26 @@ export async function updateQuotation(
       return { error: 'Failed to save quotation' };
     }
 
+    // One row per user action, not per item. saveQuotationTrips deletes and
+    // re-inserts every line, so a row-level trigger would turn "saved 5 trips"
+    // into dozens of entries.
+    await logBusinessActivity({
+      businessAccountId: member.businessAccountId,
+      action: 'quotation.updated',
+      actor: memberActor(member),
+      entity: { id, label: quotation.quotation_number },
+      changes: {
+        customer_name: { from: quotation.customer_name, to: header.data.customer_name },
+        total_sell_aed: { from: quotation.total_sell_aed, to: totals.total_sell_aed },
+        default_markup_pct: {
+          from: quotation.default_markup_pct,
+          to: header.data.default_markup_pct,
+        },
+        discount_aed: { from: quotation.discount_aed, to: header.data.discount_aed },
+      },
+      metadata: { trip_count: trips.data.length },
+    });
+
     revalidatePath(LIST_PATH);
     revalidatePath(`${LIST_PATH}/${id}`);
     return { success: true, id };
@@ -226,6 +284,15 @@ export async function setQuotationStatus(
       return { error: 'Failed to update status' };
     }
 
+    await logBusinessActivity({
+      businessAccountId: scoped.member.businessAccountId,
+      action: 'quotation.status_changed',
+      actor: memberActor(scoped.member),
+      entity: { id, label: quotation.quotation_number },
+      changes: { status: { from: current, to: next } },
+      metadata: { new_status: next, previous_status: current },
+    });
+
     revalidatePath(LIST_PATH);
     revalidatePath(`${LIST_PATH}/${id}`);
     return { success: true, id };
@@ -262,6 +329,21 @@ export async function deleteQuotation(id: string): Promise<QuotationActionResult
       console.error('Error deleting quotation:', error);
       return { error: 'Failed to delete quotation' };
     }
+
+    // The row is gone, so this entry carries the snapshot rather than an id the
+    // owner can no longer resolve.
+    await logBusinessActivity({
+      businessAccountId: scoped.member.businessAccountId,
+      action: 'quotation.deleted',
+      actor: memberActor(scoped.member),
+      entity: { id, label: quotation.quotation_number },
+      amount: quotation.total_sell_aed,
+      currency: 'AED',
+      metadata: {
+        client_name: quotation.customer_name,
+        previous_status: normalizeQuotationStatus(quotation.status),
+      },
+    });
 
     revalidatePath(LIST_PATH);
     return { success: true, id };

@@ -26,6 +26,7 @@ import {
   Globe,
   Users,
   UserCircle,
+  History,
   FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -99,6 +100,15 @@ const navGroups: NavGroup[] = [
         title: 'Team',
         href: '/business/team',
         icon: Users,
+        ownerOnly: true,
+      },
+      {
+        // Last in Management so the three owner-only oversight items (Wallet,
+        // Team, Activity) form one contiguous block that disappears cleanly
+        // for staff.
+        title: 'Activity',
+        href: '/business/activity',
+        icon: History,
         ownerOnly: true,
       },
     ],

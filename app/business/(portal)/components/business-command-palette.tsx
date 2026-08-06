@@ -36,6 +36,7 @@ import {
   Search,
   ArrowRight,
   UserCircle,
+  History,
 } from 'lucide-react';
 
 interface BusinessCommandPaletteProps {
@@ -87,6 +88,13 @@ const navigationItems: PaletteItem[] = [
     href: '/business/wallet',
     icon: Wallet,
     shortcut: 'W',
+  },
+  {
+    name: 'Activity',
+    ownerOnly: true,
+    href: '/business/activity',
+    icon: History,
+    shortcut: 'A',
   },
   {
     name: 'Settings',

@@ -16,6 +16,7 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { activityLogger } from '@/lib/business/activity/log';
 import {
   teamMemberCreateSchema,
   teamMemberUpdateSchema,
@@ -155,6 +156,18 @@ export const POST = requireBusinessOwner(async (request: Request, user) => {
     console.error('Failed to mark staff profile verified:', staffProfileError);
   }
 
+  // Never log the password, generated or supplied. password_option records only
+  // which route was taken.
+  await activityLogger(user, request)('team.member_invited', {
+    entity: { id: member.id, label: member.email ?? email },
+    metadata: {
+      invited_email: email,
+      role: 'staff',
+      role_label: 'Staff',
+      password_option: body.password_option,
+    },
+  });
+
   return apiSuccess(
     {
       member,
@@ -223,6 +236,18 @@ export const PATCH = requireBusinessOwner(async (request: Request, user) => {
     return apiError('Failed to update the team member', 500);
   }
 
+  await activityLogger(user, request)(
+    body.is_active ? 'team.member_activated' : 'team.member_deactivated',
+    {
+      entity: { id: member.id, label: member.email ?? member.full_name ?? 'Team member' },
+      metadata: {
+        member_name: member.full_name ?? member.email ?? 'Team member',
+        member_email: member.email,
+        role: member.role,
+      },
+    }
+  );
+
   return apiSuccess({ member });
 });
 
@@ -262,7 +287,9 @@ export const DELETE = requireBusinessOwner(async (request: Request, user) => {
   // business's staff member by guessing a UUID.
   const { data: target, error: targetError } = await adminClient
     .from('business_users')
-    .select('id, business_account_id, role, auth_user_id, email, full_name')
+    // created_at is selected purely so the activity row can snapshot it: once
+    // the auth user is deleted this member has no surviving record anywhere else.
+    .select('id, business_account_id, role, auth_user_id, email, full_name, created_at')
     .eq('id', parsed.data.member_id)
     .maybeSingle();
 
@@ -308,6 +335,20 @@ export const DELETE = requireBusinessOwner(async (request: Request, user) => {
     console.error('Failed to delete staff auth user:', deleteError);
     return apiError('Failed to remove the team member', 500);
   }
+
+  // The auth user, the profile and the membership are all gone by now. This row
+  // is the only remaining evidence that this person ever existed, so it carries
+  // the full snapshot rather than an id the owner can no longer resolve.
+  await activityLogger(user, request)('team.member_removed', {
+    entity: { id: target.id, label: target.email ?? target.full_name ?? 'Team member' },
+    metadata: {
+      member_name: target.full_name ?? target.email ?? 'Team member',
+      member_email: target.email,
+      role: target.role,
+      joined_at: target.created_at,
+      bookings_created_count: count ?? 0,
+    },
+  });
 
   return apiSuccess({ id: target.id });
 });

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { z } from 'zod';
+import { logBusinessActivity } from '@/lib/business/activity/log';
+import { maskEmail } from '@/lib/business/activity/mask';
 
 /**
  * Business Reset Password API
@@ -139,6 +141,18 @@ export async function POST(request: NextRequest) {
       console.error('Error marking token as used:', markUsedError);
       // Don't fail the request - password was updated successfully
     }
+
+    await logBusinessActivity({
+      businessAccountId: resetToken.business_account_id,
+      action: 'security.password_reset_completed',
+      actor: {
+        type: 'business_user',
+        name: 'Unknown',
+        authUserId: businessUser.auth_user_id,
+      },
+      request,
+      metadata: { email_masked: maskEmail(resetToken.email) },
+    });
 
     return NextResponse.json(
       { message: 'Password updated successfully.' },

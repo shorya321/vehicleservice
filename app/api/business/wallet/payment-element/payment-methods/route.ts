@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { activityLogger } from '@/lib/business/activity/log';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -179,6 +180,17 @@ export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
       return apiError('Failed to save payment method', 500);
     }
 
+    // Brand and last four only. The full card number and the Stripe payment
+    // method id are never recorded.
+    await activityLogger(user, request)('wallet.payment_method_added', {
+      entity: { id: savedPM.id, label: `${savedPM.card_brand ?? 'Card'} ${savedPM.card_last4 ?? ''}`.trim() },
+      metadata: {
+        card_brand: savedPM.card_brand,
+        card_last4: savedPM.card_last4,
+        is_default: savedPM.is_default,
+      },
+    });
+
     return apiSuccess({
       message: 'Payment method saved successfully',
       payment_method: savedPM,
@@ -235,6 +247,16 @@ export const PATCH = requireBusinessOwner(async (request: NextRequest, user) => 
       return apiError('Failed to update payment method', 500);
     }
 
+    if (updatedPM?.is_default) {
+      await activityLogger(user, request)('wallet.payment_method_default_changed', {
+        entity: {
+          id: updatedPM.id,
+          label: `${updatedPM.card_brand ?? 'Card'} ${updatedPM.card_last4 ?? ''}`.trim(),
+        },
+        metadata: { card_brand: updatedPM.card_brand, card_last4: updatedPM.card_last4 },
+      });
+    }
+
     return apiSuccess({
       message: 'Payment method updated successfully',
       payment_method: updatedPM,
@@ -269,16 +291,29 @@ export const DELETE = requireBusinessOwner(async (request: NextRequest, user) =>
       }
     );
 
-    // Soft delete (mark as inactive)
-    const { error } = await supabaseAdmin
+    // Soft delete (mark as inactive). The row is selected back so the activity
+    // log can name the card that was removed.
+    const { data: removedPM, error } = await supabaseAdmin
       .from('payment_methods')
       .update({ is_active: false, is_default: false })
       .eq('id', paymentMethodId)
-      .eq('business_account_id', user.businessAccountId);
+      .eq('business_account_id', user.businessAccountId)
+      .select('id, card_brand, card_last4')
+      .maybeSingle();
 
     if (error) {
       console.error('Error deleting payment method:', error);
       return apiError('Failed to delete payment method', 500);
+    }
+
+    if (removedPM) {
+      await activityLogger(user, request)('wallet.payment_method_removed', {
+        entity: {
+          id: removedPM.id,
+          label: `${removedPM.card_brand ?? 'Card'} ${removedPM.card_last4 ?? ''}`.trim(),
+        },
+        metadata: { card_brand: removedPM.card_brand, card_last4: removedPM.card_last4 },
+      });
     }
 
     return apiSuccess({

@@ -12,6 +12,7 @@ import {
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/email/services/business-emails';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { activityLogger } from '@/lib/business/activity/log';
 
 /**
  * DELETE /api/business/bookings/[id]
@@ -134,6 +135,26 @@ export const DELETE = requireBusinessAuth(
           });
         }
       }
+
+      // Logged BEFORE the delete, for two reasons: the row data is still
+      // readable here, and the AFTER DELETE trigger skips when a
+      // booking.deleted row already exists for this id. This route uses the
+      // service-role client, so auth.uid() is NULL inside that trigger and it
+      // could not tell an owner from a platform admin. Logging here is what
+      // attributes the deletion to the right person.
+      await activityLogger(user, request)('booking.deleted', {
+        entity: { id: bookingId, label: booking.booking_number },
+        // The amount that was taken from the wallet and is NOT coming back.
+        amount: booking.wallet_deduction_amount,
+        currency: 'AED',
+        metadata: {
+          customer_name: booking.customer_name,
+          previous_status: booking.booking_status,
+          pickup_at: booking.pickup_datetime,
+          // Deleting has never issued a refund. Say so rather than omit it.
+          refund_issued: false,
+        },
+      });
 
       // Delete the booking
       const { error: deleteError } = await supabaseAdmin

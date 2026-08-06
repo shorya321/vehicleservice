@@ -12,6 +12,7 @@ import {
 } from '@/lib/business/validators';
 import { generateSubdomain, isValidSubdomain } from '@/lib/business/domain-utils';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
+import { logBusinessActivity } from '@/lib/business/activity/log';
 import {
   sendBusinessWelcomePendingEmail,
   sendBusinessRegistrationAdminNotificationEmail,
@@ -152,6 +153,27 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     if (profileError) {
       console.error('Failed to enrich business profile:', profileError);
     }
+
+    // Day zero anchor for the activity feed, so the timeline has a beginning and
+    // the empty state is unreachable for a real account.
+    await logBusinessActivity({
+      businessAccountId: businessAccount.id,
+      action: 'account.registered',
+      actor: {
+        type: 'business_user',
+        name: data.contact_person_name,
+        authUserId: authUser.user.id,
+        role: 'owner',
+        email: data.business_email,
+      },
+      request,
+      entity: { id: businessAccount.id, label: data.business_name },
+      metadata: {
+        business_name: data.business_name,
+        subdomain,
+        status: 'pending',
+      },
+    });
 
     // NOTE: Auto sign-in removed - pending accounts cannot login until approved by admin
     // Users will see "pending approval" message when they try to login

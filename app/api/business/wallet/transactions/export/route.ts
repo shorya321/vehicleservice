@@ -3,8 +3,9 @@
  * Export transactions to CSV with filtering
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
+import { activityLogger } from '@/lib/business/activity/log';
 
 /**
  * GET /api/business/wallet/transactions/export
@@ -93,6 +94,21 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
     }
 
     filename += '.csv';
+
+    // after() rather than a bare floating promise: in a serverless function the
+    // invocation can be frozen the instant the response returns, silently
+    // dropping the write. A CSV of up to 10,000 financial rows leaving the
+    // system is worth recording.
+    after(
+      activityLogger(user, request)('document.transactions_exported', {
+        metadata: {
+          count: transactions?.length ?? 0,
+          period_start: startDate,
+          period_end: endDate,
+          filters_applied: Boolean(startDate || endDate || transactionTypes || currency),
+        },
+      })
+    );
 
     // Return CSV as response
     return new Response(csvContent, {

@@ -891,6 +891,89 @@ export type Database = {
         }
         Relationships: []
       }
+      business_activity_logs: {
+        Row: {
+          action: string
+          actor_auth_user_id: string | null
+          actor_business_user_id: string | null
+          actor_email: string | null
+          actor_name: string
+          actor_role: string | null
+          actor_type: string
+          amount: number | null
+          business_account_id: string
+          category: string
+          changes: Json | null
+          created_at: string
+          currency: string | null
+          entity_id: string | null
+          entity_label: string | null
+          entity_type: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json
+          request_id: string | null
+          severity: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_auth_user_id?: string | null
+          actor_business_user_id?: string | null
+          actor_email?: string | null
+          actor_name: string
+          actor_role?: string | null
+          actor_type: string
+          amount?: number | null
+          business_account_id: string
+          category: string
+          changes?: Json | null
+          created_at?: string
+          currency?: string | null
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json
+          request_id?: string | null
+          severity?: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_auth_user_id?: string | null
+          actor_business_user_id?: string | null
+          actor_email?: string | null
+          actor_name?: string
+          actor_role?: string | null
+          actor_type?: string
+          amount?: number | null
+          business_account_id?: string
+          category?: string
+          changes?: Json | null
+          created_at?: string
+          currency?: string | null
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json
+          request_id?: string | null
+          severity?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_activity_logs_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_booking_addons: {
         Row: {
           addon_id: string
@@ -3253,6 +3336,8 @@ export type Database = {
       }
       cancel_business_booking_with_refund: {
         Args: {
+          p_actor_business_user_id?: string
+          p_actor_name?: string
           p_booking_id: string
           p_cancellation_reason: string
           p_refund_amount?: number
@@ -3673,6 +3758,39 @@ export type Database = {
       }
       get_vendor_user_id: { Args: { p_vendor_app_id: string }; Returns: string }
       is_admin: { Args: { user_id: string }; Returns: boolean }
+      log_business_activity: {
+        Args: {
+          p_action: string
+          p_actor_auth_user_id?: string
+          p_actor_business_user_id?: string
+          p_actor_email?: string
+          p_actor_name?: string
+          p_actor_role?: string
+          p_actor_type: string
+          p_amount?: number
+          p_business_account_id: string
+          p_category: string
+          p_changes?: Json
+          p_currency?: string
+          p_entity_id?: string
+          p_entity_label?: string
+          p_entity_type?: string
+          p_ip_address?: string
+          p_metadata?: Json
+          p_request_id?: string
+          p_severity?: string
+          p_user_agent?: string
+        }
+        Returns: string
+      }
+      log_business_activity_batch: {
+        Args: { p_rows: Json }
+        Returns: number
+      }
+      purge_business_activity: {
+        Args: { p_before: string; p_business_account_id: string }
+        Returns: number
+      }
       log_user_activity: {
         Args: {
           p_action: string

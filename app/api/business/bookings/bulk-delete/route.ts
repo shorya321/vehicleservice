@@ -14,6 +14,7 @@ import {
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/email/services/business-emails';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 
 const bulkDeleteSchema = z.object({
   booking_ids: z.array(z.string().uuid()).min(1).max(50),
@@ -122,6 +123,40 @@ export const POST = requireBusinessOwner(
             });
           })
       ).catch((err) => console.error('Bulk deletion email error:', err));
+
+      // Logged BEFORE the delete: the rows are still readable, and the AFTER
+      // DELETE trigger skips any booking that already has an entry. One row per
+      // booking so the trigger sees each id, all sharing a batch id so the feed
+      // collapses them into a single "deleted N bookings" entry.
+      const batchId = crypto.randomUUID();
+      const allRefs = bookings.map((b) => b.booking_number).filter(Boolean);
+      await logBusinessActivityBatch(
+        bookings.map((b) => ({
+          businessAccountId: user.businessAccountId,
+          action: 'booking.bulk_deleted' as const,
+          actor: {
+            type: 'business_user' as const,
+            name: user.memberName || user.memberEmail || undefined,
+            authUserId: user.userId,
+            businessUserId: user.businessId,
+            role: user.role,
+            email: user.memberEmail,
+          },
+          entity: { id: b.id, label: b.booking_number },
+          amount: b.wallet_deduction_amount,
+          currency: 'AED',
+          requestId: batchId,
+          metadata: {
+            batch_id: batchId,
+            count: bookings.length,
+            refs: allRefs,
+            customer_name: b.customer_name,
+            previous_status: b.booking_status,
+            // Bulk delete has never issued refunds either.
+            refund_issued: false,
+          },
+        }))
+      );
 
       // Delete all bookings
       const bookingIdsToDelete = bookings.map((b) => b.id);

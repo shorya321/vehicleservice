@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { activityLogger } from '@/lib/business/activity/log';
 import { createClient } from '@supabase/supabase-js';
 
 // Constants
@@ -105,6 +106,13 @@ export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
       return apiError('Failed to update logo URL', 500);
     }
 
+    // Logged here rather than by the business_accounts settings trigger: the
+    // interesting facts (file name and size) are not columns.
+    await activityLogger(user, request)('settings.logo_uploaded', {
+      entity: { id: user.businessAccountId, label: user.businessName },
+      metadata: { file_name: fileName, file_size_bytes: file.size },
+    });
+
     return apiSuccess({
       message: 'Logo uploaded successfully',
       logo_url: logoUrl,
@@ -171,6 +179,11 @@ export const DELETE = requireBusinessOwner(async (request: NextRequest, user) =>
       console.error('Database update error:', updateError);
       return apiError('Failed to update database', 500);
     }
+
+    await activityLogger(user, request)('settings.logo_removed', {
+      entity: { id: user.businessAccountId, label: user.businessName },
+      metadata: { previous_file_name: filePath },
+    });
 
     return apiSuccess({
       message: 'Logo deleted successfully',

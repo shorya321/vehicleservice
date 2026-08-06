@@ -15,6 +15,7 @@ import { quotationConvertSchema } from '@/lib/business/quotations/schema';
 import { preflightConversion, repriceToken } from '@/lib/business/quotations/convert';
 import { convertQuotationItem } from '@/lib/business/quotations/convert-item';
 import { normalizeQuotationStatus, canConvert } from '@/lib/business/quotations/status';
+import { activityLogger } from '@/lib/business/activity/log';
 import type {
   ConvertibleItem,
   ConvertibleQuotation,
@@ -241,6 +242,22 @@ export const POST = requireBusinessAuth(async (
         ...(allDone ? { converted_at: new Date().toISOString() } : {}),
       })
       .eq('id', id);
+
+    // One summary row. The per-trip money and booking rows come from
+    // create_booking_with_wallet_deduction, so logging them again here would
+    // double count.
+    await activityLogger(user, request)('quotation.converted', {
+      entity: { id, label: quotation.quotation_number },
+      metadata: {
+        converted_count: converted,
+        trip_count: items.length,
+        conversion_mode: allDone ? 'full' : 'partial',
+        refs: results
+          .filter((r) => r.status !== 'failed')
+          .map((r) => r.bookingNumber)
+          .filter(Boolean),
+      },
+    });
 
     return apiSuccess({
       success: allDone,

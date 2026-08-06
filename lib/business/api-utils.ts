@@ -30,8 +30,21 @@ export interface BusinessUserContext {
   businessId: string;
   businessAccountId: string;
   role: BusinessRole;
+  /** The tenant's name, not the signed-in person's. */
   businessName: string;
+  /** The tenant's contact email, not the signed-in person's. */
   businessEmail: string;
+  /**
+   * The signed-in member's own name and email.
+   *
+   * Both columns are nullable and were only backfilled by
+   * 20260720_business_staff_users.sql, so older rows can still be null. The
+   * activity log needs these to snapshot who did something at write time,
+   * because the row must survive the auth user being hard-deleted by
+   * DELETE /api/business/team.
+   */
+  memberName: string | null;
+  memberEmail: string | null;
 }
 
 /**
@@ -70,6 +83,8 @@ export async function getAuthenticatedBusinessUser(): Promise<BusinessUserContex
       business_account_id,
       role,
       is_active,
+      full_name,
+      email,
       business_accounts (
         id,
         business_name,
@@ -105,6 +120,10 @@ export async function getAuthenticatedBusinessUser(): Promise<BusinessUserContex
     role: normalizeBusinessRole(businessUser.role),
     businessName: businessAccount.business_name,
     businessEmail: businessAccount.business_email,
+    // Fall back to the auth user's email so an older row with a null
+    // business_users.email still attributes to a real person.
+    memberName: businessUser.full_name ?? null,
+    memberEmail: businessUser.email ?? user.email ?? null,
   };
 }
 

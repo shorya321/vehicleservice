@@ -3,9 +3,10 @@
  * GET: Generate and download monthly wallet statement as PDF
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
+import { activityLogger } from '@/lib/business/activity/log';
 import { MonthlyStatementPDF } from '@/lib/pdf/generators/monthly-statement';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -137,6 +138,19 @@ export const GET = requireBusinessOwner(async (
     // Return PDF with download headers
     const fileName = `statement-${year}-${month.toString().padStart(2, '0')}`;
     const headers = getPDFDownloadHeaders(fileName);
+
+    // after() keeps the PDF from waiting on the log write, while still
+    // guaranteeing the write survives the response returning.
+    after(
+      activityLogger(user, request)('document.statement_generated', {
+        metadata: {
+          period_label: `${year}-${month.toString().padStart(2, '0')}`,
+          period_start: startOfMonth(new Date(year, month - 1)).toISOString(),
+          period_end: endOfMonth(new Date(year, month - 1)).toISOString(),
+          transaction_count: formattedTransactions.length,
+        },
+      })
+    );
 
     return new Response(pdfBuffer, {
       headers,

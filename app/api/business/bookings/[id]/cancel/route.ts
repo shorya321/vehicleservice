@@ -96,6 +96,11 @@ export const POST = requireBusinessAuth(
           p_booking_id: bookingId,
           p_cancellation_reason: body.cancellation_reason,
           p_refund_amount: refund.refundAmount,
+          // The function writes its own booking.cancelled activity row inside
+          // the same transaction. Passing the actor is what makes that row name
+          // a person instead of falling back to the system.
+          p_actor_business_user_id: user.businessId,
+          p_actor_name: user.memberName ?? user.memberEmail ?? undefined,
         }
       );
 
