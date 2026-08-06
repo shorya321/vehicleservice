@@ -7,7 +7,6 @@
  * Design: shadcn/ui theme-aware components
  */
 
-import { useState } from 'react';
 import { Car, Loader2, AlertCircle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -39,12 +38,14 @@ export function VehicleStep({
   onNext,
   onBack,
 }: VehicleStepProps) {
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string>(
-    formData.vehicle_type_id || ''
-  );
+  // Read straight from the wizard rather than mirroring it in local state. The mirror used to be
+  // seeded once on mount, so after the user went Back and changed the route the card still rendered
+  // as selected while formData held the previous route's signature - Continue then let that stale
+  // quote through and the API rejected it with "Price quote verification failed".
+  const selectedVehicleId = formData.vehicle_type_id || '';
+  const hasSignedQuote = Boolean(formData.price_signature);
 
   function handleVehicleSelect(vehicleType: VehicleTypeResult) {
-    setSelectedVehicleId(vehicleType.id);
     // No total_price here: the wizard derives it (base + add-ons). Writing it here is what used to
     // wipe the add-ons total when a vehicle was reselected after they were chosen.
     onUpdate({
@@ -57,7 +58,9 @@ export function VehicleStep({
   }
 
   function handleContinue() {
-    if (!selectedVehicleId) return;
+    // Both halves are required: the id alone is not bookable without the signature that authorises
+    // its price.
+    if (!selectedVehicleId || !hasSignedQuote) return;
     onNext();
   }
 
@@ -170,7 +173,11 @@ export function VehicleStep({
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="button" onClick={handleContinue} disabled={!selectedVehicleId}>
+        <Button
+          type="button"
+          onClick={handleContinue}
+          disabled={!selectedVehicleId || !hasSignedQuote}
+        >
           Continue to Details
         </Button>
       </div>

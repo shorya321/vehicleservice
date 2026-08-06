@@ -145,6 +145,24 @@ export function BookingWizard({
     setFormData((prev) => ({ ...prev, ...data }));
   }
 
+  /**
+   * Forget the signed price quote and the vehicle it belongs to.
+   *
+   * These five fields are one unit: the signature authenticates that exact vehicle and base price
+   * for that exact route, so keeping any of them past a route change is what produces the
+   * "Price quote verification failed" 403 at POST /api/business/bookings.
+   */
+  function clearPriceQuote() {
+    setFormData((prev) => ({
+      ...prev,
+      vehicle_type_id: undefined,
+      base_price: undefined,
+      price_signature: undefined,
+      price_signature_timestamp: undefined,
+      price_signature_nonce: undefined,
+    }));
+  }
+
   // Derived every render, so changing vehicle after picking add-ons can never drop them from the
   // total. Mirrors the server's calculateBusinessBookingPrice (basePrice + addonsPrice).
   const totalPrice = calculateWizardTotal(formData.base_price, formData.selected_addons);
@@ -156,6 +174,12 @@ export function BookingWizard({
   ) {
     setIsLoadingVehicles(true);
     setVehicleFetchError(undefined);
+
+    // Drop the held quote before refetching. The signature covers the route, the vehicle and the
+    // base price, so one minted for the previous route stops matching the moment the route changes.
+    // The Vehicle step reads its selection from here, so clearing it also deselects the card and
+    // forces a fresh pick - otherwise the stale signature rides along to the API and 403s there.
+    clearPriceQuote();
 
     try {
       // Seated count is passed in explicitly: updateFormData() above only
@@ -198,6 +222,17 @@ export function BookingWizard({
   }
 
   async function handleSubmit() {
+    // The quote is cleared whenever the route is refetched, so a missing one means the user changed
+    // the route and never re-picked a vehicle. Send them back rather than posting a request the API
+    // can only reject.
+    if (!formData.vehicle_type_id || !formData.price_signature) {
+      toast.error('Vehicle selection expired', {
+        description: 'The route changed. Please pick the vehicle again.',
+      });
+      setCurrentStep(1);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
