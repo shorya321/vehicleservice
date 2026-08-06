@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { WalletOverview } from './wallet-overview';
+import { WalletOverview, type WalletData } from './wallet-overview';
 
 interface WalletManagementClientProps {
   businessId: string;
@@ -16,7 +16,8 @@ interface WalletManagementClientProps {
 
 export function WalletManagementClient({ businessId }: WalletManagementClientProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [walletData, setWalletData] = useState<any>(null);
+  // Typed rather than `any` so the shape stays pinned to what WalletOverview consumes.
+  const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadWalletData = useCallback(async () => {
@@ -96,5 +97,7 @@ export function WalletManagementClient({ businessId }: WalletManagementClientPro
     );
   }
 
-  return <WalletOverview walletData={walletData} onRefresh={handleRefresh} />;
+  return (
+    <WalletOverview businessId={businessId} initialData={walletData} onRefresh={handleRefresh} />
+  );
 }

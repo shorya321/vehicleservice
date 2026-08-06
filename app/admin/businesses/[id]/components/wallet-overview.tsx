@@ -27,7 +27,7 @@ import { FreezeWalletModal } from './freeze-wallet-modal';
 import { SpendingLimitsModal } from './spending-limits-modal';
 import { AuditLogModal } from './audit-log-modal';
 
-interface WalletData {
+export interface WalletData {
   business: {
     id: string;
     name: string;
