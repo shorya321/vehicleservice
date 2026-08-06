@@ -31,7 +31,7 @@ export function buildSearchUrl(
 
 /**
  * Build SEO-friendly checkout URL
- * Example: /checkout/dubai-international-airport-to-abu-dhabi/luxury-sedan?date=...&time=...&passengers=...&luggage=...
+ * Example: /checkout/dubai-international-airport-to-abu-dhabi/luxury-sedan?date=...&time=...&passengers=...
  */
 export function buildCheckoutUrl(
   originSlug: string,
@@ -42,7 +42,6 @@ export function buildCheckoutUrl(
     time: string
     /** Total guests (adults + children + infants). Always emitted. */
     passengers: string | number
-    luggage: string | number
     adults?: number
     children?: number
     infants?: number
@@ -53,7 +52,6 @@ export function buildCheckoutUrl(
     date: params.date,
     time: params.time,
     passengers: params.passengers.toString(),
-    luggage: params.luggage.toString(),
   })
   // Optional breakdown. Callers that only know a total (SEO route pages) omit these.
   if (params.adults !== undefined) searchParams.set('adults', params.adults.toString())

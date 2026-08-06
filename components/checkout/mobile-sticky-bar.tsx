@@ -3,7 +3,7 @@
 import { useState, memo } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import { ArrowRight, Lock, ChevronUp, ChevronDown } from 'lucide-react'
-import { RouteDetails, VehicleTypeDetails, ExtraItemPrices } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
@@ -14,7 +14,6 @@ interface MobileStickyBarProps {
   totalPrice: number
   basePrice: number
   passengers: number
-  luggage: number
   pickupDate?: string
   pickupTime?: string
   selectedAddons: OrderSummaryAddon[]
@@ -24,7 +23,6 @@ interface MobileStickyBarProps {
   isLastStep: boolean
   agreeToTerms: boolean
   onAgreeToTermsChange: (checked: boolean) => void
-  extraItemPrices?: ExtraItemPrices
 }
 
 export const MobileStickyBar = memo(function MobileStickyBar({
@@ -33,7 +31,6 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   totalPrice,
   basePrice,
   passengers,
-  luggage,
   pickupDate,
   pickupTime,
   selectedAddons,
@@ -43,16 +40,12 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   isLastStep,
   agreeToTerms,
   onAgreeToTermsChange,
-  extraItemPrices,
 }: MobileStickyBarProps) {
   const reduceMotion = useReducedMotion()
   const { currentCurrency, exchangeRates } = useCurrency()
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
 
   const [detailsOpen, setDetailsOpen] = useState(false)
-
-  const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * (extraItemPrices?.extraLuggagePerUnit ?? 15)
 
   const formattedDate = pickupDate
     ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -112,7 +105,6 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                       ...(formattedDate ? [{ label: 'Date', value: formattedDate }] : []),
                       ...(pickupTime ? [{ label: 'Time', value: pickupTime }] : []),
                       { label: 'Passengers', value: String(passengers) },
-                      { label: 'Luggage', value: String(luggage) },
                     ].map((item, index) => (
                       <div
                         key={item.label}
@@ -134,12 +126,6 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                       <span className="text-[var(--text-secondary)]">Base fare</span>
                       <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(basePrice)}</span>
                     </div>
-                    {extraLuggageCost > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Extra luggage ({extraLuggageCount})</span>
-                        <span className="font-medium tabular-nums text-[var(--text-primary)]">{formatUserPrice(extraLuggageCost)}</span>
-                      </div>
-                    )}
                     {selectedAddons.map((addon) => (
                       <div key={addon.id} className="flex justify-between">
                         <span className="text-[var(--text-secondary)]">

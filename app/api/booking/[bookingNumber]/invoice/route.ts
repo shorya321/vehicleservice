@@ -13,6 +13,8 @@ import { BookingInvoicePDF, type BookingInvoiceLineItem } from '@/lib/pdf/genera
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
 import { getEnabledCurrencies, getExchangeRates } from '@/lib/currency/server';
 import { formatPrice, formatAmount } from '@/lib/currency/format';
+// The customer copy, never lib/business/format-child-ages.ts, which the business module owns.
+import { formatChildAges } from '@/lib/utils/child-ages';
 import { BRAND_NAME, BRAND_ADDRESS } from '@/lib/email/config';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
@@ -73,7 +75,7 @@ export async function GET(
         paid_at,
         created_at,
         booking_passengers (first_name, last_name, email, phone, is_primary),
-        booking_amenities (amenity_type, quantity, price, addon:addons (name)),
+        booking_amenities (amenity_type, quantity, price, child_ages, addon:addons (name)),
         vehicle_type:vehicle_types (name)
       `
       )
@@ -101,6 +103,22 @@ export async function GET(
     // Prices are always stored in AED. Conversion is display-only.
     const toDisplay = (amountAed: number) => formatPrice(amountAed ?? 0, currency, exchangeRates);
 
+    /**
+     * Splits a stored line total into the unit price and line total the table prints.
+     *
+     * booking_amenities.price is the EXTENDED price (unit x quantity, written by
+     * app/checkout/actions.ts), so the unit is recovered by dividing. Only the unit is derived -
+     * the Amount column stays the converted stored figure, so the lines still add up to Total
+     * Paid and still match the thank-you page and the confirmation email to the cent. In AED,
+     * the currency actually charged, the division is exact and Qty x Unit Price = Amount holds
+     * outright; a converted unit can round a cent off that product, which is what the existing
+     * "converted amounts are indicative" note covers.
+     */
+    const splitLine = (lineTotalAed: number, quantity: number) => ({
+      unitAmount: toDisplay(lineTotalAed / quantity),
+      amount: toDisplay(lineTotalAed),
+    });
+
     const primaryPassenger =
       booking.booking_passengers?.find((p) => p.is_primary) ?? booking.booking_passengers?.[0];
 
@@ -108,21 +126,20 @@ export async function GET(
       {
         label: `Base fare · ${booking.passenger_count} passenger${booking.passenger_count > 1 ? 's' : ''}`,
         quantity: 1,
+        unitAmount: toDisplay(booking.base_price),
         amount: toDisplay(booking.base_price),
       },
-      // booking_amenities.price is the LINE TOTAL, not a unit price, never multiply by quantity.
       ...(booking.booking_amenities ?? []).map((amenity) => {
         const addon = amenity.addon as unknown as { name: string } | null;
-        const label =
+        const baseLabel =
           amenity.amenity_type === 'addon' && addon
             ? addon.name
             : AMENITY_LABELS[amenity.amenity_type] ?? amenity.amenity_type;
+        // Matches the thank-you page and the confirmation email, which both name the ages.
+        const label = `${baseLabel}${formatChildAges(amenity.child_ages)}`;
+        const quantity = Math.max(1, amenity.quantity ?? 1);
 
-        return {
-          label,
-          quantity: amenity.quantity ?? 1,
-          amount: toDisplay(amenity.price),
-        };
+        return { label, quantity, ...splitLine(amenity.price, quantity) };
       }),
     ];
 
@@ -156,7 +173,8 @@ export async function GET(
       adults: booking.adults,
       children: booking.children,
       infants: booking.infants,
-      luggageCount: booking.luggage_count ?? undefined,
+      // No customer-facing bag picker writes this yet, so a stored 0 means "unknown", not "none".
+      luggageCount: booking.luggage_count && booking.luggage_count > 0 ? booking.luggage_count : undefined,
 
       lineItems,
       // The total is printed from total_price verbatim, never recomputed from line items.

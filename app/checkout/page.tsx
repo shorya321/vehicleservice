@@ -6,7 +6,7 @@ import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from './actions'
+import { getVehicleType, getLocationDetails, getActiveAddons } from './actions'
 import { createClient } from '@/lib/supabase/server'
 import { toStoredPhone } from '@/lib/validation/phone'
 import { bookingToday } from '@/lib/utils/timezone'
@@ -30,7 +30,6 @@ interface CheckoutPageProps {
     adults?: string
     children?: string
     infants?: string
-    luggage?: string
   }>
 }
 
@@ -107,12 +106,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   }
 
   // Fetch location, vehicle type, and addons details
-  const [originLocation, destinationLocation, vehicleType, addonsData, extraItemPrices] = await Promise.all([
+  const [originLocation, destinationLocation, vehicleType, addonsData] = await Promise.all([
     getLocationDetails(params.from!),
     getLocationDetails(params.to!),
     getVehicleType(params.vehicleType, params.from!, params.to!),
     getActiveAddons(),
-    getExtraItemPrices(),
   ])
 
   if (!originLocation || !destinationLocation || !vehicleType) {
@@ -164,7 +162,6 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   // contradict. Same helper as the /checkout/[routeSlug]/[vehicleSlug] route.
   const guests = resolveGuestsForVehicle(params, vehicleType.passenger_capacity)
   const passengers = getSeatedCount(guests)
-  const luggage = parseInt(params.luggage || '0')
 
   return (
     <PublicLayout>
@@ -180,11 +177,9 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             initialTime={pickupTime}
             initialPassengers={passengers}
             initialGuests={guests}
-            initialLuggage={luggage}
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
-            extraItemPrices={extraItemPrices}
           />
         </div>
       </div>

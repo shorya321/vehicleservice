@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { BookingForm } from './booking-form'
 import { OrderSummary } from './order-summary'
 import { MobileStickyBar } from './mobile-sticky-bar'
-import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory, ExtraItemPrices } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory } from '@/app/checkout/actions'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 
 export interface OrderSummaryAddon {
@@ -32,11 +32,9 @@ interface CheckoutWrapperProps {
   initialPassengers: number
   /** Adults/children/infants behind `initialPassengers`. Already clamped to the vehicle. */
   initialGuests: GuestBreakdown
-  initialLuggage: number
   user: any
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
-  extraItemPrices: ExtraItemPrices
 }
 
 const TOTAL_STEPS = 2
@@ -48,16 +46,13 @@ export function CheckoutWrapper({
   initialTime,
   initialPassengers,
   initialGuests,
-  initialLuggage,
   user,
   profile,
   addonsByCategory,
-  extraItemPrices,
 }: CheckoutWrapperProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
   const [currentPassengers, setCurrentPassengers] = useState(initialPassengers)
-  const [currentLuggage, setCurrentLuggage] = useState(initialLuggage)
   const [pickupDate, setPickupDate] = useState(initialDate)
   const [pickupTime, setPickupTime] = useState(initialTime)
   const [selectedAddons, setSelectedAddons] = useState<OrderSummaryAddon[]>([])
@@ -74,10 +69,8 @@ export function CheckoutWrapper({
   const isLastStep = currentStep === TOTAL_STEPS - 1
 
   const basePrice = vehicleType.price || 50
-  const extraLuggageCount = Math.max(0, currentLuggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * extraItemPrices.extraLuggagePerUnit
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const totalPrice = basePrice + extraLuggageCost + addonsCost
+  const totalPrice = basePrice + addonsCost
 
   const goNext = useCallback(() => {
     if (currentStep < TOTAL_STEPS - 1) {
@@ -92,10 +85,6 @@ export function CheckoutWrapper({
       setCurrentStep(prev => prev - 1)
     }
   }, [currentStep])
-
-  const handleExtrasChange = (luggage: number) => {
-    setCurrentLuggage(luggage)
-  }
 
   const handleDateTimeChange = (date: string, time: string) => {
     setPickupDate(date)
@@ -126,7 +115,6 @@ export function CheckoutWrapper({
             initialTime={initialTime}
             initialPassengers={initialPassengers}
             initialGuests={initialGuests}
-            initialLuggage={initialLuggage}
             user={user}
             profile={profile}
             addonsByCategory={addonsByCategory}
@@ -134,7 +122,6 @@ export function CheckoutWrapper({
             direction={direction}
             onGoNext={goNext}
             onGoBack={goBack}
-            onExtrasChange={handleExtrasChange}
             onPassengersChange={handlePassengersChange}
             onDateTimeChange={handleDateTimeChange}
             onAddonsChange={handleAddonsChange}
@@ -149,7 +136,6 @@ export function CheckoutWrapper({
               route={route}
               vehicleType={vehicleType}
               passengers={currentPassengers}
-              luggage={currentLuggage}
               pickupDate={pickupDate}
               pickupTime={pickupTime}
               currentStep={currentStep}
@@ -158,7 +144,6 @@ export function CheckoutWrapper({
               agreeToTerms={formMethods.agreeToTerms}
               onAgreeToTermsChange={formMethods.setAgreeToTerms}
               selectedAddons={selectedAddons}
-              extraItemPrices={extraItemPrices}
             />
           </div>
         </div>
@@ -171,7 +156,6 @@ export function CheckoutWrapper({
         totalPrice={totalPrice}
         basePrice={basePrice}
         passengers={currentPassengers}
-        luggage={currentLuggage}
         pickupDate={pickupDate}
         pickupTime={pickupTime}
         selectedAddons={selectedAddons}
@@ -181,7 +165,6 @@ export function CheckoutWrapper({
         isLastStep={isLastStep}
         agreeToTerms={formMethods.agreeToTerms}
         onAgreeToTermsChange={formMethods.setAgreeToTerms}
-        extraItemPrices={extraItemPrices}
       />
     </div>
   )

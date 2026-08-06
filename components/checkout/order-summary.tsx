@@ -3,7 +3,7 @@
 import { useState, memo } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Info, Lock } from 'lucide-react'
-import { RouteDetails, VehicleTypeDetails, ExtraItemPrices } from '@/app/checkout/actions'
+import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
@@ -12,7 +12,6 @@ interface OrderSummaryProps {
   route: RouteDetails
   vehicleType: VehicleTypeDetails
   passengers: number
-  luggage: number
   pickupDate?: string
   pickupTime?: string
   currentStep?: number
@@ -21,7 +20,6 @@ interface OrderSummaryProps {
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
   selectedAddons?: OrderSummaryAddon[]
-  extraItemPrices?: ExtraItemPrices
 }
 
 function PriceRow({
@@ -53,7 +51,6 @@ export const OrderSummary = memo(function OrderSummary({
   route,
   vehicleType,
   passengers,
-  luggage,
   pickupDate,
   pickupTime,
   currentStep,
@@ -62,7 +59,6 @@ export const OrderSummary = memo(function OrderSummary({
   agreeToTerms = false,
   onAgreeToTermsChange,
   selectedAddons = [],
-  extraItemPrices,
 }: OrderSummaryProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = useReducedMotion()
@@ -76,10 +72,8 @@ export const OrderSummary = memo(function OrderSummary({
   const [showPromo, setShowPromo] = useState(false)
 
   const basePrice = vehicleType.price || 50
-  const extraLuggageCount = Math.max(0, luggage - vehicleType.luggage_capacity)
-  const extraLuggageCost = extraLuggageCount * (extraItemPrices?.extraLuggagePerUnit ?? 15)
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const subtotal = basePrice + extraLuggageCost + addonsCost
+  const subtotal = basePrice + addonsCost
   const total = subtotal - promoDiscount
 
   const formattedDate = pickupDate
@@ -134,12 +128,6 @@ export const OrderSummary = memo(function OrderSummary({
       {/* Price Breakdown */}
       <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-2.5 text-[0.875rem]">
         <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
-        {extraLuggageCost > 0 && (
-          <PriceRow
-            label={`Extra luggage (${extraLuggageCount})`}
-            value={formatUserPrice(extraLuggageCost)}
-          />
-        )}
         {selectedAddons.map((addon) => (
           <PriceRow
             key={addon.id}

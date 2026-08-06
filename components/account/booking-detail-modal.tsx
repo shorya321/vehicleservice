@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from "react"
-import { X, MapPin, Calendar, Clock, Users, Briefcase, Car, Phone, Mail, Building2, CreditCard, Loader2, AlertTriangle, FileText, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import { X, MapPin, Calendar, Clock, Users, Car, Phone, Mail, Building2, CreditCard, Loader2, AlertTriangle, FileText, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import { getBookingDetails, cancelBooking } from "@/app/account/booking-actions"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency/format"
@@ -213,7 +213,6 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
                 <InfoItem icon={<Calendar className="w-4 h-4" />} label="Date" value={formattedDate} />
                 <InfoItem icon={<Clock className="w-4 h-4" />} label="Time" value={formattedTime} />
                 <InfoItem icon={<Users className="w-4 h-4" />} label="Passengers" value={booking.passenger_count} />
-                <InfoItem icon={<Briefcase className="w-4 h-4" />} label="Luggage" value={booking.luggage_count ?? "-"} />
               </div>
             </div>
           </Section>

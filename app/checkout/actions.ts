@@ -133,39 +133,6 @@ export interface CheckoutAddonsByCategory {
   addons: CheckoutAddon[]
 }
 
-export interface ExtraItemPrices {
-  extraLuggagePerUnit: number
-  childSeatPerUnit: number
-}
-
-const EXTRA_ITEM_DEFAULTS: ExtraItemPrices = {
-  extraLuggagePerUnit: 15,
-  childSeatPerUnit: 10,
-}
-
-export async function getExtraItemPrices(): Promise<ExtraItemPrices> {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from('addons')
-    .select('name, price, category')
-    .eq('is_active', true)
-    .eq('pricing_type', 'per_unit')
-    .in('category', ['Luggage', 'Child Safety'])
-
-  if (!data || data.length === 0) return EXTRA_ITEM_DEFAULTS
-
-  const luggageAddon = data.find(
-    a => a.category === 'Luggage' && a.name.toLowerCase().includes('luggage')
-  )
-  const childSeatAddon = data.find(a => a.category === 'Child Safety')
-
-  return {
-    extraLuggagePerUnit: luggageAddon?.price ?? EXTRA_ITEM_DEFAULTS.extraLuggagePerUnit,
-    childSeatPerUnit: childSeatAddon?.price ?? EXTRA_ITEM_DEFAULTS.childSeatPerUnit,
-  }
-}
-
 /**
  * Get active addons for customer checkout
  */
@@ -331,13 +298,11 @@ const bookingSchema = z.object({
   adults: z.number().min(1).max(50).optional(),
   children: z.number().min(0).max(50).optional(),
   infants: z.number().min(0).max(50).optional(),
-  luggageCount: z.number().min(0).max(50),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
   phone: phoneSchema,
   specialRequests: z.string().optional(),
-  extraLuggageCount: z.number().min(0),
   basePrice: z.number().min(0),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
@@ -487,9 +452,7 @@ export async function createBooking(formData: BookingFormData) {
     }
   }
 
-  const extraPrices = await getExtraItemPrices()
-  const extraLuggagePrice = validatedData.extraLuggageCount * extraPrices.extraLuggagePerUnit
-  const amenitiesPrice = extraLuggagePrice + verifiedAddonsPrice
+  const amenitiesPrice = verifiedAddonsPrice
   const totalPrice = basePrice + amenitiesPrice
   
   // Get zone IDs if location IDs are provided
@@ -527,7 +490,6 @@ export async function createBooking(formData: BookingFormData) {
       adults: validatedData.adults ?? validatedData.passengerCount,
       children: validatedData.children ?? 0,
       infants: validatedData.infants ?? 0,
-      luggage_count: validatedData.luggageCount,
       base_price: basePrice,
       amenities_price: amenitiesPrice,
       total_price: totalPrice,
@@ -554,7 +516,6 @@ export async function createBooking(formData: BookingFormData) {
       adults: validatedData.adults ?? validatedData.passengerCount,
       children: validatedData.children ?? 0,
       infants: validatedData.infants ?? 0,
-      luggage_count: validatedData.luggageCount,
       base_price: basePrice,
       amenities_price: amenitiesPrice,
       total_price: totalPrice,
@@ -622,16 +583,6 @@ export async function createBooking(formData: BookingFormData) {
     child_ages?: number[] | null
   }> = []
 
-  // Add extra luggage if any
-  if (validatedData.extraLuggageCount > 0) {
-    amenities.push({
-      booking_id: booking.id,
-      amenity_type: 'extra_luggage',
-      quantity: validatedData.extraLuggageCount,
-      price: extraLuggagePrice,
-    })
-  }
-
   // Add selected addons with addon_id reference. Prices come from `addonMap`, populated by the
   // verification step above. The same read that was checked, rather than a second query that
   // could return something different.
@@ -659,7 +610,21 @@ export async function createBooking(formData: BookingFormData) {
 
     if (amenitiesError) {
       console.error('Error adding amenities:', amenitiesError)
-      // Non-critical error, continue
+      // Every amenity is billed: amenities_price and total_price on the row above already include
+      // them. Continuing would sell add-ons that were never recorded, so the booking cannot stand.
+      // Roll it back rather than leave an over-charged, under-specified booking behind. The
+      // PaymentIntent is created later, on the payment page, so nothing is stranded by throwing.
+      // booking_passengers and booking_amenities are both ON DELETE CASCADE.
+      const { error: rollbackError } = await adminClient
+        .from('bookings')
+        .delete()
+        .eq('id', booking.id)
+
+      if (rollbackError) {
+        console.error('Failed to roll back booking after amenities error:', rollbackError)
+      }
+
+      throw new Error('Failed to save the selected extras. Your booking was not created, and you have not been charged. Please try again.')
     }
   }
 

@@ -60,7 +60,6 @@ interface Booking {
   adults?: number
   children?: number
   infants?: number
-  luggage_count: number | null
   base_price: number
   total_price: number
   customer_notes: string | null
@@ -73,7 +72,6 @@ interface ConfirmationContentProps {
   booking: Booking
   primaryPassenger: BookingPassenger | undefined
   childSeats: BookingAmenity[]
-  extraLuggage: BookingAmenity | undefined
   addons: BookingAmenity[]
 }
 
@@ -283,7 +281,6 @@ export function ConfirmationContent({
   booking,
   primaryPassenger,
   childSeats,
-  extraLuggage,
   addons,
 }: ConfirmationContentProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
@@ -344,12 +341,6 @@ export function ConfirmationContent({
             value={formatUserPrice(seat.price)}
           />
         ))}
-        {extraLuggage && (
-          <SummaryRow
-            label={`Extra luggage × ${extraLuggage.quantity}`}
-            value={formatUserPrice(extraLuggage.price)}
-          />
-        )}
         {addons.map((addon, idx) => (
           <SummaryRow
             key={`addon-${idx}`}
@@ -512,9 +503,9 @@ export function ConfirmationContent({
                         )}
                       </div>
                       <div>
-                        <dt className="t-label">Bags</dt>
+                        <dt className="t-label">Bags included</dt>
                         <dd className="numeric mt-1.5 text-[1rem] font-medium leading-snug text-[var(--text-primary)]">
-                          {booking.luggage_count || 0}{booking.vehicle_type ? ` / ${booking.vehicle_type.luggage_capacity}` : ''}
+                          {booking.vehicle_type ? booking.vehicle_type.luggage_capacity : '—'}
                         </dd>
                       </div>
                     </div>

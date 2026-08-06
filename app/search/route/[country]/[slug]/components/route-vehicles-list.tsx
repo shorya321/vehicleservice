@@ -110,7 +110,6 @@ export function RouteVehiclesList({ vehicleTypes, route, countrySlug }: RouteVeh
                     date: new Date().toISOString().split('T')[0],
                     time: '10:00',
                     passengers: vehicleType.passenger_capacity.toString(),
-                    luggage: '0',
                   })}
                   className="block"
                 >

@@ -38,7 +38,6 @@ export interface VendorBooking {
     pickup_address: string
     dropoff_address: string
     passenger_count: number
-    luggage_count: number | null
     total_price: number
     booking_status: string
     payment_status: string
@@ -222,7 +221,6 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
           pickup_address: booking.pickupAddress || '',
           dropoff_address: booking.dropoffAddress || '',
           passenger_count: booking.passengerCount,
-          luggage_count: booking.luggageCount,
           total_price: booking.totalPrice,
           booking_status: booking.bookingStatus,
           payment_status: 'pending', // Business bookings don't have payment_status

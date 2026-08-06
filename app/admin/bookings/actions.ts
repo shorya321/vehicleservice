@@ -43,7 +43,6 @@ export interface BookingWithCustomer {
   pickup_address: string
   dropoff_address: string
   passenger_count: number
-  luggage_count: number
   base_price: number
   amenities_price: number
   total_price: number
@@ -750,7 +749,6 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
     'Dropoff Address',
     'Vehicle Type',
     'Passengers',
-    'Luggage',
     'Base Price',
     'Amenities Price',
     'Total Price',
@@ -775,7 +773,6 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
       booking.dropoff_address,
       booking.vehicle_types?.name || '',
       booking.passenger_count,
-      booking.luggage_count || 0,
       booking.base_price,
       booking.amenities_price || 0,
       booking.total_price,

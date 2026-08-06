@@ -6,7 +6,7 @@ import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
-import { getVehicleType, getLocationDetails, getActiveAddons, getExtraItemPrices } from '../../actions'
+import { getVehicleType, getLocationDetails, getActiveAddons } from '../../actions'
 import { createClient } from '@/lib/supabase/server'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { toStoredPhone } from '@/lib/validation/phone'
@@ -23,7 +23,6 @@ interface CheckoutRoutePageProps {
     adults?: string
     children?: string
     infants?: string
-    luggage?: string
   }>
 }
 
@@ -126,12 +125,11 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   }
 
   // Fetch location, vehicle type, and addons details
-  const [originLocation, destinationLocation, vehicleType, addonsData, extraItemPrices] = await Promise.all([
+  const [originLocation, destinationLocation, vehicleType, addonsData] = await Promise.all([
     getLocationDetails(fromId),
     getLocationDetails(toId),
     getVehicleType(vehicleTypeRef.id, fromId, toId),
     getActiveAddons(),
-    getExtraItemPrices(),
   ])
 
   if (!originLocation || !destinationLocation || !vehicleType) {
@@ -185,7 +183,6 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   // hand-crafted links.
   const guests = resolveGuestsForVehicle(sp, vehicleType.passenger_capacity)
   const passengers = getSeatedCount(guests)
-  const luggage = parseInt(sp.luggage || '0') || 0
 
   return (
     <PublicLayout>
@@ -200,11 +197,9 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
             initialTime={pickupTime}
             initialPassengers={passengers}
             initialGuests={guests}
-            initialLuggage={luggage}
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
-            extraItemPrices={extraItemPrices}
           />
         </div>
       </div>

@@ -103,6 +103,9 @@ const styles = StyleSheet.create({
 export interface BookingInvoiceLineItem {
   label: string;
   quantity: number | null;
+  /** Price for one unit. Printed so that quantity x unitAmount = amount reads true. */
+  unitAmount: string;
+  /** Line total for the whole quantity, never a unit price. */
   amount: string;
 }
 
@@ -213,7 +216,7 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
             {/* Luggage gets its own row: formatGuestSummary already uses "·" before infants, so
                 appending "· N luggage" would give one separator two meanings. */}
             <InfoRow label="Passengers" value={passengerLabel} />
-            {data.luggageCount != null && (
+            {data.luggageCount != null && data.luggageCount > 0 && (
               <InfoRow label="Luggage" value={String(data.luggageCount)} />
             )}
           </View>
@@ -224,28 +227,34 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
           <Text style={pdfStyles.sectionTitle}>Charges</Text>
           <View style={styles.table}>
             <View style={pdfStyles.tableHeader}>
-              <View style={{ width: '55%' }}>
+              <View style={{ width: '43%' }}>
                 <Text style={pdfStyles.tableCellHeader}>Description</Text>
               </View>
-              <View style={{ width: '15%' }}>
+              <View style={{ width: '11%' }}>
                 <Text style={[pdfStyles.tableCellHeader, pdfStyles.textCenter]}>Qty</Text>
               </View>
-              <View style={{ width: '30%' }}>
+              <View style={{ width: '21%' }}>
+                <Text style={[pdfStyles.tableCellHeader, pdfStyles.textRight]}>Unit Price</Text>
+              </View>
+              <View style={{ width: '25%' }}>
                 <Text style={[pdfStyles.tableCellHeader, pdfStyles.textRight]}>Amount</Text>
               </View>
             </View>
 
             {data.lineItems.map((item, index) => (
               <View style={styles.tableRow} key={index}>
-                <View style={{ width: '55%' }}>
+                <View style={{ width: '43%' }}>
                   <Text style={pdfStyles.tableCell}>{item.label}</Text>
                 </View>
-                <View style={{ width: '15%' }}>
+                <View style={{ width: '11%' }}>
                   <Text style={[pdfStyles.tableCell, pdfStyles.textCenter]}>
                     {item.quantity != null ? String(item.quantity) : '1'}
                   </Text>
                 </View>
-                <View style={{ width: '30%' }}>
+                <View style={{ width: '21%' }}>
+                  <Text style={[pdfStyles.tableCell, pdfStyles.textRight]}>{item.unitAmount}</Text>
+                </View>
+                <View style={{ width: '25%' }}>
                   <Text style={[pdfStyles.tableCell, pdfStyles.textRight]}>{item.amount}</Text>
                 </View>
               </View>
@@ -261,8 +270,8 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
           </View>
           {data.showAedNote && (
             <Text style={{ fontSize: 8, color: pdfColors.textLight, marginTop: 6, textAlign: 'right' }}>
-              Charged in AED ({data.totalAed}). Converted amounts are indicative and use the exchange
-              rate at the time this invoice was generated.
+              Charged in AED ({data.totalAed}). Converted amounts are indicative, rounded per line,
+              and use the exchange rate at the time this invoice was generated.
             </Text>
           )}
         </View>

@@ -65,8 +65,6 @@ const bookingSchema = z.object({
   pickupTime: z.string().min(1, 'Pickup time is required'),
   flightNumber: z.string().optional(),
   specialRequests: z.string().optional(),
-  luggageCount: z.number().min(0).max(50),
-  extraLuggageCount: z.number().min(0),
   paymentMethod: z.enum(['card']),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
@@ -93,7 +91,6 @@ interface BookingFormProps {
   initialPassengers: number
   /** Adults/children/infants behind `initialPassengers`. Already clamped to the vehicle. */
   initialGuests: GuestBreakdown
-  initialLuggage: number
   user: any
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
@@ -101,7 +98,6 @@ interface BookingFormProps {
   direction: 1 | -1
   onGoNext: () => void
   onGoBack: () => void
-  onExtrasChange?: (luggage: number) => void
   onPassengersChange?: (passengers: number) => void
   onDateTimeChange?: (date: string, time: string) => void
   onAddonsChange?: (addons: OrderSummaryAddon[]) => void
@@ -122,7 +118,6 @@ export function BookingForm({
   initialTime,
   initialPassengers,
   initialGuests,
-  initialLuggage,
   user,
   profile,
   addonsByCategory,
@@ -130,7 +125,6 @@ export function BookingForm({
   direction,
   onGoNext,
   onGoBack,
-  onExtrasChange,
   onPassengersChange,
   onDateTimeChange,
   onAddonsChange,
@@ -143,7 +137,6 @@ export function BookingForm({
   // contradict. `initialPassengers` is only the server-clamped seed for that derivation.
   const [guests, setGuests] = useState<GuestBreakdown>(initialGuests)
   const passengers = getSeatedCount(guests)
-  const [luggage] = useState(initialLuggage)
   const [stepValidationAttempted, setStepValidationAttempted] = useState(false)
 
   const form = useForm<BookingFormData>({
@@ -156,8 +149,6 @@ export function BookingForm({
       phone: profile?.phone || user?.user_metadata?.phone || '',
       pickupDate: initialDate,
       pickupTime: initialTime,
-      luggageCount: luggage,
-      extraLuggageCount: Math.max(0, luggage - vehicleType.luggage_capacity),
       paymentMethod: 'card',
       agreeToTerms: false,
       selectedAddons: [],
@@ -180,12 +171,6 @@ export function BookingForm({
       onPassengersChange(passengers)
     }
   }, [passengers, onPassengersChange])
-
-  useEffect(() => {
-    if (onExtrasChange) {
-      onExtrasChange(luggage)
-    }
-  }, [luggage, onExtrasChange])
 
   useEffect(() => {
     if (onAddonsChange) {
@@ -220,13 +205,11 @@ export function BookingForm({
         adults: guests.adults,
         children: guests.children,
         infants: guests.infants,
-        luggageCount: data.luggageCount,
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
         specialRequests: data.specialRequests,
-        extraLuggageCount: data.extraLuggageCount,
         basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,
         paymentMethod: data.paymentMethod,

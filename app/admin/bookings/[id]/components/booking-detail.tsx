@@ -179,12 +179,9 @@ export function BookingDetail({ booking }: BookingDetailProps) {
               <div className="flex items-start gap-3">
                 <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Passengers & Luggage</p>
+                  <p className="text-sm text-muted-foreground">Passengers</p>
                   <p className="font-medium">
                     {booking.passenger_count} Passengers
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {booking.luggage_count || 0} Pieces of Luggage
                   </p>
                 </div>
               </div>

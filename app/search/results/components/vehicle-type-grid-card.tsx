@@ -47,7 +47,6 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
         date: searchParams.date || '',
         time: '10:00',
         passengers: searchParams.passengers || '1',
-        luggage: '0',
         adults: toCount(searchParams.adults),
         children: toCount(searchParams.children),
         infants: toCount(searchParams.infants),

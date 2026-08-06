@@ -78,7 +78,6 @@ export default async function ConfirmationRoutePage({ params }: ConfirmationRout
   const childSeats = amenities.filter(
     (a: any) => a.amenity_type === 'child_seat_infant' || a.amenity_type === 'child_seat_booster'
   )
-  const extraLuggage = amenities.find((a: any) => a.amenity_type === 'extra_luggage')
   const addons = amenities.filter((a: any) => a.amenity_type === 'addon' && a.addon)
 
   return (
@@ -87,7 +86,6 @@ export default async function ConfirmationRoutePage({ params }: ConfirmationRout
         booking={booking}
         primaryPassenger={primaryPassenger}
         childSeats={childSeats}
-        extraLuggage={extraLuggage}
         addons={addons}
       />
     </PublicLayout>
