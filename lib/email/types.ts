@@ -37,8 +37,6 @@ export interface BookingConfirmationEmailData {
   dropoffLocation: string;
   pickupDate: string;
   pickupTime: string;
-  dropoffDate: string;
-  dropoffTime: string;
   totalAmount: number;
   currency: string;
   bookingReference: string;

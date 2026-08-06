@@ -279,8 +279,6 @@ async function sendBookingEmails(
         dropoffLocation: dropoffLocation?.name || updatedBooking.dropoff_address,
         pickupDate,
         pickupTime,
-        dropoffDate: pickupDate,
-        dropoffTime: pickupTime,
         totalAmount: emailTotalAmount,
         currency: emailCurrency,
         bookingReference: updatedBooking.booking_number,

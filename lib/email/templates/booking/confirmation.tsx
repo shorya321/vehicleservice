@@ -19,8 +19,6 @@ interface BookingConfirmationEmailProps {
   dropoffLocation: string;
   pickupDate: string;
   pickupTime: string;
-  dropoffDate: string;
-  dropoffTime: string;
   totalAmount: number;
   currency: string;
   originalAmount?: number;
@@ -49,8 +47,6 @@ export const BookingConfirmationEmail = ({
   dropoffLocation,
   pickupDate,
   pickupTime,
-  dropoffDate,
-  dropoffTime,
   totalAmount,
   currency,
   originalAmount,
@@ -118,9 +114,6 @@ export const BookingConfirmationEmail = ({
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
           <strong>Dropoff Location:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff Date & Time:</strong> {dropoffDate} at {dropoffTime}
         </Text>
         {hasBookingSummary && (
           <>

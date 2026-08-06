@@ -40,8 +40,6 @@ export async function sendBookingConfirmationEmail(
         dropoffLocation: data.dropoffLocation,
         pickupDate: data.pickupDate,
         pickupTime: data.pickupTime,
-        dropoffDate: data.dropoffDate,
-        dropoffTime: data.dropoffTime,
         totalAmount: data.totalAmount,
         currency: data.currency,
         originalAmount: data.originalAmount,
