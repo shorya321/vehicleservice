@@ -1,6 +1,11 @@
 import {
+  FLEET_SPANS,
+  barMinWidthPx,
   buildTimelineLanes,
+  timelineTicks,
+  timelineTrackWidth,
   timelineWindow,
+  type FleetSpan,
   type TimelineResource,
 } from '@/lib/availability/timeline'
 import type { CalendarEvent } from '@/app/vendor/availability/types'
@@ -49,6 +54,7 @@ function layoutFor(events: CalendarEvent[]) {
     drivers: [DRIVER],
     windowStart: start,
     windowEnd: end,
+    trackWidth: timelineTrackWidth('day'),
   })
 }
 
@@ -191,5 +197,216 @@ describe('buildTimelineLanes', () => {
 
     expect(layout.vehicleLanes[0].rowCount).toBe(1)
     expect(layout.vehicleLanes[0].bars).toHaveLength(0)
+  })
+})
+
+describe('the 3-day span', () => {
+  it('runs forward from the day on screen, not backwards into a block', () => {
+    const { start, end } = timelineWindow(DAY, '3day')
+
+    expect(start.toISOString()).toBe('2026-02-11T20:00:00.000Z')
+    expect(end.getTime() - start.getTime()).toBe(3 * 24 * 60 * 60 * 1000)
+  })
+
+  it('draws three days at a wider scale than a week', () => {
+    expect(timelineTrackWidth('3day')).toBe(3 * 24 * FLEET_SPANS['3day'].pxPerHour)
+    expect(timelineTrackWidth('3day') / 3).toBeGreaterThan(timelineTrackWidth('week') / 7)
+  })
+})
+
+describe('timelineTicks', () => {
+  it('gives the header and the lane guides one shared set of positions', () => {
+    // These used to disagree: seven day labels above twelve evenly spaced guides,
+    // so on a week every guide line sat 14 hours from the label over it.
+    for (const span of ['day', '3day', 'week'] as const) {
+      const ticks = timelineTicks(timelineWindow(DAY, span).start, span)
+
+      expect(ticks.length).toBeGreaterThan(0)
+      expect(ticks[0].leftPct).toBe(0)
+      expect(ticks[ticks.length - 1].leftPct).toBeLessThan(100)
+      expect(ticks.every((tick) => tick.leftPct >= 0 && tick.leftPct < 100)).toBe(true)
+    }
+  })
+
+  it('marks midnight as a major tick and dates it on multi-day spans', () => {
+    const week = timelineTicks(timelineWindow(DAY, 'week').start, 'week')
+    const majors = week.filter((tick) => tick.major)
+
+    expect(majors).toHaveLength(7)
+    expect(majors[0].label).toMatch(/^Mon \d+$/)
+    expect(week.find((tick) => !tick.major)?.label).toMatch(/^\d{2}:\d{2}$/)
+  })
+
+  it('labels a single day in hours only', () => {
+    const day = timelineTicks(timelineWindow(DAY, 'day').start, 'day')
+
+    expect(day[0].label).toBe('00:00')
+    expect(day.every((tick) => /^\d{2}:\d{2}$/.test(tick.label))).toBe(true)
+  })
+})
+
+describe('the awaiting-response row', () => {
+  it('takes pending offers, which name no resource', () => {
+    const layout = layoutFor([
+      booking({ id: 'offer', status: 'pending', occupies: false, vehicleId: null, driverId: null }),
+    ])
+
+    expect(layout.pendingBars).toHaveLength(1)
+  })
+
+  it('leaves out an assignment the vendor already rejected', () => {
+    // A rejected assignment also names no vehicle and no driver. Without the
+    // status check it landed under "Awaiting your response", which read as work
+    // still owed an answer.
+    const layout = layoutFor([
+      booking({ id: 'rejected', status: 'rejected', occupies: false, vehicleId: null, driverId: null }),
+    ])
+
+    expect(layout.pendingBars).toHaveLength(0)
+  })
+})
+
+describe('sub-row packing across spans', () => {
+  it('keeps back-to-back trips on one row at every zoom level', () => {
+    // Row assignment used to compare percentage widths, which are the result of a
+    // division: on a 3-day span these two came out as 18.055555555555557 against
+    // 18.055555555555554 and the second was stacked as though double booked.
+    for (const span of ['day', '3day', 'week'] as const) {
+      const { start, end } = timelineWindow(DAY, span)
+      const layout = buildTimelineLanes({
+        events: [
+          booking({ id: 'first', start: dubai('09:00'), end: dubai('13:00') }),
+          booking({ id: 'second', start: dubai('13:00'), end: dubai('16:30') }),
+        ],
+        vehicles: [VEHICLE],
+        drivers: [DRIVER],
+        windowStart: start,
+        windowEnd: end,
+        trackWidth: timelineTrackWidth(span),
+      })
+
+      expect(layout.vehicleLanes[0].bars.map((bar) => bar.row)).toEqual([0, 0])
+      expect(layout.vehicleLanes[0].rowCount).toBe(1)
+    }
+  })
+
+  it('still stacks a genuine overlap at every zoom level', () => {
+    for (const span of ['day', '3day', 'week'] as const) {
+      const { start, end } = timelineWindow(DAY, span)
+      const layout = buildTimelineLanes({
+        events: [
+          booking({ id: 'first', start: dubai('09:00'), end: dubai('13:00') }),
+          booking({ id: 'second', start: dubai('12:00'), end: dubai('16:30') }),
+        ],
+        vehicles: [VEHICLE],
+        drivers: [DRIVER],
+        windowStart: start,
+        windowEnd: end,
+        trackWidth: timelineTrackWidth(span),
+      })
+
+      expect(layout.vehicleLanes[0].bars.map((bar) => bar.row)).toEqual([0, 1])
+    }
+  })
+})
+
+describe('bars are drawn wide enough for their own label', () => {
+  const dayWidth = timelineTrackWidth('day')
+
+  const layoutAt = (events: CalendarEvent[], span: FleetSpan = 'day') => {
+    const { start, end } = timelineWindow(DAY, span)
+    return buildTimelineLanes({
+      events,
+      vehicles: [VEHICLE],
+      drivers: [DRIVER],
+      windowStart: start,
+      windowEnd: end,
+      trackWidth: timelineTrackWidth(span),
+    })
+  }
+
+  it('widens a five-minute job to fit its text instead of drawing a bare sliver', () => {
+    // This is the defect the vendor reported: ZZ-TINY drew as ~2px of colour with
+    // no label on it at all.
+    const [bar] = layoutAt([
+      booking({ id: 'tiny', title: 'Tiny Trip', start: dubai('09:00'), end: dubai('09:05') }),
+    ]).vehicleLanes[0].bars
+
+    // Five minutes is 5px at the day zoom: nowhere near enough for a label.
+    expect(bar.naturalWidthPx).toBeLessThan(barMinWidthPx('Tiny Trip'))
+    expect(bar.widthPx).toBeGreaterThanOrEqual(barMinWidthPx('Tiny Trip'))
+  })
+
+  it('leaves a long job at its natural width: widening never shrinks a bar', () => {
+    const [bar] = layoutAt([
+      booking({ id: 'long', title: 'Trip #1', start: dubai('06:00'), end: dubai('18:00') }),
+    ]).vehicleLanes[0].bars
+
+    expect(bar.widthPx).toBeCloseTo(bar.naturalWidthPx, 5)
+    expect(bar.widthPx).toBeCloseTo(dayWidth / 2, 5)
+  })
+
+  it('keeps leftPct and widthPct as the TRUE proportions after widening', () => {
+    // The drawn box is a rendering concern. Anything reasoning about when the job
+    // actually runs still has the honest numbers.
+    const [bar] = layoutAt([
+      booking({ id: 'tiny', title: 'Tiny Trip', start: dubai('12:00'), end: dubai('12:05') }),
+    ]).vehicleLanes[0].bars
+
+    expect(bar.leftPct).toBeCloseTo(50, 5)
+    expect(bar.widthPct).toBeCloseTo((5 / (24 * 60)) * 100, 5)
+  })
+
+  it('stacks two jobs that only collide once they are widened', () => {
+    // Ten minutes apart in time, so nothing overlaps; widened to fit their labels
+    // they would sit on top of each other, and the second would be invisible.
+    const layout = layoutAt([
+      booking({ id: 'a', title: 'Overlap A', start: dubai('09:00'), end: dubai('09:05') }),
+      booking({ id: 'b', title: 'Back To Back', start: dubai('09:10'), end: dubai('09:15') }),
+    ])
+
+    expect(layout.vehicleLanes[0].bars.map((bar) => bar.row)).toEqual([0, 1])
+    expect(layout.vehicleLanes[0].rowCount).toBe(2)
+  })
+
+  it('still shares a row when the drawn boxes clear each other', () => {
+    const layout = layoutAt([
+      booking({ id: 'a', title: 'Overlap A', start: dubai('09:00'), end: dubai('13:00') }),
+      booking({ id: 'b', title: 'Back To Back', start: dubai('13:00'), end: dubai('16:30') }),
+    ])
+
+    expect(layout.vehicleLanes[0].bars.map((bar) => bar.row)).toEqual([0, 0])
+  })
+
+  it('shifts a widened bar at the right edge back rather than overflowing the lane', () => {
+    const [bar] = layoutAt([
+      booking({ id: 'late', title: 'Late Night Run', start: dubai('23:55'), end: new Date('2026-02-13T00:00:00+04:00') }),
+    ]).vehicleLanes[0].bars
+
+    expect(bar.leftPx + bar.widthPx).toBeLessThanOrEqual(dayWidth)
+    expect(bar.leftPx).toBeGreaterThanOrEqual(0)
+  })
+
+  it('never draws a bar wider than the whole track, at any zoom', () => {
+    for (const span of ['day', '3day', 'week'] as const) {
+      const trackWidth = timelineTrackWidth(span)
+      const [bar] = layoutAt(
+        [booking({ id: 'tiny', title: 'A very long customer name indeed', start: dubai('09:00'), end: dubai('09:01') })],
+        span
+      ).vehicleLanes[0].bars
+
+      expect(bar.widthPx).toBeLessThanOrEqual(trackWidth)
+      expect(bar.leftPx + bar.widthPx).toBeLessThanOrEqual(trackWidth + 0.001)
+    }
+  })
+})
+
+describe('barMinWidthPx', () => {
+  it('grows with the label', () => {
+    expect(barMinWidthPx('Maintenance')).toBeGreaterThan(barMinWidthPx('Leave'))
+  })
+
+  it('caps, so one enormous customer name cannot swallow the lane', () => {
+    expect(barMinWidthPx('x'.repeat(500))).toBe(barMinWidthPx('y'.repeat(400)))
   })
 })

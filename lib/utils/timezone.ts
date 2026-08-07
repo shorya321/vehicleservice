@@ -8,7 +8,10 @@ import { format } from 'date-fns'
 export const BOOKING_TIMEZONE = 'Asia/Dubai'
 
 /** Asia/Dubai observes no DST. The offset is permanently +04:00. */
-const BOOKING_UTC_OFFSET = '+04:00'
+export const BOOKING_UTC_OFFSET = '+04:00'
+
+/** The same offset in minutes, for arithmetic that cannot use the string form. */
+export const BOOKING_UTC_OFFSET_MINUTES = 4 * 60
 
 /**
  * Builds the UTC instant for a `yyyy-MM-dd` date and `HH:mm` time interpreted

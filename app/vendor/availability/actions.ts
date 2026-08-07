@@ -12,6 +12,7 @@ import {
   type DirectBookingCalendarRow,
 } from '@/lib/availability/direct-bookings'
 import { getVendorPendingAssignments } from '@/lib/availability/pending-assignments'
+import { getBusyResourceWindows } from '@/lib/vendor/direct-bookings/availability'
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
 import { tripEndFrom } from '@/lib/vendor/bookings/duration'
 import { revalidatePath } from 'next/cache'
@@ -548,21 +549,31 @@ export async function markResourceUnavailable(
     throw new Error('Cannot mark a resource unavailable for a past date')
   }
 
+  // All three occupancy sources, not two. `AvailabilityService.findConflicts`
+  // reads only `resource_schedules` and `resource_unavailability`, so it cannot
+  // see `vendor_direct_bookings`: a vendor could mark a vehicle "under
+  // maintenance" straight over a live offline booking and the insert succeeded
+  // silently. This is the same engine the direct-booking create and update paths
+  // use, so "busy" has one definition.
+  //
   // Throws if availability cannot be determined, so a database failure is never
-  // reported to the vendor as a booking conflict.
-  const conflicts = await AvailabilityService.findConflicts(
-    resourceId,
-    resourceType,
+  // reported to the vendor as availability.
+  const busy = await getBusyResourceWindows({
+    vendorId: vendorApp.id,
+    resourceIds: [resourceId],
     start,
-    end
-  )
+    end,
+  })
 
-  if (conflicts.schedules.length > 0) {
-    throw new Error('Resource has bookings during this period')
-  }
+  if (busy.length > 0) {
+    const noun = resourceType === 'vehicle' ? 'This vehicle' : 'This driver'
+    const alreadyBlocked = busy.every((window) => window.source === 'unavailability')
 
-  if (conflicts.unavailability.length > 0) {
-    throw new Error('Resource is already marked unavailable for part of this period')
+    throw new Error(
+      alreadyBlocked
+        ? `${noun} is already marked unavailable for part of that period: ${busy.map((w) => w.label).join('; ')}`
+        : `${noun} is committed during that period: ${busy.map((w) => w.label).join('; ')}`
+    )
   }
 
   // Mark as unavailable

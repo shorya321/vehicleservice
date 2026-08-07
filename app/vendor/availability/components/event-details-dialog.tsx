@@ -136,6 +136,7 @@ export function EventDetailsDialog({
                 </Row>
                 <Row icon={Clock} label="Time">
                   {formatBookingTime(event.start)} - {formatBookingTime(event.end, 'HH:mm')}
+                  <span className="ml-1 text-muted-foreground">(Dubai time)</span>
                 </Row>
 
                 <div className="flex items-start gap-2">
@@ -224,6 +225,7 @@ export function EventDetailsDialog({
                   </div>
                   <Row icon={Clock} label="Period">
                     {formatBookingTime(event.start)} - {formatBookingTime(event.end)}
+                    <span className="ml-1 text-muted-foreground">(Dubai time)</span>
                   </Row>
                   {blocked.notes && (
                     <div className="space-y-1">

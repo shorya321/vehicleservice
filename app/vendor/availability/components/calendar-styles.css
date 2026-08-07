@@ -91,6 +91,20 @@
   border-top: 1px solid hsl(var(--border));
 }
 
+/* React-big-calendar sizes month rows from the container and decides how many
+   events fit at render time. On a short viewport that left rows ~56px tall,
+   which clipped the second and third chip in a day without producing the
+   "+N more" link that is supposed to stand in for them. A floor on the grid
+   keeps every row tall enough for two chips plus the link; the calendar box
+   scrolls when the viewport cannot give it that much. */
+.vendor-calendar .rbc-month-view {
+  min-height: 620px;
+}
+
+.vendor-calendar .rbc-time-view {
+  min-height: 520px;
+}
+
 .vendor-calendar .rbc-selected {
   background-color: hsl(var(--primary) / 0.1) !important;
 }
