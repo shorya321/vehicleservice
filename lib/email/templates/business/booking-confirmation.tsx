@@ -7,6 +7,7 @@ import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
+import { getCurrentBrand } from '../../brand/brand';
 
 interface BusinessBookingConfirmationEmailProps {
   businessName: string;
@@ -157,12 +158,12 @@ export const BusinessBookingConfirmationEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        Thank you for using Infinia Transfers!
+        Thank you for using {getCurrentBrand().name}!
         <br />
         <br />
         Best regards,
         <br />
-        The Infinia Transfers Team
+        The {getCurrentBrand().name} Team
       </Text>
     </EmailLayout>
   );

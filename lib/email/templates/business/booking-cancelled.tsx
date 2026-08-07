@@ -5,6 +5,7 @@ import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
+import { getCurrentBrand } from '../../brand/brand';
 
 interface BusinessBookingCancelledEmailProps {
   businessName: string;
@@ -114,7 +115,7 @@ export const BusinessBookingCancelledEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Infinia Transfers Team
+        The {getCurrentBrand().name} Team
       </Text>
     </EmailLayout>
   );

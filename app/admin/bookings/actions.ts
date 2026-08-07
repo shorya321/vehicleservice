@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 import { getUnifiedBookingsList, createBookingAssignment, closeActiveAssignments, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
 import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/email/services/vendor-emails'
 import { sendDriverBookingUnassignmentEmail } from '@/lib/email/services/driver-emails'
@@ -512,6 +513,9 @@ export async function updateBookingStatus(
 
   // Send email notifications for business bookings
   if (bookingType === 'business') {
+    // after(): a tenant's own SMTP server is a multi round-trip conversation, so these
+    // un-awaited sends would be abandoned when the instance froze after the response.
+    after(async () => {
     try {
       const emailDetails = await getBusinessBookingEmailDetails(bookingId)
       if (emailDetails) {
@@ -519,6 +523,7 @@ export async function updateBookingStatus(
           // Send customer cancellation email
           if (emailDetails.customerEmail) {
             sendBusinessCustomerBookingCancelledEmail({
+              businessAccountId: emailDetails.businessAccountId,
               customerName: emailDetails.customerName,
               customerEmail: emailDetails.customerEmail,
               businessName: emailDetails.businessName,
@@ -534,6 +539,7 @@ export async function updateBookingStatus(
           // Send business cancellation email
           if (emailDetails.businessEmail) {
             sendBusinessBookingCancellationEmail({
+              businessAccountId: emailDetails.businessAccountId,
               email: emailDetails.businessEmail,
               businessName: emailDetails.businessName,
               bookingNumber: emailDetails.bookingNumber,
@@ -553,6 +559,7 @@ export async function updateBookingStatus(
           // Send status update emails for non-cancellation status changes
           if (emailDetails.customerEmail) {
             sendBusinessBookingStatusUpdateEmail({
+              businessAccountId: emailDetails.businessAccountId,
               email: emailDetails.customerEmail,
               businessName: emailDetails.businessName,
               bookingNumber: emailDetails.bookingNumber,
@@ -568,6 +575,7 @@ export async function updateBookingStatus(
 
           if (emailDetails.businessEmail) {
             sendBusinessBookingStatusUpdateEmail({
+              businessAccountId: emailDetails.businessAccountId,
               email: emailDetails.businessEmail,
               businessName: emailDetails.businessName,
               bookingNumber: emailDetails.bookingNumber,
@@ -585,6 +593,7 @@ export async function updateBookingStatus(
     } catch (emailError) {
       console.error('Failed to send status update emails:', emailError)
     }
+    })
   }
 
   revalidatePath('/admin/bookings')
@@ -849,8 +858,10 @@ export async function bulkUpdateBookingStatus(
     }
   }
 
-  // Send notifications for business bookings (fire-and-forget)
-  Promise.allSettled(
+  // Send notifications for business bookings. Not awaited so the caller is not held up,
+  // but inside after() so the sends survive past the response.
+  after(() =>
+    Promise.allSettled(
     bookingIds.map(async (bookingId) => {
       try {
         const details = await getBusinessBookingEmailDetails(bookingId)
@@ -858,6 +869,7 @@ export async function bulkUpdateBookingStatus(
 
         if (status === 'cancelled' && details.customerEmail) {
           await sendBusinessCustomerBookingCancelledEmail({
+            businessAccountId: details.businessAccountId,
             customerName: details.customerName,
             customerEmail: details.customerEmail,
             businessName: details.businessName,
@@ -870,6 +882,7 @@ export async function bulkUpdateBookingStatus(
           })
         } else if (details.customerEmail) {
           await sendBusinessBookingStatusUpdateEmail({
+            businessAccountId: details.businessAccountId,
             email: details.customerEmail,
             businessName: details.businessName,
             bookingNumber: details.bookingNumber,
@@ -886,7 +899,8 @@ export async function bulkUpdateBookingStatus(
         console.error(`Failed to send email for bulk booking ${bookingId}:`, err)
       }
     })
-  ).catch((err) => console.error('Bulk email notification error:', err))
+    ).catch((err) => console.error('Bulk email notification error:', err))
+  )
 
   revalidatePath('/admin/bookings')
 
@@ -1345,6 +1359,10 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
   })
 
   return {
+    // Already selected above; returned so that every business email sent from an admin
+    // session can be routed through the tenant's own SMTP credentials and brand rather
+    // than silently falling back to the platform's.
+    businessAccountId: booking.business_account_id as string,
     bookingNumber: booking.booking_number,
     tripNumber: booking.trip_number || undefined,
     customerName: booking.customer_name || 'Customer',

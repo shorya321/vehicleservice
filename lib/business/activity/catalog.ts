@@ -120,6 +120,16 @@ export const BUSINESS_ACTIVITY_ACTIONS = {
   'settings.quotation_prefix_changed': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'Hash' },
   'settings.payment_settings_updated': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'Wallet' },
   'settings.wallet_alerts_updated': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'Bell' },
+  // Email sending. Credentials never appear in these rows: the routes pass only the
+  // host, port, sender address and a password_rotated boolean.
+  'settings.email_smtp_configured': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'MailPlus' },
+  'settings.email_smtp_updated': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'Mail' },
+  'settings.email_password_rotated': { category: 'settings', severity: 'critical', entityType: 'setting', icon: 'KeyRound' },
+  'settings.email_smtp_enabled': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'MailCheck' },
+  'settings.email_smtp_disabled': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'MailX' },
+  'settings.email_smtp_removed': { category: 'settings', severity: 'critical', entityType: 'setting', icon: 'MailX' },
+  'settings.email_test_sent': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'Send' },
+  'settings.email_test_failed': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'MailWarning' },
   'settings.domain_added': { category: 'settings', severity: 'important', entityType: 'domain', icon: 'Globe' },
   'settings.domain_verified': { category: 'settings', severity: 'important', entityType: 'domain', icon: 'GlobeLock' },
   'settings.domain_verification_failed': { category: 'settings', severity: 'important', entityType: 'domain', icon: 'GlobeLock' },

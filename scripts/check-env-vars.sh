@@ -28,6 +28,17 @@ if [ -n "$ENCRYPTION_KEY" ]; then
 else
   echo "  ❌ ENCRYPTION_KEY (CRITICAL)"
 fi
+
+# Per-business SMTP passwords. Falls back to ENCRYPTION_KEY, so this is a warning
+# rather than a failure, but sharing one key across two purposes is not ideal.
+if [ -n "$EMAIL_ENCRYPTION_KEY" ]; then
+  echo "  ✅ EMAIL_ENCRYPTION_KEY"
+elif [ -n "$ENCRYPTION_KEY" ]; then
+  echo "  ⚠️  EMAIL_ENCRYPTION_KEY unset, falling back to ENCRYPTION_KEY"
+else
+  echo "  ❌ EMAIL_ENCRYPTION_KEY and ENCRYPTION_KEY both missing"
+  echo "     Business SMTP settings cannot be saved. Generate one with: openssl rand -base64 32"
+fi
 echo ""
 
 # Email

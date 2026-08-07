@@ -1166,6 +1166,154 @@ export type Database = {
           },
         ]
       }
+      business_email_log: {
+        Row: {
+          attempt: number
+          business_account_id: string | null
+          created_at: string
+          duration_ms: number | null
+          error_code: string | null
+          error_message: string | null
+          from_email: string
+          id: string
+          kind: string
+          message_id: string | null
+          provider: string
+          related_id: string | null
+          reply_to: string | null
+          smtp_host: string | null
+          status: string
+          subject: string
+          to_email: string
+        }
+        Insert: {
+          attempt?: number
+          business_account_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          from_email: string
+          id?: string
+          kind: string
+          message_id?: string | null
+          provider: string
+          related_id?: string | null
+          reply_to?: string | null
+          smtp_host?: string | null
+          status: string
+          subject: string
+          to_email: string
+        }
+        Update: {
+          attempt?: number
+          business_account_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          from_email?: string
+          id?: string
+          kind?: string
+          message_id?: string | null
+          provider?: string
+          related_id?: string | null
+          reply_to?: string | null
+          smtp_host?: string | null
+          status?: string
+          subject?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_email_log_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_email_settings: {
+        Row: {
+          allow_platform_fallback: boolean
+          business_account_id: string
+          consecutive_failures: number
+          created_at: string
+          enabled: boolean
+          from_email: string
+          from_name: string
+          last_success_at: string | null
+          last_test_at: string | null
+          last_test_error: string | null
+          last_test_status: string | null
+          provider_preset: string
+          reply_to: string | null
+          smtp_host: string
+          smtp_password_encrypted: string
+          smtp_password_key_version: number
+          smtp_password_updated_at: string
+          smtp_port: number
+          smtp_secure: boolean
+          smtp_username: string
+          updated_at: string
+        }
+        Insert: {
+          allow_platform_fallback?: boolean
+          business_account_id: string
+          consecutive_failures?: number
+          created_at?: string
+          enabled?: boolean
+          from_email: string
+          from_name: string
+          last_success_at?: string | null
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_status?: string | null
+          provider_preset?: string
+          reply_to?: string | null
+          smtp_host: string
+          smtp_password_encrypted: string
+          smtp_password_key_version?: number
+          smtp_password_updated_at?: string
+          smtp_port?: number
+          smtp_secure?: boolean
+          smtp_username: string
+          updated_at?: string
+        }
+        Update: {
+          allow_platform_fallback?: boolean
+          business_account_id?: string
+          consecutive_failures?: number
+          created_at?: string
+          enabled?: boolean
+          from_email?: string
+          from_name?: string
+          last_success_at?: string | null
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_status?: string | null
+          provider_preset?: string
+          reply_to?: string | null
+          smtp_host?: string
+          smtp_password_encrypted?: string
+          smtp_password_key_version?: number
+          smtp_password_updated_at?: string
+          smtp_port?: number
+          smtp_secure?: boolean
+          smtp_username?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_email_settings_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: true
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_quotation_item_addons: {
         Row: {
           addon_id: string
@@ -3789,6 +3937,10 @@ export type Database = {
       }
       purge_business_activity: {
         Args: { p_before: string; p_business_account_id: string }
+        Returns: number
+      }
+      prune_business_email_log: {
+        Args: { p_max_rows_per_account?: number; p_retention_days?: number }
         Returns: number
       }
       log_user_activity: {

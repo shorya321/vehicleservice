@@ -1,8 +1,50 @@
+import type React from 'react';
+import type { MailProvider } from './transport/types';
+
 // Email sending result
 export interface EmailResult {
   success: boolean;
   emailId?: string;
   error?: string;
+  /** Which credentials the message actually went out on. Absent if it never reached a transport. */
+  provider?: MailProvider;
+}
+
+/**
+ * Arguments to the single sender in lib/email/utils/send-email.ts.
+ *
+ * Declared here rather than in send-email.ts because that module used to carry a
+ * 'use server' directive, and exporting a type from a Server Action module breaks the
+ * app at runtime while tsc stays silent. The directive is gone, but keeping the type
+ * out of there means the hazard cannot come back by accident.
+ */
+export interface SendEmailParams {
+  to: string;
+  subject: string;
+  template: React.ComponentType<any>;
+  templateProps: Record<string, any>;
+  /**
+   * Overrides the reply-to for mail sent on someone else's behalf,
+   * a vendor's own address on a direct-booking notification, for example.
+   * Omit to keep the sender's default.
+   */
+  replyTo?: string;
+  /**
+   * The tenant whose SMTP credentials and brand this goes out on.
+   * `null` is a legal, meaningful value: platform mail, on purpose.
+   *
+   * Required rather than optional so `tsc --noEmit` enumerates every call site. The
+   * failure mode of an optional field is silent - forget it and the mail quietly goes
+   * out platform-branded, which is precisely the bug this feature exists to prevent.
+   */
+  businessAccountId: string | null;
+  /**
+   * Stable key for the delivery log, e.g. 'business.booking.confirmation'.
+   * Free-form: adding a template must never require a migration.
+   */
+  kind?: string;
+  /** Booking, quotation or transaction id, so a log row can be traced back. */
+  relatedId?: string;
 }
 
 // Authentication emails
@@ -207,8 +249,19 @@ export interface DriverBookingUnassignmentEmailData {
   vendorName: string;
 }
 
+/**
+ * Every business-module email carries the tenant it belongs to, so the sender can pick
+ * that tenant's SMTP credentials and brand.
+ *
+ * Required, not optional. An optional field fails silently: forget it and the mail goes
+ * out under the platform's name to a customer who has never heard of the platform.
+ */
+export interface BusinessScopedEmailData {
+  businessAccountId: string;
+}
+
 // Business customer emails (sent to end customer when business books on their behalf)
-export interface BusinessCustomerBookingConfirmationEmailData {
+export interface BusinessCustomerBookingConfirmationEmailData extends BusinessScopedEmailData {
   customerName: string;
   customerEmail: string;
   customerPhone?: string;
@@ -233,7 +286,7 @@ export interface BusinessCustomerBookingConfirmationEmailData {
   extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
 }
 
-export interface BusinessCustomerDatetimeChangedEmailData {
+export interface BusinessCustomerDatetimeChangedEmailData extends BusinessScopedEmailData {
   customerName: string;
   customerEmail: string;
   businessName: string;
@@ -245,7 +298,7 @@ export interface BusinessCustomerDatetimeChangedEmailData {
   modificationReason?: string;
 }
 
-export interface BusinessCustomerBookingCancelledEmailData {
+export interface BusinessCustomerBookingCancelledEmailData extends BusinessScopedEmailData {
   customerName: string;
   customerEmail: string;
   businessName: string;
@@ -257,7 +310,7 @@ export interface BusinessCustomerBookingCancelledEmailData {
   cancellationReason?: string;
 }
 
-export interface BusinessBookingStatusUpdateEmailData {
+export interface BusinessBookingStatusUpdateEmailData extends BusinessScopedEmailData {
   email: string;
   businessName: string;
   bookingNumber: string;
@@ -291,13 +344,13 @@ export interface CustomerDriverAssignedEmailData extends DriverAssignedTripDetai
 }
 
 /** Driver-assigned email for the passenger of a business booking. */
-export interface BusinessCustomerDriverAssignedEmailData extends DriverAssignedTripDetails {
+export interface BusinessCustomerDriverAssignedEmailData extends DriverAssignedTripDetails, BusinessScopedEmailData {
   customerName: string;
   customerEmail: string;
 }
 
 /** Driver-assigned email for the business account that made the booking. */
-export interface BusinessDriverAssignedEmailData extends DriverAssignedTripDetails {
+export interface BusinessDriverAssignedEmailData extends DriverAssignedTripDetails, BusinessScopedEmailData {
   businessName: string;
   businessEmail: string;
   passengerName: string;

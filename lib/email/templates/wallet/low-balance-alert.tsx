@@ -5,6 +5,7 @@ import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 import { formatCurrency } from '@/lib/utils/currency-converter';
+import { getCurrentBrand } from '../../brand/brand';
 
 interface LowBalanceAlertEmailProps {
   businessName: string;
@@ -73,7 +74,7 @@ export const LowBalanceAlertEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The Infinia Transfers Team
+        The {getCurrentBrand().name} Team
       </Text>
     </EmailLayout>
   );

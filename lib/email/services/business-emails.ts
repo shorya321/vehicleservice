@@ -1,5 +1,3 @@
-'use server';
-
 import { sendEmail } from '../utils/send-email';
 import type {
   EmailResult,
@@ -75,6 +73,9 @@ export async function sendBusinessApprovalEmail(
   data: BusinessApprovalEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    // Platform: the platform is speaking about the tenant's account, and it carries the
+    // platform login URL.
+    businessAccountId: null,
     to: data.email,
     subject: 'Your Business Account Has Been Approved!',
     template: BusinessAccountApprovedEmail,
@@ -93,6 +94,9 @@ export async function sendBusinessRejectionEmail(
   data: BusinessRejectionEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    // Platform: delivering a rejection through the rejected party's own mail server would
+    // be both absurd and unreliable.
+    businessAccountId: null,
     to: data.email,
     subject: 'Business Account Application Update',
     template: BusinessAccountRejectedEmail,
@@ -112,6 +116,10 @@ export async function sendBusinessWelcomePendingEmail(
   data: BusinessWelcomePendingEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    // Platform: the account is still pending, so nothing about it is verified. Letting an
+    // unapproved signup nominate an SMTP server we then send from would hand anyone with a
+    // signup form an authenticated relay.
+    businessAccountId: null,
     to: data.email,
     subject: 'Welcome to Infinia Transfers - Registration Received',
     template: BusinessWelcomePendingEmail,
@@ -127,6 +135,8 @@ export async function sendBusinessWelcomePendingEmail(
  * Business Booking Confirmation Email Data
  */
 export interface BusinessBookingConfirmationEmailData {
+  /** The tenant this booking belongs to, so the email sends on their SMTP and brand. */
+  businessAccountId: string;
   email: string;
   businessName: string;
   bookingNumber: string;
@@ -161,6 +171,8 @@ export async function sendBusinessBookingConfirmationEmail(
   data: BusinessBookingConfirmationEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.booking.confirmation',
     to: data.email,
     subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingConfirmationEmail,
@@ -195,6 +207,8 @@ export async function sendBusinessBookingConfirmationEmail(
  * Business Booking Cancellation Email Data
  */
 export interface BusinessBookingCancellationEmailData {
+  /** The tenant this booking belongs to, so the email sends on their SMTP and brand. */
+  businessAccountId: string;
   email: string;
   businessName: string;
   bookingNumber: string;
@@ -220,6 +234,8 @@ export async function sendBusinessBookingCancellationEmail(
   data: BusinessBookingCancellationEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.booking.cancellation',
     to: data.email,
     subject: `Booking Cancelled - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingCancelledEmail,
@@ -249,6 +265,8 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
   data: BusinessCustomerBookingConfirmationEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.customer.booking_confirmation',
     to: data.customerEmail,
     subject: `Your Transfer Booking - #${data.tripNumber || data.bookingNumber}`,
     template: CustomerBookingConfirmationEmail,
@@ -279,6 +297,8 @@ export async function sendBusinessCustomerDatetimeChangedEmail(
   data: BusinessCustomerDatetimeChangedEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.customer.datetime_changed',
     to: data.customerEmail,
     subject: `Pickup Time Changed - #${data.tripNumber || data.bookingNumber}`,
     template: CustomerDatetimeChangedEmail,
@@ -302,6 +322,8 @@ export async function sendBusinessCustomerBookingCancelledEmail(
   data: BusinessCustomerBookingCancelledEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.customer.booking_cancelled',
     to: data.customerEmail,
     subject: `Booking Cancelled - #${data.tripNumber || data.bookingNumber}`,
     template: CustomerBookingCancelledEmail,
@@ -325,6 +347,8 @@ export async function sendBusinessCustomerDriverAssignedEmail(
   data: BusinessCustomerDriverAssignedEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.customer.driver_assigned',
     to: data.customerEmail,
     subject: `Your Driver Has Been Assigned - #${data.tripNumber || data.bookingReference}`,
     template: CustomerDriverAssignedEmail,
@@ -347,6 +371,8 @@ export async function sendBusinessDriverAssignedEmail(
   data: BusinessDriverAssignedEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.driver_assigned',
     to: data.businessEmail,
     subject: `Driver Assigned - #${data.tripNumber || data.bookingReference}`,
     template: BusinessBookingDriverAssignedEmail,
@@ -372,6 +398,8 @@ export async function sendBusinessBookingStatusUpdateEmail(
 ): Promise<EmailResult> {
   const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1);
   return sendEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.booking.status_update',
     to: data.email,
     subject: `Booking ${statusLabel} - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingStatusUpdateEmail,
@@ -399,6 +427,8 @@ export async function sendBusinessRegistrationAdminNotificationEmail(
   const adminEmail = getAdminEmail();
   const appUrl = getAppUrl();
   return sendEmail({
+    // Platform: the recipient is a platform administrator, not the tenant's audience.
+    businessAccountId: null,
     to: adminEmail,
     subject: `New Business Registration - ${data.businessName}`,
     template: NewBusinessRegistrationAdminNotificationEmail,

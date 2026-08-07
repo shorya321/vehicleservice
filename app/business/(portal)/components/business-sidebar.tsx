@@ -19,6 +19,7 @@ import {
   Wallet,
   Settings,
   Palette,
+  Mail,
   Plus,
   ChevronLeft,
   X,
@@ -120,6 +121,13 @@ const navGroups: NavGroup[] = [
         title: 'Branding',
         href: '/business/settings/branding',
         icon: Palette,
+        ownerOnly: true,
+      },
+      {
+        // The tenant's own SMTP credentials, so its customers see its domain.
+        title: 'Email',
+        href: '/business/settings/email',
+        icon: Mail,
         ownerOnly: true,
       },
       {

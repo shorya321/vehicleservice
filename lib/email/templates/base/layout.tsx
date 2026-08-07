@@ -11,7 +11,7 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
-import { BRAND_NAME, BRAND_ADDRESS, getBrandUrl } from '../../config';
+import { getCurrentBrand } from '../../brand/brand';
 
 interface EmailLayoutProps {
   preview: string;
@@ -19,9 +19,18 @@ interface EmailLayoutProps {
   children: React.ReactNode;
 }
 
+/**
+ * The chrome every email template renders inside.
+ *
+ * The brand is read at render time rather than passed as a prop, so none of the other
+ * 56 templates had to change. On the server, sendEmail establishes the tenant's brand
+ * for the duration of the render; in the browser, where app/admin/emails renders these
+ * same templates for preview, no brand is ever established and this falls back to the
+ * platform's, which is exactly right for an admin previewing platform mail.
+ */
 export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) => {
   const currentYear = new Date().getFullYear();
-  const brandUrl = getBrandUrl();
+  const brand = getCurrentBrand();
 
   return (
     <Html>
@@ -31,7 +40,11 @@ export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) =>
         <Container style={container}>
           {/* Logo/Header */}
           <Section style={header}>
-            <Heading style={h1}>{BRAND_NAME}</Heading>
+            {brand.logoUrl ? (
+              <Img src={brand.logoUrl} alt={brand.name} height={40} style={logo} />
+            ) : (
+              <Heading style={h1}>{brand.name}</Heading>
+            )}
           </Section>
 
           {/* Main Content */}
@@ -43,27 +56,40 @@ export const EmailLayout = ({ preview, heading, children }: EmailLayoutProps) =>
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              © {currentYear} {BRAND_NAME}. All rights reserved.
+              © {currentYear} {brand.name}. All rights reserved.
             </Text>
             <Text style={footerText}>
-              {BRAND_ADDRESS}
+              {brand.address}
             </Text>
             <Text style={footerText}>
               This email was sent to you as part of your account activity.
             </Text>
-            <Text style={footerLinks}>
-              <Link href={`${brandUrl}/privacy`} style={footerLink}>
-                Privacy Policy
-              </Link>
-              {' | '}
-              <Link href={`${brandUrl}/terms`} style={footerLink}>
-                Terms of Service
-              </Link>
-              {' | '}
-              <Link href={`${brandUrl}/contact`} style={footerLink}>
-                Contact Support
-              </Link>
-            </Text>
+            {/*
+              These are the platform's own legal pages. Showing them under a tenant's
+              brand would tell the recipient that the tenant's terms are the platform's,
+              so a tenant gets a link to its own support address instead.
+            */}
+            {brand.showPlatformLinks ? (
+              <Text style={footerLinks}>
+                <Link href={`${brand.url}/privacy`} style={footerLink}>
+                  Privacy Policy
+                </Link>
+                {' | '}
+                <Link href={`${brand.url}/terms`} style={footerLink}>
+                  Terms of Service
+                </Link>
+                {' | '}
+                <Link href={`${brand.url}/contact`} style={footerLink}>
+                  Contact Support
+                </Link>
+              </Text>
+            ) : brand.supportEmail ? (
+              <Text style={footerLinks}>
+                <Link href={`mailto:${brand.supportEmail}`} style={footerLink}>
+                  Contact {brand.name}
+                </Link>
+              </Text>
+            ) : null}
           </Section>
         </Container>
       </Body>
@@ -98,6 +124,16 @@ const h1 = {
   fontWeight: 'bold',
   margin: '0',
   padding: '0',
+};
+
+/**
+ * Height is fixed and width is left to the image so any aspect ratio sits on the same
+ * baseline as the wordmark it replaces. Mail clients ignore CSS max-width often enough
+ * that constraining the height is the reliable control.
+ */
+const logo = {
+  margin: '0 auto',
+  maxWidth: '220px',
 };
 
 const content = {

@@ -1,4 +1,10 @@
-'use server';
+/**
+ * Platform operations mail: the recipient is always a platform administrator.
+ *
+ * Every send here passes businessAccountId: null. Routing platform ops alerts through a
+ * tenant's mail server would leak platform data to a third party, and would let a
+ * business suppress alerts about itself by pointing its SMTP at a black hole.
+ */
 
 import { sendEmail } from '../utils/send-email';
 import {
@@ -16,6 +22,7 @@ export async function sendNewUserNotificationEmail(
   data: NewUserRegistrationNotificationEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.adminEmail,
     subject: `New User Registration - ${data.userName}`,
     template: NewUserNotificationEmail,
@@ -36,6 +43,7 @@ export async function sendNewBookingNotificationEmail(
   data: NewBookingNotificationEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.adminEmail,
     subject: `New Booking - #${data.tripNumber || data.bookingReference}`,
     template: NewBookingNotificationEmail,

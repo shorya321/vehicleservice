@@ -3,6 +3,10 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  // nodemailer resolves its transport modules with dynamic require(), which bundlers
+  // cannot trace statically. Bundling it produces confusing "cannot find module"
+  // errors at runtime rather than at build time.
+  serverExternalPackages: ['nodemailer'],
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'motion/react'],
   },

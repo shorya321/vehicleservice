@@ -1,7 +1,4 @@
-'use server';
-
-import { jsx } from 'react/jsx-runtime';
-import { getResendClient, getEmailConfig, getAppUrl } from '../config';
+import { getAppUrl } from '../config';
 import { sendEmail } from '../utils/send-email';
 import {
   type EmailResult,
@@ -19,62 +16,38 @@ import BookingDriverAssignedEmail from '../templates/booking/driver-assigned';
 export async function sendBookingConfirmationEmail(
   data: BookingConfirmationEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.customerEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Booking Confirmed - ${data.tripNumber || data.bookingReference}`,
-      react: jsx(BookingConfirmationEmail, {
-        customerName: data.customerName,
-        bookingReference: data.bookingReference,
-        tripNumber: data.tripNumber,
-        vehicleCategory: data.vehicleCategory,
-        vehicleType: data.vehicleType,
-        passengerCapacity: data.passengerCapacity,
-        luggageCapacity: data.luggageCapacity,
-        pickupLocation: data.pickupLocation,
-        dropoffLocation: data.dropoffLocation,
-        pickupDate: data.pickupDate,
-        pickupTime: data.pickupTime,
-        totalAmount: data.totalAmount,
-        currency: data.currency,
-        originalAmount: data.originalAmount,
-        originalCurrency: data.originalCurrency,
-        passengerCount: data.passengerCount,
-        adults: data.adults,
-        children: data.children,
-        infants: data.infants,
-        basePrice: data.basePrice,
-        amenitiesPrice: data.amenitiesPrice,
-        extras: data.extras,
-        customerNotes: data.customerNotes,
-        invoiceUrl: data.invoiceUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send booking confirmation email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send booking confirmation email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending booking confirmation email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.customerEmail,
+    subject: `Booking Confirmed - ${data.tripNumber || data.bookingReference}`,
+    template: BookingConfirmationEmail,
+    templateProps: {
+      customerName: data.customerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      vehicleCategory: data.vehicleCategory,
+      vehicleType: data.vehicleType,
+      passengerCapacity: data.passengerCapacity,
+      luggageCapacity: data.luggageCapacity,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      totalAmount: data.totalAmount,
+      currency: data.currency,
+      originalAmount: data.originalAmount,
+      originalCurrency: data.originalCurrency,
+      passengerCount: data.passengerCount,
+      adults: data.adults,
+      children: data.children,
+      infants: data.infants,
+      basePrice: data.basePrice,
+      amenitiesPrice: data.amenitiesPrice,
+      extras: data.extras,
+      customerNotes: data.customerNotes,
+      invoiceUrl: data.invoiceUrl,
+    },
+  });
 }
 
 /**
@@ -83,46 +56,22 @@ export async function sendBookingConfirmationEmail(
 export async function sendBookingStatusUpdateEmail(
   data: BookingStatusUpdateEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.customerEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Booking Status Update - ${data.tripNumber || data.bookingReference}`,
-      react: jsx(BookingStatusUpdateEmail, {
-        customerName: data.customerName,
-        bookingReference: data.bookingReference,
-        tripNumber: data.tripNumber,
-        previousStatus: data.previousStatus,
-        newStatus: data.newStatus,
-        statusMessage: data.statusMessage,
-        vehicleCategory: data.vehicleCategory,
-        pickupDate: data.pickupDate,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send booking status update email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send booking status update email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending booking status update email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.customerEmail,
+    subject: `Booking Status Update - ${data.tripNumber || data.bookingReference}`,
+    template: BookingStatusUpdateEmail,
+    templateProps: {
+      customerName: data.customerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      previousStatus: data.previousStatus,
+      newStatus: data.newStatus,
+      statusMessage: data.statusMessage,
+      vehicleCategory: data.vehicleCategory,
+      pickupDate: data.pickupDate,
+    },
+  });
 }
 
 /**
@@ -132,6 +81,7 @@ export async function sendBookingDriverAssignedEmail(
   data: CustomerDriverAssignedEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.customerEmail,
     subject: `Your Driver Has Been Assigned - #${data.tripNumber || data.bookingReference}`,
     template: BookingDriverAssignedEmail,

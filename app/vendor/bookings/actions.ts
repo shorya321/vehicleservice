@@ -647,26 +647,33 @@ export async function acceptAndAssignResources(
         })
       }
     } else {
-      if (booking.customerEmail) {
+      // Hoisted above the customer send: both messages belong to the tenant and need
+      // its id to pick the right SMTP credentials and brand, so the lookup has to
+      // happen before either goes out. It previously ran only for the second one.
+      const { data: businessBooking } = await adminClient
+        .from('business_bookings')
+        .select(
+          'business_account_id, business_account:business_accounts!business_bookings_business_account_id_fkey(business_name, business_email)'
+        )
+        .eq('id', booking.id)
+        .single()
+
+      const businessAccountId = (businessBooking as any)?.business_account_id as string | undefined
+      const businessAccount = (businessBooking as any)?.business_account
+
+      if (booking.customerEmail && businessAccountId) {
         await sendBusinessCustomerDriverAssignedEmail({
           ...tripDetails,
+          businessAccountId,
           customerName: booking.customerName,
           customerEmail: booking.customerEmail,
         })
       }
 
-      const { data: businessBooking } = await adminClient
-        .from('business_bookings')
-        .select(
-          'business_account:business_accounts!business_bookings_business_account_id_fkey(business_name, business_email)'
-        )
-        .eq('id', booking.id)
-        .single()
-
-      const businessAccount = (businessBooking as any)?.business_account
-      if (businessAccount?.business_email) {
+      if (businessAccount?.business_email && businessAccountId) {
         await sendBusinessDriverAssignedEmail({
           ...tripDetails,
+          businessAccountId,
           businessName: businessAccount.business_name,
           businessEmail: businessAccount.business_email,
           passengerName: booking.customerName,

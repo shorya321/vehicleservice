@@ -13,6 +13,7 @@ import { motion } from 'motion/react';
 import {
   CreditCard,
   Palette,
+  Mail,
   Bell,
   FileText,
   Globe,
@@ -67,6 +68,14 @@ const settingsLinks = [
     description: 'Customize your business logo and brand colors',
     colorClass: 'border-l-violet-500',
     iconColorClass: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+  },
+  {
+    href: '/business/settings/email',
+    icon: Mail,
+    title: 'Email Sending',
+    description: 'Send booking emails from your own domain with your own mail server',
+    colorClass: 'border-l-rose-500',
+    iconColorClass: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
   },
   {
     href: '/business/settings/notifications',

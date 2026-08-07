@@ -3,7 +3,7 @@
  * Create and manage business bookings
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import {
   requireBusinessAuth,
   apiSuccess,
@@ -397,90 +397,102 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       const isConverted = displayCurrency !== BUSINESS_BASE_CURRENCY;
       const extrasForOwner = extras.map((e) => ({ ...e, price: toDisplay(e.price) }));
 
-      // Send confirmation to business owner
-      sendBusinessBookingConfirmationEmail({
-        email: businessAccount.business_email,
-        businessName: businessAccount.business_name,
-        bookingNumber: booking.booking_number,
-        tripNumber: booking.trip_number,
-        customerName: booking.customer_name,
-        customerPhone: booking.customer_phone,
-        pickupLocation,
-        dropoffLocation,
-        pickupDateTime,
-        vehicleType: vehicle?.name || 'Standard',
-        passengerCount: booking.passenger_count,
-        adults: booking.adults,
-        children: booking.children,
-        infants: booking.infants,
-        totalPrice: toDisplay(booking.total_price),
-        currency: displayCurrency,
-        originalAmount: isConverted ? booking.total_price : undefined,
-        originalCurrency: isConverted ? currency : undefined,
-        walletDeducted: toDisplay(booking.total_price),
-        newBalance: toDisplay(businessAccount.wallet_balance),
-        bookingUrl: `${getAppUrl()}/business/bookings/${booking.id}`,
-        referenceNumber: booking.reference_number,
-        extras: extrasForOwner,
-      }).catch((err: unknown) => {
-        console.error('Failed to send booking confirmation email:', err);
-      });
-
-      // Send confirmation to customer
-      if (booking.customer_email) {
-        sendBusinessCustomerBookingConfirmationEmail({
-          customerName: booking.customer_name,
-          customerEmail: booking.customer_email,
-          customerPhone: booking.customer_phone,
+      // These sends are deliberately not awaited: the caller should not wait on mail.
+      //
+      // They are wrapped in after() because a tenant's own SMTP server is a multi
+      // round-trip conversation against a host of unknown latency. Against Resend's
+      // single HTTPS POST an un-awaited promise usually completed before the serverless
+      // instance froze; against SMTP it frequently would not, and the mail would be
+      // dropped non-deterministically under load. after() keeps the invocation alive
+      // past the response without delaying it.
+      after(async () => {
+        // Send confirmation to business owner
+        sendBusinessBookingConfirmationEmail({
+          businessAccountId: user.businessAccountId,
+          email: businessAccount.business_email,
           businessName: businessAccount.business_name,
           bookingNumber: booking.booking_number,
           tripNumber: booking.trip_number,
+          customerName: booking.customer_name,
+          customerPhone: booking.customer_phone,
           pickupLocation,
           dropoffLocation,
           pickupDateTime,
           vehicleType: vehicle?.name || 'Standard',
           passengerCount: booking.passenger_count,
-        adults: booking.adults,
-        children: booking.children,
-        infants: booking.infants,
+          adults: booking.adults,
+          children: booking.children,
+          infants: booking.infants,
+          totalPrice: toDisplay(booking.total_price),
+          currency: displayCurrency,
+          originalAmount: isConverted ? booking.total_price : undefined,
+          originalCurrency: isConverted ? currency : undefined,
+          walletDeducted: toDisplay(booking.total_price),
+          newBalance: toDisplay(businessAccount.wallet_balance),
+          bookingUrl: `${getAppUrl()}/business/bookings/${booking.id}`,
           referenceNumber: booking.reference_number,
-          extras,
+          extras: extrasForOwner,
         }).catch((err: unknown) => {
-          console.error('Failed to send customer booking confirmation email:', err);
+          console.error('Failed to send booking confirmation email:', err);
         });
-      } else {
-        console.warn('No customer email on booking; customer was not notified', {
-          bookingId,
-          bookingNumber: booking.booking_number,
-        });
-      }
 
-      // Send admin notification. getAdminEmail() throws when neither
-      // ADMIN_NOTIFICATION_EMAIL nor RESEND_FROM_EMAIL is set, and the booking has
-      // already succeeded and deducted the wallet, so never let that surface.
-      try {
-        sendNewBookingNotificationEmail({
-          adminEmail: getAdminEmail(),
-          bookingId: bookingId as string,
-          bookingReference: booking.booking_number,
-          tripNumber: booking.trip_number,
-          customerName: booking.customer_name,
-          customerEmail: booking.customer_email || '',
-          vehicleCategory: vehicle?.category?.name || 'Vehicle',
-          vehicleType: vehicle?.name || undefined,
-          pickupLocation,
-          dropoffLocation,
-          pickupDate,
-          pickupTime,
-          totalAmount: booking.total_price,
-          currency,
-          bookingDetailsUrl: `${getAppUrl()}/admin/bookings/${bookingId}`,
-        }).catch((err: unknown) => {
-          console.error('Failed to send admin booking notification email:', err);
-        });
-      } catch (err: unknown) {
-        console.error('Admin notification email not configured:', err);
-      }
+        // Send confirmation to customer
+        if (booking.customer_email) {
+          sendBusinessCustomerBookingConfirmationEmail({
+            businessAccountId: user.businessAccountId,
+            customerName: booking.customer_name,
+            customerEmail: booking.customer_email,
+            customerPhone: booking.customer_phone,
+            businessName: businessAccount.business_name,
+            bookingNumber: booking.booking_number,
+            tripNumber: booking.trip_number,
+            pickupLocation,
+            dropoffLocation,
+            pickupDateTime,
+            vehicleType: vehicle?.name || 'Standard',
+            passengerCount: booking.passenger_count,
+          adults: booking.adults,
+          children: booking.children,
+          infants: booking.infants,
+            referenceNumber: booking.reference_number,
+            extras,
+          }).catch((err: unknown) => {
+            console.error('Failed to send customer booking confirmation email:', err);
+          });
+        } else {
+          console.warn('No customer email on booking; customer was not notified', {
+            bookingId,
+            bookingNumber: booking.booking_number,
+          });
+        }
+
+        // Send admin notification. getAdminEmail() throws when neither
+        // ADMIN_NOTIFICATION_EMAIL nor RESEND_FROM_EMAIL is set, and the booking has
+        // already succeeded and deducted the wallet, so never let that surface.
+        try {
+          sendNewBookingNotificationEmail({
+            adminEmail: getAdminEmail(),
+            bookingId: bookingId as string,
+            bookingReference: booking.booking_number,
+            tripNumber: booking.trip_number,
+            customerName: booking.customer_name,
+            customerEmail: booking.customer_email || '',
+            vehicleCategory: vehicle?.category?.name || 'Vehicle',
+            vehicleType: vehicle?.name || undefined,
+            pickupLocation,
+            dropoffLocation,
+            pickupDate,
+            pickupTime,
+            totalAmount: booking.total_price,
+            currency,
+            bookingDetailsUrl: `${getAppUrl()}/admin/bookings/${bookingId}`,
+          }).catch((err: unknown) => {
+            console.error('Failed to send admin booking notification email:', err);
+          });
+        } catch (err: unknown) {
+          console.error('Admin notification email not configured:', err);
+        }
+      });
     }
 
     // Check for low balance and send alert if needed

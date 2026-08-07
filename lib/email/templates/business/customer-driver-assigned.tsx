@@ -4,6 +4,7 @@ import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
+import { getCurrentBrand } from '../../brand/brand';
 
 /** Strips spaces, dashes and brackets so the tel: href is dialable. Keeps a leading +. */
 const toDialableNumber = (phone: string): string => phone.replace(/[^\d+]/g, '');
@@ -77,7 +78,7 @@ export const CustomerDriverAssignedEmail = ({
         <br />
         Best regards,
         <br />
-        The Infinia Transfers Team
+        The {getCurrentBrand().name} Team
       </Text>
     </EmailLayout>
   );

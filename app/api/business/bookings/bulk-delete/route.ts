@@ -3,7 +3,7 @@
  * Handle deletion of multiple bookings at once
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import {
@@ -93,7 +93,12 @@ export const POST = requireBusinessOwner(
 
       const businessName = businessAccount?.business_name || 'Your booking provider';
 
-      Promise.allSettled(
+      // after(): these run past the response, which matters now that a tenant's own
+      // SMTP server may be a multi round-trip conversation. Un-awaited, the promises
+      // would be abandoned when the serverless instance froze and a whole batch of
+      // cancellation emails would vanish with no error anywhere.
+      after(() =>
+        Promise.allSettled(
         bookings
           .filter((b) => b.customer_email)
           .map((b) => {
@@ -112,6 +117,7 @@ export const POST = requireBusinessOwner(
             });
 
             return sendBusinessCustomerBookingCancelledEmail({
+              businessAccountId: user.businessAccountId,
               customerName: b.customer_name,
               customerEmail: b.customer_email,
               businessName,
@@ -122,7 +128,8 @@ export const POST = requireBusinessOwner(
               pickupDateTime,
             });
           })
-      ).catch((err) => console.error('Bulk deletion email error:', err));
+        ).catch((err) => console.error('Bulk deletion email error:', err))
+      );
 
       // Logged BEFORE the delete: the rows are still readable, and the AFTER
       // DELETE trigger skips any booking that already has an entry. One row per

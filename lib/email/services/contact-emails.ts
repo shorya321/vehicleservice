@@ -1,4 +1,8 @@
-'use server';
+/**
+ * Public contact form mail: platform credentials.
+ *
+ * The contact form lives on the platform's own marketing site, not inside any tenant.
+ */
 
 import { sendEmail } from '../utils/send-email';
 import type { EmailResult } from '../types';
@@ -26,6 +30,7 @@ export async function sendContactConfirmationEmail(data: {
   message: string;
 }): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.email,
     subject: 'Thank you for contacting Infinia Transfers',
     template: ContactConfirmationEmail,
@@ -48,6 +53,7 @@ export async function sendContactAdminNotificationEmail(data: {
 }): Promise<EmailResult> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
   return sendEmail({
+    businessAccountId: null,
     to: data.adminEmail,
     subject: `New Contact Submission - ${data.name}`,
     template: ContactAdminNotificationEmail,
@@ -68,6 +74,7 @@ export async function sendContactReplyEmail(data: {
   replyMessage: string;
 }): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.email,
     subject: 'Reply from Infinia Transfers',
     template: ContactReplyEmail,

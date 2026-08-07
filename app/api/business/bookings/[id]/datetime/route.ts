@@ -3,7 +3,7 @@
  * Handle pickup datetime modifications for business bookings
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireBusinessAuth, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { bookingDatetimeModificationSchema } from '@/lib/business/validators';
@@ -198,18 +198,25 @@ export const PATCH = requireBusinessAuth(
           .eq('id', booking.business_account_id)
           .single();
 
-        sendBusinessCustomerDatetimeChangedEmail({
-          customerName: booking.customer_name,
-          customerEmail: booking.customer_email,
-          businessName: businessAccount?.business_name || 'Your booking provider',
-          bookingNumber: booking.booking_number,
-          tripNumber: booking.trip_number,
-          pickupLocation: booking.pickup_address || 'TBD',
-          previousDateTime: formatDt(previousDatetime),
-          newDateTime: formatDt(newPickupDatetime),
-          modificationReason: reason,
-        }).catch((err: unknown) => {
-          console.error('Failed to send customer datetime change email:', err);
+        // Not awaited, and wrapped in after() because a tenant's own SMTP server is a
+        // multi round-trip conversation against a host of unknown latency. Without it the
+        // promise is frequently dropped when the serverless instance freezes after the
+        // response, and the mail is silently lost under load.
+        after(() => {
+          sendBusinessCustomerDatetimeChangedEmail({
+            businessAccountId: user.businessAccountId,
+            customerName: booking.customer_name,
+            customerEmail: booking.customer_email,
+            businessName: businessAccount?.business_name || 'Your booking provider',
+            bookingNumber: booking.booking_number,
+            tripNumber: booking.trip_number,
+            pickupLocation: booking.pickup_address || 'TBD',
+            previousDateTime: formatDt(previousDatetime),
+            newDateTime: formatDt(newPickupDatetime),
+            modificationReason: reason,
+          }).catch((err: unknown) => {
+            console.error('Failed to send customer datetime change email:', err);
+          });
         });
       }
 

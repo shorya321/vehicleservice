@@ -1,12 +1,17 @@
-'use server';
-
 /**
  * Wallet Email Service
  * Handles sending all wallet-related notification emails
+ *
+ * These go to a business's own staff about their own money, so they send on the
+ * tenant's SMTP credentials and under the tenant's brand where one is configured.
+ *
+ * The exception is sendWalletFrozenEmail. A freeze is the platform enforcing something
+ * against the account, and that notice has to arrive precisely when the tenant is in a
+ * bad state, including when they are not cooperating. It must not depend on
+ * infrastructure the tenant controls, so it always goes out on platform credentials.
  */
 
-import { jsx } from 'react/jsx-runtime';
-import { getResendClient, getEmailConfig } from '../config';
+import { sendEmail } from '../utils/send-email';
 import { type EmailResult } from '../types';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/utils/currency-converter';
@@ -18,8 +23,19 @@ import WalletFrozenEmail from '../templates/wallet/wallet-frozen';
 import SpendingLimitReachedEmail from '../templates/wallet/spending-limit-reached';
 import MonthlyStatementEmail from '../templates/wallet/monthly-statement';
 
+/**
+ * The tenant these wallet notifications belong to.
+ *
+ * Optional during the rollout so existing callers keep compiling; step 4 makes it
+ * required at the call sites that have it, which is all of them - every caller already
+ * carries business_account_id in scope.
+ */
+interface TenantScoped {
+  businessAccountId?: string | null;
+}
+
 // Type definitions for email data
-export interface LowBalanceAlertData {
+export interface LowBalanceAlertData extends TenantScoped {
   businessName: string;
   businessEmail: string;
   currentBalance: number;
@@ -28,7 +44,7 @@ export interface LowBalanceAlertData {
   walletUrl: string;
 }
 
-export interface TransactionCompletedData {
+export interface TransactionCompletedData extends TenantScoped {
   businessName: string;
   businessEmail: string;
   transactionType: 'credit' | 'debit';
@@ -42,7 +58,7 @@ export interface TransactionCompletedData {
   walletUrl: string;
 }
 
-export interface WalletFrozenData {
+export interface WalletFrozenData extends TenantScoped {
   businessName: string;
   businessEmail: string;
   currentBalance: number;
@@ -53,7 +69,7 @@ export interface WalletFrozenData {
   supportUrl: string;
 }
 
-export interface SpendingLimitReachedData {
+export interface SpendingLimitReachedData extends TenantScoped {
   businessName: string;
   businessEmail: string;
   limitType: 'transaction' | 'daily' | 'monthly';
@@ -66,7 +82,7 @@ export interface SpendingLimitReachedData {
   supportUrl: string;
 }
 
-export interface MonthlyStatementData {
+export interface MonthlyStatementData extends TenantScoped {
   businessName: string;
   businessEmail: string;
   statementMonth: string;
@@ -85,37 +101,15 @@ export interface MonthlyStatementData {
  * Send low balance alert email
  */
 export async function sendLowBalanceAlert(data: LowBalanceAlertData): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
+  const { businessAccountId, ...templateProps } = data;
 
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Low Balance Alert - ${formatCurrency(data.currentBalance, data.currency)} remaining`,
-      react: jsx(LowBalanceAlertEmail, data),
-    });
-
-    if (error) {
-      console.error('Failed to send low balance alert:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send low balance alert',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending low balance alert:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: businessAccountId ?? null,
+    to: data.businessEmail,
+    subject: `Low Balance Alert - ${formatCurrency(data.currentBalance, data.currency)} remaining`,
+    template: LowBalanceAlertEmail,
+    templateProps,
+  });
 }
 
 /**
@@ -124,87 +118,40 @@ export async function sendLowBalanceAlert(data: LowBalanceAlertData): Promise<Em
 export async function sendTransactionCompletedEmail(
   data: TransactionCompletedData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
+  const { businessAccountId, ...rest } = data;
 
-    const formattedData = {
-      ...data,
+  const isCredit = data.transactionType === 'credit';
+
+  return sendEmail({
+    businessAccountId: businessAccountId ?? null,
+    to: data.businessEmail,
+    subject: `Transaction ${isCredit ? 'Credit' : 'Debit'} - ${formatCurrency(Math.abs(data.amount), data.currency)}`,
+    template: TransactionCompletedEmail,
+    templateProps: {
+      ...rest,
       transactionDate: format(data.transactionDate, 'PPp'),
-    };
-
-    const isCredit = data.transactionType === 'credit';
-    const subject = `Transaction ${isCredit ? 'Credit' : 'Debit'} - ${formatCurrency(Math.abs(data.amount), data.currency)}`;
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject,
-      react: jsx(TransactionCompletedEmail, formattedData),
-    });
-
-    if (error) {
-      console.error('Failed to send transaction completed email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send transaction completed email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending transaction completed email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+    },
+  });
 }
 
 /**
  * Send wallet frozen email
+ *
+ * Always platform credentials: see the note at the top of this file.
  */
 export async function sendWalletFrozenEmail(data: WalletFrozenData): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
+  const { businessAccountId: _ignored, ...rest } = data;
 
-    const formattedData = {
-      ...data,
+  return sendEmail({
+    businessAccountId: null,
+    to: data.businessEmail,
+    subject: 'Your Wallet Has Been Frozen - Action Required',
+    template: WalletFrozenEmail,
+    templateProps: {
+      ...rest,
       freezeDate: format(data.freezeDate, 'PPp'),
-    };
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject: 'Your Wallet Has Been Frozen - Action Required',
-      react: jsx(WalletFrozenEmail, formattedData),
-    });
-
-    if (error) {
-      console.error('Failed to send wallet frozen email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send wallet frozen email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending wallet frozen email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+    },
+  });
 }
 
 /**
@@ -213,80 +160,33 @@ export async function sendWalletFrozenEmail(data: WalletFrozenData): Promise<Ema
 export async function sendSpendingLimitReachedEmail(
   data: SpendingLimitReachedData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
+  const { businessAccountId, ...rest } = data;
 
-    const formattedData = {
-      ...data,
+  const limitTypeText = data.limitType === 'transaction' ? 'per-transaction' : data.limitType;
+
+  return sendEmail({
+    businessAccountId: businessAccountId ?? null,
+    to: data.businessEmail,
+    subject: `${limitTypeText.charAt(0).toUpperCase() + limitTypeText.slice(1)} Spending Limit Reached`,
+    template: SpendingLimitReachedEmail,
+    templateProps: {
+      ...rest,
       resetDate: data.resetDate ? format(data.resetDate, 'PPp') : undefined,
-    };
-
-    const limitTypeText = data.limitType === 'transaction' ? 'per-transaction' : data.limitType;
-    const subject = `${limitTypeText.charAt(0).toUpperCase() + limitTypeText.slice(1)} Spending Limit Reached`;
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject,
-      react: jsx(SpendingLimitReachedEmail, formattedData),
-    });
-
-    if (error) {
-      console.error('Failed to send spending limit reached email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send spending limit reached email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending spending limit reached email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+    },
+  });
 }
 
 /**
  * Send monthly statement email
  */
 export async function sendMonthlyStatementEmail(data: MonthlyStatementData): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
+  const { businessAccountId, ...templateProps } = data;
 
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.businessEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Monthly Wallet Statement - ${data.statementMonth} ${data.statementYear}`,
-      react: jsx(MonthlyStatementEmail, data),
-    });
-
-    if (error) {
-      console.error('Failed to send monthly statement email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send monthly statement email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending monthly statement email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: businessAccountId ?? null,
+    to: data.businessEmail,
+    subject: `Monthly Wallet Statement - ${data.statementMonth} ${data.statementYear}`,
+    template: MonthlyStatementEmail,
+    templateProps,
+  });
 }

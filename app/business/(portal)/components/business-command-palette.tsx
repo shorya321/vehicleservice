@@ -29,6 +29,7 @@ import {
   Settings,
   Paintbrush,
   Bell,
+  Mail,
   Globe,
   Plus,
   CreditCard,
@@ -108,6 +109,15 @@ const navigationItems: PaletteItem[] = [
     ownerOnly: true,
     href: '/business/settings/branding',
     icon: Paintbrush,
+    shortcut: '',
+  },
+  {
+    // "Email Sending", not "Email": there is already a Notifications entry for the
+    // member's own inbox, and the two must not read as duplicates.
+    name: 'Email Sending',
+    ownerOnly: true,
+    href: '/business/settings/email',
+    icon: Mail,
     shortcut: '',
   },
   {

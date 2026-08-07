@@ -39,11 +39,21 @@ export async function POST(request: NextRequest) {
     const supabase = createAdminClient();
     const { data: businessAccount, error: accountError } = await supabase
       .from('business_accounts')
-      .select('id, business_name, business_email, business_phone, business_address, currency, wallet_balance, notification_preferences')
+      // The column is `address`. This selected `business_address`, which does not exist,
+      // so PostgREST failed with 42703, the guard below returned 404, and EVERY wallet
+      // notification email died before it was composed: low balance, spending limit,
+      // transaction completed, and wallet frozen, across all five callers.
+      .select('id, business_name, business_email, business_phone, address, currency, wallet_balance, notification_preferences')
       .eq('id', business_account_id)
       .single();
 
     if (accountError || !businessAccount) {
+      // Log the reason. Silently returning 404 for a schema error is what let the bug
+      // above survive: every caller saw a plausible "not found" and moved on.
+      console.error(
+        `[Notification] business account lookup failed for ${business_account_id}:`,
+        accountError?.message ?? 'no row returned'
+      );
       return apiError('Business account not found', 404);
     }
 
@@ -58,10 +68,15 @@ export async function POST(request: NextRequest) {
 
     // Prepare common email data
     const baseEmailData = {
+      // Routes wallet notifications through the tenant's own SMTP credentials and brand.
+      // The one exception is the wallet-frozen notice, which sendWalletFrozenEmail
+      // deliberately forces onto platform credentials: an enforcement message has to
+      // arrive even when the tenant's own mail server is part of the problem.
+      businessAccountId: business_account_id as string,
       businessName: businessAccount.business_name,
       businessEmail: businessAccount.business_email,
       businessPhone: businessAccount.business_phone,
-      businessAddress: businessAccount.business_address,
+      businessAddress: businessAccount.address,
       currency: businessAccount.currency || 'AED',
       walletUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/wallet`,
       ...email_data,
@@ -119,15 +134,30 @@ export async function POST(request: NextRequest) {
         return apiError(`Unknown notification type: ${notification_type}`, 400);
     }
 
-    // Record notification in history
-    await supabase.from('wallet_notification_history').insert({
+    // Record notification in history.
+    //
+    // This insert previously omitted `channel`, which is NOT NULL with no default, and
+    // set `email_id`, which is not a column on this table. Both made it fail every time,
+    // and because the result was never inspected it failed silently: the history table
+    // stayed empty while the emails themselves were sending.
+    const { error: historyError } = await supabase.from('wallet_notification_history').insert({
       business_account_id,
       notification_type,
+      channel: 'email',
       status: emailResult.success ? 'sent' : 'failed',
-      email_id: emailResult.emailId,
-      error_message: emailResult.error,
-      metadata: email_data,
+      recipient_email: businessAccount.business_email,
+      sent_at: emailResult.success ? new Date().toISOString() : null,
+      error_message: emailResult.error ?? null,
+      // The provider's id has no column of its own, so it rides along in metadata
+      // rather than being dropped.
+      metadata: { ...(email_data ?? {}), email_id: emailResult.emailId ?? null },
     });
+
+    if (historyError) {
+      // Never fatal: the email has already gone out, and losing the audit row must not
+      // turn a delivered notification into a reported failure.
+      console.error('[Notification] history insert failed:', historyError.message);
+    }
 
     if (!emailResult.success) {
       return apiError(`Failed to send email: ${emailResult.error}`, 500);

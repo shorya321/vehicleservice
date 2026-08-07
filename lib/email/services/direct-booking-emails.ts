@@ -1,4 +1,10 @@
-'use server';
+/**
+ * Vendor direct-booking mail: platform credentials.
+ *
+ * These belong to the vendor module, not the white-label business module. The vendor's
+ * own address is already surfaced through replyTo, which is the right amount of "on
+ * behalf of" for a supplier relationship.
+ */
 
 import { sendEmail } from '../utils/send-email';
 import {
@@ -31,6 +37,7 @@ export async function sendDirectBookingCustomerConfirmationEmail(
   data: DirectBookingCustomerConfirmationEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.customerEmail,
     subject: `Booking Confirmed - ${data.bookingReference}`,
     template: DirectBookingCustomerConfirmationEmail,
@@ -69,6 +76,7 @@ export async function sendDirectBookingCustomerStatusUpdateEmail(
   data: DirectBookingCustomerStatusUpdateEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.customerEmail,
     subject: `Booking Update - ${data.bookingReference}`,
     template: DirectBookingCustomerStatusUpdateEmail,
@@ -94,6 +102,7 @@ export async function sendDirectBookingCustomerCancelledEmail(
   data: DirectBookingCustomerCancelledEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.customerEmail,
     subject: `Booking Cancelled - ${data.bookingReference}`,
     template: DirectBookingCustomerCancelledEmail,
@@ -117,6 +126,7 @@ export async function sendDirectBookingDriverAssignmentEmail(
   data: DirectBookingDriverAssignmentEmailData
 ): Promise<EmailResult> {
   return sendEmail({
+    businessAccountId: null,
     to: data.driverEmail,
     subject: `Trip Assignment - #${data.bookingReference}`,
     template: DirectBookingDriverAssignmentEmail,

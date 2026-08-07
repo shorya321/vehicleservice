@@ -1,7 +1,4 @@
-'use server';
-
-import { jsx } from 'react/jsx-runtime';
-import { getResendClient, getEmailConfig } from '../config';
+import { sendEmail } from '../utils/send-email';
 import {
   type EmailResult,
   type VendorApplicationReceivedEmailData,
@@ -19,46 +16,29 @@ import BookingAssignedEmail from '../templates/vendor/booking-assigned';
 import BookingUnassignedEmail from '../templates/vendor/booking-unassigned';
 
 /**
+ * Vendor mail is platform-voice throughout, including for bookings that originated with
+ * a white-label business. Vendors contract with the platform, not with the tenant, so
+ * they must see one consistent sender across bookings from many tenants. Every send
+ * here therefore passes businessAccountId: null deliberately.
+ */
+
+/**
  * Send vendor application received confirmation email
  */
 export async function sendVendorApplicationReceivedEmail(
   data: VendorApplicationReceivedEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.email,
-      replyTo: emailConfig.replyTo,
-      subject: 'Vendor Application Received - Infinia Transfers',
-      react: jsx(VendorApplicationReceivedEmail, {
-        name: data.name,
-        applicationReference: data.applicationReference,
-        submittedDate: data.submittedDate,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send vendor application received email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send vendor application received email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending vendor application received email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.email,
+    subject: 'Vendor Application Received - Infinia Transfers',
+    template: VendorApplicationReceivedEmail,
+    templateProps: {
+      name: data.name,
+      applicationReference: data.applicationReference,
+      submittedDate: data.submittedDate,
+    },
+  });
 }
 
 /**
@@ -67,42 +47,18 @@ export async function sendVendorApplicationReceivedEmail(
 export async function sendVendorApplicationApprovedEmail(
   data: VendorApplicationApprovedEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.email,
-      replyTo: emailConfig.replyTo,
-      subject: 'Congratulations! Your Vendor Application Approved',
-      react: jsx(VendorApplicationApprovedEmail, {
-        name: data.name,
-        applicationReference: data.applicationReference,
-        loginUrl: data.loginUrl,
-        dashboardUrl: data.dashboardUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send vendor application approved email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send vendor application approved email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending vendor application approved email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.email,
+    subject: 'Congratulations! Your Vendor Application Approved',
+    template: VendorApplicationApprovedEmail,
+    templateProps: {
+      name: data.name,
+      applicationReference: data.applicationReference,
+      loginUrl: data.loginUrl,
+      dashboardUrl: data.dashboardUrl,
+    },
+  });
 }
 
 /**
@@ -111,42 +67,18 @@ export async function sendVendorApplicationApprovedEmail(
 export async function sendVendorApplicationRejectedEmail(
   data: VendorApplicationRejectedEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.email,
-      replyTo: emailConfig.replyTo,
-      subject: 'Vendor Application Update - Infinia Transfers',
-      react: jsx(VendorApplicationRejectedEmail, {
-        name: data.name,
-        applicationReference: data.applicationReference,
-        rejectionReason: data.rejectionReason,
-        reapplyUrl: data.reapplyUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send vendor application rejected email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send vendor application rejected email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending vendor application rejected email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.email,
+    subject: 'Vendor Application Update - Infinia Transfers',
+    template: VendorApplicationRejectedEmail,
+    templateProps: {
+      name: data.name,
+      applicationReference: data.applicationReference,
+      rejectionReason: data.rejectionReason,
+      reapplyUrl: data.reapplyUrl,
+    },
+  });
 }
 
 /**
@@ -155,47 +87,23 @@ export async function sendVendorApplicationRejectedEmail(
 export async function sendBookingDatetimeModifiedEmail(
   data: BookingDatetimeModifiedEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.vendorEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Booking Time Changed - #${data.tripNumber || data.bookingNumber}`,
-      react: jsx(BookingDatetimeModifiedEmail, {
-        vendorName: data.vendorName,
-        bookingNumber: data.bookingNumber,
-        tripNumber: data.tripNumber,
-        customerName: data.customerName,
-        pickupAddress: data.pickupAddress,
-        previousDatetime: data.previousDatetime,
-        newDatetime: data.newDatetime,
-        modificationReason: data.modificationReason,
-        bookingUrl: data.bookingUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send booking datetime modified email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send booking datetime modified email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending booking datetime modified email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.vendorEmail,
+    subject: `Booking Time Changed - #${data.tripNumber || data.bookingNumber}`,
+    template: BookingDatetimeModifiedEmail,
+    templateProps: {
+      vendorName: data.vendorName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupAddress: data.pickupAddress,
+      previousDatetime: data.previousDatetime,
+      newDatetime: data.newDatetime,
+      modificationReason: data.modificationReason,
+      bookingUrl: data.bookingUrl,
+    },
+  });
 }
 
 /**
@@ -204,49 +112,25 @@ export async function sendBookingDatetimeModifiedEmail(
 export async function sendBookingAssignmentEmail(
   data: BookingAssignmentEmailData & { bookingUrl: string }
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.vendorEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `New Booking Assignment - #${data.tripNumber || data.bookingReference}`,
-      react: jsx(BookingAssignedEmail, {
-        vendorName: data.vendorName,
-        bookingReference: data.bookingReference,
-        tripNumber: data.tripNumber,
-        customerName: data.customerName,
-        vehicleCategory: data.vehicleCategory,
-        vehicleType: data.vehicleType,
-        pickupLocation: data.pickupLocation,
-        dropoffLocation: data.dropoffLocation,
-        pickupDate: data.pickupDate,
-        pickupTime: data.pickupTime,
-        bookingUrl: data.bookingUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send booking assignment email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send booking assignment email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending booking assignment email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.vendorEmail,
+    subject: `New Booking Assignment - #${data.tripNumber || data.bookingReference}`,
+    template: BookingAssignedEmail,
+    templateProps: {
+      vendorName: data.vendorName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      vehicleCategory: data.vehicleCategory,
+      vehicleType: data.vehicleType,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      bookingUrl: data.bookingUrl,
+    },
+  });
 }
 
 /**
@@ -255,45 +139,21 @@ export async function sendBookingAssignmentEmail(
 export async function sendBookingUnassignmentEmail(
   data: BookingUnassignmentEmailData
 ): Promise<EmailResult> {
-  try {
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: emailConfig.from,
-      to: data.vendorEmail,
-      replyTo: emailConfig.replyTo,
-      subject: `Booking Reassigned - #${data.tripNumber || data.bookingReference}`,
-      react: jsx(BookingUnassignedEmail, {
-        vendorName: data.vendorName,
-        bookingReference: data.bookingReference,
-        tripNumber: data.tripNumber,
-        customerName: data.customerName,
-        pickupLocation: data.pickupLocation,
-        pickupDate: data.pickupDate,
-        pickupTime: data.pickupTime,
-        reassignmentReason: data.reassignmentReason,
-        bookingUrl: data.bookingUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('Failed to send booking unassignment email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send booking unassignment email',
-      };
-    }
-
-    return {
-      success: true,
-      emailId: emailData?.id,
-    };
-  } catch (error) {
-    console.error('Unexpected error sending booking unassignment email:', error);
-    return {
-      success: false,
-      error: 'An unexpected error occurred while sending the email',
-    };
-  }
+  return sendEmail({
+    businessAccountId: null,
+    to: data.vendorEmail,
+    subject: `Booking Reassigned - #${data.tripNumber || data.bookingReference}`,
+    template: BookingUnassignedEmail,
+    templateProps: {
+      vendorName: data.vendorName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      reassignmentReason: data.reassignmentReason,
+      bookingUrl: data.bookingUrl,
+    },
+  });
 }

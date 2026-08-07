@@ -1,7 +1,6 @@
 'use server';
 
-import { jsx } from 'react/jsx-runtime';
-import { getResendClient, getEmailConfig } from '@/lib/email/config';
+import { sendEmail } from '@/lib/email/utils/send-email';
 import {
   type EmailTemplateType,
   getTemplatePreviewData,
@@ -60,32 +59,25 @@ export async function sendTestEmail({
       return { success: false, error: 'Template not found' };
     }
 
-    const resend = getResendClient();
-    const emailConfig = getEmailConfig();
-
     const TemplateComponent = templateComponents[templateId];
     const previewData = getTemplatePreviewData(templateId);
 
-    const { data, error } = await resend.emails.send({
-      from: emailConfig.from,
+    // Platform credentials: this is an admin previewing the platform's own templates,
+    // not a tenant sending to its customers.
+    const result = await sendEmail({
+      businessAccountId: null,
       to: recipientEmail,
-      replyTo: emailConfig.replyTo,
       subject: template.subject,
-      react: jsx(TemplateComponent, previewData),
+      template: TemplateComponent,
+      templateProps: previewData as Record<string, unknown>,
     });
 
-    if (error) {
-      console.error('Failed to send test email:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send test email',
-      };
+    if (!result.success) {
+      console.error('Failed to send test email:', result.error);
+      return { success: false, error: result.error || 'Failed to send test email' };
     }
 
-    return {
-      success: true,
-      emailId: data?.id,
-    };
+    return { success: true, emailId: result.emailId };
   } catch (error) {
     console.error('Unexpected error sending test email:', error);
     return {

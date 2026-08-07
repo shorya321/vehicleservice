@@ -3,7 +3,7 @@
  * Handle booking cancellation with automatic refund
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import {
   requireBusinessAuth,
@@ -179,43 +179,52 @@ export const POST = requireBusinessAuth(
         const toDisplay = (aed: number) => convertFromAed(aed, displayCurrency, rates);
         const isConverted = displayCurrency !== BUSINESS_BASE_CURRENCY;
 
-        // Send cancellation email to business owner
-        sendBusinessBookingCancellationEmail({
-          email: businessAccount.business_email,
-          businessName: businessAccount.business_name,
-          bookingNumber: cancelledBooking.booking_number,
-          tripNumber: cancelledBooking.trip_number,
-          customerName: cancelledBooking.customer_name,
-          pickupLocation,
-          dropoffLocation,
-          pickupDateTime,
-          cancellationReason: body.cancellation_reason,
-          refundAmount: toDisplay(refundAmount),
-          newBalance: toDisplay(newBalance),
-          currency: displayCurrency,
-          originalAmount: isConverted ? refundAmount : undefined,
-          originalCurrency: isConverted ? BUSINESS_BASE_CURRENCY : undefined,
-          walletUrl: `${getAppUrl()}/business/wallet`,
-        }).catch((err: unknown) => {
-          console.error('Failed to send business cancellation email:', err);
-        });
-
-        // Send cancellation email to customer
-        if (cancelledBooking.customer_email) {
-          sendBusinessCustomerBookingCancelledEmail({
-            customerName: cancelledBooking.customer_name,
-            customerEmail: cancelledBooking.customer_email,
+        // These sends are deliberately not awaited, and are wrapped in after() because a
+        // tenant's own SMTP server is a multi round-trip conversation against a host of
+        // unknown latency. An un-awaited promise would frequently be dropped when the
+        // serverless instance froze after the response; after() keeps the invocation
+        // alive past the response without delaying it.
+        after(async () => {
+          // Send cancellation email to business owner
+          sendBusinessBookingCancellationEmail({
+            businessAccountId: user.businessAccountId,
+            email: businessAccount.business_email,
             businessName: businessAccount.business_name,
             bookingNumber: cancelledBooking.booking_number,
             tripNumber: cancelledBooking.trip_number,
+            customerName: cancelledBooking.customer_name,
             pickupLocation,
             dropoffLocation,
             pickupDateTime,
             cancellationReason: body.cancellation_reason,
+            refundAmount: toDisplay(refundAmount),
+            newBalance: toDisplay(newBalance),
+            currency: displayCurrency,
+            originalAmount: isConverted ? refundAmount : undefined,
+            originalCurrency: isConverted ? BUSINESS_BASE_CURRENCY : undefined,
+            walletUrl: `${getAppUrl()}/business/wallet`,
           }).catch((err: unknown) => {
-            console.error('Failed to send customer cancellation email:', err);
+            console.error('Failed to send business cancellation email:', err);
           });
-        }
+
+          // Send cancellation email to customer
+          if (cancelledBooking.customer_email) {
+            sendBusinessCustomerBookingCancelledEmail({
+              businessAccountId: user.businessAccountId,
+              customerName: cancelledBooking.customer_name,
+              customerEmail: cancelledBooking.customer_email,
+              businessName: businessAccount.business_name,
+              bookingNumber: cancelledBooking.booking_number,
+              tripNumber: cancelledBooking.trip_number,
+              pickupLocation,
+              dropoffLocation,
+              pickupDateTime,
+              cancellationReason: body.cancellation_reason,
+            }).catch((err: unknown) => {
+              console.error('Failed to send customer cancellation email:', err);
+            });
+          }
+        });
 
         // Create in-app notification with refund details
         const { data: ownerUser } = await supabaseAdmin

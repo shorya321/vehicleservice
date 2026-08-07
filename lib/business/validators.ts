@@ -365,3 +365,94 @@ export const changePasswordSchema = z
   });
 
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/**
+ * Business Email (SMTP) Settings
+ *
+ * Generic SMTP only. Resend is smtp.resend.com:587 with the username literally 'resend'
+ * and the API key as the password; every other provider is the same shape.
+ */
+
+/**
+ * No carriage return or newline in any field that ends up in a mail header.
+ * Without this, a crafted from_name could inject extra headers into every message the
+ * tenant sends.
+ */
+const NO_CRLF = /^[^\r\n]*$/;
+
+export const EMAIL_ADDRESS_REGEX = /^[^@\s<>,;]+@[^@\s<>,;]+\.[A-Za-z]{2,}$/;
+
+/**
+ * Hosts unreachable from the public internet, and therefore never a real mail provider.
+ * Rejected in production only, so a developer can still point at a local catcher.
+ * Without this the test-send button is a port scanner pointed at internal infrastructure.
+ */
+export const PRIVATE_HOST_PATTERN =
+  /^(localhost$|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$|0\.0\.0\.0$)/i;
+
+export const businessEmailSettingsSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    provider_preset: z
+      .enum(['custom', 'resend', 'gmail', 'ses', 'mailgun', 'postmark', 'sendgrid'])
+      .default('custom'),
+    smtp_host: z
+      .string()
+      .trim()
+      .min(3, 'Enter the SMTP server hostname')
+      .max(255)
+      .regex(NO_CRLF)
+      .regex(/^[A-Za-z0-9.\-_]+$/, 'Enter a hostname such as smtp.resend.com, not a URL'),
+    smtp_port: z.coerce
+      .number()
+      .int('Port must be a whole number')
+      .min(1)
+      .max(65535)
+      .default(587),
+    smtp_secure: z.boolean().default(false),
+    smtp_username: z.string().trim().min(1, 'Enter the SMTP username').max(320).regex(NO_CRLF),
+    /**
+     * Optional on update: blank means "keep the password already saved".
+     * Deliberately not trimmed, because an API key may legitimately end in a character
+     * that trim() would eat.
+     */
+    smtp_password: z.string().min(1).max(512).regex(NO_CRLF).optional(),
+    from_name: z.string().trim().min(2, 'Enter a sender name').max(100).regex(NO_CRLF),
+    from_email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .max(320)
+      .regex(EMAIL_ADDRESS_REGEX, 'Enter a valid sender address'),
+    reply_to: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .max(320)
+      .regex(EMAIL_ADDRESS_REGEX, 'Enter a valid reply-to address')
+      .optional()
+      .or(z.literal(''))
+      .transform((value) => value || null),
+    allow_platform_fallback: z.boolean().default(true),
+  })
+  .refine((value) => !(value.smtp_port === 465 && !value.smtp_secure), {
+    message: 'Port 465 uses TLS from the moment it connects. Turn on "Use TLS on connect".',
+    path: ['smtp_secure'],
+  })
+  .refine((value) => !(value.smtp_port === 587 && value.smtp_secure), {
+    message: 'Port 587 starts in the clear and upgrades with STARTTLS. Turn off "Use TLS on connect".',
+    path: ['smtp_secure'],
+  });
+
+export type BusinessEmailSettingsInput = z.infer<typeof businessEmailSettingsSchema>;
+
+export const businessEmailTestSchema = z.object({
+  to_email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(320)
+    .regex(EMAIL_ADDRESS_REGEX, 'Enter a valid email address'),
+});
+
+export type BusinessEmailTestInput = z.infer<typeof businessEmailTestSchema>;
