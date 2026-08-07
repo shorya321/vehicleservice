@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, momentLocalizer, View, SlotInfo, Event as BigCalendarEvent, ToolbarProps } from 'react-big-calendar'
+import { Calendar, momentLocalizer, View, SlotInfo, ToolbarProps } from 'react-big-calendar'
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './calendar-styles.css'
@@ -24,11 +24,23 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { CalendarEvent, markResourceUnavailable, removeUnavailability, getVendorCalendarEvents } from '../actions'
+import { markResourceUnavailable, removeUnavailability, getVendorCalendarEvents } from '../actions'
+import {
+  CALENDAR_COLORS,
+  isPastEvent,
+  isReleased,
+  type CalendarDriver,
+  type CalendarEvent,
+  type CalendarEventSource,
+  type CalendarVehicle,
+} from '../types'
+import { EventDetailsDialog } from './event-details-dialog'
+import { CalendarLegend } from './calendar-legend'
+import { FleetTimeline } from './fleet-timeline'
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
-import { Car, User, Calendar as CalendarIcon, Clock, MapPin, Phone, AlertCircle } from 'lucide-react'
+import { Car, User, AlertCircle, CalendarDays, LayoutList } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 
@@ -36,24 +48,17 @@ const localizer = momentLocalizer(moment)
 
 interface AvailabilityCalendarProps {
   initialEvents: CalendarEvent[]
-  vehicles: any[]
-  drivers: any[]
+  vehicles: CalendarVehicle[]
+  drivers: CalendarDriver[]
 }
 
-interface CustomEvent extends BigCalendarEvent {
-  id: string
-  resourceId: string
-  resourceType: 'vehicle' | 'driver' | 'booking'
-  type: 'booking' | 'unavailable'
-  vehicleId?: string | null
-  driverId?: string | null
-  color?: string
-  details?: any
-}
-
-/** A booking that has already ended, or unavailability that has already elapsed. */
-function isPastEvent(event: Pick<CustomEvent, 'end'>): boolean {
-  return !!event.end && event.end < new Date()
+/** The server sends `start`/`end` as serialized dates; the client rehydrates them.
+ *  react-big-calendar is generic over the event type and only needs the accessors
+ *  named below, so this does not extend its own `Event` interface (whose optional
+ *  ReactNode `title` conflicts with our required string). */
+interface CustomEvent extends Omit<CalendarEvent, 'start' | 'end'> {
+  start: Date
+  end: Date
 }
 
 const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => moment().month(i).format('MMMM'))
@@ -147,7 +152,49 @@ export function AvailabilityCalendar({
   const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null)
   const [filterType, setFilterType] = useState<'all' | 'vehicle' | 'driver'>('all')
   const [selectedResourceFilter, setSelectedResourceFilter] = useState<string>('all')
+  const [sourceFilter, setSourceFilter] = useState<'all' | CalendarEventSource>('all')
+  const [showReleased, setShowReleased] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  // The fleet timeline is not a react-big-calendar view (RBC's own `resources` are
+  // day-only vertical columns), so it lives behind a mode switch rather than being
+  // registered as a fourth view. The RBC views keep working untouched.
+  const [mode, setMode] = useState<'calendar' | 'fleet'>('calendar')
+  const [fleetSpan, setFleetSpan] = useState<'day' | 'week'>('day')
+
+  // Switching the resource-type tab must clear the chosen resource. Without this,
+  // picking a vehicle then switching to Drivers leaves a vehicle id filtering the
+  // list while the Select renders a value absent from its own options, and the
+  // calendar silently empties. Done in the handler rather than an effect so it
+  // does not also fire on mount.
+  const handleFilterTypeChange = useCallback((next: 'all' | 'vehicle' | 'driver') => {
+    setFilterType(next)
+    setSelectedResourceFilter('all')
+  }, [])
+
+  // Fleet lanes. `is_available` / `is_active` are standing flags rather than a
+  // time window, so they render as a persistent band across the lane instead of a
+  // bar, with the same wording the direct-booking form uses for them.
+  const timelineVehicles = useMemo(
+    () =>
+      vehicles.map((v) => ({
+        id: v.id,
+        label: `${v.make ?? ''} ${v.model ?? ''}`.trim() || 'Vehicle',
+        sublabel: v.registration_number ?? undefined,
+        outOfService: v.is_available === false ? 'Marked out of service' : undefined,
+      })),
+    [vehicles]
+  )
+
+  const timelineDrivers = useMemo(
+    () =>
+      drivers.map((d) => ({
+        id: d.id,
+        label: `${d.first_name ?? ''} ${d.last_name ?? ''}`.trim() || 'Driver',
+        sublabel: d.phone ?? undefined,
+        outOfService: d.is_active === false ? 'Inactive' : undefined,
+      })),
+    [drivers]
+  )
 
   // True when the whole visible range has already elapsed.
   const isViewingPast = useMemo(() => {
@@ -172,6 +219,19 @@ export function AvailabilityCalendar({
       )
     }
 
+    // Filter by where the occupancy came from.
+    if (sourceFilter !== 'all') {
+      filtered = filtered.filter(e => e.source === sourceFilter)
+    }
+
+    // Completed and cancelled trips hold nothing, so they are history rather than
+    // schedule. Keyed off status, not `!occupies`: pending offers are also
+    // non-occupying and a switch labelled "completed & cancelled" must never hide
+    // work the vendor still owes an answer on.
+    if (!showReleased) {
+      filtered = filtered.filter(e => !isReleased(e))
+    }
+
     // Filter by specific resource
     if (selectedResourceFilter !== 'all') {
       filtered = filtered.filter(e =>
@@ -182,7 +242,7 @@ export function AvailabilityCalendar({
     }
 
     return filtered
-  }, [events, filterType, selectedResourceFilter])
+  }, [events, filterType, selectedResourceFilter, sourceFilter, showReleased])
 
   // Fetch events for the range currently on screen. Every refresh path must go
   // through this: calling getVendorCalendarEvents() with no range loads the
@@ -190,9 +250,16 @@ export function AvailabilityCalendar({
   const refetchEvents = useCallback(async () => {
     setIsLoading(true)
     try {
-      const unit = view === 'month' ? 'month' : view === 'week' ? 'week' : 'day'
-      const startDate = moment(date).startOf(unit).toDate()
-      const endDate = moment(date).endOf(unit).toDate()
+      // The fleet view draws its own Dubai-anchored window, which can reach past
+      // the calendar unit's edges, so widen the fetch by a day on each side rather
+      // than letting a bar be silently dropped at the boundary.
+      const unit = mode === 'fleet'
+        ? (fleetSpan === 'week' ? 'week' : 'day')
+        : view === 'month' ? 'month' : view === 'week' ? 'week' : 'day'
+
+      const pad = mode === 'fleet' ? 1 : 0
+      const startDate = moment(date).startOf(unit).subtract(pad, 'day').toDate()
+      const endDate = moment(date).endOf(unit).add(pad, 'day').toDate()
 
       const newEvents = await getVendorCalendarEvents(
         startDate.toISOString(),
@@ -210,7 +277,7 @@ export function AvailabilityCalendar({
     } finally {
       setIsLoading(false)
     }
-  }, [date, view])
+  }, [date, view, mode, fleetSpan])
 
   // Refetch events when date or view changes
   useEffect(() => {
@@ -220,10 +287,31 @@ export function AvailabilityCalendar({
   // Custom event style. Past events keep their type colour but recede, so history
   // reads as history and cannot be mistaken for something still actionable.
   const eventStyleGetter = useCallback((event: CustomEvent) => {
+    const past = isPastEvent(event)
+
+    // Hatched + dashed for anything that does NOT hold its vehicle and driver:
+    // pending offers, and cancelled bookings that are still in the future. Past
+    // events are excluded because dimming already reads as history, and stacking
+    // both treatments on them would be noise. This is the cue that stops a vendor
+    // reading a released slot as busy.
+    if (!event.occupies && !past) {
+      return {
+        className: 'rbc-event-unreserved',
+        style: {
+          backgroundColor: CALENDAR_COLORS.pendingFill,
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${event.color ?? CALENDAR_COLORS.pendingBorder}33 5px, ${event.color ?? CALENDAR_COLORS.pendingBorder}33 10px)`,
+          borderRadius: '5px',
+          border: `2px dashed ${event.color ?? CALENDAR_COLORS.pendingBorder}`,
+          color: CALENDAR_COLORS.pendingText,
+          display: 'block',
+        } satisfies React.CSSProperties,
+      }
+    }
+
     const style: React.CSSProperties = {
-      backgroundColor: event.color || '#3B82F6',
+      backgroundColor: event.color || CALENDAR_COLORS.onlineUpcoming,
       borderRadius: '5px',
-      opacity: isPastEvent(event) ? 0.6 : 0.9,
+      opacity: past ? 0.6 : 0.9,
       color: 'white',
       border: '0px',
       display: 'block'
@@ -309,8 +397,24 @@ export function AvailabilityCalendar({
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         <div className="space-y-2">
+          <Label>View</Label>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as 'calendar' | 'fleet')}>
+            <TabsList>
+              <TabsTrigger value="calendar">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger value="fleet">
+                <LayoutList className="h-4 w-4 mr-2" />
+                Fleet
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <div className="space-y-2">
           <Label>Resource Type</Label>
-          <Tabs value={filterType} onValueChange={(v: any) => setFilterType(v)}>
+          <Tabs value={filterType} onValueChange={(v) => handleFilterTypeChange(v as 'all' | 'vehicle' | 'driver')}>
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="vehicle">
@@ -351,26 +455,37 @@ export function AvailabilityCalendar({
           </div>
         )}
 
-        {/* Legend */}
-        <div className="flex flex-wrap gap-4 ml-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded" />
-            <span className="text-sm">Upcoming</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-emerald-500 rounded" />
-            <span className="text-sm">Completed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gray-500 rounded" />
-            <span className="text-sm">Cancelled / no trip</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-500 rounded" />
-            <span className="text-sm">Unavailable</span>
-          </div>
+        <div className="space-y-2">
+          <Label>Booking Source</Label>
+          <Select
+            value={sourceFilter}
+            onValueChange={(v) => setSourceFilter(v as 'all' | CalendarEventSource)}
+          >
+            <SelectTrigger className="w-[190px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All sources</SelectItem>
+              <SelectItem value="online">Online bookings</SelectItem>
+              <SelectItem value="offline">Offline bookings</SelectItem>
+              <SelectItem value="blocked">Blocked periods</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2 pb-2 ml-auto">
+          <Switch
+            id="show-released"
+            checked={showReleased}
+            onCheckedChange={setShowReleased}
+          />
+          <Label htmlFor="show-released" className="cursor-pointer font-normal">
+            Show completed &amp; cancelled
+          </Label>
         </div>
       </div>
+
+      <CalendarLegend />
 
       {/* Viewing a period that has already elapsed. Past bookings and unavailability
           are historical and read-only here. Full details live on the Bookings page. */}
@@ -388,8 +503,13 @@ export function AvailabilityCalendar({
         </div>
       )}
 
-      {/* Calendar */}
-      <div className="h-[600px] bg-background rounded-lg p-4 border relative">
+      {/* Calendar / Fleet */}
+      <div
+        className={cn(
+          'bg-background rounded-lg p-4 border relative',
+          mode === 'calendar' && 'h-[600px]'
+        )}
+      >
         {isLoading && (
           <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
             <div className="flex flex-col items-center gap-2">
@@ -398,150 +518,77 @@ export function AvailabilityCalendar({
             </div>
           </div>
         )}
-        <Calendar
-          localizer={localizer}
-          events={filteredEvents}
-          startAccessor="start"
-          endAccessor="end"
-          view={view}
-          onView={setView}
-          date={date}
-          onNavigate={handleNavigate}
-          onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
-          selectable
-          eventPropGetter={eventStyleGetter}
-          views={['month', 'week', 'day']}
-          components={{ toolbar: CalendarToolbar }}
-          className="vendor-calendar"
-        />
+
+        {mode === 'calendar' ? (
+          <Calendar
+            localizer={localizer}
+            events={filteredEvents}
+            startAccessor="start"
+            endAccessor="end"
+            view={view}
+            onView={setView}
+            date={date}
+            onNavigate={handleNavigate}
+            onSelectEvent={handleSelectEvent}
+            onSelectSlot={handleSelectSlot}
+            selectable
+            eventPropGetter={eventStyleGetter}
+            views={['month', 'week', 'day']}
+            components={{ toolbar: CalendarToolbar }}
+            className="vendor-calendar"
+          />
+        ) : (
+          <div className="space-y-4">
+            {/* The fleet view is outside react-big-calendar, so it carries its own
+                navigation rather than borrowing the RBC toolbar. */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button type="button" className={TOOLBAR_BTN} onClick={() => setDate(new Date())}>
+                  Today
+                </button>
+                <button
+                  type="button"
+                  className={TOOLBAR_BTN}
+                  onClick={() => setDate(moment(date).subtract(1, fleetSpan).toDate())}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className={TOOLBAR_BTN}
+                  onClick={() => setDate(moment(date).add(1, fleetSpan).toDate())}
+                >
+                  Next
+                </button>
+              </div>
+
+              <Tabs value={fleetSpan} onValueChange={(v) => setFleetSpan(v as 'day' | 'week')}>
+                <TabsList>
+                  <TabsTrigger value="day">Day</TabsTrigger>
+                  <TabsTrigger value="week">Week</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            <FleetTimeline
+              events={filteredEvents}
+              vehicles={timelineVehicles}
+              drivers={timelineDrivers}
+              date={date}
+              span={fleetSpan}
+              onSelectEvent={handleSelectEvent}
+            />
+          </div>
+        )}
       </div>
 
       {/* Event Details Dialog */}
-      <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedEvent?.type === 'booking' ? 'Booking Details' : 'Unavailability Details'}
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedEvent && (
-            <div className="space-y-4">
-              {selectedEvent.type === 'booking' ? (
-                <>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Trip #:</span>
-                      <span className="text-sm">{selectedEvent.details?.tripNumber || selectedEvent.details?.bookingNumber}</span>
-                    </div>
-                    {selectedEvent.details?.status && (
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Status:</span>
-                        <Badge variant="secondary" className="capitalize">
-                          {String(selectedEvent.details.status).replace(/_/g, ' ')}
-                        </Badge>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Customer:</span>
-                      <span className="text-sm">{selectedEvent.details?.customer}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Phone:</span>
-                      <span className="text-sm">{selectedEvent.details?.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Time:</span>
-                      <span className="text-sm">
-                        {moment(selectedEvent.start).format('MMM DD, YYYY HH:mm')} -
-                        {moment(selectedEvent.end).format('HH:mm')}
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <div className="text-sm">
-                        <div><span className="font-medium">Pickup:</span> {selectedEvent.details?.pickup}</div>
-                        <div><span className="font-medium">Dropoff:</span> {selectedEvent.details?.dropoff}</div>
-                      </div>
-                    </div>
-
-                    {/* Vehicle Details */}
-                    {selectedEvent.details?.vehicle && (
-                      <div className="pt-2 border-t">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Car className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Vehicle:</span>
-                        </div>
-                        <div className="text-sm ml-6">
-                          <div>{selectedEvent.details.vehicle.make} {selectedEvent.details.vehicle.model}</div>
-                          <div className="text-muted-foreground">Reg: {selectedEvent.details.vehicle.registrationNumber}</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Driver Details */}
-                    {selectedEvent.details?.driver && (
-                      <div className="pt-2 border-t">
-                        <div className="flex items-center gap-2 mb-1">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Driver:</span>
-                        </div>
-                        <div className="text-sm ml-6">
-                          <div>{selectedEvent.details.driver.firstName} {selectedEvent.details.driver.lastName}</div>
-                          {selectedEvent.details.driver.phone && (
-                            <div className="text-muted-foreground">Phone: {selectedEvent.details.driver.phone}</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Reason:</span>
-                      <Badge variant="destructive">{selectedEvent.details?.reason}</Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Period:</span>
-                      <span className="text-sm">
-                        {moment(selectedEvent.start).format('MMM DD, YYYY HH:mm')} -
-                        {moment(selectedEvent.end).format('MMM DD, YYYY HH:mm')}
-                      </span>
-                    </div>
-                    {selectedEvent.details?.notes && (
-                      <div className="space-y-1">
-                        <span className="text-sm font-medium">Notes:</span>
-                        <p className="text-sm text-muted-foreground">{selectedEvent.details.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          <DialogFooter>
-            {selectedEvent?.type === 'unavailable' && !isPastEvent(selectedEvent) && (
-              <Button variant="destructive" size="sm" onClick={handleRemoveUnavailability}>
-                Remove Unavailability
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => setShowEventDialog(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EventDetailsDialog
+        open={showEventDialog}
+        onOpenChange={setShowEventDialog}
+        event={selectedEvent}
+        onRemoveUnavailability={handleRemoveUnavailability}
+      />
 
       {/* Create Unavailability Dialog */}
       <UnavailabilityDialog

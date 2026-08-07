@@ -35,6 +35,21 @@
   font-size: 11px;
 }
 
+/* Events that do NOT hold their vehicle and driver: pending offers, and cancelled
+   bookings still in the future. The dashed hatch is a second cue alongside colour,
+   so a released slot is never read as busy. Inline styles from eventPropGetter set
+   the fill and border colour; these rules only stop RBC's own selected/focus
+   backgrounds from painting over the pattern. */
+.vendor-calendar .rbc-event.rbc-event-unreserved,
+.vendor-calendar .rbc-event.rbc-event-unreserved.rbc-selected {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.vendor-calendar .rbc-event.rbc-event-unreserved .rbc-event-label {
+  opacity: 0.75;
+}
+
 .vendor-calendar .rbc-toolbar {
   margin-bottom: 20px;
 }
