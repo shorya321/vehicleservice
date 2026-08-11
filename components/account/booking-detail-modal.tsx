@@ -10,13 +10,24 @@ import { getBookingTimezone } from '@/lib/utils/timezone'
 
 const DT_LONG: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }
 const DT_SHORT: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
-// Pickup-time formats only. Pinned to the booking timezone. DT_LONG/DT_SHORT
-// above format audit timestamps (created_at, paid_at, ...) and stay viewer-local.
-const DT_DATE: Intl.DateTimeFormatOptions = { timeZone: getBookingTimezone(), weekday: "long", month: "long", day: "numeric", year: "numeric" }
-const DT_TIME: Intl.DateTimeFormatOptions = { timeZone: getBookingTimezone(), hour: "2-digit", minute: "2-digit" }
+const DT_DATE: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric", year: "numeric" }
+const DT_TIME: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" }
 
+/**
+ * Every timestamp here renders in the operating timezone, audit stamps
+ * (created_at, paid_at) included.
+ *
+ * These used to split: pickup times pinned, audit times left in the viewer's
+ * own zone. That put two clocks on one screen for anyone outside Dubai, and a
+ * customer comparing "booked at" with "pickup at" was reading them against
+ * different references.
+ *
+ * The zone is resolved per call, not captured in the options above: it is
+ * admin-configurable and this module is evaluated before the stored value
+ * reaches the browser.
+ */
 function formatDT(dateStr: string, opts: Intl.DateTimeFormatOptions = DT_LONG) {
-  return new Date(dateStr).toLocaleDateString("en-US", opts)
+  return new Date(dateStr).toLocaleDateString("en-US", { timeZone: getBookingTimezone(), ...opts })
 }
 
 interface BookingDetailModalProps {
@@ -108,9 +119,10 @@ export function BookingDetailModal({ bookingId, onClose, onRefresh }: BookingDet
   const { formattedDate, formattedTime } = useMemo(() => {
     if (!booking?.pickup_datetime) return { formattedDate: "", formattedTime: "" }
     const d = new Date(booking.pickup_datetime)
+    const timeZone = getBookingTimezone()
     return {
-      formattedDate: d.toLocaleDateString("en-US", DT_DATE),
-      formattedTime: d.toLocaleTimeString("en-US", DT_TIME),
+      formattedDate: d.toLocaleDateString("en-US", { timeZone, ...DT_DATE }),
+      formattedTime: d.toLocaleTimeString("en-US", { timeZone, ...DT_TIME }),
     }
   }, [booking?.pickup_datetime])
 

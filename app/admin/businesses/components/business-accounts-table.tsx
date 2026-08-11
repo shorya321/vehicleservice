@@ -5,6 +5,7 @@
  * Display business accounts in admin portal with selection and actions
  */
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { useState } from 'react';
 import Link from 'next/link';
 import { Eye, Building2, MoreHorizontal, CheckCircle, XCircle, PauseCircle, Trash2 } from 'lucide-react';
@@ -295,7 +296,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
                   <TableCell>{account.total_bookings}</TableCell>
                   <TableCell>{getStatusBadge(account.status)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(account.created_at).toLocaleDateString('en-US', {
+                    {new Date(account.created_at).toLocaleDateString('en-US', { timeZone: getBookingTimezone(), 
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',

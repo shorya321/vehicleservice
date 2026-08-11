@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
+import { formatBookingDate } from '@/lib/business/utils/timezone';
 
 interface PaymentMethod {
   id: string;
@@ -160,7 +161,7 @@ export function PaymentMethodCard({
             {pm.last_used_at && (
               <>
                 <span className="mx-2 text-muted-foreground/50">|</span>
-                Last used <span className="text-foreground">{new Date(pm.last_used_at).toLocaleDateString()}</span>
+                Last used <span className="text-foreground">{formatBookingDate(pm.last_used_at)}</span>
               </>
             )}
           </p>

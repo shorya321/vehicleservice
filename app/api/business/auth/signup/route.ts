@@ -18,6 +18,7 @@ import {
   sendBusinessRegistrationAdminNotificationEmail,
 } from '@/lib/business/email/services/business-emails';
 import { DEFAULT_THEME_CONFIG } from '@/lib/business/branding-utils';
+import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 
 /**
  * POST /api/business/auth/signup
@@ -200,13 +201,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         businessPhone: data.business_phone,
         contactPersonName: data.contact_person_name,
         subdomain: businessAccount.subdomain,
-        registrationDate: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+        registrationDate: formatBookingDateTime(new Date(), "d MMMM yyyy 'at' HH:mm"),
       });
 
       if (!adminEmailResult.success) {

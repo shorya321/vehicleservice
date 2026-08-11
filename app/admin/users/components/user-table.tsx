@@ -1,5 +1,6 @@
 "use client"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState } from "react"
 import { User } from "@/lib/types/user"
 import {
@@ -162,7 +163,7 @@ export function UserTable({ users, currentUserId }: UserTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {new Date(user.created_at).toLocaleDateString()}
+                    {new Date(user.created_at).toLocaleDateString(undefined, { timeZone: getBookingTimezone() })}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

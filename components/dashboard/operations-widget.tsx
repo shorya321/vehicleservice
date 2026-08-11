@@ -1,5 +1,6 @@
 'use client'
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -111,7 +112,7 @@ export function OperationsWidget({ data }: OperationsWidgetProps) {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">
-                        {new Date(cancellation.cancelledAt).toLocaleString('en-US', {
+                        {new Date(cancellation.cancelledAt).toLocaleString('en-US', { timeZone: getBookingTimezone(), 
                           hour: '2-digit',
                           minute: '2-digit',
                           hour12: true

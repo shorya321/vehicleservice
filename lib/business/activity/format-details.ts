@@ -7,6 +7,7 @@
  */
 
 import type { ActivityChanges, ActivityEvent } from './types';
+import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 
 export interface DiffRow {
   field: string;
@@ -124,13 +125,7 @@ export function formatValue(value: unknown): string {
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) {
       const parsed = new Date(value);
       if (!Number.isNaN(parsed.getTime())) {
-        return parsed.toLocaleString('en-GB', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-        });
+        return formatBookingDateTime(parsed, "d MMM yyyy 'at' HH:mm");
       }
     }
     return value;

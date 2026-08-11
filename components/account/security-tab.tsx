@@ -1,5 +1,6 @@
 "use client"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -213,7 +214,7 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
             <div className="flex-1">
               <p className="text-sm font-medium text-[var(--status-pending-text)] mb-1">Deletion Request Pending</p>
               <p className="text-xs text-[var(--text-muted)] mb-3">
-                Submitted on {new Date(pendingDeletionRequest.requested_at).toLocaleDateString()}
+                Submitted on {new Date(pendingDeletionRequest.requested_at).toLocaleDateString(undefined, { timeZone: getBookingTimezone() })}
               </p>
               <button
                 onClick={handleCancelDeletion}

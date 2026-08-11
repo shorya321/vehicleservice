@@ -805,7 +805,7 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
       booking.booking_status,
       booking.payment_status || '',
       assignment?.vendor?.business_name || '',
-      new Date(booking.created_at).toLocaleString()
+      new Date(booking.created_at).toLocaleString(undefined, { timeZone: getBookingTimezone() })
     ]
   })
 
@@ -1512,8 +1512,7 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
     ? `${(booking.to_location as any).name}${booking.dropoff_address ? ` - ${booking.dropoff_address}` : ''}`
     : booking.dropoff_address || 'N/A'
 
-  const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
-    timeZone: getBookingTimezone(),
+  const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', { timeZone: getBookingTimezone(),
     dateStyle: 'full',
     timeStyle: 'short',
   })

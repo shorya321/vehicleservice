@@ -1,5 +1,6 @@
 "use client"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -38,7 +39,7 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url)
   const completion = calculateCompletion(user)
 
-  const memberSince = new Date(user.created_at).toLocaleDateString("en-US", {
+  const memberSince = new Date(user.created_at).toLocaleDateString("en-US", { timeZone: getBookingTimezone(), 
     month: "long",
     year: "numeric",
   })

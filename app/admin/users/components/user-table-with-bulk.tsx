@@ -1,5 +1,6 @@
 "use client"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState } from "react"
 import { User } from "@/lib/types/user"
 import {
@@ -254,7 +255,7 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
                       <div className="flex flex-col">
                         <span className="text-sm">
                           {user.last_sign_in_at 
-                            ? new Date(user.last_sign_in_at).toLocaleDateString()
+                            ? new Date(user.last_sign_in_at).toLocaleDateString(undefined, { timeZone: getBookingTimezone() })
                             : 'Never'
                           }
                         </span>

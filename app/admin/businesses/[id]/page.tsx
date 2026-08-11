@@ -3,6 +3,7 @@
  * View and manage specific business account
  */
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -148,7 +149,7 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
             <div>
               <p className="text-sm text-muted-foreground">Created</p>
               <p className="font-medium">
-                {new Date(businessAccount.created_at).toLocaleString()}
+                {new Date(businessAccount.created_at).toLocaleString(undefined, { timeZone: getBookingTimezone() })}
               </p>
             </div>
           </CardContent>
@@ -239,7 +240,7 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
                     <p className="font-medium capitalize">{tx.transaction_type.replace('_', ' ')}</p>
                     <p className="text-sm text-muted-foreground">{tx.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(tx.created_at).toLocaleString()}
+                      {new Date(tx.created_at).toLocaleString(undefined, { timeZone: getBookingTimezone() })}
                     </p>
                   </div>
                   <div className="text-right">

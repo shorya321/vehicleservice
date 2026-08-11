@@ -1,5 +1,6 @@
 'use client'
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -53,7 +54,7 @@ interface SubmissionDetailProps {
 
 function formatDateTime(dateStr: string | null) {
   if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('en-US', {
+  return new Date(dateStr).toLocaleString('en-US', { timeZone: getBookingTimezone(), 
     month: 'short',
     day: 'numeric',
     year: 'numeric',

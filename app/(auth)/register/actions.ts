@@ -1,5 +1,6 @@
 "use server"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { sendWelcomeEmail } from "@/lib/email/services/auth-emails"
@@ -131,7 +132,7 @@ export async function registerUser(input: RegisterData) {
       userName: data.full_name,
       userEmail: data.email,
       userPhone: data.phone ?? 'Not provided',
-      registrationDate: new Date().toLocaleDateString('en-US', {
+      registrationDate: new Date().toLocaleDateString('en-US', { timeZone: getBookingTimezone(), 
         year: 'numeric',
         month: 'long',
         day: 'numeric',

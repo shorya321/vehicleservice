@@ -1,5 +1,6 @@
 "use client"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useMemo } from "react"
 import { Car, CreditCard, Bell, CheckCircle, AlertTriangle, Info, XCircle } from "lucide-react"
 
@@ -101,7 +102,7 @@ function getTimeAgo(dateString: string): string {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
 
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString("en-US", { timeZone: getBookingTimezone(), 
     month: "short",
     day: "numeric",
   })

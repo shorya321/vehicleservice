@@ -1,5 +1,6 @@
 "use client"
 
+import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Star, MapPin, Car, Calendar, MoreVertical, Edit2, Trash2, Clock, CheckCircle } from "lucide-react"
 
@@ -48,7 +49,7 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
       menuRef.current.querySelector<HTMLButtonElement>('button')?.focus()
     }
   }, [showMenu])
-  const createdDate = new Date(review.created_at).toLocaleDateString("en-US", {
+  const createdDate = new Date(review.created_at).toLocaleDateString("en-US", { timeZone: getBookingTimezone(), 
     month: "short",
     day: "numeric",
     year: "numeric",

@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { formatBookingDate } from '@/lib/business/utils/timezone';
 
 interface PaymentMethod {
   id: string
@@ -169,7 +170,7 @@ export function PaymentMethodsSelector({
                       </p>
                       {pm.last_used_at && (
                         <p className="text-xs text-muted-foreground/70">
-                          Last used: {new Date(pm.last_used_at).toLocaleDateString()}
+                          Last used: {formatBookingDate(pm.last_used_at)}
                         </p>
                       )}
                     </div>

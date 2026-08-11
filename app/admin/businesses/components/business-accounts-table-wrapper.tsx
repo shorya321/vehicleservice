@@ -5,6 +5,7 @@
  * Manages selection state, pagination, and CSV export
  */
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -78,7 +79,7 @@ export function BusinessAccountsTableWrapper({
       account.wallet_balance.toString(),
       account.status,
       account.total_bookings.toString(),
-      new Date(account.created_at).toLocaleDateString(),
+      new Date(account.created_at).toLocaleDateString(undefined, { timeZone: getBookingTimezone() }),
     ]);
 
     // Combine headers and rows

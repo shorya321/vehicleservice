@@ -1,5 +1,6 @@
 'use client'
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -94,7 +95,7 @@ function getPriorityBadge(priority: string) {
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString('en-US', { timeZone: getBookingTimezone(), 
     month: 'short',
     day: 'numeric',
     year: 'numeric',

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { bookingToday } from '@/lib/utils/timezone'
+import { bookingToday, getBookingTimezone } from '@/lib/utils/timezone'
 import {
   resolveRevenueRange,
   buildBuckets,
@@ -507,7 +507,7 @@ export async function getAnalyticsData(): Promise<{
     date.setMonth(date.getMonth() - i)
     const start = new Date(date.getFullYear(), date.getMonth(), 1)
     const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
-    const label = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+    const label = date.toLocaleDateString('en-US', { timeZone: getBookingTimezone(),  month: 'short', year: '2-digit' })
     monthsData.push({ start, end, label })
   }
 

@@ -15,6 +15,7 @@ import {
 } from '@/lib/business/booking-utils';
 import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-emails';
 import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/business/email/services/business-emails';
+import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 
 /**
  * PATCH /api/business/bookings/[id]/datetime
@@ -189,8 +190,10 @@ export const PATCH = requireBusinessAuth(
 
       // Send datetime change email to customer
       if (booking.customer_email) {
+        // The one email where the time is the entire message, so it must not
+        // render in whatever zone the server happens to run in.
         const formatDt = (dt: string) =>
-          new Date(dt).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
+          formatBookingDateTime(dt, "EEEE, d MMMM yyyy 'at' HH:mm");
 
         const { data: businessAccount } = await supabaseAdmin
           .from('business_accounts')

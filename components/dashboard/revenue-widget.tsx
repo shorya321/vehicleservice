@@ -1,5 +1,6 @@
 'use client'
 
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle } from 'lucide-react'
 import { RevenueMetrics } from '@/app/admin/dashboard/actions'
@@ -123,7 +124,7 @@ export function RevenueChart({ data }: { data: RevenueMetrics['revenueData'] }) 
                     <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap z-10">
                       {formatCurrency(item.revenue)}
                       <br />
-                      {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {new Date(item.date).toLocaleDateString('en-US', { timeZone: getBookingTimezone(),  month: 'short', day: 'numeric' })}
                     </div>
                   </div>
                 </div>
@@ -131,7 +132,7 @@ export function RevenueChart({ data }: { data: RevenueMetrics['revenueData'] }) 
             })}
           </div>
           <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-muted-foreground mt-2">
-            <span>{new Date(data[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            <span>{new Date(data[0].date).toLocaleDateString('en-US', { timeZone: getBookingTimezone(),  month: 'short', day: 'numeric' })}</span>
             <span>Today</span>
           </div>
         </div>
