@@ -5,6 +5,7 @@
  * Displays wallet balance, status, limits, and recent transactions
  */
 
+import { toBookingTz } from '@/lib/utils/timezone'
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -202,7 +203,7 @@ export function WalletOverview({ businessId, initialData, onRefresh }: WalletOve
             </p>
             <p className="text-sm">
               <span className="font-medium">Frozen at:</span>{' '}
-              {format(new Date(wallet.frozen_by.frozen_at), 'PPpp')}
+              {format(toBookingTz(wallet.frozen_by.frozen_at), 'PPpp')}
             </p>
             {wallet.frozen_reason && (
               <p className="text-sm">
@@ -334,7 +335,7 @@ export function WalletOverview({ businessId, initialData, onRefresh }: WalletOve
                   <div className="flex-1">
                     <p className="text-sm font-medium">{transaction.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(transaction.created_at), 'PPp')}
+                      {format(toBookingTz(transaction.created_at), 'PPp')}
                     </p>
                   </div>
                   <div className="text-right">

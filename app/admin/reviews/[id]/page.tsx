@@ -107,7 +107,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        {format(new Date(review.created_at), 'MMMM d, yyyy')}
+                        {format(toBookingTz(review.created_at), 'MMMM d, yyyy')}
                       </div>
                     </div>
                   </div>

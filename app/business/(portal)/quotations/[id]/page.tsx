@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
-import { bookingToday } from '@/lib/business/utils/timezone';
+import { bookingToday , getBookingTimezone } from '@/lib/business/utils/timezone';
 // Portal money format ("AED 150.00"), matching bookings and wallet. The PDF keeps its own.
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,7 @@ interface PageProps {
 const fmtDate = (iso: string | null) =>
   iso
     ? new Intl.DateTimeFormat('en-GB', {
+        timeZone: getBookingTimezone(),
         day: '2-digit',
         month: 'short',
         year: 'numeric',

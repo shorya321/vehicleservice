@@ -1,5 +1,6 @@
 'use client'
 
+import { toBookingTz } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -143,7 +144,7 @@ export function AdminResponseSection({
               </Badge>
               {adminResponseAt && (
                 <span className="text-xs text-muted-foreground">
-                  {format(new Date(adminResponseAt), 'MMM d, yyyy')}
+                  {format(toBookingTz(adminResponseAt), 'MMM d, yyyy')}
                 </span>
               )}
             </div>

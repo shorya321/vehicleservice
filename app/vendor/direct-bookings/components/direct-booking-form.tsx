@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingToday } from "@/lib/utils/timezone"
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -100,9 +101,9 @@ export function DirectBookingForm({
       customer_notes: '',
       vehicle_id: '',
       driver_id: '',
-      pickup_date: format(new Date(), 'yyyy-MM-dd'),
+      pickup_date: bookingToday(),
       pickup_time: '09:00',
-      return_date: format(new Date(), 'yyyy-MM-dd'),
+      return_date: bookingToday(),
       return_time: '11:00',
       pickup_location: '',
       dropoff_location: '',

@@ -325,12 +325,12 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                           </div>
                           {currentAssignment.status === 'completed' && currentAssignment.completed_at && (
                             <span className="text-sm text-blue-600 font-medium">
-                              {format(new Date(currentAssignment.completed_at), 'PPp')}
+                              {format(toBookingTz(currentAssignment.completed_at), 'PPp')}
                             </span>
                           )}
                           {currentAssignment.status === 'accepted' && currentAssignment.accepted_at && (
                             <span className="text-sm text-green-600">
-                              {format(new Date(currentAssignment.accepted_at), 'PPp')}
+                              {format(toBookingTz(currentAssignment.accepted_at), 'PPp')}
                             </span>
                           )}
                         </div>
@@ -379,21 +379,21 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                           {currentAssignment.assigned_at && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Clock className="h-4 w-4" />
-                              <span>Assigned: {format(new Date(currentAssignment.assigned_at), 'PPp')}</span>
+                              <span>Assigned: {format(toBookingTz(currentAssignment.assigned_at), 'PPp')}</span>
                             </div>
                           )}
 
                           {currentAssignment.accepted_at && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <CheckCircle className="h-4 w-4" />
-                              <span>Accepted: {format(new Date(currentAssignment.accepted_at), 'PPp')}</span>
+                              <span>Accepted: {format(toBookingTz(currentAssignment.accepted_at), 'PPp')}</span>
                             </div>
                           )}
 
                           {currentAssignment.completed_at && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-green-600">Completed: {format(new Date(currentAssignment.completed_at), 'PPp')}</span>
+                              <span className="font-medium text-green-600">Completed: {format(toBookingTz(currentAssignment.completed_at), 'PPp')}</span>
                             </div>
                           )}
 
@@ -464,7 +464,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                               </div>
                               {assignment.cancelled_at && (
                                 <span className="text-xs text-muted-foreground">
-                                  {format(new Date(assignment.cancelled_at), 'PPp')}
+                                  {format(toBookingTz(assignment.cancelled_at), 'PPp')}
                                 </span>
                               )}
                             </div>
@@ -633,7 +633,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                 <Separator />
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Paid At</span>
-                  <span>{format(new Date(booking.paid_at), 'PPp')}</span>
+                  <span>{format(toBookingTz(booking.paid_at), 'PPp')}</span>
                 </div>
               </>
             )}

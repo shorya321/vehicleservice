@@ -1,5 +1,6 @@
 "use client"
 
+import { toBookingTz } from '@/lib/utils/timezone'
 import { Building2, Mail, Phone, MapPin, FileText, Calendar, User, ClipboardList } from "lucide-react"
 import { format } from "date-fns"
 
@@ -35,7 +36,7 @@ export function ApplicationDetailsCard({ application, status, badgeColor }: Appl
             </span>
           </div>
           <p className="text-sm text-[var(--text-muted)]">
-            Submitted on {format(new Date(application.created_at), "PPP")}
+            Submitted on {format(toBookingTz(application.created_at), "PPP")}
           </p>
         </div>
       </div>
@@ -79,7 +80,7 @@ export function ApplicationDetailsCard({ application, status, badgeColor }: Appl
                 Review Information
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <InfoItem icon={Calendar} label="Reviewed On" value={format(new Date(application.reviewed_at), "PPP")} />
+                <InfoItem icon={Calendar} label="Reviewed On" value={format(toBookingTz(application.reviewed_at), "PPP")} />
                 {application.reviewer && (
                   <InfoItem
                     icon={User}

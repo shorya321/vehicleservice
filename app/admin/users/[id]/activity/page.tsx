@@ -1,3 +1,4 @@
+import { toBookingTz } from '@/lib/utils/timezone'
 import { notFound } from "next/navigation"
 import { getUser, getUserActivityLogs } from "../../actions"
 import { Button } from "@/components/ui/button"
@@ -86,7 +87,7 @@ export default async function UserActivityPage({ params }: UserActivityPageProps
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {format(new Date(log.created_at), "PPp")}
+                          {format(toBookingTz(log.created_at), "PPp")}
                         </div>
                         {log.ip_address && (
                           <span>IP: {log.ip_address}</span>

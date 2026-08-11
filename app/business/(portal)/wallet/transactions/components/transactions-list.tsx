@@ -8,6 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
+import { toBookingTz } from '@/lib/business/utils/timezone'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -125,9 +126,9 @@ export function TransactionsList({
               <TableRow key={transaction.id} className="border-border hover:bg-muted/50 transition-colors duration-200">
                 <TableCell className="font-medium text-foreground">
                   <div className="flex flex-col">
-                    <span>{format(new Date(transaction.created_at), 'MMM d, yyyy')}</span>
+                    <span>{format(toBookingTz(transaction.created_at), 'MMM d, yyyy')}</span>
                     <span className="text-xs text-muted-foreground">
-                      {format(new Date(transaction.created_at), 'h:mm a')}
+                      {format(toBookingTz(transaction.created_at), 'h:mm a')}
                     </span>
                   </div>
                 </TableCell>

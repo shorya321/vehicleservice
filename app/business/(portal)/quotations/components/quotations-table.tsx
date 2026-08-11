@@ -12,6 +12,7 @@
  * wallet/transactions/components/transactions-list.tsx applies.
  */
 
+import { getBookingTimezone } from "@/lib/business/utils/timezone";
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -86,6 +87,7 @@ interface QuotationsTableProps {
 function formatDate(iso: string | null): string {
   if (!iso) return '-';
   return new Intl.DateTimeFormat('en-GB', {
+    timeZone: getBookingTimezone(),
     day: '2-digit',
     month: 'short',
     year: 'numeric',

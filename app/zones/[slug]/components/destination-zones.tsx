@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingToday } from "@/lib/utils/timezone"
 import { ArrowRight, DollarSign, Map, Car } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,14 +24,14 @@ export function DestinationZones({ destinations, fromZoneId, fromZoneName, fromZ
   const handleZoneSelect = (destination: DestinationZone) => {
     if (fromZoneSlug && destination.slug) {
       router.push(buildSearchUrl(fromZoneSlug, destination.slug, {
-        date: format(new Date(), 'yyyy-MM-dd'),
+        date: bookingToday(),
         passengers: 2,
       }))
     } else {
       const params = new URLSearchParams({
         fromZone: fromZoneId,
         toZone: destination.id,
-        date: format(new Date(), 'yyyy-MM-dd'),
+        date: bookingToday(),
         passengers: '2',
       })
       router.push(`/search/results?${params.toString()}`)

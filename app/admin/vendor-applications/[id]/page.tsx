@@ -1,3 +1,4 @@
+import { toBookingTz } from '@/lib/utils/timezone'
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -169,7 +170,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                     <div>
                       <p className="text-sm font-medium">Submitted On</p>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(application.created_at), 'PPP')}
+                        {format(toBookingTz(application.created_at), 'PPP')}
                       </p>
                     </div>
                   </div>
@@ -180,7 +181,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                       <div>
                         <p className="text-sm font-medium">Last Edited</p>
                         <p className="text-sm text-muted-foreground">
-                          {format(new Date(application.updated_at), 'PPP p')}{" "}
+                          {format(toBookingTz(application.updated_at), 'PPP p')}{" "}
                           ({formatDistanceToNow(new Date(application.updated_at), { addSuffix: true })})
                         </p>
                       </div>
@@ -362,7 +363,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                     <div>
                       <p className="text-sm font-medium">Reviewed On</p>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(application.reviewed_at), 'PPP')} by{" "}
+                        {format(toBookingTz(application.reviewed_at), 'PPP')} by{" "}
                         {application.reviewer?.full_name || application.reviewer?.email || 'Admin'}
                       </p>
                     </div>
@@ -450,7 +451,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   <span className="text-muted-foreground">Member Since</span>
                   <span>
                     {application.user?.created_at
-                      ? format(new Date(application.user.created_at), 'MMM yyyy')
+                      ? format(toBookingTz(application.user.created_at), 'MMM yyyy')
                       : 'N/A'}
                   </span>
                 </div>

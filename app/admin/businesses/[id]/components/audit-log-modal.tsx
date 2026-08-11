@@ -5,6 +5,7 @@
  * Displays admin wallet action history with filtering
  */
 
+import { toBookingTz } from '@/lib/utils/timezone'
 import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
@@ -238,7 +239,7 @@ export function AuditLogModal({
                       <div className="flex items-center gap-2">
                         {getActionBadge(entry.action_type)}
                         <span className="text-xs text-muted-foreground">
-                          {format(new Date(entry.created_at), 'PPp')}
+                          {format(toBookingTz(entry.created_at), 'PPp')}
                         </span>
                       </div>
                       {entry.amount !== null && (

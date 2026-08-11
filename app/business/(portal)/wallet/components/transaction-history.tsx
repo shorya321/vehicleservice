@@ -8,6 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
+import { toBookingTz } from '@/lib/business/utils/timezone'
 import { motion } from 'motion/react';
 import { ArrowDown, ArrowUp, Receipt, RefreshCw, Settings } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -78,7 +79,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
   const TransactionRow = ({ transaction, index }: { transaction: Transaction; index: number }) => {
     const isCredit = transaction.amount > 0;
     const relativeTime = formatDistanceToNow(new Date(transaction.created_at), { addSuffix: true });
-    const fullDate = format(new Date(transaction.created_at), 'MMM d, yyyy h:mm a');
+    const fullDate = format(toBookingTz(transaction.created_at), 'MMM d, yyyy h:mm a');
 
     // Row classes for the outer wrapper (so divide-y and border-l are on same element)
     const rowClasses = cn(

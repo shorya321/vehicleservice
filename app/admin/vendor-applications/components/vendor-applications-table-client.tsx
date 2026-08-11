@@ -1,5 +1,6 @@
 'use client'
 
+import { toBookingTz } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -188,16 +189,16 @@ export function VendorApplicationsTableClient({
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <p>{format(new Date(application.created_at), 'MMM d, yyyy')}</p>
+                      <p>{format(toBookingTz(application.created_at), 'MMM d, yyyy')}</p>
                       <p className="text-muted-foreground">
-                        {format(new Date(application.created_at), 'h:mm a')}
+                        {format(toBookingTz(application.created_at), 'h:mm a')}
                       </p>
                     </div>
                   </TableCell>
                   <TableCell>
                     {application.reviewed_at ? (
                       <div className="text-sm">
-                        <p>{format(new Date(application.reviewed_at), 'MMM d, yyyy')}</p>
+                        <p>{format(toBookingTz(application.reviewed_at), 'MMM d, yyyy')}</p>
                         <p className="text-muted-foreground">
                           {application.reviewer?.full_name || 'System'}
                         </p>

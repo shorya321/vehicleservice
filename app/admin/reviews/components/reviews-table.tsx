@@ -1,5 +1,6 @@
 'use client'
 
+import { toBookingTz } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -292,7 +293,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
-                      {format(new Date(review.created_at), 'MMM d, yyyy')}
+                      {format(toBookingTz(review.created_at), 'MMM d, yyyy')}
                     </span>
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>

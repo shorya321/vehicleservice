@@ -179,7 +179,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Booked on {format(new Date(booking.created_at), 'MMM d, yyyy')} at {format(new Date(booking.created_at), 'h:mm a')}
+              Booked on {format(toBookingTz(booking.created_at), 'MMM d, yyyy')} at {format(toBookingTz(booking.created_at), 'h:mm a')}
             </p>
           </div>
         </div>
@@ -497,7 +497,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                             <Clock className="h-4 w-4 text-muted-foreground" />
                             <span className="text-muted-foreground">Assigned:</span>
                             <span className="font-medium text-foreground">
-                              {format(new Date(assignment.assigned_at), 'MMM d, yyyy')} at {format(new Date(assignment.assigned_at), 'h:mm a')}
+                              {format(toBookingTz(assignment.assigned_at), 'MMM d, yyyy')} at {format(toBookingTz(assignment.assigned_at), 'h:mm a')}
                             </span>
                           </div>
                         )}
@@ -506,7 +506,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                             <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                             <span className="text-muted-foreground">Accepted:</span>
                             <span className="font-medium text-foreground">
-                              {format(new Date(assignment.accepted_at), 'MMM d, yyyy')} at {format(new Date(assignment.accepted_at), 'h:mm a')}
+                              {format(toBookingTz(assignment.accepted_at), 'MMM d, yyyy')} at {format(toBookingTz(assignment.accepted_at), 'h:mm a')}
                             </span>
                           </div>
                         )}
@@ -515,7 +515,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                             <CheckCircle className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                             <span className="text-muted-foreground">Completed:</span>
                             <span className="font-medium text-sky-600 dark:text-sky-400">
-                              {format(new Date(assignment.completed_at), 'MMM d, yyyy')} at {format(new Date(assignment.completed_at), 'h:mm a')}
+                              {format(toBookingTz(assignment.completed_at), 'MMM d, yyyy')} at {format(toBookingTz(assignment.completed_at), 'h:mm a')}
                             </span>
                           </div>
                         )}
@@ -571,7 +571,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                   <div>
                     <p className="text-xs text-muted-foreground">Created</p>
                     <p className="text-sm font-medium text-foreground">
-                      {format(new Date(booking.created_at), 'MMM d, yyyy')} at {format(new Date(booking.created_at), 'h:mm a')}
+                      {format(toBookingTz(booking.created_at), 'MMM d, yyyy')} at {format(toBookingTz(booking.created_at), 'h:mm a')}
                     </p>
                   </div>
                 </div>
@@ -583,7 +583,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                     <div>
                       <p className="text-xs text-muted-foreground">Confirmed</p>
                       <p className="text-sm font-medium text-foreground">
-                        {format(new Date(booking.updated_at), 'MMM d, yyyy')} at {format(new Date(booking.updated_at), 'h:mm a')}
+                        {format(toBookingTz(booking.updated_at), 'MMM d, yyyy')} at {format(toBookingTz(booking.updated_at), 'h:mm a')}
                       </p>
                     </div>
                   </div>
@@ -596,7 +596,7 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                     <div>
                       <p className="text-xs text-muted-foreground">Cancelled</p>
                       <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                        {format(new Date(booking.cancelled_at), 'MMM d, yyyy')} at {format(new Date(booking.cancelled_at), 'h:mm a')}
+                        {format(toBookingTz(booking.cancelled_at), 'MMM d, yyyy')} at {format(toBookingTz(booking.cancelled_at), 'h:mm a')}
                       </p>
                     </div>
                   </div>
