@@ -17,7 +17,7 @@ import { AddonSelection, SelectedAddon, childAgesComplete } from './addon-select
 import { formatGuestSummary, getSeatedCount } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { calculateAddonsTotal } from '@/lib/business/wizard-pricing';
-import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
+import { getBookingTimezone, bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
 
 interface Location {
   id: string;
@@ -119,7 +119,7 @@ export function ReviewStep({
               <p className="font-medium text-foreground">
                 {formData.pickup_datetime
                   ? bookingLocalInputToUtc(formData.pickup_datetime).toLocaleString(undefined, {
-                      timeZone: BOOKING_TIMEZONE,
+                      timeZone: getBookingTimezone(),
                     })
                   : ''}
               </p>

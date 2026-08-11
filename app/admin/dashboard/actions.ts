@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { startOfDay, subDays, format } from 'date-fns'
-import { BOOKING_TIMEZONE, bookingToday } from '@/lib/utils/timezone'
+import { getBookingTimezone, bookingToday } from '@/lib/utils/timezone'
 import {
   bucketKeyForDubaiDay,
   buildBuckets,
@@ -185,7 +185,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -203,7 +203,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       month: 'short',
       day: 'numeric',
       hour: '2-digit',

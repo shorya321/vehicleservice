@@ -13,7 +13,7 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 
 const bulkDeleteSchema = z.object({
@@ -111,7 +111,7 @@ export const POST = requireBusinessOwner(
               : b.dropoff_address || 'N/A';
 
             const pickupDateTime = new Date(b.pickup_datetime).toLocaleString('en-US', {
-              timeZone: BOOKING_TIMEZONE,
+              timeZone: getBookingTimezone(),
               dateStyle: 'full',
               timeStyle: 'short',
             });

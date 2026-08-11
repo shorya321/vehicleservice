@@ -65,7 +65,7 @@ import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { toast } from 'sonner';
 import { EditDateTimeModal } from './edit-datetime-modal';
 import { canModifyBookingDateTime } from '@/lib/business/booking-utils';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 interface Booking {
   id: string;
@@ -765,13 +765,13 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
 
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDate = pickupDate.toLocaleDateString('en-US', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
   const formattedTime = pickupDate.toLocaleTimeString('en-US', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
@@ -962,7 +962,7 @@ function MobileBookingCard({
 
   const pickupDate = new Date(booking.pickup_datetime);
   const formattedDateTime = pickupDate.toLocaleDateString('en-US', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     month: 'short',
     day: 'numeric',
     hour: '2-digit',

@@ -16,7 +16,7 @@ import {
 } from '@/lib/business/email/services/business-emails'
 import { getAppUrl } from '@/lib/email/config'
 import { format } from 'date-fns'
-import { BOOKING_TIMEZONE, toBookingTz } from '@/lib/utils/timezone'
+import { getBookingTimezone, toBookingTz } from '@/lib/utils/timezone'
 
 export interface BookingFilters {
   search?: string
@@ -793,8 +793,8 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
       booking.customer_name || '',
       booking.customer_email || '',
       booking.customer_phone || '',
-      pickupDate.toLocaleDateString('en-US', { timeZone: BOOKING_TIMEZONE }),
-      pickupDate.toLocaleTimeString('en-US', { timeZone: BOOKING_TIMEZONE }),
+      pickupDate.toLocaleDateString('en-US', { timeZone: getBookingTimezone() }),
+      pickupDate.toLocaleTimeString('en-US', { timeZone: getBookingTimezone() }),
       booking.pickup_address,
       booking.dropoff_address,
       booking.vehicle_types?.name || '',
@@ -1513,7 +1513,7 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
     : booking.dropoff_address || 'N/A'
 
   const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     dateStyle: 'full',
     timeStyle: 'short',
   })

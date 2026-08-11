@@ -23,7 +23,7 @@ import { BUSINESS_BASE_CURRENCY, convertFromAed } from '@/lib/business/wallet-op
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 import { activityLogger } from '@/lib/business/activity/log';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 /**
  * POST /api/business/bookings
@@ -362,18 +362,18 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         : booking.dropoff_address || 'N/A';
 
       const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
-        timeZone: BOOKING_TIMEZONE,
+        timeZone: getBookingTimezone(),
         dateStyle: 'full',
         timeStyle: 'short',
       });
 
       // The admin template takes date and time as separate rows.
       const pickupDate = new Date(booking.pickup_datetime).toLocaleDateString('en-US', {
-        timeZone: BOOKING_TIMEZONE,
+        timeZone: getBookingTimezone(),
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       });
       const pickupTime = new Date(booking.pickup_datetime).toLocaleTimeString('en-US', {
-        timeZone: BOOKING_TIMEZONE,
+        timeZone: getBookingTimezone(),
         hour: '2-digit', minute: '2-digit',
       });
 

@@ -19,7 +19,7 @@ import {
   sendBusinessBookingStatusUpdateEmail,
   sendBusinessVendorRejectedEmail,
 } from '@/lib/business/email/services/business-emails'
-import { toBookingTz, BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { toBookingTz, getBookingTimezone } from '@/lib/utils/timezone'
 
 /**
  * Loads everything a business-booking notification needs, or null when the booking is
@@ -65,7 +65,7 @@ async function businessBookingEmailDetails(bookingId: string) {
     pickupLocation: withAddress(row.from_location?.name, row.pickup_address),
     dropoffLocation: withAddress(row.to_location?.name, row.dropoff_address),
     pickupDateTime: new Date(row.pickup_datetime).toLocaleString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       dateStyle: 'full',
       timeStyle: 'short',
     }),

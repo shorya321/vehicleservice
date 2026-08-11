@@ -19,7 +19,7 @@ import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emai
 import { getAdminEmail, getAppUrl } from '@/lib/email/config'
 import { verifyBookingSignature, verifyPaymentAmount } from '@/lib/security/booking-hmac'
 import { convertAmount } from '@/lib/currency/format'
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import type { ExchangeRatesMap } from '@/lib/currency/types'
 import type { Database } from '@/lib/supabase/types'
 
@@ -190,11 +190,11 @@ async function sendBookingEmails(
     const customerEmail = passenger?.email || userEmail || ''
     const pickupDatetime = new Date(updatedBooking.pickup_datetime)
     const pickupDate = pickupDatetime.toLocaleDateString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
     const pickupTime = pickupDatetime.toLocaleTimeString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       hour: '2-digit', minute: '2-digit',
     })
 

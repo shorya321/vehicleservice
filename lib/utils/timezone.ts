@@ -2,16 +2,49 @@ import { TZDate } from '@date-fns/tz'
 import { format } from 'date-fns'
 
 /**
- * Pickup times are always expressed as Asia/Dubai wall-clock, independent of
- * where the server runs or where the customer browses from.
+ * The operating timezone: the wall-clock every booking, report and day boundary
+ * is expressed in, independent of where the server runs or where the customer
+ * browses from.
+ *
+ * Admin-configurable (Settings -> General), so it is read through
+ * `getBookingTimezone()` rather than being a constant. The default stands until
+ * the stored setting is loaded, and is what every fallback path uses.
  */
-export const BOOKING_TIMEZONE = 'Asia/Dubai'
+export const DEFAULT_BOOKING_TIMEZONE = 'Asia/Dubai'
 
-/** Asia/Dubai observes no DST. The offset is permanently +04:00. */
-export const BOOKING_UTC_OFFSET = '+04:00'
+/**
+ * Process-wide, deliberately.
+ *
+ * This is one platform-level setting rather than a per-tenant one, so every
+ * concurrent request wants the same answer and a module-level holder is the
+ * right shape. It is set from the stored setting on the server and pushed to
+ * the browser at hydration; see `lib/site-settings/timezone.ts`.
+ */
+let currentTimezone = DEFAULT_BOOKING_TIMEZONE
 
-/** The same offset in minutes, for arithmetic that cannot use the string form. */
-export const BOOKING_UTC_OFFSET_MINUTES = 4 * 60
+/** The operating timezone in effect right now. */
+export function getBookingTimezone(): string {
+  return currentTimezone
+}
+
+/**
+ * Applies the stored setting. Ignores anything the runtime cannot resolve, so a
+ * bad value in the database degrades to the default rather than throwing inside
+ * every date on the site.
+ */
+export function setBookingTimezone(timeZone: string | null | undefined): void {
+  if (!timeZone || !isValidTimezone(timeZone)) return
+  currentTimezone = timeZone
+}
+
+export function isValidTimezone(timeZone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone })
+    return true
+  } catch {
+    return false
+  }
+}
 
 /**
  * What the display helpers accept.
@@ -29,33 +62,117 @@ function toDate(value: DateInput): Date | null {
 }
 
 /**
- * Builds the UTC instant for a `yyyy-MM-dd` date and `HH:mm` time interpreted
- * as Dubai wall-clock.
+ * The zone's UTC offset, in minutes, at a given instant.
+ *
+ * Measured rather than assumed. The previous implementation hardcoded "+04:00",
+ * which is exact for Asia/Dubai because it has no DST, but silently wrong for
+ * any zone that does - an hour out for half the year, twice a year. Now that
+ * the zone is admin-configurable, the offset has to be read per instant.
  */
-export function bookingWallClockToUtc(date: string, time: string): Date {
-  const parsed = new Date(`${date}T${time}:00${BOOKING_UTC_OFFSET}`)
+function offsetMinutesAt(instant: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(instant)
 
-  if (Number.isNaN(parsed.getTime())) {
+  const read = (type: Intl.DateTimeFormatPartTypes): number =>
+    Number(parts.find((part) => part.type === type)?.value ?? '0')
+
+  // `hour` comes back as 24 at midnight under hour12: false in some runtimes.
+  const asIfUtc = Date.UTC(
+    read('year'),
+    read('month') - 1,
+    read('day'),
+    read('hour') % 24,
+    read('minute'),
+    read('second')
+  )
+
+  // Drop sub-second precision on both sides so the difference is a clean offset.
+  return (asIfUtc - Math.floor(instant.getTime() / 1000) * 1000) / 60_000
+}
+
+/**
+ * The operating timezone's UTC offset in minutes at a given instant, positive
+ * east of Greenwich.
+ *
+ * Exported for the two places that must do their own offset arithmetic: the
+ * react-big-calendar display shim and the dashboard bucketing module.
+ */
+export function bookingOffsetMinutesAt(instant: Date = new Date()): number {
+  return offsetMinutesAt(instant, getBookingTimezone())
+}
+
+/**
+ * Builds the UTC instant for a `yyyy-MM-dd` date and `HH:mm` time read as
+ * operating-timezone wall-clock.
+ *
+ * Two passes. The first guesses the offset by measuring it at the naive
+ * instant; the second re-measures at the candidate, which is what keeps the
+ * result exact when the wall-clock time sits on the far side of a DST
+ * transition from the guess. For a zone without DST both passes agree and this
+ * is equivalent to the old fixed-offset string.
+ */
+export function bookingWallClockToUtc(
+  date: string,
+  time: string,
+  timeZone: string = getBookingTimezone()
+): Date {
+  const [year, month, day] = date.split('-').map(Number)
+  const [hour, minute] = time.split(':').map(Number)
+
+  const naive = Date.UTC(year, (month ?? 0) - 1, day, hour, minute)
+
+  if (Number.isNaN(naive)) {
     throw new Error(`Invalid pickup date/time: ${date} ${time}`)
   }
 
-  return parsed
+  const firstGuess = new Date(naive - offsetMinutesAt(new Date(naive), timeZone) * 60_000)
+  const settled = new Date(naive - offsetMinutesAt(firstGuess, timeZone) * 60_000)
+
+  if (Number.isNaN(settled.getTime())) {
+    throw new Error(`Invalid pickup date/time: ${date} ${time}`)
+  }
+
+  return settled
 }
 
-/** Wraps a stored ISO timestamp so date-fns `format` renders it as Dubai wall-clock. */
+/** Wraps a stored ISO timestamp so date-fns `format` renders it as operating wall-clock. */
 export function toBookingTz(iso: string): TZDate {
-  return new TZDate(iso, BOOKING_TIMEZONE)
+  return new TZDate(iso, getBookingTimezone())
 }
-
-const DAY_FORMATTER = new Intl.DateTimeFormat('en-CA', {
-  timeZone: BOOKING_TIMEZONE,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-})
 
 /**
- * The Dubai calendar day (`yyyy-MM-dd`) a given instant falls on.
+ * Intl formatters are expensive to build and the zone rarely changes, so they
+ * are cached per zone rather than per call.
+ */
+const dayFormatters = new Map<string, Intl.DateTimeFormat>()
+
+function dayFormatter(timeZone: string): Intl.DateTimeFormat {
+  let formatter = dayFormatters.get(timeZone)
+
+  if (!formatter) {
+    // en-CA yields ISO order, which is what makes the result sortable.
+    formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    dayFormatters.set(timeZone, formatter)
+  }
+
+  return formatter
+}
+
+/**
+ * The operating-timezone calendar day (`yyyy-MM-dd`) a given instant falls on.
  *
  * Use this for grouping and for "same day?" comparisons. Reading `getDate()`
  * off a Date instead answers the question in the viewer's timezone, so a feed
@@ -63,12 +180,12 @@ const DAY_FORMATTER = new Intl.DateTimeFormat('en-CA', {
  */
 export function bookingDayKey(value: DateInput): string {
   const date = toDate(value)
-  return date ? DAY_FORMATTER.format(date) : ''
+  return date ? dayFormatter(getBookingTimezone()).format(date) : ''
 }
 
-/** Today's date as `yyyy-MM-dd` in the booking timezone (en-CA yields ISO order). */
+/** Today's date as `yyyy-MM-dd` in the operating timezone. */
 export function bookingToday(): string {
-  return DAY_FORMATTER.format(new Date())
+  return dayFormatter(getBookingTimezone()).format(new Date())
 }
 
 /**
@@ -107,13 +224,13 @@ export function bookingUtcToLocalInput(iso: string): string {
 // for instead; nothing outside this file should be calling toLocaleString on a
 // stored timestamp.
 
-/** A stored instant as a Dubai date, e.g. `11 Aug 2026`. */
+/** A stored instant as an operating-timezone date, e.g. `11 Aug 2026`. */
 export function formatBookingDate(value: DateInput, pattern = 'dd MMM yyyy'): string {
   const date = toDate(value)
-  return date ? format(new TZDate(date, BOOKING_TIMEZONE), pattern) : ''
+  return date ? format(new TZDate(date, getBookingTimezone()), pattern) : ''
 }
 
-/** A stored instant as a Dubai date and time, e.g. `11 Aug 2026 at 14:32`. */
+/** A stored instant as an operating-timezone date and time, e.g. `11 Aug 2026 at 14:32`. */
 export function formatBookingDateTime(
   value: DateInput,
   pattern = "dd MMM yyyy 'at' HH:mm"

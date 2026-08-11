@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { getBookingTimezone } from '@/lib/utils/timezone'
 
 import {
   BOOKING_STATUS_LABELS,
@@ -118,14 +118,14 @@ function formatDateTime(iso: string): { date: string; time: string } {
 
   return {
     date: value.toLocaleDateString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     }),
     time: value.toLocaleTimeString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       hour: '2-digit',
       minute: '2-digit',
     }),

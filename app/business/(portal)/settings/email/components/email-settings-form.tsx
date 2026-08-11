@@ -26,7 +26,7 @@ import {
   sesHostForRegion,
   type EmailProviderPreset,
 } from '@/lib/business/email/provider-presets';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { SenderChecklist } from './sender-checklist';
 import type { EmailSettings } from './types';
 
@@ -47,7 +47,7 @@ function formatChangedOn(iso: string): string {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
   });
 }
 

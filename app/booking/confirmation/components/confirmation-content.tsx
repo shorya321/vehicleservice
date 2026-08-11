@@ -8,16 +8,16 @@ import { Copy, Check, Info, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
 import { formatChildAges } from '@/lib/utils/child-ages'
 import { InvoiceDownloadButton } from './invoice-download-button'
 
 const formatDate = (d: Date) =>
-  new Intl.DateTimeFormat('en-GB', { timeZone: BOOKING_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+  new Intl.DateTimeFormat('en-GB', { timeZone: getBookingTimezone(), weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d)
 
 const formatTime = (d: Date) =>
-  new Intl.DateTimeFormat('en-GB', { timeZone: BOOKING_TIMEZONE, hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
+  new Intl.DateTimeFormat('en-GB', { timeZone: getBookingTimezone(), hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
 
 interface BookingPassenger {
   first_name: string

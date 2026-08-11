@@ -1,13 +1,16 @@
 import {
-  BOOKING_TIMEZONE,
+  DEFAULT_BOOKING_TIMEZONE,
   bookingDayKey,
   bookingDaysAgoUtc,
+  bookingOffsetMinutesAt,
   bookingRelativeTime,
   bookingToday,
   bookingWallClockToUtc,
   formatBookingDate,
   formatBookingDateTime,
   formatBookingTime,
+  getBookingTimezone,
+  setBookingTimezone,
   startOfBookingMonthUtc,
 } from '@/lib/utils/timezone'
 
@@ -124,7 +127,64 @@ describe('window boundaries', () => {
 })
 
 describe('module constants', () => {
-  it('names the booking timezone once', () => {
-    expect(BOOKING_TIMEZONE).toBe('Asia/Dubai')
+  it('defaults to Dubai until the stored setting says otherwise', () => {
+    expect(DEFAULT_BOOKING_TIMEZONE).toBe('Asia/Dubai')
+    expect(getBookingTimezone()).toBe('Asia/Dubai')
+  })
+})
+
+/**
+ * The zone is admin-configurable, so the arithmetic can no longer assume a
+ * fixed +04:00. These pin the behaviour that assumption used to hide: a zone
+ * that observes DST, either side of a transition.
+ */
+describe('a configurable timezone', () => {
+  afterEach(() => setBookingTimezone(DEFAULT_BOOKING_TIMEZONE))
+
+  it('refuses a zone the runtime cannot resolve, rather than throwing later', () => {
+    setBookingTimezone('Mars/Olympus_Mons')
+    expect(getBookingTimezone()).toBe('Asia/Dubai')
+
+    setBookingTimezone(null)
+    expect(getBookingTimezone()).toBe('Asia/Dubai')
+  })
+
+  it('moves the calendar day with the zone', () => {
+    // 21:30Z is already the 12th in Dubai but still the 11th in London.
+    setBookingTimezone('Europe/London')
+    expect(bookingDayKey(EARLY_DUBAI)).toBe('2026-08-11')
+
+    setBookingTimezone('Asia/Dubai')
+    expect(bookingDayKey(EARLY_DUBAI)).toBe('2026-08-12')
+  })
+
+  it('resolves wall-clock across a DST transition, which a fixed offset cannot', () => {
+    setBookingTimezone('Europe/London')
+
+    // BST, +01:00.
+    expect(bookingWallClockToUtc('2026-08-11', '12:00').toISOString()).toBe(
+      '2026-08-11T11:00:00.000Z'
+    )
+    // GMT, +00:00. A hardcoded offset would put this an hour out.
+    expect(bookingWallClockToUtc('2026-01-11', '12:00').toISOString()).toBe(
+      '2026-01-11T12:00:00.000Z'
+    )
+  })
+
+  it('keeps Dubai exactly where the old fixed-offset code put it', () => {
+    expect(bookingWallClockToUtc('2026-08-11', '00:00').toISOString()).toBe(
+      new Date('2026-08-11T00:00:00+04:00').toISOString()
+    )
+    expect(bookingWallClockToUtc('2026-01-11', '08:30').toISOString()).toBe(
+      new Date('2026-01-11T08:30:00+04:00').toISOString()
+    )
+  })
+
+  it('reports the offset it measured', () => {
+    expect(bookingOffsetMinutesAt(new Date(EARLY_DUBAI))).toBe(240)
+
+    setBookingTimezone('Europe/London')
+    expect(bookingOffsetMinutesAt(new Date('2026-08-11T12:00:00Z'))).toBe(60)
+    expect(bookingOffsetMinutesAt(new Date('2026-01-11T12:00:00Z'))).toBe(0)
   })
 })

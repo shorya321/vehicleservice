@@ -4,7 +4,7 @@ import { memo, useMemo } from "react"
 import { Calendar, Clock, Car, ChevronRight, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from '@/lib/currency/context'
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+import { getBookingTimezone } from '@/lib/utils/timezone'
 import type { BookingListItem } from "./types"
 
 interface BookingCardProps {
@@ -32,8 +32,8 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
   const { formattedDate, formattedTime } = useMemo(() => {
     const d = new Date(booking.pickup_datetime)
     return {
-      formattedDate: d.toLocaleDateString("en-US", { timeZone: BOOKING_TIMEZONE, weekday: "short", month: "short", day: "numeric" }),
-      formattedTime: d.toLocaleTimeString("en-US", { timeZone: BOOKING_TIMEZONE, hour: "2-digit", minute: "2-digit" }),
+      formattedDate: d.toLocaleDateString("en-US", { timeZone: getBookingTimezone(), weekday: "short", month: "short", day: "numeric" }),
+      formattedTime: d.toLocaleTimeString("en-US", { timeZone: getBookingTimezone(), hour: "2-digit", minute: "2-digit" }),
     }
   }, [booking.pickup_datetime])
 

@@ -22,7 +22,7 @@ import { verifyTransport } from '@/lib/email/transport/transporter';
 import { redactMailError, safeErrorSummary, toSafeSmtpError } from '@/lib/email/transport/smtp-errors';
 import { sendEmailWithConfig } from '@/lib/email/utils/send-email';
 import SmtpTestEmail from '@/lib/business/email/templates/smtp-test';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,7 +132,7 @@ export const POST = requireBusinessOwner(async (request, user) => {
           smtpPort: config.smtp.port,
           fromEmail: config.identity.fromEmail,
           sentAt: now.toLocaleString('en-US', {
-            timeZone: BOOKING_TIMEZONE,
+            timeZone: getBookingTimezone(),
             dateStyle: 'full',
             timeStyle: 'short',
           }),

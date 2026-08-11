@@ -11,10 +11,9 @@
  * per viewer.
  */
 
-const MS_PER_DAY = 86_400_000
+import { bookingDayKey, bookingWallClockToUtc } from '@/lib/utils/timezone'
 
-/** Asia/Dubai is a fixed +04:00 with no DST. See `lib/utils/timezone.ts`. */
-const DUBAI_OFFSET_MS = 4 * 60 * 60 * 1000
+const MS_PER_DAY = 86_400_000
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -134,15 +133,15 @@ export function daysBetween(from: string, to: string): number {
 // --- Dubai-day mapping ----------------------------------------------------
 
 /**
- * The Dubai calendar day a stored UTC instant falls on.
+ * The operating-timezone calendar day a stored UTC instant falls on.
  *
- * Shifting by a fixed offset is exact for Asia/Dubai (no DST) and avoids an
- * Intl allocation per booking row.
+ * This used to shift by a hardcoded +04:00, which is exact for Asia/Dubai
+ * because it has no DST but wrong for any zone that does. Now that the zone is
+ * admin-configurable it delegates to the shared helper, which measures the
+ * offset instead of assuming it.
  */
 export function dubaiDayFromIso(iso: string): string {
-  const instant = new Date(iso).getTime()
-  if (Number.isNaN(instant)) return ''
-  return new Date(instant + DUBAI_OFFSET_MS).toISOString().slice(0, 10)
+  return bookingDayKey(iso)
 }
 
 export function bucketKeyForDubaiDay(day: string, unit: BucketUnit): string {
@@ -163,8 +162,8 @@ export function toUtcBounds(range: Pick<RevenueRange, 'from' | 'to'>): {
   toUtcExclusive: Date
 } {
   return {
-    fromUtc: new Date(dayToUtc(range.from).getTime() - DUBAI_OFFSET_MS),
-    toUtcExclusive: new Date(dayToUtc(addDays(range.to, 1)).getTime() - DUBAI_OFFSET_MS),
+    fromUtc: bookingWallClockToUtc(range.from, '00:00'),
+    toUtcExclusive: bookingWallClockToUtc(addDays(range.to, 1), '00:00'),
   }
 }
 

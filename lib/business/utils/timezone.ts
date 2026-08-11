@@ -23,13 +23,12 @@
  */
 
 export {
-  BOOKING_TIMEZONE,
-  BOOKING_UTC_OFFSET,
-  BOOKING_UTC_OFFSET_MINUTES,
+  DEFAULT_BOOKING_TIMEZONE,
   type DateInput,
   bookingDayKey,
   bookingDaysAgoUtc,
   bookingLocalInputToUtc,
+  bookingOffsetMinutesAt,
   bookingRelativeTime,
   bookingToday,
   bookingUtcToLocalInput,
@@ -37,6 +36,9 @@ export {
   formatBookingDate,
   formatBookingDateTime,
   formatBookingTime,
+  getBookingTimezone,
+  isValidTimezone,
+  setBookingTimezone,
   startOfBookingDayUtc,
   startOfBookingMonthUtc,
   toBookingTz,

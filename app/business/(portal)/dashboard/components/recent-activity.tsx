@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 interface RecentBooking {
   id: string;
@@ -184,13 +184,13 @@ function ActivityItem({ booking, index, isLast }: ActivityItemProps) {
   const status = statusConfig[booking.booking_status.toLowerCase()] || statusConfig.pending;
 
   const formattedDate = new Date(booking.pickup_datetime).toLocaleDateString('en-US', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     month: 'short',
     day: 'numeric',
   });
 
   const formattedTime = new Date(booking.pickup_datetime).toLocaleTimeString('en-US', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     hour: '2-digit',
     minute: '2-digit',
   });

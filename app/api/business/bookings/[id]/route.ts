@@ -11,7 +11,7 @@ import {
   apiError,
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { activityLogger } from '@/lib/business/activity/log';
 
 /**
@@ -91,7 +91,7 @@ export const DELETE = requireBusinessAuth(
           : booking.dropoff_address || 'N/A';
 
         const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {
-          timeZone: BOOKING_TIMEZONE,
+          timeZone: getBookingTimezone(),
           dateStyle: 'full',
           timeStyle: 'short',
         });

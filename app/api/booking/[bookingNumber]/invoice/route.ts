@@ -16,7 +16,7 @@ import { formatPrice, formatAmount } from '@/lib/currency/format';
 // The customer copy, never lib/business/format-child-ages.ts, which the business module owns.
 import { formatChildAges } from '@/lib/utils/child-ages';
 import { BRAND_NAME, BRAND_ADDRESS } from '@/lib/email/config';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { getBookingTimezone } from '@/lib/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
 
 export const dynamic = 'force-dynamic';
@@ -29,7 +29,7 @@ const AMENITY_LABELS: Record<string, string> = {
 
 const formatDateTime = (iso: string): string =>
   new Intl.DateTimeFormat('en-GB', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -40,7 +40,7 @@ const formatDateTime = (iso: string): string =>
 
 const formatDate = (iso: string): string =>
   new Intl.DateTimeFormat('en-GB', {
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -19,19 +19,22 @@
  * action, to `toBookingTz`, or into a comparison against `new Date()`.
  */
 
-import { BOOKING_UTC_OFFSET_MINUTES } from '@/lib/utils/timezone'
+import { bookingOffsetMinutesAt } from '@/lib/utils/timezone'
 
 /**
- * Milliseconds to add to a real instant so the browser renders it as Dubai
- * wall-clock. Dubai's side is constant (no DST); the browser's is read per
- * date, so a browser that does observe DST stays correct either side of a
- * transition.
+ * Milliseconds to add to a real instant so the browser renders it as operating
+ * wall-clock.
+ *
+ * Both sides are now read per date. The browser's always was, so a browser that
+ * observes DST stays correct either side of a transition; the operating zone's
+ * used to be the constant +04:00, which was exact only because Asia/Dubai has
+ * no DST. Now that the zone is admin-configurable it has to be measured too.
  */
 function shiftMs(reference: Date): number {
   // getTimezoneOffset() is minutes to add to local time to reach UTC, so it is
   // negative east of Greenwich. Negate it to get the conventional UTC offset.
   const browserOffsetMinutes = -reference.getTimezoneOffset()
-  return (BOOKING_UTC_OFFSET_MINUTES - browserOffsetMinutes) * 60_000
+  return (bookingOffsetMinutesAt(reference) - browserOffsetMinutes) * 60_000
 }
 
 /** Real instant -> the date to hand react-big-calendar. */

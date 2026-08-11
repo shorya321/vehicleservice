@@ -18,7 +18,7 @@ import {
   LuxuryTableRow,
 } from '@/components/business/ui';
 import { cn } from '@/lib/utils';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import type { EmailLogEntry } from './types';
 
 /**
@@ -37,7 +37,7 @@ function formatSentAt(iso: string): string {
     month: 'short',
     hour: 'numeric',
     minute: '2-digit',
-    timeZone: BOOKING_TIMEZONE,
+    timeZone: getBookingTimezone(),
   });
 }
 

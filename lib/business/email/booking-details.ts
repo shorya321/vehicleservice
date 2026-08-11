@@ -11,7 +11,7 @@
  */
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
+import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 export interface BusinessBookingEmailDetails {
   businessAccountId: string;
@@ -82,7 +82,7 @@ export async function loadBusinessBookingEmailDetails(
     pickupLocation: withAddress(row.from_location?.name, row.pickup_address),
     dropoffLocation: withAddress(row.to_location?.name, row.dropoff_address),
     pickupDateTime: new Date(row.pickup_datetime).toLocaleString('en-US', {
-      timeZone: BOOKING_TIMEZONE,
+      timeZone: getBookingTimezone(),
       dateStyle: 'full',
       timeStyle: 'short',
     }),
