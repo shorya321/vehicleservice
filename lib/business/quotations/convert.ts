@@ -16,6 +16,7 @@
  *    alone would strand a quotation half-converted partway down the loop.
  */
 
+import { startOfBookingDayUtc, startOfBookingMonthUtc } from "@/lib/business/utils/timezone";
 import crypto from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
@@ -230,9 +231,13 @@ async function checkWallet(
     return `This conversion totals AED ${totalNetAed.toFixed(2)}, above your per-transaction limit of AED ${Number(account.max_transaction_amount).toFixed(2)}.`;
   }
 
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  // The same boundaries deduct_from_wallet enforces, which resolve through
+  // platform_timezone() in SQL. Local Date constructors gave a server-local day
+  // and month, so this pre-flight check and the database check disagreed for
+  // the first four hours of every day: a conversion could pass here and then be
+  // rejected by the deduction, or the reverse.
+  const startOfDay = startOfBookingDayUtc().toISOString();
+  const startOfMonth = startOfBookingMonthUtc().toISOString();
 
   if (account.max_daily_spend !== null) {
     const spent = await spendSince(supabase, businessAccountId, startOfDay);
