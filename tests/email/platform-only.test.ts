@@ -195,27 +195,60 @@ describe('the three lists together', () => {
 
 /**
  * The business module owns its own email presentation and must not reach back into the
- * shared one.
+ * shared one, except through two named files.
  *
- * lib/business/email/platform.ts is the single sanctioned crossing. Everything else
- * importing lib/email directly would reintroduce exactly the coupling that made tenant
- * colours impossible to add without putting every customer email at risk.
+ * `brand.ts` is isomorphic and carries the brand accessor. `platform.ts` is server-only
+ * and carries the sender. The split is not cosmetic: templates are rendered in a browser
+ * by app/admin/emails/components/email-management-client.tsx for the admin preview, and
+ * reaching the brand through the sender's module pulled nodemailer, AsyncLocalStorage
+ * and lib/email/transport/crypto (which throws when `window` is defined) into the client
+ * bundle. The Vercel build failed generating that chunk while every test here passed.
  */
+const BOUNDARY_FILES = ['brand.ts', 'platform.ts'];
+
+function businessEmailFiles(): string[] {
+  const { readdirSync, statSync } = require('fs') as typeof import('fs');
+  const root = join(process.cwd(), 'lib/business/email');
+
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((entry) => {
+      const full = join(dir, entry);
+      return statSync(full).isDirectory() ? walk(full) : [full];
+    });
+
+  return walk(root);
+}
+
 describe('the module boundary', () => {
-  it('is crossed by exactly one file', () => {
-    const { readdirSync, statSync } = require('fs') as typeof import('fs');
-    const root = join(process.cwd(), 'lib/business/email');
-
-    const walk = (dir: string): string[] =>
-      readdirSync(dir).flatMap((entry) => {
-        const full = join(dir, entry);
-        return statSync(full).isDirectory() ? walk(full) : [full];
-      });
-
-    const offenders = walk(root).filter((file) => {
-      if (file.endsWith('platform.ts')) return false;
+  it('is crossed by exactly the two boundary files', () => {
+    const offenders = businessEmailFiles().filter((file) => {
+      if (BOUNDARY_FILES.some((name) => file.endsWith(`/${name}`))) return false;
       return /^import[^;]*from '[^']*lib\/email/m.test(readFileSync(file, 'utf8'));
     });
+
+    expect(offenders).toEqual([]);
+  });
+
+  /**
+   * The assertion that would have caught the build break.
+   *
+   * The test above passed the whole time, because it only checked *that* the boundary
+   * was crossed once, never which side of it the renderable code sat on. Templates,
+   * styles and components are exactly what a client bundle can pull in, so none of them
+   * may touch the server-only half.
+   */
+  it('keeps renderable code away from the server-only half', () => {
+    const renderable = businessEmailFiles().filter((file) =>
+      ['/templates/', '/styles/', '/components/'].some((dir) => file.includes(dir))
+    );
+
+    // Guards the guard: a path rename that empties this list must fail loudly rather
+    // than silently assert nothing.
+    expect(renderable.length).toBeGreaterThan(15);
+
+    const offenders = renderable.filter((file) =>
+      /^import[^;]*from '[^']*platform'/m.test(readFileSync(file, 'utf8'))
+    );
 
     expect(offenders).toEqual([]);
   });

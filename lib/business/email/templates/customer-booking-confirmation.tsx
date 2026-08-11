@@ -6,7 +6,7 @@ import InfoBox from '../components/info-box';
 import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
-import { getBusinessBrand } from '../platform';
+import { getBusinessBrand } from '../brand';
 
 interface CustomerBookingConfirmationEmailProps {
   customerName: string;

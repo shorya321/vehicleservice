@@ -6,7 +6,7 @@
  * belong here.
  */
 
-import type { DriverAssignedTripDetails } from './platform';
+import type { DriverAssignedTripDetails } from './brand';
 
 export type { DriverAssignedTripDetails };
 

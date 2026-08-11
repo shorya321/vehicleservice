@@ -4,7 +4,7 @@ import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
 import { emailStyles } from '../styles/constants';
-import { getBusinessBrand } from '../platform';
+import { getBusinessBrand } from '../brand';
 
 interface BusinessCustomerBookingCompletedEmailProps {
   customerName: string;

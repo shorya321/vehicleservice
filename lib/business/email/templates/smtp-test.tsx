@@ -3,7 +3,7 @@ import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import { emailStyles } from '../styles/constants';
-import { getBusinessBrand } from '../platform';
+import { getBusinessBrand } from '../brand';
 
 interface SmtpTestEmailProps {
   recipientName: string;

@@ -11,7 +11,7 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
-import { getBusinessBrand } from '../../platform';
+import { getBusinessBrand } from '../../brand';
 
 interface BusinessEmailLayoutProps {
   preview: string;

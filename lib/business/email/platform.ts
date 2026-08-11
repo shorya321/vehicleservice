@@ -1,5 +1,5 @@
 /**
- * The single seam between the business email module and the shared mail infrastructure.
+ * The server-only seam between the business email module and the shared mail transport.
  *
  * The business module owns its own copies of everything a recipient sees: templates,
  * layout, button, palette. What it does not own is the transport, because that means
@@ -7,24 +7,27 @@
  * of encryption code that can drift from the first is the one kind of duplication worth
  * refusing.
  *
- * So exactly one file crosses the boundary, and this is it. Nothing else under
- * lib/business/email/ may import from lib/email/. Keeping the crossing in one module
- * means a future violation is visible in a single import list rather than spread across
- * a dozen templates.
+ * NEVER import this from anything that renders in a browser. It reaches nodemailer,
+ * AsyncLocalStorage and lib/email/transport/crypto, which throws at module scope when
+ * `window` is defined. Templates used to import their brand accessor from here, which
+ * pulled all of that into the admin email preview's client bundle and broke the build.
+ * Renderable code imports lib/business/email/brand.ts instead, which is isomorphic.
+ *
+ * Exactly two files under lib/business/email/ may import lib/email: this one, for the
+ * sender, and brand.ts, for the brand. Nothing else, so a future violation shows up in
+ * one of two import lists rather than spread across a dozen templates.
  */
 
-import { getCurrentBrand } from '@/lib/email/brand/brand';
 import { getAdminEmail, getAppUrl } from '@/lib/email/config';
 import { bustMailConfigCache } from '@/lib/email/transport/resolve-config';
 import { sendEmail } from '@/lib/email/utils/send-email';
-import type { EmailBrand, EmailBrandColors } from '@/lib/email/transport/types';
-import type { DriverAssignedTripDetails, EmailResult, SendEmailParams } from '@/lib/email/types';
+import type { EmailResult, SendEmailParams } from '@/lib/email/types';
 
-export type { EmailBrand, EmailBrandColors, EmailResult, DriverAssignedTripDetails };
+export type { EmailResult };
 
 /**
- * Re-exported so templates and services reach them through the boundary rather than
- * importing lib/email directly.
+ * Re-exported so services reach them through the boundary rather than importing
+ * lib/email directly.
  */
 export { getAdminEmail, getAppUrl };
 
@@ -90,13 +93,5 @@ export function bustBusinessMailCache(businessAccountId: string): void {
   bustMailConfigCache(businessAccountId);
 }
 
-/**
- * The brand the email currently being rendered belongs to.
- *
- * Read during render rather than passed as a prop, so a template's props stay about the
- * booking and never about who is sending it. Outside a send (the admin preview page, a
- * unit test) this resolves to the platform brand.
- */
-export function getBusinessBrand(): EmailBrand {
-  return getCurrentBrand();
-}
+// getBusinessBrand lives in ./brand, not here. Templates need it, templates render in
+// the browser, and this module cannot.

@@ -20,7 +20,7 @@
  * worse than an off-brand one.
  */
 
-import { getBusinessBrand } from '../platform';
+import { getBusinessBrand } from '../brand';
 
 export const emailStyles = {
   get text() {

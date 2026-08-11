@@ -5,7 +5,7 @@ import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
 import { emailStyles } from '../styles/constants';
-import { getBusinessBrand } from '../platform';
+import { getBusinessBrand } from '../brand';
 
 /** Strips spaces, dashes and brackets so the tel: href is dialable. Keeps a leading +. */
 const toDialableNumber = (phone: string): string => phone.replace(/[^\d+]/g, '');
