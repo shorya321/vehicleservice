@@ -14,7 +14,7 @@ import {
   MODIFIABLE_STATUSES,
 } from '@/lib/business/booking-utils';
 import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-emails';
-import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/email/services/business-emails';
+import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/business/email/services/business-emails';
 
 /**
  * PATCH /api/business/bookings/[id]/datetime

@@ -20,11 +20,19 @@ const DEFAULT_RETENTION_DAYS = 90;
 const DEFAULT_MAX_ROWS_PER_ACCOUNT = 5000;
 
 export async function GET(request: Request) {
-  // Same authorization shape as the other cron routes in this project.
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Fails closed. The previous shape only checked the header `if (cronSecret)`, so with
+  // CRON_SECRET unset the route was open to anyone, and retention_days is a caller-supplied
+  // query parameter. An anonymous request could trim every tenant's delivery log to the
+  // SQL function's 7-day floor. Missing configuration is not authorisation.
+  if (!cronSecret) {
+    console.error('[CRON prune-email-logs] CRON_SECRET is not configured, refusing to run');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
     const isVercelCron = request.headers.get('x-vercel-cron') === '1';
     if (!isVercelCron) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

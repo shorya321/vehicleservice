@@ -1,26 +1,31 @@
-import { sendEmail } from '../utils/send-email';
+import { getAdminEmail, getAppUrl, sendBusinessEmail, sendPlatformEmail } from '../platform';
+import type { EmailResult } from '../platform';
 import type {
-  EmailResult,
   BusinessCustomerBookingConfirmationEmailData,
   BusinessCustomerDatetimeChangedEmailData,
   BusinessCustomerBookingCancelledEmailData,
   BusinessBookingStatusUpdateEmailData,
   BusinessCustomerDriverAssignedEmailData,
   BusinessDriverAssignedEmailData,
+  BusinessCustomerBookingCompletedEmailData,
+  BusinessVendorAssignmentEmailData,
 } from '../types';
-import BusinessAccountApprovedEmail from '../templates/business/account-approved';
-import BusinessAccountRejectedEmail from '../templates/business/account-rejected';
-import BusinessWelcomePendingEmail from '../templates/business/welcome-pending';
-import BusinessBookingConfirmationEmail from '../templates/business/booking-confirmation';
-import BusinessBookingCancelledEmail from '../templates/business/booking-cancelled';
-import CustomerBookingConfirmationEmail from '../templates/business/customer-booking-confirmation';
-import CustomerDatetimeChangedEmail from '../templates/business/customer-datetime-changed';
-import CustomerBookingCancelledEmail from '../templates/business/customer-booking-cancelled';
-import BusinessBookingStatusUpdateEmail from '../templates/business/booking-status-update';
-import CustomerDriverAssignedEmail from '../templates/business/customer-driver-assigned';
-import BusinessBookingDriverAssignedEmail from '../templates/business/booking-driver-assigned';
-import NewBusinessRegistrationAdminNotificationEmail from '../templates/business/new-registration-admin-notification';
-import { getAdminEmail, getAppUrl } from '../config';
+import BusinessAccountApprovedEmail from '../templates/account-approved';
+import BusinessAccountRejectedEmail from '../templates/account-rejected';
+import BusinessWelcomePendingEmail from '../templates/welcome-pending';
+import BusinessBookingConfirmationEmail from '../templates/booking-confirmation';
+import BusinessBookingCancelledEmail from '../templates/booking-cancelled';
+import CustomerBookingConfirmationEmail from '../templates/customer-booking-confirmation';
+import CustomerDatetimeChangedEmail from '../templates/customer-datetime-changed';
+import CustomerBookingCancelledEmail from '../templates/customer-booking-cancelled';
+import BusinessBookingStatusUpdateEmail from '../templates/booking-status-update';
+import BusinessCustomerBookingStatusUpdateEmail from '../templates/customer-booking-status-update';
+import BusinessCustomerBookingCompletedEmail from '../templates/customer-booking-completed';
+import BusinessVendorAssignedEmail from '../templates/booking-vendor-assigned';
+import BusinessVendorRejectedEmail from '../templates/booking-vendor-rejected';
+import CustomerDriverAssignedEmail from '../templates/customer-driver-assigned';
+import BusinessBookingDriverAssignedEmail from '../templates/booking-driver-assigned';
+import NewBusinessRegistrationAdminNotificationEmail from '../templates/new-registration-admin-notification';
 
 /**
  * Business Registration Admin Notification Email Data
@@ -72,10 +77,9 @@ export interface BusinessWelcomePendingEmailData {
 export async function sendBusinessApprovalEmail(
   data: BusinessApprovalEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendPlatformEmail({
     // Platform: the platform is speaking about the tenant's account, and it carries the
     // platform login URL.
-    businessAccountId: null,
     to: data.email,
     subject: 'Your Business Account Has Been Approved!',
     template: BusinessAccountApprovedEmail,
@@ -93,10 +97,9 @@ export async function sendBusinessApprovalEmail(
 export async function sendBusinessRejectionEmail(
   data: BusinessRejectionEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendPlatformEmail({
     // Platform: delivering a rejection through the rejected party's own mail server would
     // be both absurd and unreliable.
-    businessAccountId: null,
     to: data.email,
     subject: 'Business Account Application Update',
     template: BusinessAccountRejectedEmail,
@@ -115,11 +118,10 @@ export async function sendBusinessRejectionEmail(
 export async function sendBusinessWelcomePendingEmail(
   data: BusinessWelcomePendingEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendPlatformEmail({
     // Platform: the account is still pending, so nothing about it is verified. Letting an
     // unapproved signup nominate an SMTP server we then send from would hand anyone with a
     // signup form an authenticated relay.
-    businessAccountId: null,
     to: data.email,
     subject: 'Welcome to Infinia Transfers - Registration Received',
     template: BusinessWelcomePendingEmail,
@@ -170,8 +172,13 @@ export interface BusinessBookingConfirmationEmailData {
 export async function sendBusinessBookingConfirmationEmail(
   data: BusinessBookingConfirmationEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
+    // Addressed to the business owner, not to their customer, so it goes out on platform
+    // credentials wearing the tenant's brand. Routing owner alerts over the tenant's own
+    // server means a business whose SMTP has broken stops being told anything, with the
+    // broken server as the only thing that could report it.
+    forcePlatformTransport: true,
     kind: 'business.booking.confirmation',
     to: data.email,
     subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
@@ -233,8 +240,13 @@ export interface BusinessBookingCancellationEmailData {
 export async function sendBusinessBookingCancellationEmail(
   data: BusinessBookingCancellationEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
+    // Addressed to the business owner, not to their customer, so it goes out on platform
+    // credentials wearing the tenant's brand. Routing owner alerts over the tenant's own
+    // server means a business whose SMTP has broken stops being told anything, with the
+    // broken server as the only thing that could report it.
+    forcePlatformTransport: true,
     kind: 'business.booking.cancellation',
     to: data.email,
     subject: `Booking Cancelled - #${data.tripNumber || data.bookingNumber}`,
@@ -264,7 +276,7 @@ export async function sendBusinessBookingCancellationEmail(
 export async function sendBusinessCustomerBookingConfirmationEmail(
   data: BusinessCustomerBookingConfirmationEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
     kind: 'business.customer.booking_confirmation',
     to: data.customerEmail,
@@ -296,7 +308,7 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
 export async function sendBusinessCustomerDatetimeChangedEmail(
   data: BusinessCustomerDatetimeChangedEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
     kind: 'business.customer.datetime_changed',
     to: data.customerEmail,
@@ -321,7 +333,7 @@ export async function sendBusinessCustomerDatetimeChangedEmail(
 export async function sendBusinessCustomerBookingCancelledEmail(
   data: BusinessCustomerBookingCancelledEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
     kind: 'business.customer.booking_cancelled',
     to: data.customerEmail,
@@ -346,7 +358,7 @@ export async function sendBusinessCustomerBookingCancelledEmail(
 export async function sendBusinessCustomerDriverAssignedEmail(
   data: BusinessCustomerDriverAssignedEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
     kind: 'business.customer.driver_assigned',
     to: data.customerEmail,
@@ -370,8 +382,13 @@ export async function sendBusinessCustomerDriverAssignedEmail(
 export async function sendBusinessDriverAssignedEmail(
   data: BusinessDriverAssignedEmailData
 ): Promise<EmailResult> {
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
+    // Addressed to the business owner, not to their customer, so it goes out on platform
+    // credentials wearing the tenant's brand. Routing owner alerts over the tenant's own
+    // server means a business whose SMTP has broken stops being told anything, with the
+    // broken server as the only thing that could report it.
+    forcePlatformTransport: true,
     kind: 'business.driver_assigned',
     to: data.businessEmail,
     subject: `Driver Assigned - #${data.tripNumber || data.bookingReference}`,
@@ -397,8 +414,13 @@ export async function sendBusinessBookingStatusUpdateEmail(
   data: BusinessBookingStatusUpdateEmailData
 ): Promise<EmailResult> {
   const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1);
-  return sendEmail({
+  return sendBusinessEmail({
     businessAccountId: data.businessAccountId,
+    // Addressed to the business owner, not to their customer, so it goes out on platform
+    // credentials wearing the tenant's brand. Routing owner alerts over the tenant's own
+    // server means a business whose SMTP has broken stops being told anything, with the
+    // broken server as the only thing that could report it.
+    forcePlatformTransport: true,
     kind: 'business.booking.status_update',
     to: data.email,
     subject: `Booking ${statusLabel} - #${data.tripNumber || data.bookingNumber}`,
@@ -419,6 +441,126 @@ export async function sendBusinessBookingStatusUpdateEmail(
 }
 
 /**
+ * The passenger's copy of a status change.
+ *
+ * Separate from the owner's because the two audiences need different words: the owner
+ * template opens "Hi {businessName}", which read as "Hi Acme Hotel," to the passenger
+ * when one template served both.
+ *
+ * Tenant transport, because the passenger's counterpart is the business.
+ */
+export async function sendBusinessCustomerBookingStatusUpdateEmail(
+  data: BusinessBookingStatusUpdateEmailData
+): Promise<EmailResult> {
+  const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1);
+
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.customer.booking_status_update',
+    to: data.email,
+    subject: `Your booking is ${statusLabel} - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessCustomerBookingStatusUpdateEmail,
+    templateProps: {
+      customerName: data.customerName,
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDateTime: data.pickupDateTime,
+      previousStatus: data.previousStatus,
+      newStatus: data.newStatus,
+      statusMessage: data.statusMessage,
+    },
+  });
+}
+
+/**
+ * Tells the passenger their trip is done.
+ *
+ * Tenant transport: the passenger's counterpart is the business. Nothing was sent on
+ * completion before this, so the confirmation from before the trip was the last thing a
+ * passenger ever heard about it.
+ */
+export async function sendBusinessCustomerBookingCompletedEmail(
+  data: BusinessCustomerBookingCompletedEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    kind: 'business.customer.booking_completed',
+    to: data.customerEmail,
+    subject: `Your trip is complete - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessCustomerBookingCompletedEmail,
+    templateProps: {
+      customerName: data.customerName,
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDateTime: data.pickupDateTime,
+    },
+  });
+}
+
+/**
+ * Tells the business a transport partner is now behind one of its bookings.
+ *
+ * Owner-only, platform transport. Assigning a vendor previously notified the vendor and
+ * the driver and left the business, whose booking it is, hearing nothing.
+ */
+export async function sendBusinessVendorAssignedEmail(
+  data: BusinessVendorAssignmentEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.booking.vendor_assigned',
+    to: data.email,
+    subject: `Transport arranged - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessVendorAssignedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDateTime: data.pickupDateTime,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+    },
+  });
+}
+
+/**
+ * Tells the business a booking lost its transport partner and is being reassigned.
+ *
+ * Owner-only, platform transport. The passenger is deliberately not told: nothing has
+ * changed for them, and a rejection they cannot act on is only a worry.
+ */
+export async function sendBusinessVendorRejectedEmail(
+  data: BusinessVendorAssignmentEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.booking.vendor_rejected',
+    to: data.email,
+    subject: `Arranging new transport - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessVendorRejectedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      pickupDateTime: data.pickupDateTime,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+    },
+  });
+}
+
+/**
  * Send admin notification when a new business registers (pending approval)
  */
 export async function sendBusinessRegistrationAdminNotificationEmail(
@@ -426,9 +568,8 @@ export async function sendBusinessRegistrationAdminNotificationEmail(
 ): Promise<EmailResult> {
   const adminEmail = getAdminEmail();
   const appUrl = getAppUrl();
-  return sendEmail({
+  return sendPlatformEmail({
     // Platform: the recipient is a platform administrator, not the tenant's audience.
-    businessAccountId: null,
     to: adminEmail,
     subject: `New Business Registration - ${data.businessName}`,
     template: NewBusinessRegistrationAdminNotificationEmail,

@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { activityLogger } from '@/lib/business/activity/log';
+import { bustBusinessMailCache } from '@/lib/business/email/platform';
 import { createClient } from '@supabase/supabase-js';
 
 // Constants
@@ -106,6 +107,10 @@ export const POST = requireBusinessOwner(async (request: NextRequest, user) => {
       return apiError('Failed to update logo URL', 500);
     }
 
+    // The logo is the header of every email this tenant sends, and the resolved brand is
+    // cached for 60 seconds.
+    bustBusinessMailCache(user.businessAccountId);
+
     // Logged here rather than by the business_accounts settings trigger: the
     // interesting facts (file name and size) are not columns.
     await activityLogger(user, request)('settings.logo_uploaded', {
@@ -179,6 +184,9 @@ export const DELETE = requireBusinessOwner(async (request: NextRequest, user) =>
       console.error('Database update error:', updateError);
       return apiError('Failed to update database', 500);
     }
+
+    // Emails fall back to the wordmark now, so the cached brand must go with the file.
+    bustBusinessMailCache(user.businessAccountId);
 
     await activityLogger(user, request)('settings.logo_removed', {
       entity: { id: user.businessAccountId, label: user.businessName },

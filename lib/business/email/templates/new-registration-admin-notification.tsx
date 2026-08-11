@@ -1,9 +1,9 @@
 import { Text } from '@react-email/components';
-import EmailLayout from '../base/layout';
-import DetailsSection from '../../components/details-section';
-import InfoBox from '../../components/info-box';
-import Button from '../base/button';
-import { emailStyles } from '../../styles/constants';
+import EmailLayout from './base/layout';
+import DetailsSection from '../components/details-section';
+import InfoBox from '../components/info-box';
+import Button from './base/button';
+import { emailStyles } from '../styles/constants';
 
 interface NewBusinessRegistrationAdminNotificationEmailProps {
   businessName: string;

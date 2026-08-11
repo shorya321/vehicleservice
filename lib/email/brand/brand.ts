@@ -15,12 +15,31 @@
  * to the platform brand, which is exactly right for an admin previewing platform mail.
  */
 
-import type { EmailBrand } from '../transport/types';
+import type { EmailBrand, EmailBrandColors } from '../transport/types';
 
 export type { EmailBrand };
 
 export const PLATFORM_BRAND_NAME = 'Infinia Transfers';
 export const PLATFORM_BRAND_ADDRESS = '123 Business Bay, Dubai, UAE';
+
+/**
+ * The platform palette, transcribed from the values already hardcoded in
+ * lib/email/templates/base/layout.tsx and lib/email/styles/constants.ts.
+ *
+ * These are not a new design. They exist so that anything rendering without a tenant in
+ * scope resolves to exactly what it renders today, which is what makes the shared
+ * template snapshots hold.
+ */
+export const PLATFORM_BRAND_COLORS: EmailBrandColors = {
+  primary: '#556cd6',
+  primaryText: '#ffffff',
+  background: '#f6f9fc',
+  surface: '#ffffff',
+  heading: '#1a1a1a',
+  text: '#525f7f',
+  muted: '#8898aa',
+  border: '#e6ebf1',
+};
 
 function platformUrl(): string {
   return (
@@ -39,6 +58,7 @@ export function getPlatformBrand(): EmailBrand {
     logoUrl: null,
     supportEmail: null,
     showPlatformLinks: true,
+    colors: PLATFORM_BRAND_COLORS,
   };
 }
 

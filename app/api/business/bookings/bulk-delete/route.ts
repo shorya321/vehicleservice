@@ -12,7 +12,7 @@ import {
   apiError,
   parseRequestBody,
 } from '@/lib/business/api-utils';
-import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/email/services/business-emails';
+import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 

@@ -1,13 +1,13 @@
 import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import Button from '../base/button';
-import DetailsSection from '../../components/details-section';
-import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import EmailLayout from './base/layout';
+import Button from './base/button';
+import DetailsSection from '../components/details-section';
+import InfoBox from '../components/info-box';
+import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
-import { getCurrentBrand } from '../../brand/brand';
+import { getBusinessBrand } from '../platform';
 
 interface BusinessBookingConfirmationEmailProps {
   businessName: string;
@@ -137,7 +137,7 @@ export const BusinessBookingConfirmationEmail = ({
           <strong>Booking Total:</strong> {currency} {totalPrice.toFixed(2)}
         </Text>
         {showChargeNote && (
-          <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
+          <Text style={{ ...emailStyles.muted, fontSize: '13px' }}>
             Payment charged in {originalCurrency} {originalAmount!.toFixed(2)}
           </Text>
         )}
@@ -158,12 +158,12 @@ export const BusinessBookingConfirmationEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        Thank you for using {getCurrentBrand().name}!
+        Thank you for using {getBusinessBrand().name}!
         <br />
         <br />
         Best regards,
         <br />
-        The {getCurrentBrand().name} Team
+        The {getBusinessBrand().name} Team
       </Text>
     </EmailLayout>
   );

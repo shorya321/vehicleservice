@@ -61,6 +61,10 @@ export const PROVIDER_PRESETS: Record<EmailProviderPreset, ProviderPreset> = {
     secure: false,
     usernameHint: 'Your full Google address, for example bookings@yourcompany.com.',
     passwordHint: 'A 16-character App Password, not your normal login password.',
+    // The App Passwords screen, which is where the credential comes from. It is not a
+    // domain-verification screen, and the checklist knows not to call it one: managedDomain
+    // suppresses the "verify your domain" step for Google, who sign outbound mail
+    // themselves once the Workspace domain is set up.
     verifyUrl: 'https://myaccount.google.com/apppasswords',
     verifyLabel: 'Google App Passwords',
     managedDomain: true,

@@ -8,8 +8,14 @@
  * two tabs both pass and then both convert.
  */
 
-import type { NextResponse } from 'next/server';
+import { after, type NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { loadBusinessBookingEmailDetails } from '@/lib/business/email/booking-details';
+import { getAppUrl } from '@/lib/business/email/platform';
+import {
+  sendBusinessBookingConfirmationEmail,
+  sendBusinessCustomerBookingConfirmationEmail,
+} from '@/lib/business/email/services/business-emails';
 import { requireBusinessAuth, apiError, apiSuccess } from '@/lib/business/api-utils';
 import { quotationConvertSchema } from '@/lib/business/quotations/schema';
 import { preflightConversion, repriceToken } from '@/lib/business/quotations/convert';
@@ -258,6 +264,82 @@ export const POST = requireBusinessAuth(async (
           .filter(Boolean),
       },
     });
+
+    // Tell the passenger and the business about every booking this created.
+    //
+    // Converting a quotation is a second booking channel, and it sent nothing at all: the
+    // portal create route emails the passenger, the owner and the platform admin, while a
+    // booking born from a quotation reached its passenger in silence even though the
+    // quotation carried their address all along.
+    //
+    // Inside after() and never awaited, matching the create route: the money has already
+    // moved and an unreachable mail server must not turn a completed conversion into a
+    // failed one.
+    const newBookingIds = results
+      .filter((r) => r.status === 'converted' && r.bookingId)
+      .map((r) => r.bookingId as string);
+
+    if (newBookingIds.length > 0) {
+      after(async () => {
+        for (const bookingId of newBookingIds) {
+          try {
+            const details = await loadBusinessBookingEmailDetails(bookingId);
+            if (!details) continue;
+
+            if (details.customerEmail) {
+              await sendBusinessCustomerBookingConfirmationEmail({
+                businessAccountId: details.businessAccountId,
+                customerName: details.customerName,
+                customerEmail: details.customerEmail,
+                businessName: details.businessName,
+                bookingNumber: details.bookingNumber,
+                tripNumber: details.tripNumber,
+                pickupLocation: details.pickupLocation,
+                dropoffLocation: details.dropoffLocation,
+                pickupDateTime: details.pickupDateTime,
+                vehicleType: details.vehicleType,
+                passengerCount: details.passengerCount,
+                adults: details.adults,
+                children: details.children,
+                infants: details.infants,
+              });
+            } else {
+              // Matches the create route: a quotation without a customer address is legal,
+              // so this is worth noticing but not worth failing over.
+              console.warn(
+                `[quotation-convert] booking ${details.bookingNumber} has no customer email, skipping passenger confirmation`
+              );
+            }
+
+            if (details.businessEmail) {
+              await sendBusinessBookingConfirmationEmail({
+                businessAccountId: details.businessAccountId,
+                email: details.businessEmail,
+                businessName: details.businessName,
+                bookingNumber: details.bookingNumber,
+                tripNumber: details.tripNumber,
+                customerName: details.customerName,
+                pickupLocation: details.pickupLocation,
+                dropoffLocation: details.dropoffLocation,
+                pickupDateTime: details.pickupDateTime,
+                vehicleType: details.vehicleType,
+                passengerCount: details.passengerCount,
+                adults: details.adults,
+                children: details.children,
+                infants: details.infants,
+                totalPrice: details.totalPrice,
+                currency: details.currency,
+                walletDeducted: details.walletDeducted,
+                newBalance: details.newBalance,
+                bookingUrl: `${getAppUrl()}/business/bookings/${details.bookingId}`,
+              });
+            }
+          } catch (emailError) {
+            console.error(`[quotation-convert] email failed for booking ${bookingId}:`, emailError);
+          }
+        }
+      });
+    }
 
     return apiSuccess({
       success: allDone,

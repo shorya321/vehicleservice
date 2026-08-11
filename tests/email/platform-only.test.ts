@@ -1,35 +1,49 @@
 /**
- * Guards the routing rule: which emails must NOT go out on a tenant's SMTP server.
+ * Guards the routing rule: which credentials each email goes out on, and whose brand it
+ * wears.
  *
- * The rule
- * --------
- * Use tenant credentials only when the tenant is the sender-of-record. Fall back to the
- * platform when the recipient IS the platform, when the platform is speaking ABOUT the
- * tenant's account, when the tenant is not yet approved, or when the message carries an
- * authentication credential.
+ * The rule has three cases, not two.
  *
- * This is a source-level test rather than a behavioural one on purpose. The failure it
- * catches is someone later "tidying up" a platform-only send by threading a tenant id
- * into it, which would be invisible at runtime until a real tenant complained. Reading
- * the argument out of the source pins the decision where the decision is written.
+ *   Passenger mail    sendBusinessEmail, no flag.
+ *                     Tenant credentials, tenant brand. The passenger's counterpart is
+ *                     the business, never the platform.
+ *
+ *   Owner mail        sendBusinessEmail with forcePlatformTransport.
+ *                     Platform credentials, tenant brand. A notification about a broken
+ *                     mail server cannot travel over the mail server that broke.
+ *
+ *   Platform mail     sendPlatformEmail, or businessAccountId: null in shared services.
+ *                     Platform credentials, platform brand. The platform is speaking to
+ *                     itself, to a supplier, to someone who is not yet a tenant, or is
+ *                     carrying a credential.
+ *
+ * A source-level test rather than a behavioural one, on purpose. The failure it catches
+ * is someone later "tidying up" a routing decision, which would be invisible at runtime
+ * until a real tenant complained. Reading the call out of the source pins the decision
+ * where the decision is written.
  */
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const SERVICES = join(process.cwd(), 'lib/email/services');
+const SHARED_SERVICES = join(process.cwd(), 'lib/email/services');
+const BUSINESS_SERVICES = join(process.cwd(), 'lib/business/email/services');
 
+/** Business email moved into the business module; shared services stayed put. */
 function source(file: string): string {
-  return readFileSync(join(SERVICES, file), 'utf8');
+  const root = file === 'business-emails.ts' ? BUSINESS_SERVICES : SHARED_SERVICES;
+  return readFileSync(join(root, file), 'utf8');
 }
 
-/** The argument object literal of a given exported function, up to its closing brace. */
+/** One exported function's body, up to the next export. */
 function bodyOf(file: string, fn: string): string {
   const src = source(file);
   const start = src.indexOf(`export async function ${fn}`);
 
   if (start === -1) {
-    throw new Error(`${fn} not found in ${file}. If it was renamed, update this guard rather than deleting it.`);
+    throw new Error(
+      `${fn} not found in ${file}. If it was renamed, update this guard rather than deleting it.`
+    );
   }
 
   const next = src.indexOf('\nexport ', start + 1);
@@ -37,8 +51,7 @@ function bodyOf(file: string, fn: string): string {
 }
 
 /**
- * Sends whose recipient is the platform, or which the platform makes about a tenant's
- * account, or which carry a credential. Each entry records why.
+ * Platform credentials and platform brand. Each entry records why it is not tenant mail.
  */
 const PLATFORM_ONLY: Array<[file: string, fn: string, why: string]> = [
   [
@@ -51,11 +64,7 @@ const PLATFORM_ONLY: Array<[file: string, fn: string, why: string]> = [
     'sendBusinessWelcomePendingEmail',
     'account is unapproved, so nothing about it is verified yet',
   ],
-  [
-    'business-emails.ts',
-    'sendBusinessApprovalEmail',
-    'the platform is speaking about the tenant account',
-  ],
+  ['business-emails.ts', 'sendBusinessApprovalEmail', 'the platform is speaking about the tenant account'],
   [
     'business-emails.ts',
     'sendBusinessRejectionEmail',
@@ -66,46 +75,22 @@ const PLATFORM_ONLY: Array<[file: string, fn: string, why: string]> = [
     'sendWalletFrozenEmail',
     'enforcement notice must arrive even when the tenant is uncooperative',
   ],
-  [
-    'admin-emails.ts',
-    'sendNewBookingNotificationEmail',
-    'recipient is the platform admin',
-  ],
-  [
-    'admin-emails.ts',
-    'sendNewUserNotificationEmail',
-    'recipient is the platform admin',
-  ],
+  ['admin-emails.ts', 'sendNewBookingNotificationEmail', 'recipient is the platform admin'],
+  ['admin-emails.ts', 'sendNewUserNotificationEmail', 'recipient is the platform admin'],
   [
     'auth-emails.ts',
     'sendPasswordResetEmail',
     'a reset link is a bearer credential and account recovery must not depend on tenant infrastructure',
   ],
-  [
-    'auth-emails.ts',
-    'sendWelcomeEmail',
-    'platform account signup',
-  ],
-  [
-    'auth-emails.ts',
-    'sendVerificationEmail',
-    'platform account verification',
-  ],
+  ['auth-emails.ts', 'sendWelcomeEmail', 'platform account signup'],
+  ['auth-emails.ts', 'sendVerificationEmail', 'platform account verification'],
   [
     'vendor-emails.ts',
     'sendBookingDatetimeModifiedEmail',
     'vendors are platform suppliers and must see one consistent sender across tenants',
   ],
-  [
-    'vendor-emails.ts',
-    'sendBookingAssignmentEmail',
-    'vendors are platform suppliers',
-  ],
-  [
-    'vendor-emails.ts',
-    'sendBookingUnassignmentEmail',
-    'vendors are platform suppliers',
-  ],
+  ['vendor-emails.ts', 'sendBookingAssignmentEmail', 'vendors are platform suppliers'],
+  ['vendor-emails.ts', 'sendBookingUnassignmentEmail', 'vendors are platform suppliers'],
   [
     'driver-emails.ts',
     'sendDriverBookingAssignmentEmail',
@@ -119,46 +104,84 @@ const PLATFORM_ONLY: Array<[file: string, fn: string, why: string]> = [
 ];
 
 describe('platform-only sends', () => {
-  it.each(PLATFORM_ONLY)('%s %s passes a null tenant, because %s', (file, fn, _why) => {
-    expect(bodyOf(file, fn)).toContain('businessAccountId: null');
+  it.each(PLATFORM_ONLY)('%s %s stays on the platform, because %s', (file, fn, _why) => {
+    const body = bodyOf(file, fn);
+
+    // The business module states it by calling sendPlatformEmail; shared services still
+    // pass an explicit null.
+    expect(body).toMatch(/sendPlatformEmail\(\{|businessAccountId: null/);
   });
 
   it.each(PLATFORM_ONLY)('%s %s never reads a tenant id from its data', (file, fn, _why) => {
     expect(bodyOf(file, fn)).not.toContain('businessAccountId: data.businessAccountId');
   });
+
+  it.each(PLATFORM_ONLY)('%s %s does not wear a tenant brand', (file, fn, _why) => {
+    expect(bodyOf(file, fn)).not.toContain('forcePlatformTransport');
+  });
 });
 
 /**
- * The mirror image: sends that carry the tenant, so a white-label customer sees the
- * business they booked with. Forgetting one of these is the original bug.
+ * Tenant credentials, tenant brand. Forgetting one of these is the original bug: a
+ * white-label customer receiving mail from a platform they have never heard of.
  */
-const TENANT_SCOPED: Array<[file: string, fn: string]> = [
-  ['business-emails.ts', 'sendBusinessBookingConfirmationEmail'],
-  ['business-emails.ts', 'sendBusinessBookingCancellationEmail'],
+const PASSENGER_SCOPED: Array<[file: string, fn: string]> = [
   ['business-emails.ts', 'sendBusinessCustomerBookingConfirmationEmail'],
   ['business-emails.ts', 'sendBusinessCustomerDatetimeChangedEmail'],
   ['business-emails.ts', 'sendBusinessCustomerBookingCancelledEmail'],
   ['business-emails.ts', 'sendBusinessCustomerDriverAssignedEmail'],
-  ['business-emails.ts', 'sendBusinessDriverAssignedEmail'],
-  ['business-emails.ts', 'sendBusinessBookingStatusUpdateEmail'],
+  ['business-emails.ts', 'sendBusinessCustomerBookingStatusUpdateEmail'],
+  ['business-emails.ts', 'sendBusinessCustomerBookingCompletedEmail'],
   ['wallet-emails.ts', 'sendLowBalanceAlert'],
   ['wallet-emails.ts', 'sendTransactionCompletedEmail'],
   ['wallet-emails.ts', 'sendSpendingLimitReachedEmail'],
   ['wallet-emails.ts', 'sendMonthlyStatementEmail'],
 ];
 
-describe('tenant-scoped sends', () => {
-  it.each(TENANT_SCOPED)('%s %s routes through the tenant', (file, fn) => {
+describe('tenant-transport sends', () => {
+  it.each(PASSENGER_SCOPED)('%s %s goes out on the tenant server', (file, fn) => {
     const body = bodyOf(file, fn);
 
     expect(body).toMatch(/businessAccountId: (data\.businessAccountId|businessAccountId \?\? null)/);
     expect(body).not.toContain('businessAccountId: null');
+    expect(body).not.toContain('forcePlatformTransport');
   });
 });
 
-describe('the two lists together', () => {
+/**
+ * Platform credentials, tenant brand.
+ *
+ * These are addressed to the business owner rather than to their customer. Routing them
+ * over the tenant's own server would mean a business whose SMTP has failed stops hearing
+ * about its own bookings, with the broken server as the only thing that could report it.
+ */
+const OWNER_SCOPED: Array<[file: string, fn: string]> = [
+  ['business-emails.ts', 'sendBusinessBookingConfirmationEmail'],
+  ['business-emails.ts', 'sendBusinessBookingCancellationEmail'],
+  ['business-emails.ts', 'sendBusinessDriverAssignedEmail'],
+  ['business-emails.ts', 'sendBusinessBookingStatusUpdateEmail'],
+  ['business-emails.ts', 'sendBusinessVendorAssignedEmail'],
+  ['business-emails.ts', 'sendBusinessVendorRejectedEmail'],
+];
+
+describe('owner sends', () => {
+  it.each(OWNER_SCOPED)('%s %s uses platform transport', (file, fn) => {
+    expect(bodyOf(file, fn)).toContain('forcePlatformTransport: true');
+  });
+
+  it.each(OWNER_SCOPED)('%s %s still carries the tenant, so the brand survives', (file, fn) => {
+    const body = bodyOf(file, fn);
+
+    expect(body).toContain('businessAccountId: data.businessAccountId');
+    expect(body).not.toContain('businessAccountId: null');
+  });
+});
+
+describe('the three lists together', () => {
   it('cover every send in the business and wallet services', () => {
-    const named = new Set([...PLATFORM_ONLY, ...TENANT_SCOPED].map(([file, fn]) => `${file}:${fn}`));
+    const named = new Set(
+      [...PLATFORM_ONLY, ...PASSENGER_SCOPED, ...OWNER_SCOPED].map(([file, fn]) => `${file}:${fn}`)
+    );
 
     for (const file of ['business-emails.ts', 'wallet-emails.ts']) {
       const exported = Array.from(source(file).matchAll(/export async function (\w+)/g)).map((m) => m[1]);
@@ -167,5 +190,33 @@ describe('the two lists together', () => {
         expect(named.has(`${file}:${fn}`)).toBe(true);
       }
     }
+  });
+});
+
+/**
+ * The business module owns its own email presentation and must not reach back into the
+ * shared one.
+ *
+ * lib/business/email/platform.ts is the single sanctioned crossing. Everything else
+ * importing lib/email directly would reintroduce exactly the coupling that made tenant
+ * colours impossible to add without putting every customer email at risk.
+ */
+describe('the module boundary', () => {
+  it('is crossed by exactly one file', () => {
+    const { readdirSync, statSync } = require('fs') as typeof import('fs');
+    const root = join(process.cwd(), 'lib/business/email');
+
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((entry) => {
+        const full = join(dir, entry);
+        return statSync(full).isDirectory() ? walk(full) : [full];
+      });
+
+    const offenders = walk(root).filter((file) => {
+      if (file.endsWith('platform.ts')) return false;
+      return /^import[^;]*from '[^']*lib\/email/m.test(readFileSync(file, 'utf8'));
+    });
+
+    expect(offenders).toEqual([]);
   });
 });

@@ -38,8 +38,8 @@ import VendorApplicationApprovedEmail from '@/lib/email/templates/vendor/applica
 import VendorApplicationRejectedEmail from '@/lib/email/templates/vendor/application-rejected';
 import BookingAssignedEmail from '@/lib/email/templates/vendor/booking-assigned';
 import BookingDriverAssignedEmail from '@/lib/email/templates/booking/driver-assigned';
-import BusinessCustomerDriverAssignedEmail from '@/lib/email/templates/business/customer-driver-assigned';
-import BusinessBookingDriverAssignedEmail from '@/lib/email/templates/business/booking-driver-assigned';
+import BusinessCustomerDriverAssignedEmail from '@/lib/business/email/templates/customer-driver-assigned';
+import BusinessBookingDriverAssignedEmail from '@/lib/business/email/templates/booking-driver-assigned';
 import DirectBookingCustomerConfirmationEmail from '@/lib/email/templates/direct-booking/customer-confirmation';
 import DirectBookingCustomerStatusUpdateEmail from '@/lib/email/templates/direct-booking/customer-status-update';
 import DirectBookingCustomerCancelledEmail from '@/lib/email/templates/direct-booking/customer-cancelled';

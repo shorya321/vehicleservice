@@ -39,6 +39,16 @@ export interface SendEmailParams {
    */
   businessAccountId: string | null;
   /**
+   * Send on platform credentials while keeping the tenant's brand.
+   *
+   * For mail addressed to the business owner rather than to their customer. A tenant
+   * whose mail server has failed must still receive the notification telling them so,
+   * and that cannot travel over the server that failed.
+   *
+   * Meaningless without a `businessAccountId`, which is what supplies the brand.
+   */
+  forcePlatformTransport?: boolean;
+  /**
    * Stable key for the delivery log, e.g. 'business.booking.confirmation'.
    * Free-form: adding a template must never require a migration.
    */
@@ -250,79 +260,10 @@ export interface DriverBookingUnassignmentEmailData {
 }
 
 /**
- * Every business-module email carries the tenant it belongs to, so the sender can pick
- * that tenant's SMTP credentials and brand.
- *
- * Required, not optional. An optional field fails silently: forget it and the mail goes
- * out under the platform's name to a customer who has never heard of the platform.
+ * Business email data shapes used to live here. They moved to
+ * lib/business/email/types.ts when the business module took ownership of its own email
+ * presentation, and nothing outside that module referenced them.
  */
-export interface BusinessScopedEmailData {
-  businessAccountId: string;
-}
-
-// Business customer emails (sent to end customer when business books on their behalf)
-export interface BusinessCustomerBookingConfirmationEmailData extends BusinessScopedEmailData {
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  businessName: string;
-  bookingNumber: string;
-  tripNumber?: string;
-  pickupLocation: string;
-  dropoffLocation: string;
-  pickupDateTime: string;
-  vehicleType: string;
-  /** Every guest (adults + children + infants). */
-  passengerCount: number;
-  adults?: number;
-  children?: number;
-  infants?: number;
-  referenceNumber?: string;
-  /**
-   * Kept structurally separate from the customer-flow `extras` above on purpose. The business
-   * module is independent, and the end-customer variant deliberately hides prices. `childAges`
-   * carries one age per seat for child-seat add-ons.
-   */
-  extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
-}
-
-export interface BusinessCustomerDatetimeChangedEmailData extends BusinessScopedEmailData {
-  customerName: string;
-  customerEmail: string;
-  businessName: string;
-  bookingNumber: string;
-  tripNumber?: string;
-  pickupLocation: string;
-  previousDateTime: string;
-  newDateTime: string;
-  modificationReason?: string;
-}
-
-export interface BusinessCustomerBookingCancelledEmailData extends BusinessScopedEmailData {
-  customerName: string;
-  customerEmail: string;
-  businessName: string;
-  bookingNumber: string;
-  tripNumber?: string;
-  pickupLocation: string;
-  dropoffLocation: string;
-  pickupDateTime: string;
-  cancellationReason?: string;
-}
-
-export interface BusinessBookingStatusUpdateEmailData extends BusinessScopedEmailData {
-  email: string;
-  businessName: string;
-  bookingNumber: string;
-  tripNumber?: string;
-  customerName: string;
-  pickupLocation: string;
-  dropoffLocation: string;
-  pickupDateTime: string;
-  previousStatus: string;
-  newStatus: string;
-  statusMessage?: string;
-}
 
 /**
  * Driver contact details shared by every driver-assigned notification.
@@ -341,20 +282,6 @@ export interface DriverAssignedTripDetails {
 export interface CustomerDriverAssignedEmailData extends DriverAssignedTripDetails {
   customerName: string;
   customerEmail: string;
-}
-
-/** Driver-assigned email for the passenger of a business booking. */
-export interface BusinessCustomerDriverAssignedEmailData extends DriverAssignedTripDetails, BusinessScopedEmailData {
-  customerName: string;
-  customerEmail: string;
-}
-
-/** Driver-assigned email for the business account that made the booking. */
-export interface BusinessDriverAssignedEmailData extends DriverAssignedTripDetails, BusinessScopedEmailData {
-  businessName: string;
-  businessEmail: string;
-  passengerName: string;
-  bookingId: string;
 }
 
 // ---------------------------------------------------------------------------

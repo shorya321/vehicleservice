@@ -13,6 +13,7 @@ import {
 } from '@/lib/business/api-utils';
 import { brandingSettingsSchema } from '@/lib/business/validators';
 import { parseThemeConfig, mergeThemeConfig, type ThemeConfig } from '@/lib/business/branding-utils';
+import { bustBusinessMailCache } from '@/lib/business/email/platform';
 
 /**
  * GET /api/business/branding/settings
@@ -117,6 +118,14 @@ export const PUT = requireBusinessOwner(async (request: NextRequest, user) => {
       console.error('Error updating branding settings:', error);
       return apiError('Failed to update branding settings', 500);
     }
+
+    // Emails carry the tenant's name, logo and colours, and the resolved brand is cached
+    // for 60 seconds. Without this the owner changes their accent, sends a test email and
+    // gets the old one back, which reads as the feature being broken.
+    //
+    // Best effort by design: the branding change is already committed, and a cache that
+    // expires on its own in a minute is not worth failing a successful save over.
+    bustBusinessMailCache(user.businessAccountId);
 
     return apiSuccess({
       message: 'Branding settings updated successfully',

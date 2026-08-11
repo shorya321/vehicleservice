@@ -1,10 +1,10 @@
 import { Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import Button from '../base/button';
-import InfoBox from '../../components/info-box';
-import List from '../../components/list';
-import { emailStyles } from '../../styles/constants';
+import EmailLayout from './base/layout';
+import Button from './base/button';
+import InfoBox from '../components/info-box';
+import List from '../components/list';
+import { emailStyles } from '../styles/constants';
 
 interface BusinessAccountApprovedEmailProps {
   businessName: string;

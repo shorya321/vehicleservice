@@ -10,8 +10,10 @@ import { sendDriverBookingUnassignmentEmail } from '@/lib/email/services/driver-
 import {
   sendBusinessCustomerBookingCancelledEmail,
   sendBusinessBookingStatusUpdateEmail,
+  sendBusinessCustomerBookingStatusUpdateEmail,
   sendBusinessBookingCancellationEmail,
-} from '@/lib/email/services/business-emails'
+  sendBusinessVendorAssignedEmail,
+} from '@/lib/business/email/services/business-emails'
 import { getAppUrl } from '@/lib/email/config'
 import { format } from 'date-fns'
 import { BOOKING_TIMEZONE, toBookingTz } from '@/lib/utils/timezone'
@@ -448,6 +450,18 @@ export async function updateBookingStatus(
 
   // Select correct table based on booking type
   const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
+
+  // Read the status before overwriting it. The notification emails report the change as
+  // "from X to Y", and X used to be the literal string 'pending' regardless of reality,
+  // so a booking going from confirmed to completed told the recipient it had been pending.
+  const { data: beforeUpdate } = await adminClient
+    .from(tableName)
+    .select('booking_status')
+    .eq('id', bookingId)
+    .maybeSingle()
+
+  const previousStatus = (beforeUpdate as { booking_status?: string } | null)?.booking_status ?? 'pending'
+
   const { error } = await adminClient
     .from(tableName)
     .update(updateData)
@@ -556,9 +570,12 @@ export async function updateBookingStatus(
             }).catch((err: unknown) => console.error('Failed to send business cancel email:', err))
           }
         } else {
-          // Send status update emails for non-cancellation status changes
+          // Two audiences, two templates. The passenger gets one written in the
+          // business's voice to its customer; the owner gets the internal one that opens
+          // "Hi {businessName}". Sending the owner template to the passenger, as this did,
+          // greeted a customer of Acme Hotel as "Hi Acme Hotel,".
           if (emailDetails.customerEmail) {
-            sendBusinessBookingStatusUpdateEmail({
+            sendBusinessCustomerBookingStatusUpdateEmail({
               businessAccountId: emailDetails.businessAccountId,
               email: emailDetails.customerEmail,
               businessName: emailDetails.businessName,
@@ -568,7 +585,7 @@ export async function updateBookingStatus(
               pickupLocation: emailDetails.pickupLocation,
               dropoffLocation: emailDetails.dropoffLocation,
               pickupDateTime: emailDetails.pickupDateTime,
-              previousStatus: 'pending',
+              previousStatus,
               newStatus: status,
             }).catch((err: unknown) => console.error('Failed to send customer status email:', err))
           }
@@ -584,7 +601,7 @@ export async function updateBookingStatus(
               pickupLocation: emailDetails.pickupLocation,
               dropoffLocation: emailDetails.dropoffLocation,
               pickupDateTime: emailDetails.pickupDateTime,
-              previousStatus: 'pending',
+              previousStatus,
               newStatus: status,
             }).catch((err: unknown) => console.error('Failed to send business status email:', err))
           }
@@ -816,6 +833,24 @@ export async function bulkUpdateBookingStatus(
     updateData.cancellation_reason = 'Bulk cancellation by admin'
   }
 
+  // Snapshot each booking's status before overwriting it, so the notifications can report
+  // the change that actually happened. This path used to hardcode 'pending' as the
+  // previous status, so confirming an already-confirmed booking told the recipient it had
+  // moved from pending. Both tables are read because the action is table-agnostic and
+  // fires the same update at each.
+  const previousStatuses = new Map<string, string>()
+
+  for (const table of ['bookings', 'business_bookings'] as const) {
+    const { data: before } = await adminClient
+      .from(table)
+      .select('id, booking_status')
+      .in('id', bookingIds)
+
+    for (const row of (before ?? []) as Array<{ id: string; booking_status: string | null }>) {
+      if (row.booking_status) previousStatuses.set(row.id, row.booking_status)
+    }
+  }
+
   // Update customer bookings
   const { error } = await adminClient
     .from('bookings')
@@ -867,33 +902,77 @@ export async function bulkUpdateBookingStatus(
         const details = await getBusinessBookingEmailDetails(bookingId)
         if (!details) return
 
-        if (status === 'cancelled' && details.customerEmail) {
-          await sendBusinessCustomerBookingCancelledEmail({
-            businessAccountId: details.businessAccountId,
-            customerName: details.customerName,
-            customerEmail: details.customerEmail,
-            businessName: details.businessName,
-            bookingNumber: details.bookingNumber,
-            tripNumber: details.tripNumber,
-            pickupLocation: details.pickupLocation,
-            dropoffLocation: details.dropoffLocation,
-            pickupDateTime: details.pickupDateTime,
-            cancellationReason: 'Bulk cancellation by admin',
-          })
-        } else if (details.customerEmail) {
-          await sendBusinessBookingStatusUpdateEmail({
-            businessAccountId: details.businessAccountId,
-            email: details.customerEmail,
-            businessName: details.businessName,
-            bookingNumber: details.bookingNumber,
-            tripNumber: details.tripNumber,
-            customerName: details.customerName,
-            pickupLocation: details.pickupLocation,
-            dropoffLocation: details.dropoffLocation,
-            pickupDateTime: details.pickupDateTime,
-            previousStatus: 'pending',
-            newStatus: status,
-          })
+        const previousStatus = previousStatuses.get(bookingId) ?? 'pending'
+
+        // Both audiences, matching the single-booking path. Bulk previously sent only the
+        // passenger copy, so cancelling twenty bookings one at a time notified the owner
+        // twenty times and cancelling the same twenty at once notified them not at all.
+        if (status === 'cancelled') {
+          if (details.customerEmail) {
+            await sendBusinessCustomerBookingCancelledEmail({
+              businessAccountId: details.businessAccountId,
+              customerName: details.customerName,
+              customerEmail: details.customerEmail,
+              businessName: details.businessName,
+              bookingNumber: details.bookingNumber,
+              tripNumber: details.tripNumber,
+              pickupLocation: details.pickupLocation,
+              dropoffLocation: details.dropoffLocation,
+              pickupDateTime: details.pickupDateTime,
+              cancellationReason: 'Bulk cancellation by admin',
+            })
+          }
+
+          if (details.businessEmail) {
+            await sendBusinessBookingCancellationEmail({
+              businessAccountId: details.businessAccountId,
+              email: details.businessEmail,
+              businessName: details.businessName,
+              bookingNumber: details.bookingNumber,
+              tripNumber: details.tripNumber,
+              customerName: details.customerName,
+              pickupLocation: details.pickupLocation,
+              dropoffLocation: details.dropoffLocation,
+              pickupDateTime: details.pickupDateTime,
+              cancellationReason: 'Bulk cancellation by admin',
+              refundAmount: 0,
+              newBalance: 0,
+              currency: details.currency,
+              walletUrl: `${getAppUrl()}/business/wallet`,
+            })
+          }
+        } else {
+          if (details.customerEmail) {
+            await sendBusinessCustomerBookingStatusUpdateEmail({
+              businessAccountId: details.businessAccountId,
+              email: details.customerEmail,
+              businessName: details.businessName,
+              bookingNumber: details.bookingNumber,
+              tripNumber: details.tripNumber,
+              customerName: details.customerName,
+              pickupLocation: details.pickupLocation,
+              dropoffLocation: details.dropoffLocation,
+              pickupDateTime: details.pickupDateTime,
+              previousStatus,
+              newStatus: status,
+            })
+          }
+
+          if (details.businessEmail) {
+            await sendBusinessBookingStatusUpdateEmail({
+              businessAccountId: details.businessAccountId,
+              email: details.businessEmail,
+              businessName: details.businessName,
+              bookingNumber: details.bookingNumber,
+              tripNumber: details.tripNumber,
+              customerName: details.customerName,
+              pickupLocation: details.pickupLocation,
+              dropoffLocation: details.dropoffLocation,
+              pickupDateTime: details.pickupDateTime,
+              previousStatus,
+              newStatus: status,
+            })
+          }
         }
       } catch (err) {
         console.error(`Failed to send email for bulk booking ${bookingId}:`, err)
@@ -914,6 +993,13 @@ export async function deleteBooking(
   const adminClient = createAdminClient()
 
   try {
+    // Read the notification details while the row still exists. Everything the emails need
+    // lives on the booking, and after the delete there is nothing left to read.
+    //
+    // bulkDeleteBookings delegates here, so both delete paths are covered by this.
+    const emailDetails =
+      bookingType === 'business' ? await getBusinessBookingEmailDetails(bookingId) : null
+
     // Check for booking assignment and clean up availability
     const fieldName = bookingType === 'customer' ? 'booking_id' : 'business_booking_id'
     const { data: assignment } = await adminClient
@@ -981,6 +1067,52 @@ export async function deleteBooking(
 
     if (!deletedRows || deletedRows.length === 0) {
       return { error: 'Booking not found or already deleted' }
+    }
+
+    // Deleting a booking from admin used to tell nobody, while the identical action taken
+    // by the business itself emailed the passenger. Same outcome for the passenger, so it
+    // gets the same email. Cancelled rather than deleted is the honest framing: "deleted"
+    // is an internal bookkeeping word.
+    if (emailDetails) {
+      after(async () => {
+        try {
+          if (emailDetails.customerEmail) {
+            await sendBusinessCustomerBookingCancelledEmail({
+              businessAccountId: emailDetails.businessAccountId,
+              customerName: emailDetails.customerName,
+              customerEmail: emailDetails.customerEmail,
+              businessName: emailDetails.businessName,
+              bookingNumber: emailDetails.bookingNumber,
+              tripNumber: emailDetails.tripNumber,
+              pickupLocation: emailDetails.pickupLocation,
+              dropoffLocation: emailDetails.dropoffLocation,
+              pickupDateTime: emailDetails.pickupDateTime,
+              cancellationReason: 'Booking removed by administrator',
+            })
+          }
+
+          if (emailDetails.businessEmail) {
+            await sendBusinessBookingCancellationEmail({
+              businessAccountId: emailDetails.businessAccountId,
+              email: emailDetails.businessEmail,
+              businessName: emailDetails.businessName,
+              bookingNumber: emailDetails.bookingNumber,
+              tripNumber: emailDetails.tripNumber,
+              customerName: emailDetails.customerName,
+              pickupLocation: emailDetails.pickupLocation,
+              dropoffLocation: emailDetails.dropoffLocation,
+              pickupDateTime: emailDetails.pickupDateTime,
+              cancellationReason: 'Booking removed by administrator',
+              refundAmount: 0,
+              newBalance: 0,
+              currency: emailDetails.currency,
+              walletUrl: `${getAppUrl()}/business/wallet`,
+            })
+          }
+        } catch (deleteEmailError) {
+          console.error('Failed to send booking deletion emails:', deleteEmailError)
+        }
+      })
     }
 
     revalidatePath('/admin/bookings')
@@ -1237,6 +1369,34 @@ export async function assignBookingToVendor(
     }
   } catch (emailError) {
     console.error('Failed to send booking assignment email:', emailError)
+  }
+
+  // Tell the business its booking now has transport behind it.
+  //
+  // This path notified the incoming vendor, the outgoing vendor and the driver, and said
+  // nothing to the business whose booking it is. Owner only: which supplier is fulfilling
+  // the trip is not the passenger's concern.
+  if (bookingType === 'business') {
+    try {
+      const details = await getBusinessBookingEmailDetails(bookingId)
+
+      if (details?.businessEmail) {
+        await sendBusinessVendorAssignedEmail({
+          businessAccountId: details.businessAccountId,
+          email: details.businessEmail,
+          businessName: details.businessName,
+          bookingId,
+          bookingNumber: details.bookingNumber,
+          tripNumber: details.tripNumber,
+          customerName: details.customerName,
+          pickupLocation: details.pickupLocation,
+          dropoffLocation: details.dropoffLocation,
+          pickupDateTime: details.pickupDateTime,
+        })
+      }
+    } catch (ownerEmailError) {
+      console.error('Failed to send vendor-assigned email to business:', ownerEmailError)
+    }
   }
 
   revalidatePath('/admin/bookings')

@@ -24,7 +24,7 @@ import { getAppUrl } from '@/lib/email/config';
 import {
   sendBusinessBookingCancellationEmail,
   sendBusinessCustomerBookingCancelledEmail,
-} from '@/lib/email/services/business-emails';
+} from '@/lib/business/email/services/business-emails';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 
 /**

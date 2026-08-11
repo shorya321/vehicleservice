@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
-import { sendBusinessRejectionEmail } from '@/lib/email/services/business-emails';
+import { sendBusinessRejectionEmail } from '@/lib/business/email/services/business-emails';
 import { z } from 'zod';
 
 /**

@@ -46,30 +46,48 @@ interface CacheEntry {
 
 const configCache = new Map<string, CacheEntry>();
 
-function readCache(businessAccountId: string): ResolvedMailConfig | null {
-  const entry = configCache.get(businessAccountId);
+/**
+ * One tenant has two resolutions, and they must not share a slot.
+ *
+ * A passenger email resolves to the tenant's own transport; an owner notification
+ * resolves to the platform transport wearing the tenant's brand. Keyed on the tenant id
+ * alone, whichever ran first would be served to the other, and owner mail would start
+ * going out over tenant credentials or, worse, passenger mail would stop doing so.
+ */
+function cacheKey(businessAccountId: string, forcePlatformTransport: boolean): string {
+  return `${businessAccountId}:${forcePlatformTransport ? 'platform' : 'tenant'}`;
+}
+
+function readCache(key: string): ResolvedMailConfig | null {
+  const entry = configCache.get(key);
   if (!entry) return null;
 
   if (entry.expiresAt <= Date.now()) {
-    configCache.delete(businessAccountId);
+    configCache.delete(key);
     return null;
   }
 
   return entry.config;
 }
 
-function writeCache(businessAccountId: string, config: ResolvedMailConfig): void {
+function writeCache(key: string, config: ResolvedMailConfig): void {
   if (configCache.size >= MAX_CACHED_CONFIGS) {
     const oldest = configCache.keys().next();
     if (!oldest.done) configCache.delete(oldest.value);
   }
 
-  configCache.set(businessAccountId, { config, expiresAt: Date.now() + CONFIG_TTL_MS });
+  configCache.set(key, { config, expiresAt: Date.now() + CONFIG_TTL_MS });
 }
 
-/** Drops one tenant's cached config so the next send re-reads the database. */
+/**
+ * Drops one tenant's cached config so the next send re-reads the database.
+ *
+ * Clears both resolutions: a credential change invalidates the tenant transport, and a
+ * branding change invalidates the brand carried by both.
+ */
 export function bustMailConfigCache(businessAccountId: string): void {
-  configCache.delete(businessAccountId);
+  configCache.delete(cacheKey(businessAccountId, false));
+  configCache.delete(cacheKey(businessAccountId, true));
 }
 
 /** Test seam. */
@@ -77,14 +95,28 @@ export function clearMailConfigCache(): void {
   configCache.clear();
 }
 
-/** Platform transport, but wearing the tenant's brand. */
-function platformWithBrand(businessAccountId: string, row: BusinessBrandRow | null): ResolvedMailConfig {
+/**
+ * Platform transport, but wearing the tenant's brand.
+ *
+ * Two callers with different intent: a degraded resolution (no credentials, breaker
+ * tripped, decryption failed), and a deliberate `forcePlatformTransport` for owner
+ * notifications. Only the deliberate one takes the tenant's name onto the From header,
+ * because on the degraded path the existing envelope behaviour is load-bearing for the
+ * `fell_back` accounting and must not shift.
+ */
+function platformWithBrand(
+  businessAccountId: string,
+  row: BusinessBrandRow | null,
+  deliberate = false
+): ResolvedMailConfig {
   const platform = getPlatformMailConfig();
+  const brand = row ? buildBusinessBrand(row) : getPlatformBrand();
 
   return {
     ...platform,
     businessAccountId,
-    brand: row ? buildBusinessBrand(row) : getPlatformBrand(),
+    brand,
+    identity: deliberate ? { ...platform.identity, fromName: brand.name } : platform.identity,
   };
 }
 
@@ -114,6 +146,16 @@ export interface ResolveOptions {
    * tripped breaker after fixing their password, so the breaker is bypassed too.
    */
   readonly ignoreEnabled?: boolean;
+  /**
+   * Send on platform credentials while keeping the tenant's brand. Used for
+   * notifications addressed to the business owner rather than to their customer.
+   *
+   * The reason is availability, not aesthetics: if a tenant's own mail server is what
+   * carries the alert that their mail server is failing, the alert never arrives. The
+   * owner is the platform's customer, so the platform speaks to them directly, in their
+   * own livery.
+   */
+  readonly forcePlatformTransport?: boolean;
 }
 
 function usable(settings: SettingsRow | null, ignoreEnabled: boolean): settings is SettingsRow {
@@ -142,11 +184,13 @@ export async function resolveMailConfig(
   }
 
   const ignoreEnabled = options.ignoreEnabled === true;
+  const forcePlatform = options.forcePlatformTransport === true;
+  const key = cacheKey(businessAccountId, forcePlatform);
 
   // A test-send config must never touch the shared cache in either direction. Reading
   // could return a stale platform config; writing would poison the cache so that real
   // booking emails start using a transport the owner has not switched on yet.
-  const cached = ignoreEnabled ? null : readCache(businessAccountId);
+  const cached = ignoreEnabled ? null : readCache(key);
   if (cached) return cached;
 
   let brandRow: BusinessBrandRow | null = null;
@@ -159,7 +203,7 @@ export async function resolveMailConfig(
       .from('business_accounts')
       .select(
         `id, business_name, brand_name, logo_url, business_email, address,
-         subdomain, custom_domain, custom_domain_verified,
+         subdomain, custom_domain, custom_domain_verified, theme_config,
          business_email_settings (
            enabled, smtp_host, smtp_port, smtp_secure, smtp_username,
            smtp_password_encrypted, from_email, from_name, reply_to,
@@ -171,12 +215,20 @@ export async function resolveMailConfig(
 
     if (error || !data) {
       if (error) console.error('[mail-config] lookup failed:', error.message);
-      const config = platformWithBrand(businessAccountId, null);
-      if (!ignoreEnabled) writeCache(businessAccountId, config);
+      const config = platformWithBrand(businessAccountId, null, forcePlatform);
+      if (!ignoreEnabled) writeCache(key, config);
       return config;
     }
 
     brandRow = data as unknown as BusinessBrandRow;
+
+    // Owner notifications stop here: the row was fetched for the brand, and the tenant's
+    // credentials are deliberately not consulted.
+    if (forcePlatform) {
+      const config = platformWithBrand(businessAccountId, brandRow, true);
+      if (!ignoreEnabled) writeCache(key, config);
+      return config;
+    }
 
     // PostgREST returns an embedded one-to-one as either an object or a single-element
     // array depending on how it infers the relationship, so normalise both shapes.
@@ -186,7 +238,7 @@ export async function resolveMailConfig(
 
     if (!usable(settings, ignoreEnabled)) {
       const config = platformWithBrand(businessAccountId, brandRow);
-      if (!ignoreEnabled) writeCache(businessAccountId, config);
+      if (!ignoreEnabled) writeCache(key, config);
       return config;
     }
 
@@ -215,7 +267,7 @@ export async function resolveMailConfig(
       allowPlatformFallback: settings.allow_platform_fallback,
     };
 
-    if (!ignoreEnabled) writeCache(businessAccountId, config);
+    if (!ignoreEnabled) writeCache(key, config);
     return config;
   } catch (error) {
     // Most likely a decryption failure: a rotated key, or a row copied between tenants.
@@ -225,8 +277,8 @@ export async function resolveMailConfig(
       error instanceof Error ? error.message : 'unknown error'
     );
 
-    const config = platformWithBrand(businessAccountId, brandRow);
-    if (!ignoreEnabled) writeCache(businessAccountId, config);
+    const config = platformWithBrand(businessAccountId, brandRow, forcePlatform);
+    if (!ignoreEnabled) writeCache(key, config);
     return config;
   }
 }

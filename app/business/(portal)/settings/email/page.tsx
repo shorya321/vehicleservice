@@ -57,7 +57,7 @@ export default async function BusinessEmailSettingsPage() {
       .limit(25),
     admin
       .from('business_accounts')
-      .select('business_email')
+      .select('business_email, custom_domain, custom_domain_verified')
       .eq('id', member.businessAccountId)
       .maybeSingle(),
   ]);
@@ -90,6 +90,12 @@ export default async function BusinessEmailSettingsPage() {
         // button. The account's own address is always present and is always on the
         // test-send allow-list, so it is the right fallback.
         memberEmail={member.email ?? account?.business_email ?? ''}
+        // Only a verified domain is offered as the expected sender domain. An unverified
+        // one is a claim, and warning a tenant that their sender does not match a domain
+        // they have not proved they own would be noise.
+        tenantDomain={
+          account?.custom_domain_verified ? (account.custom_domain as string | null) : null
+        }
       />
     </PageContainer>
   );

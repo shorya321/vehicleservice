@@ -18,7 +18,28 @@ import {
   LuxuryTableRow,
 } from '@/components/business/ui';
 import { cn } from '@/lib/utils';
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 import type { EmailLogEntry } from './types';
+
+/**
+ * Pinned locale and time zone, for the same reason as the password date on the
+ * configuration tab: an unpinned toLocaleString() renders differently on the server and
+ * in the browser and breaks hydration.
+ *
+ * Not currently a live error only because Radix does not mount an inactive tab, so these
+ * rows never reach the server HTML. That is an accident of the tab component rather than
+ * anything this file arranged, and it would break the moment the log became the default
+ * tab. A delivery timestamp should be deterministic on its own merits anyway.
+ */
+function formatSentAt(iso: string): string {
+  return new Date(iso).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: BOOKING_TIMEZONE,
+  });
+}
 
 interface EmailLogTableProps {
   initialLogs: EmailLogEntry[];
@@ -144,7 +165,7 @@ export function EmailLogTable({ initialLogs }: EmailLogTableProps) {
                     className="cursor-pointer"
                   >
                     <LuxuryTableCell className="whitespace-nowrap text-sm">
-                      {new Date(log.created_at).toLocaleString()}
+                      {formatSentAt(log.created_at)}
                     </LuxuryTableCell>
                     <LuxuryTableCell className="text-sm">{log.to_email}</LuxuryTableCell>
                     <LuxuryTableCell className="max-w-[280px] truncate text-sm">

@@ -29,6 +29,33 @@ export interface MailIdentity {
 }
 
 /**
+ * The palette a template renders under.
+ *
+ * Only the business module's own templates read this. Every shared template
+ * (customer, vendor, driver, auth, wallet, admin) keeps its own static styles, so
+ * adding this field cannot change what a customer receives.
+ *
+ * Semantic colours are deliberately absent: status badges and info/success/warning
+ * boxes carry meaning, and a tenant whose accent happens to be red must not end up
+ * with a red "confirmed" badge.
+ */
+export interface EmailBrandColors {
+  /** Buttons and links. */
+  readonly primary: string;
+  /** Label colour on top of `primary`, picked for contrast rather than configured. */
+  readonly primaryText: string;
+  /** The page behind the message card. */
+  readonly background: string;
+  /** The message card itself. */
+  readonly surface: string;
+  readonly heading: string;
+  readonly text: string;
+  /** Footer text and secondary captions. */
+  readonly muted: string;
+  readonly border: string;
+}
+
+/**
  * The brand a template renders under. Resolved per tenant, so a white-label
  * business's customers never see the platform's name.
  */
@@ -44,6 +71,7 @@ export interface EmailBrand {
    * tells the recipient the tenant's terms are the platform's.
    */
   readonly showPlatformLinks: boolean;
+  readonly colors: EmailBrandColors;
 }
 
 export interface ResolvedMailConfig {

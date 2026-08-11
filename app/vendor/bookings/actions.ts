@@ -15,8 +15,62 @@ import { sendBookingDriverAssignedEmail } from '@/lib/email/services/booking-ema
 import {
   sendBusinessCustomerDriverAssignedEmail,
   sendBusinessDriverAssignedEmail,
-} from '@/lib/email/services/business-emails'
-import { toBookingTz } from '@/lib/utils/timezone'
+  sendBusinessCustomerBookingCompletedEmail,
+  sendBusinessBookingStatusUpdateEmail,
+  sendBusinessVendorRejectedEmail,
+} from '@/lib/business/email/services/business-emails'
+import { toBookingTz, BOOKING_TIMEZONE } from '@/lib/utils/timezone'
+
+/**
+ * Loads everything a business-booking notification needs, or null when the booking is
+ * not a business one.
+ *
+ * Vendor actions operate on both `bookings` and `business_bookings`, so every caller
+ * guards on this returning null rather than on a booking-type check of its own.
+ */
+async function businessBookingEmailDetails(bookingId: string) {
+  const adminClient = createAdminClient()
+
+  const { data: booking } = await adminClient
+    .from('business_bookings')
+    .select(
+      `booking_number, trip_number, customer_name, customer_email,
+       pickup_address, dropoff_address, pickup_datetime, business_account_id,
+       from_location:from_location_id(name),
+       to_location:to_location_id(name)`
+    )
+    .eq('id', bookingId)
+    .maybeSingle()
+
+  const row = booking as any
+  if (!row?.business_account_id) return null
+
+  const { data: account } = await adminClient
+    .from('business_accounts')
+    .select('business_name, business_email')
+    .eq('id', row.business_account_id)
+    .maybeSingle()
+
+  const withAddress = (name: string | undefined, address: string | null) =>
+    name ? `${name}${address ? ` - ${address}` : ''}` : address || 'N/A'
+
+  return {
+    businessAccountId: row.business_account_id as string,
+    bookingNumber: row.booking_number as string,
+    tripNumber: (row.trip_number as string) || undefined,
+    customerName: (row.customer_name as string) || 'Customer',
+    customerEmail: (row.customer_email as string) || null,
+    businessName: (account as any)?.business_name || 'Business',
+    businessEmail: (account as any)?.business_email || null,
+    pickupLocation: withAddress(row.from_location?.name, row.pickup_address),
+    dropoffLocation: withAddress(row.to_location?.name, row.dropoff_address),
+    pickupDateTime: new Date(row.pickup_datetime).toLocaleString('en-US', {
+      timeZone: BOOKING_TIMEZONE,
+      dateStyle: 'full',
+      timeStyle: 'short',
+    }),
+  }
+}
 
 export interface VendorBooking {
   id: string
@@ -779,6 +833,31 @@ export async function rejectAssignment(
     throw new Error('Failed to reject assignment')
   }
 
+  // The business is left holding an unassigned booking, so tell it. Owner only: nothing
+  // has changed for the passenger, and a rejection they cannot act on is only a worry.
+  if (booking?.bookingType === 'business') {
+    try {
+      const details = await businessBookingEmailDetails(booking.id)
+
+      if (details?.businessEmail) {
+        await sendBusinessVendorRejectedEmail({
+          businessAccountId: details.businessAccountId,
+          email: details.businessEmail,
+          businessName: details.businessName,
+          bookingId: booking.id,
+          bookingNumber: details.bookingNumber,
+          tripNumber: details.tripNumber,
+          customerName: details.customerName,
+          pickupLocation: details.pickupLocation,
+          dropoffLocation: details.dropoffLocation,
+          pickupDateTime: details.pickupDateTime,
+        })
+      }
+    } catch (rejectionEmailError) {
+      console.error('Failed to send rejection email (non-critical):', rejectionEmailError)
+    }
+  }
+
   revalidatePath('/vendor/bookings')
   revalidatePath('/admin/bookings')
   revalidatePath('/admin/dashboard')
@@ -1157,6 +1236,48 @@ export async function completeBooking(assignmentId: string) {
 
   // Free vehicle and driver resources
   await AvailabilityService.removeSchedule(assignmentId)
+
+  // Close the loop with the passenger and the business. Completing a trip previously sent
+  // nothing at all, so the confirmation from before the trip was the last thing either of
+  // them heard about it. Guarded on the booking being a business one, so the B2C path is
+  // untouched, and never allowed to fail the completion it is reporting.
+  if (booking.bookingType === 'business') {
+    try {
+      const details = await businessBookingEmailDetails(booking.id)
+
+      if (details?.customerEmail) {
+        await sendBusinessCustomerBookingCompletedEmail({
+          businessAccountId: details.businessAccountId,
+          customerName: details.customerName,
+          customerEmail: details.customerEmail,
+          businessName: details.businessName,
+          bookingNumber: details.bookingNumber,
+          tripNumber: details.tripNumber,
+          pickupLocation: details.pickupLocation,
+          dropoffLocation: details.dropoffLocation,
+          pickupDateTime: details.pickupDateTime,
+        })
+      }
+
+      if (details?.businessEmail) {
+        await sendBusinessBookingStatusUpdateEmail({
+          businessAccountId: details.businessAccountId,
+          email: details.businessEmail,
+          businessName: details.businessName,
+          bookingNumber: details.bookingNumber,
+          tripNumber: details.tripNumber,
+          customerName: details.customerName,
+          pickupLocation: details.pickupLocation,
+          dropoffLocation: details.dropoffLocation,
+          pickupDateTime: details.pickupDateTime,
+          previousStatus: 'in_progress',
+          newStatus: 'completed',
+        })
+      }
+    } catch (completionEmailError) {
+      console.error('Failed to send completion emails (non-critical):', completionEmailError)
+    }
+  }
 
   revalidatePath('/vendor/bookings')
   revalidatePath('/admin/bookings')

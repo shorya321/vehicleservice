@@ -1,12 +1,12 @@
 import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import DetailsSection from '../../components/details-section';
-import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import EmailLayout from './base/layout';
+import DetailsSection from '../components/details-section';
+import InfoBox from '../components/info-box';
+import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
-import { getCurrentBrand } from '../../brand/brand';
+import { getBusinessBrand } from '../platform';
 
 interface CustomerBookingConfirmationEmailProps {
   customerName: string;
@@ -125,7 +125,7 @@ export const CustomerBookingConfirmationEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The {getCurrentBrand().name} Team
+        The {getBusinessBrand().name} Team
       </Text>
     </EmailLayout>
   );

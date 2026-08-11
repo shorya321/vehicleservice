@@ -14,6 +14,8 @@ import type { ProviderPreset } from '@/lib/business/email/provider-presets';
 interface SenderChecklistProps {
   preset: ProviderPreset;
   fromEmail: string;
+  /** The tenant's verified custom domain, used before a sender address is typed. */
+  tenantDomain: string | null;
 }
 
 function domainOf(email: string): string | null {
@@ -45,8 +47,11 @@ function Record({ children }: { children: React.ReactNode }) {
  * saved correct SMTP credentials and still had everything land in spam because the
  * domain was never authenticated.
  */
-export function SenderChecklist({ preset, fromEmail }: SenderChecklistProps) {
-  const domain = domainOf(fromEmail) ?? 'yourdomain.com';
+export function SenderChecklist({ preset, fromEmail, tenantDomain }: SenderChecklistProps) {
+  // The sender address first, because that is the domain these records must authenticate.
+  // The tenant's verified domain is the next best guess while the field is still empty,
+  // so the steps name a real domain instead of a placeholder the owner has to translate.
+  const domain = domainOf(fromEmail) ?? tenantDomain ?? 'yourdomain.com';
 
   return (
     <LuxuryCard>
@@ -85,10 +90,25 @@ export function SenderChecklist({ preset, fromEmail }: SenderChecklistProps) {
         ) : (
           <>
             <Step n={2} title="Add an SPF record">
-              <p>
-                A <code>TXT</code> record on <code>{domain}</code>:
-              </p>
-              <Record>v=spf1 include:{preset.spfInclude ?? 'yourprovider.com'} ~all</Record>
+              {preset.spfInclude ? (
+                <>
+                  <p>
+                    A <code>TXT</code> record on <code>{domain}</code>:
+                  </p>
+                  <Record>v=spf1 include:{preset.spfInclude} ~all</Record>
+                </>
+              ) : (
+                /*
+                  A custom server has no include we can know, and printing a placeholder
+                  produces a record that looks copy-pasteable and authorises nothing. Ask
+                  for the real value instead of inventing one.
+                */
+                <p>
+                  Your provider publishes the <code>include:</code> value for their sending
+                  servers. Add it to a <code>TXT</code> record on <code>{domain}</code> in the
+                  form <code>v=spf1 include:their-value ~all</code>.
+                </p>
+              )}
               <p>
                 If {domain} already has an SPF record, merge this <code>include:</code> into it.
                 Two separate SPF records is itself a failure.

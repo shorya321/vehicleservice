@@ -88,15 +88,29 @@ async function sendViaResend(params: SendEmailParams, config: ResolvedMailConfig
   const emailConfig = getEmailConfig();
 
   const element = jsx(params.template, params.templateProps);
-  const plainText = await runWithBrand(config.brand, () => render(element, { plainText: true }));
 
-  const { data: emailData, error } = await resend.emails.send({
-    from: emailConfig.from,
-    to: params.to,
-    replyTo: params.replyTo || emailConfig.replyTo,
-    subject: params.subject,
-    react: element,
-    text: plainText,
+  // The brand scope has to wrap the send() call, not just the plain-text render.
+  //
+  // Passing `react:` hands the element to the Resend SDK, which renders the HTML itself
+  // inside send(). Wrapping only the render() above would leave that HTML render outside
+  // the AsyncLocalStorage scope, so getCurrentBrand() would fall back to the platform
+  // brand and every tenant email on this path would silently lose its name, logo and
+  // colors. The plain text would be branded and the HTML would not.
+  //
+  // MAIL_TRANSPORT defaults to 'resend', so this is the live path for all platform mail,
+  // including owner notifications that deliberately use platform credentials with tenant
+  // branding.
+  const { data: emailData, error } = await runWithBrand(config.brand, async () => {
+    const text = await render(element, { plainText: true });
+
+    return resend.emails.send({
+      from: emailConfig.from,
+      to: params.to,
+      replyTo: params.replyTo || emailConfig.replyTo,
+      subject: params.subject,
+      react: element,
+      text,
+    });
   });
 
   // Logged on this path too, not just the SMTP one.
@@ -277,7 +291,11 @@ export async function sendEmailWithConfig(
   let config: ResolvedMailConfig | null = resolved;
 
   try {
-    config = resolved ?? (await resolveMailConfig(params.businessAccountId ?? null));
+    config =
+      resolved ??
+      (await resolveMailConfig(params.businessAccountId ?? null, {
+        forcePlatformTransport: params.forcePlatformTransport,
+      }));
 
     if (config.provider === 'platform_smtp' && platformTransportMode() === 'resend') {
       return await sendViaResend(params, config);

@@ -7,7 +7,13 @@
  * one tenant's customer receive an email footed with another tenant's name.
  */
 
-import { clearBrandResolver, getCurrentBrand, getPlatformBrand, type EmailBrand } from '@/lib/email/brand/brand';
+import {
+  clearBrandResolver,
+  getCurrentBrand,
+  getPlatformBrand,
+  PLATFORM_BRAND_COLORS,
+  type EmailBrand,
+} from '@/lib/email/brand/brand';
 import { getScopedBrand, runWithBrand } from '@/lib/email/brand/brand-store.server';
 
 function tenantBrand(name: string): EmailBrand {
@@ -18,6 +24,8 @@ function tenantBrand(name: string): EmailBrand {
     logoUrl: null,
     supportEmail: `support@${name.toLowerCase()}.example.com`,
     showPlatformLinks: false,
+    // Scoping is what is under test here, not the palette.
+    colors: PLATFORM_BRAND_COLORS,
   };
 }
 

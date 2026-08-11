@@ -1,9 +1,9 @@
 import { Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import DetailsSection from '../../components/details-section';
-import { emailStyles } from '../../styles/constants';
-import { getCurrentBrand } from '../../brand/brand';
+import EmailLayout from './base/layout';
+import DetailsSection from '../components/details-section';
+import { emailStyles } from '../styles/constants';
+import { getBusinessBrand } from '../platform';
 
 interface SmtpTestEmailProps {
   recipientName: string;
@@ -26,7 +26,7 @@ export const SmtpTestEmail = ({
   fromEmail,
   sentAt,
 }: SmtpTestEmailProps) => {
-  const brand = getCurrentBrand();
+  const brand = getBusinessBrand();
 
   return (
     <EmailLayout preview="Your email settings are working" heading="Your email settings are working">

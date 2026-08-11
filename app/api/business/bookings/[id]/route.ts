@@ -10,7 +10,7 @@ import {
   apiSuccess,
   apiError,
 } from '@/lib/business/api-utils';
-import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/email/services/business-emails';
+import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
 import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 import { activityLogger } from '@/lib/business/activity/log';
 

@@ -18,6 +18,8 @@ interface EmailSettingsContentProps {
   initialLogs: EmailLogEntry[];
   platformFallbackFrom: string;
   memberEmail: string;
+  /** The tenant's verified custom domain, or null when they have not set one up. */
+  tenantDomain: string | null;
 }
 
 export function EmailSettingsContent({
@@ -25,6 +27,7 @@ export function EmailSettingsContent({
   initialLogs,
   platformFallbackFrom,
   memberEmail,
+  tenantDomain,
 }: EmailSettingsContentProps) {
   const router = useRouter();
 
@@ -39,7 +42,11 @@ export function EmailSettingsContent({
         </LuxuryTabsList>
 
         <LuxuryTabsContent value="configuration" className="space-y-6">
-          <EmailSettingsForm settings={initialSettings} onSaved={() => router.refresh()} />
+          <EmailSettingsForm
+            settings={initialSettings}
+            tenantDomain={tenantDomain}
+            onSaved={() => router.refresh()}
+          />
 
           <div className="flex flex-wrap items-center gap-3 border-t border-border pt-6">
             <TestEmailDialog

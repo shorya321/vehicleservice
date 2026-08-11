@@ -1,11 +1,11 @@
 import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import Button from '../base/button';
-import DetailsSection from '../../components/details-section';
-import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
-import { getCurrentBrand } from '../../brand/brand';
+import EmailLayout from './base/layout';
+import Button from './base/button';
+import DetailsSection from '../components/details-section';
+import InfoBox from '../components/info-box';
+import { emailStyles } from '../styles/constants';
+import { getBusinessBrand } from '../platform';
 
 interface BusinessBookingCancelledEmailProps {
   businessName: string;
@@ -92,7 +92,7 @@ export const BusinessBookingCancelledEmail = ({
           <strong>Refund Amount:</strong> {currency} {refundAmount.toFixed(2)}
         </Text>
         {showChargeNote && (
-          <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
+          <Text style={{ ...emailStyles.muted, fontSize: '13px' }}>
             Refunded in {originalCurrency} {originalAmount!.toFixed(2)}
           </Text>
         )}
@@ -115,7 +115,7 @@ export const BusinessBookingCancelledEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The {getCurrentBrand().name} Team
+        The {getBusinessBrand().name} Team
       </Text>
     </EmailLayout>
   );

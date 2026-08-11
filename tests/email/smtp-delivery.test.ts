@@ -11,7 +11,7 @@ import { clearMailConfigCache } from '@/lib/email/transport/resolve-config';
 import { clearTransporterCache } from '@/lib/email/transport/transporter';
 import { formatAddress } from '@/lib/email/transport/deliver';
 import { sendEmail } from '@/lib/email/utils/send-email';
-import BusinessWelcomePendingEmail from '@/lib/email/templates/business/welcome-pending';
+import BusinessWelcomePendingEmail from '@/lib/business/email/templates/welcome-pending';
 import { startSmtpSink, type SmtpSink } from './helpers/smtp-sink';
 
 const originalEnv = { ...process.env };

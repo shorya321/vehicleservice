@@ -25,7 +25,7 @@ jest.mock('@/lib/supabase/admin', () => ({
 import { encryptSecret, resetMailCryptoCache } from '@/lib/email/transport/crypto';
 import { clearMailConfigCache } from '@/lib/email/transport/resolve-config';
 import { clearTransporterCache } from '@/lib/email/transport/transporter';
-import { sendBusinessCustomerBookingConfirmationEmail } from '@/lib/email/services/business-emails';
+import { sendBusinessCustomerBookingConfirmationEmail } from '@/lib/business/email/services/business-emails';
 import { sendVendorApplicationApprovedEmail } from '@/lib/email/services/vendor-emails';
 import { startSmtpSink, type SmtpSink } from './helpers/smtp-sink';
 
@@ -47,6 +47,19 @@ function tenantRow(settingsOverrides: Record<string, unknown> = {}, brandOverrid
       subdomain: 'acme',
       custom_domain: 'transfers.acmehotel.com',
       custom_domain_verified: true,
+      theme_config: {
+        accent: { primary: '#BA955E', secondary: '#14B8A6', tertiary: '#06B6D4' },
+        light: {
+          background: '#FFFFFF',
+          surface: '#FAFAFA',
+          card: '#FFFFFF',
+          sidebar: '#FFFFFF',
+          muted: '#F4F4F5',
+          text_primary: '#09090B',
+          text_secondary: '#71717A',
+          border: '#E4E4E7',
+        },
+      },
       ...brandOverrides,
       business_email_settings: {
         enabled: true,
@@ -178,6 +191,50 @@ describe('a configured tenant', () => {
     await bookingConfirmation();
 
     expect(decodedBody()).toContain('https://cdn.example.com/acme.png');
+  });
+
+  it('paints the email in the tenant accent, not the platform indigo', async () => {
+    await bookingConfirmation();
+    const body = decodedBody();
+
+    expect(body).toContain('#BA955E');
+    // The colour every tenant's buttons and links used to be, regardless of their brand.
+    expect(body).not.toContain('#556cd6');
+  });
+
+  it('takes the surface and border colours from the tenant theme', async () => {
+    await bookingConfirmation();
+    const body = decodedBody();
+
+    expect(body).toContain('#FAFAFA');
+    expect(body).toContain('#E4E4E7');
+  });
+
+  it('keeps status colours fixed, because they carry meaning rather than identity', async () => {
+    mockMaybeSingle.mockResolvedValue(
+      tenantRow({}, {
+        theme_config: {
+          // A tenant whose accent is red must not get a red success box.
+          accent: { primary: '#EF4444', secondary: '#14B8A6', tertiary: '#06B6D4' },
+          light: {
+            background: '#FFFFFF',
+            surface: '#FAFAFA',
+            card: '#FFFFFF',
+            sidebar: '#FFFFFF',
+            muted: '#F4F4F5',
+            text_primary: '#09090B',
+            text_secondary: '#71717A',
+            border: '#E4E4E7',
+          },
+        },
+      })
+    );
+
+    await bookingConfirmation();
+    const body = decodedBody();
+
+    // The confirmation carries a success box, which stays green.
+    expect(body).toContain('#10b981');
   });
 });
 

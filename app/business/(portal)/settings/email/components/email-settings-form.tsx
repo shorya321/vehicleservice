@@ -26,11 +26,35 @@ import {
   sesHostForRegion,
   type EmailProviderPreset,
 } from '@/lib/business/email/provider-presets';
+import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
 import { SenderChecklist } from './sender-checklist';
 import type { EmailSettings } from './types';
 
+/**
+ * Both the locale and the time zone are pinned, and both are load-bearing.
+ *
+ * A bare toLocaleDateString() takes them from whatever runtime it happens to run in, so
+ * the server rendered 10/08/2026 and the browser rendered 8/10/2026 and React threw a
+ * hydration error. Fixing only the locale would not have been enough: near midnight the
+ * server's zone and the viewer's zone disagree about the day, which is the same bug with
+ * a rarer trigger.
+ *
+ * Dubai matches how the rest of the portal shows dates, and the spelled-out month means
+ * nobody has to guess whether 8/10 is August or October.
+ */
+function formatChangedOn(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: BOOKING_TIMEZONE,
+  });
+}
+
 interface EmailSettingsFormProps {
   settings: EmailSettings | null;
+  /** The tenant's verified custom domain, or null when they have not set one up. */
+  tenantDomain: string | null;
   onSaved: () => void;
 }
 
@@ -67,13 +91,28 @@ function initialState(settings: EmailSettings | null): FormState {
   };
 }
 
-export function EmailSettingsForm({ settings, onSaved }: EmailSettingsFormProps) {
+export function EmailSettingsForm({ settings, tenantDomain, onSaved }: EmailSettingsFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => initialState(settings));
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
 
   const preset = PROVIDER_PRESETS[form.provider_preset];
+
+  /**
+   * Warn, never block, when the sender address is not on the tenant's verified domain.
+   *
+   * Blocking would be wrong: sending from mail.acme.com, or from a provider-owned domain,
+   * is completely legitimate. But a mismatch is worth surfacing, because the email body
+   * links to the verified domain while the envelope says something else, and that
+   * combination is exactly what receiving spam filters score as impersonation.
+   */
+  const senderDomain = form.from_email.includes('@')
+    ? form.from_email.slice(form.from_email.lastIndexOf('@') + 1).toLowerCase()
+    : '';
+  const domainMismatch = Boolean(
+    tenantDomain && senderDomain && senderDomain !== tenantDomain.toLowerCase()
+  );
   const verified = settings?.last_test_status === 'success';
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]): void {
@@ -312,7 +351,7 @@ export function EmailSettingsForm({ settings, onSaved }: EmailSettingsFormProps)
             <p className="text-xs text-muted-foreground">
               {preset.passwordHint}
               {settings?.smtp_password_updated_at
-                ? ` Last changed ${new Date(settings.smtp_password_updated_at).toLocaleDateString()}.`
+                ? ` Last changed ${formatChangedOn(settings.smtp_password_updated_at)}.`
                 : ''}
             </p>
           </div>
@@ -347,9 +386,17 @@ export function EmailSettingsForm({ settings, onSaved }: EmailSettingsFormProps)
                 type="email"
                 value={form.from_email}
                 onChange={(e) => set('from_email', e.target.value)}
-                placeholder="bookings@acmehotel.com"
+                placeholder={tenantDomain ? `bookings@${tenantDomain}` : 'bookings@acmehotel.com'}
                 required
               />
+              {domainMismatch && (
+                <p className="text-xs text-amber-600 dark:text-amber-500">
+                  Your verified domain is {tenantDomain}, and this address is on {senderDomain}.
+                  That still works, but your emails link to {tenantDomain} while claiming to come
+                  from {senderDomain}, which some inbox providers treat as a warning sign. Make
+                  sure {senderDomain} is authenticated too.
+                </p>
+              )}
             </div>
           </div>
 
@@ -368,7 +415,7 @@ export function EmailSettingsForm({ settings, onSaved }: EmailSettingsFormProps)
         </LuxuryCardContent>
       </LuxuryCard>
 
-      <SenderChecklist preset={preset} fromEmail={form.from_email} />
+      <SenderChecklist preset={preset} fromEmail={form.from_email} tenantDomain={tenantDomain} />
 
       <LuxuryCard>
         <LuxuryCardHeader>

@@ -1,10 +1,10 @@
 import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import DetailsSection from '../../components/details-section';
-import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
-import { getCurrentBrand } from '../../brand/brand';
+import EmailLayout from './base/layout';
+import DetailsSection from '../components/details-section';
+import InfoBox from '../components/info-box';
+import { emailStyles } from '../styles/constants';
+import { getBusinessBrand } from '../platform';
 
 interface BusinessBookingStatusUpdateEmailProps {
   businessName: string;
@@ -88,7 +88,7 @@ export const BusinessBookingStatusUpdateEmail = ({
       <Text style={emailStyles.text}>
         Best regards,
         <br />
-        The {getCurrentBrand().name} Team
+        The {getBusinessBrand().name} Team
       </Text>
     </EmailLayout>
   );

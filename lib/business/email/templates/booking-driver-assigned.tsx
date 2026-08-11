@@ -1,46 +1,52 @@
 import { Hr, Link, Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import DetailsSection from '../../components/details-section';
-import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
-import { getCurrentBrand } from '../../brand/brand';
+import EmailLayout from './base/layout';
+import Button from './base/button';
+import DetailsSection from '../components/details-section';
+import InfoBox from '../components/info-box';
+import { emailStyles } from '../styles/constants';
+import { getBusinessBrand } from '../platform';
 
 /** Strips spaces, dashes and brackets so the tel: href is dialable. Keeps a leading +. */
 const toDialableNumber = (phone: string): string => phone.replace(/[^\d+]/g, '');
 
-interface CustomerDriverAssignedEmailProps {
-  customerName: string;
+interface BusinessBookingDriverAssignedEmailProps {
+  businessName: string;
+  passengerName: string;
   bookingReference: string;
   tripNumber?: string;
   driverName: string;
   driverPhone?: string | null;
   pickupDate: string;
   pickupTime: string;
+  bookingUrl: string;
 }
 
-export const CustomerDriverAssignedEmail = ({
-  customerName,
+export const BusinessBookingDriverAssignedEmail = ({
+  businessName,
+  passengerName,
   bookingReference,
   tripNumber,
   driverName,
   driverPhone,
   pickupDate,
   pickupTime,
-}: CustomerDriverAssignedEmailProps) => {
+  bookingUrl,
+}: BusinessBookingDriverAssignedEmailProps) => {
   return (
     <EmailLayout
-      preview={`Your driver for #${tripNumber || bookingReference} has been assigned`}
-      heading="Your Driver Has Been Assigned"
+      preview={`Driver assigned for #${tripNumber || bookingReference}`}
+      heading="Driver Assigned"
     >
-      <Text style={emailStyles.text}>Hi {customerName},</Text>
+      <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <InfoBox type="success">
-        A driver has been assigned to your transfer{' '}
-        <strong>#{tripNumber || bookingReference}</strong>.
+        A driver has been assigned to booking{' '}
+        <strong>#{tripNumber || bookingReference}</strong> for{' '}
+        <strong>{passengerName}</strong>.
       </InfoBox>
 
-      <InfoBox type="info" title="Your Driver">
+      <InfoBox type="info" title="Assigned Driver">
         <Text style={emailStyles.detailRow}>
           <strong>Name:</strong> {driverName}
         </Text>
@@ -55,12 +61,15 @@ export const CustomerDriverAssignedEmail = ({
       </InfoBox>
 
       <Text style={emailStyles.text}>
-        <strong>Pickup Details:</strong>
+        <strong>Booking Details:</strong>
       </Text>
 
       <DetailsSection>
         <Text style={emailStyles.detailRow}>
           <strong>Trip #:</strong> {tripNumber || bookingReference}
+        </Text>
+        <Text style={emailStyles.detailRow}>
+          <strong>Passenger:</strong> {passengerName}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Pickup Date:</strong> {pickupDate}
@@ -70,18 +79,20 @@ export const CustomerDriverAssignedEmail = ({
         </Text>
       </DetailsSection>
 
+      <Button href={bookingUrl}>View Booking</Button>
+
       <Hr style={emailStyles.hr} />
 
       <Text style={emailStyles.text}>
-        You can contact your driver directly on the number above closer to your pickup time.
+        Your passenger has also been sent these driver contact details.
         <br />
         <br />
         Best regards,
         <br />
-        The {getCurrentBrand().name} Team
+        The {getBusinessBrand().name} Team
       </Text>
     </EmailLayout>
   );
 };
 
-export default CustomerDriverAssignedEmail;
+export default BusinessBookingDriverAssignedEmail;

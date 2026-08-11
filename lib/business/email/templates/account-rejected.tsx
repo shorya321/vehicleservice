@@ -1,8 +1,8 @@
 import { Text } from '@react-email/components';
 import * as React from 'react';
-import EmailLayout from '../base/layout';
-import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import EmailLayout from './base/layout';
+import InfoBox from '../components/info-box';
+import { emailStyles } from '../styles/constants';
 
 interface BusinessAccountRejectedEmailProps {
   businessName: string;

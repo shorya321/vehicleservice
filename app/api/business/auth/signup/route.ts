@@ -16,7 +16,7 @@ import { logBusinessActivity } from '@/lib/business/activity/log';
 import {
   sendBusinessWelcomePendingEmail,
   sendBusinessRegistrationAdminNotificationEmail,
-} from '@/lib/email/services/business-emails';
+} from '@/lib/business/email/services/business-emails';
 import { DEFAULT_THEME_CONFIG } from '@/lib/business/branding-utils';
 
 /**

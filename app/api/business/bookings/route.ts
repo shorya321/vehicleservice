@@ -15,7 +15,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   sendBusinessBookingConfirmationEmail,
   sendBusinessCustomerBookingConfirmationEmail,
-} from '@/lib/email/services/business-emails';
+} from '@/lib/business/email/services/business-emails';
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails';
 import { getAdminEmail, getAppUrl } from '@/lib/email/config';
 import { getExchangeRates } from '@/lib/currency/server';
