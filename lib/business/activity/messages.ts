@@ -20,6 +20,7 @@
  * joins a live table for display text.
  */
 
+import { formatBookingDateTime } from "@/lib/business/utils/timezone";
 import type { ActivityEvent, MessageSegment } from './types';
 
 /**
@@ -180,12 +181,47 @@ function stringifyScalar(value: unknown): string | null {
   return null;
 }
 
+/** Matches the shape the capture triggers write, so nothing visibly changes. */
+const ACTIVITY_TIMESTAMP_PATTERN = "dd MMM yyyy 'at' HH:mm";
+
+/**
+ * The placeholders that name a moment in time, and where the raw instant for
+ * each one lives.
+ */
+function resolveTimestampPlaceholder(key: string, event: ActivityEvent): string | null {
+  const metadata = event.metadata ?? {};
+  const pickupChange = event.changes?.pickup_datetime;
+
+  const raw =
+    key === 'pickup_clause' ? metadata.pickup_at
+    : key === 'previous_datetime' ? pickupChange?.from
+    : key === 'new_datetime' ? pickupChange?.to
+    : undefined;
+
+  if (typeof raw !== 'string' || raw === '') return null;
+
+  const formatted = formatBookingDateTime(raw, ACTIVITY_TIMESTAMP_PATTERN);
+  if (!formatted) return null;
+
+  // pickup_clause is an optional fragment, so it carries its own lead-in.
+  return key === 'pickup_clause' ? ` for ${formatted}` : formatted;
+}
+
 /**
  * Resolve a placeholder to plain text. Returns null when the value is missing,
  * which causes the placeholder and its surrounding punctuation to be dropped.
  */
 function resolvePlaceholder(key: string, event: ActivityEvent): string | null {
   const metadata = event.metadata ?? {};
+
+  // Timestamps are re-rendered from the raw instant rather than read from the
+  // string the trigger stored. The stored string is frozen at whatever the
+  // operating timezone was when the row was written, so it would not follow a
+  // later change to that setting; the instant beside it always does. The frozen
+  // string stays as the fallback for rows written before the instant was kept.
+  const fromInstant = resolveTimestampPlaceholder(key, event);
+  if (fromInstant !== null) return fromInstant;
+
   if (key in metadata) return stringifyScalar(metadata[key]);
 
   // A few keys read from promoted columns or from the changes diff.
