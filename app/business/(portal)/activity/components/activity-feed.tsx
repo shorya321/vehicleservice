@@ -18,6 +18,12 @@ import { Activity, History, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/business/ui/empty-state';
 import type { ActivityEvent } from '@/lib/business/activity/types';
+import {
+  bookingDayKey,
+  bookingDaysAgoUtc,
+  bookingToday,
+  formatBookingDate,
+} from '@/lib/business/utils/timezone';
 import { PortalSectionCard } from '../../components/ui/section-card';
 import { ActivityRow } from './activity-row';
 import { ActivityRowsSkeleton } from './activity-skeleton';
@@ -35,23 +41,22 @@ interface ActivityFeedProps {
   onClearFilters: () => void;
 }
 
+/**
+ * Grouped by operating-timezone day, not the viewer's.
+ *
+ * Comparing getFullYear/getMonth/getDate answered "same day?" in whatever zone
+ * the browser sat in, so a member abroad saw entries filed under a different
+ * heading than the Dubai office did for the same event.
+ */
 function dayLabel(iso: string): string {
-  const date = new Date(iso);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
+  const day = bookingDayKey(iso);
+  const today = bookingToday();
 
-  const sameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+  if (day === today) return 'Today';
+  // Day arithmetic on the key, so this cannot drift with the viewer either.
+  if (day === bookingDayKey(bookingDaysAgoUtc(1, today))) return 'Yesterday';
 
-  if (sameDay(date, today)) return 'Today';
-  if (sameDay(date, yesterday)) return 'Yesterday';
-
-  return date.toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
+  return formatBookingDate(iso, 'EEEE, d MMMM yyyy');
 }
 
 function groupByDay(events: ActivityEvent[]): Array<[string, ActivityEvent[]]> {

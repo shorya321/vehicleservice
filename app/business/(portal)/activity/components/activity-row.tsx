@@ -11,6 +11,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { renderActivityMessage } from '@/lib/business/activity/messages';
+import { bookingRelativeTime, formatBookingDateTime } from '@/lib/business/utils/timezone';
 import type { ActivityEvent } from '@/lib/business/activity/types';
 import { ActivityActorAvatar } from './activity-actor';
 import { ActivityDetailPanel } from './activity-detail-panel';
@@ -24,18 +25,8 @@ interface ActivityRowProps {
   showSeverityBadge?: boolean;
 }
 
-function relativeTime(iso: string): string {
-  const then = new Date(iso).getTime();
-  const diffMinutes = Math.round((Date.now() - then) / 60000);
-
-  if (diffMinutes < 1) return 'just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  if (diffMinutes < 60 * 24) return `${Math.round(diffMinutes / 60)}h ago`;
-
-  return new Date(iso).toLocaleString('en-GB', {
-    day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
-  });
-}
+// relativeTime and the absolute title both used to resolve in the viewer's own
+// timezone, so a member abroad read a different clock than the Dubai office.
 
 export function ActivityRow({
   event,
@@ -49,9 +40,7 @@ export function ActivityRow({
   const segments = renderActivityMessage(event, { formatMoney, liveEntityIds });
   const isCritical = event.severity === 'critical';
 
-  const absolute = new Date(event.createdAt).toLocaleString('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit',
-  });
+  const absolute = formatBookingDateTime(event.createdAt, "d MMMM yyyy 'at' HH:mm");
 
   return (
     <div
@@ -153,7 +142,7 @@ export function ActivityRow({
         <div className="flex shrink-0 items-center gap-2">
           <div className="hidden text-right sm:block">
             <p className="text-xs tabular-nums text-muted-foreground" title={absolute}>
-              {relativeTime(event.createdAt)}
+              {bookingRelativeTime(event.createdAt)}
             </p>
             {event.amount !== null && (
               <p className="whitespace-nowrap text-xs font-semibold tabular-nums text-primary">
@@ -187,7 +176,7 @@ export function ActivityRow({
       {/* Mobile puts time and amount under the message instead of beside it. */}
       <div className="mt-1 flex items-center gap-3 pl-11 text-xs text-muted-foreground sm:hidden">
         <span className="tabular-nums" title={absolute}>
-          {relativeTime(event.createdAt)}
+          {bookingRelativeTime(event.createdAt)}
         </span>
         {event.amount !== null && (
           <span className="whitespace-nowrap font-semibold tabular-nums text-primary">

@@ -24,6 +24,7 @@ import {
   activityMessageToText,
 } from '@/lib/business/activity/messages';
 import type { ActivityEvent } from '@/lib/business/activity/types';
+import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 
 interface ActivityDetailPanelProps {
   event: ActivityEvent;
@@ -36,10 +37,7 @@ export function ActivityDetailPanel({ event }: ActivityDetailPanelProps) {
   const factRows = buildFactRows(event);
   const { refs, remaining } = buildReferenceList(event);
 
-  const absolute = new Date(event.createdAt).toLocaleString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-  });
+  const absolute = formatBookingDateTime(event.createdAt, "EEEE, d MMMM yyyy 'at' HH:mm");
 
   async function copyDetails() {
     const lines = [
