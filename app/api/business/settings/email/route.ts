@@ -99,12 +99,24 @@ export const PATCH = requireBusinessOwner(async (request, user) => {
       return apiError('That host is not reachable from the internet. Enter your provider SMTP server.', 400);
     }
 
-    // Sending as the platform's own domain from a tenant's server would let one tenant
-    // impersonate the platform to its own customers.
-    const platformDomain = platformFallbackFrom().split('@')[1]?.toLowerCase();
-    if (platformDomain && input.from_email.endsWith(`@${platformDomain}`)) {
-      return apiError(`The sender address cannot be on ${platformDomain}. Use your own domain.`, 400);
-    }
+    // No sender-domain restriction here, deliberately.
+    //
+    // This used to reject any from_email on the platform's own sending domain, on the
+    // theory that a tenant could otherwise impersonate the platform to its own customers.
+    // In practice the check could only string-match a domain, and it got the answer wrong
+    // in both directions: it blocked the operator from using a domain they own and had
+    // verified, while leaving the platform's root brand domain, the one a recipient
+    // actually recognises, completely unguarded.
+    //
+    // The real control lives with the provider. Resend, SES, Mailgun, Postmark and
+    // SendGrid all verify domain ownership per account and reject an unverified sender
+    // with a 550 before the message leaves, so a business using its own credentials
+    // cannot send as a domain it does not control no matter what it types here. For a
+    // raw SMTP server with no verification step, DMARC on the claimed domain is what
+    // stops it. Neither is something a save-time comparison can improve on.
+    //
+    // Guidance still exists where it belongs: email-settings-form.tsx warns, without
+    // blocking, when the sender domain differs from the tenant's verified custom domain.
 
     const admin = createAdminClient();
 
