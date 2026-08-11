@@ -97,6 +97,8 @@ export function BulkActionsBar({
           const url = window.URL.createObjectURL(blob)
           const a = document.createElement('a')
           a.href = url
+          // A download filename, not a displayed date, so the UTC day is fine here.
+          // eslint-disable-next-line no-restricted-syntax
           a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`
           document.body.appendChild(a)
           a.click()

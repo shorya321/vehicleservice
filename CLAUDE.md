@@ -74,6 +74,66 @@ Development server is always running on 3001 locally
 Always use proper CORS and JWT with anon key for Supabase edge functions
 Every edge function must implement JWT and CORS for all request types
 
+## 🕐 Timezone Policy (MANDATORY)
+
+The product runs on one clock: the **operating timezone**, admin-configurable at
+Settings → General and stored in `site_settings.config.timezone` (default
+`Asia/Dubai`). Every displayed time, every day boundary and every month boundary
+is expressed in it, for every user wherever they are.
+
+**Never** set a `TZ` env var. The Node server and Postgres both stay UTC on
+purpose; converting at the edges is what keeps the two agreeing. Setting `TZ`
+would fix the JavaScript half and silently split it from the SQL half.
+
+### In TypeScript
+
+Everything goes through `lib/utils/timezone.ts`:
+
+| Need | Use |
+|---|---|
+| Show a stored instant | `formatBookingDate` / `formatBookingDateTime` / `formatBookingTime` |
+| "2h ago" | `bookingRelativeTime` |
+| Group by day | `bookingDayKey` |
+| Today as `yyyy-MM-dd` | `bookingToday()` |
+| Query window | `startOfBookingDayUtc` / `startOfBookingMonthUtc` / `bookingDaysAgoUtc` |
+| Date-picker min guard | `bookingTodayAsCalendarDate()` |
+| Wall-clock → instant | `bookingWallClockToUtc` / `bookingLocalInputToUtc` |
+
+**Business module imports from `lib/business/utils/timezone.ts`**, never
+`lib/utils` directly. `tests/business/timezone-chokepoint.test.ts` enforces it.
+
+Banned, because each one silently resolves in whatever zone the process or
+browser happens to be in:
+- `new Date().setHours(0, 0, 0, 0)` for a day boundary
+- `new Date().toISOString().split('T')[0]` for "today" (that is UTC today)
+- `toLocaleString`/`toLocaleDateString` on a stored timestamp with no `timeZone`
+- `format(new Date(iso), ...)` without `toBookingTz`
+- `setDate(1)` / local `new Date(y, m, d)` for a month or day edge
+
+These are correct and must be left alone:
+- `now() ± duration` ("last 48 hours") — elapsed time needs no timezone
+- `new Date(day + 'T00:00:00')` parsed local and formatted local — a calendar
+  date round-tripping symmetrically; pinning it would introduce a day shift
+- `lib/availability/display-tz.ts` — a deliberate shim for react-big-calendar
+- `.toISOString().split('T')[0]` in an export **filename**
+
+### In SQL
+
+Use `platform_timezone()`, never `CURRENT_DATE` or a bare `date_trunc` on a
+`timestamptz`, both of which resolve in the session zone (UTC):
+
+```sql
+date_trunc('day', now() AT TIME ZONE platform_timezone()) AT TIME ZONE platform_timezone()
+```
+
+Use half-open ranges (`>= start AND < next`). An inclusive bound built from
+`23:59:59` drops whatever lands in the final second.
+
+### Tests
+
+`jest.config.js` pins `TZ=UTC` to reproduce production, so local-time bugs fail
+in CI instead of passing locally and breaking on Vercel.
+
 ## 🗺️ Comprehensive Code Map
 
 ### Architecture Overview

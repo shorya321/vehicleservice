@@ -83,6 +83,8 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
     const csvContent = csvRows.join('\n');
 
     // Generate filename
+    // A download filename, not a displayed date, so the UTC day is fine here.
+    // eslint-disable-next-line no-restricted-syntax
     const timestamp = new Date().toISOString().split('T')[0];
     let filename = `transactions_${timestamp}`;
 

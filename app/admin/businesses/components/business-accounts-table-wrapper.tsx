@@ -90,6 +90,8 @@ export function BusinessAccountsTableWrapper({
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
+    // A download filename, not a displayed date, so the UTC day is fine here.
+    // eslint-disable-next-line no-restricted-syntax
     link.setAttribute('download', `business-accounts-${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);

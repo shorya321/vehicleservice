@@ -87,6 +87,8 @@ export const GET = requireBusinessOwner(async (request: Request, user) => {
     });
 
     const csv = [header.map(csvCell).join(','), ...rows].join('\n');
+    // A download filename, not a displayed date, so the UTC day is fine here.
+    // eslint-disable-next-line no-restricted-syntax
     const filename = `activity_${new Date().toISOString().split('T')[0]}.csv`;
 
     // Exporting the audit log is itself a data movement event and belongs in

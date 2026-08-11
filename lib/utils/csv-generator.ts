@@ -202,17 +202,23 @@ export function generateTransactionExportFilename(
   endDate?: Date | string
 ): string {
   const sanitizedName = businessName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  // A download filename, not a displayed date, so the UTC day is fine here.
+  // eslint-disable-next-line no-restricted-syntax
   const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
   let filename = `${sanitizedName}_transactions`;
 
   if (startDate) {
     const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+    // A download filename, not a displayed date, so the UTC day is fine here.
+    // eslint-disable-next-line no-restricted-syntax
     filename += `_from_${start.toISOString().split('T')[0]}`;
   }
 
   if (endDate) {
     const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+    // A download filename, not a displayed date, so the UTC day is fine here.
+    // eslint-disable-next-line no-restricted-syntax
     filename += `_to_${end.toISOString().split('T')[0]}`;
   }
 
