@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
 import { TransactionInvoicePDF } from '@/lib/pdf/generators/transaction-invoice';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
-import { format } from 'date-fns';
+import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
 
 /**
@@ -74,12 +74,12 @@ export const GET = requireBusinessOwner(async (
       description: transaction.description || 'Wallet transaction',
       previousBalance,
       newBalance: transaction.balance_after,
-      transactionDate: format(new Date(transaction.created_at), 'PPp'),
+      transactionDate: formatBookingDateTime(transaction.created_at, 'PPp'),
       paymentMethod: transaction.payment_method || 'N/A',
       referenceId: transaction.reference_id,
 
       // Metadata
-      generatedDate: format(new Date(), 'PPp'),
+      generatedDate: formatBookingDateTime(new Date(), 'PPp'),
     };
 
     // Generate PDF

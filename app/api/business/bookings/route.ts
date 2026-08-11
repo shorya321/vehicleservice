@@ -23,7 +23,7 @@ import { BUSINESS_BASE_CURRENCY, convertFromAed } from '@/lib/business/wallet-op
 import { verifyBusinessQuoteSignature } from '@/lib/security/booking-hmac';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 import { activityLogger } from '@/lib/business/activity/log';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 
 /**
  * POST /api/business/bookings

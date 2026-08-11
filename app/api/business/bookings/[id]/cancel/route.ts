@@ -25,7 +25,7 @@ import {
   sendBusinessBookingCancellationEmail,
   sendBusinessCustomerBookingCancelledEmail,
 } from '@/lib/business/email/services/business-emails';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 
 /**
  * POST /api/business/bookings/[id]/cancel

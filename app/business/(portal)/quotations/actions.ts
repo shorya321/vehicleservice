@@ -12,7 +12,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
-import { bookingToday } from '@/lib/utils/timezone';
+import { bookingToday } from '@/lib/business/utils/timezone';
 import { normalizeQuotationStatus, isQuotationExpired } from '@/lib/business/quotations/status';
 import type {
   QuotationFilters,

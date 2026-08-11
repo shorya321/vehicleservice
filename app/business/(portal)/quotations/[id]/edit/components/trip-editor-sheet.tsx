@@ -34,7 +34,7 @@ import { LocationSearchAutocomplete } from '@/components/search/location-search-
 import { FieldGroup } from '../../../components/field-group';
 // Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
 import { formatCurrency } from '@/lib/business/wallet-operations';
-import { bookingLocalInputToUtc, bookingUtcToLocalInput } from '@/lib/utils/timezone';
+import { bookingLocalInputToUtc, bookingUtcToLocalInput } from '@/lib/business/utils/timezone';
 import { getAvailableVehicleTypesForRoute } from '../../../../bookings/new/actions';
 import { roundAed, applyMarkup } from '@/lib/business/quotations/pricing';
 import { MarkupInput } from './markup-input';

@@ -11,7 +11,7 @@
  */
 
 import { formatAmount, getCurrencyDecimalPlaces } from '@/lib/currency/format';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 import { parseThemeConfig, DEFAULT_THEME_CONFIG } from '@/lib/business/branding-utils';
 import { safeHexColor, type PdfImageSource } from './brand-logo';
 import type { QuotationPdfData, QuotationPdfLineItem } from '@/lib/pdf/generators/quotation';

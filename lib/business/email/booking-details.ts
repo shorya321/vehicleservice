@@ -11,7 +11,7 @@
  */
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 
 export interface BusinessBookingEmailDetails {
   businessAccountId: string;

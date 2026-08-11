@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
-import { bookingToday } from '@/lib/utils/timezone';
+import { bookingToday } from '@/lib/business/utils/timezone';
 // Portal money format ("AED 150.00"), matching bookings and wallet. The PDF keeps its own.
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { Button } from '@/components/ui/button';

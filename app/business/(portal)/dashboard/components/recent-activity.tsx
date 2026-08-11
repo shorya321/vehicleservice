@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 
 interface RecentBooking {
   id: string;

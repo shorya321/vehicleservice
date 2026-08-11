@@ -17,7 +17,7 @@ import { AddonSelection, SelectedAddon, childAgesComplete } from './addon-select
 import { formatGuestSummary, getSeatedCount } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { calculateAddonsTotal } from '@/lib/business/wizard-pricing';
-import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE, bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
 
 interface Location {
   id: string;

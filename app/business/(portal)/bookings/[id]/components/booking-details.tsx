@@ -31,7 +31,7 @@ import {
 import { format, differenceInDays } from 'date-fns';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { formatChildAges } from '@/lib/business/format-child-ages';
-import { toBookingTz } from '@/lib/utils/timezone';
+import { toBookingTz } from '@/lib/business/utils/timezone';
 
 interface BookingDetailsProps {
   booking: any;

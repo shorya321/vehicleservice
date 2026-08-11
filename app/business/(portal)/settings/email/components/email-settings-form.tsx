@@ -26,7 +26,7 @@ import {
   sesHostForRegion,
   type EmailProviderPreset,
 } from '@/lib/business/email/provider-presets';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 import { SenderChecklist } from './sender-checklist';
 import type { EmailSettings } from './types';
 

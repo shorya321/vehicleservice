@@ -11,7 +11,7 @@ import {
   apiError,
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 import { activityLogger } from '@/lib/business/activity/log';
 
 /**

@@ -13,7 +13,9 @@
 
 import { sendEmail } from '../utils/send-email';
 import { type EmailResult } from '../types';
-import { format } from 'date-fns';
+// Dubai, not the server's zone: these render on Vercel, which runs in UTC, so a
+// bare format() would tell a business its money moved four hours before it did.
+import { formatBookingDateTime } from '@/lib/utils/timezone';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 
 // Import email templates
@@ -129,7 +131,7 @@ export async function sendTransactionCompletedEmail(
     template: TransactionCompletedEmail,
     templateProps: {
       ...rest,
-      transactionDate: format(data.transactionDate, 'PPp'),
+      transactionDate: formatBookingDateTime(data.transactionDate, 'PPp'),
     },
   });
 }
@@ -149,7 +151,7 @@ export async function sendWalletFrozenEmail(data: WalletFrozenData): Promise<Ema
     template: WalletFrozenEmail,
     templateProps: {
       ...rest,
-      freezeDate: format(data.freezeDate, 'PPp'),
+      freezeDate: formatBookingDateTime(data.freezeDate, 'PPp'),
     },
   });
 }
@@ -171,7 +173,7 @@ export async function sendSpendingLimitReachedEmail(
     template: SpendingLimitReachedEmail,
     templateProps: {
       ...rest,
-      resetDate: data.resetDate ? format(data.resetDate, 'PPp') : undefined,
+      resetDate: data.resetDate ? formatBookingDateTime(data.resetDate, 'PPp') : undefined,
     },
   });
 }

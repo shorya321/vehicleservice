@@ -9,7 +9,7 @@ import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
 import { activityLogger } from '@/lib/business/activity/log';
 import { MonthlyStatementPDF } from '@/lib/pdf/generators/monthly-statement';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { bookingWallClockToUtc, formatBookingDate, formatBookingDateTime } from '@/lib/business/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
 
 /**
@@ -44,10 +44,22 @@ export const GET = requireBusinessOwner(async (
       return apiError('Business account not found', 404);
     }
 
-    // Calculate statement period dates
-    const statementDate = new Date(year, month - 1, 1);
-    const startDate = startOfMonth(statementDate);
-    const endDate = endOfMonth(statementDate);
+    // The statement covers a Dubai calendar month, so both edges are resolved
+    // as Dubai midnight. `new Date(year, month - 1, 1)` would instead resolve
+    // in the server's zone, which is UTC on Vercel, and file everything in the
+    // first four hours of the 1st under the previous month's statement.
+    const monthStart = `${year}-${String(month).padStart(2, '0')}-01`;
+    const nextMonthStart =
+      month === 12
+        ? `${year + 1}-01-01`
+        : `${year}-${String(month + 1).padStart(2, '0')}-01`;
+
+    const startDate = bookingWallClockToUtc(monthStart, '00:00');
+    // Half-open: an inclusive `lte` against the month's final instant is what
+    // drops transactions in the last second of the period.
+    const endDateExclusive = bookingWallClockToUtc(nextMonthStart, '00:00');
+    // The last Dubai day actually covered, for display only.
+    const lastDayOfPeriod = new Date(endDateExclusive.getTime() - 1);
 
     // Get all transactions for the statement period
     const { data: transactions, error: transactionsError } = await supabase
@@ -55,7 +67,7 @@ export const GET = requireBusinessOwner(async (
       .select('*')
       .eq('business_account_id', businessAccount.id)
       .gte('created_at', startDate.toISOString())
-      .lte('created_at', endDate.toISOString())
+      .lt('created_at', endDateExclusive.toISOString())
       .order('created_at', { ascending: true });
 
     if (transactionsError) {
@@ -95,7 +107,7 @@ export const GET = requireBusinessOwner(async (
     // Format transactions for PDF
     const formattedTransactions = (transactions || []).map((transaction) => ({
       id: transaction.id,
-      date: format(new Date(transaction.created_at), 'PP'),
+      date: formatBookingDate(transaction.created_at, 'PP'),
       description: transaction.description || 'Wallet transaction',
       type: transaction.transaction_type as 'credit' | 'debit',
       amount: transaction.amount,
@@ -111,10 +123,10 @@ export const GET = requireBusinessOwner(async (
       businessAddress: businessAccount.address,
 
       // Statement Period
-      statementMonth: format(statementDate, 'MMMM'),
+      statementMonth: formatBookingDate(startDate, 'MMMM'),
       statementYear: year,
-      startDate: format(startDate, 'PP'),
-      endDate: format(endDate, 'PP'),
+      startDate: formatBookingDate(startDate, 'PP'),
+      endDate: formatBookingDate(lastDayOfPeriod, 'PP'),
 
       // Summary
       openingBalance,
@@ -129,7 +141,7 @@ export const GET = requireBusinessOwner(async (
 
       // Metadata
       statementId: `${businessAccount.id}-${year}-${month.toString().padStart(2, '0')}`,
-      generatedDate: format(new Date(), 'PPp'),
+      generatedDate: formatBookingDateTime(new Date(), 'PPp'),
     };
 
     // Generate PDF
@@ -145,8 +157,8 @@ export const GET = requireBusinessOwner(async (
       activityLogger(user, request)('document.statement_generated', {
         metadata: {
           period_label: `${year}-${month.toString().padStart(2, '0')}`,
-          period_start: startOfMonth(new Date(year, month - 1)).toISOString(),
-          period_end: endOfMonth(new Date(year, month - 1)).toISOString(),
+          period_start: startDate.toISOString(),
+          period_end: endDateExclusive.toISOString(),
           transaction_count: formattedTransactions.length,
         },
       })

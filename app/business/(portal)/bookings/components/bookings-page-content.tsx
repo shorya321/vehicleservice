@@ -65,7 +65,7 @@ import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { toast } from 'sonner';
 import { EditDateTimeModal } from './edit-datetime-modal';
 import { canModifyBookingDateTime } from '@/lib/business/booking-utils';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 
 interface Booking {
   id: string;

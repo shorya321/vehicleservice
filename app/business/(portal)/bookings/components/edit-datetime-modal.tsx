@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, parse } from 'date-fns';
-import { toBookingTz, bookingUtcToLocalInput, bookingLocalInputToUtc } from '@/lib/utils/timezone';
+import { toBookingTz, bookingUtcToLocalInput, bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
 import { Clock, CalendarDays, Loader2 } from 'lucide-react';
 import {
   Dialog,

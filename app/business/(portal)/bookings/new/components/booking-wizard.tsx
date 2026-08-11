@@ -33,7 +33,7 @@ import {
   getActiveAddons,
 } from '../actions';
 import { SelectedAddon } from './addon-selection';
-import { bookingLocalInputToUtc } from '@/lib/utils/timezone';
+import { bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
 import { calculateWizardTotal } from '@/lib/business/wizard-pricing';
 
 interface Location {

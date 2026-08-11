@@ -18,7 +18,7 @@ import {
   LuxuryTableRow,
 } from '@/components/business/ui';
 import { cn } from '@/lib/utils';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 import type { EmailLogEntry } from './types';
 
 /**

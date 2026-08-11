@@ -13,7 +13,7 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
-import { BOOKING_TIMEZONE } from '@/lib/utils/timezone';
+import { BOOKING_TIMEZONE } from '@/lib/business/utils/timezone';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 
 const bulkDeleteSchema = z.object({
