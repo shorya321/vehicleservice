@@ -169,7 +169,7 @@ export function ActivityContent({
     filters.search.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       <PageHeader
         title="Activity"
         description="Every action taken in your account, by your team, the platform, and your vendors."

@@ -59,7 +59,7 @@ export function ActivityDetailPanel({ event }: ActivityDetailPanelProps) {
   }
 
   return (
-    <div className="mt-3 rounded-lg bg-muted/30 p-4 text-sm">
+    <div className="mt-3 rounded-lg border border-border bg-muted/30 p-4 text-sm">
       {diffRows.length > 0 && (
         <div className="mb-4 overflow-x-auto">
           <table className="w-full min-w-[420px] border-collapse text-left">
@@ -74,8 +74,10 @@ export function ActivityDetailPanel({ event }: ActivityDetailPanelProps) {
               {diffRows.map((row) => (
                 <tr key={row.field} className="border-t border-border/50">
                   <td className="py-2 pr-4 text-muted-foreground">{row.label}</td>
-                  <td className="py-2 pr-4 text-muted-foreground line-through">{row.before}</td>
-                  <td className="py-2 font-medium text-foreground">{row.after}</td>
+                  <td className="py-2 pr-4 tabular-nums text-muted-foreground line-through">
+                    {row.before}
+                  </td>
+                  <td className="py-2 font-medium tabular-nums text-foreground">{row.after}</td>
                 </tr>
               ))}
             </tbody>
@@ -88,7 +90,7 @@ export function ActivityDetailPanel({ event }: ActivityDetailPanelProps) {
           {factRows.map((row) => (
             <div key={row.key} className="flex justify-between gap-4">
               <dt className="text-muted-foreground">{row.label}</dt>
-              <dd className="text-right font-medium text-foreground">{row.value}</dd>
+              <dd className="text-right font-medium tabular-nums text-foreground">{row.value}</dd>
             </div>
           ))}
         </dl>

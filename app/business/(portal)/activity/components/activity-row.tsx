@@ -56,10 +56,14 @@ export function ActivityRow({
   return (
     <div
       className={cn(
-        'rounded-xl border border-transparent px-3 py-3 transition-colors hover:bg-muted/40',
+        // The left accent rail on hover is the portal's row idiom, shared with
+        // every table in bookings and quotations.
+        'rounded-xl border border-transparent border-l-2 border-l-transparent px-3 py-3 transition-colors hover:border-l-primary hover:bg-muted/50',
         // Only critical rows get a marker. Badging everything is how audit logs
-        // become unreadable.
-        isCritical && 'border-l-2 border-l-red-500/60 bg-red-500/[0.03]'
+        // become unreadable. The dark pair matters: /[0.03] is invisible against
+        // the portal's near-black dark background.
+        isCritical &&
+          'border-l-red-500/60 bg-red-500/[0.03] hover:border-l-red-500/60 dark:bg-red-500/10'
       )}
     >
       <div className="flex items-start gap-3">
@@ -87,7 +91,14 @@ export function ActivityRow({
               actorName={event.actorName}
               className="mt-0.5"
             />
-            <p className={cn('min-w-0 text-sm text-foreground', !expanded && 'line-clamp-3')}>
+            {/* break-words: actor names here are often email addresses, and an
+                unbroken token overflows the row on a narrow viewport. */}
+            <p
+              className={cn(
+                'min-w-0 break-words text-sm text-foreground',
+                !expanded && 'line-clamp-3'
+              )}
+            >
               {segments.map((segment, index) => {
                 if (segment.kind === 'actor') {
                   return (
@@ -141,11 +152,11 @@ export function ActivityRow({
 
         <div className="flex shrink-0 items-center gap-2">
           <div className="hidden text-right sm:block">
-            <p className="text-xs text-muted-foreground" title={absolute}>
+            <p className="text-xs tabular-nums text-muted-foreground" title={absolute}>
               {relativeTime(event.createdAt)}
             </p>
             {event.amount !== null && (
-              <p className="text-xs font-medium text-foreground">
+              <p className="whitespace-nowrap text-xs font-semibold tabular-nums text-primary">
                 {formatMoney(event.amount, event.currency)}
               </p>
             )}
@@ -175,9 +186,11 @@ export function ActivityRow({
 
       {/* Mobile puts time and amount under the message instead of beside it. */}
       <div className="mt-1 flex items-center gap-3 pl-11 text-xs text-muted-foreground sm:hidden">
-        <span title={absolute}>{relativeTime(event.createdAt)}</span>
+        <span className="tabular-nums" title={absolute}>
+          {relativeTime(event.createdAt)}
+        </span>
         {event.amount !== null && (
-          <span className="font-medium text-foreground">
+          <span className="whitespace-nowrap font-semibold tabular-nums text-primary">
             {formatMoney(event.amount, event.currency)}
           </span>
         )}

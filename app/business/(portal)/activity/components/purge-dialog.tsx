@@ -11,15 +11,18 @@
 
 import { useState } from 'react';
 import { Eraser, Loader2 } from 'lucide-react';
+// Portal copies, both deliberately: this dialog opens from a DropdownMenuItem,
+// and only the portal AlertDialog clears the pointer-events strand Radix leaves
+// on <body> when the two unmount together. The portal Select matches Input.
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '../../components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+} from '../../components/ui/select';
 
 type CutoffKey = '3m' | '6m' | '12m' | '24m';
 
