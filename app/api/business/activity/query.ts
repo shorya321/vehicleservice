@@ -143,8 +143,12 @@ export function applyActivityFilters<T extends FilterableQuery>(
     // a search term escape into the query grammar.
     const safe = filters.search.replace(/[,()"\\]/g, ' ').trim();
     if (safe) {
+      // metadata->>booking_number keeps booking numbers findable now that
+      // entity_label carries the trip number instead. Rows written before
+      // 20260811120100 simply have no such key and fall through to the other
+      // three columns.
       next = next.or(
-        `actor_name.ilike.%${safe}%,entity_label.ilike.%${safe}%,action.ilike.%${safe}%`
+        `actor_name.ilike.%${safe}%,entity_label.ilike.%${safe}%,action.ilike.%${safe}%,metadata->>booking_number.ilike.%${safe}%`
       ) as T;
     }
   }

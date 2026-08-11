@@ -136,7 +136,9 @@ export const POST = requireBusinessOwner(
       // booking so the trigger sees each id, all sharing a batch id so the feed
       // collapses them into a single "deleted N bookings" entry.
       const batchId = crypto.randomUUID();
-      const allRefs = bookings.map((b) => b.booking_number).filter(Boolean);
+      // Trip numbers, to match the identifier the feed sentence now uses.
+      // COALESCE onto the booking number for pre-20260611 rows that have none.
+      const allRefs = bookings.map((b) => b.trip_number || b.booking_number).filter(Boolean);
       await logBusinessActivityBatch(
         bookings.map((b) => ({
           businessAccountId: user.businessAccountId,

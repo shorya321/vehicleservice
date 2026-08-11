@@ -249,6 +249,30 @@ export const POST = requireBusinessAuth(async (
       })
       .eq('id', id);
 
+    // Trip numbers for the reference list, so this row names its bookings the
+    // same way the rest of the feed does. Read here rather than threaded out of
+    // convertQuotationItem: every wallet charge is already committed by this
+    // point, so a lookup cannot influence conversion or payment. On any failure
+    // the list falls back to booking numbers, which is what it held before.
+    //
+    // Deliberately not newBookingIds: that one is 'converted' only and belongs
+    // to the confirmation emails below. This covers 'already_converted' too, so
+    // re-running a partial conversion still lists trip numbers.
+    const refIds = results
+      .filter((r) => r.status !== 'failed' && r.bookingId)
+      .map((r) => r.bookingId as string);
+
+    const tripByBookingId = new Map<string, string>();
+    if (refIds.length > 0) {
+      const { data: tripRows } = await admin
+        .from('business_bookings')
+        .select('id, trip_number')
+        .in('id', refIds);
+      for (const row of tripRows ?? []) {
+        if (row.trip_number) tripByBookingId.set(row.id, row.trip_number);
+      }
+    }
+
     // One summary row. The per-trip money and booking rows come from
     // create_booking_with_wallet_deduction, so logging them again here would
     // double count.
@@ -260,7 +284,7 @@ export const POST = requireBusinessAuth(async (
         conversion_mode: allDone ? 'full' : 'partial',
         refs: results
           .filter((r) => r.status !== 'failed')
-          .map((r) => r.bookingNumber)
+          .map((r) => (r.bookingId && tripByBookingId.get(r.bookingId)) || r.bookingNumber)
           .filter(Boolean),
       },
     });
