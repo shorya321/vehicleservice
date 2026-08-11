@@ -1,3 +1,15 @@
+/**
+ * Pin the clock the tests run against.
+ *
+ * UTC rather than Asia/Dubai on purpose: production runs in UTC (Vercel, and
+ * Postgres), so this reproduces the environment where timezone bugs actually
+ * appear. Pinning to Dubai would let local-time code pass here and fail in
+ * production, which is the exact failure mode this repo already had.
+ *
+ * Set before the config is exported so the worker processes inherit it.
+ */
+process.env.TZ = 'UTC'
+
 /** @type {import('jest').Config} */
 const config = {
   // Use ts-jest for TypeScript support
