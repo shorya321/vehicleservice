@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import {
   Dialog,
@@ -171,7 +172,7 @@ export function QuickAddDriverModal({ open, onClose, onDriverCreated }: QuickAdd
               placeholder="Select expiry date"
               captionLayout="dropdown"
               startMonth={new Date()}
-              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              disabled={(date) => date < bookingTodayAsCalendarDate()}
             />
           </div>
 

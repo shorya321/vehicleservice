@@ -1,5 +1,6 @@
 "use client"
 
+import { bookingTodayAsCalendarDate } from "@/lib/utils/timezone"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
@@ -46,18 +47,18 @@ const vendorApplicationSchema = z.object({
   tradeLicenseNumber: z.string().min(1, "Trade license number is required"),
   tradeLicenseExpiry: z.string().min(1, "Trade license expiry date is required").refine((date) => {
     if (!date) return false
+    // Judged against the operating timezone, not the applicant browser: an
+    // expiry is a fact about the document, not about where it is read.
     const expiryDate = new Date(date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return expiryDate > today
+    return expiryDate > bookingTodayAsCalendarDate()
   }, "Trade license expiry date must be in the future"),
   insurancePolicyNumber: z.string().min(1, "Insurance policy number is required"),
   insuranceExpiry: z.string().min(1, "Insurance expiry date is required").refine((date) => {
     if (!date) return false
+    // Judged against the operating timezone, not the applicant browser: an
+    // expiry is a fact about the document, not about where it is read.
     const expiryDate = new Date(date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return expiryDate > today
+    return expiryDate > bookingTodayAsCalendarDate()
   }, "Insurance expiry date must be in the future"),
   // Banking details (optional for initial application)
   bankName: z.string().optional(),
@@ -368,7 +369,7 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                     <FormDatePicker
                       value={field.value ? parse(field.value, "yyyy-MM-dd", new Date()) : undefined}
                       onChange={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      disabled={(date) => date < bookingTodayAsCalendarDate()}
                       placeholder="Select expiry date"
                       className={checkoutInputStyles}
                       captionLayout="dropdown"
@@ -406,7 +407,7 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
                     <FormDatePicker
                       value={field.value ? parse(field.value, "yyyy-MM-dd", new Date()) : undefined}
                       onChange={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      disabled={(date) => date < bookingTodayAsCalendarDate()}
                       placeholder="Select expiry date"
                       className={checkoutInputStyles}
                       captionLayout="dropdown"

@@ -4,6 +4,7 @@ import {
   bookingDaysAgoUtc,
   bookingOffsetMinutesAt,
   bookingRelativeTime,
+  bookingTodayAsCalendarDate,
   bookingToday,
   bookingWallClockToUtc,
   formatBookingDate,
@@ -122,6 +123,26 @@ describe('window boundaries', () => {
   it('agrees with bookingWallClockToUtc', () => {
     expect(bookingDaysAgoUtc(3, '2026-08-11').toISOString()).toBe(
       bookingWallClockToUtc('2026-08-08', '00:00').toISOString()
+    )
+  })
+})
+
+describe('bookingTodayAsCalendarDate', () => {
+  it('is browser-local midnight of the operating timezone day', () => {
+    const date = bookingTodayAsCalendarDate('2026-08-12')
+
+    // Local components, because a calendar widget reads it with local getters.
+    expect(date.getFullYear()).toBe(2026)
+    expect(date.getMonth()).toBe(7)
+    expect(date.getDate()).toBe(12)
+    expect(date.getHours()).toBe(0)
+  })
+
+  it('tracks the operating day, not the machine day', () => {
+    // The guard this feeds must let someone pick the operating zone's today
+    // even when their own calendar has already moved on.
+    expect(bookingTodayAsCalendarDate(bookingToday()).getDate()).toBe(
+      Number(bookingToday().slice(8, 10))
     )
   })
 })

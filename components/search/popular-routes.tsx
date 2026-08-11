@@ -1,3 +1,4 @@
+import { bookingToday } from "@/lib/utils/timezone"
 import Link from 'next/link'
 import { MapPin, TrendingUp } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -63,8 +64,8 @@ export function PopularRoutes({
           <Link
             key={route.id}
             href={route.originSlug && route.destinationSlug
-              ? buildSearchUrl(route.originSlug, route.destinationSlug, { date: new Date().toISOString().split('T')[0], passengers: 2 })
-              : `/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${new Date().toISOString().split('T')[0]}&passengers=2`
+              ? buildSearchUrl(route.originSlug, route.destinationSlug, { date: bookingToday(), passengers: 2 })
+              : `/search/results?from=${route.originLocationId}&to=${route.destinationLocationId}&date=${bookingToday()}&passengers=2`
             }
             className="block transition-transform hover:scale-[1.02]"
           >

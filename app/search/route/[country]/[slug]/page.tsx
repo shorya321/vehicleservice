@@ -1,3 +1,4 @@
+import { bookingToday } from "@/lib/utils/timezone"
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getRouteBySlug, getRoutesVehicles } from './actions'
@@ -88,7 +89,7 @@ export default async function RoutePage({ params }: RoutePageProps) {
   const searchParams = {
     from: route.origin_location_id,
     to: route.destination_location_id,
-    date: new Date().toISOString().split('T')[0],
+    date: bookingToday(),
     passengers: '2'
   }
 

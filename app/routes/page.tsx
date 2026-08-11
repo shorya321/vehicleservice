@@ -1,3 +1,4 @@
+import { bookingToday } from "@/lib/utils/timezone"
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPublicRoutes } from './actions'
@@ -21,7 +22,7 @@ interface PageProps {
 export default async function RoutesPage({ searchParams }: PageProps) {
   const params = await searchParams
   const page = Math.max(1, parseInt(params.page || '1'))
-  const todayDate = new Date().toISOString().split('T')[0]
+  const todayDate = bookingToday()
 
   const { routes, total, totalPages } = await getPublicRoutes({ page, limit: PAGE_LIMIT })
   const startIndex = (page - 1) * PAGE_LIMIT

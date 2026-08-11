@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { UseFormReturn } from 'react-hook-form'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
@@ -125,7 +126,7 @@ export function TransferDetailsSection({
             <FormDatePicker
               value={pickupDateValue}
               onChange={handleDatePickerChange}
-              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              disabled={(date) => date < bookingTodayAsCalendarDate()}
               placeholder="Select pickup date"
               className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus-visible:ring-1 focus-visible:ring-[var(--gold)]/15 focus-visible:border-[var(--gold)]"
             />

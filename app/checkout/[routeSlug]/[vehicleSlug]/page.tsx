@@ -1,3 +1,4 @@
+import { bookingToday } from "@/lib/utils/timezone"
 import { Metadata } from 'next'
 import { redirect, notFound } from 'next/navigation'
 
@@ -176,7 +177,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   }
 
   // Parse date and time
-  const pickupDate = sp.date || new Date().toISOString().split('T')[0]
+  const pickupDate = sp.date || bookingToday()
   const pickupTime = sp.time || '10:00'
   // Resolve the breakdown and the total together, clamped to the vehicle, so they can never
   // contradict. Search filters by capacity, so clamping normally only fires for stale or

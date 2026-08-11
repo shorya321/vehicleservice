@@ -5,6 +5,7 @@
  * Modal for modifying booking pickup datetime
  */
 
+import { bookingTodayAsCalendarDate } from '@/lib/business/utils/timezone'
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -174,7 +175,7 @@ export function EditDateTimeModal({
                             const d = date ? format(date, 'yyyy-MM-dd') : '';
                             field.onChange(d && timeValue ? `${d}T${timeValue}` : d ? `${d}T12:00` : '');
                           }}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          disabled={(date) => date < bookingTodayAsCalendarDate()}
                           placeholder="Select date"
                         />
                       </FormControl>

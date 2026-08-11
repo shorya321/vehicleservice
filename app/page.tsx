@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import { bookingToday } from "@/lib/utils/timezone"
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { PublicHeader } from '@/components/layout/public-header'
@@ -25,7 +26,7 @@ export const metadata = {
 export default async function HomePage() {
   const supabase = await createClient()
   const cookieStore = await cookies()
-  const todayStr = new Date().toISOString().split('T')[0]
+  const todayStr = bookingToday()
 
   const { data: { user } } = await supabase.auth.getUser()
 

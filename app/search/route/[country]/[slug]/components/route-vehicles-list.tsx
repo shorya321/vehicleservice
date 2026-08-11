@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingToday } from "@/lib/utils/timezone"
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
@@ -107,7 +108,7 @@ export function RouteVehiclesList({ vehicleTypes, route, countrySlug }: RouteVeh
                 {/* CTA Button */}
                 <Link
                   href={buildCheckoutUrl(route.origin.slug, route.destination.slug, vehicleType.slug, {
-                    date: new Date().toISOString().split('T')[0],
+                    date: bookingToday(),
                     time: '10:00',
                     passengers: vehicleType.passenger_capacity.toString(),
                   })}

@@ -298,3 +298,20 @@ export function bookingDaysAgoUtc(days: number, today: string = bookingToday()):
 export function startOfBookingMonthUtc(today: string = bookingToday()): Date {
   return bookingWallClockToUtc(`${today.slice(0, 7)}-01`, '00:00')
 }
+
+/**
+ * The operating timezone's today, as a Date at *browser-local* midnight.
+ *
+ * For calendar widgets only. react-day-picker hands back a local-midnight Date
+ * for the day the user clicked, so a "no earlier than today" guard has to
+ * compare against a Date of the same kind. Building that from `new Date()` uses
+ * the browser's idea of today, which lets someone east of the operating zone
+ * be blocked from a day that is still valid, and someone west of it pick a day
+ * that has already passed.
+ *
+ * Never send one of these to the server or compare it against a stored instant.
+ */
+export function bookingTodayAsCalendarDate(today: string = bookingToday()): Date {
+  const [year, month, day] = today.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}

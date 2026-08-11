@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { CalendarDays } from 'lucide-react'
@@ -42,7 +43,7 @@ export function DatePicker({ value, onChange, className }: DatePickerProps) {
               setOpen(false)
             }
           }}
-          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+          disabled={(date) => date < bookingTodayAsCalendarDate()}
           defaultMonth={value}
           autoFocus
         />

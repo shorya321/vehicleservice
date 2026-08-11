@@ -39,6 +39,7 @@ export {
   getBookingTimezone,
   isValidTimezone,
   setBookingTimezone,
+  bookingTodayAsCalendarDate,
   startOfBookingDayUtc,
   startOfBookingMonthUtc,
   toBookingTz,

@@ -1,5 +1,6 @@
 'use server'
 
+import { bookingToday } from "@/lib/utils/timezone"
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -118,7 +119,7 @@ export async function createDriver(formData: FormData) {
       country_code: formData.get('country_code') as string || 'AE',
       emergency_contact_name: formData.get('emergency_contact_name') as string || null,
       emergency_contact_phone: formData.get('emergency_contact_phone') as string || null,
-      joining_date: formData.get('joining_date') as string || new Date().toISOString().split('T')[0],
+      joining_date: formData.get('joining_date') as string || bookingToday(),
       employment_status: formData.get('employment_status') as string || 'active',
       notes: formData.get('notes') as string || null,
       is_available: formData.get('is_available') === 'true',

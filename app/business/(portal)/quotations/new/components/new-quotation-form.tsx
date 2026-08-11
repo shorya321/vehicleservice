@@ -12,6 +12,7 @@
  * schema requires them.
  */
 
+import { bookingTodayAsCalendarDate } from "@/lib/business/utils/timezone";
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -58,8 +59,12 @@ const formSchema = z.object({
 
 type FormValues = z.input<typeof formSchema>;
 
-/** Midnight today. A quotation that expires in the past is not a quotation. */
-const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
+/**
+ * Midnight today in the operating timezone. A quotation that expires in the
+ * past is not a quotation, and which day that is must not depend on where the
+ * person filling the form happens to be sitting.
+ */
+const startOfToday = () => bookingTodayAsCalendarDate();
 
 interface NewQuotationFormProps {
   /** Business display currency; the AED rate is frozen against it at creation. */

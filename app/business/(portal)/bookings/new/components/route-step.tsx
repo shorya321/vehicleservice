@@ -7,6 +7,7 @@
  * Design: shadcn/ui theme-aware components
  */
 
+import { bookingTodayAsCalendarDate } from '@/lib/business/utils/timezone'
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -187,7 +188,7 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
                           const d = date ? format(date, 'yyyy-MM-dd') : '';
                           field.onChange(d && timeValue ? `${d}T${timeValue}` : d ? `${d}T12:00` : '');
                         }}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        disabled={(date) => date < bookingTodayAsCalendarDate()}
                         placeholder="Select date"
                       />
                     </FormControl>

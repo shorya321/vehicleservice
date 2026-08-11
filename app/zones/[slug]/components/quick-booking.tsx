@@ -1,5 +1,6 @@
 'use client'
 
+import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -100,7 +101,7 @@ export function QuickBooking({ locations, destinations }: QuickBookingProps) {
             <FormDatePicker
               value={date ? parse(date, 'yyyy-MM-dd', new Date()) : undefined}
               onChange={(d) => setDate(d ? format(d, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'))}
-              disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+              disabled={(d) => d < bookingTodayAsCalendarDate()}
               placeholder="Select date"
             />
           </div>

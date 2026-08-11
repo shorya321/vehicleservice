@@ -1,5 +1,6 @@
 "use client"
 
+import { bookingTodayAsCalendarDate } from "@/lib/utils/timezone"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -319,7 +320,7 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
                         isDisabled={isApproved}
                         captionLayout="dropdown"
                         startMonth={new Date()}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        disabled={(date) => date < bookingTodayAsCalendarDate()}
                       />
                     </FormControl>
                     <FormMessage />
@@ -357,7 +358,7 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
                         isDisabled={isApproved}
                         captionLayout="dropdown"
                         startMonth={new Date()}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        disabled={(date) => date < bookingTodayAsCalendarDate()}
                       />
                     </FormControl>
                     <FormMessage />
