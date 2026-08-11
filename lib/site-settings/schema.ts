@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isValidTimezone } from '@/lib/utils/timezone'
 
 export const siteSettingsSchema = z.object({
   brand_name: z.string().min(1, 'Brand name is required').max(100),
@@ -21,6 +22,12 @@ export const siteSettingsSchema = z.object({
   }),
   maintenance_mode: z.boolean(),
   block_search_indexing: z.boolean(),
+  // Checked against the runtime rather than a hardcoded list, so the set stays
+  // correct as the IANA database is updated.
+  timezone: z
+    .string()
+    .min(1, 'Timezone is required')
+    .refine(isValidTimezone, 'Not a recognised IANA timezone'),
 })
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>

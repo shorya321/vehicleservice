@@ -21,7 +21,16 @@ import {
   Type,
   Wrench,
   EyeOff,
+  Globe,
 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { DEFAULT_BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
 import { updateSiteSettings, uploadSiteLogo, removeSiteLogo } from '../actions'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
@@ -30,6 +39,45 @@ import { siteSettingsSchema, type SiteSettingsFormValues } from '@/lib/site-sett
 interface GeneralSettingsFormProps {
   currentSettings: SiteSettingsConfig
 }
+
+interface TimezoneOption {
+  value: string
+  label: string
+}
+
+/**
+ * Built from the runtime's own IANA database where it is available, so the list
+ * stays current without anyone maintaining it, and falls back to a short list
+ * of the zones this business plausibly operates in.
+ *
+ * Each entry shows its current UTC offset, because "Asia/Dubai" alone does not
+ * tell an admin what they are choosing.
+ */
+function buildTimezoneOptions(): TimezoneOption[] {
+  const supported =
+    typeof Intl.supportedValuesOf === 'function'
+      ? Intl.supportedValuesOf('timeZone')
+      : ['Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Asia/Kuwait', 'Europe/London', 'UTC']
+
+  const now = new Date()
+
+  return supported.map((value) => {
+    let offset = ''
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: value,
+        timeZoneName: 'shortOffset',
+      }).formatToParts(now)
+      offset = parts.find((part) => part.type === 'timeZoneName')?.value ?? ''
+    } catch {
+      // A zone the runtime lists but cannot format is not worth offering.
+    }
+
+    return { value, label: offset ? `${value} (${offset})` : value }
+  })
+}
+
+const TIMEZONE_OPTIONS = buildTimezoneOptions()
 
 export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProps) {
   const router = useRouter()
@@ -52,6 +100,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       social_links: currentSettings.social_links,
       maintenance_mode: currentSettings.maintenance_mode,
       block_search_indexing: currentSettings.block_search_indexing,
+      timezone: currentSettings.timezone,
     },
   })
 
@@ -156,6 +205,56 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                       aria-label="Toggle search engine indexing block"
                     />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Operating Timezone Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Globe className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle>Operating Timezone</CardTitle>
+                <CardDescription>
+                  The clock the whole product runs on
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="timezone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Timezone</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger aria-label="Operating timezone">
+                        <SelectValue placeholder={DEFAULT_BOOKING_TIMEZONE} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-72">
+                      {TIMEZONE_OPTIONS.map((zone) => (
+                        <SelectItem key={zone.value} value={zone.value}>
+                          {zone.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Booking times, reports and day boundaries are all expressed in this
+                    zone, for every user wherever they are. Stored timestamps are not
+                    rewritten, so changing this re-reads existing history against the new
+                    clock: figures that count a day or a month, such as bookings today or
+                    wallet spending limits, will shift accordingly.
+                  </p>
+                  <FormMessage />
                 </FormItem>
               )}
             />

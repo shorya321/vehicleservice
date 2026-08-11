@@ -6,6 +6,8 @@ import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
 import { getSiteSettings } from '@/lib/site-settings/server'
+import { loadBookingTimezone } from '@/lib/site-settings/timezone'
+import { BookingTimezoneSync } from '@/components/booking-timezone-sync'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -53,6 +55,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Applies the stored operating timezone to this render on the server, and
+  // yields the value to hand the browser. Every date on the site depends on it,
+  // so it is resolved here rather than per route.
+  const timeZone = await loadBookingTimezone()
+
   // Read branding headers injected by middleware for custom domain white-labeling
   const headersList = await headers()
   const customDomain = headersList.get('x-custom-domain') === 'true'
@@ -89,6 +96,8 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${inter.className} ${customerFontClass} luxury-scrollbar`} suppressHydrationWarning>
+        {/* Before anything that renders a date. */}
+        <BookingTimezoneSync timeZone={timeZone} />
         <NextThemesProvider
           attribute="class"
           defaultTheme="system"

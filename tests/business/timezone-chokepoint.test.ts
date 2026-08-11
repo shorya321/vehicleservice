@@ -23,8 +23,16 @@ const ROOTS = [
   'components/business',
 ];
 
-/** The one file permitted to cross. */
-const CHOKEPOINT = 'lib/business/utils/timezone.ts';
+/**
+ * The files permitted to cross. Two, split the same way
+ * `lib/business/email/brand.ts` and `platform.ts` are: the isomorphic helpers
+ * are safe for client components, the loader is `server-only` and would break
+ * the browser bundle if it reached them.
+ */
+const CHOKEPOINTS = [
+  'lib/business/utils/timezone.ts',
+  'lib/business/utils/timezone-server.ts',
+];
 
 function walk(dir: string): string[] {
   let entries: string[];
@@ -51,17 +59,30 @@ describe('the business timezone boundary', () => {
     expect(businessFiles().length).toBeGreaterThan(50);
   });
 
-  it('is crossed by exactly the chokepoint', () => {
+  it('is crossed by exactly the chokepoints', () => {
     const offenders = businessFiles()
-      .filter((file) => !file.endsWith(CHOKEPOINT))
-      .filter((file) => /from '[^']*lib\/utils\/timezone'/.test(readFileSync(file, 'utf8')))
+      .filter((file) => !CHOKEPOINTS.some((allowed) => file.endsWith(allowed)))
+      .filter((file) =>
+        /from '[^']*(lib\/utils\/timezone|lib\/site-settings\/timezone)'/.test(
+          readFileSync(file, 'utf8')
+        )
+      )
       .map((file) => file.replace(`${process.cwd()}/`, ''));
 
     expect(offenders).toEqual([]);
   });
 
+  it('keeps the server-only loader away from the isomorphic half', () => {
+    // Importing it into ./timezone would drag `server-only` into every client
+    // component that formats a date.
+    const isomorphic = readFileSync(join(process.cwd(), CHOKEPOINTS[0]), 'utf8');
+
+    expect(isomorphic).not.toContain('server-only');
+    expect(isomorphic).not.toContain('site-settings');
+  });
+
   it('keeps the chokepoint a re-export, never a second implementation', () => {
-    const source = readFileSync(join(process.cwd(), CHOKEPOINT), 'utf8');
+    const source = readFileSync(join(process.cwd(), CHOKEPOINTS[0]), 'utf8');
 
     // A copy would have to define the offset itself. Re-exporting cannot.
     expect(source).not.toMatch(/const\s+BOOKING_UTC_OFFSET\s*=/);
@@ -71,7 +92,7 @@ describe('the business timezone boundary', () => {
 
   it('re-exports everything the shared module offers, so nobody needs to bypass it', () => {
     const shared = readFileSync(join(process.cwd(), 'lib/utils/timezone.ts'), 'utf8');
-    const chokepoint = readFileSync(join(process.cwd(), CHOKEPOINT), 'utf8');
+    const chokepoint = readFileSync(join(process.cwd(), CHOKEPOINTS[0]), 'utf8');
 
     const exported = Array.from(
       shared.matchAll(/export (?:async )?(?:function|const|type) (\w+)/g)

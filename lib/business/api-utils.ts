@@ -19,6 +19,7 @@ export interface ApiResponse<T = any> {
 // cannot be pulled into a 'use client' bundle. Re-exported here so existing
 // server-side imports keep working.
 import { normalizeBusinessRole, type BusinessRole } from './roles';
+import { loadBookingTimezone } from './utils/timezone-server';
 
 export { normalizeBusinessRole, isOwnerRole, type BusinessRole } from './roles';
 
@@ -238,6 +239,13 @@ export function requireBusinessAuth(
     if (!user) {
       return apiError('Unauthorized', 401);
     }
+
+    // API routes do not render through app/layout.tsx, so the operating
+    // timezone would otherwise stay at its default in a worker that has only
+    // ever served requests like this one. Statement and invoice PDFs are
+    // generated here, so this is exactly where it has to be right. Cached, so
+    // it is a cache read rather than a query.
+    await loadBookingTimezone();
 
     return handler(request, user, context);
   });

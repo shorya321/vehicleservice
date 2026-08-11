@@ -1,3 +1,5 @@
+import { DEFAULT_BOOKING_TIMEZONE, isValidTimezone } from '@/lib/utils/timezone'
+
 export interface SocialLinks {
   instagram: string
   facebook: string
@@ -21,6 +23,11 @@ export interface SiteSettingsConfig {
   social_links: SocialLinks
   maintenance_mode: boolean
   block_search_indexing: boolean
+  /**
+   * IANA name of the operating timezone: the wall-clock every booking, report
+   * and day boundary is expressed in. See `lib/utils/timezone.ts`.
+   */
+  timezone: string
 }
 
 export const DEFAULT_SOCIAL_LINKS: SocialLinks = {
@@ -46,6 +53,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   social_links: DEFAULT_SOCIAL_LINKS,
   maintenance_mode: false,
   block_search_indexing: true,
+  timezone: DEFAULT_BOOKING_TIMEZONE,
 }
 
 export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
@@ -92,5 +100,11 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
     maintenance_mode: typeof obj.maintenance_mode === 'boolean' ? obj.maintenance_mode : false,
     // Missing key = blocked. Safe pre-launch default so demo content is never crawled.
     block_search_indexing: typeof obj.block_search_indexing === 'boolean' ? obj.block_search_indexing : true,
+    // Validated here rather than trusted: an unresolvable zone would otherwise
+    // throw inside every date on the site.
+    timezone:
+      typeof obj.timezone === 'string' && isValidTimezone(obj.timezone)
+        ? obj.timezone
+        : DEFAULT_BOOKING_TIMEZONE,
   }
 }
