@@ -11,6 +11,7 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getExchangeRates } from '@/lib/currency/server';
+import { bookingToday } from '@/lib/business/utils/timezone';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
 import { ActivityContent } from './components/activity-content';
 
@@ -76,6 +77,10 @@ export default async function BusinessActivityPage() {
         id: member.id,
         label: member.full_name || member.email || 'Team member',
       }))}
+      // Resolved here so the filter window is judged in the operating timezone
+      // rather than the viewer's, and so the export link renders identically on
+      // both sides of hydration.
+      today={bookingToday()}
     />
   );
 }

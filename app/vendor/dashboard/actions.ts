@@ -2,8 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { bookingToday, getBookingTimezone } from '@/lib/utils/timezone'
 import {
+  bookingToday,
+  bookingWallClockToUtc,
+  formatBookingDate,
+  getBookingTimezone,
+  startOfBookingMonthUtc,
+} from '@/lib/utils/timezone'
+import {
+  addMonths,
   resolveRevenueRange,
   buildBuckets,
   toUtcBounds,
@@ -75,10 +82,10 @@ export async function getVendorDashboardStats(): Promise<VendorDashboardStats> {
     .eq('vendor_id', vendorApp.id)
     .eq('is_active', true)
 
-  // 3. Calculate this month's revenue from completed bookings
-  const startOfMonth = new Date()
-  startOfMonth.setDate(1)
-  startOfMonth.setHours(0, 0, 0, 0)
+  // 3. Calculate this month's revenue from completed bookings.
+  // A Dubai month, not the server's: on Vercel the old local boundary was
+  // 04:00 Dubai on the 1st, so early work on the 1st counted last month.
+  const startOfMonth = startOfBookingMonthUtc()
 
   // Get all completed booking assignments for this vendor this month
   const { data: completedAssignments } = await adminClient
@@ -500,15 +507,22 @@ export async function getAnalyticsData(): Promise<{
     return { revenueData: [], bookingData: [], driverPerformance: [] }
   }
 
-  // Calculate last 6 months
+  // Calculate the last 6 Dubai months.
+  // Built from local Date constructors this produced server-local month edges,
+  // and the `end` was the last second of the month rather than a half-open
+  // bound, so anything in that final second fell out of every bucket.
   const monthsData: { start: Date; end: Date; label: string }[] = []
+  const firstOfThisMonth = `${bookingToday().slice(0, 7)}-01`
   for (let i = 5; i >= 0; i--) {
-    const date = new Date()
-    date.setMonth(date.getMonth() - i)
-    const start = new Date(date.getFullYear(), date.getMonth(), 1)
-    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
-    const label = date.toLocaleDateString('en-US', { timeZone: getBookingTimezone(),  month: 'short', year: '2-digit' })
-    monthsData.push({ start, end, label })
+    const startDay = addMonths(firstOfThisMonth, -i)
+    const nextMonthDay = addMonths(firstOfThisMonth, -i + 1)
+    monthsData.push({
+      start: bookingWallClockToUtc(startDay, '00:00'),
+      // Exclusive: the start of the following month.
+      end: bookingWallClockToUtc(nextMonthDay, '00:00'),
+      // Midday so the label cannot land on the wrong side of a boundary.
+      label: formatBookingDate(bookingWallClockToUtc(startDay, '12:00'), 'MMM yy'),
+    })
   }
 
   // Fetch revenue and booking data for last 6 months
@@ -523,7 +537,8 @@ export async function getAnalyticsData(): Promise<{
       .eq('vendor_id', vendorApp.id)
       .eq('status', 'completed')
       .gte('completed_at', month.start.toISOString())
-      .lte('completed_at', month.end.toISOString())
+      // `end` is the start of the next month, so this must be exclusive.
+      .lt('completed_at', month.end.toISOString())
 
     let monthRevenue = 0
     let monthBookings = 0

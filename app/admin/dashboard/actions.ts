@@ -2,8 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { startOfDay, subDays, format } from 'date-fns'
-import { getBookingTimezone, bookingToday } from '@/lib/utils/timezone'
+// subDays still used for a rolling 48-hour window, which is a duration rather
+// than a day boundary and so needs no timezone.
+import { format, subDays } from 'date-fns'
+import { getBookingTimezone, bookingToday, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
 import {
   bucketKeyForDubaiDay,
   buildBuckets,
@@ -71,8 +73,11 @@ export interface DashboardMetrics {
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const adminClient = createAdminClient()
-  const today = startOfDay(new Date())
-  const yesterday = startOfDay(subDays(new Date(), 1))
+  // Dubai days, not the server's. getRevenueTrend() further down this same file
+  // already buckets by Dubai day, so a UTC "today" here made the two panels on
+  // one dashboard disagree for the first four hours of every day.
+  const today = startOfBookingDayUtc()
+  const yesterday = bookingDaysAgoUtc(1)
 
   // Fetch today's revenue and compare with yesterday
   const { data: todayBookings } = await adminClient

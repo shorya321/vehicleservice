@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { PageHeader } from '../../components/ui/page-header';
 import { formatCurrency, convertForDisplay } from '@/lib/business/wallet-operations';
+import { bookingDaysAgoUtc } from '@/lib/business/utils/timezone';
 import type { CurrencyCode } from '@/lib/utils/currency-converter';
 import type { ActivityEvent } from '@/lib/business/activity/types';
 import { ActivityFeed } from './activity-feed';
@@ -30,6 +31,8 @@ interface ActivityContentProps {
   displayCurrency: CurrencyCode;
   exchangeRates: Record<string, number>;
   members: TeamMemberOption[];
+  /** Today as a `yyyy-MM-dd` operating-timezone day, resolved on the server. */
+  today: string;
 }
 
 const DEFAULT_FILTERS: ActivityFilterState = {
@@ -48,22 +51,32 @@ const RANGE_LABELS: Record<ActivityFilterState['range'], string> = {
   all: 'all time',
 };
 
-function rangeStart(range: ActivityFilterState['range']): string | null {
+/**
+ * The window start, as whole days back from a fixed operating-timezone day.
+ *
+ * `today` comes from the server rather than the clock, which fixes two things
+ * at once. The window is now measured in Dubai days instead of the viewer's,
+ * and because the value is identical on both sides of hydration, the Export CSV
+ * href below renders the same string on the server and in the browser. Building
+ * it from `new Date()` during render made those two differ by about a second
+ * and produced a hydration mismatch on every load.
+ *
+ * The same pattern the quotations page uses to judge expiry in Dubai.
+ */
+function rangeStart(range: ActivityFilterState['range'], today: string): string | null {
   if (range === 'all') return null;
   const days = range === '24h' ? 1 : range === '7d' ? 7 : range === '30d' ? 30 : 90;
-  const from = new Date();
-  from.setDate(from.getDate() - days);
-  return from.toISOString();
+  return bookingDaysAgoUtc(days, today).toISOString();
 }
 
-function buildParams(filters: ActivityFilterState): URLSearchParams {
+function buildParams(filters: ActivityFilterState, today: string): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.categories.length) params.set('categories', filters.categories.join(','));
   if (filters.severity === 'critical') params.set('severities', 'critical');
   if (filters.severity === 'important') params.set('severities', 'important,critical');
   if (filters.actor !== 'any') params.set('actor', filters.actor);
   if (filters.search) params.set('search', filters.search);
-  const from = rangeStart(filters.range);
+  const from = rangeStart(filters.range, today);
   if (from) params.set('from', from);
   return params;
 }
@@ -73,6 +86,7 @@ export function ActivityContent({
   displayCurrency,
   exchangeRates,
   members,
+  today,
 }: ActivityContentProps) {
   const [filters, setFilters] = useState<ActivityFilterState>(DEFAULT_FILTERS);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
@@ -102,7 +116,7 @@ export function ActivityContent({
     [displayCurrency, exchangeRates]
   );
 
-  const params = useMemo(() => buildParams(filters).toString(), [filters]);
+  const params = useMemo(() => buildParams(filters, today).toString(), [filters, today]);
 
   useEffect(() => {
     let cancelled = false;

@@ -5,6 +5,7 @@
  * Design System: Premium Indigo - Stripe/Linear inspired
  */
 
+import { startOfBookingMonthUtc } from '@/lib/business/utils/timezone';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -82,10 +83,8 @@ export default async function BusinessWalletPage() {
     .eq('business_account_id', businessAccountId)
     .eq('is_active', true);
 
-  // 2. Monthly transaction count (current month)
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  // 2. Monthly transaction count (current Dubai month, not the server's)
+  const startOfMonth = startOfBookingMonthUtc();
 
   const { count: monthlyTransactionCount } = await supabase
     .from('wallet_transactions')

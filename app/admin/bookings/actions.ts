@@ -16,7 +16,7 @@ import {
 } from '@/lib/business/email/services/business-emails'
 import { getAppUrl } from '@/lib/email/config'
 import { format } from 'date-fns'
-import { getBookingTimezone, toBookingTz } from '@/lib/utils/timezone'
+import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
 
 export interface BookingFilters {
   search?: string
@@ -683,10 +683,14 @@ function sumRevenue(result: RevenueResult): number {
 export async function getBookingStats() {
   const adminClient = createAdminClient()
 
+  // "Upcoming" compares against a real instant, which needs no timezone.
   const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const todayEnd = new Date(todayStart)
-  todayEnd.setDate(todayEnd.getDate() + 1)
+
+  // "Today" is a Dubai calendar day. Built from local getters this counted a
+  // UTC day on the server, so the tile disagreed with the booking list beside
+  // it, which already resolves Dubai midnights.
+  const todayStart = startOfBookingDayUtc()
+  const todayEnd = bookingDaysAgoUtc(-1)
 
   // Stats cover both booking sources, matching the unified list query.
   const countCustomer = () =>

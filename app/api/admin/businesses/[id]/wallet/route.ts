@@ -3,6 +3,7 @@
  * Allows admins to view complete wallet information for a business
  */
 
+import { startOfBookingDayUtc, startOfBookingMonthUtc } from '@/lib/utils/timezone'
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError } from '@/lib/business/api-utils';
@@ -123,14 +124,15 @@ export async function GET(
         .select('amount')
         .eq('business_account_id', businessAccountId)
         .lt('amount', 0)
-        .gte('created_at', new Date().toISOString().split('T')[0]);
+        // toISOString().split('T')[0] is the UTC calendar day, so between 00:00
+        // and 04:00 Dubai this asked for yesterday. It also has to agree with
+        // the daily limit enforced in deduct_from_wallet.
+        .gte('created_at', startOfBookingDayUtc().toISOString());
 
       const dailySpend = dailyTransactions?.reduce((sum, tx) => sum + Math.abs(tx.amount), 0) || 0;
 
       // Get this month's spending
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
+      const monthStart = startOfBookingMonthUtc();
 
       const { data: monthlyTransactions } = await supabase
         .from('wallet_transactions')

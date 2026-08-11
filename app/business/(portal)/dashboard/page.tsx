@@ -5,6 +5,7 @@
  * Design System: Premium B2B experience with refined luxury aesthetic
  */
 
+import { startOfBookingMonthUtc } from '@/lib/business/utils/timezone';
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { getExchangeRates } from '@/lib/currency/server';
@@ -94,10 +95,11 @@ export default async function BusinessDashboardPage() {
     .select('*', { count: 'exact', head: true })
     .match({ ...bookingScope, booking_status: 'completed' });
 
-  // Get this month's bookings
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  // Get this month's bookings.
+  // setDate(1) + setHours(0,0,0,0) yields midnight in whatever zone the process
+  // runs in, which is UTC on Vercel, so bookings made in the first four hours of
+  // the 1st fell outside "this month".
+  const startOfMonth = startOfBookingMonthUtc();
 
   const { count: monthlyBookings } = await supabase
     .from('business_bookings')

@@ -3,6 +3,7 @@
  * Comprehensive statistics for wallet transactions
  */
 
+import { bookingDaysAgoUtc } from '@/lib/business/utils/timezone';
 import { NextRequest } from 'next/server';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 
@@ -53,9 +54,10 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
       console.error('Error fetching monthly trends:', monthlyError);
     }
 
-    // Get daily trends (last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Get daily trends (last 30 Dubai days).
+    // The `day` column is a bucket, so the boundary has to be a day boundary
+    // too rather than "this instant, 30 days ago".
+    const thirtyDaysAgo = bookingDaysAgoUtc(30);
 
     const { data: dailyTrends, error: dailyError } = await supabase
       .from('daily_transaction_summary')
