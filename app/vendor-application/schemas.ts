@@ -1,11 +1,20 @@
 import * as z from "zod"
 
+/**
+ * The one place a vendor application field is declared required or optional.
+ *
+ * Every surface that writes an application parses this: the create form, the create
+ * action, the edit form and the edit action. It was previously copied into all four,
+ * which is how business_email came to be optional while approve and reject both mail
+ * the applicant at that address.
+ */
 export const vendorApplicationSchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  businessEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
-  businessPhone: z.string().min(6, "Please enter a valid phone number").optional().or(z.literal("")),
-  businessAddress: z.string().optional(),
-  businessCity: z.string().optional(),
+  // Required because the approval and rejection emails are addressed here.
+  businessEmail: z.string().email("Please enter a valid email"),
+  businessPhone: z.string().min(6, "Please enter a valid phone number"),
+  businessAddress: z.string().min(1, "Business address is required"),
+  businessCity: z.string().min(1, "City is required"),
   businessCountryCode: z.string().default("AE"),
   businessDescription: z.string().optional(),
   registrationNumber: z.string().min(1, "Business registration number is required"),

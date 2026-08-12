@@ -100,25 +100,25 @@ export function VendorApplicationEditForm({ application, defaultValues }: Vendor
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Business Email</label>
-                <input {...register("businessEmail")} type="email" className="luxury-input" placeholder="contact@business.com" />
+                <label className="form-label">Business Email *</label>
+                <input {...register("businessEmail")} type="email" aria-required="true" className="luxury-input" placeholder="contact@business.com" />
                 {errors.businessEmail && <p className="mt-1.5 text-sm text-red-400">{errors.businessEmail.message}</p>}
               </div>
               <div>
-                <label className="form-label">Business Phone</label>
-                <input {...register("businessPhone")} className="luxury-input" placeholder="+971 50 123 4567" />
+                <label className="form-label">Business Phone *</label>
+                <input {...register("businessPhone")} aria-required="true" className="luxury-input" placeholder="+971 50 123 4567" />
                 {errors.businessPhone && <p className="mt-1.5 text-sm text-red-400">{errors.businessPhone.message}</p>}
               </div>
             </div>
             <div>
-              <label className="form-label">Business Address</label>
-              <input {...register("businessAddress")} className="luxury-input" placeholder="123 Main Street" />
+              <label className="form-label">Business Address *</label>
+              <input {...register("businessAddress")} aria-required="true" className="luxury-input" placeholder="123 Main Street" />
               {errors.businessAddress && <p className="mt-1.5 text-sm text-red-400">{errors.businessAddress.message}</p>}
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="form-label">City</label>
-                <input {...register("businessCity")} className="luxury-input" placeholder="Dubai" />
+                <label className="form-label">City *</label>
+                <input {...register("businessCity")} aria-required="true" className="luxury-input" placeholder="Dubai" />
                 {errors.businessCity && <p className="mt-1.5 text-sm text-red-400">{errors.businessCity.message}</p>}
               </div>
               <div>

@@ -23,8 +23,10 @@ import { format } from "date-fns"
 
 const businessSchema = z.object({
   business_name: z.string().min(2, "Business name must be at least 2 characters"),
-  business_email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  business_phone: z.string().optional(),
+  // Required here too, so an approved vendor cannot blank the address the platform
+  // reaches them on after clearing the same requirement at application time.
+  business_email: z.string().email("Invalid email address"),
+  business_phone: z.string().min(6, "Please enter a valid phone number"),
   business_address: z.string().optional(),
   business_city: z.string().optional(),
   business_country_code: z.string().default("AE"),
@@ -152,7 +154,7 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
                 name="business_email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Email</FormLabel>
+                    <FormLabel>Business Email *</FormLabel>
                     <FormControl>
                       <Input 
                         type="email" 
@@ -171,7 +173,7 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
                 name="business_phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Phone</FormLabel>
+                    <FormLabel>Business Phone *</FormLabel>
                     <FormControl>
                       <Input 
                         type="tel" 

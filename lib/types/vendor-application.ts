@@ -22,8 +22,9 @@ export interface VendorApplicationFormData {
 
 export interface VendorProfileFormData {
   business_name: string
-  business_email?: string
-  business_phone?: string
+  // Not optional: the platform mails and calls a vendor at these.
+  business_email: string
+  business_phone: string
   business_address?: string
   business_city?: string
   business_country_code: string

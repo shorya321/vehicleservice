@@ -2,27 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { vendorApplicationSchema } from "./schemas"
 import * as z from "zod"
-
-const vendorApplicationSchema = z.object({
-  businessName: z.string().min(2),
-  businessEmail: z.string().email().optional().or(z.literal("")),
-  businessPhone: z.string().min(6).optional().or(z.literal("")),
-  businessAddress: z.string().optional(),
-  businessCity: z.string().optional(),
-  businessCountryCode: z.string().default("AE"),
-  businessDescription: z.string().optional(),
-  registrationNumber: z.string().min(1),
-  tradeLicenseNumber: z.string().min(1),
-  tradeLicenseExpiry: z.string().min(1),
-  insurancePolicyNumber: z.string().min(1),
-  insuranceExpiry: z.string().min(1),
-  bankName: z.string().optional(),
-  accountHolderName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  iban: z.string().optional(),
-  swiftCode: z.string().optional(),
-})
 
 export async function updateVendorApplication(
   applicationId: string,
@@ -56,21 +37,30 @@ export async function updateVendorApplication(
       return { error: "Only pending applications can be updated" }
     }
 
+    // Parsed here, not only typed. The schema was previously used for the argument type
+    // alone, so an edit could blank a field the create form insists on, including the
+    // business email that the approval and rejection notices are addressed to.
+    const parsed = vendorApplicationSchema.safeParse(values)
+    if (!parsed.success) {
+      return { error: "Please check the form and try again" }
+    }
+    const data = parsed.data
+
     // Prepare documents JSON
     const documents = {
-      trade_license_number: values.tradeLicenseNumber,
-      trade_license_expiry: values.tradeLicenseExpiry,
-      insurance_policy_number: values.insurancePolicyNumber,
-      insurance_expiry: values.insuranceExpiry,
+      trade_license_number: data.tradeLicenseNumber,
+      trade_license_expiry: data.tradeLicenseExpiry,
+      insurance_policy_number: data.insurancePolicyNumber,
+      insurance_expiry: data.insuranceExpiry,
     }
 
     // Prepare banking details JSON
     const banking_details = {
-      bank_name: values.bankName || null,
-      account_holder_name: values.accountHolderName || null,
-      account_number: values.accountNumber || null,
-      iban: values.iban || null,
-      swift_code: values.swiftCode || null,
+      bank_name: data.bankName || null,
+      account_holder_name: data.accountHolderName || null,
+      account_number: data.accountNumber || null,
+      iban: data.iban || null,
+      swift_code: data.swiftCode || null,
     }
 
     // Update the application.
@@ -79,14 +69,14 @@ export async function updateVendorApplication(
     const { data: updated, error: updateError } = await supabase
       .from("vendor_applications")
       .update({
-        business_name: values.businessName,
-        business_email: values.businessEmail || null,
-        business_phone: values.businessPhone || null,
-        business_address: values.businessAddress || null,
-        business_city: values.businessCity || null,
-        business_country_code: values.businessCountryCode,
-        business_description: values.businessDescription || null,
-        registration_number: values.registrationNumber,
+        business_name: data.businessName,
+        business_email: data.businessEmail,
+        business_phone: data.businessPhone,
+        business_address: data.businessAddress,
+        business_city: data.businessCity,
+        business_country_code: data.businessCountryCode,
+        business_description: data.businessDescription || null,
+        registration_number: data.registrationNumber,
         documents: documents,
         banking_details: banking_details,
         updated_at: new Date().toISOString(),

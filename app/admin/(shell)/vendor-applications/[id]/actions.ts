@@ -7,6 +7,34 @@ import {
 } from '@/lib/email/services/vendor-emails';
 import { getAppUrl } from '@/lib/email/config';
 
+/**
+ * Where an approval or rejection notice is addressed.
+ *
+ * business_email is nullable on rows created before it became required, and an empty
+ * `to` fails the send after the RPC has already committed: the applicant is decided on
+ * and never told. The account email is NOT NULL, so it is the address of last resort.
+ */
+async function resolveApplicantEmail(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  application: { business_email: string | null; user_id: string | null }
+): Promise<string> {
+  if (application.business_email) {
+    return application.business_email;
+  }
+
+  if (!application.user_id) {
+    return '';
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', application.user_id)
+    .single();
+
+  return profile?.email || '';
+}
+
 interface ApproveApplicationData {
   applicationId: string;
   /**
@@ -33,7 +61,7 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     // Get application details first
     const { data: application, error: fetchError } = await supabase
       .from('vendor_applications')
-      .select('id, business_email, business_name')
+      .select('id, business_email, business_name, user_id')
       .eq('id', data.applicationId)
       .single();
 
@@ -64,7 +92,7 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     const dashboardUrl = `${appUrl}/vendor`;
 
     const emailResult = await sendVendorApplicationApprovedEmail({
-      email: application.business_email || '',
+      email: await resolveApplicantEmail(supabase, application),
       name: application.business_name,
       applicationReference: application.id,
       loginUrl,
@@ -90,7 +118,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     // Get application details first
     const { data: application, error: fetchError } = await supabase
       .from('vendor_applications')
-      .select('id, business_email, business_name')
+      .select('id, business_email, business_name, user_id')
       .eq('id', data.applicationId)
       .single();
 
@@ -121,7 +149,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     const reapplyUrl = `${appUrl}/become-vendor`;
 
     const emailResult = await sendVendorApplicationRejectedEmail({
-      email: application.business_email || '',
+      email: await resolveApplicantEmail(supabase, application),
       name: application.business_name,
       applicationReference: application.id,
       rejectionReason: data.rejectionReason,

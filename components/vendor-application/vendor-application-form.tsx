@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { createVendorApplication } from "@/app/become-vendor/actions"
+import { vendorApplicationSchema } from "@/app/vendor-application/schemas"
 import {
   Form,
   FormControl,
@@ -34,41 +35,25 @@ import { countries } from "@/lib/constants/countries"
 const checkoutFieldBase = "bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold-text)]/20 focus:border-[var(--gold-text)] hover:border-[rgba(var(--gold-text-rgb),0.3)] transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
 const checkoutInputStyles = `h-[52px] ${checkoutFieldBase}`
 
-const vendorApplicationSchema = z.object({
-  businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  businessEmail: z.string().email("Please enter a valid email address").optional().or(z.literal("")),
-  businessPhone: z.string().min(6, "Please enter a valid phone number").optional().or(z.literal("")),
-  businessAddress: z.string().optional(),
-  businessCity: z.string().optional(),
-  businessCountryCode: z.string().default("AE"),
-  businessDescription: z.string().optional(),
-  registrationNumber: z.string().min(1, "Business registration number is required"),
-  // Documents (required for verification)
-  tradeLicenseNumber: z.string().min(1, "Trade license number is required"),
-  tradeLicenseExpiry: z.string().min(1, "Trade license expiry date is required").refine((date) => {
-    if (!date) return false
-    // Judged against the operating timezone, not the applicant browser: an
-    // expiry is a fact about the document, not about where it is read.
-    const expiryDate = new Date(date)
-    return expiryDate > bookingTodayAsCalendarDate()
-  }, "Trade license expiry date must be in the future"),
-  insurancePolicyNumber: z.string().min(1, "Insurance policy number is required"),
-  insuranceExpiry: z.string().min(1, "Insurance expiry date is required").refine((date) => {
-    if (!date) return false
-    // Judged against the operating timezone, not the applicant browser: an
-    // expiry is a fact about the document, not about where it is read.
-    const expiryDate = new Date(date)
-    return expiryDate > bookingTodayAsCalendarDate()
-  }, "Insurance expiry date must be in the future"),
-  // Banking details (optional for initial application)
-  bankName: z.string().optional(),
-  accountHolderName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  iban: z.string().optional(),
-  swiftCode: z.string().optional(),
+// Judged against the operating timezone, not the applicant browser: an expiry is a fact
+// about the document, not about where it is read.
+const isFutureDate = (date: string): boolean =>
+  Boolean(date) && new Date(date) > bookingTodayAsCalendarDate()
+
+// The shared schema owns which fields are required; this form adds only the two checks
+// that cannot apply on the edit path, where a document may already have expired.
+const createApplicationSchema = vendorApplicationSchema.extend({
+  tradeLicenseExpiry: z
+    .string()
+    .min(1, "Trade license expiry date is required")
+    .refine(isFutureDate, "Trade license expiry date must be in the future"),
+  insuranceExpiry: z
+    .string()
+    .min(1, "Insurance expiry date is required")
+    .refine(isFutureDate, "Insurance expiry date must be in the future"),
 })
 
-type VendorApplicationFormData = z.infer<typeof vendorApplicationSchema>
+type VendorApplicationFormData = z.infer<typeof createApplicationSchema>
 
 interface VendorApplicationFormProps {
   defaultValues?: {
@@ -82,7 +67,7 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<VendorApplicationFormData>({
-    resolver: zodResolver(vendorApplicationSchema),
+    resolver: zodResolver(createApplicationSchema),
     defaultValues: {
       businessName: "",
       businessEmail: defaultValues?.businessEmail || "",
@@ -199,9 +184,9 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
               name="businessEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[var(--text-secondary)]">Business Email</FormLabel>
+                  <FormLabel className="text-[var(--text-secondary)]">Business Email *</FormLabel>
                   <FormControl>
-                    <Input type="email" className={checkoutInputStyles} placeholder="contact@business.com" {...field} />
+                    <Input type="email" aria-required="true" className={checkoutInputStyles} placeholder="contact@business.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,9 +198,9 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
               name="businessPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[var(--text-secondary)]">Business Phone</FormLabel>
+                  <FormLabel className="text-[var(--text-secondary)]">Business Phone *</FormLabel>
                   <FormControl>
-                    <Input className={checkoutInputStyles} placeholder="+971 50 123 4567" {...field} />
+                    <Input aria-required="true" className={checkoutInputStyles} placeholder="+971 50 123 4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -228,9 +213,9 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
             name="businessAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[var(--text-secondary)]">Business Address</FormLabel>
+                <FormLabel className="text-[var(--text-secondary)]">Business Address *</FormLabel>
                 <FormControl>
-                  <Input className={checkoutInputStyles} placeholder="123 Main Street, Building A" {...field} />
+                  <Input aria-required="true" className={checkoutInputStyles} placeholder="123 Main Street, Building A" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -243,9 +228,9 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
               name="businessCity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[var(--text-secondary)]">City</FormLabel>
+                  <FormLabel className="text-[var(--text-secondary)]">City *</FormLabel>
                   <FormControl>
-                    <Input className={checkoutInputStyles} placeholder="Dubai" {...field} />
+                    <Input aria-required="true" className={checkoutInputStyles} placeholder="Dubai" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

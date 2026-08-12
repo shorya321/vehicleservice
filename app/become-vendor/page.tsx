@@ -32,6 +32,7 @@ const benefits = [
 ]
 
 const requirements = [
+  "Business contact email, phone and address",
   "Business registration number",
   "Current trade license",
   "Valid insurance policy",

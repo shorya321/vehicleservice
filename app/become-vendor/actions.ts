@@ -5,27 +5,8 @@ import { getAdminEmail, getAppUrl } from "@/lib/email/config"
 import { sendNewVendorApplicationNotificationEmail } from "@/lib/email/services/admin-emails"
 import { sendVendorApplicationReceivedEmail } from "@/lib/email/services/vendor-emails"
 import { formatBookingDate } from "@/lib/utils/timezone"
+import { vendorApplicationSchema } from "@/app/vendor-application/schemas"
 import * as z from "zod"
-
-const vendorApplicationSchema = z.object({
-  businessName: z.string().min(2),
-  businessEmail: z.string().email().optional().or(z.literal("")),
-  businessPhone: z.string().min(6).optional().or(z.literal("")),
-  businessAddress: z.string().optional(),
-  businessCity: z.string().optional(),
-  businessCountryCode: z.string().default("AE"),
-  businessDescription: z.string().optional(),
-  registrationNumber: z.string().min(1),
-  tradeLicenseNumber: z.string().min(1),
-  tradeLicenseExpiry: z.string().min(1),
-  insurancePolicyNumber: z.string().min(1),
-  insuranceExpiry: z.string().min(1),
-  bankName: z.string().optional(),
-  accountHolderName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  iban: z.string().optional(),
-  swiftCode: z.string().optional(),
-})
 
 /**
  * Create a vendor application.
@@ -71,10 +52,10 @@ export async function createVendorApplication(
       .insert({
         user_id: user.id,
         business_name: data.businessName,
-        business_email: data.businessEmail || null,
-        business_phone: data.businessPhone || null,
-        business_address: data.businessAddress || null,
-        business_city: data.businessCity || null,
+        business_email: data.businessEmail,
+        business_phone: data.businessPhone,
+        business_address: data.businessAddress,
+        business_city: data.businessCity,
         business_country_code: data.businessCountryCode,
         business_description: data.businessDescription || null,
         registration_number: data.registrationNumber,
