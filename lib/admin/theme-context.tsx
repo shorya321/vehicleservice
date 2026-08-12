@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import type { AdminThemeConfig } from './theme-utils';
 import { DEFAULT_ADMIN_THEME, hexToHsl } from './theme-utils';
 
@@ -12,6 +12,18 @@ import { DEFAULT_ADMIN_THEME, hexToHsl } from './theme-utils';
  * - Instant theme toggle (no page reload)
  * - localStorage persistence
  * - Background sync to database
+ *
+ * Two systems write `<html class>`: next-themes, mounted at the root layout
+ * with `enableSystem`, and this provider. They read different stores, so they
+ * can disagree - and when they do, the class says one mode while the CSS
+ * variables below say the other, which paints the portal in a half-broken
+ * palette until you toggle by hand.
+ *
+ * Inside the portal this provider wins, deliberately and last. It re-applies
+ * whenever next-themes writes, so an OS theme flip or another tab cannot leave
+ * the two out of step. It does not call next-themes' setTheme, because that
+ * would persist the portal's mode into the site-wide `theme` key and restyle
+ * the customer-facing site as a side effect of an admin toggle.
  */
 
 const ADMIN_THEME_STORAGE_KEY = 'admin-theme-mode';
@@ -92,9 +104,18 @@ export function AdminThemeContextProvider({
 }: AdminThemeContextProviderProps) {
   const [mode, setModeState] = useState<'dark' | 'light'>(initialTheme.mode);
   const [mounted, setMounted] = useState(false);
+  const initializedRef = useRef(false);
 
-  // Initialize from localStorage on mount
+  // Initialize from localStorage on mount.
+  //
+  // Guarded so it runs once. `initialTheme` is a deserialized server prop: a
+  // router.refresh() hands back a fresh object identity with identical
+  // contents, and without the guard that re-read localStorage and stomped the
+  // mode the user had just picked back to the persisted one.
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const initTheme = () => {
       setMounted(true);
       const stored = localStorage.getItem(ADMIN_THEME_STORAGE_KEY) as 'dark' | 'light' | null;
@@ -109,10 +130,34 @@ export function AdminThemeContextProvider({
     initTheme();
   }, [initialTheme]);
 
-  // Apply theme when mode changes
+  // Apply theme when mode changes.
   useEffect(() => {
     if (!mounted) return;
     applyThemeToDOM(initialTheme, mode);
+  }, [mode, initialTheme, mounted]);
+
+  // Re-assert if anything else rewrites the class.
+  //
+  // Watching the attribute rather than next-themes' resolvedTheme, because
+  // next-themes re-applies the class on a storage event even when its resolved
+  // value has not changed - dark to dark still rewrites the DOM, and a hook
+  // dependency on that value never fires. The attribute is the thing that
+  // actually diverges, so the attribute is what we watch.
+  //
+  // This terminates: re-applying sets the class to `mode`, and the resulting
+  // mutation fails the guard below, so it does not re-enter.
+  useEffect(() => {
+    if (!mounted) return;
+
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      if (!root.classList.contains(mode)) {
+        applyThemeToDOM(initialTheme, mode);
+      }
+    });
+
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
   }, [mode, initialTheme, mounted]);
 
   const setMode = (newMode: 'dark' | 'light') => {
