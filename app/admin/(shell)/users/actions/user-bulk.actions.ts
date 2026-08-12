@@ -8,7 +8,11 @@ import {
 } from "@/lib/vehicles/server-storage"
 import { revalidatePath } from "next/cache"
 import { logUserActivity } from "./user-activity.actions"
-import { cleanupBusinessData, findDeletionBlockers } from "./user-delete.actions"
+import {
+  cleanupBusinessData,
+  deleteCustomerBookings,
+  findDeletionBlockers,
+} from "./user-delete.actions"
 
 // Not exported: files with 'use server' may only export async functions.
 interface BulkDeleteUsersResult {
@@ -64,6 +68,14 @@ export async function bulkDeleteUsers(
       const bizCleanup = await cleanupBusinessData(supabaseAdmin, userId)
       if (bizCleanup.error) {
         failed.push({ id: userId, reason: bizCleanup.error })
+        continue
+      }
+
+      // bookings.customer_id is ON DELETE SET NULL, so the auth delete alone
+      // would strand this customer's trips with no customer on them.
+      const bookingCleanup = await deleteCustomerBookings(supabaseAdmin, userId)
+      if (bookingCleanup.error) {
+        failed.push({ id: userId, reason: bookingCleanup.error })
         continue
       }
 

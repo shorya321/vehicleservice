@@ -61,7 +61,9 @@ export function DeleteUserDialog({ userId, open, onClose }: DeleteUserDialogProp
           </DialogTitle>
           <DialogDescription>
             This action cannot be undone. This will permanently delete the user
-            account and all associated data.
+            account and all associated data, including every transfer booking
+            they placed along with its passengers, add-ons, vendor assignment and
+            review.
           </DialogDescription>
         </DialogHeader>
         

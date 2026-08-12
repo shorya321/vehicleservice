@@ -67,7 +67,7 @@ export function BulkActionsBar({
       setConfirmAction({
         type: 'delete',
         title: 'Delete Users',
-        description: `Are you sure you want to delete ${selectedCount} user${selectedCount > 1 ? 's' : ''}? This action cannot be undone.`
+        description: `Are you sure you want to delete ${selectedCount} user${selectedCount > 1 ? 's' : ''}? Every transfer booking they placed is deleted with them. This action cannot be undone.`
       })
       return
     }

@@ -202,6 +202,37 @@ export async function cleanupBusinessData(
 }
 
 /**
+ * Remove the transfer bookings a customer placed.
+ *
+ * This has to be explicit. Every other table hanging off a user is torn down by
+ * the auth.users -> profiles cascade, but `bookings.customer_id -> profiles(id)`
+ * is declared ON DELETE SET NULL, so deleting the customer used to leave the
+ * booking behind with an empty customer - visible in Bookings and counted on the
+ * dashboard, with no way left to tell whose trip it was.
+ *
+ * Deleting the booking is enough on its own: booking_passengers,
+ * booking_amenities, booking_assignments (and resource_schedules through it) and
+ * reviews all cascade from bookings.id, and nothing references a booking with
+ * RESTRICT.
+ */
+export async function deleteCustomerBookings(
+  adminClient: SupabaseClient,
+  userId: string
+): Promise<{ error?: string }> {
+  const { error } = await adminClient
+    .from('bookings')
+    .delete()
+    .eq('customer_id', userId)
+
+  if (error) {
+    console.error('Failed to delete customer bookings:', { userId, error })
+    return { error: `Failed to delete this user's bookings: ${error.message}` }
+  }
+
+  return {}
+}
+
+/**
  * Find records that will stop `auth.admin.deleteUser` from succeeding.
  *
  * Deleting a user removes only the auth.users row and leans on
@@ -328,6 +359,11 @@ export async function deleteUser(id: string) {
     // If business user, delete their business account first (cascades all business data)
     const bizCleanup = await cleanupBusinessData(adminClient, id)
     if (bizCleanup.error) return { error: bizCleanup.error }
+
+    // After the guards, so a refusal never destroys bookings first, and before
+    // the auth delete, while customer_id still points at this user.
+    const bookingCleanup = await deleteCustomerBookings(adminClient, id)
+    if (bookingCleanup.error) return { error: bookingCleanup.error }
 
     // Collect the vehicle images before the delete: deleting the user cascades
     // auth.users -> profiles -> vendor_applications -> vehicles, destroying the
