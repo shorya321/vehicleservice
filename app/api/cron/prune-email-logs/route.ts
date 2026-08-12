@@ -20,7 +20,6 @@ const DEFAULT_RETENTION_DAYS = 90;
 const DEFAULT_MAX_ROWS_PER_ACCOUNT = 5000;
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
   // Fails closed. The previous shape only checked the header `if (cronSecret)`, so with
@@ -32,11 +31,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    const isVercelCron = request.headers.get('x-vercel-cron') === '1';
-    if (!isVercelCron) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  // Bearer only. There used to be a fallback that accepted an `x-vercel-cron: 1`
+  // header when the Authorization header did not match. That header is
+  // platform-controlled on Vercel but this repo also deploys to Coolify, where nothing
+  // strips it, so anyone could send it against the Coolify domain and trim every
+  // tenant's delivery log to the 7-day floor. Vercel Cron sends the Authorization
+  // header itself whenever CRON_SECRET is set on the project, so the fallback bought
+  // nothing.
+  if (request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
