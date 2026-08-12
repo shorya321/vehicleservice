@@ -60,9 +60,16 @@ npm run lint       # Run ESLint
 ```
 
 ### Database Migrations
-```bash
-node scripts/run-migration.ts  # Run pending migrations
-```
+
+There is no migration runner script. Schema changes are applied with the
+Supabase MCP `apply_migration` tool, which records the migration server-side and
+writes **no** local file.
+
+**Never run `supabase db push`.** `supabase/migrations/` is inert history, not a
+deploy path: most applied migrations have no file there, and several files there
+were never applied. See `supabase/migrations/README.md` before touching it -
+it also covers how to name a mirrored file after the version the server actually
+recorded.
 
 ### Type Generation
 ```bash
@@ -255,8 +262,13 @@ Business subdomains and custom domains are completely isolated from the main pla
 
 **Implementation:**
 - Helper utilities: `lib/business/domain-routing.ts`
-- Middleware logic: `middleware.ts` (lines 79-107)
+- Routing logic: `proxy.ts`, in the block guarded by the business-domain lookup
+  (`get_business_by_custom_domain`)
 - Allowed patterns: `/business/*`, `/_next/*`, `/api/business/*`, `/favicon.ico`
+
+> Next.js 16 renamed `middleware.ts` to **`proxy.ts`**. There is no
+> `middleware.ts` in this repo. The old name still appears in older migration
+> comments and in Next docs written for 15 and earlier.
 
 ### Testing & Debugging
 Use `agent-browser` skill for visual debugging and browser automation

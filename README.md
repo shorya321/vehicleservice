@@ -84,7 +84,7 @@ vehicleservice/
 │   └── supabase/       # Supabase client configurations
 ├── supabase/
 │   └── migrations/     # Database migrations
-└── middleware.ts       # Authentication middleware
+└── proxy.ts            # Auth, maintenance gate, business domain routing
 ```
 
 ## User Roles
