@@ -11,9 +11,11 @@ import {
   type EmailResult,
   type NewUserRegistrationNotificationEmailData,
   type NewBookingNotificationEmailData,
+  type NewVendorApplicationNotificationEmailData,
 } from '../types';
 import NewUserNotificationEmail from '../templates/admin/new-user-notification';
 import NewBookingNotificationEmail from '../templates/admin/new-booking-notification';
+import NewVendorApplicationNotificationEmail from '../templates/admin/new-vendor-application-notification';
 
 /**
  * Send admin notification for new user registration
@@ -32,6 +34,28 @@ export async function sendNewUserNotificationEmail(
       userPhone: data.userPhone,
       registrationDate: data.registrationDate,
       userDetailsUrl: data.userDetailsUrl,
+    },
+  });
+}
+
+/**
+ * Send admin notification for a new vendor application
+ */
+export async function sendNewVendorApplicationNotificationEmail(
+  data: NewVendorApplicationNotificationEmailData
+): Promise<EmailResult> {
+  return sendEmail({
+    businessAccountId: null,
+    to: data.adminEmail,
+    subject: `New Vendor Application - ${data.companyName}`,
+    template: NewVendorApplicationNotificationEmail,
+    templateProps: {
+      applicationReference: data.applicationReference,
+      applicantName: data.applicantName,
+      applicantEmail: data.applicantEmail,
+      companyName: data.companyName,
+      submittedDate: data.submittedDate,
+      applicationDetailsUrl: data.applicationDetailsUrl,
     },
   });
 }

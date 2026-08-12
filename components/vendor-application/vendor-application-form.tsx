@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { createClient } from "@/lib/supabase/client"
+import { createVendorApplication } from "@/app/become-vendor/actions"
 import {
   Form,
   FormControl,
@@ -71,14 +71,13 @@ const vendorApplicationSchema = z.object({
 type VendorApplicationFormData = z.infer<typeof vendorApplicationSchema>
 
 interface VendorApplicationFormProps {
-  userId: string
   defaultValues?: {
     businessEmail?: string
     businessPhone?: string
   }
 }
 
-export function VendorApplicationForm({ userId, defaultValues }: VendorApplicationFormProps) {
+export function VendorApplicationForm({ defaultValues }: VendorApplicationFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -120,50 +119,20 @@ export function VendorApplicationForm({ userId, defaultValues }: VendorApplicati
 
   async function onSubmit(data: VendorApplicationFormData) {
     setIsSubmitting(true)
-    const supabase = createClient()
 
     try {
-      // Submit vendor application
-      // Prepare documents JSON
-      const documents = {
-        trade_license_number: data.tradeLicenseNumber || null,
-        trade_license_expiry: data.tradeLicenseExpiry || null,
-        insurance_policy_number: data.insurancePolicyNumber || null,
-        insurance_expiry: data.insuranceExpiry || null,
-      }
+      // Submitted through a server action rather than the browser client, so the admin
+      // notification email has a server context to run in.
+      const { error, code } = await createVendorApplication(data)
 
-      // Prepare banking details JSON
-      const banking_details = {
-        bank_name: data.bankName || null,
-        account_holder_name: data.accountHolderName || null,
-        account_number: data.accountNumber || null,
-        iban: data.iban || null,
-        swift_code: data.swiftCode || null,
+      if (code === '23505') {
+        toast.error("You have already submitted a vendor application")
+        router.push('/vendor-application')
+        return
       }
-
-      const { error } = await supabase
-        .from('vendor_applications')
-        .insert({
-          user_id: userId,
-          business_name: data.businessName,
-          business_email: data.businessEmail || null,
-          business_phone: data.businessPhone || null,
-          business_address: data.businessAddress || null,
-          business_city: data.businessCity || null,
-          business_country_code: data.businessCountryCode,
-          business_description: data.businessDescription || null,
-          registration_number: data.registrationNumber,
-          documents: documents,
-          banking_details: banking_details,
-        })
 
       if (error) {
-        if (error.code === '23505') {
-          toast.error("You have already submitted a vendor application")
-          router.push('/vendor-application')
-          return
-        }
-        throw error
+        throw new Error(error)
       }
 
       toast.success("Application submitted successfully! We'll review it within 48 hours.")

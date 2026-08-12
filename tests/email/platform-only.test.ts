@@ -78,6 +78,11 @@ const PLATFORM_ONLY: Array<[file: string, fn: string, why: string]> = [
   ['admin-emails.ts', 'sendNewBookingNotificationEmail', 'recipient is the platform admin'],
   ['admin-emails.ts', 'sendNewUserNotificationEmail', 'recipient is the platform admin'],
   [
+    'admin-emails.ts',
+    'sendNewVendorApplicationNotificationEmail',
+    'recipient is the platform admin',
+  ],
+  [
     'auth-emails.ts',
     'sendPasswordResetEmail',
     'a reset link is a bearer credential and account recovery must not depend on tenant infrastructure',

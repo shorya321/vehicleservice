@@ -142,7 +142,6 @@ export default async function BecomeVendorPage() {
                 </div>
 
                 <VendorApplicationForm
-                  userId={user.id}
                   defaultValues={{
                     businessEmail: profile?.email || "",
                     businessPhone: profile?.phone || "",
