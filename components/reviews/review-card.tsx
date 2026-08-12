@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { approveReview, rejectReview, toggleFeaturedReview } from '@/app/admin/reviews/actions'
+import { approveReview, rejectReview, toggleFeaturedReview } from '@/app/admin/(shell)/reviews/actions'
 import { deleteReview } from '@/app/account/review-actions'
 
 export interface Review {

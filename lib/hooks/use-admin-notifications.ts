@@ -8,7 +8,7 @@ import {
   getUnreadCountAction,
   markNotificationAsReadAction,
   markAllAsReadAction,
-} from '@/app/admin/notifications/actions';
+} from '@/app/admin/(shell)/notifications/actions';
 import { toast } from 'sonner';
 
 interface UseAdminNotificationsReturn {

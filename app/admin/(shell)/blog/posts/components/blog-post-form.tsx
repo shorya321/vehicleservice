@@ -29,7 +29,7 @@ import {
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { createBlogPost, updateBlogPost, BlogPostFormData, BlogPostWithRelations } from "../actions"
-import { ImageUpload } from "@/app/admin/vehicle-types/components/image-upload"
+import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-upload"
 import { Badge } from "@/components/ui/badge"
 
 const formSchema = z.object({

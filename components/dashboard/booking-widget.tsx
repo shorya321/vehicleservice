@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Calendar, TrendingUp, Users, XCircle, Clock, CheckCircle, Activity } from 'lucide-react'
-import { BookingMetrics } from '@/app/admin/dashboard/actions'
+import type { BookingMetrics } from '@/app/admin/(shell)/dashboard/actions'
 import { formatCurrency } from '@/lib/utils'
 import { getBookingTimezone } from '@/lib/utils/timezone'
 import Link from 'next/link'

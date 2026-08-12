@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { MessageSquare, X } from 'lucide-react'
 import { adminResponseSchema } from '@/lib/reviews/validation'
-import { addAdminResponse } from '@/app/admin/reviews/actions'
+import { addAdminResponse } from '@/app/admin/(shell)/reviews/actions'
 import { toast } from 'sonner'
 
 type AdminResponseFormData = z.infer<typeof adminResponseSchema>

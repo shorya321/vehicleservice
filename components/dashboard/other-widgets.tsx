@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { MapPin, Car, Users, TrendingUp, Truck, Search } from 'lucide-react'
-import { RouteMetrics, FleetMetrics, CustomerMetrics } from '@/app/admin/dashboard/actions'
+import type { RouteMetrics, FleetMetrics, CustomerMetrics } from '@/app/admin/(shell)/dashboard/actions'
 import { formatCurrency } from '@/lib/utils'
 
 export function RouteWidget({ data }: { data: RouteMetrics }) {

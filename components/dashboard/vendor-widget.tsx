@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Building, Clock, TrendingUp, AlertCircle } from 'lucide-react'
-import { VendorMetrics } from '@/app/admin/dashboard/actions'
+import type { VendorMetrics } from '@/app/admin/(shell)/dashboard/actions'
 
 interface VendorWidgetProps {
   data: VendorMetrics

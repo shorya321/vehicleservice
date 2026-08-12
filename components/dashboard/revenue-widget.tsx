@@ -3,7 +3,7 @@
 import { getBookingTimezone } from '@/lib/utils/timezone'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle } from 'lucide-react'
-import { RevenueMetrics } from '@/app/admin/dashboard/actions'
+import type { RevenueMetrics } from '@/app/admin/(shell)/dashboard/actions'
 import { formatCurrency } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
 

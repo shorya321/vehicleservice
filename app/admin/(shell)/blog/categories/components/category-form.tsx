@@ -21,7 +21,7 @@ import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { createBlogCategory, updateBlogCategory, BlogCategory, BlogCategoryFormData } from "../actions"
-import { ImageUpload } from "@/app/admin/vehicle-types/components/image-upload"
+import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-upload"
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),

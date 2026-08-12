@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Car, Users, AlertTriangle, XCircle, MapPin, Activity } from 'lucide-react'
-import { OperationalMetrics } from '@/app/admin/dashboard/actions'
+import type { OperationalMetrics } from '@/app/admin/(shell)/dashboard/actions'
 
 interface OperationsWidgetProps {
   data: OperationalMetrics
