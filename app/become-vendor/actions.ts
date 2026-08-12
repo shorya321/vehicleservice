@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { getAdminEmail, getAppUrl } from "@/lib/email/config"
 import { sendNewVendorApplicationNotificationEmail } from "@/lib/email/services/admin-emails"
+import { sendVendorApplicationReceivedEmail } from "@/lib/email/services/vendor-emails"
 import { formatBookingDate } from "@/lib/utils/timezone"
 import * as z from "zod"
 
@@ -93,8 +94,9 @@ export async function createVendorApplication(
       return { error: "Failed to submit application" }
     }
 
-    // Notify the admin. Wrapped on its own because getAdminEmail() throws when the env
-    // is unset, and a mail failure must not undo an application that is already stored.
+    // Notify the admin and confirm to the applicant. Wrapped on its own because
+    // getAdminEmail() throws when the env is unset, and a mail failure must not undo an
+    // application that is already stored.
     try {
       const { data: profile } = await supabase
         .from("profiles")
@@ -102,22 +104,51 @@ export async function createVendorApplication(
         .eq("id", user.id)
         .single()
 
-      const result = await sendNewVendorApplicationNotificationEmail({
-        adminEmail: getAdminEmail(),
-        applicationId: application.id,
-        applicationReference: application.id,
-        applicantName: profile?.full_name || data.businessName,
-        applicantEmail: data.businessEmail || profile?.email || user.email || "",
-        companyName: data.businessName,
-        submittedDate: formatBookingDate(new Date()),
-        applicationDetailsUrl: `${getAppUrl()}/admin/vendor-applications/${application.id}`,
-      })
+      const applicantName = profile?.full_name || data.businessName
+      const submittedDate = formatBookingDate(new Date())
 
-      if (!result.success) {
-        console.error("[VendorApplication] admin notification failed:", result.error)
+      // The account email, not businessEmail: the confirmation goes to the person who
+      // applied, and the business field is optional and describes the company.
+      const applicantEmail = profile?.email || user.email || data.businessEmail || ""
+
+      const [adminResult, applicantResult] = await Promise.allSettled([
+        sendNewVendorApplicationNotificationEmail({
+          adminEmail: getAdminEmail(),
+          applicationId: application.id,
+          applicationReference: application.id,
+          applicantName,
+          applicantEmail: data.businessEmail || profile?.email || user.email || "",
+          companyName: data.businessName,
+          submittedDate,
+          applicationDetailsUrl: `${getAppUrl()}/admin/vendor-applications/${application.id}`,
+        }),
+        applicantEmail
+          ? sendVendorApplicationReceivedEmail({
+              email: applicantEmail,
+              name: applicantName,
+              applicationReference: application.id,
+              submittedDate,
+            })
+          : Promise.resolve({ success: false, error: "no applicant email on file" }),
+      ])
+
+      // Reported separately so a failure names which of the two it was.
+      if (adminResult.status === "rejected") {
+        console.error("[VendorApplication] admin notification threw:", adminResult.reason)
+      } else if (!adminResult.value.success) {
+        console.error("[VendorApplication] admin notification failed:", adminResult.value.error)
+      }
+
+      if (applicantResult.status === "rejected") {
+        console.error("[VendorApplication] applicant confirmation threw:", applicantResult.reason)
+      } else if (!applicantResult.value.success) {
+        console.error(
+          "[VendorApplication] applicant confirmation failed:",
+          applicantResult.value.error
+        )
       }
     } catch (emailError) {
-      console.error("[VendorApplication] admin notification error:", emailError)
+      console.error("[VendorApplication] notification error:", emailError)
     }
 
     return {}
