@@ -51,7 +51,15 @@ export function VendorApplicationActions({ applicationId, expectedUpdatedAt }: V
         return
       }
 
-      toast.success("Application approved successfully! Approval email sent to vendor.")
+      if (result.emailDelivered) {
+        toast.success("Application approved. Approval email sent to the vendor.")
+      } else {
+        // The approval stands; only the notice failed. Said plainly, because the admin
+        // is now the only route left to the vendor.
+        toast.warning("Application approved, but the notification email could not be sent. Contact the vendor directly.", {
+          duration: 10000,
+        })
+      }
       router.refresh()
       router.push('/admin/vendor-applications')
     } catch (error) {
@@ -87,7 +95,13 @@ export function VendorApplicationActions({ applicationId, expectedUpdatedAt }: V
         return
       }
 
-      toast.success("Application rejected. Rejection email sent to applicant.")
+      if (result.emailDelivered) {
+        toast.success("Application rejected. Rejection email sent to the applicant.")
+      } else {
+        toast.warning("Application rejected, but the notification email could not be sent. Contact the applicant directly.", {
+          duration: 10000,
+        })
+      }
       setShowRejectDialog(false)
       router.refresh()
       router.push('/admin/vendor-applications')

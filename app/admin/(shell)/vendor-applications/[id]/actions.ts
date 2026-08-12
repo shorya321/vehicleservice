@@ -91,8 +91,15 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
     const loginUrl = `${appUrl}/login`;
     const dashboardUrl = `${appUrl}/vendor`;
 
+    const applicantEmail = await resolveApplicantEmail(supabase, application);
+
+    if (!applicantEmail) {
+      console.error('No address on file for application', application.id);
+      return { success: true, emailDelivered: false };
+    }
+
     const emailResult = await sendVendorApplicationApprovedEmail({
-      email: await resolveApplicantEmail(supabase, application),
+      email: applicantEmail,
       name: application.business_name,
       applicationReference: application.id,
       loginUrl,
@@ -101,10 +108,10 @@ export async function approveVendorApplication(data: ApproveApplicationData) {
 
     if (!emailResult.success) {
       console.error('Failed to send approval email:', emailResult.error);
-      // Don't fail the approval if email fails
+      // The decision stands either way; the caller is told so it can say so.
     }
 
-    return { success: true };
+    return { success: true, emailDelivered: emailResult.success, applicantEmail };
   } catch (error) {
     console.error('Error approving application:', error);
     return { error: 'An unexpected error occurred' };
@@ -148,8 +155,15 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
     const appUrl = getAppUrl();
     const reapplyUrl = `${appUrl}/become-vendor`;
 
+    const applicantEmail = await resolveApplicantEmail(supabase, application);
+
+    if (!applicantEmail) {
+      console.error('No address on file for application', application.id);
+      return { success: true, emailDelivered: false };
+    }
+
     const emailResult = await sendVendorApplicationRejectedEmail({
-      email: await resolveApplicantEmail(supabase, application),
+      email: applicantEmail,
       name: application.business_name,
       applicationReference: application.id,
       rejectionReason: data.rejectionReason,
@@ -158,10 +172,10 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
 
     if (!emailResult.success) {
       console.error('Failed to send rejection email:', emailResult.error);
-      // Don't fail the rejection if email fails
+      // The decision stands either way; the caller is told so it can say so.
     }
 
-    return { success: true };
+    return { success: true, emailDelivered: emailResult.success, applicantEmail };
   } catch (error) {
     console.error('Error rejecting application:', error);
     return { error: 'An unexpected error occurred' };
