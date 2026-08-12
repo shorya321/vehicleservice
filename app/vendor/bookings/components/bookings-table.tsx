@@ -185,6 +185,19 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         <div className="text-muted-foreground">
                           {assignment.booking?.pickup_datetime ? format(toBookingTz(assignment.booking.pickup_datetime), 'HH:mm') : 'N/A'}
                         </div>
+                        {/* Still awaiting the vendor with its departure already behind us.
+                            The assign dialog judges availability against that historic
+                            window, so resources can read as unavailable over a block or
+                            trip that is long finished. Unmarked, that looks like a bug. */}
+                        {assignment.pickup_has_passed && (
+                          <Badge
+                            variant="outline"
+                            className="mt-1 text-xs text-muted-foreground whitespace-nowrap"
+                          >
+                            <Clock className="h-3 w-3 mr-1" />
+                            Past pickup
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </TableCell>

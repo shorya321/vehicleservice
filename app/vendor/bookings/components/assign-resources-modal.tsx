@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Loader2, User, Car, CheckCircle, XCircle, AlertCircle, Calendar, Plus } from 'lucide-react'
-import { getVendorDrivers, getVendorVehicles, acceptAndAssignResources, checkResourceAvailabilityForBooking } from '../actions'
+import { acceptAndAssignResources, checkResourceAvailabilityForBooking } from '../actions'
 import { QuickAddDriverModal } from './quick-add-driver-modal'
 import {
   DEFAULT_TRIP_DURATION_HOURS,
@@ -41,6 +41,26 @@ interface AssignResourcesModalProps {
   onClose: () => void
 }
 
+/**
+ * One thing already holding this resource over the booking's window. `label` arrives
+ * ready to show, formatted in the operating timezone by the availability module, so
+ * nothing here reformats a timestamp.
+ */
+interface ResourceConflictView {
+  source: string
+  label: string
+  start: string
+  end: string
+}
+
+interface ResourceAvailability {
+  available: boolean
+  conflicts: ResourceConflictView[]
+  // Set only when the resource is held back by its standing flag rather than by a
+  // window, which is the one case with no conflict to name.
+  unavailableReason?: string | null
+}
+
 interface Driver {
   id: string
   first_name: string
@@ -48,10 +68,7 @@ interface Driver {
   phone: string
   license_number: string
   license_type: string | null
-  availability?: {
-    available: boolean
-    conflicts: any[]
-  }
+  availability?: ResourceAvailability
 }
 
 interface Vehicle {
@@ -63,10 +80,7 @@ interface Vehicle {
   seats: number | null
   transmission: string | null
   fuel_type: string | null
-  availability?: {
-    available: boolean
-    conflicts: any[]
-  }
+  availability?: ResourceAvailability
 }
 
 export function AssignResourcesModal({
@@ -87,6 +101,9 @@ export function AssignResourcesModal({
   const [durationHours, setDurationHours] = useState<number>(DEFAULT_TRIP_DURATION_HOURS)
   const [durationInput, setDurationInput] = useState<string>(String(DEFAULT_TRIP_DURATION_HOURS))
   const [pickupIso, setPickupIso] = useState<string | null>(null)
+  // Server-computed, never derived from the browser clock, so the warning cannot flicker
+  // or disagree with the availability answer it is explaining.
+  const [pickupHasPassed, setPickupHasPassed] = useState(false)
 
   const loadResources = useCallback(async (hours: number) => {
     setIsLoading(true)
@@ -95,6 +112,7 @@ export function AssignResourcesModal({
       setDrivers(availabilityData.drivers)
       setVehicles(availabilityData.vehicles)
       setPickupIso(availabilityData.bookingTime)
+      setPickupHasPassed(availabilityData.pickupHasPassed)
 
       // A longer window can turn a chosen driver or vehicle busy. Dropping the selection
       // here stops the vendor submitting one the server would reject anyway.
@@ -146,6 +164,10 @@ export function AssignResourcesModal({
 
   const releaseAtLabel = pickupIso
     ? format(toBookingTz(tripEndFrom(new Date(pickupIso), durationHours).toISOString()), 'd MMM yyyy, HH:mm')
+    : null
+
+  const pickupLabel = pickupIso
+    ? format(toBookingTz(pickupIso), 'd MMM yyyy, HH:mm')
     : null
 
   const handleDriverCreated = async (driver: { id: string; first_name: string; last_name: string }) => {
@@ -207,6 +229,18 @@ export function AssignResourcesModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {pickupHasPassed && (
+            <div className="flex items-start gap-2 rounded-lg border border-muted bg-muted/50 p-3">
+              <AlertCircle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                This pickup was due{pickupLabel ? ` on ${pickupLabel}` : ''} and has already
+                passed. Availability below is still measured against that original window, so
+                a driver or vehicle can read as unavailable for a block or trip that is over
+                in real time.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="duration">Booking duration (hours)</Label>
             <Input
@@ -283,6 +317,14 @@ export function AssignResourcesModal({
                                 </Badge>
                               )}
                             </div>
+                            {!driver.availability?.available && (
+                              <span className="text-xs text-red-600">
+                                {driver.availability?.unavailableReason ??
+                                  driver.availability?.conflicts
+                                    .map((conflict) => conflict.label)
+                                    .join('; ')}
+                              </span>
+                            )}
                             <span className="text-xs text-muted-foreground">
                               License: {driver.license_number}
                               {driver.license_type && ` (${driver.license_type})`}
@@ -342,6 +384,14 @@ export function AssignResourcesModal({
                                 </Badge>
                               )}
                             </div>
+                            {!vehicle.availability?.available && (
+                              <span className="text-xs text-red-600">
+                                {vehicle.availability?.unavailableReason ??
+                                  vehicle.availability?.conflicts
+                                    .map((conflict) => conflict.label)
+                                    .join('; ')}
+                              </span>
+                            )}
                             <span className="text-xs text-muted-foreground">
                               {vehicle.registration_number}
                               {vehicle.seats && ` • ${vehicle.seats} seats`}

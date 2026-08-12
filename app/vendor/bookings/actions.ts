@@ -83,6 +83,12 @@ export interface VendorBooking {
   accepted_at: string | null
   /** Hours the vehicle and driver are held from pickup. Null on assignments never accepted. */
   estimated_duration_hours: number | null
+  /**
+   * Still waiting on the vendor while its departure time is already behind us. Derived
+   * server-side, never in the component: `Date.now()` during render is impure, and a
+   * browser clock could disagree with the availability answer this explains.
+   */
+  pickup_has_passed?: boolean
   notes: string | null
   booking: {
     id: string
@@ -341,81 +347,26 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
     )
   }
 
-  return filteredBookings
+  // Stamp the past-pickup marker here, where reading the clock is legitimate. Doing it in
+  // the table would be an impure read during render, and a browser clock could contradict
+  // the availability verdict the marker is there to explain.
+  const now = Date.now()
+
+  return filteredBookings.map((assignment) => ({
+    ...assignment,
+    pickup_has_passed:
+      assignment.status === 'pending' &&
+      !!assignment.booking?.pickup_datetime &&
+      new Date(assignment.booking.pickup_datetime).getTime() < now,
+  }))
 }
 
-export async function getVendorDrivers() {
-  const supabase = await createClient()
-  
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  
-  // Get vendor application for current user
-  const { data: vendorApp } = await supabase
-    .from('vendor_applications')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-  
-  if (!vendorApp) {
-    throw new Error('Vendor application not found')
-  }
-  
-  // Get drivers
-  const { data: drivers, error } = await supabase
-    .from('vendor_drivers')
-    .select('*')
-    .eq('vendor_id', vendorApp.id)
-    .eq('is_active', true)
-    .eq('is_available', true)
-    .order('first_name')
-  
-  if (error) {
-    console.error('Error fetching drivers:', error)
-    throw new Error('Failed to fetch drivers')
-  }
-  
-  return drivers || []
-}
-
-export async function getVendorVehicles() {
-  const supabase = await createClient()
-  
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  
-  // Get vendor application for current user
-  const { data: vendorApp } = await supabase
-    .from('vendor_applications')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-  
-  if (!vendorApp) {
-    throw new Error('Vendor application not found')
-  }
-  
-  // Get vehicles
-  const { data: vehicles, error } = await supabase
-    .from('vehicles')
-    .select('*')
-    .eq('business_id', vendorApp.id)
-    .eq('is_available', true)
-    .order('make')
-  
-  if (error) {
-    console.error('Error fetching vehicles:', error)
-    throw new Error('Failed to fetch vehicles')
-  }
-  
-  return vehicles || []
-}
+// There is deliberately no plain "list the free drivers" or "list the free vehicles"
+// helper here. Both used to exist and filtered on the standing `is_available` /
+// `is_active` flags alone, which reports a resource as free while a calendar block or
+// another booking is holding it. Occupancy is a question about a time window, so ask
+// `checkResourceAvailabilityForBooking` below, which answers it against the booking's
+// own window across all three sources.
 
 export async function acceptAndAssignResources(
   assignmentId: string,
@@ -953,27 +904,34 @@ export async function checkResourceAvailabilityForBooking(
     }
   }
 
+  // Why an option is offered or not, in words the vendor can act on. A time conflict
+  // already carries a formatted label; the standing flag has no window to describe, so
+  // it needs wording of its own that points at the page where it is switched back.
   const driversWithAvailability = (drivers || []).map((driver) => {
     const conflicts = conflictsByResource.get(driver.id) ?? []
+    const flaggedOff = !driver.is_available
 
     return {
       ...driver,
       availability: {
         // Flag first, exactly as before: a driver not flagged available is never offered.
-        available: !driver.is_available ? false : conflicts.length === 0,
+        available: flaggedOff ? false : conflicts.length === 0,
         conflicts,
+        unavailableReason: flaggedOff ? 'Marked unavailable on the Drivers page' : null,
       },
     }
   })
 
   const vehiclesWithAvailability = (vehicles || []).map((vehicle) => {
     const conflicts = conflictsByResource.get(vehicle.id) ?? []
+    const flaggedOff = !vehicle.is_available
 
     return {
       ...vehicle,
       availability: {
-        available: !vehicle.is_available ? false : conflicts.length === 0,
+        available: flaggedOff ? false : conflicts.length === 0,
         conflicts,
+        unavailableReason: flaggedOff ? 'Marked out of service on the Vehicles page' : null,
       },
     }
   })
@@ -982,6 +940,12 @@ export async function checkResourceAvailabilityForBooking(
     durationHours: holdHours,
     bookingTime: pickupTime.toISOString(),
     estimatedEndTime: estimatedEndTime.toISOString(),
+    // Availability is judged against the booking's own window, never against the clock.
+    // Once pickup is in the past that window is history, so a block or trip that is long
+    // over in wall-clock terms still reports a conflict. Correct, and baffling without a
+    // word of warning, so the dialog says it outright. Computed here because the server
+    // owns the authoritative clock and the client must not disagree at hydration.
+    pickupHasPassed: pickupTime.getTime() < Date.now(),
     drivers: driversWithAvailability,
     vehicles: vehiclesWithAvailability
   }
