@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { NotificationService } from '@/lib/notifications/notification-service';
-import { NotificationCategory } from '@/lib/notifications/types';
+import { NotificationCategory, NotificationPurgePreview } from '@/lib/notifications/types';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -93,6 +93,131 @@ export async function markAllAsReadAction(category?: NotificationCategory) {
   } catch (error) {
     console.error('Error in markAllAsReadAction:', error);
     return { error: 'Failed to mark all notifications as read' };
+  }
+}
+
+/**
+ * Delete a single notification
+ */
+export async function deleteNotificationAction(notificationId: string) {
+  try {
+    await NotificationService.deleteNotification(notificationId);
+    revalidatePath('/admin/notifications');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in deleteNotificationAction:', error);
+    return { error: 'Failed to delete notification' };
+  }
+}
+
+/**
+ * Delete the current user's read notifications, optionally within one category
+ */
+export async function clearReadNotificationsAction(category?: NotificationCategory) {
+  try {
+    const deleted = await NotificationService.clearRead(category);
+    revalidatePath('/admin/notifications');
+    return { success: true, deleted };
+  } catch (error) {
+    console.error('Error in clearReadNotificationsAction:', error);
+    return { error: 'Failed to clear read notifications' };
+  }
+}
+
+/**
+ * Preview what an admin purge would remove.
+ *
+ * Read-only, and paired with purgeNotificationsAction: both RPCs take the same
+ * arguments and share the same predicate, so the number shown in the dialog is the
+ * number that gets removed.
+ *
+ * Uses the session client, not the admin client, because count_notification_purge
+ * reads auth.uid() to check the caller is an admin and a service-role call has no
+ * auth.uid() at all.
+ */
+export async function previewNotificationPurgeAction(
+  before: string | null,
+  allUsers: boolean
+) {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc('count_notification_purge', {
+      p_before: before ?? undefined,
+      p_all_users: allUsers,
+    });
+
+    if (error) {
+      console.error('Error in previewNotificationPurgeAction:', error.message);
+      return { error: 'Failed to preview the purge' };
+    }
+
+    // The RPC is typed as Json because it returns jsonb. Its shape is fixed by
+    // jsonb_build_object in count_notification_purge.
+    return { data: data as unknown as NotificationPurgePreview };
+  } catch (error) {
+    console.error('Error in previewNotificationPurgeAction:', error);
+    return { error: 'Failed to preview the purge' };
+  }
+}
+
+/**
+ * Table-wide notification counts, across every user.
+ *
+ * Deliberately reuses count_notification_purge rather than adding a near-identical
+ * function: called with (null, true) it already means "every row, all users", which is
+ * exactly this stat, and it already carries the admin check. The name reads oddly here
+ * for that reason, so this is not a copy-paste slip.
+ *
+ * This exists because getNotificationStatsAction below filters on the current user, so
+ * the page's "Total" card is one admin's feed. With no platform-wide number anywhere,
+ * rows belonging to other users were invisible, and an admin who cleared their own feed
+ * saw an empty page while the table still held rows.
+ */
+export async function getPlatformNotificationStatsAction() {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc('count_notification_purge', {
+      p_before: undefined,
+      p_all_users: true,
+    });
+
+    if (error) {
+      console.error('Error in getPlatformNotificationStatsAction:', error.message);
+      return { data: null };
+    }
+
+    return { data: data as unknown as NotificationPurgePreview };
+  } catch (error) {
+    console.error('Error in getPlatformNotificationStatsAction:', error);
+    return { data: null };
+  }
+}
+
+/**
+ * Delete notifications older than a cutoff. `before` of null means every row.
+ * The function writes a notifications_purged row to user_activity_logs.
+ */
+export async function purgeNotificationsAction(before: string | null, allUsers: boolean) {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc('purge_notifications', {
+      p_before: before ?? undefined,
+      p_all_users: allUsers,
+    });
+
+    if (error) {
+      console.error('Error in purgeNotificationsAction:', error.message);
+      return { error: error.message };
+    }
+
+    revalidatePath('/admin/notifications');
+    return { success: true, deleted: data ?? 0 };
+  } catch (error) {
+    console.error('Error in purgeNotificationsAction:', error);
+    return { error: 'Failed to clear notifications' };
   }
 }
 

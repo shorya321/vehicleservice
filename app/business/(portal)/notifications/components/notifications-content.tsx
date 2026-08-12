@@ -10,13 +10,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Bell, BellRing, BellOff, Inbox, Settings2, CheckCheck, ChevronDown } from 'lucide-react';
+import { Bell, BellRing, BellOff, Inbox, Settings2, CheckCheck, ChevronDown, Eraser } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
   getNotificationsAction,
   markNotificationAsReadAction,
   markAllAsReadAction,
+  deleteNotificationAction,
+  clearReadNotificationsAction,
   getNotificationStatsAction,
 } from '../actions';
 import { toast } from 'sonner';
@@ -141,6 +143,54 @@ export function NotificationsContent() {
     }
   };
 
+  // Delete a single notification.
+  //
+  // Optimistic, then reconciled by fetchStats. The realtime subscription only listens
+  // for INSERT, and Supabase sends nothing but the primary key on DELETE unless the
+  // table is set to REPLICA IDENTITY FULL, so a delete never arrives over the channel.
+  // Updating local state here is what keeps this tab correct.
+  const handleDelete = async (notificationId: string) => {
+    const removed = notifications.find((n) => n.id === notificationId);
+    if (!removed) return;
+
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+
+    const result = await deleteNotificationAction(notificationId);
+
+    if (result.error) {
+      // Put it back rather than leaving the list lying about what is stored.
+      setNotifications((prev) =>
+        [...prev, removed].sort(
+          (a, b) =>
+            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+        )
+      );
+      toast.error('Failed to delete notification');
+      return;
+    }
+
+    fetchStats();
+  };
+
+  // Delete the read notifications in the active category
+  const handleClearRead = async () => {
+    const category = activeCategory === 'all' ? undefined : (activeCategory as NotificationCategory);
+    const result = await clearReadNotificationsAction(category);
+
+    if (result.error) {
+      toast.error('Failed to clear read notifications');
+      return;
+    }
+
+    setNotifications((prev) => prev.filter((n) => !n.is_read));
+    toast.success(
+      result.deleted === 1
+        ? 'Cleared 1 read notification'
+        : `Cleared ${result.deleted ?? 0} read notifications`
+    );
+    fetchStats();
+  };
+
   // Tab configuration
   const tabs = [
     { value: 'all', label: 'All', count: stats.total },
@@ -179,6 +229,15 @@ export function NotificationsContent() {
             >
               <CheckCheck className="h-4 w-4" />
               Mark all as read
+            </Button>
+          )}
+          {stats.read > 0 && (
+            <Button
+              onClick={handleClearRead}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card/80 border border-border text-foreground/80 font-medium hover:border-primary/30 hover:bg-primary/5 transition-all duration-300"
+            >
+              <Eraser className="h-4 w-4" />
+              Clear read
             </Button>
           )}
         </div>
@@ -319,6 +378,7 @@ export function NotificationsContent() {
                   key={notification.id}
                   notification={notification}
                   onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>

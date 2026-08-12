@@ -108,6 +108,34 @@ export async function markAllAsReadAction(category?: NotificationCategory) {
 }
 
 /**
+ * Delete a single notification
+ */
+export async function deleteNotificationAction(notificationId: string) {
+  try {
+    await NotificationService.deleteNotification(notificationId);
+    revalidatePath('/business/notifications');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in deleteNotificationAction:', error);
+    return { error: 'Failed to delete notification' };
+  }
+}
+
+/**
+ * Delete the current user's read notifications, optionally within one category
+ */
+export async function clearReadNotificationsAction(category?: NotificationCategory) {
+  try {
+    const deleted = await NotificationService.clearRead(category);
+    revalidatePath('/business/notifications');
+    return { success: true, deleted };
+  } catch (error) {
+    console.error('Error in clearReadNotificationsAction:', error);
+    return { error: 'Failed to clear read notifications' };
+  }
+}
+
+/**
  * Get recent notifications for dropdown
  */
 export async function getRecentNotificationsAction(limit: number = 5) {

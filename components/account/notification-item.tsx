@@ -16,6 +16,8 @@ interface NotificationItemProps {
     metadata?: Record<string, any>
   }
   onMarkAsRead?: () => void
+  /** Optional so existing call sites that do not offer delete keep working unchanged. */
+  onDelete?: () => void
 }
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
@@ -31,7 +33,7 @@ const TYPE_STYLES: Record<string, { icon: React.ElementType; color: string }> = 
   info: { icon: Info, color: "text-[var(--status-confirmed-text)]" },
 }
 
-export function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
+export function NotificationItem({ notification, onMarkAsRead, onDelete }: NotificationItemProps) {
   const CategoryIcon = CATEGORY_ICONS[notification.category] || Bell
   const typeStyle = TYPE_STYLES[notification.type] || TYPE_STYLES.info
   const TypeIcon = typeStyle.icon
@@ -76,15 +78,27 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
           <div className="flex items-center justify-between">
             <span className="text-xs text-[var(--text-muted)]">{timeAgo}</span>
 
-            {!notification.is_read && onMarkAsRead && (
-              <button
-                onClick={onMarkAsRead}
-                className="text-xs text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors"
-                aria-label={`Mark "${notification.title}" as read`}
-              >
-                Mark as read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {!notification.is_read && onMarkAsRead && (
+                <button
+                  onClick={onMarkAsRead}
+                  className="text-xs text-[var(--gold-text)] hover:text-[var(--text-primary)] transition-colors"
+                  aria-label={`Mark "${notification.title}" as read`}
+                >
+                  Mark as read
+                </button>
+              )}
+
+              {onDelete && (
+                <button
+                  onClick={onDelete}
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--error-text)] transition-colors"
+                  aria-label={`Delete "${notification.title}"`}
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

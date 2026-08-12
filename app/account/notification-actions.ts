@@ -161,6 +161,61 @@ export async function markAllNotificationsAsRead(category?: NotificationCategory
   return { error: null }
 }
 
+export async function deleteNotification(notificationId: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: "Not authenticated" }
+  }
+
+  // Through the RPC, not a `.delete()`: notifications has SELECT, INSERT and UPDATE
+  // policies but no FOR DELETE policy, so a delete from a session client silently
+  // affects zero rows. delete_notification scopes to auth.uid() itself.
+  const { error } = await supabase.rpc("delete_notification", {
+    p_notification_id: notificationId,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath("/account")
+  return { error: null }
+}
+
+export async function clearReadNotifications(category?: NotificationCategory) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: "Not authenticated", deleted: 0 }
+  }
+
+  // The account surface only ever shows these three categories, so "all" clears the
+  // three rather than passing NULL, which the RPC would read as every category. One
+  // call per category keeps this page's scope identical to the reads above it.
+  const targets: Exclude<NotificationCategory, "all">[] =
+    category && category !== "all" ? [category] : ["booking", "payment", "system"]
+
+  let deleted = 0
+
+  for (const target of targets) {
+    const { data, error } = await supabase.rpc("clear_read_notifications", {
+      p_category: target,
+    })
+
+    if (error) {
+      return { error: error.message, deleted }
+    }
+
+    deleted += data ?? 0
+  }
+
+  revalidatePath("/account")
+  return { error: null, deleted }
+}
+
 export async function getRecentNotifications(limit: number = 5) {
   const supabase = await createClient()
 

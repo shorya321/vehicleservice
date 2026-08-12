@@ -22,12 +22,15 @@ import {
   Wallet,
   CalendarCheck,
   Sparkles,
+  X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface BusinessNotificationItemProps {
   notification: Notification;
   onMarkAsRead?: (id: string) => void;
+  /** Optional so existing call sites that do not offer delete keep working unchanged. */
+  onDelete?: (id: string) => void;
   compact?: boolean;
 }
 
@@ -126,6 +129,7 @@ const getCategoryStyles = (category: NotificationCategory, isRead: boolean) => {
 export function BusinessNotificationItem({
   notification,
   onMarkAsRead,
+  onDelete,
   compact = false,
 }: BusinessNotificationItemProps) {
   const router = useRouter();
@@ -182,6 +186,20 @@ export function BusinessNotificationItem({
         {!notification.is_read && (
           <div className="flex-shrink-0 w-2 h-2 bg-primary rounded-full mt-2" />
         )}
+        {onDelete && (
+          <button
+            type="button"
+            aria-label="Delete notification"
+            onClick={(event) => {
+              // The row itself navigates on click, so the delete must not bubble.
+              event.stopPropagation();
+              onDelete(notification.id);
+            }}
+            className="flex-shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     );
   }
@@ -233,6 +251,20 @@ export function BusinessNotificationItem({
               </span>
             )}
             {!notification.is_read && <div className="w-2 h-2 bg-primary rounded-full" />}
+            {onDelete && (
+              <button
+                type="button"
+                aria-label="Delete notification"
+                onClick={(event) => {
+                  // The row itself navigates on click, so the delete must not bubble.
+                  event.stopPropagation();
+                  onDelete(notification.id);
+                }}
+                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
 

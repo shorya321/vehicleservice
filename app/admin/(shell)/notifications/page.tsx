@@ -33,7 +33,9 @@ export default async function NotificationsPage() {
   return (
       <AnimatedPage>
         <Suspense fallback={<NotificationsContentSkeleton />}>
-          <NotificationsContent />
+          {/* The purge dialog asks the admin to retype this before a destructive
+              selection, so it comes from the server session rather than the client. */}
+          <NotificationsContent adminEmail={user.email ?? ''} />
         </Suspense>
       </AnimatedPage>
   );

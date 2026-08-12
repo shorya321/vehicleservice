@@ -12,7 +12,7 @@ import { NotificationItem } from '@/components/admin/notifications/notification-
 import Link from 'next/link';
 
 export function VendorNotificationBell() {
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } =
     useVendorNotifications(5);
 
   return (
@@ -72,6 +72,7 @@ export function VendorNotificationBell() {
                   key={notification.id}
                   notification={notification}
                   onMarkAsRead={markAsRead}
+                  onDelete={deleteNotification}
                   compact
                 />
               ))}

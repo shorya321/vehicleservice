@@ -2,12 +2,14 @@
 
 import { Notification } from '@/lib/notifications/types';
 import { cn } from '@/lib/utils';
-import { Bell, CalendarCheck, FileText, Star, User, Wallet } from 'lucide-react';
+import { Bell, CalendarCheck, FileText, Star, User, Wallet, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead?: (id: string) => void;
+  /** Optional so existing call sites that do not offer delete keep working unchanged. */
+  onDelete?: (id: string) => void;
   compact?: boolean;
 }
 
@@ -23,6 +25,7 @@ const categoryConfig: Record<string, { icon: typeof Bell; bgColor: string; iconC
 export function NotificationItem({
   notification,
   onMarkAsRead,
+  onDelete,
   compact = false,
 }: NotificationItemProps) {
   const router = useRouter();
@@ -39,15 +42,24 @@ export function NotificationItem({
   };
 
   return (
-    <button
-      onClick={handleClick}
+    // A div, not a button. The row used to be one, which left nowhere valid to put
+    // the delete control: a button cannot be nested inside another button. The row
+    // action is now an inner button and delete is its sibling.
+    <div
       className={cn(
-        'flex items-start gap-3 p-4 w-full text-left',
-        'hover:bg-muted/50 transition-colors',
-        notification.link && 'cursor-pointer',
-        compact && 'p-3'
+        'group relative flex items-start gap-3',
+        'hover:bg-muted/50 transition-colors'
       )}
     >
+      <button
+        onClick={handleClick}
+        className={cn(
+          'flex flex-1 min-w-0 items-start gap-3 p-4 text-left',
+          notification.link && 'cursor-pointer',
+          compact && 'p-3',
+          onDelete && 'pr-10'
+        )}
+      >
       {/* Colored icon container */}
       <div className={cn(
         'h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0',
@@ -80,6 +92,26 @@ export function NotificationItem({
       {!notification.is_read && (
         <div className="flex-shrink-0 w-2 h-2 bg-primary rounded-full mt-2" />
       )}
-    </button>
+      </button>
+
+      {/* Delete. Always visible on touch, revealed on hover or keyboard focus on
+          pointer devices, so it does not compete with the row content. */}
+      {onDelete && (
+        <button
+          type="button"
+          aria-label="Delete notification"
+          onClick={() => onDelete(notification.id)}
+          className={cn(
+            'absolute right-2 top-3 flex-shrink-0 rounded-md p-1.5',
+            'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+            'transition-colors',
+            'opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100',
+            compact && 'top-2'
+          )}
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
   );
 }

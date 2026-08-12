@@ -25,6 +25,32 @@ export interface NotificationsResponse {
   total: number;
 }
 
+/**
+ * What an admin purge would remove, as returned by count_notification_purge.
+ *
+ * Lives here rather than beside the server action because a 'use server' file may
+ * only export async functions; a type export there breaks the app at runtime on an
+ * unrelated route and tsc does not catch it.
+ *
+ * `oldest` and `newest` are null when the selection matches no rows.
+ *
+ * The two survivor counts are deliberately separate. `others_total` ignores the cutoff
+ * and means "owned by anyone but the caller", which is the set the admin notifications
+ * page never shows. `remaining_total` is everything this selection misses, which on a
+ * dated cutoff also includes the caller's own newer rows, so it must never be described
+ * as belonging to other users.
+ */
+export interface NotificationPurgePreview {
+  total: number;
+  unread: number;
+  users: number;
+  oldest: string | null;
+  newest: string | null;
+  remaining_total: number;
+  others_total: number;
+  others_users: number;
+}
+
 // Category icon mapping
 export const categoryIcons = {
   booking: 'ShoppingCart',

@@ -120,6 +120,46 @@ export class NotificationService {
   }
 
   /**
+   * Delete a single notification.
+   *
+   * Goes through the RPC rather than a `.delete()` on the table: notifications has
+   * SELECT, INSERT and UPDATE policies but no FOR DELETE policy, so a delete from a
+   * session client silently affects zero rows. delete_notification is SECURITY
+   * DEFINER and scopes to auth.uid() itself.
+   */
+  static async deleteNotification(notificationId: string): Promise<void> {
+    const supabase = await createClient();
+
+    const { error } = await supabase.rpc('delete_notification', {
+      p_notification_id: notificationId,
+    });
+
+    if (error) {
+      console.error('Error deleting notification:', error);
+      throw new Error('Failed to delete notification');
+    }
+  }
+
+  /**
+   * Delete the current user's read notifications, optionally within one category.
+   * Returns how many rows were removed.
+   */
+  static async clearRead(category?: NotificationCategory): Promise<number> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc('clear_read_notifications', {
+      p_category: category || undefined,
+    });
+
+    if (error) {
+      console.error('Error clearing read notifications:', error);
+      throw new Error('Failed to clear read notifications');
+    }
+
+    return data ?? 0;
+  }
+
+  /**
    * Get recent notifications (for dropdown)
    */
   static async getRecentNotifications(userId: string, limit: number = 5) {

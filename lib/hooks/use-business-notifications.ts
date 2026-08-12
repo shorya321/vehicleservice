@@ -8,6 +8,7 @@ import {
   getUnreadCountAction,
   markNotificationAsReadAction,
   markAllAsReadAction,
+  deleteNotificationAction,
 } from '@/app/business/(portal)/notifications/actions';
 import { toast } from 'sonner';
 
@@ -17,6 +18,7 @@ interface UseBusinessNotificationsReturn {
   loading: boolean;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: (category?: NotificationCategory) => Promise<void>;
+  deleteNotification: (notificationId: string) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -70,6 +72,36 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
       toast.success('All notifications marked as read');
     }
   }, []);
+
+  // Delete a notification.
+  //
+  // The realtime channel below subscribes to INSERT only, and Supabase sends nothing
+  // but the primary key on DELETE unless the table is set to REPLICA IDENTITY FULL,
+  // so a delete never arrives over it. Refetching afterwards is what pulls the next
+  // notification into this capped list of `limit`.
+  const deleteNotification = useCallback(
+    async (notificationId: string) => {
+      let wasUnread = false;
+
+      setNotifications((prev) => {
+        wasUnread = prev.some((n) => n.id === notificationId && !n.is_read);
+        return prev.filter((n) => n.id !== notificationId);
+      });
+
+      if (wasUnread) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+
+      const result = await deleteNotificationAction(notificationId);
+
+      if (result.error) {
+        toast.error('Failed to delete notification');
+      }
+
+      await fetchNotifications();
+    },
+    [fetchNotifications]
+  );
 
   // Get current user and set up realtime subscription
   useEffect(() => {
@@ -170,6 +202,7 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
     loading,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     refetch: fetchNotifications,
   };
 }

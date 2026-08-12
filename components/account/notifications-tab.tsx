@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Bell, Mail, CreditCard, CheckCheck, ChevronDown, Loader2 } from "lucide-react"
+import { Bell, Mail, CreditCard, CheckCheck, ChevronDown, Loader2, Eraser } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import {
   getNotifications,
   getNotificationStats,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  deleteNotification,
+  clearReadNotifications,
   type NotificationCategory,
 } from "@/app/account/notification-actions"
 import { NotificationItem } from "./notification-item"
@@ -33,6 +35,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
   const [stats, setStats] = useState({ total: 0, unread: 0, read: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [isMarkingAll, setIsMarkingAll] = useState(false)
+  const [isClearingRead, setIsClearingRead] = useState(false)
   const [category, setCategory] = useState<NotificationCategory>("all")
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
@@ -127,6 +130,63 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
     }
   }
 
+  // Optimistic, because the realtime subscription only listens for INSERT and
+  // Supabase sends nothing but the primary key on DELETE unless the table is set to
+  // REPLICA IDENTITY FULL. Updating local state here is what keeps this tab correct.
+  const handleDelete = async (id: string) => {
+    const removed = notifications.find((n) => n.id === id)
+    if (!removed) return
+
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+    setStats((prev) => ({
+      ...prev,
+      total: Math.max(0, prev.total - 1),
+      unread: removed.is_read ? prev.unread : Math.max(0, prev.unread - 1),
+      read: removed.is_read ? Math.max(0, prev.read - 1) : prev.read,
+    }))
+
+    const result = await deleteNotification(id)
+
+    if (result.error) {
+      // Put it back rather than leaving the list lying about what is stored.
+      setNotifications((prev) =>
+        [...prev, removed].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+      )
+      setStats((prev) => ({
+        ...prev,
+        total: prev.total + 1,
+        unread: removed.is_read ? prev.unread : prev.unread + 1,
+        read: removed.is_read ? prev.read + 1 : prev.read,
+      }))
+      toast.error(result.error)
+    }
+  }
+
+  const handleClearRead = async () => {
+    setIsClearingRead(true)
+    const result = await clearReadNotifications(category)
+    setIsClearingRead(false)
+
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+
+    setNotifications((prev) => prev.filter((n) => !n.is_read))
+    setStats((prev) => ({
+      ...prev,
+      total: Math.max(0, prev.total - (result.deleted ?? 0)),
+      read: Math.max(0, prev.read - (result.deleted ?? 0)),
+    }))
+    toast.success(
+      result.deleted === 1
+        ? "Cleared 1 read notification"
+        : `Cleared ${result.deleted ?? 0} read notifications`
+    )
+  }
+
   const unreadNotifications = notifications.filter((n) => !n.is_read)
   const readNotifications = notifications.filter((n) => n.is_read)
 
@@ -135,15 +195,29 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
     { label: "unread", value: stats.unread, color: "var(--status-confirmed-text)" },
   ], [stats.total, stats.unread])
 
-  const markAllAction = stats.unread > 0 ? (
-    <button
-      onClick={handleMarkAllAsRead}
-      disabled={isMarkingAll}
-      className="text-sm text-[var(--gold-text)] hover:text-[var(--text-primary)] flex items-center gap-1.5 transition-colors"
-    >
-      {isMarkingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
-      Mark all as read
-    </button>
+  const markAllAction = stats.unread > 0 || stats.read > 0 ? (
+    <div className="flex items-center gap-4">
+      {stats.unread > 0 && (
+        <button
+          onClick={handleMarkAllAsRead}
+          disabled={isMarkingAll}
+          className="text-sm text-[var(--gold-text)] hover:text-[var(--text-primary)] flex items-center gap-1.5 transition-colors"
+        >
+          {isMarkingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+          Mark all as read
+        </button>
+      )}
+      {stats.read > 0 && (
+        <button
+          onClick={handleClearRead}
+          disabled={isClearingRead}
+          className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center gap-1.5 transition-colors"
+        >
+          {isClearingRead ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eraser className="w-4 h-4" />}
+          Clear read
+        </button>
+      )}
+    </div>
   ) : undefined
 
   return (
@@ -213,6 +287,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
                     key={notification.id}
                     notification={notification}
                     onMarkAsRead={() => handleMarkAsRead(notification.id)}
+                    onDelete={() => handleDelete(notification.id)}
                   />
                 ))}
               </div>
@@ -227,6 +302,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
+                    onDelete={() => handleDelete(notification.id)}
                   />
                 ))}
               </div>

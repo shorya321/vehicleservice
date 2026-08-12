@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 export function NotificationBell() {
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } =
     useAdminNotifications(5);
   const router = useRouter();
 
@@ -75,6 +75,7 @@ export function NotificationBell() {
                   key={notification.id}
                   notification={notification}
                   onMarkAsRead={markAsRead}
+                  onDelete={deleteNotification}
                   compact
                 />
               ))}

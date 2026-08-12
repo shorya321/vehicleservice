@@ -12,6 +12,8 @@ import {
   getNotificationsAction,
   markNotificationAsReadAction,
   markAllAsReadAction,
+  deleteNotificationAction,
+  clearReadNotificationsAction,
   getNotificationStatsAction,
 } from '../actions';
 import { Notification } from '@/lib/notifications/types';
@@ -124,6 +126,60 @@ export function NotificationsContent() {
     }
   };
 
+  // Delete a single notification.
+  //
+  // Optimistic, then reconciled by fetchStats. The realtime subscription only listens
+  // for INSERT, and Supabase sends nothing but the primary key on DELETE unless the
+  // table is set to REPLICA IDENTITY FULL, so a delete never arrives over the channel.
+  // Updating local state here is what keeps this tab correct.
+  const handleDelete = async (id: string) => {
+    const removed = notifications.find((n) => n.id === id);
+    if (!removed) return;
+
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (!removed.is_read) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
+    const result = await deleteNotificationAction(id);
+
+    if (result.error) {
+      // Put it back rather than leaving the list lying about what is stored.
+      setNotifications((prev) =>
+        [...prev, removed].sort(
+          (a, b) =>
+            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+        )
+      );
+      if (!removed.is_read) {
+        setUnreadCount((prev) => prev + 1);
+      }
+      toast.error('Failed to delete notification');
+      return;
+    }
+
+    fetchStats();
+  };
+
+  // Delete the read notifications in the active tab
+  const handleClearRead = async () => {
+    const category = activeTab === 'all' ? undefined : activeTab;
+    const result = await clearReadNotificationsAction(category);
+
+    if (result.error) {
+      toast.error('Failed to clear read notifications');
+      return;
+    }
+
+    setNotifications((prev) => prev.filter((n) => !n.is_read));
+    toast.success(
+      result.deleted === 1
+        ? 'Cleared 1 read notification'
+        : `Cleared ${result.deleted ?? 0} read notifications`
+    );
+    fetchStats();
+  };
+
   // Load more
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -159,11 +215,18 @@ export function NotificationsContent() {
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
-        {unreadCount > 0 && (
-          <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">
-            Mark all as read
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
+            <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">
+              Mark all as read
+            </Button>
+          )}
+          {readNotifications.length > 0 && (
+            <Button onClick={handleClearRead} variant="outline" size="sm">
+              Clear read
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -304,6 +367,7 @@ export function NotificationsContent() {
                               key={notification.id}
                               notification={notification}
                               onMarkAsRead={handleMarkAsRead}
+                              onDelete={handleDelete}
                             />
                           ))}
                         </div>
@@ -322,6 +386,7 @@ export function NotificationsContent() {
                               key={notification.id}
                               notification={notification}
                               onMarkAsRead={handleMarkAsRead}
+                              onDelete={handleDelete}
                             />
                           ))}
                         </div>

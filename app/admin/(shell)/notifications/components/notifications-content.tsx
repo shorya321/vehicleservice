@@ -13,7 +13,11 @@ import {
   markNotificationAsReadAction,
   markAllAsReadAction,
   getNotificationStatsAction,
+  getPlatformNotificationStatsAction,
+  deleteNotificationAction,
+  clearReadNotificationsAction,
 } from '../actions';
+import { PurgeDialog } from './purge-dialog';
 import { Notification } from '@/lib/notifications/types';
 import {
   Bell,
@@ -23,7 +27,9 @@ import {
   Users,
   Building2,
   Star,
-  CreditCard
+  CreditCard,
+  Eraser,
+  Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
@@ -48,13 +54,19 @@ interface NotificationStats {
   payment: number;
 }
 
-export function NotificationsContent() {
+interface NotificationsContentProps {
+  adminEmail: string;
+}
+
+export function NotificationsContent({ adminEmail }: NotificationsContentProps) {
   const [activeTab, setActiveTab] = useState<NotificationCategory | 'all'>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [purgeOpen, setPurgeOpen] = useState(false);
+  const [platformTotal, setPlatformTotal] = useState<number | null>(null);
   const [stats, setStats] = useState<NotificationStats>({
     total: 0,
     unread: 0,
@@ -66,13 +78,22 @@ export function NotificationsContent() {
     payment: 0,
   });
 
-  // Fetch stats
+  // Fetch stats.
+  //
+  // Two calls on purpose. getNotificationStatsAction is scoped to this admin, which is
+  // what the rest of the cards describe. The platform total is the whole table, and it
+  // is here because without it an admin who clears their own feed sees an empty page
+  // while other users' rows are still stored.
   const fetchStats = async () => {
     try {
-      const result = await getNotificationStatsAction();
+      const [result, platform] = await Promise.all([
+        getNotificationStatsAction(),
+        getPlatformNotificationStatsAction(),
+      ]);
       if (result.data) {
         setStats(result.data);
       }
+      setPlatformTotal(platform.data?.total ?? null);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -157,6 +178,60 @@ export function NotificationsContent() {
     }
   };
 
+  // Delete a single notification.
+  //
+  // Optimistic, then reconciled by fetchStats. The realtime subscription above only
+  // listens for INSERT, and Supabase sends nothing but the primary key on DELETE
+  // unless the table is set to REPLICA IDENTITY FULL, so a delete never arrives over
+  // the channel. Updating local state here is what keeps this tab correct.
+  const handleDelete = async (id: string) => {
+    const removed = notifications.find((n) => n.id === id);
+    if (!removed) return;
+
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (!removed.is_read) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
+    const result = await deleteNotificationAction(id);
+
+    if (result.error) {
+      // Put it back rather than leaving the list lying about what is stored.
+      setNotifications((prev) =>
+        [...prev, removed].sort(
+          (a, b) =>
+            new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+        )
+      );
+      if (!removed.is_read) {
+        setUnreadCount((prev) => prev + 1);
+      }
+      toast.error('Failed to delete notification');
+      return;
+    }
+
+    fetchStats();
+  };
+
+  // Delete the read notifications in the active tab
+  const handleClearRead = async () => {
+    const category = activeTab === 'all' ? undefined : activeTab;
+    const result = await clearReadNotificationsAction(category);
+
+    if (result.error) {
+      toast.error('Failed to clear read notifications');
+      return;
+    }
+
+    setNotifications((prev) => prev.filter((n) => !n.is_read));
+    toast.success(
+      result.deleted === 1
+        ? 'Cleared 1 read notification'
+        : `Cleared ${result.deleted ?? 0} read notifications`
+    );
+    fetchStats();
+  };
+
   // Load more
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -192,26 +267,71 @@ export function NotificationsContent() {
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
-        {unreadCount > 0 && (
-          <Button onClick={handleMarkAllAsRead} variant="outline">
-            Mark all as read
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
+            <Button onClick={handleMarkAllAsRead} variant="outline">
+              Mark all as read
+            </Button>
+          )}
+          {readNotifications.length > 0 && (
+            <Button onClick={handleClearRead} variant="outline">
+              Clear read
+            </Button>
+          )}
+          <Button onClick={() => setPurgeOpen(true)} variant="outline">
+            <Eraser className="mr-2 h-4 w-4" />
+            Clear notifications
           </Button>
-        )}
+        </div>
       </div>
 
+      <PurgeDialog
+        open={purgeOpen}
+        adminEmail={adminEmail}
+        onOpenChange={setPurgeOpen}
+        onPurged={() => {
+          setPage(1);
+          fetchNotifications(activeTab === 'all' ? undefined : activeTab, 1);
+          fetchStats();
+        }}
+      />
+
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         <AnimatedCard delay={0.1}>
           <Card className="admin-card-hover">
             <CardContent className="p-5">
+              {/* "Your Total", not "Total". Every card in this row is scoped to the
+                  signed-in admin, and reading the first one as the table's count is
+                  what made a self-scoped purge look like it had failed. */}
               <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-muted-foreground">Total</span>
+                <span className="text-sm font-medium text-muted-foreground">Your Total</span>
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
                   <Bell className="h-4 w-4 text-primary" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedCard>
+
+        {/* The whole table, across every user. The only card here that is not this
+            admin's own feed, which is the entire reason it exists. */}
+        <AnimatedCard delay={0.15}>
+          <Card className="admin-card-hover">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-sm font-medium text-muted-foreground">All Users</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-500/20">
+                  <Globe className="h-4 w-4 text-slate-400" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-300">
+                  {platformTotal ?? '-'}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -385,6 +505,7 @@ export function NotificationsContent() {
                               key={notification.id}
                               notification={notification}
                               onMarkAsRead={handleMarkAsRead}
+                              onDelete={handleDelete}
                             />
                           ))}
                         </div>
@@ -403,6 +524,7 @@ export function NotificationsContent() {
                               key={notification.id}
                               notification={notification}
                               onMarkAsRead={handleMarkAsRead}
+                              onDelete={handleDelete}
                             />
                           ))}
                         </div>

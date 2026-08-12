@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { Bell, CalendarCheck, CheckCircle2, Wallet, CreditCard, FileText, Star, User, ShoppingCart } from 'lucide-react';
+import { Bell, CalendarCheck, CheckCircle2, Wallet, CreditCard, FileText, Star, User, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -34,9 +34,11 @@ const categoryConfig: Record<string, { icon: typeof Bell; bgColor: string; iconC
 function NotificationItem({
   notification,
   onMarkAsRead,
+  onDelete,
 }: {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
   const router = useRouter();
   const config = categoryConfig[notification.category] || categoryConfig.system;
@@ -52,14 +54,17 @@ function NotificationItem({
   };
 
   return (
-    <button
-      onClick={handleClick}
-      className={cn(
-        'flex items-start gap-3 p-4 w-full text-left',
-        'hover:bg-muted/50 transition-colors',
-        notification.link && 'cursor-pointer'
-      )}
-    >
+    // A div, not a button. The row used to be one, which left nowhere valid to put
+    // the delete control: a button cannot be nested inside another button.
+    <div className="group relative flex items-start gap-3 hover:bg-muted/50 transition-colors">
+      <button
+        onClick={handleClick}
+        className={cn(
+          'flex flex-1 min-w-0 items-start gap-3 p-4 text-left',
+          notification.link && 'cursor-pointer',
+          onDelete && 'pr-10'
+        )}
+      >
       {/* Colored icon container */}
       <div className={cn(
         'h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0',
@@ -88,12 +93,29 @@ function NotificationItem({
       {!notification.is_read && (
         <div className="flex-shrink-0 w-2 h-2 bg-primary rounded-full mt-2" />
       )}
-    </button>
+      </button>
+
+      {onDelete && (
+        <button
+          type="button"
+          aria-label="Delete notification"
+          onClick={() => onDelete(notification.id)}
+          className={cn(
+            'absolute right-2 top-3 flex-shrink-0 rounded-md p-1.5',
+            'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+            'transition-colors',
+            'opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100'
+          )}
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
   );
 }
 
 export function BusinessNotificationBell() {
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } =
     useBusinessNotifications(5);
   const router = useRouter();
 
@@ -166,6 +188,7 @@ export function BusinessNotificationBell() {
                   key={notification.id}
                   notification={notification}
                   onMarkAsRead={markAsRead}
+                  onDelete={deleteNotification}
                 />
               ))}
             </div>

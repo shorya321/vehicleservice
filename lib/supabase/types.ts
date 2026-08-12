@@ -3964,6 +3964,32 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      prune_notifications: {
+        Args: {
+          p_max_rows_per_user?: number
+          p_read_retention_days?: number
+          p_unread_retention_days?: number
+        }
+        Returns: number
+      }
+      delete_notification: {
+        Args: { p_notification_id: string }
+        Returns: number
+      }
+      clear_read_notifications: {
+        Args: {
+          p_category?: Database["public"]["Enums"]["notification_category"]
+        }
+        Returns: number
+      }
+      count_notification_purge: {
+        Args: { p_all_users?: boolean; p_before?: string }
+        Returns: Json
+      }
+      purge_notifications: {
+        Args: { p_all_users?: boolean; p_before?: string }
+        Returns: number
+      }
       record_wallet_notification: {
         Args: {
           p_body?: string
