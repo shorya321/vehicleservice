@@ -3,9 +3,42 @@ import { createServerClient } from '@supabase/ssr'
 import { detectCurrencyFromAcceptLanguage, isValidCurrencyCode } from '@/lib/currency/detect'
 import { CURRENCY_COOKIE_NAME, CURRENCY_COOKIE_MAX_AGE } from '@/lib/currency/types'
 
+/**
+ * Routes whose Server Actions authenticate themselves, so middleware does not have to.
+ *
+ * Next dispatches a Server Action as a POST carrying `next-action`, and the client waits
+ * on a `text/x-component` flight stream. Answer one with a redirect or an HTML rewrite
+ * and the awaited promise never settles: the caller's button spins forever, because the
+ * flight reader neither resolves nor rejects. That is the stuck submit button on the
+ * vendor application form, reproduced by clearing the session cookie and submitting.
+ *
+ * Letting these POSTs past the middleware gate costs nothing, because each action calls
+ * supabase.auth.getUser() itself and returns { error: "Unauthorized" }, which the form
+ * renders as a toast. app/become-vendor/actions.ts binds its insert to user.id, and
+ * app/vendor-application/actions.ts additionally checks row ownership and pending status
+ * in both JS and SQL.
+ *
+ * Exact paths, never a prefix: a future `/vendor-application/<something>` segment must
+ * have to opt in here deliberately rather than inherit the exemption. Every other route,
+ * /admin and /vendor and /business and /account included, keeps its middleware gate,
+ * because Server Action ids resolve per page bundle and several of those actions have no
+ * auth check of their own.
+ */
+const SELF_AUTHENTICATING_ACTION_PATHS = [
+  '/become-vendor',
+  '/vendor-application',
+  '/vendor-application/edit',
+]
+
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
+  // Header lookup is case insensitive, so this matches the `Next-Action` sent on the wire.
+  const isSelfAuthenticatingActionPost =
+    request.method === 'POST' &&
+    request.headers.get('next-action') !== null &&
+    SELF_AUTHENTICATING_ACTION_PATHS.includes(request.nextUrl.pathname)
 
   let supabaseResponse = NextResponse.next({
     request: {
@@ -37,6 +70,36 @@ export async function proxy(request: NextRequest) {
       },
     }
   )
+
+  /**
+   * Copies whatever cookies are currently staged on `supabaseResponse` onto `res`.
+   *
+   * getUser() below rotates the refresh token and stages the replacement `sb-*` cookies
+   * through the setAll callback above. Returning a bare NextResponse.redirect drops those
+   * Set-Cookie headers, and Supabase has already spent the old refresh token server side,
+   * so the browser is left holding a dead one and the user is signed out at random. Every
+   * exit from here therefore goes through redirectWith/rewriteWith.
+   *
+   * Reads the `supabaseResponse` binding rather than taking it as an argument: setAll
+   * reassigns that variable, so a captured copy would go stale. Do not introduce a
+   * `const` snapshot of it above a branch.
+   */
+  function withStagedCookies(res: NextResponse): NextResponse {
+    for (const cookie of supabaseResponse.cookies.getAll()) {
+      res.cookies.set(cookie)
+    }
+    return res
+  }
+
+  /** NextResponse.redirect that preserves refreshed Supabase auth cookies. */
+  function redirectWith(url: URL | string): NextResponse {
+    return withStagedCookies(NextResponse.redirect(url))
+  }
+
+  /** NextResponse.rewrite that preserves refreshed Supabase auth cookies. */
+  function rewriteWith(url: URL | string): NextResponse {
+    return withStagedCookies(NextResponse.rewrite(url))
+  }
 
   // Refresh session if expired
   let user = null
@@ -111,9 +174,14 @@ export async function proxy(request: NextRequest) {
     // Maintenance gate: anonymous visitors on non-exempt paths see the maintenance page.
     if (
       flags.maintenanceMode &&
+      // Rewriting a Server Action POST to an HTML page hangs the caller (see
+      // SELF_AUTHENTICATING_ACTION_PATHS). Maintenance is a presentation gate, not an
+      // authorization one, so skipping it here grants nothing that is not already
+      // reachable when maintenance is off.
+      !isSelfAuthenticatingActionPost &&
       !MAINTENANCE_EXEMPT_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p))
     ) {
-      return NextResponse.rewrite(new URL('/maintenance', request.url))
+      return rewriteWith(new URL('/maintenance', request.url))
     }
 
     // Pre-launch crawl block: keep search engines out of demo content.
@@ -210,14 +278,14 @@ export async function proxy(request: NextRequest) {
       } else {
         // In production, show "Business Not Found" page
         console.warn('Production: Business not found, redirecting to not-found page')
-        return NextResponse.redirect(new URL('/business-not-found', request.url))
+        return redirectWith(new URL('/business-not-found', request.url))
       }
     }
 
     // Root path - redirect to appropriate business entry point
     if (pathname === '/') {
       const redirectPath = getBusinessRedirectPath(!!user)
-      return NextResponse.redirect(new URL(redirectPath, request.url))
+      return redirectWith(new URL(redirectPath, request.url))
     }
 
     // Block signup routes on custom domains and subdomains
@@ -225,14 +293,14 @@ export async function proxy(request: NextRequest) {
     // Business users must register on the main website first
     if (pathname.startsWith('/business/signup')) {
       console.log('Signup blocked on custom domain/subdomain, redirecting to login')
-      return NextResponse.redirect(new URL('/business/login', request.url))
+      return redirectWith(new URL('/business/login', request.url))
     }
 
     // Check if current path is allowed on custom domains
     if (!isAllowedOnCustomDomain(pathname)) {
       // Redirect disallowed routes to business portal
       const redirectPath = getBusinessRedirectPath(!!user)
-      return NextResponse.redirect(new URL(redirectPath, request.url))
+      return redirectWith(new URL(redirectPath, request.url))
     }
 
     // Path is allowed, continue to business portal routes
@@ -242,7 +310,7 @@ export async function proxy(request: NextRequest) {
   // Protected admin routes
   if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      return redirectWith(new URL('/admin/login', request.url))
     }
 
     // Check if user has admin role
@@ -255,15 +323,15 @@ export async function proxy(request: NextRequest) {
 
       if (error) {
         console.error('Error fetching admin profile:', error)
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
 
       if (!profile || profile.role !== 'admin') {
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
     } catch (error) {
       console.error('Middleware profile fetch error:', error)
-      return NextResponse.redirect(new URL('/unauthorized', request.url))
+      return redirectWith(new URL('/unauthorized', request.url))
     }
   }
 
@@ -271,14 +339,20 @@ export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/account') ||
       request.nextUrl.pathname.startsWith('/become-vendor') ||
       request.nextUrl.pathname.startsWith('/vendor-application')) {
-    if (!user) {
+    // A 307 on a Server Action POST is re-sent to /login, where the action id does not
+    // resolve, and the caller is left waiting on a response that never comes. The actions
+    // on these paths reject unauthenticated callers themselves, so the form gets a real
+    // error to show instead.
+    if (!user && !isSelfAuthenticatingActionPost) {
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
-      return NextResponse.redirect(redirectUrl)
+      return redirectWith(redirectUrl)
     }
 
-    // Restrict /become-vendor to customers only
-    if (request.nextUrl.pathname.startsWith('/become-vendor')) {
+    // Restrict /become-vendor to customers only.
+    // Guarded on `user` because the branch above no longer guarantees one: an
+    // unauthenticated action POST reaches here, and user.id would throw.
+    if (user && request.nextUrl.pathname.startsWith('/become-vendor')) {
       try {
         const { data: profile } = await supabase
           .from('profiles')
@@ -287,11 +361,11 @@ export async function proxy(request: NextRequest) {
           .single()
 
         if (!profile || profile.role !== 'customer') {
-          return NextResponse.redirect(new URL('/unauthorized', request.url))
+          return redirectWith(new URL('/unauthorized', request.url))
         }
       } catch (error) {
         console.error('Middleware become-vendor role check error:', error)
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
     }
   }
@@ -300,7 +374,7 @@ export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/vendor') &&
       !request.nextUrl.pathname.startsWith('/vendor-application')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      return redirectWith(new URL('/login', request.url))
     }
 
     try {
@@ -312,15 +386,15 @@ export async function proxy(request: NextRequest) {
 
       if (error) {
         console.error('Error fetching vendor profile:', error)
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
 
       if (!profile || profile.role !== 'vendor') {
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
     } catch (error) {
       console.error('Middleware profile fetch error:', error)
-      return NextResponse.redirect(new URL('/unauthorized', request.url))
+      return redirectWith(new URL('/unauthorized', request.url))
     }
   }
 
@@ -338,7 +412,7 @@ export async function proxy(request: NextRequest) {
 
   if (request.nextUrl.pathname.startsWith('/business') && !isPublicBusinessPath) {
     if (!user) {
-      return NextResponse.redirect(new URL('/business/login', request.url))
+      return redirectWith(new URL('/business/login', request.url))
     }
 
     // Check if user is a business user
@@ -351,12 +425,12 @@ export async function proxy(request: NextRequest) {
 
       if (error || !businessUser) {
         console.error('Not a business user:', error?.message)
-        return NextResponse.redirect(new URL('/business/login', request.url))
+        return redirectWith(new URL('/business/login', request.url))
       }
 
       // Check if business user is active
       if (!businessUser.is_active) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
 
       // Check if business account is active
@@ -365,14 +439,14 @@ export async function proxy(request: NextRequest) {
         : businessUser.business_accounts
 
       if (businessAccount?.status !== 'active') {
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
+        return redirectWith(new URL('/unauthorized', request.url))
       }
 
       // Domain ownership validation is now handled in login API
       // No need for SMART REDIRECT - wrong business users cannot log in
     } catch (error) {
       console.error('Middleware business user fetch error:', error)
-      return NextResponse.redirect(new URL('/unauthorized', request.url))
+      return redirectWith(new URL('/unauthorized', request.url))
     }
   }
 
@@ -387,7 +461,7 @@ export async function proxy(request: NextRequest) {
         .single()
 
       if (!error && profile && profile.role === 'admin') {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+        return redirectWith(new URL('/admin/dashboard', request.url))
       }
     } catch (error) {
       console.error('Middleware profile fetch error:', error)
@@ -406,11 +480,11 @@ export async function proxy(request: NextRequest) {
       if (!error && profile) {
         switch (profile.role) {
           case 'customer':
-            return NextResponse.redirect(new URL('/account', request.url))
+            return redirectWith(new URL('/account', request.url))
           case 'vendor':
-            return NextResponse.redirect(new URL('/vendor/dashboard', request.url))
+            return redirectWith(new URL('/vendor/dashboard', request.url))
           case 'admin':
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+            return redirectWith(new URL('/admin/dashboard', request.url))
         }
       }
     } catch (error) {
@@ -428,7 +502,7 @@ export async function proxy(request: NextRequest) {
         .single()
 
       if (!error && businessUser) {
-        return NextResponse.redirect(new URL('/business/dashboard', request.url))
+        return redirectWith(new URL('/business/dashboard', request.url))
       }
     } catch (error) {
       console.error('Middleware business user fetch error:', error)
