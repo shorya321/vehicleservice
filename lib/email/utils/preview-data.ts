@@ -16,10 +16,17 @@ export type EmailTemplateType =
   | 'directBookingCustomerConfirmation'
   | 'directBookingCustomerStatusUpdate'
   | 'directBookingCustomerCancelled'
-  | 'directBookingDriverAssignment';
+  | 'directBookingDriverAssignment'
+  | 'adminNewBooking'
+  | 'adminNewVendorApplication';
 
 /** Named so the category union has one definition rather than two literals to keep in step. */
-export type EmailTemplateCategory = 'auth' | 'booking' | 'vendor' | 'direct-booking';
+export type EmailTemplateCategory =
+  | 'auth'
+  | 'booking'
+  | 'vendor'
+  | 'direct-booking'
+  | 'admin';
 
 export interface EmailTemplate {
   id: EmailTemplateType;
@@ -269,6 +276,45 @@ export const emailTemplates: EmailTemplate[] = [
       'vendorPhone',
     ],
   },
+  {
+    id: 'adminNewBooking',
+    name: 'Admin: New Booking Received',
+    category: 'admin',
+    description: 'Sent to the platform admin when a booking is paid and confirmed',
+    subject: 'New Booking - #{tripNumber}',
+    variables: [
+      'bookingReference',
+      'tripNumber',
+      'customerName',
+      'customerEmail',
+      'customerPhone',
+      'vehicleCategory',
+      'vehicleType',
+      'pickupLocation',
+      'dropoffLocation',
+      'pickupDate',
+      'pickupTime',
+      'totalAmount',
+      'currency',
+      'bookingDetailsUrl',
+    ],
+  },
+  {
+    id: 'adminNewVendorApplication',
+    name: 'Admin: New Vendor Application',
+    category: 'admin',
+    description: 'Sent to the platform admin when a customer applies to become a vendor',
+    subject: 'New Vendor Application - {companyName}',
+    variables: [
+      'applicationReference',
+      'applicantName',
+      'applicantEmail',
+      'businessPhone',
+      'companyName',
+      'submittedDate',
+      'applicationDetailsUrl',
+    ],
+  },
 ];
 
 export const emailPreviewData: Record<EmailTemplateType, any> = {
@@ -426,6 +472,31 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     returnTime: '11:00 AM',
     vendorName: 'Ahmed Transportation LLC',
     vendorPhone: '+971 4 555 0100',
+  },
+  adminNewBooking: {
+    bookingReference: 'BK-2024-001234',
+    tripNumber: 'INFTAH062601',
+    customerName: 'Sarah Johnson',
+    customerEmail: 'sarah.johnson@example.com',
+    customerPhone: '+971 50 123 4567',
+    vehicleCategory: 'Luxury Sedan',
+    vehicleType: 'Mercedes-Benz E-Class',
+    pickupLocation: 'Dubai International Airport (DXB)',
+    dropoffLocation: 'Burj Khalifa, Downtown Dubai',
+    pickupDate: 'March 15, 2024',
+    pickupTime: '2:30 PM',
+    totalAmount: 250,
+    currency: 'AED',
+    bookingDetailsUrl: `${getAppUrl()}/admin/bookings`,
+  },
+  adminNewVendorApplication: {
+    applicationReference: 'VA-2024-5678',
+    applicantName: 'Ahmed Al Mansouri',
+    applicantEmail: 'ahmed@ahmedtransport.ae',
+    businessPhone: '+971 4 555 0100',
+    companyName: 'Ahmed Transportation LLC',
+    submittedDate: 'March 10, 2024',
+    applicationDetailsUrl: `${getAppUrl()}/admin/vendor-applications/sample-id`,
   },
 };
 

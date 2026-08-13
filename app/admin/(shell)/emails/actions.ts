@@ -24,6 +24,8 @@ import DirectBookingCustomerConfirmationEmail from '@/lib/email/templates/direct
 import DirectBookingCustomerStatusUpdateEmail from '@/lib/email/templates/direct-booking/customer-status-update';
 import DirectBookingCustomerCancelledEmail from '@/lib/email/templates/direct-booking/customer-cancelled';
 import DirectBookingDriverAssignmentEmail from '@/lib/email/templates/direct-booking/driver-assignment';
+import AdminNewBookingNotificationEmail from '@/lib/email/templates/admin/new-booking-notification';
+import AdminNewVendorApplicationNotificationEmail from '@/lib/email/templates/admin/new-vendor-application-notification';
 
 const templateComponents = {
   welcome: WelcomeEmail,
@@ -42,6 +44,8 @@ const templateComponents = {
   directBookingCustomerStatusUpdate: DirectBookingCustomerStatusUpdateEmail,
   directBookingCustomerCancelled: DirectBookingCustomerCancelledEmail,
   directBookingDriverAssignment: DirectBookingDriverAssignmentEmail,
+  adminNewBooking: AdminNewBookingNotificationEmail,
+  adminNewVendorApplication: AdminNewVendorApplicationNotificationEmail,
 };
 
 interface SendTestEmailParams {

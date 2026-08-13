@@ -477,6 +477,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
             tripNumber: booking.trip_number,
             customerName: booking.customer_name,
             customerEmail: booking.customer_email || '',
+            customerPhone: booking.customer_phone || 'Not provided',
             vehicleCategory: vehicle?.category?.name || 'Vehicle',
             vehicleType: vehicle?.name || undefined,
             pickupLocation,

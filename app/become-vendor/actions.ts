@@ -99,6 +99,7 @@ export async function createVendorApplication(
           applicationReference: application.id,
           applicantName,
           applicantEmail: data.businessEmail || profile?.email || user.email || "",
+          businessPhone: data.businessPhone || "Not provided",
           companyName: data.businessName,
           submittedDate,
           applicationDetailsUrl: `${getAppUrl()}/admin/vendor-applications/${application.id}`,

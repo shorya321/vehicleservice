@@ -184,6 +184,9 @@ export interface NewBookingNotificationEmailData {
   tripNumber?: string;
   customerName: string;
   customerEmail: string;
+  // Callers pass 'Not provided' rather than omitting it: an admin needs to know the
+  // number is genuinely absent, not that the template failed to render a row.
+  customerPhone: string;
   vehicleCategory: string;
   vehicleType?: string;
   pickupLocation: string;
@@ -201,6 +204,7 @@ export interface NewVendorApplicationNotificationEmailData {
   applicationReference: string;
   applicantName: string;
   applicantEmail: string;
+  businessPhone: string;
   companyName: string;
   submittedDate: string;
   applicationDetailsUrl: string;

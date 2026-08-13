@@ -9,6 +9,7 @@ interface NewVendorApplicationNotificationEmailProps {
   applicationReference: string;
   applicantName: string;
   applicantEmail: string;
+  businessPhone: string;
   companyName: string;
   submittedDate: string;
   applicationDetailsUrl: string;
@@ -18,6 +19,7 @@ export const NewVendorApplicationNotificationEmail = ({
   applicationReference,
   applicantName,
   applicantEmail,
+  businessPhone,
   companyName,
   submittedDate,
   applicationDetailsUrl,
@@ -43,6 +45,9 @@ export const NewVendorApplicationNotificationEmail = ({
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Email:</strong> {applicantEmail}
+        </Text>
+        <Text style={emailStyles.detailRow}>
+          <strong>Phone:</strong> {businessPhone}
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Submitted:</strong> {submittedDate}

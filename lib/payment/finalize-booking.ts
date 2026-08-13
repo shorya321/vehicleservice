@@ -164,7 +164,7 @@ async function sendBookingEmails(
 
     const { data: passenger } = await adminClient
       .from('booking_passengers')
-      .select('first_name, last_name, email')
+      .select('first_name, last_name, email, phone')
       .eq('booking_id', bookingId)
       .eq('is_primary', true)
       .single()
@@ -188,6 +188,20 @@ async function sendBookingEmails(
       ? `${passenger.first_name} ${passenger.last_name}`
       : 'Customer'
     const customerEmail = passenger?.email || userEmail || ''
+
+    // Admin needs a number to call. The passenger row is the better source because it
+    // describes whoever is actually travelling, but the field is optional at checkout,
+    // so fall back to the account holder. The extra read only fires when it is empty.
+    let customerPhone = passenger?.phone || ''
+    if (!customerPhone && updatedBooking.customer_id) {
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('phone')
+        .eq('id', updatedBooking.customer_id)
+        .single()
+      customerPhone = profile?.phone || ''
+    }
+
     const pickupDatetime = new Date(updatedBooking.pickup_datetime)
     const pickupDate = pickupDatetime.toLocaleDateString('en-US', {
       timeZone: getBookingTimezone(),
@@ -305,6 +319,7 @@ async function sendBookingEmails(
       tripNumber: updatedBooking.trip_number,
       customerName,
       customerEmail,
+      customerPhone: customerPhone || 'Not provided',
       vehicleCategory: (vehicleType?.category as { name: string } | null)?.name || 'Vehicle',
       vehicleType: vehicleType?.name || undefined,
       pickupLocation: pickupLocation?.name || updatedBooking.pickup_address,

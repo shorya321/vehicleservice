@@ -44,6 +44,8 @@ import DirectBookingCustomerConfirmationEmail from '@/lib/email/templates/direct
 import DirectBookingCustomerStatusUpdateEmail from '@/lib/email/templates/direct-booking/customer-status-update';
 import DirectBookingCustomerCancelledEmail from '@/lib/email/templates/direct-booking/customer-cancelled';
 import DirectBookingDriverAssignmentEmail from '@/lib/email/templates/direct-booking/driver-assignment';
+import AdminNewBookingNotificationEmail from '@/lib/email/templates/admin/new-booking-notification';
+import AdminNewVendorApplicationNotificationEmail from '@/lib/email/templates/admin/new-vendor-application-notification';
 
 const templateComponents: Record<EmailTemplateType, any> = {
   welcome: WelcomeEmail,
@@ -62,6 +64,8 @@ const templateComponents: Record<EmailTemplateType, any> = {
   directBookingCustomerStatusUpdate: DirectBookingCustomerStatusUpdateEmail,
   directBookingCustomerCancelled: DirectBookingCustomerCancelledEmail,
   directBookingDriverAssignment: DirectBookingDriverAssignmentEmail,
+  adminNewBooking: AdminNewBookingNotificationEmail,
+  adminNewVendorApplication: AdminNewVendorApplicationNotificationEmail,
 };
 
 type PreviewMode = 'desktop' | 'mobile';
@@ -80,6 +84,7 @@ export function EmailManagementClient() {
   const directBookingTemplates = emailTemplates.filter(
     (t) => t.category === 'direct-booking'
   );
+  const adminTemplates = emailTemplates.filter((t) => t.category === 'admin');
 
   // Get current template info
   const currentTemplate = getTemplateById(selectedTemplate);
@@ -197,6 +202,17 @@ export function EmailManagementClient() {
                   <SelectGroup>
                     <SelectLabel>Direct Bookings</SelectLabel>
                     {directBookingTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {template.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Admin Notifications</SelectLabel>
+                    {adminTemplates.map((template) => (
                       <SelectItem key={template.id} value={template.id}>
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4" />
