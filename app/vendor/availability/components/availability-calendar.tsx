@@ -32,9 +32,8 @@ import {
 } from '@/lib/availability/filters'
 import { conflictsByResource, findResourceConflicts } from '@/lib/availability/conflicts'
 import { FLEET_SPANS, type FleetSpan } from '@/lib/availability/timeline'
-import { AlertCircle, CalendarOff } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const localizer = momentLocalizer(moment)
@@ -297,26 +296,6 @@ export function AvailabilityCalendar({
     }
   }
 
-  // The nearest booking outside the visible range, so an empty week is a dead end
-  // no longer. Uses the unfiltered set: the point is to find work, and the
-  // filters are what hid it.
-  const jumpToNextBooking = useCallback(() => {
-    const rangeStart = moment(date).startOf(view === 'month' ? 'month' : view === 'week' ? 'week' : 'day')
-    const upcoming = events
-      .filter((e) => moment(e.start).isAfter(rangeStart))
-      .sort((a, b) => a.start.getTime() - b.start.getTime())[0]
-
-    if (upcoming) {
-      setDate(upcoming.start)
-      return
-    }
-
-    // Nothing in the loaded window: step forward a unit and let the refetch look.
-    setDate(moment(date).add(1, view === 'month' ? 'month' : view === 'week' ? 'week' : 'day').toDate())
-  }, [events, date, view])
-
-  const calendarIsEmpty = mode === 'calendar' && !isLoading && displayEvents.length === 0
-
   return (
     <div className="space-y-4">
       <CalendarFilters
@@ -399,20 +378,6 @@ export function AvailabilityCalendar({
               components={{ toolbar: CalendarToolbar }}
               className="vendor-calendar"
             />
-
-            {calendarIsEmpty && (
-              <div className="pointer-events-none absolute inset-x-4 bottom-4 top-32 flex items-center justify-center">
-                <div className="pointer-events-auto flex flex-col items-center gap-3 rounded-lg border bg-background/95 px-6 py-5 text-center shadow-sm">
-                  <CalendarOff className="h-6 w-6 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Nothing scheduled in this {view === 'month' ? 'month' : view}.
-                  </p>
-                  <Button variant="outline" size="sm" onClick={jumpToNextBooking}>
-                    Jump to next booking
-                  </Button>
-                </div>
-              </div>
-            )}
           </>
         ) : (
           <div className="space-y-4">
