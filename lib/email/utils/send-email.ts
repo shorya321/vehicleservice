@@ -7,6 +7,7 @@ import {
   deliver,
   formatAddress,
   getPlatformMailConfig,
+  MailTimeoutError,
   redactMailError,
   resolveMailConfig,
   toSafeSmtpError,
@@ -80,38 +81,27 @@ function fireAndForget(start: () => Promise<unknown> | undefined, label: string)
 }
 
 /**
- * The original Resend path, behaviour unchanged. This is the rollback route: it stays
- * until SMTP has been live and quiet for a release cycle.
+ * Outer deadline for a single Resend call.
+ *
+ * The SMTP path has had one since it was written (SEND_DEADLINE_MS in transport/deliver).
+ * This path had none: the SDK is a plain fetch, and Node's fetch has no default timeout,
+ * so a stalled mail API held the calling request open for as long as the platform allowed.
+ * A caller mid-form saw that as a submit button that never came back.
+ *
+ * Lower than the 25s SMTP bound because this is one HTTP round trip, not a multi step
+ * SMTP conversation. A healthy send is well under two seconds.
+ */
+const RESEND_SEND_DEADLINE_MS = 15_000;
+
+/**
+ * The original Resend path. This is the rollback route: it stays until SMTP has been live
+ * and quiet for a release cycle.
  */
 async function sendViaResend(params: SendEmailParams, config: ResolvedMailConfig): Promise<EmailResult> {
   const resend = getResendClient();
   const emailConfig = getEmailConfig();
 
   const element = jsx(params.template, params.templateProps);
-
-  // The brand scope has to wrap the send() call, not just the plain-text render.
-  //
-  // Passing `react:` hands the element to the Resend SDK, which renders the HTML itself
-  // inside send(). Wrapping only the render() above would leave that HTML render outside
-  // the AsyncLocalStorage scope, so getCurrentBrand() would fall back to the platform
-  // brand and every tenant email on this path would silently lose its name, logo and
-  // colors. The plain text would be branded and the HTML would not.
-  //
-  // MAIL_TRANSPORT defaults to 'resend', so this is the live path for all platform mail,
-  // including owner notifications that deliberately use platform credentials with tenant
-  // branding.
-  const { data: emailData, error } = await runWithBrand(config.brand, async () => {
-    const text = await render(element, { plainText: true });
-
-    return resend.emails.send({
-      from: emailConfig.from,
-      to: params.to,
-      replyTo: params.replyTo || emailConfig.replyTo,
-      subject: params.subject,
-      react: element,
-      text,
-    });
-  });
 
   // Logged on this path too, not just the SMTP one.
   //
@@ -127,6 +117,65 @@ async function sendViaResend(params: SendEmailParams, config: ResolvedMailConfig
     replyTo: params.replyTo,
     relatedId: params.relatedId,
   } as const;
+
+  // The brand scope has to wrap the send() call, not just the plain-text render.
+  //
+  // Passing `react:` hands the element to the Resend SDK, which renders the HTML itself
+  // inside send(). Wrapping only the render() above would leave that HTML render outside
+  // the AsyncLocalStorage scope, so getCurrentBrand() would fall back to the platform
+  // brand and every tenant email on this path would silently lose its name, logo and
+  // colors. The plain text would be branded and the HTML would not.
+  //
+  // MAIL_TRANSPORT defaults to 'resend', so this is the live path for all platform mail,
+  // including owner notifications that deliberately use platform credentials with tenant
+  // branding.
+  const send = runWithBrand(config.brand, async () => {
+    const text = await render(element, { plainText: true });
+
+    return resend.emails.send({
+      from: emailConfig.from,
+      to: params.to,
+      replyTo: params.replyTo || emailConfig.replyTo,
+      subject: params.subject,
+      react: element,
+      text,
+    });
+  });
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(
+      () => reject(new MailTimeoutError(`Sending via the Resend API exceeded ${RESEND_SEND_DEADLINE_MS}ms`)),
+      RESEND_SEND_DEADLINE_MS
+    );
+  });
+
+  let sent: Awaited<typeof send>;
+  try {
+    sent = await Promise.race([send, deadline]);
+  } catch (raceError) {
+    // Only the deadline is handled here. Anything else keeps its existing route out of
+    // this function, through the catch in sendEmailWithConfig, so no other failure mode
+    // changes shape.
+    if (!(raceError instanceof MailTimeoutError)) throw raceError;
+
+    // Losing the race does not cancel the request: fetch is still in flight and Resend
+    // may yet accept the message. The row is written as failed because that is what we
+    // know at the point the caller has to be answered.
+    console.error(`Failed to send email to ${params.to}:`, raceError.message);
+
+    fireAndForget(() => logEmail({
+      ...logBase,
+      status: 'failed',
+      error: { code: 'timeout', message: raceError.message },
+    }), 'delivery log');
+
+    return { success: false, error: raceError.message, provider: 'platform_smtp' };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+
+  const { data: emailData, error } = sent;
 
   if (error) {
     console.error(`Failed to send email to ${params.to}:`, error);

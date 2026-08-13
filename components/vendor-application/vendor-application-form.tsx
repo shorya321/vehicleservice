@@ -65,6 +65,9 @@ interface VendorApplicationFormProps {
 export function VendorApplicationForm({ defaultValues }: VendorApplicationFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Set once the application is stored and we are routing away. router.push does not
+  // resolve, so this is what keeps the button closed across the navigation.
+  const [isLeaving, setIsLeaving] = useState(false)
 
   const form = useForm<VendorApplicationFormData>({
     resolver: zodResolver(createApplicationSchema),
@@ -110,8 +113,30 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
       // notification email has a server context to run in.
       const { error, code } = await createVendorApplication(data)
 
-      if (code === '23505') {
+      if (error === 'Unauthorized') {
+        // The session went away while the form was open. Say so plainly and keep every
+        // field: sending them to /login from here would throw the application away.
+        toast.error("Your session has expired. Please sign in again, then submit.", {
+          duration: 10000,
+        })
+        return
+      }
+
+      if (code === 'duplicate_registration') {
+        // Someone else already registered this number. Keep them on the filled form:
+        // this is one field to correct, not a reason to lose the whole application.
+        form.setError('registrationNumber', {
+          type: 'server',
+          message: "This registration number is already registered to another business",
+        })
+        form.setFocus('registrationNumber')
+        toast.error("That business registration number is already in use")
+        return
+      }
+
+      if (code === 'already_applied') {
         toast.error("You have already submitted a vendor application")
+        setIsLeaving(true)
         router.push('/vendor-application')
         return
       }
@@ -121,8 +146,13 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
       }
 
       toast.success("Application submitted successfully! We'll review it within 48 hours.")
+      // Held until the route actually changes. Clearing it here would re-enable the
+      // button while the navigation is still in flight, which is a second submit on an
+      // application that is already stored.
+      setIsLeaving(true)
       router.push('/vendor-application')
     } catch (error) {
+      console.error('[VendorApplicationForm] submit failed:', error)
       toast.error("Failed to submit application. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -470,8 +500,8 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
 
         {/* Actions */}
         <div className="pt-6">
-          <button type="submit" disabled={isSubmitting} className="checkout-btn-primary min-w-[160px]">
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <button type="submit" disabled={isSubmitting || isLeaving} className="checkout-btn-primary min-w-[160px]">
+            {(isSubmitting || isLeaving) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Submit Application
           </button>
         </div>
