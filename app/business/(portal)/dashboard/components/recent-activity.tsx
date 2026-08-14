@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/business/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
@@ -280,7 +280,7 @@ function EmptyActivityState() {
       {/* Primary action button */}
       <Button
         asChild
-        className="gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-sm hover:shadow-md transition-all duration-200"
+        className="gap-2 hover:bg-primary/90"
       >
         <Link href="/business/bookings/new">
           <Plus className="h-4 w-4" />

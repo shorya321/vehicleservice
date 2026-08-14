@@ -220,6 +220,7 @@ export const themeModeColorsSchema = z.object({
   surface: hexColorSchema.optional(),
   card: hexColorSchema.optional(),
   sidebar: hexColorSchema.optional(),
+  muted: hexColorSchema.optional(),
   text_primary: hexColorSchema.optional(),
   text_secondary: hexColorSchema.optional(),
   border: hexColorSchema.optional(),

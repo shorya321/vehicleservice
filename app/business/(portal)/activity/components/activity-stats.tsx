@@ -199,7 +199,7 @@ export function ActivityStats({
         subtext={stats?.topActor ? `${stats.topActor.count} actions` : undefined}
         icon={Users}
         tone="text-foreground"
-        bubble="bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400"
+        bubble="bg-primary/10 dark:bg-primary/20 text-primary"
         // A person's name, not a figure: lining numerals would be wrong here.
         numeric={false}
         onClick={

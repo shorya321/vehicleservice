@@ -35,7 +35,7 @@ import { getBusinessInitials } from '@/lib/business/branding-utils';
 import { normalizeBusinessRole } from '@/lib/business/roles';
 import { useSidebar } from '@/components/business/sidebar-context';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import {
   Tooltip,
   TooltipContent,
@@ -288,8 +288,8 @@ function NavItem({
         'group relative flex items-center gap-3 rounded-xl px-3 py-2.5',
         'text-sm font-medium transition-all duration-200',
         isActive
-          ? 'bg-primary/10 text-primary shadow-[inset_0_0_30px_rgba(198,170,136,0.08)]'
-          : 'text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(198,170,136,0.05)]',
+          ? 'bg-primary/10 text-primary shadow-[inset_0_0_30px_hsl(var(--primary)/0.08)]'
+          : 'text-foreground/70 hover:text-foreground hover:bg-primary/5 hover:shadow-[inset_0_0_20px_hsl(var(--primary)/0.05)]',
         isCollapsed && 'justify-center px-2'
       )}
     >
@@ -340,7 +340,11 @@ function NewBookingButton({ isCollapsed, onClick }: { isCollapsed: boolean; onCl
           <Button
             asChild
             className={cn(
-              'w-full rounded-xl shadow-sm hover:shadow-glow-gold',
+              // No hover:shadow-* here on purpose. `shadow-glow-gold` resolved to
+              // rgba(var(--gold-rgb), …), a platform variable the business theme
+              // never overrides, and tailwind-merge let it replace the Button
+              // variant's own brand-tinted glow. Letting the variant win is the fix.
+              'w-full rounded-xl shadow-sm',
               isCollapsed ? '' : 'gap-2'
             )}
           >

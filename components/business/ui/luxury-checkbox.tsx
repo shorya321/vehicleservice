@@ -42,7 +42,7 @@ const LuxuryCheckbox = React.forwardRef<
         'hover:border-[var(--business-border-hover)]',
         'data-[state=checked]:bg-[var(--business-primary-500)]',
         'data-[state=checked]:border-[var(--business-primary-500)]',
-        'data-[state=checked]:text-white',
+        'data-[state=checked]:text-primary-foreground',
         className
       )}
       {...props}

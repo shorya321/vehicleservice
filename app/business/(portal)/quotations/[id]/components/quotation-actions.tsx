@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Download, Loader2, Send, Check, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { setQuotationStatus } from '../../mutations';
 import type { QuotationStatus } from '@/lib/business/quotations/status';
 

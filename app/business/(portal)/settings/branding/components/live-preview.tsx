@@ -9,7 +9,7 @@
 
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/business/ui/button'
 import { Sun, Moon, LayoutDashboard, CreditCard, Calendar, Settings, ChevronRight, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

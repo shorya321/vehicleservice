@@ -10,7 +10,7 @@
 
 import { toBookingTz } from '@/lib/business/utils/timezone'
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import {
   Table,
   TableBody,
@@ -111,7 +111,11 @@ export function TransactionsList({
       {/* Transactions Table */}
       <div className="rounded-xl border border-border overflow-hidden bg-card">
         <Table>
-          <TableHeader>
+          {/* TableHeader's own `[&_tr]:border-luxury-gold/20` is a descendant rule, so it
+              outranks a border class set on the row and tailwind-merge cannot see the
+              conflict. It has to be neutralised here, on the same element - the same fix
+              quotations-table.tsx and team-page-content.tsx already carry. */}
+          <TableHeader className="[&_tr]:border-border">
             <TableRow className="border-border hover:bg-muted/50">
               <TableHead className="text-muted-foreground text-xs uppercase tracking-wider">Date & Time</TableHead>
               <TableHead className="text-muted-foreground text-xs uppercase tracking-wider">Type</TableHead>

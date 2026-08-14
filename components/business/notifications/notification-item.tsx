@@ -64,67 +64,25 @@ const categoryBadgeIcons: Record<NotificationCategory, React.ComponentType<{ cla
   system: Bell,
 };
 
-// Category-specific badge colors (always shown regardless of read status)
-const getCategoryBadgeColor = (category: NotificationCategory) => {
-  switch (category) {
-    case 'booking':
-      return 'bg-sky-500/10 text-sky-500 border-sky-500/30';
-    case 'payment':
-      return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30';
-    case 'system':
-      return 'bg-violet-500/10 text-violet-500 border-violet-500/30';
-    case 'review':
-      return 'bg-amber-500/10 text-amber-500 border-amber-500/30';
-    default:
-      return 'bg-primary/10 text-primary border-primary/30';
-  }
-};
+// These rows are clickable, so their chips follow the tenant accent rather than a
+// per-category hue. The category is still carried by the icon and the badge text,
+// which is what a reader actually goes by.
+const CATEGORY_BADGE = 'bg-primary/10 text-primary border-primary/30';
 
-// Category-specific styling (icon changes with read status, badge always colored)
-const getCategoryStyles = (category: NotificationCategory, isRead: boolean) => {
-  const badge = getCategoryBadgeColor(category);
-
-  if (isRead) {
-    return {
-      iconContainer: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-      badge, // Always use category-specific color
-    };
-  }
-
-  switch (category) {
-    case 'booking':
-      return {
+// Only the read status changes the styling now: an unread row gets the accent, a
+// read one goes muted.
+const getCategoryStyles = (isRead: boolean | null) =>
+  isRead
+    ? {
+        iconContainer: 'bg-muted',
+        iconColor: 'text-muted-foreground',
+        badge: CATEGORY_BADGE,
+      }
+    : {
         iconContainer: 'bg-primary/10',
         iconColor: 'text-primary',
-        badge,
+        badge: CATEGORY_BADGE,
       };
-    case 'payment':
-      return {
-        iconContainer: 'bg-emerald-500/10',
-        iconColor: 'text-emerald-500',
-        badge,
-      };
-    case 'system':
-      return {
-        iconContainer: 'bg-violet-500/10',
-        iconColor: 'text-violet-500',
-        badge,
-      };
-    case 'review':
-      return {
-        iconContainer: 'bg-amber-500/10',
-        iconColor: 'text-amber-500',
-        badge,
-      };
-    default:
-      return {
-        iconContainer: 'bg-primary/10',
-        iconColor: 'text-primary',
-        badge,
-      };
-  }
-};
 
 export function BusinessNotificationItem({
   notification,
@@ -136,7 +94,7 @@ export function BusinessNotificationItem({
   const Icon = categoryIcons[notification.category] || Bell;
   const BadgeIcon = categoryBadgeIcons[notification.category] || Bell;
   const categoryLabel = categoryLabels[notification.category] || 'Notification';
-  const styles = getCategoryStyles(notification.category, notification.is_read);
+  const styles = getCategoryStyles(notification.is_read);
 
   const handleClick = () => {
     // Mark as read if unread

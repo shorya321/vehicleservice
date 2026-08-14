@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Loader2, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Form,

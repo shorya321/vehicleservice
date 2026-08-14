@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { FormDatePicker } from '@/components/ui/form-date-picker';
 import { FormTimePicker } from '@/components/ui/form-time-picker';
 import { Textarea } from '@/components/ui/textarea';

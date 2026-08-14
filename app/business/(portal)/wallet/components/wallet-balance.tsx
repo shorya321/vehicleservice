@@ -12,7 +12,7 @@
 import { useState } from 'react';
 import { Plus, Loader2, CreditCard, ExternalLink, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -141,7 +141,7 @@ export function WalletBalance({
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
+              <Button className="hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Credits
               </Button>
@@ -215,7 +215,7 @@ export function WalletBalance({
                 <Button
                   onClick={handleRecharge}
                   disabled={isLoading}
-                  className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+                  className="w-full hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>

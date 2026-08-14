@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 // The portal copy: its trigger matches Input styling, the shared one does not.
 import {

@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, AlertTriangle, ArrowRight, Wallet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 // The business Dialog, not the shared one: components/ui/dialog paints DialogContent
 // bg-luxury-darkGray/95 + text-luxury-pearl, which is the public site's skin and ignores the
 // portal's light/dark theme entirely.

@@ -15,7 +15,7 @@
 
 import Link from 'next/link';
 import { Activity, History, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { EmptyState } from '@/components/business/ui/empty-state';
 import type { ActivityEvent } from '@/lib/business/activity/types';
 import {

@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/business/ui/button'
 import { Loader2, Upload, Trash2, Camera } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -173,7 +173,7 @@ export function AvatarUpload({ currentAvatarUrl, displayName }: AvatarUploadProp
                 size="sm"
                 onClick={handleDelete}
                 disabled={isUploading || isDeleting}
-                className="bg-muted border-border text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 disabled:opacity-50"
+                className="bg-muted border-border text-destructive hover:bg-destructive/10 hover:border-destructive/30 disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>

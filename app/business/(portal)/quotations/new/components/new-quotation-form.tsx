@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { format, parse } from 'date-fns';
 import { CalendarDays, Loader2, MessageSquare, User } from 'lucide-react';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 // The portal's date control. Same one the booking wizard and the wallet filters use.
@@ -179,7 +179,7 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
         <FieldGroup
           title="Quotation Terms"
           icon={CalendarDays}
-          tone="bg-sky-500/10 text-sky-500"
+          tone="bg-primary/10 text-primary"
         >
           <div className="grid items-start gap-4 sm:grid-cols-2">
             <FormField
@@ -250,7 +250,7 @@ export function NewQuotationForm({ currency }: NewQuotationFormProps) {
         <FieldGroup
           title="Optional Information"
           icon={MessageSquare}
-          tone="bg-violet-500/10 text-violet-500"
+          tone="bg-primary/10 text-primary"
         >
           <FormField
             control={form.control}

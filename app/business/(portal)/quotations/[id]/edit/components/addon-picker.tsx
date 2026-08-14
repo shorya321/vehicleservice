@@ -15,7 +15,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';

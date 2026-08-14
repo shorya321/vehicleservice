@@ -17,6 +17,7 @@ import { BusinessThemeProvider } from '@/lib/business/theme-provider';
 import { BusinessPortalContent } from './components/business-portal-content';
 import { normalizeBusinessRole } from '@/lib/business/api-utils';
 import { parseThemeConfig } from '@/lib/business/branding-utils';
+import { buildThemeStyleSheet, THEME_MODE_BOOTSTRAP } from '@/lib/business/theme-vars';
 
 // Import business-specific design system
 import '@/app/business/globals.css';
@@ -98,48 +99,69 @@ export default async function BusinessPortalLayout({
     'User';
 
   return (
-    <BusinessThemeProvider
-      defaultTheme="dark"
-      themeConfig={themeConfig}
-    >
-      <SidebarProvider>
-        <div className="min-h-screen bg-background">
-          {/* Skip Navigation Link - Accessibility */}
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[var(--business-primary-500)] focus:text-white focus:font-medium focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--business-primary-400)] focus:ring-offset-2 focus:ring-offset-[var(--business-surface-0)]"
-          >
-            Skip to main content
-          </a>
+    <>
+      {/* Settles dark/light before paint, and stamps data-business-branding so
+          the stylesheet below is live the instant it is parsed. Must come FIRST:
+          the sheet is scoped to that attribute, so any markup between the two
+          tags would paint unbranded. The mode lives in localStorage, so the
+          server cannot render the class, and next-themes would otherwise apply
+          the *system* preference - a white page for anyone on a light-preference
+          machine until the provider asserts dark. */}
+      <script dangerouslySetInnerHTML={{ __html: THEME_MODE_BOOTSTRAP }} />
+      {/* The tenant palette, server-rendered so the very first paint is already
+          branded. Without this the portal painted the static gold from
+          globals.css until BusinessThemeProvider's effect ran after hydration -
+          roughly a second of the wrong colours on every reload.
 
-          {/* Sidebar */}
-          <BusinessSidebar
-            businessName={branding.business_name}
-            brandName={branding.brand_name}
-            logoUrl={branding.logo_url}
-            primaryColor={themeConfig.accent.primary}
-            secondaryColor={themeConfig.accent.secondary}
-            accentColor={themeConfig.accent.tertiary}
-            role={businessUser.role}
-          />
+          Deliberately a plain <style> with no `precedence`: React would then
+          hoist and deduplicate it by href, which either goes stale when the
+          tenant changes their preset or leaves a second, competing tag behind.
+          Rendered in place it is emitted ahead of all portal markup, and the
+          rules carry enough specificity to win regardless of position. */}
+      <style dangerouslySetInnerHTML={{ __html: buildThemeStyleSheet(themeConfig) }} />
+      <BusinessThemeProvider
+        defaultTheme="dark"
+        themeConfig={themeConfig}
+      >
+        <SidebarProvider>
+          <div className="min-h-screen bg-background">
+            {/* Skip Navigation Link - Accessibility */}
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[var(--business-primary-500)] focus:text-primary-foreground focus:font-medium focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--business-primary-400)] focus:ring-offset-2 focus:ring-offset-[var(--business-surface-0)]"
+            >
+              Skip to main content
+            </a>
 
-          {/* Main Content Area - with dynamic margin based on sidebar state */}
-          <BusinessPortalContent
-            userEmail={memberEmail}
-            contactPersonName={memberName}
-            role={businessUser.role}
-            businessName={branding.business_name}
-            brandName={branding.brand_name}
-            logoUrl={branding.logo_url}
-            avatarUrl={profile?.avatar_url ?? null}
-            primaryColor={themeConfig.accent.primary}
-            secondaryColor={themeConfig.accent.secondary}
-            accentColor={themeConfig.accent.tertiary}
-          >
-            {children}
-          </BusinessPortalContent>
-        </div>
-      </SidebarProvider>
-    </BusinessThemeProvider>
+            {/* Sidebar */}
+            <BusinessSidebar
+              businessName={branding.business_name}
+              brandName={branding.brand_name}
+              logoUrl={branding.logo_url}
+              primaryColor={themeConfig.accent.primary}
+              secondaryColor={themeConfig.accent.secondary}
+              accentColor={themeConfig.accent.tertiary}
+              role={businessUser.role}
+            />
+
+            {/* Main Content Area - with dynamic margin based on sidebar state */}
+            <BusinessPortalContent
+              userEmail={memberEmail}
+              contactPersonName={memberName}
+              role={businessUser.role}
+              businessName={branding.business_name}
+              brandName={branding.brand_name}
+              logoUrl={branding.logo_url}
+              avatarUrl={profile?.avatar_url ?? null}
+              primaryColor={themeConfig.accent.primary}
+              secondaryColor={themeConfig.accent.secondary}
+              accentColor={themeConfig.accent.tertiary}
+            >
+              {children}
+            </BusinessPortalContent>
+          </div>
+        </SidebarProvider>
+      </BusinessThemeProvider>
+    </>
   );
 }

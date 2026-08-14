@@ -90,7 +90,8 @@ export function ThemeToggle({ className, size = "default" }: ThemeToggleProps) {
       <motion.div
         className="absolute inset-0 rounded-lg opacity-0"
         style={{
-          background: "radial-gradient(circle, rgba(198, 170, 136, 0.15) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
         }}
         whileHover={{ opacity: 1 }}
         transition={{ duration: 0.2 }}

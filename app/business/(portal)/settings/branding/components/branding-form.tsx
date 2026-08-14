@@ -15,7 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/business/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -44,6 +44,9 @@ const brandingFormSchema = z.object({
   dark_surface: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_card: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_sidebar: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
+  // Derived surface, not exposed as a picker - carried so the preset's own value
+  // survives a save instead of being replaced by the Gold Luxury default.
+  dark_muted: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_text_primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_text_secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   dark_border: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
@@ -52,6 +55,7 @@ const brandingFormSchema = z.object({
   light_surface: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_card: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_sidebar: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
+  light_muted: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_text_primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_text_secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
   light_border: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color'),
@@ -127,6 +131,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       dark_surface: themeConfig.dark.surface,
       dark_card: themeConfig.dark.card,
       dark_sidebar: themeConfig.dark.sidebar,
+      dark_muted: themeConfig.dark.muted,
       dark_text_primary: themeConfig.dark.text_primary,
       dark_text_secondary: themeConfig.dark.text_secondary,
       dark_border: themeConfig.dark.border,
@@ -135,6 +140,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
       light_surface: themeConfig.light.surface,
       light_card: themeConfig.light.card,
       light_sidebar: themeConfig.light.sidebar,
+      light_muted: themeConfig.light.muted,
       light_text_primary: themeConfig.light.text_primary,
       light_text_secondary: themeConfig.light.text_secondary,
       light_border: themeConfig.light.border,
@@ -187,6 +193,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
           surface: data.dark_surface,
           card: data.dark_card,
           sidebar: data.dark_sidebar,
+          muted: data.dark_muted,
           text_primary: data.dark_text_primary,
           text_secondary: data.dark_text_secondary,
           border: data.dark_border,
@@ -196,6 +203,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
           surface: data.light_surface,
           card: data.light_card,
           sidebar: data.light_sidebar,
+          muted: data.light_muted,
           text_primary: data.light_text_primary,
           text_secondary: data.light_text_secondary,
           border: data.light_border,
@@ -242,6 +250,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
     form.setValue('dark_surface', preset.dark.surface)
     form.setValue('dark_card', preset.dark.card)
     form.setValue('dark_sidebar', preset.dark.sidebar)
+    form.setValue('dark_muted', preset.dark.muted)
     form.setValue('dark_text_primary', preset.dark.text_primary)
     form.setValue('dark_text_secondary', preset.dark.text_secondary)
     form.setValue('dark_border', preset.dark.border)
@@ -250,6 +259,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
     form.setValue('light_surface', preset.light.surface)
     form.setValue('light_card', preset.light.card)
     form.setValue('light_sidebar', preset.light.sidebar)
+    form.setValue('light_muted', preset.light.muted)
     form.setValue('light_text_primary', preset.light.text_primary)
     form.setValue('light_text_secondary', preset.light.text_secondary)
     form.setValue('light_border', preset.light.border)
@@ -485,7 +495,7 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>

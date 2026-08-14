@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { MoreHorizontal, Trash2, Download, Loader2, MapPin, CalendarClock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -141,25 +141,105 @@ export function isValidHexColor(color: string): boolean {
 }
 
 /**
- * Get contrast color (black or white) for a given background color
- * Useful for determining text color on colored backgrounds
+ * Split a hex color into its RGB channels.
+ * @param hex Hex color, with or without a leading #
+ * @returns Channel values in the 0-255 range
+ */
+function hexChannels(hex: string): { r: number; g: number; b: number } {
+  const clean = hex.replace(/^#/, '');
+  return {
+    r: parseInt(clean.substring(0, 2), 16),
+    g: parseInt(clean.substring(2, 4), 16),
+    b: parseInt(clean.substring(4, 6), 16),
+  };
+}
+
+/**
+ * Render a hex color as a bare "r, g, b" triplet.
+ *
+ * Used to build rgba() gradients from a tenant accent, where the alpha is
+ * supplied by the caller.
+ * @param hex Hex color, with or without a leading #
+ * @returns e.g. "198, 170, 136"
+ */
+export function hexToRgbTriplet(hex: string): string {
+  const { r, g, b } = hexChannels(hex);
+  return `${r}, ${g}, ${b}`;
+}
+
+/**
+ * Mix a hex color toward white (positive amount) or black (negative amount).
+ *
+ * Used to derive the neighbouring steps of the --business-primary ramp from a
+ * single tenant accent, so components that reference the 400/500 steps follow
+ * the brand instead of the hardcoded gold.
+ * @param hex Base hex color
+ * @param amount Mix ratio between -1 (black) and 1 (white)
+ * @returns New hex color
+ */
+export function shiftHexLightness(hex: string, amount: number): string {
+  const { r, g, b } = hexChannels(hex);
+  const target = amount >= 0 ? 255 : 0;
+  const ratio = Math.min(Math.abs(amount), 1);
+  const mix = (channel: number): string =>
+    Math.round(channel + (target - channel) * ratio)
+      .toString(16)
+      .padStart(2, '0');
+
+  return `#${mix(r)}${mix(g)}${mix(b)}`;
+}
+
+/**
+ * WCAG 2.1 relative luminance.
+ *
+ * The channel values must be linearised before weighting - a plain
+ * 0.299r + 0.587g + 0.114b over gamma-encoded sRGB (the old YIQ shortcut) is a
+ * different quantity and misjudges saturated mid-tones. Rose #F43F5E was the
+ * case that exposed it: YIQ scored it 0.47 and picked white at a 3.67:1 ratio,
+ * where black actually reaches 5.39:1.
+ * @param hex Hex color, with or without a leading #
+ * @returns Relative luminance in the 0-1 range
+ */
+function relativeLuminance(hex: string): number {
+  const { r, g, b } = hexChannels(hex);
+  const linearise = (value: number): number => {
+    const channel = value / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : Math.pow((channel + 0.055) / 1.055, 2.4);
+  };
+
+  return (
+    0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b)
+  );
+}
+
+/**
+ * Minimum contrast ratio we will accept from white before falling back to black.
+ *
+ * Deliberately below the AA threshold of 4.5. White is the conventional label on
+ * a saturated mid-tone accent, and picking purely by "whichever ratio is higher"
+ * flips to black on colours like indigo #6366F1 (white 4.47 vs black 4.70),
+ * which reads heavy and unlike any other product. Anything genuinely light -
+ * gold, emerald, amber - scores far under this and still gets black.
+ */
+const MIN_WHITE_CONTRAST = 4;
+
+/**
+ * Pick black or white for text sitting on a given background.
+ *
+ * Prefers white and only falls back to black once white would drop below
+ * MIN_WHITE_CONTRAST, so light accents get a readable dark label while mid-tone
+ * brand colours keep the conventional white one.
  * @param hexColor Background hex color
  * @returns "#000000" or "#ffffff"
  */
 export function getContrastColor(hexColor: string): string {
-  // Remove # if present
-  hexColor = hexColor.replace(/^#/, '');
+  const luminance = relativeLuminance(hexColor);
+  // WCAG ratio against white, whose relative luminance is 1.
+  const againstWhite = 1.05 / (luminance + 0.05);
 
-  // Parse hex to RGB
-  const r = parseInt(hexColor.substring(0, 2), 16);
-  const g = parseInt(hexColor.substring(2, 4), 16);
-  const b = parseInt(hexColor.substring(4, 6), 16);
-
-  // Calculate relative luminance (WCAG formula)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  // Return black for light backgrounds, white for dark backgrounds
-  return luminance > 0.5 ? '#000000' : '#ffffff';
+  return againstWhite >= MIN_WHITE_CONTRAST ? '#ffffff' : '#000000';
 }
 
 /**

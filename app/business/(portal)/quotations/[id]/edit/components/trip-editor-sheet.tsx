@@ -21,7 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 // Same date/time controls as the booking wizard's route step.
@@ -434,7 +434,7 @@ export function TripEditorSheet({
             </FieldGroup>
 
             {/* Guests */}
-            <FieldGroup title="Guests" icon={Users} tone="bg-sky-500/10 text-sky-500">
+            <FieldGroup title="Guests" icon={Users} tone="bg-primary/10 text-primary">
               <div className="grid grid-cols-3 gap-3">
                 {(['adults', 'children', 'infants'] as const).map((key) => (
                   <div key={key} className="space-y-1">
@@ -465,7 +465,7 @@ export function TripEditorSheet({
             </FieldGroup>
 
             {/* Vehicle. Disclosed only once the route is valid */}
-            <FieldGroup title="Vehicle" icon={Car} tone="bg-violet-500/10 text-violet-500">
+            <FieldGroup title="Vehicle" icon={Car} tone="bg-primary/10 text-primary">
               {!routeReady ? (
                 <p className="text-sm text-muted-foreground">
                   Choose a pickup and dropoff to see available vehicles.
@@ -518,7 +518,7 @@ export function TripEditorSheet({
               <FieldGroup
                 title="Extras"
                 icon={Package}
-                tone="bg-amber-500/10 text-amber-500"
+                tone="bg-primary/10 text-primary"
                 description="Added to the trip's net cost. The customer sees the names, not the prices."
               >
                 <AddonPicker
@@ -534,7 +534,7 @@ export function TripEditorSheet({
               <FieldGroup
                 title="Price"
                 icon={Receipt}
-                tone="bg-emerald-500/10 text-emerald-500"
+                tone="bg-primary/10 text-primary"
                 description="Internal. The customer only ever sees the sell price."
               >
                   <MarkupInput

@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, Loader2, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import {
   Dialog,
   DialogContent,

@@ -12,7 +12,7 @@ import { motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/business/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 
 interface PremiumFeaturesCardProps {
@@ -53,9 +53,9 @@ export function PremiumFeaturesCard({ className }: PremiumFeaturesCardProps) {
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="flex h-12 w-12 items-center justify-center rounded-xl mb-4 bg-violet-500/10"
+            className="flex h-12 w-12 items-center justify-center rounded-xl mb-4 bg-primary/10"
           >
-            <Sparkles className="h-6 w-6 text-violet-500" />
+            <Sparkles className="h-6 w-6 text-primary" />
           </motion.div>
 
           <span className="text-base font-semibold text-foreground">
@@ -67,7 +67,7 @@ export function PremiumFeaturesCard({ className }: PremiumFeaturesCardProps) {
           <Button
             variant="outline"
             size="sm"
-            className="w-full bg-violet-500/10 border-violet-500/30 text-violet-500 font-medium hover:bg-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
+            className="w-full bg-primary/10 border-primary/30 text-primary font-medium hover:bg-primary/20 hover:border-primary/50 transition-all duration-300"
           >
             Learn More
           </Button>

@@ -173,7 +173,7 @@ export function PaymentMethodCard({
         <AlertDialogTrigger asChild>
           <button
             disabled={isDeleting}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all duration-200"
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
           >
             {isDeleting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -197,7 +197,7 @@ export function PaymentMethodCard({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(pm.id)}
-              className="bg-red-500 hover:bg-red-500/90 text-white"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

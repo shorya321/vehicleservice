@@ -11,7 +11,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/business/(portal)/components/ui/select';
@@ -107,7 +107,6 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
               onCheckedChange={(checked) =>
                 setSettings((prev) => ({ ...prev, save_payment_methods: checked }))
               }
-              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
 
@@ -129,7 +128,6 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
               onCheckedChange={(checked) =>
                 setSettings((prev) => ({ ...prev, payment_element_enabled: checked }))
               }
-              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
         </CardContent>
@@ -250,7 +248,7 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
           onClick={handleSave}
           disabled={isSaving || !hasChanges}
           size="lg"
-          className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? (
             <>

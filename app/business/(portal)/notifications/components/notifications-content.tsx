@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Bell, BellRing, BellOff, Inbox, Settings2, CheckCheck, ChevronDown, Eraser } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
   getNotificationsAction,

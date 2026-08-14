@@ -9,7 +9,7 @@
  */
 
 import { Bell, CalendarCheck, CheckCircle2, Wallet, CreditCard, FileText, Star, User, ShoppingCart, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,13 +21,15 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Notification } from '@/lib/notifications/types';
 
-// Icon and color mapping for different notification categories
+// Icon per notification category. The chip colour follows the tenant accent for
+// every category rather than a fixed per-category hue - the icon carries the
+// category. `system` stays muted because it is the deliberately quiet one.
 const categoryConfig: Record<string, { icon: typeof Bell; bgColor: string; iconColor: string }> = {
   booking: { icon: CalendarCheck, bgColor: 'bg-primary/10', iconColor: 'text-primary' },
-  user: { icon: User, bgColor: 'bg-sky-500/10', iconColor: 'text-sky-500' },
-  vendor_application: { icon: FileText, bgColor: 'bg-violet-500/10', iconColor: 'text-violet-500' },
-  review: { icon: Star, bgColor: 'bg-amber-500/10', iconColor: 'text-amber-500' },
-  payment: { icon: Wallet, bgColor: 'bg-emerald-500/10', iconColor: 'text-emerald-500' },
+  user: { icon: User, bgColor: 'bg-primary/10', iconColor: 'text-primary' },
+  vendor_application: { icon: FileText, bgColor: 'bg-primary/10', iconColor: 'text-primary' },
+  review: { icon: Star, bgColor: 'bg-primary/10', iconColor: 'text-primary' },
+  payment: { icon: Wallet, bgColor: 'bg-primary/10', iconColor: 'text-primary' },
   system: { icon: Bell, bgColor: 'bg-muted', iconColor: 'text-muted-foreground' },
 };
 

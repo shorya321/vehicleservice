@@ -8,7 +8,7 @@
  */
 
 import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, hasSufficientBalance } from '@/lib/business/wallet-operations';
 import { BookingFormData } from './booking-wizard';
@@ -142,8 +142,8 @@ export function ReviewStep({
         </div>
         <div className="p-5 rounded-xl border border-border bg-muted/30">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-              <Users className="h-5 w-5 text-sky-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <Users className="h-5 w-5 text-primary" />
             </div>
             <h3 className="text-base font-semibold text-foreground">Passengers</h3>
           </div>
@@ -159,8 +159,8 @@ export function ReviewStep({
       {/* Customer Details */}
       <div className="p-5 rounded-xl border border-border bg-muted/30">
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
-            <User className="h-5 w-5 text-violet-500" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <User className="h-5 w-5 text-primary" />
           </div>
           <h3 className="text-base font-semibold text-foreground">Customer Information</h3>
         </div>
@@ -189,8 +189,8 @@ export function ReviewStep({
       {/* Addons Selection */}
       <div className="p-5 rounded-xl border border-border bg-muted/30">
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-            <Package className="h-5 w-5 text-amber-500" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Package className="h-5 w-5 text-primary" />
           </div>
           <h3 className="text-base font-semibold text-foreground">Additional Services</h3>
         </div>
@@ -215,8 +215,8 @@ export function ReviewStep({
       {/* Pricing Breakdown */}
       <div className="p-5 rounded-xl border border-border bg-muted/30">
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
-            <Receipt className="h-5 w-5 text-emerald-500" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Receipt className="h-5 w-5 text-primary" />
           </div>
           <h3 className="text-base font-semibold text-foreground">Pricing</h3>
         </div>

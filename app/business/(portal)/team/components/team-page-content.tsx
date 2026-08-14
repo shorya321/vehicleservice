@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { Users, UserPlus, AlertTriangle, Loader2, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,

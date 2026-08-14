@@ -937,23 +937,7 @@ body {
    UTILITY CLASSES
    ============================================ */
 
-/* Primary gradient text - Gold */
-.business-text-gradient {
-  background: linear-gradient(135deg, #C6AA88 0%, #E8D9C5 50%, #C6AA88 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Aurora gradient text - Gold to Teal */
-.business-text-gradient-aurora {
-  background: linear-gradient(135deg, #C6AA88 0%, #14B8A6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Gold accent border */
+/* Accent border */
 .business-border-primary {
   border-color: hsl(var(--primary) / 0.3);
 }
@@ -985,12 +969,12 @@ body {
 }
 
 .business-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(198, 170, 136, 0.3);
+  background-color: hsl(var(--primary) / 0.3);
   border-radius: 3px;
 }
 
 .business-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(198, 170, 136, 0.5);
+  background-color: hsl(var(--primary) / 0.5);
 }
 
 /* ============================================
@@ -1002,7 +986,7 @@ body {
 
 [data-business-branding] [role="listbox"].bg-popover {
   scrollbar-width: thin;
-  scrollbar-color: rgba(198, 170, 136, 0.3) transparent;
+  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
 }
 
 [data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar {
@@ -1015,12 +999,12 @@ body {
 }
 
 [data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar-thumb {
-  background-color: rgba(198, 170, 136, 0.3);
+  background-color: hsl(var(--primary) / 0.3);
   border-radius: 3px;
 }
 
 [data-business-branding] [role="listbox"].bg-popover::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(198, 170, 136, 0.5);
+  background-color: hsl(var(--primary) / 0.5);
 }
 
 /* Group headers - more breathing room */

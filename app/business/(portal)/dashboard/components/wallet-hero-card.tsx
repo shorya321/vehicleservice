@@ -14,7 +14,7 @@ import { Wallet, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/business/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { CurrencyCountUp } from '@/components/business/motion';
 import {
   BUSINESS_BASE_CURRENCY,

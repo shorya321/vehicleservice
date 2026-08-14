@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { Pencil, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import {
   Tooltip,
   TooltipContent,

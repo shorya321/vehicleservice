@@ -13,7 +13,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Search, Filter, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 // The portal keeps its own Select so the trigger matches Input styling. The same one the
 // bookings filter row uses.
 import {

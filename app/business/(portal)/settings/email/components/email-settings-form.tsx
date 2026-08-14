@@ -452,10 +452,9 @@ export function EmailSettingsForm({ settings, tenantDomain, onSaved }: EmailSett
         {settings && (
           <LuxuryButton
             type="button"
-            variant="ghost"
+            variant="destructive"
             onClick={remove}
             disabled={removing}
-            className="text-red-600 hover:text-red-700 dark:text-red-400"
           >
             {removing ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />

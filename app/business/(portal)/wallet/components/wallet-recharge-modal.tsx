@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/business/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CreditCard, AlertCircle, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'

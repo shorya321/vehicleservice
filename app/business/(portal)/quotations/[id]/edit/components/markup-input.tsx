@@ -15,7 +15,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { AlertTriangle } from 'lucide-react';
 // Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
 import { formatCurrency } from '@/lib/business/wallet-operations';

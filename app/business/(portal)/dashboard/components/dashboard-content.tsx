@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Plus, Settings, UserCircle } from 'lucide-react';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { WalletHeroCard } from './wallet-hero-card';
 import { StatsGrid } from './stats-grid';
 import { QuickActionsCard } from './quick-actions-card';
@@ -199,7 +199,7 @@ function DashboardHeader({ greeting, businessName, prefersReducedMotion, isOwner
           )}
         </Button>
 
-        <Button asChild className="rounded-xl shadow-sm hover:shadow-lg">
+        <Button asChild className="rounded-xl shadow-sm">
           <Link href="/business/bookings/new">
             <Plus className="h-4 w-4 mr-2" />
             New Booking

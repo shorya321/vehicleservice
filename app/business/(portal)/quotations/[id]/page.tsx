@@ -25,7 +25,7 @@ import { getBusinessMember } from '@/lib/business/member-scope';
 import { bookingToday , getBookingTimezone } from '@/lib/business/utils/timezone';
 // Portal money format ("AED 150.00"), matching bookings and wallet. The PDF keeps its own.
 import { formatCurrency } from '@/lib/business/wallet-operations';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { PortalSectionCard } from '@/app/business/(portal)/components/ui/section-card';
 import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { Separator } from '@/components/ui/separator';

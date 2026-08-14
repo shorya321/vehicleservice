@@ -10,7 +10,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormDatePicker } from '@/components/ui/form-date-picker';
@@ -114,7 +114,7 @@ export function TransactionFilters({
                 variant="ghost"
                 size="sm"
                 onClick={handleReset}
-                className="text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10"
+                className="text-muted-foreground"
               >
                 <X className="mr-2 h-4 w-4" />
                 Clear
@@ -282,7 +282,7 @@ export function TransactionFilters({
         {hasActiveFilters && (
           <Button
             onClick={handleApply}
-            className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+            className="w-full hover:bg-primary/90"
           >
             Apply Filters
           </Button>

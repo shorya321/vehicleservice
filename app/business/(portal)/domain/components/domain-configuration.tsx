@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Loader2, Globe, CheckCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Form,
@@ -185,7 +185,7 @@ export function DomainConfiguration({
                       placeholder="transfers.yourhotel.com"
                       {...field}
                       disabled={isVerified}
-                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-sky-500 focus:ring-sky-500/20 disabled:opacity-50"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 disabled:opacity-50"
                     />
                   </FormControl>
                   <FormDescription className="text-muted-foreground">
@@ -200,7 +200,7 @@ export function DomainConfiguration({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -226,7 +226,7 @@ export function DomainConfiguration({
             <Button
               onClick={handleVerify}
               disabled={isVerifying}
-              className="bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 hover:border-sky-500/50 disabled:opacity-50"
+              className="bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 disabled:opacity-50"
             >
               {isVerifying ? (
                 <>
@@ -270,7 +270,7 @@ export function DomainConfiguration({
                 onClick={handleRemove}
                 disabled={isLoading || isVerifying}
                 size="sm"
-                className="bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50"
+                className="bg-destructive/10 border border-destructive/30 text-destructive hover:bg-destructive/20 hover:border-destructive/50 disabled:opacity-50"
               >
                 {isLoading ? (
                   <>

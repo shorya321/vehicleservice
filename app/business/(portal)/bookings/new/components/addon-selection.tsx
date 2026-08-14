@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Check, Minus, Plus } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';

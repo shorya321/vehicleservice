@@ -15,7 +15,7 @@ import { ArrowRight, CreditCard, Loader2, ExternalLink, Wallet, Activity } from 
 import { FadeIn } from '@/components/business/motion/fade-in';
 import { HeroStatCard } from '@/components/business/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -388,7 +388,7 @@ export function WalletPageContent({
             <Button
               onClick={handleRecharge}
               disabled={isLoading}
-              className="w-full h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+              className="w-full h-11 hover:bg-primary/90 disabled:opacity-50"
             >
               {isLoading ? (
                 <>

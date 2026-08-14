@@ -3,11 +3,14 @@
 import * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
-  hexToHsl,
   parseThemeConfig,
-  DEFAULT_THEME_CONFIG,
   type ThemeConfig,
 } from "@/lib/business/branding-utils";
+import {
+  buildThemeVars,
+  THEME_VAR_NAMES,
+  THEME_GUARD_GLOBAL,
+} from "@/lib/business/theme-vars";
 
 /**
  * Business Portal Theme Provider
@@ -36,6 +39,24 @@ const ThemeProviderContext = createContext<ThemeProviderContextValue | undefined
 );
 
 const STORAGE_KEY = "business-theme";
+
+/**
+ * Put the portal's mode on <html>, idempotently.
+ *
+ * Only writes when the value actually differs, which is what lets the
+ * MutationObserver guard below re-apply without retriggering itself.
+ */
+function applyBusinessMode(mode: "dark" | "light"): void {
+  const root = document.documentElement;
+
+  if (!root.classList.contains(mode)) {
+    root.classList.remove("light", "dark");
+    root.classList.add(mode);
+  }
+  if (root.getAttribute("data-business-theme") !== mode) {
+    root.setAttribute("data-business-theme", mode);
+  }
+}
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -82,26 +103,59 @@ export function BusinessThemeProvider({
     initTheme();
   }, [storageKey, defaultTheme]);
 
+  // The mode the portal wants on <html>, kept in a ref so the guard below can
+  // read it without being torn down and reinstalled every time `theme` changes.
+  const desiredModeRef = React.useRef<"dark" | "light">("dark");
+
   // Resolve theme and apply to document
   useEffect(() => {
     if (!mounted) return;
 
     const resolved = theme === "system" ? getSystemTheme() : theme;
+    desiredModeRef.current = resolved;
     const updateResolved = () => setResolvedTheme(resolved);
     updateResolved();
 
-    // Apply theme class to the business portal root
-    const root = document.documentElement;
-
-    // Remove existing theme classes
-    root.classList.remove("light", "dark");
-
-    // Add the resolved theme class
-    root.classList.add(resolved);
-
-    // Also set a data attribute for more flexible styling
-    root.setAttribute("data-business-theme", resolved);
+    applyBusinessMode(resolved);
   }, [theme, mounted]);
+
+  // Hold the mode against next-themes.
+  //
+  // next-themes also owns the light/dark class on <html> (root layout, with
+  // defaultTheme="system" enableSystem) and re-asserts the *system* preference
+  // when it hydrates, which on a light-preference machine flips the portal to
+  // light. Tailwind's `dark:` variants key off that same class, so this cannot be
+  // sidestepped by scoping our own selectors elsewhere - the class has to be
+  // right.
+  //
+  // Deliberately its own effect with only `[mounted]` as a dep, reading the mode
+  // from a ref. Folding this into the effect above meant it was disconnected and
+  // reinstalled on every `theme` change, and next-themes' hydration landed inside
+  // exactly that window - leaving a ~24ms light frame that the guard was supposed
+  // to prevent. Installed once, it corrects at the microtask boundary, before any
+  // paint. The equality checks in applyBusinessMode keep it idempotent, so
+  // re-applying cannot retrigger the observer into a loop.
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Take over from the bootstrap's guard. It has been holding the mode since
+    // before hydration; leaving it running would keep forcing the portal's mode
+    // after a client-side navigation out of the business module.
+    const guards = window as unknown as Record<
+      string,
+      MutationObserver | undefined
+    >;
+    guards[THEME_GUARD_GLOBAL]?.disconnect();
+    delete guards[THEME_GUARD_GLOBAL];
+
+    const root = document.documentElement;
+    const observer = new MutationObserver(() =>
+      applyBusinessMode(desiredModeRef.current)
+    );
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, [mounted]);
 
   // Apply branding colors on mount and when theme changes
   // This OVERRIDES root layout inline styles for custom domains
@@ -110,77 +164,26 @@ export function BusinessThemeProvider({
     if (!mounted) return;
 
     const root = document.documentElement;
-    const isDark = resolvedTheme === "dark";
 
-    // Get accent colors from config
-    const primary = config.accent.primary;
-    const secondary = config.accent.secondary;
+    // Same derivation the portal layout serialises into its SSR <style>, so the
+    // first paint and every subsequent update can never disagree. These land as
+    // inline styles, which outrank that stylesheet - that is what makes a preset
+    // switch or a mode toggle apply without a reload.
+    const vars = buildThemeVars(config, resolvedTheme);
+    for (const [name, value] of Object.entries(vars)) {
+      root.style.setProperty(name, value);
+    }
 
-    // Get mode-specific colors based on resolved theme
-    const modeColors = isDark ? config.dark : config.light;
-
-    // Apply accent colors (shared across modes)
-    root.style.setProperty("--primary", hexToHsl(primary));
-    root.style.setProperty("--primary-foreground", isDark ? "240 10% 4%" : "0 0% 100%");
-    root.style.setProperty("--secondary", hexToHsl(secondary));
-    root.style.setProperty("--secondary-foreground", "0 0% 100%");
-    root.style.setProperty("--accent", isDark ? hexToHsl(modeColors.muted) : hexToHsl(modeColors.surface));
-    root.style.setProperty("--accent-foreground", hexToHsl(modeColors.text_primary));
-    root.style.setProperty("--ring", hexToHsl(primary));
-
-    // Apply mode-specific colors as CSS variables
-    // These map to business portal CSS variable system
-    root.style.setProperty("--background", hexToHsl(modeColors.background));
-    root.style.setProperty("--foreground", hexToHsl(modeColors.text_primary));
-    root.style.setProperty("--card", hexToHsl(modeColors.card));
-    root.style.setProperty("--card-foreground", hexToHsl(modeColors.text_primary));
-    root.style.setProperty("--popover", hexToHsl(modeColors.surface));
-    root.style.setProperty("--popover-foreground", hexToHsl(modeColors.text_primary));
-    root.style.setProperty("--muted", hexToHsl(modeColors.muted));
-    root.style.setProperty("--muted-foreground", hexToHsl(modeColors.text_secondary));
-    root.style.setProperty("--border", hexToHsl(modeColors.border));
-    root.style.setProperty("--input", hexToHsl(modeColors.border));
-
-    // Business-specific CSS variables for sidebar and surfaces
-    // These use HEX values directly since they're used as var(--business-*) without hsl() wrapper
-    root.style.setProperty("--business-sidebar", modeColors.sidebar);
-    root.style.setProperty("--business-surface", modeColors.surface);
-    root.style.setProperty("--business-card", modeColors.card);
-    root.style.setProperty("--business-border", modeColors.border);
-    root.style.setProperty("--business-text-primary", modeColors.text_primary);
-    root.style.setProperty("--business-text-secondary", modeColors.text_secondary);
-
-    // Set data attribute to indicate business portal branding is active
+    // Set data attribute to indicate business portal branding is active. The
+    // SSR stylesheet is scoped to this attribute, so it must stay set for as
+    // long as the portal is mounted.
     root.setAttribute("data-business-branding", "true");
 
     // Cleanup: remove branding styles when component unmounts
     return () => {
-      // Accent colors
-      root.style.removeProperty("--primary");
-      root.style.removeProperty("--primary-foreground");
-      root.style.removeProperty("--secondary");
-      root.style.removeProperty("--secondary-foreground");
-      root.style.removeProperty("--accent");
-      root.style.removeProperty("--accent-foreground");
-      root.style.removeProperty("--ring");
-      // Mode colors
-      root.style.removeProperty("--background");
-      root.style.removeProperty("--foreground");
-      root.style.removeProperty("--card");
-      root.style.removeProperty("--card-foreground");
-      root.style.removeProperty("--popover");
-      root.style.removeProperty("--popover-foreground");
-      root.style.removeProperty("--muted");
-      root.style.removeProperty("--muted-foreground");
-      root.style.removeProperty("--border");
-      root.style.removeProperty("--input");
-      // Business-specific
-      root.style.removeProperty("--business-sidebar");
-      root.style.removeProperty("--business-surface");
-      root.style.removeProperty("--business-card");
-      root.style.removeProperty("--business-border");
-      root.style.removeProperty("--business-text-primary");
-      root.style.removeProperty("--business-text-secondary");
+      for (const name of THEME_VAR_NAMES) {
+        root.style.removeProperty(name);
+      }
       root.removeAttribute("data-business-branding");
     };
   }, [mounted, config, resolvedTheme]);

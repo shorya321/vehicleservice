@@ -14,7 +14,7 @@ import { Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
 import { bookingToday } from '@/lib/business/utils/timezone';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { getQuotations, getQuotationStats } from './actions';
 import { QuotationFilters } from './components/quotation-filters';

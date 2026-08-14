@@ -34,7 +34,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -532,7 +532,7 @@ export function BookingsPageContent({
         )}
 
         {/* New Booking Button */}
-        <Button asChild className="ml-auto gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
+        <Button asChild className="ml-auto gap-2 hover:bg-primary/90">
           <Link href="/business/bookings/new">
             <Plus className="h-4 w-4" />
             New Booking
@@ -1095,7 +1095,7 @@ function EmptyBookingsState({ hasFilter }: { hasFilter: boolean }) {
       {!hasFilter && (
         <Button
           asChild
-          className="gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+          className="gap-2 hover:bg-primary/90"
         >
           <Link href="/business/bookings/new">
             <Plus className="h-4 w-4" />

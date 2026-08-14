@@ -8,7 +8,7 @@
  */
 
 import { Car, Loader2, AlertCircle, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { VehicleCategoryTabs } from './vehicle-category-tabs';
 import { BookingFormData } from './booking-wizard';
@@ -154,7 +154,7 @@ export function VehicleStep({
               <p className="text-xs text-muted-foreground">Zone Transfer</p>
             </div>
           </div>
-          <span className="px-3 py-1.5 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 text-sm font-semibold">
+          <span className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-semibold">
             Base: {formatCurrency(zoneInfo.basePrice, BUSINESS_BASE_CURRENCY)}
           </span>
         </div>

@@ -11,7 +11,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/business/ui/button';
 import { Loader2, TrendingUp, TrendingDown, DollarSign, Activity, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { convertForDisplay, formatCurrency } from '@/lib/business/wallet-operations';

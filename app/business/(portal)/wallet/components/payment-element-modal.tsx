@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/business/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, CreditCard, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -136,7 +136,7 @@ function CheckoutForm({ amount, currency, clientSecret, onSuccess, onClose }: Ch
         <Button
           type="submit"
           disabled={!stripe || isProcessing}
-          className="flex-1 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+          className="flex-1 hover:bg-primary/90 disabled:opacity-50"
         >
           {isProcessing ? (
             <>
@@ -268,7 +268,7 @@ export function PaymentElementModal({
               </Alert>
               <Button
                 onClick={createPaymentIntent}
-                className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+                className="w-full hover:bg-primary/90"
               >
                 Try Again
               </Button>

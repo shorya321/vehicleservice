@@ -51,38 +51,36 @@ interface SettingsPageContentProps {
   userRole: string;
 }
 
-// Settings links with accent colors
+// Settings links. Each tile is a full-tile Link, so its icon chip follows the
+// tenant accent rather than a fixed hue - the Notifications tile was already the
+// only one doing this and the other five now match it.
 const settingsLinks = [
   {
     href: '/business/settings/payment',
     icon: CreditCard,
     title: 'Payment Settings',
     description: 'Manage payment methods, currency, and auto-save preferences',
-    colorClass: 'border-l-emerald-500',
-    iconColorClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    iconColorClass: 'bg-primary/10 text-primary',
   },
   {
     href: '/business/settings/branding',
     icon: Palette,
     title: 'Branding',
     description: 'Customize your business logo and brand colors',
-    colorClass: 'border-l-violet-500',
-    iconColorClass: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+    iconColorClass: 'bg-primary/10 text-primary',
   },
   {
     href: '/business/settings/email',
     icon: Mail,
     title: 'Email Sending',
     description: 'Send booking emails from your own domain with your own mail server',
-    colorClass: 'border-l-rose-500',
-    iconColorClass: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+    iconColorClass: 'bg-primary/10 text-primary',
   },
   {
     href: '/business/settings/notifications',
     icon: Bell,
     title: 'Notifications',
     description: 'Configure email and wallet notification preferences',
-    colorClass: 'border-l-primary',
     iconColorClass: 'bg-primary/10 text-primary',
   },
   {
@@ -90,16 +88,14 @@ const settingsLinks = [
     icon: FileText,
     title: 'Quotation Settings',
     description: 'Set the prefix used for your quotation numbers',
-    colorClass: 'border-l-amber-500',
-    iconColorClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    iconColorClass: 'bg-primary/10 text-primary',
   },
   {
     href: '/business/domain',
     icon: Globe,
     title: 'Custom Domain',
     description: 'Configure your custom domain and DNS settings',
-    colorClass: 'border-l-sky-500',
-    iconColorClass: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+    iconColorClass: 'bg-primary/10 text-primary',
   },
 ];
 

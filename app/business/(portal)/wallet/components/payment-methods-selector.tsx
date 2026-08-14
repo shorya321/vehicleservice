@@ -11,7 +11,7 @@
 import { useState, useEffect } from 'react'
 import { CreditCard, Plus, Loader2, AlertCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/business/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -181,7 +181,7 @@ export function PaymentMethodsSelector({
                     onClick={() => onSelectSaved(pm.id)}
                     disabled={isProcessing}
                     size="sm"
-                    className="shrink-0 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+                    className="shrink-0 hover:bg-primary/90 disabled:opacity-50"
                   >
                     {isProcessing ? (
                       <>
