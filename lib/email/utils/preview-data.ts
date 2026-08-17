@@ -18,7 +18,11 @@ export type EmailTemplateType =
   | 'directBookingCustomerCancelled'
   | 'directBookingDriverAssignment'
   | 'adminNewBooking'
-  | 'adminNewVendorApplication';
+  | 'adminNewVendorApplication'
+  | 'businessWelcomePending'
+  | 'businessRegistrationAdminNotice'
+  | 'businessAccountApproved'
+  | 'businessAccountRejected';
 
 /** Named so the category union has one definition rather than two literals to keep in step. */
 export type EmailTemplateCategory =
@@ -26,7 +30,12 @@ export type EmailTemplateCategory =
   | 'booking'
   | 'vendor'
   | 'direct-booking'
-  | 'admin';
+  | 'admin'
+  /**
+   * The lifecycle of a business account itself: registration, approval, rejection.
+   * The business *booking* emails stay under 'booking', which is what they are.
+   */
+  | 'business';
 
 export interface EmailTemplate {
   id: EmailTemplateType;
@@ -315,6 +324,48 @@ export const emailTemplates: EmailTemplate[] = [
       'applicationDetailsUrl',
     ],
   },
+  {
+    id: 'businessWelcomePending',
+    name: 'Business: Registration Received',
+    category: 'business',
+    description:
+      'Sent to the business owner the moment they register, while the account is still pending approval',
+    subject: 'Welcome to Infinia Transfers - Registration Received',
+    variables: ['businessName', 'ownerName', 'supportEmail'],
+  },
+  {
+    id: 'businessRegistrationAdminNotice',
+    name: 'Business: New Registration (Admin)',
+    category: 'business',
+    description:
+      'Sent to the platform admin when a business registers, so somebody knows there is an account waiting',
+    subject: 'New Business Registration - {businessName}',
+    variables: [
+      'businessName',
+      'businessEmail',
+      'businessPhone',
+      'contactPersonName',
+      'registrationDate',
+      'businessDetailsUrl',
+    ],
+  },
+  {
+    id: 'businessAccountApproved',
+    name: 'Business: Account Approved',
+    category: 'business',
+    description: 'Sent to the business owner when an admin approves their account',
+    subject: 'Your Business Account Has Been Approved!',
+    variables: ['businessName', 'ownerName', 'loginUrl'],
+  },
+  {
+    id: 'businessAccountRejected',
+    name: 'Business: Account Rejected',
+    category: 'business',
+    description:
+      'Sent to the applicant when an admin rejects their account. The reason is written by the admin and shown here.',
+    subject: 'Business Account Application Update',
+    variables: ['businessName', 'ownerName', 'reason', 'supportEmail'],
+  },
 ];
 
 export const emailPreviewData: Record<EmailTemplateType, any> = {
@@ -497,6 +548,31 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     companyName: 'Ahmed Transportation LLC',
     submittedDate: 'March 10, 2024',
     applicationDetailsUrl: `${getAppUrl()}/admin/vendor-applications/sample-id`,
+  },
+  // supportEmail is deliberately omitted from the two templates that accept it, so
+  // the preview shows the template's own default. That is what the real sends do.
+  businessWelcomePending: {
+    businessName: 'Acme Hotel Group',
+    ownerName: 'Aisha Rahman',
+  },
+  businessRegistrationAdminNotice: {
+    businessName: 'Acme Hotel Group',
+    businessEmail: 'reservations@acmehotelgroup.com',
+    businessPhone: '+971 4 555 0100',
+    contactPersonName: 'Aisha Rahman',
+    registrationDate: 'March 15, 2024 at 2:30 PM',
+    businessDetailsUrl: `${getAppUrl()}/admin/businesses/sample-business-id`,
+  },
+  businessAccountApproved: {
+    businessName: 'Acme Hotel Group',
+    ownerName: 'Aisha Rahman',
+    loginUrl: `${getAppUrl()}/business/login`,
+  },
+  businessAccountRejected: {
+    businessName: 'Acme Hotel Group',
+    ownerName: 'Aisha Rahman',
+    // Supplied so the conditional reason block in the template is visible here.
+    reason: 'The trade licence number could not be verified against the registry.',
   },
 };
 

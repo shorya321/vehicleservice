@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -21,52 +21,12 @@ import {
   getTemplatePreviewData,
   type EmailTemplateType,
 } from '@/lib/email/utils/preview-data';
+import { templateComponents } from '@/lib/email/utils/template-components';
 import { render } from '@react-email/render';
 import { Mail, Monitor, Smartphone } from 'lucide-react';
 import { sendTestEmail } from '../actions';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-
-// Import email templates
-import WelcomeEmail from '@/lib/email/templates/auth/welcome';
-import VerificationEmail from '@/lib/email/templates/auth/verification';
-import PasswordResetEmail from '@/lib/email/templates/auth/password-reset';
-import BookingConfirmationEmail from '@/lib/email/templates/booking/confirmation';
-import BookingStatusUpdateEmail from '@/lib/email/templates/booking/status-update';
-import VendorApplicationReceivedEmail from '@/lib/email/templates/vendor/application-received';
-import VendorApplicationApprovedEmail from '@/lib/email/templates/vendor/application-approved';
-import VendorApplicationRejectedEmail from '@/lib/email/templates/vendor/application-rejected';
-import BookingAssignedEmail from '@/lib/email/templates/vendor/booking-assigned';
-import BookingDriverAssignedEmail from '@/lib/email/templates/booking/driver-assigned';
-import BusinessCustomerDriverAssignedEmail from '@/lib/business/email/templates/customer-driver-assigned';
-import BusinessBookingDriverAssignedEmail from '@/lib/business/email/templates/booking-driver-assigned';
-import DirectBookingCustomerConfirmationEmail from '@/lib/email/templates/direct-booking/customer-confirmation';
-import DirectBookingCustomerStatusUpdateEmail from '@/lib/email/templates/direct-booking/customer-status-update';
-import DirectBookingCustomerCancelledEmail from '@/lib/email/templates/direct-booking/customer-cancelled';
-import DirectBookingDriverAssignmentEmail from '@/lib/email/templates/direct-booking/driver-assignment';
-import AdminNewBookingNotificationEmail from '@/lib/email/templates/admin/new-booking-notification';
-import AdminNewVendorApplicationNotificationEmail from '@/lib/email/templates/admin/new-vendor-application-notification';
-
-const templateComponents: Record<EmailTemplateType, any> = {
-  welcome: WelcomeEmail,
-  verification: VerificationEmail,
-  passwordReset: PasswordResetEmail,
-  bookingConfirmation: BookingConfirmationEmail,
-  bookingStatus: BookingStatusUpdateEmail,
-  vendorReceived: VendorApplicationReceivedEmail,
-  vendorApproved: VendorApplicationApprovedEmail,
-  vendorRejected: VendorApplicationRejectedEmail,
-  vendorBookingAssigned: BookingAssignedEmail,
-  driverAssigned: BookingDriverAssignedEmail,
-  businessCustomerDriverAssigned: BusinessCustomerDriverAssignedEmail,
-  businessDriverAssigned: BusinessBookingDriverAssignedEmail,
-  directBookingCustomerConfirmation: DirectBookingCustomerConfirmationEmail,
-  directBookingCustomerStatusUpdate: DirectBookingCustomerStatusUpdateEmail,
-  directBookingCustomerCancelled: DirectBookingCustomerCancelledEmail,
-  directBookingDriverAssignment: DirectBookingDriverAssignmentEmail,
-  adminNewBooking: AdminNewBookingNotificationEmail,
-  adminNewVendorApplication: AdminNewVendorApplicationNotificationEmail,
-};
 
 type PreviewMode = 'desktop' | 'mobile';
 
@@ -85,6 +45,7 @@ export function EmailManagementClient() {
     (t) => t.category === 'direct-booking'
   );
   const adminTemplates = emailTemplates.filter((t) => t.category === 'admin');
+  const businessTemplates = emailTemplates.filter((t) => t.category === 'business');
 
   // Get current template info
   const currentTemplate = getTemplateById(selectedTemplate);
@@ -94,7 +55,10 @@ export function EmailManagementClient() {
     const generateEmailHtml = async () => {
       const TemplateComponent = templateComponents[selectedTemplate];
       const previewData = getTemplatePreviewData(selectedTemplate);
-      const html = await render(TemplateComponent(previewData));
+      // createElement rather than calling the component directly: a template wrapped
+      // in memo or forwardRef has no call signature, and the sender renders it the
+      // same way, so the preview cannot diverge from what actually gets mailed.
+      const html = await render(createElement(TemplateComponent, previewData));
       setEmailHtml(html);
     };
 
@@ -213,6 +177,17 @@ export function EmailManagementClient() {
                   <SelectGroup>
                     <SelectLabel>Admin Notifications</SelectLabel>
                     {adminTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {template.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Business Accounts</SelectLabel>
+                    {businessTemplates.map((template) => (
                       <SelectItem key={template.id} value={template.id}>
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4" />
