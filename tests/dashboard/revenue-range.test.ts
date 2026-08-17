@@ -8,6 +8,7 @@ import {
   isValidDay,
   presetForPeriod,
   resolveRevenueRange,
+  resolveRevenueSource,
   startOfWeek,
   toUtcBounds,
 } from '@/lib/dashboard/revenue-range'
@@ -302,5 +303,24 @@ describe('legacy PeriodType alias', () => {
 
     expect(range.bucket).toBe('week')
     expect(buildBuckets(range)).toHaveLength(8)
+  })
+})
+
+describe('resolveRevenueSource', () => {
+  it('accepts each known source', () => {
+    expect(resolveRevenueSource('all')).toBe('all')
+    expect(resolveRevenueSource('customer')).toBe('customer')
+    expect(resolveRevenueSource('business')).toBe('business')
+  })
+
+  it('defaults to all when the param is absent', () => {
+    expect(resolveRevenueSource(undefined)).toBe('all')
+  })
+
+  it('degrades an unknown or hostile value to all', () => {
+    expect(resolveRevenueSource('vendor')).toBe('all')
+    expect(resolveRevenueSource('')).toBe('all')
+    expect(resolveRevenueSource('Business')).toBe('all')
+    expect(resolveRevenueSource('bookings; drop table')).toBe('all')
   })
 })

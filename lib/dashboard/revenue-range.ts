@@ -50,6 +50,29 @@ export interface RevenueRangeInput {
   bucket?: string
 }
 
+/**
+ * Which side of the business the chart is reporting on. `all` is the default
+ * and sums both, which is what the card showed before the selector existed.
+ *
+ * Deliberately not part of `RevenueRangeInput`: that type is shared with the
+ * vendor dashboard, and this selector is admin-only.
+ */
+export const REVENUE_SOURCES = ['all', 'customer', 'business'] as const
+
+export type RevenueSource = (typeof REVENUE_SOURCES)[number]
+
+export const DEFAULT_REVENUE_SOURCE: RevenueSource = 'all'
+
+/**
+ * `?source=` is user-editable, so anything unrecognised degrades to the
+ * default rather than throwing or reaching a query.
+ */
+export function resolveRevenueSource(value: string | undefined): RevenueSource {
+  return REVENUE_SOURCES.includes(value as RevenueSource)
+    ? (value as RevenueSource)
+    : DEFAULT_REVENUE_SOURCE
+}
+
 export interface RevenueBucket {
   key: string
   date: string
@@ -71,6 +94,8 @@ export interface RevenueTrendPoint {
 
 export interface RevenueTrendMeta {
   range: RevenueRange
+  /** Which booking sources this result summed. */
+  source: RevenueSource
   totalRows: number
   /** True when the row cap was hit, so the totals under-report. */
   truncated: boolean

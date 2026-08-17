@@ -12,9 +12,11 @@ import {
   dubaiDayFromIso,
   presetForPeriod,
   resolveRevenueRange,
+  resolveRevenueSource,
   toUtcBounds,
   type PeriodType,
   type RevenueRangeInput,
+  type RevenueSource,
   type RevenueTrendPoint,
   type RevenueTrendResult,
 } from '@/lib/dashboard/revenue-range'
@@ -474,7 +476,34 @@ function normalizeTrendInput(input: RevenueRangeInput | PeriodType): RevenueRang
 }
 
 /**
- * Pages through every booking in the window.
+ * Both sides of the business. The chart reports platform revenue, so a booking
+ * sold through a business tenant counts the same as one sold direct; leaving
+ * `business_bookings` out under-reported the total with no cue on the card.
+ */
+const REVENUE_TABLES = ['bookings', 'business_bookings'] as const
+
+type RevenueTable = (typeof REVENUE_TABLES)[number]
+
+/**
+ * A fixed map, not a string built from the query param: `?source=` is
+ * user-editable and must never be able to name a table.
+ */
+const TABLES_BY_SOURCE: Record<RevenueSource, ReadonlyArray<RevenueTable>> = {
+  all: REVENUE_TABLES,
+  customer: ['bookings'],
+  business: ['business_bookings'],
+}
+
+type RevenueRow = { total_price: number | null; created_at: string }
+
+/**
+ * The admin chart's own input. Kept local rather than folded into
+ * `RevenueRangeInput`, which the vendor dashboard also consumes.
+ */
+type RevenueTrendInput = RevenueRangeInput & { source?: string }
+
+/**
+ * Pages through every booking in the window, for one table.
  *
  * The previous implementation issued a single unbounded query, which PostgREST
  * silently capped at 1000 rows, and because it ordered ascending, the rows it
@@ -482,16 +511,17 @@ function normalizeTrendInput(input: RevenueRangeInput | PeriodType): RevenueRang
  */
 async function fetchBookingsInRange(
   adminClient: ReturnType<typeof createAdminClient>,
+  table: RevenueTable,
   fromUtc: Date,
   toUtcExclusive: Date,
   statuses: string[]
-): Promise<{ rows: Array<{ total_price: number | null; created_at: string }>; truncated: boolean }> {
-  const rows: Array<{ total_price: number | null; created_at: string }> = []
+): Promise<{ rows: RevenueRow[]; truncated: boolean }> {
+  const rows: RevenueRow[] = []
 
   for (let page = 0; page * REVENUE_PAGE_SIZE < REVENUE_MAX_ROWS; page++) {
     const start = page * REVENUE_PAGE_SIZE
     const { data, error } = await adminClient
-      .from('bookings')
+      .from(table)
       .select('total_price, created_at')
       .in('payment_status', statuses)
       .gte('created_at', fromUtc.toISOString())
@@ -502,7 +532,7 @@ async function fetchBookingsInRange(
     if (error) throw new Error(error.message)
     if (!data || data.length === 0) return { rows, truncated: false }
 
-    rows.push(...(data as Array<{ total_price: number | null; created_at: string }>))
+    rows.push(...(data as RevenueRow[]))
 
     if (data.length < REVENUE_PAGE_SIZE) return { rows, truncated: false }
   }
@@ -510,13 +540,29 @@ async function fetchBookingsInRange(
   return { rows, truncated: true }
 }
 
+/** Whether a table holds any revenue at all, to tell "empty range" from "no history". */
+async function countAllRevenueRows(
+  adminClient: ReturnType<typeof createAdminClient>,
+  table: RevenueTable,
+  statuses: string[]
+): Promise<number> {
+  const { count } = await adminClient
+    .from(table)
+    .select('id', { count: 'exact', head: true })
+    .in('payment_status', statuses)
+
+  return count ?? 0
+}
+
 export async function getRevenueTrendWithMeta(
-  input: RevenueRangeInput | PeriodType = {}
+  input: RevenueTrendInput | PeriodType = {}
 ): Promise<RevenueTrendResult> {
   const adminClient = createAdminClient()
   const range = resolveRevenueRange(normalizeTrendInput(input), bookingToday())
   const buckets = buildBuckets(range)
   const statuses = includedPaymentStatuses()
+  const source = resolveRevenueSource(typeof input === 'string' ? undefined : input.source)
+  const tables = TABLES_BY_SOURCE[source]
 
   const emptyPoints: RevenueTrendPoint[] = buckets.map(({ date, label }) => ({
     date,
@@ -527,13 +573,22 @@ export async function getRevenueTrendWithMeta(
   try {
     const { fromUtc, toUtcExclusive } = toUtcBounds(range)
 
-    const [{ rows, truncated }, { count }] = await Promise.all([
-      fetchBookingsInRange(adminClient, fromUtc, toUtcExclusive, statuses),
-      adminClient
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .in('payment_status', statuses),
+    // Platform and business bookings are two tables but one revenue line, so
+    // the selected ones are paged over the same window and merged before
+    // bucketing. `hasAnyHistory` counts the same tables, so "no revenue
+    // recorded yet" reflects the selected source rather than the whole DB.
+    const [fetched, counts] = await Promise.all([
+      Promise.all(
+        tables.map((table) =>
+          fetchBookingsInRange(adminClient, table, fromUtc, toUtcExclusive, statuses)
+        )
+      ),
+      Promise.all(tables.map((table) => countAllRevenueRows(adminClient, table, statuses))),
     ])
+
+    const rows = fetched.flatMap((result) => result.rows)
+    const truncated = fetched.some((result) => result.truncated)
+    const historyCount = counts.reduce((sum, count) => sum + count, 0)
 
     const totalsByBucket = new Map<string, number>()
     for (const row of rows) {
@@ -550,9 +605,10 @@ export async function getRevenueTrendWithMeta(
       })),
       meta: {
         range,
+        source,
         totalRows: rows.length,
         truncated,
-        hasAnyHistory: (count ?? 0) > 0,
+        hasAnyHistory: historyCount > 0,
         includedPaymentStatuses: statuses,
         error: null,
       },
@@ -567,6 +623,7 @@ export async function getRevenueTrendWithMeta(
       points: emptyPoints,
       meta: {
         range,
+        source,
         totalRows: 0,
         truncated: false,
         hasAnyHistory: false,
