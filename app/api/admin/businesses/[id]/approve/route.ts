@@ -4,10 +4,9 @@
  */
 
 import { NextRequest } from 'next/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
-import { sendBusinessApprovalEmail } from '@/lib/business/email/services/business-emails';
+import { approveBusinessAccount } from '@/lib/business/admin/account-status';
 
 /**
  * PUT /api/admin/businesses/[id]/approve
@@ -39,90 +38,21 @@ export const PUT = withErrorHandling(
       return apiError('Forbidden: Admin access required', 403);
     }
 
-    // Use admin client to update status
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const result = await approveBusinessAccount(businessId);
 
-    try {
-      // First, check if business exists and is in pending status
-      const { data: business, error: fetchError } = await supabaseAdmin
-        .from('business_accounts')
-        .select('id, status, business_name, business_email')
-        .eq('id', businessId)
-        .single();
-
-      if (fetchError || !business) {
-        return apiError('Business account not found', 404);
-      }
-
-      if (business.status !== 'pending') {
-        return apiError(
-          `Cannot approve business with status '${business.status}'. Only pending businesses can be approved.`,
-          400
-        );
-      }
-
-      // Update status to active
-      const { error: updateError } = await supabaseAdmin
-        .from('business_accounts')
-        .update({
-          status: 'active',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', businessId);
-
-      if (updateError) {
-        console.error('Approval update error:', updateError);
-        return apiError('Failed to approve business account', 500);
-      }
-
-      // Get the owner's name from business_users
-      const { data: ownerUser } = await supabaseAdmin
-        .from('business_users')
-        .select('full_name')
-        .eq('business_account_id', businessId)
-        .eq('role', 'owner')
-        .single();
-
-      const ownerName = ownerUser?.full_name || 'Business Owner';
-
-      // Always link to the main platform domain: tenant subdomains and custom
-      // domains are not provisioned yet at approval time.
-      const platformDomain = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
-      const loginUrl = `${platformDomain}/business/login`;
-
-      // Send approval notification email
-      const emailResult = await sendBusinessApprovalEmail({
-        email: business.business_email,
-        businessName: business.business_name,
-        ownerName,
-        loginUrl,
-      });
-
-      if (!emailResult.success) {
-        console.error('Failed to send approval email:', emailResult.error);
-        // Don't fail the approval if email fails - log and continue
-      } else {
-        console.log('Approval email sent successfully:', emailResult.emailId);
-      }
-
-      return apiSuccess({
-        message: 'Business account approved successfully',
-        business_id: businessId,
-        business_name: business.business_name,
-        new_status: 'active',
-      });
-    } catch (error) {
-      console.error('Admin approve API error:', error);
-      return apiError('Failed to approve business account', 500);
+    if (!result.success) {
+      // "not found" and "already decided" are the only two ways the claim can fail
+      // without a thrown error; the message distinguishes them.
+      const status = result.error === 'Business account not found' ? 404 : 400;
+      return apiError(result.error || 'Failed to approve business account', status);
     }
+
+    return apiSuccess({
+      message: 'Business account approved successfully',
+      business_id: businessId,
+      business_name: result.businessName,
+      new_status: 'active',
+      email_delivered: result.emailDelivered,
+    });
   }
 );

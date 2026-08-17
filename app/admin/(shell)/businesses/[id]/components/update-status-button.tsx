@@ -59,7 +59,17 @@ export function UpdateStatusButton({ businessId, currentStatus }: UpdateStatusBu
         throw new Error(result.error || 'Failed to update status');
       }
 
-      toast.success(`Status updated: Business account is now ${newStatus}`);
+      // Deciding a pending account from this dropdown emails the owner, so a failed
+      // send has to be reported here too. Every other transition sends nothing and
+      // returns no email_delivered at all - undefined is not false, so those keep
+      // the plain success toast.
+      if (result.data?.email_delivered === false) {
+        toast.warning('Status updated, email not sent', {
+          description: `The account is now ${newStatus}, but the notification email could not be delivered.`,
+        });
+      } else {
+        toast.success(`Status updated: Business account is now ${newStatus}`);
+      }
 
       setIsDialogOpen(false);
       router.refresh();

@@ -46,7 +46,17 @@ export function ApproveButton({ businessId, businessName }: ApproveButtonProps) 
         throw new Error(result.error || 'Failed to approve business');
       }
 
-      toast.success(`Business approved: ${businessName} can now login and create bookings`);
+      // The approval stands even if the email did not go out. Saying only "approved"
+      // would hide a business waiting on a mail that never left - which is exactly
+      // how the original silent-approval bug survived unnoticed.
+      if (result.data?.email_delivered === false) {
+        toast.warning('Business approved, email not sent', {
+          description: `${businessName} can now login, but the notification email could not be delivered.`,
+        });
+      } else {
+        toast.success(`Business approved: ${businessName} can now login and create bookings`);
+      }
+
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to approve business');

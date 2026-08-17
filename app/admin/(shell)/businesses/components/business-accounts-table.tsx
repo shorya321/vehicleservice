@@ -124,7 +124,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
     setActionLoading(businessId);
 
     try {
-      let result;
+      let result: { success: boolean; error?: string; emailDelivered?: boolean } | undefined;
 
       switch (action) {
         case 'approve':
@@ -142,9 +142,21 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
       }
 
       if (result?.success) {
-        toast.success('Success', {
-          description: `${businessName} has been ${action}d`,
-        });
+        // Approve and reject email the owner. If that send failed the status still
+        // changed, so saying only "Success" would hide a business waiting on a mail
+        // that never went out.
+        const emailFailed =
+          (action === 'approve' || action === 'reject') && result.emailDelivered === false;
+
+        if (emailFailed) {
+          toast.warning('Status changed, email not sent', {
+            description: `${businessName} has been ${action}d, but the notification email could not be delivered.`,
+          });
+        } else {
+          toast.success('Success', {
+            description: `${businessName} has been ${action}d`,
+          });
+        }
       } else {
         toast.error('Failed', {
           description: result?.error || `Failed to ${action} business`,

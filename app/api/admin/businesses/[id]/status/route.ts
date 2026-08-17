@@ -8,6 +8,10 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
 import { businessStatusSchema } from '@/lib/business/validators';
+import {
+  approveBusinessAccount,
+  rejectBusinessAccount,
+} from '@/lib/business/admin/account-status';
 
 /**
  * PUT /api/admin/businesses/[id]/status
@@ -65,6 +69,37 @@ export const PUT = withErrorHandling(
     );
 
     try {
+      // Deciding a pending account from this dropdown is an approval or a rejection
+      // by another name, and owes the owner the same email the dedicated buttons
+      // send. Route those two through the shared helper; everything else - suspend,
+      // reactivate, inactive - has no template yet and stays a plain update.
+      const { data: current } = await supabaseAdmin
+        .from('business_accounts')
+        .select('status')
+        .eq('id', businessId)
+        .maybeSingle();
+
+      if (!current) {
+        return apiError('Business account not found', 404);
+      }
+
+      if (current.status === 'pending' && (status === 'active' || status === 'rejected')) {
+        const result =
+          status === 'active'
+            ? await approveBusinessAccount(businessId)
+            : await rejectBusinessAccount(businessId);
+
+        if (!result.success) {
+          return apiError(result.error || 'Failed to update status', 400);
+        }
+
+        return apiSuccess({
+          message: 'Status updated successfully',
+          new_status: status,
+          email_delivered: result.emailDelivered,
+        });
+      }
+
       const { error } = await supabaseAdmin
         .from('business_accounts')
         .update({

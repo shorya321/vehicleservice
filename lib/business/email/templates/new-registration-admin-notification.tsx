@@ -10,7 +10,6 @@ interface NewBusinessRegistrationAdminNotificationEmailProps {
   businessEmail: string;
   businessPhone: string;
   contactPersonName: string;
-  subdomain: string;
   registrationDate: string;
   businessDetailsUrl: string;
 }
@@ -20,7 +19,6 @@ export const NewBusinessRegistrationAdminNotificationEmail = ({
   businessEmail,
   businessPhone,
   contactPersonName,
-  subdomain,
   registrationDate,
   businessDetailsUrl,
 }: NewBusinessRegistrationAdminNotificationEmailProps) => {
@@ -48,9 +46,6 @@ export const NewBusinessRegistrationAdminNotificationEmail = ({
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Phone:</strong> {businessPhone}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Subdomain:</strong> {subdomain}.infiniatransfers.com
         </Text>
         <Text style={emailStyles.detailRow}>
           <strong>Registration Date:</strong> {registrationDate}

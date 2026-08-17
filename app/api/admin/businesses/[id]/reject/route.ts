@@ -4,10 +4,9 @@
  */
 
 import { NextRequest } from 'next/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
-import { sendBusinessRejectionEmail } from '@/lib/business/email/services/business-emails';
+import { rejectBusinessAccount } from '@/lib/business/admin/account-status';
 import { z } from 'zod';
 
 /**
@@ -61,87 +60,20 @@ export const PUT = withErrorHandling(
       rejectionReason = undefined;
     }
 
-    // Use admin client to update status
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const result = await rejectBusinessAccount(businessId, rejectionReason);
 
-    try {
-      // First, check if business exists and is in pending status
-      const { data: business, error: fetchError } = await supabaseAdmin
-        .from('business_accounts')
-        .select('id, status, business_name, business_email')
-        .eq('id', businessId)
-        .single();
-
-      if (fetchError || !business) {
-        return apiError('Business account not found', 404);
-      }
-
-      if (business.status !== 'pending') {
-        return apiError(
-          `Cannot reject business with status '${business.status}'. Only pending businesses can be rejected.`,
-          400
-        );
-      }
-
-      // Update status to rejected
-      const { error: updateError } = await supabaseAdmin
-        .from('business_accounts')
-        .update({
-          status: 'rejected',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', businessId);
-
-      if (updateError) {
-        console.error('Rejection update error:', updateError);
-        return apiError('Failed to reject business account', 500);
-      }
-
-      // Get the owner's name from business_users
-      const { data: ownerUser } = await supabaseAdmin
-        .from('business_users')
-        .select('full_name')
-        .eq('business_account_id', businessId)
-        .eq('role', 'owner')
-        .single();
-
-      const ownerName = ownerUser?.full_name || 'Business Owner';
-
-      // Send rejection notification email
-      const emailResult = await sendBusinessRejectionEmail({
-        email: business.business_email,
-        businessName: business.business_name,
-        ownerName,
-        reason: rejectionReason,
-        supportEmail: 'support@vehicleservice.com',
-      });
-
-      if (!emailResult.success) {
-        console.error('Failed to send rejection email:', emailResult.error);
-        // Don't fail the rejection if email fails - log and continue
-      } else {
-        console.log('Rejection email sent successfully:', emailResult.emailId);
-      }
-
-      return apiSuccess({
-        message: 'Business account rejected successfully',
-        business_id: businessId,
-        business_name: business.business_name,
-        new_status: 'rejected',
-        rejection_reason: rejectionReason,
-      });
-    } catch (error) {
-      console.error('Admin reject API error:', error);
-      return apiError('Failed to reject business account', 500);
+    if (!result.success) {
+      const status = result.error === 'Business account not found' ? 404 : 400;
+      return apiError(result.error || 'Failed to reject business account', status);
     }
+
+    return apiSuccess({
+      message: 'Business account rejected successfully',
+      business_id: businessId,
+      business_name: result.businessName,
+      new_status: 'rejected',
+      rejection_reason: rejectionReason,
+      email_delivered: result.emailDelivered,
+    });
   }
 );

@@ -51,7 +51,9 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
 
     setIsLoading(true);
     try {
-      let result;
+      let result:
+        | { success: boolean; error?: string; count?: number; emailFailures?: number }
+        | undefined;
 
       switch (action) {
         case 'approve':
@@ -69,9 +71,20 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
       }
 
       if (result?.success) {
-        toast.success('Success', {
-          description: `${selectedIds.length} business${selectedIds.length > 1 ? 'es' : ''} ${action}d successfully`,
-        });
+        // Bulk approve emails every owner it approves. Report the ones it could not
+        // reach: the accounts are live regardless, and nobody would think to check.
+        const emailFailures = action === 'approve' ? (result.emailFailures ?? 0) : 0;
+        const count = result.count ?? selectedIds.length;
+
+        if (emailFailures > 0) {
+          toast.warning('Approved, some emails not sent', {
+            description: `${count} business${count > 1 ? 'es' : ''} approved. ${emailFailures} notification email${emailFailures > 1 ? 's' : ''} could not be delivered.`,
+          });
+        } else {
+          toast.success('Success', {
+            description: `${count} business${count > 1 ? 'es' : ''} ${action}d successfully`,
+          });
+        }
         onClearSelection();
       } else {
         toast.error('Failed', {

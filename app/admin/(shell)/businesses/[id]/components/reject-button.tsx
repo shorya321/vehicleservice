@@ -51,7 +51,16 @@ export function RejectButton({ businessId, businessName }: RejectButtonProps) {
         throw new Error(result.error || 'Failed to reject business');
       }
 
-      toast.success(`Business rejected: ${businessName} has been denied access`);
+      // The rejection stands even if the email did not go out. Report the unsent
+      // mail rather than showing a clean success the applicant never received.
+      if (result.data?.email_delivered === false) {
+        toast.warning('Business rejected, email not sent', {
+          description: `${businessName} has been denied access, but the notification email could not be delivered.`,
+        });
+      } else {
+        toast.success(`Business rejected: ${businessName} has been denied access`);
+      }
+
       setIsDialogOpen(false);
       setRejectionReason('');
       router.refresh();
@@ -93,14 +102,14 @@ export function RejectButton({ businessId, businessName }: RejectButtonProps) {
             </Label>
             <Textarea
               id="rejection-reason"
-              placeholder="e.g., Incomplete information, suspicious activity, etc."
+              placeholder="e.g., The trade licence number could not be verified."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               disabled={isLoading}
               className="min-h-[100px]"
             />
             <p className="text-xs text-muted-foreground">
-              This reason will be stored internally for future reference
+              Sent to the applicant in the rejection email. Write it for them to read.
             </p>
           </div>
         </div>

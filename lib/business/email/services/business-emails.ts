@@ -36,7 +36,6 @@ export interface BusinessRegistrationAdminNotificationEmailData {
   businessEmail: string;
   businessPhone: string;
   contactPersonName: string;
-  subdomain: string;
   registrationDate: string;
 }
 
@@ -578,7 +577,6 @@ export async function sendBusinessRegistrationAdminNotificationEmail(
       businessEmail: data.businessEmail,
       businessPhone: data.businessPhone,
       contactPersonName: data.contactPersonName,
-      subdomain: data.subdomain,
       registrationDate: data.registrationDate,
       businessDetailsUrl: `${appUrl}/admin/businesses/${data.businessId}`,
     },

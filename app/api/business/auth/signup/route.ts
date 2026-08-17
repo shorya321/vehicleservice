@@ -121,11 +121,16 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       return apiError('Failed to create business account', 500);
     }
 
-    // Create business user (link auth user to business account)
+    // Create business user (link auth user to business account).
+    // full_name and email are set here rather than left NULL: the admin approval and
+    // rejection emails read the owner's name off this row, and an empty one used to
+    // make them greet a real person as "Business Owner".
     const { error: businessUserError } = await supabaseAdmin.from('business_users').insert({
       business_account_id: businessAccount.id,
       auth_user_id: authUser.user.id,
       role: 'owner',
+      full_name: data.contact_person_name,
+      email: data.business_email,
     });
 
     if (businessUserError) {
@@ -200,7 +205,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         businessEmail: data.business_email,
         businessPhone: data.business_phone,
         contactPersonName: data.contact_person_name,
-        subdomain: businessAccount.subdomain,
         registrationDate: formatBookingDateTime(new Date(), "d MMMM yyyy 'at' HH:mm"),
       });
 

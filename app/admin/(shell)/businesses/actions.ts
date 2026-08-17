@@ -9,6 +9,10 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { removeDomainFromVercel, isVercelConfigured } from '@/lib/vercel/api';
 import { stripe } from '@/lib/stripe/server';
+import {
+  approveBusinessAccount,
+  rejectBusinessAccount,
+} from '@/lib/business/admin/account-status';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,20 +25,22 @@ const supabaseAdmin = createClient(
   }
 );
 
+/**
+ * Approve and reject delegate to lib/business/admin/account-status, which owns the
+ * guarded status change *and* the notification to the owner. They used to do a bare
+ * UPDATE here and email nobody, while the detail-page API route did email - so which
+ * button an admin clicked decided whether the business ever heard back.
+ */
 export async function quickApproveBusinessAction(businessId: string) {
   try {
-    const { error } = await supabaseAdmin
-      .from('business_accounts')
-      .update({ status: 'active', updated_at: new Date().toISOString() })
-      .eq('id', businessId)
-      .eq('status', 'pending'); // Only approve if pending
+    const result = await approveBusinessAccount(businessId);
 
-    if (error) {
-      return { success: false, error: error.message };
+    if (!result.success) {
+      return { success: false, error: result.error };
     }
 
     revalidatePath('/admin/businesses');
-    return { success: true };
+    return { success: true, emailDelivered: result.emailDelivered };
   } catch (error) {
     return { success: false, error: 'Failed to approve business' };
   }
@@ -42,18 +48,14 @@ export async function quickApproveBusinessAction(businessId: string) {
 
 export async function quickRejectBusinessAction(businessId: string) {
   try {
-    const { error } = await supabaseAdmin
-      .from('business_accounts')
-      .update({ status: 'rejected', updated_at: new Date().toISOString() })
-      .eq('id', businessId)
-      .eq('status', 'pending'); // Only reject if pending
+    const result = await rejectBusinessAccount(businessId);
 
-    if (error) {
-      return { success: false, error: error.message };
+    if (!result.success) {
+      return { success: false, error: result.error };
     }
 
     revalidatePath('/admin/businesses');
-    return { success: true };
+    return { success: true, emailDelivered: result.emailDelivered };
   } catch (error) {
     return { success: false, error: 'Failed to reject business' };
   }
@@ -97,20 +99,35 @@ export async function quickReactivateBusinessAction(businessId: string) {
   }
 }
 
+/**
+ * One account at a time rather than a single `.in()` update, because each approval
+ * owes its owner an individually addressed email. Sequential on purpose: the batch
+ * is a handful of rows off one screen, and firing the sends concurrently would only
+ * make a provider rate-limit harder to read.
+ */
 export async function bulkApproveBusinessesAction(businessIds: string[]) {
   try {
-    const { error } = await supabaseAdmin
-      .from('business_accounts')
-      .update({ status: 'active', updated_at: new Date().toISOString() })
-      .in('id', businessIds)
-      .eq('status', 'pending');
+    let approved = 0;
+    let emailFailures = 0;
 
-    if (error) {
-      return { success: false, error: error.message };
+    for (const id of businessIds) {
+      const result = await approveBusinessAccount(id);
+
+      if (result.success) {
+        approved++;
+        if (result.emailDelivered === false) {
+          emailFailures++;
+        }
+      }
     }
 
     revalidatePath('/admin/businesses');
-    return { success: true, count: businessIds.length };
+
+    if (approved === 0) {
+      return { success: false, error: 'No pending businesses were approved' };
+    }
+
+    return { success: true, count: approved, emailFailures };
   } catch (error) {
     return { success: false, error: 'Failed to bulk approve businesses' };
   }
