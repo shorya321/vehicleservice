@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { format, parse } from 'date-fns';
+import Image from 'next/image';
 import { Car, Loader2, MapPin, Package, Receipt, Users } from 'lucide-react';
 import {
   Sheet,
@@ -49,6 +50,7 @@ interface VehicleOption {
   category: string;
   capacity: number;
   price: number;
+  image?: string;
 }
 
 interface TripEditorSheetProps {
@@ -184,6 +186,7 @@ export function TripEditorSheet({
             category: v.category,
             capacity: v.capacity,
             price: v.price,
+            image: v.image,
           }))
         );
       } catch {
@@ -495,10 +498,25 @@ export function TripEditorSheet({
                             : 'border-border bg-card hover:bg-muted/50'
                         )}
                       >
-                        <div>
-                          <div className="font-medium text-foreground">{vehicle.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {vehicle.category} · up to {vehicle.capacity} guests
+                        <div className="flex items-center gap-3">
+                          {/* Thumbnail only when the type has one. The row keeps its
+                              height without it. */}
+                          {vehicle.image && (
+                            <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
+                              <Image
+                                src={vehicle.image}
+                                alt={vehicle.name}
+                                fill
+                                sizes="56px"
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="font-medium text-foreground">{vehicle.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {vehicle.category} · up to {vehicle.capacity} guests
+                            </div>
                           </div>
                         </div>
                         {/* Cost, not the sell price. This is the internal builder. */}
