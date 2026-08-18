@@ -11,8 +11,11 @@ export const metadata: Metadata = {
 }
 
 export default async function ZonePricingPage() {
+  // The matrix needs every zone at once, not a page of them. getZones defaults
+  // to PAGE_SIZE (10), which silently truncated this grid to the first 10
+  // zones, and there is no pagination control here to reach the rest.
   const [zonesData, pricing] = await Promise.all([
-    getZones(),
+    getZones({ status: 'active', limit: 500 }),
     getZonePricing()
   ])
 

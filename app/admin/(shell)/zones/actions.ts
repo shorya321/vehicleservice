@@ -41,6 +41,14 @@ export interface ZonePricing {
   to_zone?: Zone
 }
 
+// Only the columns the pricing matrix actually reads. The matrix renders one
+// cell per zone pair, so this grows quadratically with zone count. Fetching
+// the full row plus both zone embeds is wasted bytes at 841 rows and up.
+export type ZonePricingCell = Pick<
+  ZonePricing,
+  'from_zone_id' | 'to_zone_id' | 'base_price'
+>
+
 const PAGE_SIZE = 10
 
 export async function getZones(filters: ZoneFilters = {}): Promise<PaginatedZones> {
@@ -207,17 +215,16 @@ export async function deleteZone(id: string) {
   return { success: true }
 }
 
-export async function getZonePricing(): Promise<ZonePricing[]> {
+export async function getZonePricing(): Promise<ZonePricingCell[]> {
   const supabase = await createClient()
 
+  // The caller builds a `from|to -> price` Map, so order is irrelevant and the
+  // zone embeds are unused. Range is explicit because PostgREST silently caps
+  // an unbounded select at ~1000 rows, which the N x N matrix will outgrow.
   const { data, error } = await supabase
     .from('zone_pricing')
-    .select(`
-      *,
-      from_zone:zones!zone_pricing_from_zone_id_fkey(id, name, slug),
-      to_zone:zones!zone_pricing_to_zone_id_fkey(id, name, slug)
-    `)
-    .order('base_price')
+    .select('from_zone_id, to_zone_id, base_price')
+    .range(0, 9999)
 
   if (error) {
     console.error('Error fetching zone pricing:', error)

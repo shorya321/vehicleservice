@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Zone, updateZonePricing } from '../actions'
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -29,8 +28,17 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
   const [tempValue, setTempValue] = useState<string>('')
   const [saving, setSaving] = useState(false)
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set())
+  const [zoneFilter, setZoneFilter] = useState('')
 
   const activeZones = zones.filter(z => z.is_active)
+
+  // Narrows both axes so a single pair is easy to find in a 29x29 grid. Edits
+  // live in pricingMap/changedCells keyed by zone id, so filtering a cell out
+  // of view never discards an unsaved change.
+  const query = zoneFilter.trim().toLowerCase()
+  const visibleZones = query
+    ? activeZones.filter(z => z.name.toLowerCase().includes(query))
+    : activeZones
 
   const getCellKey = (fromId: string, toId: string) => {
     return `${fromId}|${toId}`
@@ -162,25 +170,44 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
         </div>
       )}
 
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
+      <div className="flex items-center gap-3">
+        <Input
+          value={zoneFilter}
+          onChange={(e) => setZoneFilter(e.target.value)}
+          placeholder="Filter zones by name..."
+          className="max-w-xs"
+        />
+        <span className="text-sm text-muted-foreground">
+          Showing {visibleZones.length} of {activeZones.length} zones
+        </span>
+      </div>
+
+      {/*
+        Deliberately a plain <table>, not the shadcn <Table>. That component
+        wraps its table in its own `overflow-auto` div, which would become the
+        scroll parent and leave `sticky top-0` with nothing to stick to. The
+        remaining Table* parts below are plain thead/tbody/tr/th/td and are
+        used unchanged.
+      */}
+      <div className="relative rounded-md border overflow-auto max-h-[70vh]">
+        <table className="w-full caption-bottom text-sm">
           <TableHeader>
             <TableRow>
-              <TableHead className="sticky left-0 z-10 bg-background">From \ To</TableHead>
-              {activeZones.map(zone => (
-                <TableHead key={zone.id} className="text-center min-w-[100px]">
+              <TableHead className="sticky left-0 top-0 z-30 bg-background">From \ To</TableHead>
+              {visibleZones.map(zone => (
+                <TableHead key={zone.id} className="sticky top-0 z-20 bg-background text-center min-w-[120px]">
                   {zone.name}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {activeZones.map(fromZone => (
+            {visibleZones.map(fromZone => (
               <TableRow key={fromZone.id}>
                 <TableCell className="sticky left-0 z-10 bg-background font-medium">
                   {fromZone.name}
                 </TableCell>
-                {activeZones.map(toZone => {
+                {visibleZones.map(toZone => {
                   const cellKey = getCellKey(fromZone.id, toZone.id)
                   const isEditing = editingCell === cellKey
                   const price = getPrice(fromZone.id, toZone.id)
@@ -214,7 +241,7 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
                           'font-mono',
                           hasChanged && 'font-semibold text-yellow-600 dark:text-yellow-400'
                         )}>
-                          ${price.toFixed(2)}
+                          AED {price.toFixed(2)}
                         </span>
                       )}
                     </TableCell>
@@ -223,11 +250,11 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </table>
       </div>
 
       <div className="text-sm text-muted-foreground">
-        <p>Click on any cell to edit the base price for transfers between zones.</p>
+        <p>Click on any cell to edit the base price (AED) for transfers between zones.</p>
         <p>The diagonal represents transfers within the same zone.</p>
       </div>
     </div>
