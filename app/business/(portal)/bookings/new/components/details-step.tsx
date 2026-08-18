@@ -10,7 +10,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, CalendarDays, MessageSquare } from 'lucide-react';
+import { User, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -116,17 +116,6 @@ export function DetailsStep({ formData, onUpdate, onNext, onBack }: DetailsStepP
               )}
             />
           </div>
-        </div>
-
-        {/* Booking Details */}
-        <div className="space-y-4 p-5 border border-border rounded-xl bg-muted/30">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <CalendarDays className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground">Booking Details</h3>
-          </div>
-
         </div>
 
         {/* Optional Information */}
