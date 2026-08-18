@@ -14,7 +14,7 @@ import { motion } from 'motion/react';
 import { Car, Users, Briefcase, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
-import { formatCurrency } from '@/lib/business/wallet-operations';
+import { BUSINESS_BASE_CURRENCY, formatCurrency } from '@/lib/business/wallet-operations';
 import { VehicleTypeResult } from '../actions';
 
 interface VehicleTypeCardProps {
@@ -116,14 +116,14 @@ export function VehicleTypeCard({
 
         {/* Price */}
         <div className="pt-3 border-t border-border">
-          <p className="text-sm text-muted-foreground mb-1">Base Price</p>
+          <p className="text-sm text-muted-foreground mb-1">Price</p>
           <p
             className={cn(
               'text-2xl font-bold transition-colors duration-300',
               isSelected ? 'text-primary' : 'text-foreground'
             )}
           >
-            {formatCurrency(vehicleType.price)}
+            {formatCurrency(vehicleType.price, BUSINESS_BASE_CURRENCY)}
           </p>
           <p className="text-xs text-muted-foreground/70">per vehicle</p>
         </div>
