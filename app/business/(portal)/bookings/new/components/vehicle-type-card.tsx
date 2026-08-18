@@ -60,7 +60,9 @@ export function VehicleTypeCard({
         {showImage ? (
           <Image
             src={vehicleType.image as string}
-            alt={vehicleType.name}
+            /* Decorative: the name is the heading directly below, inside the
+               same button, so a descriptive alt just stutters it. */
+            alt=""
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className={cn(

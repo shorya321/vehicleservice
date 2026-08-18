@@ -505,7 +505,7 @@ export function TripEditorSheet({
                             <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
                               <Image
                                 src={vehicle.image}
-                                alt={vehicle.name}
+                                alt=""
                                 fill
                                 sizes="56px"
                                 className="object-cover"

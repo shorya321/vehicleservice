@@ -145,7 +145,7 @@ export function ReviewStep({
               <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                 <Image
                   src={vehicleType.image}
-                  alt={vehicleType.name}
+                  alt=""
                   fill
                   sizes="80px"
                   className="object-cover"
