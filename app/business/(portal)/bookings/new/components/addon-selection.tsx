@@ -259,8 +259,11 @@ export function AddonSelection({
                     </motion.div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground">{addon.name}</p>
+                      {/* Two lines, not one: the child-seat descriptions carry the weight range
+                          ("9-18kg · approx. 1-4 years") that tells the operator which seat to
+                          pick, and a single clamped line cut it off in the 3-column grid. */}
                       {addon.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {addon.description}
                         </p>
                       )}
