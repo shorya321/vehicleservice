@@ -17,6 +17,7 @@ import {
 } from '@/lib/business/api-utils';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { activityLogger } from '@/lib/business/activity/log';
+import { resolveTeamRoster } from '@/lib/business/team-identity';
 import {
   teamMemberCreateSchema,
   teamMemberUpdateSchema,
@@ -32,7 +33,7 @@ export const GET = requireBusinessOwner(async (_request: Request, user) => {
 
   const { data: members, error } = await adminClient
     .from('business_users')
-    .select('id, email, full_name, role, is_active, created_at')
+    .select('id, auth_user_id, email, full_name, role, is_active, created_at')
     .eq('business_account_id', user.businessAccountId)
     .order('created_at', { ascending: true });
 
@@ -41,7 +42,11 @@ export const GET = requireBusinessOwner(async (_request: Request, user) => {
     return apiError('Failed to load team members', 500);
   }
 
-  return apiSuccess({ members: members ?? [] });
+  // full_name/email are nullable on this table, so fall back to profiles and,
+  // for the owner only, to the business account. Same chain the Team page uses.
+  const roster = await resolveTeamRoster(adminClient, user.businessAccountId, members ?? []);
+
+  return apiSuccess({ members: roster });
 });
 
 /**

@@ -12,6 +12,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getBusinessMember } from '@/lib/business/member-scope';
+import { resolveTeamRoster } from '@/lib/business/team-identity';
 import { TeamPageContent } from './components/team-page-content';
 
 export const metadata: Metadata = {
@@ -48,7 +49,7 @@ export default async function BusinessTeamPage() {
 
   const { data: members } = await adminClient
     .from('business_users')
-    .select('id, email, full_name, role, is_active, created_at')
+    .select('id, auth_user_id, email, full_name, role, is_active, created_at')
     .eq('business_account_id', member.businessAccountId)
     .order('created_at', { ascending: true });
 
@@ -65,9 +66,16 @@ export default async function BusinessTeamPage() {
     return { ...counts, [row.created_by_user_id]: (counts[row.created_by_user_id] ?? 0) + 1 };
   }, {});
 
+  // business_users.full_name/email are nullable, and an owner row created
+  // outside the signup route carries NULLs - which rendered the owner as "-"
+  // in both columns while the header above showed their real name. Resolve
+  // from profiles, then from the business account for the owner, the same way
+  // every other portal surface does.
+  const roster = await resolveTeamRoster(adminClient, member.businessAccountId, members ?? []);
+
   return (
     <TeamPageContent
-      members={members ?? []}
+      members={roster}
       currentMemberId={member.id}
       bookingCounts={bookingCounts}
     />
