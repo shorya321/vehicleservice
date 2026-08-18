@@ -35,6 +35,7 @@ import {
 import { SelectedAddon } from './addon-selection';
 import { bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
 import { calculateWizardTotal } from '@/lib/business/wizard-pricing';
+import { capChildSeats } from '@/lib/business/child-seat-capacity';
 
 interface Location {
   id: string;
@@ -142,7 +143,19 @@ export function BookingWizard({
   }, []);
 
   function updateFormData(data: Partial<BookingFormData>) {
-    setFormData((prev) => ({ ...prev, ...data }));
+    setFormData((prev) => {
+      const next = { ...prev, ...data };
+      // Guests are chosen on the Route step and seats on the Review step, so guests can be lowered
+      // after the seats were picked. Left alone the seats stay in state, still priced but hidden
+      // (AddonSelection drops the whole group at capacity 0), and the API rejects the booking with
+      // no control left on screen to remove them. capChildSeats returns `prev`'s own array
+      // whenever nothing needs trimming, so this is identity-stable on every other update.
+      const capped = capChildSeats(
+        next.selected_addons ?? [],
+        (next.children ?? 0) + (next.infants ?? 0)
+      );
+      return capped === next.selected_addons ? next : { ...next, selected_addons: capped };
+    });
   }
 
   /**
