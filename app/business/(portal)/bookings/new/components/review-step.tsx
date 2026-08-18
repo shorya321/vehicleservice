@@ -7,6 +7,7 @@
  * Design: shadcn/ui theme-aware components
  */
 
+import Image from 'next/image';
 import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
 import { Button } from '@/components/business/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -137,8 +138,25 @@ export function ReviewStep({
             </div>
             <h3 className="text-base font-semibold text-foreground">Vehicle</h3>
           </div>
-          <p className="text-lg font-semibold text-foreground">{vehicleType?.name}</p>
-          <p className="text-sm text-muted-foreground">{vehicleType?.description}</p>
+          <div className="flex items-start gap-3">
+            {/* Thumbnail only when the type has an image. Without one the section
+                icon above still identifies the panel, so nothing shifts. */}
+            {vehicleType?.image && (
+              <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
+                <Image
+                  src={vehicleType.image}
+                  alt={vehicleType.name}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-lg font-semibold text-foreground">{vehicleType?.name}</p>
+              <p className="text-sm text-muted-foreground">{vehicleType?.description}</p>
+            </div>
+          </div>
         </div>
         <div className="p-5 rounded-xl border border-border bg-muted/30">
           <div className="flex items-center gap-3 mb-3">
