@@ -8,6 +8,8 @@
  * SCOPE: Business module ONLY
  */
 
+import { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import { Car, Users, Briefcase, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +29,9 @@ export function VehicleTypeCard({
   onSelect,
 }: VehicleTypeCardProps) {
   const prefersReducedMotion = useReducedMotion();
+  const [imageError, setImageError] = useState(false);
+
+  const showImage = Boolean(vehicleType.image) && !imageError;
 
   return (
     <motion.button
@@ -34,7 +39,7 @@ export function VehicleTypeCard({
       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       onClick={() => onSelect(vehicleType)}
       className={cn(
-        'relative p-5 rounded-xl text-left transition-all duration-300',
+        'group relative rounded-xl text-left overflow-hidden transition-all duration-300',
         'focus:outline-none',
         'border-2 card-hover',
         isSelected
@@ -44,30 +49,47 @@ export function VehicleTypeCard({
     >
       {/* Selected Indicator */}
       {isSelected && (
-        <div className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
+        <div className="absolute top-3 right-3 z-10 h-7 w-7 rounded-lg bg-primary flex items-center justify-center shadow-md ring-2 ring-background">
           <Check className="h-4 w-4 text-primary-foreground" />
         </div>
       )}
 
-      {/* Vehicle Icon */}
-      <div className="flex items-center justify-between mb-4">
-        <motion.div
-          whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          className={cn(
-            'h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300',
-            isSelected ? 'bg-primary/20' : 'bg-primary/10'
-          )}
-        >
-          <Car className={cn(
-            'h-6 w-6 transition-colors duration-300',
-            isSelected ? 'text-primary' : 'text-primary/70'
-          )} />
-        </motion.div>
+      {/* Vehicle Image. Falls back to the icon so a missing or broken
+          image_url keeps the card exactly the same height. */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        {showImage ? (
+          <Image
+            src={vehicleType.image as string}
+            alt={vehicleType.name}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className={cn(
+              'object-cover transition-transform duration-500',
+              prefersReducedMotion ? undefined : 'group-hover:scale-[1.03]'
+            )}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className={cn(
+                'h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300',
+                isSelected ? 'bg-primary/20' : 'bg-primary/10'
+              )}
+            >
+              <Car
+                className={cn(
+                  'h-6 w-6 transition-colors duration-300',
+                  isSelected ? 'text-primary' : 'text-primary/70'
+                )}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Vehicle Info */}
-      <div>
+      <div className="p-5">
         <div>
           <h3 className={cn(
             'font-semibold text-lg mb-1 transition-colors duration-300',
