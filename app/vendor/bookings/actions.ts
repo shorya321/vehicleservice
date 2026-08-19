@@ -14,11 +14,17 @@ import { sendDriverBookingAssignmentEmail } from '@/lib/email/services/driver-em
 import { sendBookingDriverAssignedEmail } from '@/lib/email/services/booking-emails'
 import {
   sendBusinessCustomerDriverAssignedEmail,
-  sendBusinessDriverAssignedEmail,
   sendBusinessCustomerBookingCompletedEmail,
   sendBusinessBookingStatusUpdateEmail,
-  sendBusinessVendorRejectedEmail,
 } from '@/lib/business/email/services/business-emails'
+import {
+  notifyBusinessDriverAssigned,
+  notifyBusinessVendorRejected,
+} from '@/lib/business/email/notify'
+import {
+  buildBusinessSideRecipients,
+  loadBookingCreatorById,
+} from '@/lib/business/email/recipients'
 import { toBookingTz, getBookingTimezone } from '@/lib/utils/timezone'
 
 /**
@@ -36,6 +42,7 @@ async function businessBookingEmailDetails(bookingId: string) {
     .select(
       `booking_number, trip_number, customer_name, customer_email,
        pickup_address, dropoff_address, pickup_datetime, business_account_id,
+       created_by_user_id,
        from_location:from_location_id(name),
        to_location:to_location_id(name)`
     )
@@ -62,6 +69,8 @@ async function businessBookingEmailDetails(bookingId: string) {
     customerEmail: (row.customer_email as string) || null,
     businessName: (account as any)?.business_name || 'Business',
     businessEmail: (account as any)?.business_email || null,
+    /** business_users.id of whoever created the booking, for the staff copy. */
+    createdByUserId: (row.created_by_user_id as string) || null,
     pickupLocation: withAddress(row.from_location?.name, row.pickup_address),
     dropoffLocation: withAddress(row.to_location?.name, row.dropoff_address),
     pickupDateTime: new Date(row.pickup_datetime).toLocaleString('en-US', {
@@ -658,7 +667,7 @@ export async function acceptAndAssignResources(
       const { data: businessBooking } = await adminClient
         .from('business_bookings')
         .select(
-          'business_account_id, business_account:business_accounts!business_bookings_business_account_id_fkey(business_name, business_email)'
+          'business_account_id, created_by_user_id, business_account:business_accounts!business_bookings_business_account_id_fkey(business_name, business_email)'
         )
         .eq('id', booking.id)
         .single()
@@ -675,12 +684,21 @@ export async function acceptAndAssignResources(
         })
       }
 
-      if (businessAccount?.business_email && businessAccountId) {
-        await sendBusinessDriverAssignedEmail({
+      if (businessAccountId) {
+        // The driver's name and number is the detail the guest phones to ask for, and the
+        // staff member who created the booking is who answers that phone.
+        const recipients = buildBusinessSideRecipients({
+          ownerEmail: businessAccount?.business_email ?? null,
+          ownerName: businessAccount?.business_name ?? null,
+          creator: await loadBookingCreatorById(
+            (businessBooking as any)?.created_by_user_id ?? null
+          ),
+        })
+
+        await notifyBusinessDriverAssigned(recipients, {
           ...tripDetails,
           businessAccountId,
-          businessName: businessAccount.business_name,
-          businessEmail: businessAccount.business_email,
+          businessName: businessAccount?.business_name || 'Business',
           passengerName: booking.customerName,
           bookingId: booking.id,
         })
@@ -790,10 +808,17 @@ export async function rejectAssignment(
     try {
       const details = await businessBookingEmailDetails(booking.id)
 
-      if (details?.businessEmail) {
-        await sendBusinessVendorRejectedEmail({
+      if (details) {
+        // The staff member who booked it needs the warning too: the guest is at risk of
+        // no pickup and has deliberately not been told.
+        const recipients = buildBusinessSideRecipients({
+          ownerEmail: details.businessEmail,
+          ownerName: details.businessName,
+          creator: await loadBookingCreatorById(details.createdByUserId),
+        })
+
+        await notifyBusinessVendorRejected(recipients, {
           businessAccountId: details.businessAccountId,
-          email: details.businessEmail,
           businessName: details.businessName,
           bookingId: booking.id,
           bookingNumber: details.bookingNumber,

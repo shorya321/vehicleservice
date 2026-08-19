@@ -9,11 +9,17 @@ import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/
 import { sendDriverBookingUnassignmentEmail } from '@/lib/email/services/driver-emails'
 import {
   sendBusinessCustomerBookingCancelledEmail,
-  sendBusinessBookingStatusUpdateEmail,
   sendBusinessCustomerBookingStatusUpdateEmail,
-  sendBusinessBookingCancellationEmail,
   sendBusinessVendorAssignedEmail,
 } from '@/lib/business/email/services/business-emails'
+import {
+  notifyBusinessBookingCancelled,
+  notifyBusinessBookingStatus,
+} from '@/lib/business/email/notify'
+import {
+  buildBusinessSideRecipients,
+  loadBookingCreatorById,
+} from '@/lib/business/email/recipients'
 import { getAppUrl } from '@/lib/email/config'
 import { format } from 'date-fns'
 import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
@@ -550,11 +556,16 @@ export async function updateBookingStatus(
             }).catch((err: unknown) => console.error('Failed to send customer cancel email:', err))
           }
 
-          // Send business cancellation email
-          if (emailDetails.businessEmail) {
-            sendBusinessBookingCancellationEmail({
+          // To the owner and to the staff member who created it. No actor is passed:
+          // an admin is not a business member, so nobody's own action is being echoed.
+          notifyBusinessBookingCancelled(
+            buildBusinessSideRecipients({
+              ownerEmail: emailDetails.businessEmail || null,
+              ownerName: emailDetails.businessName,
+              creator: await loadBookingCreatorById(emailDetails.createdByUserId),
+            }),
+            {
               businessAccountId: emailDetails.businessAccountId,
-              email: emailDetails.businessEmail,
               businessName: emailDetails.businessName,
               bookingNumber: emailDetails.bookingNumber,
               tripNumber: emailDetails.tripNumber,
@@ -563,12 +574,14 @@ export async function updateBookingStatus(
               dropoffLocation: emailDetails.dropoffLocation,
               pickupDateTime: emailDetails.pickupDateTime,
               cancellationReason,
+              // No refund path exists in this file, so nothing moved. The balance is the
+              // real one rather than the 0 this used to claim.
               refundAmount: 0,
-              newBalance: 0,
+              newBalance: emailDetails.walletBalance,
               currency: emailDetails.currency,
               walletUrl: `${getAppUrl()}/business/wallet`,
-            }).catch((err: unknown) => console.error('Failed to send business cancel email:', err))
-          }
+            }
+          ).catch((err: unknown) => console.error('Failed to send business cancel email:', err))
         } else {
           // Two audiences, two templates. The passenger gets one written in the
           // business's voice to its customer; the owner gets the internal one that opens
@@ -590,10 +603,17 @@ export async function updateBookingStatus(
             }).catch((err: unknown) => console.error('Failed to send customer status email:', err))
           }
 
-          if (emailDetails.businessEmail) {
-            sendBusinessBookingStatusUpdateEmail({
+          // The creator copy is gated to 'confirmed' inside the notify layer: this
+          // sender carries every status, and staff were scoped to the one that changes
+          // what they tell the guest.
+          notifyBusinessBookingStatus(
+            buildBusinessSideRecipients({
+              ownerEmail: emailDetails.businessEmail || null,
+              ownerName: emailDetails.businessName,
+              creator: await loadBookingCreatorById(emailDetails.createdByUserId),
+            }),
+            {
               businessAccountId: emailDetails.businessAccountId,
-              email: emailDetails.businessEmail,
               businessName: emailDetails.businessName,
               bookingNumber: emailDetails.bookingNumber,
               tripNumber: emailDetails.tripNumber,
@@ -603,8 +623,8 @@ export async function updateBookingStatus(
               pickupDateTime: emailDetails.pickupDateTime,
               previousStatus,
               newStatus: status,
-            }).catch((err: unknown) => console.error('Failed to send business status email:', err))
-          }
+            }
+          ).catch((err: unknown) => console.error('Failed to send business status email:', err))
         }
       }
     } catch (emailError) {
@@ -927,10 +947,14 @@ export async function bulkUpdateBookingStatus(
             })
           }
 
-          if (details.businessEmail) {
-            await sendBusinessBookingCancellationEmail({
+          await notifyBusinessBookingCancelled(
+            buildBusinessSideRecipients({
+              ownerEmail: details.businessEmail || null,
+              ownerName: details.businessName,
+              creator: await loadBookingCreatorById(details.createdByUserId),
+            }),
+            {
               businessAccountId: details.businessAccountId,
-              email: details.businessEmail,
               businessName: details.businessName,
               bookingNumber: details.bookingNumber,
               tripNumber: details.tripNumber,
@@ -940,11 +964,11 @@ export async function bulkUpdateBookingStatus(
               pickupDateTime: details.pickupDateTime,
               cancellationReason: 'Bulk cancellation by admin',
               refundAmount: 0,
-              newBalance: 0,
+              newBalance: details.walletBalance,
               currency: details.currency,
               walletUrl: `${getAppUrl()}/business/wallet`,
-            })
-          }
+            }
+          )
         } else {
           if (details.customerEmail) {
             await sendBusinessCustomerBookingStatusUpdateEmail({
@@ -962,10 +986,14 @@ export async function bulkUpdateBookingStatus(
             })
           }
 
-          if (details.businessEmail) {
-            await sendBusinessBookingStatusUpdateEmail({
+          await notifyBusinessBookingStatus(
+            buildBusinessSideRecipients({
+              ownerEmail: details.businessEmail || null,
+              ownerName: details.businessName,
+              creator: await loadBookingCreatorById(details.createdByUserId),
+            }),
+            {
               businessAccountId: details.businessAccountId,
-              email: details.businessEmail,
               businessName: details.businessName,
               bookingNumber: details.bookingNumber,
               tripNumber: details.tripNumber,
@@ -975,8 +1003,8 @@ export async function bulkUpdateBookingStatus(
               pickupDateTime: details.pickupDateTime,
               previousStatus,
               newStatus: status,
-            })
-          }
+            }
+          )
         }
       } catch (err) {
         console.error(`Failed to send email for bulk booking ${bookingId}:`, err)
@@ -1095,10 +1123,14 @@ export async function deleteBooking(
             })
           }
 
-          if (emailDetails.businessEmail) {
-            await sendBusinessBookingCancellationEmail({
+          await notifyBusinessBookingCancelled(
+            buildBusinessSideRecipients({
+              ownerEmail: emailDetails.businessEmail || null,
+              ownerName: emailDetails.businessName,
+              creator: await loadBookingCreatorById(emailDetails.createdByUserId),
+            }),
+            {
               businessAccountId: emailDetails.businessAccountId,
-              email: emailDetails.businessEmail,
               businessName: emailDetails.businessName,
               bookingNumber: emailDetails.bookingNumber,
               tripNumber: emailDetails.tripNumber,
@@ -1108,11 +1140,11 @@ export async function deleteBooking(
               pickupDateTime: emailDetails.pickupDateTime,
               cancellationReason: 'Booking removed by administrator',
               refundAmount: 0,
-              newBalance: 0,
+              newBalance: emailDetails.walletBalance,
               currency: emailDetails.currency,
               walletUrl: `${getAppUrl()}/business/wallet`,
-            })
-          }
+            }
+          )
         } catch (deleteEmailError) {
           console.error('Failed to send booking deletion emails:', deleteEmailError)
         }
@@ -1493,7 +1525,7 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
     .select(`
       booking_number, trip_number, customer_name, customer_email,
       pickup_address, dropoff_address, pickup_datetime,
-      business_account_id,
+      business_account_id, created_by_user_id,
       from_location:from_location_id(name),
       to_location:to_location_id(name)
     `)
@@ -1504,7 +1536,7 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
 
   const { data: account } = await adminClient
     .from('business_accounts')
-    .select('business_name, business_email, currency')
+    .select('business_name, business_email, currency, wallet_balance')
     .eq('id', booking.business_account_id)
     .single()
 
@@ -1533,6 +1565,14 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
     businessName: account?.business_name || 'Business',
     businessEmail: account?.business_email || '',
     currency: account?.currency || 'AED',
+    /** business_users.id of whoever created the booking, for the staff copy. */
+    createdByUserId: (booking.created_by_user_id as string) || null,
+    /**
+     * The tenant's balance as it stands. Cancelling from admin moves no money - there is
+     * no refund path in this file - so this is the unchanged figure, and the emails used
+     * to hardcode it to 0 and tell owners their wallet was empty.
+     */
+    walletBalance: Number(account?.wallet_balance ?? 0),
     pickupLocation,
     dropoffLocation,
     pickupDateTime,
