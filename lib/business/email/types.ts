@@ -94,6 +94,8 @@ export interface BusinessBookingStatusUpdateEmailData extends BusinessScopedEmai
   previousStatus: string;
   newStatus: string;
   statusMessage?: string;
+  /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
+  bookedBy?: string;
 }
 
 /** Driver-assigned email for the business account that made the booking. */
@@ -104,6 +106,8 @@ export interface BusinessDriverAssignedEmailData
   businessEmail: string;
   passengerName: string;
   bookingId: string;
+  /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
+  bookedBy?: string;
 }
 
 /** The passenger's trip-complete note. */
@@ -135,4 +139,27 @@ export interface BusinessVendorAssignmentEmailData extends BusinessScopedEmailDa
   pickupLocation: string;
   dropoffLocation: string;
   pickupDateTime: string;
+  /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
+  bookedBy?: string;
+}
+
+/**
+ * A booking whose pickup time moved, addressed to the business side.
+ *
+ * Rescheduling used to notify the vendor and the passenger and nobody at the business at
+ * all, so the account that owns the trip could be the last to learn it had moved.
+ */
+export interface BusinessBookingDatetimeChangedEmailData extends BusinessScopedEmailData {
+  email: string;
+  businessName: string;
+  bookingId: string;
+  bookingNumber: string;
+  tripNumber?: string;
+  customerName: string;
+  pickupLocation: string;
+  previousDateTime: string;
+  newDateTime: string;
+  modificationReason?: string;
+  /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
+  bookedBy?: string;
 }

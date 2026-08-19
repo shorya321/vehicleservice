@@ -156,36 +156,89 @@ describe('tenant-transport sends', () => {
 /**
  * Platform credentials, tenant brand.
  *
- * These are addressed to the business owner rather than to their customer. Routing them
- * over the tenant's own server would mean a business whose SMTP has failed stops hearing
- * about its own bookings, with the broken server as the only thing that could report it.
+ * These are addressed to somebody on the business side rather than to their customer.
+ * Routing them over the tenant's own server would mean a business whose SMTP has failed
+ * stops hearing about its own bookings, with the broken server as the only thing that
+ * could report it.
+ *
+ * Two audiences sit on this list. The owner, at business_accounts.business_email, and the
+ * staff member who created the booking, at their own address. The staff member is inside
+ * the tenant rather than an audience of it, so the same reasoning applies to both - and
+ * splitting the two halves of one message across two servers would make delivery
+ * arbitrary, with one copy arriving and one not.
  */
-const OWNER_SCOPED: Array<[file: string, fn: string]> = [
+const BUSINESS_SIDE_SCOPED: Array<[file: string, fn: string]> = [
   ['business-emails.ts', 'sendBusinessBookingConfirmationEmail'],
   ['business-emails.ts', 'sendBusinessBookingCancellationEmail'],
   ['business-emails.ts', 'sendBusinessDriverAssignedEmail'],
   ['business-emails.ts', 'sendBusinessBookingStatusUpdateEmail'],
   ['business-emails.ts', 'sendBusinessVendorAssignedEmail'],
   ['business-emails.ts', 'sendBusinessVendorRejectedEmail'],
+  ['business-emails.ts', 'sendBusinessBookingDatetimeChangedEmail'],
+  ['business-emails.ts', 'sendBusinessCreatorBookingConfirmationEmail'],
+  ['business-emails.ts', 'sendBusinessCreatorBookingCancellationEmail'],
+  ['business-emails.ts', 'sendBusinessCreatorBookingStatusUpdateEmail'],
+  ['business-emails.ts', 'sendBusinessCreatorDriverAssignedEmail'],
+  ['business-emails.ts', 'sendBusinessCreatorVendorRejectedEmail'],
+  ['business-emails.ts', 'sendBusinessCreatorDatetimeChangedEmail'],
 ];
 
-describe('owner sends', () => {
-  it.each(OWNER_SCOPED)('%s %s uses platform transport', (file, fn) => {
+describe('business-side sends', () => {
+  it.each(BUSINESS_SIDE_SCOPED)('%s %s uses platform transport', (file, fn) => {
     expect(bodyOf(file, fn)).toContain('forcePlatformTransport: true');
   });
 
-  it.each(OWNER_SCOPED)('%s %s still carries the tenant, so the brand survives', (file, fn) => {
-    const body = bodyOf(file, fn);
+  it.each(BUSINESS_SIDE_SCOPED)(
+    '%s %s still carries the tenant, so the brand survives',
+    (file, fn) => {
+      const body = bodyOf(file, fn);
 
-    expect(body).toContain('businessAccountId: data.businessAccountId');
-    expect(body).not.toContain('businessAccountId: null');
-  });
+      expect(body).toContain('businessAccountId: data.businessAccountId');
+      expect(body).not.toContain('businessAccountId: null');
+    }
+  );
+});
+
+/**
+ * The staff copies must not carry the tenant's running wallet balance.
+ *
+ * The templates enforce this through a discriminated union, but only because each sender
+ * annotates its templateProps: SendEmailParams types that field as Record<string, any>,
+ * so an unannotated literal is unchecked and the union enforces nothing. This pins the
+ * annotation itself, which is the thing holding the guarantee up.
+ */
+const CREATOR_SCOPED_WITH_MONEY: Array<[file: string, fn: string, props: string]> = [
+  [
+    'business-emails.ts',
+    'sendBusinessCreatorBookingConfirmationEmail',
+    'BusinessBookingConfirmationEmailProps',
+  ],
+  [
+    'business-emails.ts',
+    'sendBusinessCreatorBookingCancellationEmail',
+    'BusinessBookingCancelledEmailProps',
+  ],
+];
+
+describe('staff copies', () => {
+  it.each(CREATOR_SCOPED_WITH_MONEY)(
+    '%s %s declares itself the creator variant and is type-checked against %s',
+    (file, fn, props) => {
+      const body = bodyOf(file, fn);
+
+      expect(body).toContain("audience: 'creator'");
+      expect(body).toContain(`satisfies ${props}`);
+      // The wallet balance and the wallet CTA both belong to the owner alone.
+      expect(body).not.toContain('newBalance');
+      expect(body).not.toContain('walletUrl');
+    }
+  );
 });
 
 describe('the three lists together', () => {
   it('cover every send in the business and wallet services', () => {
     const named = new Set(
-      [...PLATFORM_ONLY, ...PASSENGER_SCOPED, ...OWNER_SCOPED].map(([file, fn]) => `${file}:${fn}`)
+      [...PLATFORM_ONLY, ...PASSENGER_SCOPED, ...BUSINESS_SIDE_SCOPED].map(([file, fn]) => `${file}:${fn}`)
     );
 
     for (const file of ['business-emails.ts', 'wallet-emails.ts']) {

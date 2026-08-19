@@ -4,6 +4,7 @@ import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -20,6 +21,8 @@ interface BusinessBookingDriverAssignedEmailProps {
   pickupDate: string;
   pickupTime: string;
   bookingUrl: string;
+  /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
+  bookedBy?: string;
 }
 
 export const BusinessBookingDriverAssignedEmail = ({
@@ -32,6 +35,7 @@ export const BusinessBookingDriverAssignedEmail = ({
   pickupDate,
   pickupTime,
   bookingUrl,
+  bookedBy,
 }: BusinessBookingDriverAssignedEmailProps) => {
   return (
     <EmailLayout
@@ -39,6 +43,8 @@ export const BusinessBookingDriverAssignedEmail = ({
       heading="Driver Assigned"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
+
+      <BookedBy bookedBy={bookedBy} />
 
       <InfoBox type="success">
         A driver has been assigned to booking{' '}

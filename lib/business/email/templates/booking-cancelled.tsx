@@ -4,10 +4,11 @@ import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
-interface BusinessBookingCancelledEmailProps {
+export interface BookingCancelledFacts {
   businessName: string;
   bookingNumber: string;
   tripNumber?: string;
@@ -16,30 +17,51 @@ interface BusinessBookingCancelledEmailProps {
   dropoffLocation: string;
   pickupDateTime: string;
   cancellationReason?: string;
+  /** This booking's refund. Staff see the same figure on the portal booking detail. */
   refundAmount: number;
-  newBalance: number;
   currency: string;
-  walletUrl: string;
   originalAmount?: number;
   originalCurrency?: string;
+  /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
+  bookedBy?: string;
 }
 
-export const BusinessBookingCancelledEmail = ({
-  businessName,
-  bookingNumber,
-  tripNumber,
-  customerName,
-  pickupLocation,
-  dropoffLocation,
-  pickupDateTime,
-  cancellationReason,
-  refundAmount,
-  newBalance,
-  currency,
-  walletUrl,
-  originalAmount,
-  originalCurrency,
-}: BusinessBookingCancelledEmailProps) => {
+/**
+ * Who is reading, and therefore what wallet surface appears.
+ *
+ * Three things here belong to the owner alone: the running balance, the "credited back to
+ * your wallet" note, and the wallet CTA. /business/wallet redirects staff to the
+ * dashboard, so shipping that button to a staff member sends them somewhere that bounces
+ * them - worse than showing nothing.
+ *
+ * Carrying `walletUrl` in the owner arm rather than alongside the facts means the staff
+ * variant cannot render the button even by accident. See the same reasoning, at more
+ * length, in ./booking-confirmation.tsx.
+ */
+type WalletView =
+  | { audience: 'owner'; newBalance: number; walletUrl: string }
+  | { audience: 'creator' };
+
+export type BusinessBookingCancelledEmailProps = BookingCancelledFacts & WalletView;
+
+export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEmailProps) => {
+  // One object, not a destructured signature, so `props.audience` still narrows the
+  // owner-only fields below.
+  const {
+    businessName,
+    bookingNumber,
+    tripNumber,
+    customerName,
+    pickupLocation,
+    dropoffLocation,
+    pickupDateTime,
+    cancellationReason,
+    refundAmount,
+    currency,
+    originalAmount,
+    originalCurrency,
+    bookedBy,
+  } = props;
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
     <EmailLayout
@@ -47,6 +69,8 @@ export const BusinessBookingCancelledEmail = ({
       heading="Booking Cancelled"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
+
+      <BookedBy bookedBy={bookedBy} />
 
       <InfoBox type="warning">
         Booking <strong>#{tripNumber || bookingNumber}</strong> has been cancelled.
@@ -96,17 +120,25 @@ export const BusinessBookingCancelledEmail = ({
             Refunded in {originalCurrency} {originalAmount!.toFixed(2)}
           </Text>
         )}
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.totalRow}>
-          <strong>New Wallet Balance:</strong> {currency} {newBalance.toFixed(2)}
-        </Text>
+        {props.audience === 'owner' && (
+          <>
+            <Hr style={emailStyles.hr} />
+            <Text style={emailStyles.totalRow}>
+              <strong>New Wallet Balance:</strong> {currency} {props.newBalance.toFixed(2)}
+            </Text>
+          </>
+        )}
       </DetailsSection>
 
-      <InfoBox type="success">
-        The refund has been automatically credited back to your wallet.
-      </InfoBox>
+      {props.audience === 'owner' && (
+        <>
+          <InfoBox type="success">
+            The refund has been automatically credited back to your wallet.
+          </InfoBox>
 
-      <Button href={walletUrl}>View Wallet Balance</Button>
+          <Button href={props.walletUrl}>View Wallet Balance</Button>
+        </>
+      )}
 
       <Text style={emailStyles.text}>
         If you have any questions about this cancellation, please contact our support team.

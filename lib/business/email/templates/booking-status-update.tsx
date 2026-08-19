@@ -3,6 +3,7 @@ import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -17,6 +18,8 @@ interface BusinessBookingStatusUpdateEmailProps {
   previousStatus: string;
   newStatus: string;
   statusMessage?: string;
+  /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
+  bookedBy?: string;
 }
 
 const statusInfoType: Record<string, 'success' | 'warning' | 'info'> = {
@@ -42,6 +45,7 @@ export const BusinessBookingStatusUpdateEmail = ({
   previousStatus,
   newStatus,
   statusMessage,
+  bookedBy,
 }: BusinessBookingStatusUpdateEmailProps) => {
   const infoType = statusInfoType[newStatus] || 'info';
 
@@ -51,6 +55,8 @@ export const BusinessBookingStatusUpdateEmail = ({
       heading="Booking Status Update"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
+
+      <BookedBy bookedBy={bookedBy} />
 
       <InfoBox type={infoType}>
         Booking <strong>#{tripNumber || bookingNumber}</strong> status changed from{' '}

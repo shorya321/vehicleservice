@@ -9,12 +9,21 @@ import type {
   BusinessDriverAssignedEmailData,
   BusinessCustomerBookingCompletedEmailData,
   BusinessVendorAssignmentEmailData,
+  BusinessBookingDatetimeChangedEmailData,
 } from '../types';
 import BusinessAccountApprovedEmail from '../templates/account-approved';
 import BusinessAccountRejectedEmail from '../templates/account-rejected';
 import BusinessWelcomePendingEmail from '../templates/welcome-pending';
 import BusinessBookingConfirmationEmail from '../templates/booking-confirmation';
+import type {
+  BookingConfirmationFacts,
+  BusinessBookingConfirmationEmailProps,
+} from '../templates/booking-confirmation';
 import BusinessBookingCancelledEmail from '../templates/booking-cancelled';
+import type {
+  BookingCancelledFacts,
+  BusinessBookingCancelledEmailProps,
+} from '../templates/booking-cancelled';
 import CustomerBookingConfirmationEmail from '../templates/customer-booking-confirmation';
 import CustomerDatetimeChangedEmail from '../templates/customer-datetime-changed';
 import CustomerBookingCancelledEmail from '../templates/customer-booking-cancelled';
@@ -23,9 +32,161 @@ import BusinessCustomerBookingStatusUpdateEmail from '../templates/customer-book
 import BusinessCustomerBookingCompletedEmail from '../templates/customer-booking-completed';
 import BusinessVendorAssignedEmail from '../templates/booking-vendor-assigned';
 import BusinessVendorRejectedEmail from '../templates/booking-vendor-rejected';
+import BusinessBookingDatetimeChangedEmail from '../templates/booking-datetime-changed';
 import CustomerDriverAssignedEmail from '../templates/customer-driver-assigned';
 import BusinessBookingDriverAssignedEmail from '../templates/booking-driver-assigned';
 import NewBusinessRegistrationAdminNotificationEmail from '../templates/new-registration-admin-notification';
+
+/**
+ * Tell the staff member who created a booking that its status moved.
+ *
+ * Gated by creatorWantsStatus in ../recipients.ts, not here: the underlying owner sender
+ * carries every status in the system, including completion from the vendor path, and
+ * staff were deliberately scoped to the one status that changes what they tell the guest.
+ */
+export async function sendBusinessCreatorBookingStatusUpdateEmail(
+  data: BusinessBookingStatusUpdateEmailData
+): Promise<EmailResult> {
+  const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1);
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.creator.booking.status_update',
+    to: data.email,
+    subject: `Booking ${statusLabel} - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessBookingStatusUpdateEmail,
+    templateProps: {
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDateTime: data.pickupDateTime,
+      previousStatus: data.previousStatus,
+      newStatus: data.newStatus,
+      statusMessage: data.statusMessage,
+    },
+  });
+}
+
+/**
+ * Give the staff member who created a booking the driver's name and number.
+ *
+ * The highest-value message in this set. It is the detail the guest phones to ask for,
+ * and the staff member is the one who answers that phone.
+ */
+export async function sendBusinessCreatorDriverAssignedEmail(
+  data: BusinessDriverAssignedEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.creator.driver_assigned',
+    to: data.businessEmail,
+    subject: `Driver Assigned - #${data.tripNumber || data.bookingReference}`,
+    template: BusinessBookingDriverAssignedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      passengerName: data.passengerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      driverName: data.driverName,
+      driverPhone: data.driverPhone,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+    },
+  });
+}
+
+/**
+ * Warn the staff member who created a booking that its transport fell through.
+ *
+ * The guest is at risk of no pickup and has not been told, deliberately. The staff member
+ * needs the warning so they can manage the expectation the reassignment is racing.
+ */
+export async function sendBusinessCreatorVendorRejectedEmail(
+  data: BusinessVendorAssignmentEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.creator.booking.vendor_rejected',
+    to: data.email,
+    subject: `Arranging new transport - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessVendorRejectedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      pickupDateTime: data.pickupDateTime,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+    },
+  });
+}
+
+/**
+ * Tell the business account that one of its bookings moved.
+ *
+ * New: rescheduling previously emailed the vendor and the passenger and said nothing to
+ * the business at all.
+ */
+export async function sendBusinessBookingDatetimeChangedEmail(
+  data: BusinessBookingDatetimeChangedEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.booking.datetime_changed',
+    to: data.email,
+    subject: `Pickup Time Changed - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessBookingDatetimeChangedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      previousDateTime: data.previousDateTime,
+      newDateTime: data.newDateTime,
+      modificationReason: data.modificationReason,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+      bookedBy: data.bookedBy,
+    },
+  });
+}
+
+/**
+ * Tell the staff member who created a booking that its pickup time moved.
+ *
+ * Suppressed when they moved it themselves; see ../recipients.ts.
+ */
+export async function sendBusinessCreatorDatetimeChangedEmail(
+  data: BusinessBookingDatetimeChangedEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.creator.booking.datetime_changed',
+    to: data.email,
+    subject: `Pickup Time Changed - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessBookingDatetimeChangedEmail,
+    templateProps: {
+      businessName: data.businessName,
+      bookingNumber: data.bookingNumber,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      pickupLocation: data.pickupLocation,
+      previousDateTime: data.previousDateTime,
+      newDateTime: data.newDateTime,
+      modificationReason: data.modificationReason,
+      bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+    },
+  });
+}
 
 /**
  * Business Registration Admin Notification Email Data
@@ -163,6 +324,51 @@ export interface BusinessBookingConfirmationEmailData {
   /** The AED amount actually charged, when `currency` is a converted display currency. */
   originalAmount?: number;
   originalCurrency?: string;
+  /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
+  bookedBy?: string;
+}
+
+/**
+ * The same booking, addressed to the staff member who created it.
+ *
+ * `newBalance` is absent by construction rather than by convention: the tenant's running
+ * balance is owner-only, and Omit is what stops a caller passing it anyway.
+ */
+export type BusinessCreatorBookingConfirmationEmailData = Omit<
+  BusinessBookingConfirmationEmailData,
+  'newBalance' | 'bookedBy'
+>;
+
+/**
+ * Everything both audiences see. Shared so the owner copy and the creator copy cannot
+ * drift into describing the same booking differently.
+ */
+function confirmationFacts(
+  data: BusinessCreatorBookingConfirmationEmailData
+): BookingConfirmationFacts {
+  return {
+    businessName: data.businessName,
+    bookingNumber: data.bookingNumber,
+    tripNumber: data.tripNumber,
+    customerName: data.customerName,
+    customerPhone: data.customerPhone,
+    pickupLocation: data.pickupLocation,
+    dropoffLocation: data.dropoffLocation,
+    pickupDateTime: data.pickupDateTime,
+    vehicleType: data.vehicleType,
+    passengerCount: data.passengerCount,
+    adults: data.adults,
+    children: data.children,
+    infants: data.infants,
+    totalPrice: data.totalPrice,
+    currency: data.currency,
+    walletDeducted: data.walletDeducted,
+    bookingUrl: data.bookingUrl,
+    referenceNumber: data.referenceNumber,
+    extras: data.extras,
+    originalAmount: data.originalAmount,
+    originalCurrency: data.originalCurrency,
+  };
 }
 
 /**
@@ -182,30 +388,42 @@ export async function sendBusinessBookingConfirmationEmail(
     to: data.email,
     subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingConfirmationEmail,
+    // Annotated rather than written inline. SendEmailParams types templateProps as
+    // Record<string, any>, so an inline literal is unchecked and the template's
+    // owner/creator union would enforce nothing at all.
     templateProps: {
-      businessName: data.businessName,
-      bookingNumber: data.bookingNumber,
-      tripNumber: data.tripNumber,
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      pickupLocation: data.pickupLocation,
-      dropoffLocation: data.dropoffLocation,
-      pickupDateTime: data.pickupDateTime,
-      vehicleType: data.vehicleType,
-      passengerCount: data.passengerCount,
-      adults: data.adults,
-      children: data.children,
-      infants: data.infants,
-      totalPrice: data.totalPrice,
-      currency: data.currency,
-      walletDeducted: data.walletDeducted,
+      ...confirmationFacts(data),
+      bookedBy: data.bookedBy,
+      audience: 'owner',
       newBalance: data.newBalance,
-      bookingUrl: data.bookingUrl,
-      referenceNumber: data.referenceNumber,
-      extras: data.extras,
-      originalAmount: data.originalAmount,
-      originalCurrency: data.originalCurrency,
-    },
+    } satisfies BusinessBookingConfirmationEmailProps,
+  });
+}
+
+/**
+ * Send booking confirmation to the staff member who created the booking.
+ *
+ * Before this, a staff member creating a booking received nothing: the confirmation went
+ * to business_accounts.business_email whoever had made it. Same transport as the owner
+ * copy - the creator is inside the tenant, not an audience of it, and splitting the two
+ * halves of one message across two servers makes delivery arbitrary.
+ *
+ * No `bookedBy`: telling somebody they booked it is noise on their own email.
+ */
+export async function sendBusinessCreatorBookingConfirmationEmail(
+  data: BusinessCreatorBookingConfirmationEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.creator.booking.confirmation',
+    to: data.email,
+    subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessBookingConfirmationEmail,
+    templateProps: {
+      ...confirmationFacts(data),
+      audience: 'creator',
+    } satisfies BusinessBookingConfirmationEmailProps,
   });
 }
 
@@ -231,6 +449,39 @@ export interface BusinessBookingCancellationEmailData {
   /** The AED amount actually refunded, when `currency` is a converted display currency. */
   originalAmount?: number;
   originalCurrency?: string;
+  /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
+  bookedBy?: string;
+}
+
+/**
+ * The same cancellation, addressed to the staff member who created the booking.
+ *
+ * Both the running balance and the wallet link are absent by construction. /business/wallet
+ * redirects staff to the dashboard, so a wallet CTA here would bounce its own reader.
+ */
+export type BusinessCreatorBookingCancellationEmailData = Omit<
+  BusinessBookingCancellationEmailData,
+  'newBalance' | 'walletUrl' | 'bookedBy'
+>;
+
+/** Everything both audiences see, shared so the two copies cannot drift. */
+function cancellationFacts(
+  data: BusinessCreatorBookingCancellationEmailData
+): BookingCancelledFacts {
+  return {
+    businessName: data.businessName,
+    bookingNumber: data.bookingNumber,
+    tripNumber: data.tripNumber,
+    customerName: data.customerName,
+    pickupLocation: data.pickupLocation,
+    dropoffLocation: data.dropoffLocation,
+    pickupDateTime: data.pickupDateTime,
+    cancellationReason: data.cancellationReason,
+    refundAmount: data.refundAmount,
+    currency: data.currency,
+    originalAmount: data.originalAmount,
+    originalCurrency: data.originalCurrency,
+  };
 }
 
 /**
@@ -251,21 +502,36 @@ export async function sendBusinessBookingCancellationEmail(
     subject: `Booking Cancelled - #${data.tripNumber || data.bookingNumber}`,
     template: BusinessBookingCancelledEmail,
     templateProps: {
-      businessName: data.businessName,
-      bookingNumber: data.bookingNumber,
-      tripNumber: data.tripNumber,
-      customerName: data.customerName,
-      pickupLocation: data.pickupLocation,
-      dropoffLocation: data.dropoffLocation,
-      pickupDateTime: data.pickupDateTime,
-      cancellationReason: data.cancellationReason,
-      refundAmount: data.refundAmount,
+      ...cancellationFacts(data),
+      bookedBy: data.bookedBy,
+      audience: 'owner',
       newBalance: data.newBalance,
-      currency: data.currency,
       walletUrl: data.walletUrl,
-      originalAmount: data.originalAmount,
-      originalCurrency: data.originalCurrency,
-    },
+    } satisfies BusinessBookingCancelledEmailProps,
+  });
+}
+
+/**
+ * Tell the staff member who created a booking that it has been cancelled.
+ *
+ * Reaches them whoever pulled the trigger - an admin, the owner, or the cancellation
+ * policy - because the person who has to phone the guest is the one who booked it.
+ * Suppressed only when they cancelled it themselves; see ../recipients.ts.
+ */
+export async function sendBusinessCreatorBookingCancellationEmail(
+  data: BusinessCreatorBookingCancellationEmailData
+): Promise<EmailResult> {
+  return sendBusinessEmail({
+    businessAccountId: data.businessAccountId,
+    forcePlatformTransport: true,
+    kind: 'business.creator.booking.cancellation',
+    to: data.email,
+    subject: `Booking Cancelled - #${data.tripNumber || data.bookingNumber}`,
+    template: BusinessBookingCancelledEmail,
+    templateProps: {
+      ...cancellationFacts(data),
+      audience: 'creator',
+    } satisfies BusinessBookingCancelledEmailProps,
   });
 }
 
@@ -402,6 +668,7 @@ export async function sendBusinessDriverAssignedEmail(
       pickupDate: data.pickupDate,
       pickupTime: data.pickupTime,
       bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+      bookedBy: data.bookedBy,
     },
   });
 }
@@ -435,6 +702,7 @@ export async function sendBusinessBookingStatusUpdateEmail(
       previousStatus: data.previousStatus,
       newStatus: data.newStatus,
       statusMessage: data.statusMessage,
+      bookedBy: data.bookedBy,
     },
   });
 }
@@ -555,6 +823,7 @@ export async function sendBusinessVendorRejectedEmail(
       pickupLocation: data.pickupLocation,
       pickupDateTime: data.pickupDateTime,
       bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+      bookedBy: data.bookedBy,
     },
   });
 }

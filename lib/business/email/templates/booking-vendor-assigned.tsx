@@ -4,6 +4,7 @@ import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -16,6 +17,8 @@ interface BusinessVendorAssignedEmailProps {
   dropoffLocation: string;
   pickupDateTime: string;
   bookingUrl: string;
+  /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
+  bookedBy?: string;
 }
 
 /**
@@ -38,6 +41,7 @@ export const BusinessVendorAssignedEmail = ({
   dropoffLocation,
   pickupDateTime,
   bookingUrl,
+  bookedBy,
 }: BusinessVendorAssignedEmailProps) => {
   return (
     <EmailLayout
@@ -45,6 +49,8 @@ export const BusinessVendorAssignedEmail = ({
       heading="Transport Arranged"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
+
+      <BookedBy bookedBy={bookedBy} />
 
       <InfoBox type="success">
         Booking <strong>#{tripNumber || bookingNumber}</strong> has been assigned to a
