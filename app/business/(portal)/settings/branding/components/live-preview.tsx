@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/business/ui/button'
 import { Sun, Moon, LayoutDashboard, CreditCard, Calendar, Settings, ChevronRight, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getContrastColor } from '@/lib/business/branding-utils'
 
 interface PreviewColors {
   // Accent colors
@@ -99,7 +100,7 @@ export function LivePreview({ darkColors, lightColors, brandName = 'Your Brand',
             className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
             style={{
               backgroundColor: colors.primary,
-              color: previewMode === 'dark' ? '#09090B' : '#FFFFFF',
+              color: getContrastColor(colors.primary),
             }}
           >
             {brandName.substring(0, 2).toUpperCase()}
@@ -193,7 +194,7 @@ export function LivePreview({ darkColors, lightColors, brandName = 'Your Brand',
               className="w-full py-2.5 rounded-lg text-xs font-medium transition-colors duration-300 flex items-center justify-center gap-1"
               style={{
                 backgroundColor: colors.primary,
-                color: previewMode === 'dark' ? '#09090B' : '#FFFFFF',
+                color: getContrastColor(colors.primary),
               }}
             >
               New Booking

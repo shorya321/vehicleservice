@@ -200,7 +200,7 @@ export function shiftHexLightness(hex: string, amount: number): string {
  * @param hex Hex color, with or without a leading #
  * @returns Relative luminance in the 0-1 range
  */
-function relativeLuminance(hex: string): number {
+export function relativeLuminance(hex: string): number {
   const { r, g, b } = hexChannels(hex);
   const linearise = (value: number): number => {
     const channel = value / 255;
@@ -212,6 +212,22 @@ function relativeLuminance(hex: string): number {
   return (
     0.2126 * linearise(r) + 0.7152 * linearise(g) + 0.0722 * linearise(b)
   );
+}
+
+/**
+ * WCAG 2.1 contrast ratio between two colours.
+ *
+ * Symmetric - the order of the arguments does not matter. Ranges from 1 (same
+ * colour) to 21 (black against white).
+ * @param a Hex colour, with or without a leading #
+ * @param b Hex colour, with or without a leading #
+ * @returns Contrast ratio in the 1-21 range
+ */
+export function contrastRatio(a: string, b: string): number {
+  const lighter = Math.max(relativeLuminance(a), relativeLuminance(b));
+  const darker = Math.min(relativeLuminance(a), relativeLuminance(b));
+
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 /**

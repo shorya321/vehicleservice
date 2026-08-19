@@ -158,9 +158,6 @@ interface BusinessSidebarProps {
   businessName: string;
   brandName?: string | null;
   logoUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
   /** business_users.role of the signed-in member. Anything but 'owner' is staff. */
   role?: string | null;
 }
@@ -556,7 +553,7 @@ export function BusinessSidebar({
       <Sheet open={isMobileOpen} onOpenChange={(open) => !open && closeMobile()}>
         <SheetContent
           side="left"
-          className="w-[280px] p-0 [&>button]:hidden bg-card border-r border-border"
+          className="w-[280px] p-0 [&>button]:hidden business-chrome-sidebar border-r border-border"
         >
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           <TooltipProvider delayDuration={0}>
@@ -590,7 +587,7 @@ export function BusinessSidebar({
         className={cn(
           'fixed left-0 top-0 z-50 h-screen',
           'flex flex-col overflow-hidden',
-          'bg-card border-r border-border',
+          'business-chrome-sidebar border-r border-border',
           'shadow-lg sidebar-transition',
           !prefersReducedMotion && 'will-change-[width]'
         )}

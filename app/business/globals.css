@@ -644,16 +644,6 @@ body {
    SCOPE: Business portal only
    ============================================ */
 
-/*
- * Fix for form labels not visible in light mode
- * Labels should use foreground color, not muted-foreground
- */
-
-/* Force labels with muted-foreground class to have better contrast in light mode */
-.light label.text-muted-foreground {
-  color: hsl(240 6% 30%) !important; /* Darker gray #4a4a4f for light mode visibility */
-}
-
 /* Ensure FormLabel components in business forms are visible */
 .light [data-slot="form-label"],
 .light form label {
@@ -668,26 +658,20 @@ body {
   line-height: 1;
 }
 
+/* Muted labels follow the tenant's derived muted text in both modes. Light mode
+   used to carry a hardcoded gray here that no theme_config value could beat;
+   --business-text-muted enforces its own contrast floor instead. */
 .business-label-muted {
-  color: hsl(var(--muted-foreground));
+  color: var(--business-text-muted);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1;
 }
 
-/* Light mode override for business-label-muted */
-.light .business-label-muted {
-  color: hsl(240 6% 35%); /* Better contrast than default muted-foreground */
-}
-
 /* Review section labels - high contrast in both modes */
 .text-business-label {
-  color: hsl(var(--muted-foreground));
+  color: var(--business-text-muted);
   font-weight: 500;
-}
-
-.light .text-business-label {
-  color: hsl(240 6% 35%); /* #56565e - darker gray for light mode visibility */
 }
 
 /* ============================================
@@ -765,10 +749,25 @@ body {
    SIDEBAR STYLES
    ============================================ */
 
-.business-sidebar {
-  background-color: var(--business-surface-1);
-  border-right: 1px solid var(--business-border-subtle);
-  transition: width var(--business-duration-moderate) var(--business-ease-out);
+/* Portal chrome.
+ *
+ * The sidebar and the header paint from the tenant's own "Sidebar" and
+ * "Surface" colours. They used to be plain `bg-card`, so both pickers were
+ * inert at runtime while the branding Live Preview showed them as distinct -
+ * the reported "preview is right, the portal is wrong".
+ *
+ * Classes rather than Tailwind arbitrary values because the header needs 95%
+ * alpha and `bg-[var(--x)]/95` does not compose. rgba() over a triplet var
+ * rather than color-mix() to avoid depending on newer CSS support.
+ *
+ * No transition here: the real sidebar animates its width with framer-motion,
+ * and a competing `transition: width` fought it. */
+.business-chrome-sidebar {
+  background-color: var(--business-sidebar);
+}
+
+.business-chrome-header {
+  background-color: rgba(var(--business-header-rgb), 0.95);
 }
 
 .business-sidebar-expanded {
@@ -823,12 +822,6 @@ body {
   color: var(--business-text-muted);
   padding: 1.25rem 0.75rem 0.5rem;
   font-weight: 600;
-}
-
-/* Light mode sidebar */
-.light .business-sidebar {
-  background-color: hsl(var(--card));
-  border-color: hsl(var(--border));
 }
 
 .light .business-nav-item:hover {

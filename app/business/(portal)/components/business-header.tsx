@@ -53,9 +53,6 @@ interface BusinessHeaderProps {
   businessName: string;
   brandName?: string | null;
   logoUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
 }
 
 export function BusinessHeader({
@@ -125,7 +122,7 @@ export function BusinessHeader({
       style={{ left: prefersReducedMotion ? currentWidth : undefined }}
       className={cn(
         'fixed top-0 right-0 z-30 flex h-14 items-center justify-between',
-        'bg-card/95 backdrop-blur-sm',
+        'business-chrome-header backdrop-blur-sm',
         'border-b border-border',
         'shadow-sm',
         'px-4 md:px-6',

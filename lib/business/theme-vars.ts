@@ -23,6 +23,7 @@ import {
   hexToRgbTriplet,
   shiftHexLightness,
   getContrastColor,
+  contrastRatio,
   isValidHexColor,
   DEFAULT_THEME_CONFIG,
   type ThemeConfig,
@@ -64,6 +65,16 @@ export const THEME_VAR_NAMES = [
   "--business-surface-0",
   "--business-surface-1",
   "--business-surface-2",
+  "--business-surface-3",
+  "--business-surface-4",
+  "--business-text-muted",
+  "--business-border-subtle",
+  "--business-border-default",
+  "--business-border-hover",
+  "--business-border-active",
+  "--business-sidebar",
+  "--business-header",
+  "--business-header-rgb",
   "--business-gradient-mesh",
 ] as const;
 
@@ -98,6 +109,50 @@ function safeModeColors(
     text_secondary: safeHex(colors.text_secondary, fallback.text_secondary),
     border: safeHex(colors.border, fallback.border),
   };
+}
+
+/**
+ * Contrast floor for muted text against its own mode's background.
+ *
+ * WCAG AA for body text. app/business/globals.css used to guarantee legibility
+ * here with a hardcoded `.light label.text-muted-foreground { ... !important }`,
+ * which no tenant value could ever beat. Deriving the colour instead only works
+ * if the derivation cannot fade itself into the background.
+ */
+const MIN_MUTED_CONTRAST = 4.5;
+
+/**
+ * Fade `color` toward the mode's background without dropping below
+ * MIN_MUTED_CONTRAST.
+ *
+ * Tries the full fade first and backs off in even steps, so a palette with room
+ * to spare gets the intended separation between secondary and muted text, and a
+ * tight one degrades to no fade at all rather than to something unreadable.
+ *
+ * The fallback is the unfaded colour - that is `text_secondary`, which the
+ * tenant already chose as readable body text. If even that fails the floor the
+ * palette itself is the problem, and inventing a different colour here would
+ * silently override a deliberate choice.
+ * @param color Hex colour to fade, normally text_secondary
+ * @param background Hex background the result must stay legible against
+ * @param amount Full fade ratio, signed as shiftHexLightness expects
+ * @returns Hex colour
+ */
+function fadeWithContrastFloor(
+  color: string,
+  background: string,
+  amount: number
+): string {
+  const steps = 6;
+
+  for (let step = steps; step >= 1; step--) {
+    const candidate = shiftHexLightness(color, (amount * step) / steps);
+    if (contrastRatio(candidate, background) >= MIN_MUTED_CONTRAST) {
+      return candidate;
+    }
+  }
+
+  return color;
 }
 
 /**
@@ -162,10 +217,41 @@ export function buildThemeVars(
     "--business-primary-500": primary,
     "--business-primary-400": shiftHexLightness(primary, 0.12),
 
+    // Muted text. Faded off text_secondary rather than exposed as its own
+    // picker, with a hard contrast floor - see fadeWithContrastFloor.
+    "--business-text-muted": fadeWithContrastFloor(
+      modeColors.text_secondary,
+      modeColors.background,
+      isDark ? -0.25 : 0.18
+    ),
+
     // Surface layers behind the portal chrome.
     "--business-surface-0": modeColors.background,
     "--business-surface-1": modeColors.sidebar,
     "--business-surface-2": modeColors.card,
+    // Hover and elevated steps, derived off the card so they track the tenant
+    // instead of the zinc ramp hardcoded in app/business/globals.css.
+    "--business-surface-3": shiftHexLightness(modeColors.card, isDark ? 0.06 : -0.06),
+    "--business-surface-4": shiftHexLightness(modeColors.card, isDark ? 0.12 : -0.12),
+
+    // Border ramp. The tenant picks one border colour; the subtle/hover/active
+    // steps move away from it in the direction the mode has room for. These were
+    // fixed rgba(255,255,255,...) / rgba(0,0,0,...) values before, which is why
+    // changing "Border" appeared to do nothing outside of inputs and tables.
+    "--business-border-subtle": shiftHexLightness(modeColors.border, isDark ? -0.18 : 0.18),
+    "--business-border-default": modeColors.border,
+    "--business-border-hover": shiftHexLightness(modeColors.border, isDark ? 0.12 : -0.12),
+    "--business-border-active": shiftHexLightness(modeColors.border, isDark ? 0.24 : -0.24),
+
+    // Portal chrome. Kept as their own variables rather than reusing
+    // --business-surface-1 / --popover so the sidebar and header read as what
+    // the branding form calls them, and so the Live Preview and the real portal
+    // paint from the same two values.
+    "--business-sidebar": modeColors.sidebar,
+    "--business-header": modeColors.surface,
+    // Triplet form, because .business-chrome-header needs the header colour at
+    // 95% alpha and rgba() cannot take a hex var.
+    "--business-header-rgb": hexToRgbTriplet(modeColors.surface),
 
     // Mesh backdrop painted by .business-mesh-bg.
     "--business-gradient-mesh": [

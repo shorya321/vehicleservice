@@ -22,9 +22,6 @@ interface BusinessPortalContentProps {
   brandName?: string | null;
   logoUrl?: string | null;
   avatarUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
 }
 
 export function BusinessPortalContent({
@@ -36,9 +33,6 @@ export function BusinessPortalContent({
   brandName,
   logoUrl,
   avatarUrl,
-  primaryColor,
-  secondaryColor,
-  accentColor,
 }: BusinessPortalContentProps) {
   const { isCollapsed } = useSidebar();
   const prefersReducedMotion = useReducedMotion();
@@ -73,9 +67,6 @@ export function BusinessPortalContent({
         brandName={brandName}
         logoUrl={logoUrl}
         avatarUrl={avatarUrl}
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-        accentColor={accentColor}
       />
 
       <main id="main-content" className="flex-1 pt-14" tabIndex={-1}>

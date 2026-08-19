@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   parseThemeConfig,
   type ThemeConfig,
@@ -76,8 +76,14 @@ export function BusinessThemeProvider({
   const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
 
-  // Parse theme config with defaults
-  const config = parseThemeConfig(themeConfig);
+  // Parse theme config with defaults.
+  //
+  // Memoised on purpose: parseThemeConfig returns a fresh object every call, and
+  // `config` is a dependency of the branding effect below. Recomputed each
+  // render, that effect's cleanup stripped all THEME_VAR_NAMES *and*
+  // data-business-branding - the attribute the SSR stylesheet is scoped to -
+  // on every single re-render, only to re-add them a moment later.
+  const config = useMemo(() => parseThemeConfig(themeConfig), [themeConfig]);
 
   // Get system preference
   const getSystemTheme = (): "dark" | "light" => {

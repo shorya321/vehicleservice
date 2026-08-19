@@ -138,9 +138,6 @@ export default async function BusinessPortalLayout({
               businessName={branding.business_name}
               brandName={branding.brand_name}
               logoUrl={branding.logo_url}
-              primaryColor={themeConfig.accent.primary}
-              secondaryColor={themeConfig.accent.secondary}
-              accentColor={themeConfig.accent.tertiary}
               role={businessUser.role}
             />
 
@@ -153,9 +150,6 @@ export default async function BusinessPortalLayout({
               brandName={branding.brand_name}
               logoUrl={branding.logo_url}
               avatarUrl={profile?.avatar_url ?? null}
-              primaryColor={themeConfig.accent.primary}
-              secondaryColor={themeConfig.accent.secondary}
-              accentColor={themeConfig.accent.tertiary}
             >
               {children}
             </BusinessPortalContent>
