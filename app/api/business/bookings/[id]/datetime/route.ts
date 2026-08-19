@@ -15,6 +15,11 @@ import {
 } from '@/lib/business/booking-utils';
 import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-emails';
 import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/business/email/services/business-emails';
+import { notifyBusinessBookingRescheduled } from '@/lib/business/email/notify';
+import {
+  buildBusinessSideRecipients,
+  loadBookingCreatorById,
+} from '@/lib/business/email/recipients';
 import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 
 /**
@@ -188,24 +193,51 @@ export const PATCH = requireBusinessAuth(
         }
       }
 
-      // Send datetime change email to customer
-      if (booking.customer_email) {
-        // The one email where the time is the entire message, so it must not
-        // render in whatever zone the server happens to run in.
-        const formatDt = (dt: string) =>
-          formatBookingDateTime(dt, "EEEE, d MMMM yyyy 'at' HH:mm");
+      // The one email where the time is the entire message, so it must not
+      // render in whatever zone the server happens to run in.
+      const formatDt = (dt: string) =>
+        formatBookingDateTime(dt, "EEEE, d MMMM yyyy 'at' HH:mm");
 
-        const { data: businessAccount } = await supabaseAdmin
-          .from('business_accounts')
-          .select('business_name')
-          .eq('id', booking.business_account_id)
-          .single();
+      // business_email is needed now that the business side is told too. Read outside the
+      // customer_email guard below: a booking without a passenger address is legal, and
+      // used to mean nobody heard about the change at all.
+      const { data: businessAccount } = await supabaseAdmin
+        .from('business_accounts')
+        .select('business_name, business_email')
+        .eq('id', booking.business_account_id)
+        .single();
 
-        // Not awaited, and wrapped in after() because a tenant's own SMTP server is a
-        // multi round-trip conversation against a host of unknown latency. Without it the
-        // promise is frequently dropped when the serverless instance freezes after the
-        // response, and the mail is silently lost under load.
-        after(() => {
+      // Not awaited, and wrapped in after() because a tenant's own SMTP server is a
+      // multi round-trip conversation against a host of unknown latency. Without it the
+      // promise is frequently dropped when the serverless instance freezes after the
+      // response, and the mail is silently lost under load.
+      after(async () => {
+        // Rescheduling used to tell the vendor and the passenger and say nothing to the
+        // business, so the account that owns the trip could be the last to know it moved.
+        // The creator is skipped when they are the one who moved it.
+        const recipients = buildBusinessSideRecipients({
+          ownerEmail: businessAccount?.business_email ?? null,
+          ownerName: businessAccount?.business_name ?? null,
+          creator: await loadBookingCreatorById(booking.created_by_user_id),
+          actorMemberId: user.businessId,
+        });
+
+        notifyBusinessBookingRescheduled(recipients, {
+          businessAccountId: user.businessAccountId,
+          businessName: businessAccount?.business_name || 'Your booking provider',
+          bookingId: booking.id,
+          bookingNumber: booking.booking_number,
+          tripNumber: booking.trip_number,
+          customerName: booking.customer_name,
+          pickupLocation: booking.pickup_address || 'TBD',
+          previousDateTime: formatDt(previousDatetime),
+          newDateTime: formatDt(newPickupDatetime),
+          modificationReason: reason,
+        }).catch((err: unknown) => {
+          console.error('Failed to send business datetime change email:', err);
+        });
+
+        if (booking.customer_email) {
           sendBusinessCustomerDatetimeChangedEmail({
             businessAccountId: user.businessAccountId,
             customerName: booking.customer_name,
@@ -220,8 +252,8 @@ export const PATCH = requireBusinessAuth(
           }).catch((err: unknown) => {
             console.error('Failed to send customer datetime change email:', err);
           });
-        });
-      }
+        }
+      });
 
       // Fetch updated booking to return
       const { data: updatedBooking } = await supabaseAdmin

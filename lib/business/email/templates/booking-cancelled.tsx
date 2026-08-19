@@ -132,9 +132,17 @@ export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEma
 
       {props.audience === 'owner' && (
         <>
-          <InfoBox type="success">
-            The refund has been automatically credited back to your wallet.
-          </InfoBox>
+          {/*
+            Gated on an actual refund, not just on the audience. Deleting a booking from
+            the portal reuses this template and never moves money, so an unconditional
+            "credited back to your wallet" would tell the owner a refund happened when
+            none did.
+          */}
+          {refundAmount > 0 && (
+            <InfoBox type="success">
+              The refund has been automatically credited back to your wallet.
+            </InfoBox>
+          )}
 
           <Button href={props.walletUrl}>View Wallet Balance</Button>
         </>

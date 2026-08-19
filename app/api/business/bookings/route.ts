@@ -12,10 +12,9 @@ import {
 } from '@/lib/business/api-utils';
 import { bookingCreationSchema } from '@/lib/business/validators';
 import { createClient } from '@supabase/supabase-js';
-import {
-  sendBusinessBookingConfirmationEmail,
-  sendBusinessCustomerBookingConfirmationEmail,
-} from '@/lib/business/email/services/business-emails';
+import { sendBusinessCustomerBookingConfirmationEmail } from '@/lib/business/email/services/business-emails';
+import { notifyBusinessBookingCreated } from '@/lib/business/email/notify';
+import { buildBusinessSideRecipients } from '@/lib/business/email/recipients';
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails';
 import { getAdminEmail, getAppUrl } from '@/lib/email/config';
 import { getExchangeRates } from '@/lib/currency/server';
@@ -405,11 +404,26 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       // instance froze; against SMTP it frequently would not, and the mail would be
       // dropped non-deterministically under load. after() keeps the invocation alive
       // past the response without delaying it.
+      // The creator is the caller, so this costs no queries: requireBusinessAuth already
+      // carries the member's id, name and address. Every other trigger site has to look
+      // the creator up, because there the actor is usually not the person who booked it.
+      const recipients = buildBusinessSideRecipients({
+        ownerEmail: businessAccount.business_email,
+        ownerName: businessAccount.business_name,
+        creator: {
+          memberId: user.businessId,
+          email: user.memberEmail,
+          name: user.memberName,
+          role: user.role,
+          isActive: true,
+        },
+      });
+
       after(async () => {
-        // Send confirmation to business owner
-        sendBusinessBookingConfirmationEmail({
+        // To the owner, and to the staff member who created it. One send when they are the
+        // same person; see lib/business/email/recipients.ts for the full rule.
+        notifyBusinessBookingCreated(recipients, {
           businessAccountId: user.businessAccountId,
-          email: businessAccount.business_email,
           businessName: businessAccount.business_name,
           bookingNumber: booking.booking_number,
           tripNumber: booking.trip_number,

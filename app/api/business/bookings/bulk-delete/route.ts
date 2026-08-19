@@ -13,6 +13,12 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
+import { notifyBusinessBookingCancelled } from '@/lib/business/email/notify';
+import {
+  buildBusinessSideRecipients,
+  loadBookingCreatorById,
+} from '@/lib/business/email/recipients';
+import { getAppUrl } from '@/lib/business/email/platform';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 
@@ -54,7 +60,7 @@ export const POST = requireBusinessOwner(
         .select(`
           id, business_account_id, booking_status, wallet_deduction_amount,
           booking_number, trip_number, customer_name, customer_email,
-          pickup_address, dropoff_address, pickup_datetime,
+          pickup_address, dropoff_address, pickup_datetime, created_by_user_id,
           from_location:from_location_id(name),
           to_location:to_location_id(name)
         `)
@@ -87,7 +93,7 @@ export const POST = requireBusinessOwner(
       // Send customer cancellation emails BEFORE deletion (fire-and-forget)
       const { data: businessAccount } = await supabaseAdmin
         .from('business_accounts')
-        .select('business_name, currency')
+        .select('business_name, business_email, currency, wallet_balance')
         .eq('id', user.businessAccountId)
         .single();
 
@@ -97,11 +103,22 @@ export const POST = requireBusinessOwner(
       // SMTP server may be a multi round-trip conversation. Un-awaited, the promises
       // would be abandoned when the serverless instance froze and a whole batch of
       // cancellation emails would vanish with no error anywhere.
-      after(() =>
-        Promise.allSettled(
-        bookings
-          .filter((b) => b.customer_email)
-          .map((b) => {
+      after(async () => {
+        // A batch can span several creators, so resolve each distinct one once rather
+        // than per booking. This route is owner-only, so the actor is never a creator and
+        // no self-action suppression applies.
+        const creatorIds = Array.from(
+          new Set(bookings.map((b) => b.created_by_user_id).filter(Boolean))
+        ) as string[];
+
+        const creators = new Map(
+          (await Promise.all(creatorIds.map((id) => loadBookingCreatorById(id))))
+            .filter((c): c is NonNullable<typeof c> => c !== null)
+            .map((c) => [c.memberId, c] as const)
+        );
+
+        await Promise.allSettled(
+          bookings.flatMap((b) => {
             const pickupLocation = (b as any).from_location?.name
               ? `${(b as any).from_location.name}${b.pickup_address ? ` - ${b.pickup_address}` : ''}`
               : b.pickup_address || 'N/A';
@@ -116,20 +133,55 @@ export const POST = requireBusinessOwner(
               timeStyle: 'short',
             });
 
-            return sendBusinessCustomerBookingCancelledEmail({
-              businessAccountId: user.businessAccountId,
-              customerName: b.customer_name,
-              customerEmail: b.customer_email,
-              businessName,
-              bookingNumber: b.booking_number,
-              tripNumber: b.trip_number,
-              pickupLocation,
-              dropoffLocation,
-              pickupDateTime,
-            });
+            const sends: Array<Promise<unknown>> = [
+              // Deletion moves no money, so the balance is unchanged and refundAmount is
+              // 0; the template drops its "credited back" note when nothing was refunded.
+              notifyBusinessBookingCancelled(
+                buildBusinessSideRecipients({
+                  ownerEmail: businessAccount?.business_email ?? null,
+                  ownerName: businessAccount?.business_name ?? null,
+                  creator: b.created_by_user_id
+                    ? creators.get(b.created_by_user_id) ?? null
+                    : null,
+                }),
+                {
+                  businessAccountId: user.businessAccountId,
+                  businessName,
+                  bookingNumber: b.booking_number,
+                  tripNumber: b.trip_number,
+                  customerName: b.customer_name,
+                  pickupLocation,
+                  dropoffLocation,
+                  pickupDateTime,
+                  cancellationReason: 'Booking deleted. No refund is issued on deletion.',
+                  refundAmount: 0,
+                  newBalance: Number(businessAccount?.wallet_balance ?? 0),
+                  currency: businessAccount?.currency || 'AED',
+                  walletUrl: `${getAppUrl()}/business/wallet`,
+                }
+              ),
+            ];
+
+            if (b.customer_email) {
+              sends.push(
+                sendBusinessCustomerBookingCancelledEmail({
+                  businessAccountId: user.businessAccountId,
+                  customerName: b.customer_name,
+                  customerEmail: b.customer_email,
+                  businessName,
+                  bookingNumber: b.booking_number,
+                  tripNumber: b.trip_number,
+                  pickupLocation,
+                  dropoffLocation,
+                  pickupDateTime,
+                })
+              );
+            }
+
+            return sends;
           })
-        ).catch((err) => console.error('Bulk deletion email error:', err))
-      );
+        ).catch((err) => console.error('Bulk deletion email error:', err));
+      });
 
       // Logged BEFORE the delete: the rows are still readable, and the AFTER
       // DELETE trigger skips any booking that already has an entry. One row per

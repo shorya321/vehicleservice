@@ -12,10 +12,12 @@ import { after, type NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { loadBusinessBookingEmailDetails } from '@/lib/business/email/booking-details';
 import { getAppUrl } from '@/lib/business/email/platform';
+import { sendBusinessCustomerBookingConfirmationEmail } from '@/lib/business/email/services/business-emails';
+import { notifyBusinessBookingCreated } from '@/lib/business/email/notify';
 import {
-  sendBusinessBookingConfirmationEmail,
-  sendBusinessCustomerBookingConfirmationEmail,
-} from '@/lib/business/email/services/business-emails';
+  buildBusinessSideRecipients,
+  loadBookingCreatorById,
+} from '@/lib/business/email/recipients';
 import { requireBusinessAuth, apiError, apiSuccess } from '@/lib/business/api-utils';
 import { quotationConvertSchema } from '@/lib/business/quotations/schema';
 import { preflightConversion, repriceToken } from '@/lib/business/quotations/convert';
@@ -305,6 +307,10 @@ export const POST = requireBusinessAuth(async (
 
     if (newBookingIds.length > 0) {
       after(async () => {
+        // Every booking in this batch carries the same created_by_user_id, so one lookup
+        // covers the loop.
+        const creator = await loadBookingCreatorById(user.businessId);
+
         for (const bookingId of newBookingIds) {
           try {
             const details = await loadBusinessBookingEmailDetails(bookingId);
@@ -335,10 +341,16 @@ export const POST = requireBusinessAuth(async (
               );
             }
 
-            if (details.businessEmail) {
-              await sendBusinessBookingConfirmationEmail({
+            // The whole batch was converted by one person, so the creator is resolved
+            // once above the loop rather than per trip.
+            await notifyBusinessBookingCreated(
+              buildBusinessSideRecipients({
+                ownerEmail: details.businessEmail,
+                ownerName: details.businessName,
+                creator,
+              }),
+              {
                 businessAccountId: details.businessAccountId,
-                email: details.businessEmail,
                 businessName: details.businessName,
                 bookingNumber: details.bookingNumber,
                 tripNumber: details.tripNumber,
@@ -356,8 +368,8 @@ export const POST = requireBusinessAuth(async (
                 walletDeducted: details.walletDeducted,
                 newBalance: details.newBalance,
                 bookingUrl: `${getAppUrl()}/business/bookings/${details.bookingId}`,
-              });
-            }
+              }
+            );
           } catch (emailError) {
             console.error(`[quotation-convert] email failed for booking ${bookingId}:`, emailError);
           }

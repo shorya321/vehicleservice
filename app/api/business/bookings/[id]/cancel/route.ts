@@ -21,10 +21,12 @@ import {
 } from '@/lib/business/wallet-operations';
 import { getExchangeRates } from '@/lib/currency/server';
 import { getAppUrl } from '@/lib/email/config';
+import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
+import { notifyBusinessBookingCancelled } from '@/lib/business/email/notify';
 import {
-  sendBusinessBookingCancellationEmail,
-  sendBusinessCustomerBookingCancelledEmail,
-} from '@/lib/business/email/services/business-emails';
+  buildBusinessSideRecipients,
+  loadBookingCreatorById,
+} from '@/lib/business/email/recipients';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 /**
@@ -185,10 +187,17 @@ export const POST = requireBusinessAuth(
         // serverless instance froze after the response; after() keeps the invocation
         // alive past the response without delaying it.
         after(async () => {
-          // Send cancellation email to business owner
-          sendBusinessBookingCancellationEmail({
+          // To the owner, and to the staff member who created the booking - unless that is
+          // the person who just cancelled it, who watched it succeed on screen.
+          const recipients = buildBusinessSideRecipients({
+            ownerEmail: businessAccount.business_email,
+            ownerName: businessAccount.business_name,
+            creator: await loadBookingCreatorById(booking.created_by_user_id),
+            actorMemberId: user.businessId,
+          });
+
+          notifyBusinessBookingCancelled(recipients, {
             businessAccountId: user.businessAccountId,
-            email: businessAccount.business_email,
             businessName: businessAccount.business_name,
             bookingNumber: cancelledBooking.booking_number,
             tripNumber: cancelledBooking.trip_number,
