@@ -12,6 +12,12 @@ import { ArrowLeft } from 'lucide-react';
 import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
 import { BookingDetails } from './components/booking-details';
 import { CancelBookingButton } from './components/cancel-booking-button';
+import {
+  BUSINESS_CANCELLABLE_STATUSES,
+  getCancellationEligibility,
+  type BusinessCancellableStatus,
+} from '@/lib/business/booking-utils';
+import { loadCancellationWindowMinutes } from '@/lib/business/utils/cancellation-settings';
 import { EditDateTimeButton } from '../components/edit-datetime-button';
 
 export const metadata: Metadata = {
@@ -127,7 +133,24 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
     booking_addons: bookingAddons.data || [],
   };
 
-  const canCancel = ['pending', 'confirmed'].includes(booking.booking_status);
+  // Same status list as before, now with two further gates: a vendor already on
+  // the booking, and the grace period since it was created. The assignment is read
+  // from the rows fetched above rather than from booking_status, which is never set
+  // to 'assigned' and so would match nothing.
+  const hasActiveAssignment = (assignments.data ?? []).some(
+    (assignment) => assignment.status === 'pending' || assignment.status === 'accepted'
+  );
+
+  const cancellation = getCancellationEligibility(booking, {
+    windowMinutes: await loadCancellationWindowMinutes(),
+    hasActiveAssignment,
+  });
+
+  // Shown, disabled, with the reason - rather than vanishing. A control that is
+  // simply absent reads as a bug, and leaves the user with nothing to act on.
+  const showCancel = BUSINESS_CANCELLABLE_STATUSES.includes(
+    booking.booking_status as BusinessCancellableStatus
+  );
   const canEditDateTime = ['pending', 'confirmed', 'assigned'].includes(booking.booking_status);
 
   return (
@@ -153,7 +176,7 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
           </h1>
         </div>
         {/* Actions */}
-        {(canCancel || canEditDateTime) && (
+        {(showCancel || canEditDateTime) && (
           <div className="flex items-center gap-3">
             {canEditDateTime && (
               <EditDateTimeButton
@@ -163,11 +186,10 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
                 pickupDatetime={booking.pickup_datetime}
               />
             )}
-            {canCancel && (
+            {showCancel && (
               <CancelBookingButton
                 bookingId={id}
-                bookingStatus={booking.booking_status}
-                pickupDatetime={booking.pickup_datetime}
+                eligibility={cancellation}
                 walletDeductionAmount={Number(booking.wallet_deduction_amount)}
               />
             )}

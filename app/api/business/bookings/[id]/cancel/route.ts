@@ -16,6 +16,8 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { bookingCancellationSchema } from '@/lib/business/validators';
+import { getCancellationEligibility } from '@/lib/business/booking-utils';
+import { loadCancellationWindowMinutes } from '@/lib/business/utils/cancellation-settings';
 import { closeActiveAssignments } from '@/lib/bookings/unified-service';
 import {
   BUSINESS_BASE_CURRENCY,
@@ -65,7 +67,7 @@ export const POST = requireBusinessAuth(
       const { data: booking, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
         .select(
-          'business_account_id, booking_status, created_by_user_id, pickup_datetime, wallet_deduction_amount'
+          'business_account_id, booking_status, created_by_user_id, created_at, pickup_datetime, wallet_deduction_amount'
         )
         .eq('id', bookingId)
         .single();
@@ -81,6 +83,36 @@ export const POST = requireBusinessAuth(
       // Staff may only cancel bookings they created themselves.
       if (user.role !== 'owner' && booking.created_by_user_id !== user.businessId) {
         return apiError('Forbidden: you can only cancel bookings you created', 403);
+      }
+
+      // Whether a vendor is on this booking, asked of booking_assignments rather
+      // than of booking_status. booking_status is never set to 'assigned' anywhere
+      // in the product, so a booking with a driver on it still reads 'confirmed':
+      // testing the status here would let exactly the case this blocks straight
+      // through. A partial unique index keeps this to at most one row.
+      const { data: activeAssignment, error: assignmentError } = await supabaseAdmin
+        .from('booking_assignments')
+        .select('id')
+        .eq('business_booking_id', bookingId)
+        .in('status', ['pending', 'accepted'])
+        .maybeSingle();
+
+      // Fail closed. An unreadable assignments table must not be the reason a
+      // booking a vendor is already driving to gets cancelled.
+      if (assignmentError) {
+        console.error('Failed to check booking assignments before cancellation:', assignmentError);
+        return apiError('Unable to verify this booking right now. Please try again.', 503);
+      }
+
+      // The same rule the booking detail page renders, evaluated again here. The
+      // page decides what to show; this decides what is allowed.
+      const eligibility = getCancellationEligibility(booking, {
+        windowMinutes: await loadCancellationWindowMinutes(),
+        hasActiveAssignment: activeAssignment !== null,
+      });
+
+      if (!eligibility.canCancel) {
+        return apiError(eligibility.reason, 403);
       }
 
       // Call atomic cancellation function
@@ -264,8 +296,6 @@ export const POST = requireBusinessAuth(
       return apiSuccess({
         message: 'Booking cancelled successfully',
         new_balance: formatCurrency(newBalance),
-        // Never true any more. Kept so the button, which still branches on it,
-        // keeps compiling until it is rewritten.
         refunded: false,
         refund_reason:
           'The amount held for this booking has not been returned to your wallet. Refunds are reviewed by our team.',

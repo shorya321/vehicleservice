@@ -21,18 +21,23 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/business/wallet-operations';
+import type { CancellationEligibility } from '@/lib/business/booking-utils';
 
 interface CancelBookingButtonProps {
   bookingId: string;
-  bookingStatus: string;
-  pickupDatetime: string;
+  /**
+   * Decided on the server. This component cannot work it out for itself: the
+   * window is a platform setting and the vendor check is a database query, and a
+   * client component can do neither. The API re-evaluates the same rule, so this
+   * governs what is shown, never what is permitted.
+   */
+  eligibility: CancellationEligibility;
   walletDeductionAmount: number;
 }
 
 export function CancelBookingButton({
   bookingId,
-  bookingStatus,
-  pickupDatetime,
+  eligibility,
   walletDeductionAmount,
 }: CancelBookingButtonProps) {
   const router = useRouter();
@@ -80,6 +85,25 @@ export function CancelBookingButton({
     }
   }
 
+  if (!eligibility.canCancel) {
+    return (
+      <div className="flex flex-col items-start gap-1.5 sm:items-end">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled
+          className="h-10 px-4 border-destructive/30 text-destructive"
+        >
+          <XCircle className="mr-2 h-4 w-4" />
+          Cancel Booking
+        </Button>
+        <p className="max-w-xs text-xs text-muted-foreground sm:text-right">
+          {eligibility.reason}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
@@ -123,6 +147,10 @@ export function CancelBookingButton({
             'Nothing was charged to your wallet for this booking.'
           )}
         </div>
+
+        <p className="mb-4 text-xs text-muted-foreground">
+          {eligibility.reason}
+        </p>
 
         {/* Cancellation Reason */}
         <div className="space-y-2 mb-6">
