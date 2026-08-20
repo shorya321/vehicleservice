@@ -18,6 +18,7 @@ import {
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
+import { hasActiveVendorAssignment } from '@/lib/business/bookings/active-assignments';
 import { activityLogger } from '@/lib/business/activity/log';
 
 /**
@@ -68,8 +69,30 @@ export const DELETE = requireBusinessAuth(
         return apiError('Forbidden: you can only delete bookings you created', 403);
       }
 
-      // Deleting NEVER moves money. Refunds belong to cancellation alone, where the published
-      // 24-hour policy is applied (see getCancellationRefund + the cancel route).
+      // A booking a vendor is on cannot be deleted from the portal, for the same
+      // reason it cannot be cancelled - except worse. Deleting is a hard DELETE
+      // that cascades the assignment away, so a driver would be left holding a
+      // job with no booking behind it and nothing to tell them it had gone.
+      const { assigned, error: assignmentError } = await hasActiveVendorAssignment(
+        supabaseAdmin,
+        bookingId
+      );
+
+      // Fail closed. An unreadable assignments table is not a reason to allow an
+      // irreversible delete.
+      if (assignmentError) {
+        return apiError('Unable to verify this booking right now. Please try again.', 503);
+      }
+
+      if (assigned) {
+        return apiError(
+          'A vehicle has already been assigned to this booking. Contact support to remove it.',
+          403
+        );
+      }
+
+      // Deleting NEVER moves money. Neither does cancelling any more: refunds are
+      // reviewed and issued by the platform team from the business account.
       //
       // This previously called an RPC named `add_wallet_balance` that has never existed in the
       // database. The real function is `add_to_wallet`. The error was logged, deletion

@@ -21,6 +21,7 @@ import {
 import { getAppUrl } from '@/lib/business/email/platform';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
+import { findBookingsWithActiveAssignment } from '@/lib/business/bookings/active-assignments';
 
 const bulkDeleteSchema = z.object({
   booking_ids: z.array(z.string().uuid()).min(1).max(50),
@@ -84,8 +85,40 @@ export const POST = requireBusinessOwner(
         return apiError('Unauthorized: Some bookings do not belong to your account', 403);
       }
 
-      // Deleting NEVER moves money. Refunds belong to cancellation alone, under the published
-      // 24-hour policy. This previously issued one aggregate refund through an RPC named
+      // Bookings a vendor is on cannot be deleted from the portal. All or
+      // nothing, matching the ownership check above and the single `.in()`
+      // delete below: a partial delete would leave the caller guessing which of
+      // their selection survived.
+      const { assignedIds, error: assignmentError } = await findBookingsWithActiveAssignment(
+        supabaseAdmin,
+        bookings.map((b) => b.id)
+      );
+
+      // Fail closed. An unreadable assignments table is not a reason to allow an
+      // irreversible bulk delete.
+      if (assignmentError) {
+        return apiError('Unable to verify these bookings right now. Please try again.', 503);
+      }
+
+      if (assignedIds.size > 0) {
+        // Named, because the caller selected these by checkbox and otherwise has
+        // no way to tell which ones to deselect.
+        const blocked = bookings
+          .filter((b) => assignedIds.has(b.id))
+          .map((b) => b.trip_number || b.booking_number)
+          .join(', ');
+
+        return apiError(
+          `A vehicle has already been assigned to ${blocked}. Deselect ${
+            assignedIds.size === 1 ? 'it' : 'those'
+          } and try again, or contact support.`,
+          403
+        );
+      }
+
+      // Deleting NEVER moves money. Neither does cancelling any more: refunds are
+      // reviewed and issued by the platform team. This previously issued one
+      // aggregate refund through an RPC named
       // `add_wallet_balance` that has never existed (the real one is `add_to_wallet`), logged
       // the failure, deleted anyway, and still reported `total_refund`. It also omitted
       // 'completed' from its guard, so a corrected call would have refunded delivered trips.

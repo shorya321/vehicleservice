@@ -18,6 +18,7 @@ import {
 import { bookingCancellationSchema } from '@/lib/business/validators';
 import { getCancellationEligibility } from '@/lib/business/booking-utils';
 import { loadCancellationWindowMinutes } from '@/lib/business/utils/cancellation-settings';
+import { hasActiveVendorAssignment } from '@/lib/business/bookings/active-assignments';
 import { closeActiveAssignments } from '@/lib/bookings/unified-service';
 import {
   BUSINESS_BASE_CURRENCY,
@@ -85,22 +86,16 @@ export const POST = requireBusinessAuth(
         return apiError('Forbidden: you can only cancel bookings you created', 403);
       }
 
-      // Whether a vendor is on this booking, asked of booking_assignments rather
-      // than of booking_status. booking_status is never set to 'assigned' anywhere
-      // in the product, so a booking with a driver on it still reads 'confirmed':
-      // testing the status here would let exactly the case this blocks straight
-      // through. A partial unique index keeps this to at most one row.
-      const { data: activeAssignment, error: assignmentError } = await supabaseAdmin
-        .from('booking_assignments')
-        .select('id')
-        .eq('business_booking_id', bookingId)
-        .in('status', ['pending', 'accepted'])
-        .maybeSingle();
+      // Whether a vendor is on this booking. Asked of booking_assignments, never
+      // of booking_status - see the helper for why the status cannot answer it.
+      const { assigned, error: assignmentError } = await hasActiveVendorAssignment(
+        supabaseAdmin,
+        bookingId
+      );
 
       // Fail closed. An unreadable assignments table must not be the reason a
       // booking a vendor is already driving to gets cancelled.
       if (assignmentError) {
-        console.error('Failed to check booking assignments before cancellation:', assignmentError);
         return apiError('Unable to verify this booking right now. Please try again.', 503);
       }
 
@@ -108,7 +103,7 @@ export const POST = requireBusinessAuth(
       // page decides what to show; this decides what is allowed.
       const eligibility = getCancellationEligibility(booking, {
         windowMinutes: await loadCancellationWindowMinutes(),
-        hasActiveAssignment: activeAssignment !== null,
+        hasActiveAssignment: assigned,
       });
 
       if (!eligibility.canCancel) {

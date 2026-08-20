@@ -143,53 +143,61 @@ export const PATCH = requireBusinessAuth(
         // Don't fail the request, audit is secondary
       }
 
-      // 3. If booking is assigned, send email to vendor
-      if (booking.booking_status === 'assigned') {
-        // Fetch assignment and vendor details
-        const { data: assignment } = await supabaseAdmin
-          .from('booking_assignments')
-          .select(
-            `
-            id,
-            vendor_id,
-            vendor_applications!inner(
-              id,
-              business_name,
-              business_email,
-              user_id
-            )
+      // 3. Tell the vendor, if there is one on this booking.
+      //
+      // This was gated on `booking.booking_status === 'assigned'`, a value that
+      // is never written: vendor assignment lives entirely in
+      // booking_assignments.status, so a booking a vendor has accepted still
+      // reads 'confirmed'. The whole block was therefore unreachable, and a
+      // vendor was never told that the pickup time had moved - the one change
+      // they most need to hear about. The query below already asks the right
+      // question, so the status gate is simply removed rather than replaced.
+      //
+      // maybeSingle, not single: most bookings have no active assignment, and
+      // that is an ordinary outcome rather than an error to log.
+      const { data: assignment } = await supabaseAdmin
+        .from('booking_assignments')
+        .select(
           `
+          id,
+          vendor_id,
+          vendor_applications!inner(
+            id,
+            business_name,
+            business_email,
+            user_id
           )
-          .eq('business_booking_id', bookingId)
-          .in('status', ['pending', 'accepted'])
-          .single();
+        `
+        )
+        .eq('business_booking_id', bookingId)
+        .in('status', ['pending', 'accepted'])
+        .maybeSingle();
 
-        if (assignment?.vendor_applications) {
-          const vendor = assignment.vendor_applications as {
-            id: string;
-            business_name: string;
-            business_email: string;
-            user_id: string;
-          };
+      if (assignment?.vendor_applications) {
+        const vendor = assignment.vendor_applications as {
+          id: string;
+          business_name: string;
+          business_email: string;
+          user_id: string;
+        };
 
-          // Send email notification to vendor
-          try {
-            await sendBookingDatetimeModifiedEmail({
-              vendorEmail: vendor.business_email,
-              vendorName: vendor.business_name,
-              bookingNumber: booking.booking_number,
-              tripNumber: booking.trip_number,
-              customerName: booking.customer_name,
-              pickupAddress: booking.pickup_address,
-              previousDatetime: previousDatetime,
-              newDatetime: newPickupDatetime,
-              modificationReason: reason,
-              bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/vendor/bookings/${bookingId}`,
-            });
-          } catch (emailError) {
-            console.error('Failed to send vendor notification email:', emailError);
-            // Don't fail the request, email is secondary
-          }
+        // Send email notification to vendor
+        try {
+          await sendBookingDatetimeModifiedEmail({
+            vendorEmail: vendor.business_email,
+            vendorName: vendor.business_name,
+            bookingNumber: booking.booking_number,
+            tripNumber: booking.trip_number,
+            customerName: booking.customer_name,
+            pickupAddress: booking.pickup_address,
+            previousDatetime: previousDatetime,
+            newDatetime: newPickupDatetime,
+            modificationReason: reason,
+            bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/vendor/bookings/${bookingId}`,
+          });
+        } catch (emailError) {
+          console.error('Failed to send vendor notification email:', emailError);
+          // Don't fail the request, email is secondary
         }
       }
 
