@@ -28,6 +28,13 @@ export const siteSettingsSchema = z.object({
     .string()
     .min(1, 'Timezone is required')
     .refine(isValidTimezone, 'Not a recognised IANA timezone'),
+  // Coerced because the number input hands back a string. 0 is legal and means
+  // business self-cancellation is switched off; the upper bound is 24 hours.
+  business_cancellation_window_minutes: z.coerce
+    .number()
+    .int('Enter a whole number of minutes')
+    .min(0, 'Cannot be negative')
+    .max(1440, 'Cannot exceed 1440 minutes (24 hours)'),
 })
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>

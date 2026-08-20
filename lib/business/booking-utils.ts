@@ -119,6 +119,16 @@ export interface CancellationRefund {
 }
 
 /**
+ * SUPERSEDED, and deliberately still here.
+ *
+ * Business cancellation no longer returns money at all: refunds are a commercial
+ * conversation settled by the platform team, not an automatic wallet credit. The
+ * cancel route therefore stopped calling this, and `getCancellationEligibility`
+ * below decides who may cancel and when.
+ *
+ * Kept rather than deleted so its test suite keeps running as a regression guard
+ * over this module. Do not read it as live policy, and do not wire it back up.
+ *
  * How much of a booking's wallet deduction comes back if it is cancelled right now.
  *
  * Two tiers, matching the published policy:
@@ -224,4 +234,130 @@ export function validateNewPickupDatetime(newDatetime: string): {
       error: 'Invalid datetime format.',
     };
   }
+}
+
+/**
+ * Statuses a business may cancel from the portal.
+ *
+ * The same literal that `app/business/(portal)/bookings/[id]/page.tsx` has always
+ * used, lifted into a constant so the page and the API cannot drift. Nothing was
+ * added or removed: this is not a change in status behaviour.
+ *
+ * Note what is NOT here, and why it would be useless: `booking_status` is never
+ * set to 'assigned' anywhere in the product. Vendor assignment lives entirely in
+ * `booking_assignments.status`, so a booking with a driver on it still reads
+ * 'confirmed'. Blocking on the status would block nothing, which is exactly why
+ * `hasActiveAssignment` is a separate input below.
+ */
+export const BUSINESS_CANCELLABLE_STATUSES = ['pending', 'confirmed'] as const;
+
+export type BusinessCancellableStatus = (typeof BUSINESS_CANCELLABLE_STATUSES)[number];
+
+export interface CancellationEligibility {
+  canCancel: boolean;
+  /** Whole minutes left in the grace period. 0 whenever cancelling is refused. */
+  minutesRemaining: number;
+  /** Shown before the user confirms, and returned as the body of the 403. */
+  reason: string;
+}
+
+/**
+ * Whether a business may cancel this booking itself, right now.
+ *
+ * Three gates, in this order:
+ *
+ *   1. the window is open at all         (0 minutes switches the feature off)
+ *   2. the booking is not already settled
+ *   3. no vendor is assigned to it
+ *   4. the grace period since creation has not elapsed
+ *
+ * Assignment is checked before timing on purpose. A booking that is both assigned
+ * and expired should say so - "a vendor is on this" is the useful sentence, and
+ * "you are two minutes late" invites the user to try again faster next time when
+ * no amount of speed would have helped.
+ *
+ * Deliberately compares two absolute instants, so it is timezone-independent: a
+ * grace period is a duration, not a wall-clock time, and needs no Asia/Dubai
+ * conversion. Same reasoning as `getCancellationRefund` above.
+ *
+ * Pure and sync, taking the window and the assignment flag as arguments rather
+ * than reading them, so the API route and the UI derive the SAME answer from one
+ * implementation. A client component can do neither a settings read nor a
+ * database query, which is why both arrive as inputs.
+ */
+export function getCancellationEligibility(
+  booking: {
+    booking_status: string;
+    created_at: string;
+  },
+  opts: {
+    /** From site settings. 0 disables business self-cancellation entirely. */
+    windowMinutes: number;
+    /** A `booking_assignments` row for this booking in 'pending' or 'accepted'. */
+    hasActiveAssignment: boolean;
+  }
+): CancellationEligibility {
+  const refuse = (reason: string): CancellationEligibility => ({
+    canCancel: false,
+    minutesRemaining: 0,
+    reason,
+  });
+
+  const windowMinutes = Number.isFinite(opts.windowMinutes)
+    ? Math.max(0, Math.floor(opts.windowMinutes))
+    : 0;
+
+  if (windowMinutes <= 0) {
+    return refuse(
+      'Bookings cannot be cancelled from the portal. Contact support to cancel this booking.'
+    );
+  }
+
+  if (
+    !BUSINESS_CANCELLABLE_STATUSES.includes(booking.booking_status as BusinessCancellableStatus)
+  ) {
+    return refuse(`No longer cancellable. This booking is already ${booking.booking_status}.`);
+  }
+
+  if (opts.hasActiveAssignment) {
+    return refuse(
+      'A vehicle has already been assigned to this booking. Contact support to cancel it.'
+    );
+  }
+
+  // An unreadable created_at fails closed. The alternative - treating it as "just
+  // created" - would hand out an unlimited window on exactly the rows whose data
+  // is already suspect.
+  // The type guard is load-bearing, not defensive noise: parseISO THROWS on a
+  // non-string rather than returning an Invalid Date, so checking only for NaN
+  // would turn an absent column into a 500.
+  if (typeof booking.created_at !== 'string' || booking.created_at === '') {
+    return refuse('Contact support to cancel this booking.');
+  }
+
+  const createdMs = parseISO(booking.created_at).getTime();
+
+  if (Number.isNaN(createdMs)) {
+    return refuse('Contact support to cancel this booking.');
+  }
+
+  const minutesElapsed = (Date.now() - createdMs) / (1000 * 60);
+
+  if (minutesElapsed >= windowMinutes) {
+    return refuse(
+      `The ${windowMinutes}-minute cancellation window for this booking has passed. Contact support to cancel it.`
+    );
+  }
+
+  // Rounded up: with 30 seconds left, "1 minute" is truer to the user than "0",
+  // which reads as though the window has already shut.
+  const minutesRemaining = Math.max(1, Math.ceil(windowMinutes - minutesElapsed));
+
+  return {
+    canCancel: true,
+    minutesRemaining,
+    reason: `You can cancel this booking for another ${minutesRemaining} minute${
+      minutesRemaining === 1 ? '' : 's'
+    }. Cancelling does not return the amount to your wallet.`,
+  };
 }

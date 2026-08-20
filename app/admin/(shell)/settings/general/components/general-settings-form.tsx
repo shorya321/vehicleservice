@@ -22,6 +22,7 @@ import {
   Wrench,
   EyeOff,
   Globe,
+  CalendarX,
 } from 'lucide-react'
 import {
   Select,
@@ -101,6 +102,8 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       maintenance_mode: currentSettings.maintenance_mode,
       block_search_indexing: currentSettings.block_search_indexing,
       timezone: currentSettings.timezone,
+      business_cancellation_window_minutes:
+        currentSettings.business_cancellation_window_minutes,
     },
   })
 
@@ -253,6 +256,53 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                     rewritten, so changing this re-reads existing history against the new
                     clock: figures that count a day or a month, such as bookings today or
                     wallet spending limits, will shift accordingly.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Booking Cancellation Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <CalendarX className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle>Booking Cancellation</CardTitle>
+                <CardDescription>
+                  How long a business may cancel its own booking
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="business_cancellation_window_minutes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cancellation window (minutes)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="1440"
+                      step="1"
+                      aria-label="Business cancellation window in minutes"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-sm text-muted-foreground">
+                    Counted from the moment the booking was created. After it passes,
+                    only your team can cancel the booking. A booking that already has a
+                    vendor assigned cannot be cancelled by the business at any point,
+                    however new it is. Set to 0 to stop businesses cancelling their own
+                    bookings altogether. Cancelling never returns money to a wallet:
+                    refunds are issued by your team from the business account.
                   </p>
                   <FormMessage />
                 </FormItem>

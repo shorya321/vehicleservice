@@ -1,5 +1,15 @@
 import { DEFAULT_BOOKING_TIMEZONE, isValidTimezone } from '@/lib/utils/timezone'
 
+/**
+ * Default self-cancellation window for business bookings, in minutes.
+ *
+ * Lives here rather than in the business module because it is the default of a
+ * platform setting, and `lib/site-settings` must not depend on `lib/business`.
+ * `getCancellationEligibility` takes the window as a required argument, so it
+ * never needs a fallback of its own.
+ */
+export const DEFAULT_CANCELLATION_WINDOW_MINUTES = 30
+
 export interface SocialLinks {
   instagram: string
   facebook: string
@@ -28,6 +38,15 @@ export interface SiteSettingsConfig {
    * and day boundary is expressed in. See `lib/utils/timezone.ts`.
    */
   timezone: string
+  /**
+   * How long after creating a booking a business may still cancel it themselves,
+   * in minutes. Outside that window, and whenever a vendor has already been
+   * assigned, cancelling is a support conversation instead.
+   *
+   * 0 disables business self-cancellation entirely. See
+   * `getCancellationEligibility` in `lib/business/booking-utils.ts`.
+   */
+  business_cancellation_window_minutes: number
 }
 
 export const DEFAULT_SOCIAL_LINKS: SocialLinks = {
@@ -54,6 +73,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   maintenance_mode: false,
   block_search_indexing: true,
   timezone: DEFAULT_BOOKING_TIMEZONE,
+  business_cancellation_window_minutes: DEFAULT_CANCELLATION_WINDOW_MINUTES,
 }
 
 export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
@@ -106,5 +126,14 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
       typeof obj.timezone === 'string' && isValidTimezone(obj.timezone)
         ? obj.timezone
         : DEFAULT_BOOKING_TIMEZONE,
+    // A whole, non-negative count of minutes or nothing. A stray float or a
+    // negative would otherwise read as "window already closed" for every
+    // booking, silently switching self-cancellation off site-wide.
+    business_cancellation_window_minutes:
+      typeof obj.business_cancellation_window_minutes === 'number' &&
+      Number.isFinite(obj.business_cancellation_window_minutes) &&
+      obj.business_cancellation_window_minutes >= 0
+        ? Math.floor(obj.business_cancellation_window_minutes)
+        : DEFAULT_CANCELLATION_WINDOW_MINUTES,
   }
 }
