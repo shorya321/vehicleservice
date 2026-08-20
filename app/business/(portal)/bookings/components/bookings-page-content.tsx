@@ -711,14 +711,15 @@ export function BookingsPageContent({
                 ? 'Are you sure you want to delete this booking? This action cannot be undone.'
                 : `Are you sure you want to delete ${selectedBookings.size} booking(s)? This action cannot be undone.`}
             </AlertDialogDescription>
-            {/* Deleting does NOT refund - refunds come from cancelling, under the 24-hour
-                policy. Saying so here is the only thing standing between a stray click and
-                money the business never gets back. */}
+            {/* Neither deleting nor cancelling returns the money by itself any more, so
+                this no longer points at cancelling as the way to get it back. Saying so
+                here is the only thing standing between a stray click and an amount the
+                business assumes is coming back on its own. */}
             {forfeitAmount > 0 && (
               <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
                 {bookingToDelete ? 'This booking still holds ' : 'These bookings still hold '}
-                <strong>{formatCurrency(forfeitAmount)}</strong>. Deleting forfeits it. Cancel
-                instead if you want the amount refunded.
+                <strong>{formatCurrency(forfeitAmount)}</strong>. Deleting does not return it,
+                and neither does cancelling. Refunds are reviewed and issued by our team.
               </div>
             )}
           </AlertDialogHeader>

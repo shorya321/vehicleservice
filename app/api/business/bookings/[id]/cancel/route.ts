@@ -1,6 +1,10 @@
 /**
  * Cancel Booking API
- * Handle booking cancellation with automatic refund
+ *
+ * Cancels a business booking. Deliberately moves no money: the wallet deduction
+ * stays where it is and a refund, if one is due, is issued by the platform team
+ * from the business account. Cancelling used to return the full amount whenever
+ * pickup was more than 24h out, with nobody reviewing it.
  */
 
 import { NextRequest, after } from 'next/server';
@@ -12,7 +16,6 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { bookingCancellationSchema } from '@/lib/business/validators';
-import { getCancellationRefund } from '@/lib/business/booking-utils';
 import { closeActiveAssignments } from '@/lib/bookings/unified-service';
 import {
   BUSINESS_BASE_CURRENCY,
@@ -31,7 +34,7 @@ import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 /**
  * POST /api/business/bookings/[id]/cancel
- * Cancel booking and refund to wallet atomically
+ * Cancel booking. The wallet is not touched.
  */
 export const POST = requireBusinessAuth(
   async (request: NextRequest, user, context: { params: Promise<{ id: string }> }) => {
@@ -61,7 +64,6 @@ export const POST = requireBusinessAuth(
       // Verify booking belongs to this business
       const { data: booking, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
-        // pickup_datetime + wallet_deduction_amount drive the refund tier below.
         .select(
           'business_account_id, booking_status, created_by_user_id, pickup_datetime, wallet_deduction_amount'
         )
@@ -81,23 +83,16 @@ export const POST = requireBusinessAuth(
         return apiError('Forbidden: you can only cancel bookings you created', 403);
       }
 
-      // Apply the published policy: free cancellation up to 24h before pickup, no refund
-      // inside that window. Computed SERVER-side from the stored booking, never from
-      // anything the client sent, and passed to the RPC, which clamps it to the original
-      // deduction as a second line of defence.
-      const refund = getCancellationRefund({
-        booking_status: booking.booking_status,
-        pickup_datetime: booking.pickup_datetime,
-        wallet_deduction_amount: booking.wallet_deduction_amount,
-      });
-
       // Call atomic cancellation function
       const { data: result, error } = await supabaseAdmin.rpc(
         'cancel_business_booking_with_refund',
         {
           p_booking_id: bookingId,
           p_cancellation_reason: body.cancellation_reason,
-          p_refund_amount: refund.refundAmount,
+          // Always zero. The RPC still owns the row lock, the settled-status
+          // guard, the cancelled_at write and the activity row; it simply skips
+          // the add_to_wallet branch. Refunds are a decision, not a side effect.
+          p_refund_amount: 0,
           // The function writes its own booking.cancelled activity row inside
           // the same transaction. Passing the actor is what makes that row name
           // a person instead of falling back to the system.
@@ -117,13 +112,15 @@ export const POST = requireBusinessAuth(
         return apiError(error.message || 'Failed to cancel booking', 500);
       }
 
-      // Extract refund details from result
+      // The RPC returns what it actually did, which is nothing: refund_amount is
+      // the zero passed in, and new_balance is the balance re-read unchanged. Read
+      // back rather than assumed, so the emails below state a fact.
       const refundAmount = result?.[0]?.refund_amount || 0;
       const newBalance = result?.[0]?.new_balance || 0;
 
-      // The RPC owns the booking row and the wallet refund atomically, but knows nothing
-      // about vendor assignments, so close them here and release the vehicle and driver.
-      // Deliberately after the RPC: a cleanup failure must not undo a completed refund.
+      // The RPC owns the booking row, but knows nothing about vendor assignments, so
+      // close them here and release the vehicle and driver.
+      // Deliberately after the RPC: a cleanup failure must not undo a cancellation.
       const { error: closeError } = await closeActiveAssignments({
         businessBookingId: bookingId,
         outcome: 'cancelled',
@@ -174,12 +171,10 @@ export const POST = requireBusinessAuth(
           timeStyle: 'short',
         });
 
-        // Refund and balance are AED. Render them in the business's preferred currency,
-        // showing the AED figure actually refunded alongside.
+        // The balance is AED. Render it in the business's preferred currency.
         const displayCurrency = businessAccount.preferred_currency || BUSINESS_BASE_CURRENCY;
         const rates = await getExchangeRates();
         const toDisplay = (aed: number) => convertFromAed(aed, displayCurrency, rates);
-        const isConverted = displayCurrency !== BUSINESS_BASE_CURRENCY;
 
         // These sends are deliberately not awaited, and are wrapped in after() because a
         // tenant's own SMTP server is a multi round-trip conversation against a host of
@@ -206,11 +201,12 @@ export const POST = requireBusinessAuth(
             dropoffLocation,
             pickupDateTime,
             cancellationReason: body.cancellation_reason,
-            refundAmount: toDisplay(refundAmount),
+            // Zero, always. The template has an arm for it that says refunds are
+            // reviewed by the team, so the owner is not left waiting on money that
+            // is not coming by itself.
+            refundAmount: 0,
             newBalance: toDisplay(newBalance),
             currency: displayCurrency,
-            originalAmount: isConverted ? refundAmount : undefined,
-            originalCurrency: isConverted ? BUSINESS_BASE_CURRENCY : undefined,
             walletUrl: `${getAppUrl()}/business/wallet`,
           }).catch((err: unknown) => {
             console.error('Failed to send business cancellation email:', err);
@@ -235,7 +231,8 @@ export const POST = requireBusinessAuth(
           }
         });
 
-        // Create in-app notification with refund details
+        // Create in-app notification. The type string is left as it is: it is
+        // matched elsewhere to pick an icon, and renaming it buys nothing.
         const { data: ownerUser } = await supabaseAdmin
           .from('business_users')
           .select('auth_user_id')
@@ -249,15 +246,15 @@ export const POST = requireBusinessAuth(
             p_category: 'booking',
             p_type: 'booking_cancelled_refund',
             p_title: `Booking Cancelled - #${cancelledBooking.trip_number || cancelledBooking.booking_number}`,
-            p_message: `Booking for ${cancelledBooking.customer_name} cancelled. ${businessAccount.currency || 'AED'} ${refundAmount.toFixed(2)} refunded to wallet.`,
+            p_message: `Booking for ${cancelledBooking.customer_name} cancelled. No refund is issued automatically; contact support if one is due.`,
             p_data: {
               booking_number: cancelledBooking.booking_number,
               trip_number: cancelledBooking.trip_number,
-              refund_amount: refundAmount,
+              refund_amount: 0,
               new_balance: newBalance,
               currency: businessAccount.currency || 'AED',
             },
-            p_link: `/business/wallet`,
+            p_link: `/business/bookings/${bookingId}`,
           }).then(({ error: notifError }) => {
             if (notifError) console.error('Failed to create cancellation notification:', notifError);
           });
@@ -266,13 +263,12 @@ export const POST = requireBusinessAuth(
 
       return apiSuccess({
         message: 'Booking cancelled successfully',
-        refund_amount: formatCurrency(refundAmount),
         new_balance: formatCurrency(newBalance),
-        // The policy outcome, so the UI states what actually happened rather than assuming a
-        // cancellation always returns money.
-        refunded: refundAmount > 0,
-        refund_reason: refund.reason,
-        within_free_window: refund.withinFreeWindow,
+        // Never true any more. Kept so the button, which still branches on it,
+        // keeps compiling until it is rewritten.
+        refunded: false,
+        refund_reason:
+          'The amount held for this booking has not been returned to your wallet. Refunds are reviewed by our team.',
       });
     } catch (error) {
       console.error('Cancel booking API error:', error);

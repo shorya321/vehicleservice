@@ -138,9 +138,21 @@ export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEma
             "credited back to your wallet" would tell the owner a refund happened when
             none did.
           */}
-          {refundAmount > 0 && (
+          {refundAmount > 0 ? (
             <InfoBox type="success">
               The refund has been automatically credited back to your wallet.
+            </InfoBox>
+          ) : (
+            /*
+              The other half of the same argument. A bare "Refund Amount: 0.00"
+              with nothing beside it reads as a system error rather than as
+              policy, and leaves the owner waiting for money that is not coming
+              on its own. Cancelling and deleting both land here.
+            */
+            <InfoBox type="info">
+              The amount held for this booking has not been returned to your wallet
+              automatically. Refunds are reviewed and issued by our team - contact us
+              if you believe one is due.
             </InfoBox>
           )}
 

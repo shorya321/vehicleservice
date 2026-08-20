@@ -2,7 +2,7 @@
 
 /**
  * Cancel Booking Button Component
- * Handle booking cancellation with refund
+ * Handle booking cancellation. Cancelling does not move money.
  *
  * Design System: Premium Admin Panel with Gold Accent
  */
@@ -20,7 +20,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { getCancellationRefund } from '@/lib/business/booking-utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 
 interface CancelBookingButtonProps {
@@ -40,12 +39,6 @@ export function CancelBookingButton({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  const refund = getCancellationRefund({
-    booking_status: bookingStatus,
-    pickup_datetime: pickupDatetime,
-    wallet_deduction_amount: walletDeductionAmount,
-  });
 
   async function handleCancel() {
     if (cancellationReason.trim().length < 10) {
@@ -73,9 +66,7 @@ export function CancelBookingButton({
       // Report what actually happened. A cancellation inside the free-cancellation window
       // returns nothing, and claiming otherwise is exactly the failure this work removed.
       toast.success('Booking cancelled', {
-        description: result.data.refunded
-          ? `Refund of ${result.data.refund_amount} has been credited to your wallet.`
-          : result.data.refund_reason,
+        description: result.data.refund_reason,
       });
 
       setIsDialogOpen(false);
@@ -118,22 +109,18 @@ export function CancelBookingButton({
           Are you sure you want to cancel this booking?
         </p>
 
-        {/* What the refund will actually be, stated BEFORE confirming. Uses the same pure
-            helper the server uses, so the preview cannot disagree with the outcome. */}
-        <div
-          className={`mb-4 rounded-lg border p-3 text-sm ${
-            refund.refundAmount > 0
-              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
-          }`}
-        >
-          {refund.refundAmount > 0 ? (
+        {/* What happens to the money, stated BEFORE confirming rather than discovered
+            afterwards. Cancelling returns nothing on its own; a refund is a decision our
+            team makes. */}
+        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
+          {walletDeductionAmount > 0 ? (
             <>
-              <strong>{formatCurrency(refund.refundAmount)}</strong> will be returned to your
-              wallet.
+              The <strong>{formatCurrency(walletDeductionAmount)}</strong> held for this booking
+              will not be returned to your wallet automatically. Refunds are reviewed and issued
+              by our team.
             </>
           ) : (
-            refund.reason
+            'Nothing was charged to your wallet for this booking.'
           )}
         </div>
 
