@@ -177,7 +177,9 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
         </div>
         {/* Actions */}
         {(showCancel || canEditDateTime) && (
-          <div className="flex items-center gap-3">
+          // Wraps because the cancel control can now carry a line of explanation
+          // beneath it, which does not fit beside the reschedule button on a phone.
+          <div className="flex flex-wrap items-start gap-3 sm:items-center">
             {canEditDateTime && (
               <EditDateTimeButton
                 bookingId={id}
