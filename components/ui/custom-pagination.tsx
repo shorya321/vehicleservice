@@ -9,6 +9,8 @@ interface CustomPaginationProps {
   totalPages: number
   baseUrl?: string
   queryParams?: Record<string, any>
+  /** Query param key to write the page number into. Defaults to "page". */
+  paramName?: string
 }
 
 export function CustomPagination({
@@ -16,6 +18,7 @@ export function CustomPagination({
   totalPages,
   baseUrl,
   queryParams = {},
+  paramName = 'page',
 }: CustomPaginationProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -31,7 +34,7 @@ export function CustomPagination({
       }
     })
     
-    params.set('page', page.toString())
+    params.set(paramName, page.toString())
     const url = baseUrl || pathname
     router.push(`${url}?${params.toString()}`)
   }

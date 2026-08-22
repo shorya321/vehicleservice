@@ -19,6 +19,7 @@ import { ApproveButton } from './components/approve-button';
 import { RejectButton } from './components/reject-button';
 import { AnimatedPage } from '@/components/layout/animated-page';
 import { DeleteBusinessButton } from './components/delete-business-button';
+import { CustomPagination } from '@/components/ui/custom-pagination';
 
 export const metadata: Metadata = {
   title: 'Business Account Details | Admin Portal',
@@ -29,11 +30,26 @@ interface BusinessDetailsPageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    txPage?: string;
+  }>;
 }
 
-export default async function AdminBusinessDetailsPage({ params }: BusinessDetailsPageProps) {
+const TX_PAGE_SIZE = 10;
+
+export default async function AdminBusinessDetailsPage({
+  params,
+  searchParams,
+}: BusinessDetailsPageProps) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
+
+  // Parse the transactions page from the URL (own param so it never collides
+  // with a future `page` param on this route)
+  const parsedTxPage = parseInt(resolvedSearchParams.txPage || '1', 10);
+  const txPage = Number.isNaN(parsedTxPage) || parsedTxPage < 1 ? 1 : parsedTxPage;
+  const txOffset = (txPage - 1) * TX_PAGE_SIZE;
 
   // Get business account details
   const { data: businessAccount, error } = await supabase
@@ -60,13 +76,26 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
     .order('created_at', { ascending: false })
     .limit(10);
 
-  // Get recent transactions
-  const { data: recentTransactions } = await supabase
+  // Get transactions for the current page
+  const { data: recentTransactions, count: txCount } = await supabase
     .from('wallet_transactions')
-    .select('id, amount, transaction_type, description, balance_after, created_at')
+    .select('id, amount, transaction_type, description, balance_after, created_at', {
+      count: 'exact',
+    })
     .eq('business_account_id', id)
     .order('created_at', { ascending: false })
-    .limit(10);
+    .range(txOffset, txOffset + TX_PAGE_SIZE - 1);
+
+  const txTotal = txCount || 0;
+  const txTotalPages = Math.ceil(txTotal / TX_PAGE_SIZE);
+
+  // Exact booking count for the delete confirmation. Deriving it from
+  // recentBookings would cap it at the query's limit and understate what the
+  // delete actually destroys.
+  const { count: bookingCount } = await supabase
+    .from('business_bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('business_account_id', id);
 
   return (
       <AnimatedPage>
@@ -112,7 +141,7 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
             businessId={businessAccount.id}
             businessName={businessAccount.business_name}
             hasCustomDomain={!!businessAccount.custom_domain}
-            bookingCount={recentBookings?.length ?? 0}
+            bookingCount={bookingCount ?? 0}
           />
         </div>
       </div>
@@ -227,11 +256,24 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
       <Card>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>Latest 10 wallet transactions</CardDescription>
+          <CardDescription>
+            {!recentTransactions || recentTransactions.length === 0
+              ? 'Wallet transactions'
+              : `Showing ${txOffset + 1}-${txOffset + recentTransactions.length} of ${txTotal} transactions`}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {!recentTransactions || recentTransactions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No transactions yet</p>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {txPage > 1 ? 'No transactions on this page' : 'No transactions yet'}
+              </p>
+              {txPage > 1 && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/admin/businesses/${id}`}>Back to first page</Link>
+                </Button>
+              )}
+            </div>
           ) : (
             <div className="space-y-2">
               {recentTransactions.map((tx) => (
@@ -256,6 +298,16 @@ export default async function AdminBusinessDetailsPage({ params }: BusinessDetai
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {txTotalPages > 1 && (
+            <div className="pt-4">
+              <CustomPagination
+                currentPage={txPage}
+                totalPages={txTotalPages}
+                paramName="txPage"
+              />
             </div>
           )}
         </CardContent>
