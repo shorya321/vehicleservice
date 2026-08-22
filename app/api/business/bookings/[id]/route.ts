@@ -11,19 +11,15 @@ import {
   apiError,
 } from '@/lib/business/api-utils';
 import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/services/business-emails';
-import { notifyBusinessBookingCancelled } from '@/lib/business/email/notify';
-import { getAppUrl } from '@/lib/business/email/platform';
-import {
-  buildBusinessSideRecipients,
-  loadBookingCreatorById,
-} from '@/lib/business/email/recipients';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { hasActiveVendorAssignment } from '@/lib/business/bookings/active-assignments';
+import { isActiveBookingStatus } from '@/lib/business/booking-utils';
 import { activityLogger } from '@/lib/business/activity/log';
 
 /**
  * DELETE /api/business/bookings/[id]
- * Delete a booking permanently (with refund if applicable)
+ * Delete a booking permanently. Never moves money, and never emails anyone
+ * until the row is actually gone.
  */
 export const DELETE = requireBusinessAuth(
   async (request: NextRequest, user, context: { params: Promise<{ id: string }> }) => {
@@ -43,7 +39,7 @@ export const DELETE = requireBusinessAuth(
     );
 
     try {
-      // Fetch booking to verify ownership, get refund info, and capture details for notifications
+      // Fetch booking to verify ownership and capture details for notifications
       const { data: booking, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
         .select(`
@@ -91,6 +87,32 @@ export const DELETE = requireBusinessAuth(
         );
       }
 
+      // A booking converted from a quotation is held by an ON DELETE RESTRICT
+      // foreign key and can never be deleted. That used to be discovered by
+      // attempting the delete and reading 23503 off the failure - by which point
+      // the passenger had already been emailed a cancellation for a booking that
+      // is still sitting there. Checked up front now, before anything is sent.
+      //
+      // limit(1) on an array, not maybeSingle(): maybeSingle throws PGRST116 if
+      // the unique index ever fails to hold, turning a clean 409 into a 503.
+      const { data: quotationLinks, error: quotationLinkError } = await supabaseAdmin
+        .from('business_quotation_items')
+        .select('id')
+        .eq('converted_booking_id', bookingId)
+        .limit(1);
+
+      // Fail closed, same reasoning as the assignment guard above.
+      if (quotationLinkError) {
+        return apiError('Unable to verify this booking right now. Please try again.', 503);
+      }
+
+      if (quotationLinks && quotationLinks.length > 0) {
+        return apiError(
+          'This booking was created from a quotation and cannot be deleted. Cancel it instead if the trip is not going ahead.',
+          409
+        );
+      }
+
       // Deleting NEVER moves money. Neither does cancelling any more: refunds are
       // reviewed and issued by the platform team from the business account.
       //
@@ -103,15 +125,11 @@ export const DELETE = requireBusinessAuth(
       // Removing the refund entirely fixes both, and makes the ordering question moot: with no
       // money moving there is nothing to keep atomic with the delete.
 
-      // Notify BEFORE deletion (the row's data won't exist after).
-      //
-      // None of this used to run unless the booking had a passenger address: the whole
-      // block, including the owner's in-app notification, sat inside a customer_email
-      // guard, so deleting a booking entered without one told nobody anything. Only the
-      // passenger send is conditional now.
+      // Read the row's details NOW, while it still exists, but send nothing yet.
+      // Everything below the delete depends on these locals, not on the row.
       const { data: businessAccount } = await supabaseAdmin
         .from('business_accounts')
-        .select('business_name, business_email, currency, wallet_balance')
+        .select('business_name, business_email')
         .eq('id', user.businessAccountId)
         .single();
 
@@ -129,81 +147,11 @@ export const DELETE = requireBusinessAuth(
         timeStyle: 'short',
       });
 
-      // Not awaited, and wrapped in after() because a tenant's own SMTP server is a
-      // multi round-trip conversation against a host of unknown latency. Without it the
-      // promise is frequently dropped when the serverless instance freezes after the
-      // response, and the mail is silently lost under load.
-      after(async () => {
-        // Deletion moves no money, so refundAmount is 0 and the balance is unchanged. The
-        // template drops its "credited back to your wallet" note when nothing was
-        // refunded, so this does not claim a refund that did not happen.
-        const recipients = buildBusinessSideRecipients({
-          ownerEmail: businessAccount?.business_email ?? null,
-          ownerName: businessAccount?.business_name ?? null,
-          creator: await loadBookingCreatorById(booking.created_by_user_id),
-          actorMemberId: user.businessId,
-        });
-
-        notifyBusinessBookingCancelled(recipients, {
-          businessAccountId: user.businessAccountId,
-          businessName: businessAccount?.business_name || 'Your booking provider',
-          bookingNumber: booking.booking_number,
-          tripNumber: booking.trip_number,
-          customerName: booking.customer_name,
-          pickupLocation,
-          dropoffLocation,
-          pickupDateTime,
-          cancellationReason: 'Booking deleted. No refund is issued on deletion.',
-          refundAmount: 0,
-          newBalance: Number(businessAccount?.wallet_balance ?? 0),
-          currency: businessAccount?.currency || 'AED',
-          walletUrl: `${getAppUrl()}/business/wallet`,
-        }).catch((err: unknown) => {
-          console.error('Failed to send business deletion email:', err);
-        });
-
-        if (booking.customer_email) {
-          sendBusinessCustomerBookingCancelledEmail({
-            businessAccountId: user.businessAccountId,
-            customerName: booking.customer_name,
-            customerEmail: booking.customer_email,
-            businessName: businessAccount?.business_name || 'Your booking provider',
-            bookingNumber: booking.booking_number,
-            tripNumber: booking.trip_number,
-            pickupLocation,
-            dropoffLocation,
-            pickupDateTime,
-          }).catch((err: unknown) => {
-            console.error('Failed to send customer deletion email:', err);
-          });
-        }
-      });
-
-      // Create in-app notification for business user
-      const { data: ownerUser } = await supabaseAdmin
-        .from('business_users')
-        .select('auth_user_id')
-        .eq('business_account_id', user.businessAccountId)
-        .eq('role', 'owner')
-        .single();
-
-      if (ownerUser?.auth_user_id) {
-        supabaseAdmin.rpc('create_business_notification', {
-          p_business_user_auth_id: ownerUser.auth_user_id,
-          p_category: 'booking',
-          p_type: 'booking_deleted',
-          p_title: `Booking Deleted - #${booking.trip_number || booking.booking_number}`,
-          p_message: `Booking for ${booking.customer_name} deleted. No refund is issued on deletion. Cancel a booking to release its refund.`,
-          p_data: {
-            booking_number: booking.booking_number,
-            trip_number: booking.trip_number,
-            refunded: false,
-          },
-          p_link: '/business/bookings',
-        }).then(({ error: notifError }) => {
-          if (notifError) console.error('Failed to create deletion notification:', notifError);
-        });
-      }
+      // Whether the passenger still had a trip ahead of them. A booking that is
+      // already cancelled or completed must NOT produce a second "your transfer
+      // has been cancelled" - they were told once already, and telling them again
+      // because someone tidied up the list is the bug this guards.
+      const wasActive = isActiveBookingStatus(booking.booking_status);
 
       // Logged BEFORE the delete, for two reasons: the row data is still
       // readable here, and the AFTER DELETE trigger skips when a
@@ -225,25 +173,96 @@ export const DELETE = requireBusinessAuth(
         },
       });
 
-      // Delete the booking
-      const { error: deleteError } = await supabaseAdmin
+      // Delete the booking. select('id') so a no-op delete is distinguishable
+      // from a successful one: two clicks on a slow connection would otherwise
+      // both report success and both mail the passenger.
+      const { data: deletedRows, error: deleteError } = await supabaseAdmin
         .from('business_bookings')
         .delete()
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select('id');
 
       if (deleteError) {
         console.error('Delete booking error:', deleteError);
 
-        // A booking created from a quotation is protected by an ON DELETE RESTRICT foreign key,
-        // which surfaces here as 23503. Without this it reads as a generic server error.
+        // Kept as a race fallback only: the pre-flight check above catches this
+        // before anything is sent. Reaching here means the booking was converted
+        // to a quotation line in the moments since.
         if (deleteError.code === '23503') {
           return apiError(
-            'This booking was created from a quotation. Remove it from that quotation before deleting.',
+            'This booking was created from a quotation and cannot be deleted. Cancel it instead if the trip is not going ahead.',
             409
           );
         }
 
         return apiError('Failed to delete booking', 500);
+      }
+
+      if (!deletedRows || deletedRows.length === 0) {
+        // Someone else deleted it first. Their request sent the notifications.
+        return apiError('Booking not found', 404);
+      }
+
+      // ---------------------------------------------------------------------
+      // Past this line the booking is gone. Only now does anyone get told.
+      //
+      // Wrapped in after() because a tenant's own SMTP server is a multi
+      // round-trip conversation against a host of unknown latency. Without it the
+      // promise is frequently dropped when the serverless instance freezes after
+      // the response, and the mail is silently lost under load.
+      // ---------------------------------------------------------------------
+      after(async () => {
+        // The passenger hears about a deletion only when it takes a live trip
+        // away from them. No business-side email at all: deleting is an internal
+        // tidy-up, the owner gets the bell below and the activity feed row, and
+        // reusing the cancellation email for it was what put "Booking Cancelled"
+        // in owners' inboxes for a booking they had already cancelled.
+        if (wasActive && booking.customer_email) {
+          await sendBusinessCustomerBookingCancelledEmail({
+            businessAccountId: user.businessAccountId,
+            customerName: booking.customer_name,
+            customerEmail: booking.customer_email,
+            businessName: businessAccount?.business_name || 'Your booking provider',
+            bookingNumber: booking.booking_number,
+            tripNumber: booking.trip_number,
+            pickupLocation,
+            dropoffLocation,
+            pickupDateTime,
+          }).catch((err: unknown) => {
+            console.error('Failed to send customer deletion email:', err);
+          });
+        }
+      });
+
+      // In-app notification for the owner, so a staff deletion does not go
+      // unseen. Skipped when the owner is the one who clicked: nobody needs a
+      // bell for their own action, which is the same rule the email layer
+      // applies through buildBusinessSideRecipients.
+      const { data: ownerUser } = await supabaseAdmin
+        .from('business_users')
+        .select('auth_user_id')
+        .eq('business_account_id', user.businessAccountId)
+        .eq('role', 'owner')
+        .single();
+
+      if (ownerUser?.auth_user_id && ownerUser.auth_user_id !== user.userId) {
+        supabaseAdmin.rpc('create_business_notification', {
+          p_business_user_auth_id: ownerUser.auth_user_id,
+          p_category: 'booking',
+          p_type: 'booking_deleted',
+          p_title: `Booking Deleted - #${booking.trip_number || booking.booking_number}`,
+          // No "cancel to release its refund" any more. Cancelling releases
+          // nothing either: refunds are reviewed and issued by the platform team.
+          p_message: `Booking for ${booking.customer_name} deleted. No refund is issued on deletion.`,
+          p_data: {
+            booking_number: booking.booking_number,
+            trip_number: booking.trip_number,
+            refunded: false,
+          },
+          p_link: '/business/bookings',
+        }).then(({ error: notifError }) => {
+          if (notifError) console.error('Failed to create deletion notification:', notifError);
+        });
       }
 
       return apiSuccess({

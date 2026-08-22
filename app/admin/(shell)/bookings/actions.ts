@@ -21,6 +21,7 @@ import {
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients'
 import { getAppUrl } from '@/lib/email/config'
+import { isActiveBookingStatus } from '@/lib/business/booking-utils'
 import { format } from 'date-fns'
 import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
 
@@ -468,6 +469,14 @@ export async function updateBookingStatus(
 
   const previousStatus = (beforeUpdate as { booking_status?: string } | null)?.booking_status ?? 'pending'
 
+  // A status change to the status it already has is not a change. Without this the
+  // row is rewritten and the whole notification set goes out again, so re-cancelling
+  // an already-cancelled booking sent the passenger a second "your transfer has been
+  // cancelled" for something they were told about days ago.
+  if (beforeUpdate && previousStatus === status) {
+    return { success: true, unchanged: true }
+  }
+
   const { error } = await adminClient
     .from(tableName)
     .update(updateData)
@@ -892,11 +901,22 @@ export async function bulkUpdateBookingStatus(
     }
   }
 
+  // Drop the ones already in the target status. Rewriting a row to the value it
+  // already holds is not a change, but it did fire the whole notification set, so a
+  // bulk cancel that overlapped an earlier one mailed those passengers a second
+  // "your transfer has been cancelled". Ids with no snapshot are kept: they were not
+  // readable here, and the update below is a no-op for them anyway.
+  const idsToUpdate = bookingIds.filter((id) => previousStatuses.get(id) !== status)
+
+  if (idsToUpdate.length === 0) {
+    return { success: true, unchanged: true }
+  }
+
   // Update customer bookings
   const { error } = await adminClient
     .from('bookings')
     .update(updateData)
-    .in('id', bookingIds)
+    .in('id', idsToUpdate)
 
   if (error) {
     console.error('Error bulk updating customer booking status:', error)
@@ -906,7 +926,7 @@ export async function bulkUpdateBookingStatus(
   const { error: bizError } = await adminClient
     .from('business_bookings')
     .update(updateData)
-    .in('id', bookingIds)
+    .in('id', idsToUpdate)
 
   if (bizError) {
     console.error('Error bulk updating business booking status:', bizError)
@@ -920,7 +940,7 @@ export async function bulkUpdateBookingStatus(
   // every resource stayed blocked. Ids are passed for both booking types because this action
   // is table-agnostic. It fires the same update at `bookings` and `business_bookings`.
   if (status === 'cancelled') {
-    for (const bookingId of bookingIds) {
+    for (const bookingId of idsToUpdate) {
       const { error: closeError } = await closeActiveAssignments({
         bookingId,
         businessBookingId: bookingId,
@@ -938,7 +958,7 @@ export async function bulkUpdateBookingStatus(
   // but inside after() so the sends survive past the response.
   after(() =>
     Promise.allSettled(
-    bookingIds.map(async (bookingId) => {
+    idsToUpdate.map(async (bookingId) => {
       try {
         const details = await getBusinessBookingEmailDetails(bookingId)
         if (!details) return
@@ -1125,7 +1145,13 @@ export async function deleteBooking(
     if (emailDetails) {
       after(async () => {
         try {
-          if (emailDetails.customerEmail) {
+          // Only when the trip was still ahead of them. Deleting a booking the
+          // passenger already had a cancellation notice for sent them a second one,
+          // which is exactly what the tidy-up of an old cancelled row looks like.
+          // The business-side email below is NOT gated the same way: an admin
+          // deleting a tenant's booking is an outside action with no in-app bell
+          // behind it, so the owner has to hear about it either way.
+          if (emailDetails.wasActive && emailDetails.customerEmail) {
             await sendBusinessCustomerBookingCancelledEmail({
               businessAccountId: emailDetails.businessAccountId,
               customerName: emailDetails.customerName,
@@ -1541,7 +1567,7 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
     .from('business_bookings')
     .select(`
       booking_number, trip_number, customer_name, customer_email,
-      pickup_address, dropoff_address, pickup_datetime,
+      booking_status, pickup_address, dropoff_address, pickup_datetime,
       business_account_id, created_by_user_id,
       from_location:from_location_id(name),
       to_location:to_location_id(name)
@@ -1579,6 +1605,8 @@ async function getBusinessBookingEmailDetails(bookingId: string) {
     tripNumber: booking.trip_number || undefined,
     customerName: booking.customer_name || 'Customer',
     customerEmail: booking.customer_email,
+    /** Whether the passenger still had a trip ahead of them when this was read. */
+    wasActive: isActiveBookingStatus(booking.booking_status as string | null),
     businessName: account?.business_name || 'Business',
     businessEmail: account?.business_email || '',
     currency: account?.currency || 'AED',

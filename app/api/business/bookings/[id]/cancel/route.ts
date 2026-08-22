@@ -260,14 +260,32 @@ export const POST = requireBusinessAuth(
 
         // Create in-app notification. The type string is left as it is: it is
         // matched elsewhere to pick an icon, and renaming it buys nothing.
-        const { data: ownerUser } = await supabaseAdmin
-          .from('business_users')
-          .select('auth_user_id')
-          .eq('business_account_id', user.businessAccountId)
-          .eq('role', 'owner')
-          .single();
+        //
+        // Read the creator's auth id in the same round trip as the owner's,
+        // because `trigger_notify_business_booking_status_changed` has ALREADY
+        // written a "Booking Cancelled" row for `created_by_user_id` by the time
+        // this runs. When the owner is the creator - the normal case for a
+        // single-user tenant - sending this one too puts two bells in the tray
+        // for one cancellation.
+        const memberIds = [
+          booking.created_by_user_id,
+        ].filter((id): id is string => Boolean(id));
 
-        if (ownerUser?.auth_user_id) {
+        const { data: members } = await supabaseAdmin
+          .from('business_users')
+          .select('id, auth_user_id, role')
+          .eq('business_account_id', user.businessAccountId)
+          .or(
+            memberIds.length > 0
+              ? `role.eq.owner,id.in.(${memberIds.join(',')})`
+              : 'role.eq.owner'
+          );
+
+        const ownerUser = members?.find((m) => m.role === 'owner') ?? null;
+        const creatorAuthUserId =
+          members?.find((m) => m.id === booking.created_by_user_id)?.auth_user_id ?? null;
+
+        if (ownerUser?.auth_user_id && ownerUser.auth_user_id !== creatorAuthUserId) {
           supabaseAdmin.rpc('create_business_notification', {
             p_business_user_auth_id: ownerUser.auth_user_id,
             p_category: 'booking',

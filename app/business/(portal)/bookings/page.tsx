@@ -9,6 +9,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { Plus, CalendarCheck } from 'lucide-react';
 import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
 import { BookingsPageContent } from './components/bookings-page-content';
@@ -94,11 +95,41 @@ export default async function BusinessBookingsPage() {
 
   const { count: pendingCount } = await pendingQuery;
 
+  // Which of these bookings were converted from a quotation. Those are held by an
+  // ON DELETE RESTRICT foreign key and can never be deleted, so the list disables
+  // the action rather than letting the click fail at the API.
+  //
+  // Read with the admin client on purpose. The only RLS policy on
+  // business_quotation_items is creator-scoped (owner, or the quotation's own
+  // creator), so a staff member would see nothing here and would be shown a Delete
+  // button that cannot work. The filter is the ids already loaded for this tenant
+  // and the projection is a booking id, so nothing about the quotation leaks.
+  const loadedIds = (bookings || []).map((b) => b.id);
+  let quotationBookingIds: string[] = [];
+
+  if (loadedIds.length > 0) {
+    const { data: quotationLinks, error: quotationLinkError } = await createAdminClient()
+      .from('business_quotation_items')
+      .select('converted_booking_id')
+      .in('converted_booking_id', loadedIds);
+
+    if (quotationLinkError) {
+      // Not fatal: the API refuses the delete anyway, and after the ordering fix
+      // that refusal no longer emails anyone.
+      console.error('Failed to read quotation links for bookings list:', quotationLinkError);
+    } else {
+      quotationBookingIds = (quotationLinks || [])
+        .map((q) => q.converted_booking_id)
+        .filter((id): id is string => Boolean(id));
+    }
+  }
+
   return (
     <BookingsPageContent
       bookings={bookings || []}
       totalCount={totalCount || 0}
       pendingCount={pendingCount || 0}
+      quotationBookingIds={quotationBookingIds}
     />
   );
 }

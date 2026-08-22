@@ -253,6 +253,34 @@ export const BUSINESS_CANCELLABLE_STATUSES = ['pending', 'confirmed'] as const;
 
 export type BusinessCancellableStatus = (typeof BUSINESS_CANCELLABLE_STATUSES)[number];
 
+/**
+ * Statuses where the trip is still ahead of the passenger.
+ *
+ * Deleting one of these takes a live trip away from someone who is expecting a
+ * car, so the passenger has to be told. Deleting a booking that is already
+ * `cancelled` or `completed` tells them nothing they do not know, and mailing
+ * them again is the bug this constant exists to prevent.
+ *
+ * Deliberately NOT `BUSINESS_CANCELLABLE_STATUSES`. That set answers a different
+ * question - may the portal cancel this - and omits `in_progress`, so reusing it
+ * would silently swallow the notice when an in-progress booking is deleted.
+ *
+ * `assigned` is in the enum and is never written (assignment lives in
+ * `booking_assignments.status`). It is listed so the set is exhaustive against
+ * the enum, not because anything depends on it.
+ */
+export const ACTIVE_BOOKING_STATUSES = [
+  'pending',
+  'confirmed',
+  'assigned',
+  'in_progress',
+] as const;
+
+/** Whether the passenger still has a trip ahead of them on this booking. */
+export function isActiveBookingStatus(status: string | null | undefined): boolean {
+  return ACTIVE_BOOKING_STATUSES.includes(status as (typeof ACTIVE_BOOKING_STATUSES)[number]);
+}
+
 export interface CancellationEligibility {
   canCancel: boolean;
   /** Whole minutes left in the grace period. 0 whenever cancelling is refused. */

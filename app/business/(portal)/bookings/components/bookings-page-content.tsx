@@ -87,6 +87,12 @@ interface BookingsPageContentProps {
   bookings: Booking[];
   totalCount: number;
   pendingCount: number;
+  /**
+   * Bookings that were converted from a quotation. An ON DELETE RESTRICT foreign
+   * key holds them, so deleting one is impossible - the row can only ever be
+   * cancelled. Shown as a disabled action rather than a click that fails.
+   */
+  quotationBookingIds?: string[];
 }
 
 // Map booking status to UI status
@@ -113,9 +119,14 @@ export function BookingsPageContent({
   bookings,
   totalCount,
   pendingCount,
+  quotationBookingIds = [],
 }: BookingsPageContentProps) {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
+  const quotationBookings = useMemo(
+    () => new Set(quotationBookingIds),
+    [quotationBookingIds]
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
@@ -179,8 +190,14 @@ export function BookingsPageContent({
 
   // Selection handlers - select all on current page
   const toggleSelectAll = () => {
-    const currentPageBookingIds = paginatedBookings.map((b) => b.id);
-    const allCurrentPageSelected = currentPageBookingIds.every((id) => selectedBookings.has(id));
+    // Quotation-derived bookings are excluded: the bulk delete is all or nothing,
+    // so one of them in the selection refuses the whole batch.
+    const currentPageBookingIds = paginatedBookings
+      .filter((b) => !quotationBookings.has(b.id))
+      .map((b) => b.id);
+    const allCurrentPageSelected =
+      currentPageBookingIds.length > 0 &&
+      currentPageBookingIds.every((id) => selectedBookings.has(id));
 
     if (allCurrentPageSelected) {
       // Deselect all on current page
@@ -196,6 +213,7 @@ export function BookingsPageContent({
   };
 
   const toggleSelectBooking = (bookingId: string) => {
+    if (quotationBookings.has(bookingId)) return;
     const newSelected = new Set(selectedBookings);
     if (newSelected.has(bookingId)) {
       newSelected.delete(bookingId);
@@ -206,8 +224,12 @@ export function BookingsPageContent({
   };
 
   // Check selection state for current page
-  const currentPageBookingIds = paginatedBookings.map((b) => b.id);
-  const isAllSelected = paginatedBookings.length > 0 && currentPageBookingIds.every((id) => selectedBookings.has(id));
+  const currentPageBookingIds = paginatedBookings
+    .filter((b) => !quotationBookings.has(b.id))
+    .map((b) => b.id);
+  const isAllSelected =
+    currentPageBookingIds.length > 0 &&
+    currentPageBookingIds.every((id) => selectedBookings.has(id));
   const isSomeSelected = selectedBookings.size > 0 && !isAllSelected;
 
   /**
@@ -228,6 +250,27 @@ export function BookingsPageContent({
     return bookings
       .filter((b) => selectedBookings.has(b.id) && holdsMoney(b))
       .reduce((sum, b) => sum + Number(b.wallet_deduction_amount), 0);
+  })();
+
+  /**
+   * How many of the bookings about to be deleted still have a trip ahead of them.
+   *
+   * Only those get a notice to the passenger. A booking that is already cancelled or
+   * completed sends nothing, because the passenger was told once already and a second
+   * "your transfer has been cancelled" for a tidy-up is what this whole change removes.
+   * Mirrors ACTIVE_BOOKING_STATUSES in lib/business/booking-utils.
+   */
+  const passengersToNotify = (() => {
+    const stillAhead = (b: Booking) =>
+      ['pending', 'confirmed', 'assigned', 'in_progress'].includes(b.booking_status) &&
+      Boolean(b.customer_email);
+
+    if (bookingToDelete) {
+      const target = bookings.find((b) => b.id === bookingToDelete);
+      return target && stillAhead(target) ? 1 : 0;
+    }
+
+    return bookings.filter((b) => selectedBookings.has(b.id) && stillAhead(b)).length;
   })();
 
   // Delete handlers
@@ -600,6 +643,7 @@ export function BookingsPageContent({
                         index={index}
                         prefersReducedMotion={prefersReducedMotion}
                         isSelected={selectedBookings.has(booking.id)}
+                        fromQuotation={quotationBookings.has(booking.id)}
                         onToggleSelect={() => toggleSelectBooking(booking.id)}
                         onDelete={() => handleDeleteSingle(booking.id)}
                         onRefresh={() => router.refresh()}
@@ -617,6 +661,7 @@ export function BookingsPageContent({
                       index={index}
                       prefersReducedMotion={prefersReducedMotion}
                       isSelected={selectedBookings.has(booking.id)}
+                      fromQuotation={quotationBookings.has(booking.id)}
                       onToggleSelect={() => toggleSelectBooking(booking.id)}
                       onDelete={() => handleDeleteSingle(booking.id)}
                       onRefresh={() => router.refresh()}
@@ -722,6 +767,18 @@ export function BookingsPageContent({
                 and neither does cancelling. Refunds are reviewed and issued by our team.
               </div>
             )}
+            {/* Say plainly who hears about this, so nobody deletes an old cancelled
+                booking expecting the passenger to be emailed again, or a live one
+                expecting them not to be. */}
+            <div className="mt-3 text-sm text-muted-foreground">
+              {passengersToNotify > 0
+                ? bookingToDelete
+                  ? 'The passenger will be emailed that their transfer is cancelled.'
+                  : `${passengersToNotify} passenger(s) will be emailed that their transfer is cancelled.`
+                : bookingToDelete
+                  ? 'The passenger has already been told about this booking and will not be emailed again.'
+                  : 'These passengers have already been told and will not be emailed again.'}
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
@@ -755,12 +812,14 @@ interface TableRowProps {
   index: number;
   prefersReducedMotion: boolean;
   isSelected: boolean;
+  /** Converted from a quotation: held by a foreign key, so it cannot be deleted. */
+  fromQuotation: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
   onRefresh: () => void;
 }
 
-function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSelect, onDelete, onRefresh }: TableRowProps) {
+function TableRow({ booking, index, prefersReducedMotion, isSelected, fromQuotation, onToggleSelect, onDelete, onRefresh }: TableRowProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const canEditDateTime = canModifyBookingDateTime(booking);
 
@@ -793,8 +852,13 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
       <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
         <Checkbox
           checked={isSelected}
+          disabled={fromQuotation}
           onCheckedChange={onToggleSelect}
-          aria-label={`Select booking ${booking.trip_number || booking.booking_number}`}
+          aria-label={
+            fromQuotation
+              ? `Booking ${booking.trip_number || booking.booking_number} came from a quotation and cannot be deleted`
+              : `Select booking ${booking.trip_number || booking.booking_number}`
+          }
           className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
         />
       </div>
@@ -863,6 +927,12 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, onToggleSe
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
+              disabled={fromQuotation}
+              title={
+                fromQuotation
+                  ? 'Created from a quotation and cannot be deleted. Cancel it instead.'
+                  : undefined
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
@@ -944,6 +1014,8 @@ interface MobileBookingCardProps {
   index: number;
   prefersReducedMotion: boolean;
   isSelected: boolean;
+  /** Converted from a quotation: held by a foreign key, so it cannot be deleted. */
+  fromQuotation: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
   onRefresh: () => void;
@@ -954,6 +1026,7 @@ function MobileBookingCard({
   index,
   prefersReducedMotion,
   isSelected,
+  fromQuotation,
   onToggleSelect,
   onDelete,
   onRefresh,
@@ -993,8 +1066,13 @@ function MobileBookingCard({
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={isSelected}
+                  disabled={fromQuotation}
                   onCheckedChange={onToggleSelect}
-                  aria-label={`Select booking ${booking.trip_number || booking.booking_number}`}
+                  aria-label={
+                    fromQuotation
+                      ? `Booking ${booking.trip_number || booking.booking_number} came from a quotation and cannot be deleted`
+                      : `Select booking ${booking.trip_number || booking.booking_number}`
+                  }
                   className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
                 />
               </div>
@@ -1051,6 +1129,12 @@ function MobileBookingCard({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
+                  disabled={fromQuotation}
+                  title={
+                    fromQuotation
+                      ? 'Created from a quotation and cannot be deleted. Cancel it instead.'
+                      : undefined
+                  }
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
