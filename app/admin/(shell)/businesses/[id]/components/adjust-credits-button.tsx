@@ -100,7 +100,7 @@ export function AdjustCreditsButton({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount (USD)</Label>
+            <Label htmlFor="amount">Amount (AED)</Label>
             <Input
               id="amount"
               type="number"

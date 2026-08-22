@@ -66,6 +66,32 @@ export const POST = withErrorHandling(
     );
 
     try {
+      // add_to_wallet has no negative-balance guard of its own, and it is shared
+      // with the Stripe webhook and verify-payment, so the check belongs here
+      // rather than in the function. Without it a large debit silently drives a
+      // business wallet negative.
+      if (amount < 0) {
+        const { data: account, error: balanceError } = await supabaseAdmin
+          .from('business_accounts')
+          .select('wallet_balance')
+          .eq('id', businessId)
+          .single();
+
+        if (balanceError || !account) {
+          console.error('Credit adjustment balance lookup error:', balanceError);
+          return apiError('Business account not found', 404);
+        }
+
+        if (Number(account.wallet_balance) + amount < 0) {
+          return apiError(
+            `Adjustment would result in a negative balance. Current balance: ${formatCurrency(
+              Number(account.wallet_balance)
+            )}`,
+            400
+          );
+        }
+      }
+
       // Call add_to_wallet function (works for both positive and negative amounts)
       const { data: newBalance, error } = await supabaseAdmin.rpc('add_to_wallet', {
         p_business_id: businessId,
