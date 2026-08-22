@@ -3,6 +3,22 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from './types'
 
+// Next signals control flow (dynamic bail-out, redirect, notFound) by throwing.
+// Those throws are expected and must propagate untouched, not be logged as failures.
+const NEXT_CONTROL_FLOW_DIGESTS = [
+  'DYNAMIC_SERVER_USAGE',
+  'BAILOUT_TO_CLIENT_SIDE_RENDERING',
+  'NEXT_REDIRECT',
+  'NEXT_NOT_FOUND',
+  'NEXT_HTTP_ERROR_FALLBACK',
+]
+
+function isNextControlFlow(error: unknown): boolean {
+  const digest = (error as { digest?: unknown } | null)?.digest
+  return typeof digest === 'string'
+    && NEXT_CONTROL_FLOW_DIGESTS.some((prefix) => digest.startsWith(prefix))
+}
+
 export const createClient = cache(async function createClient() {
   try {
     const cookieStore = await cookies()
@@ -41,7 +57,9 @@ export const createClient = cache(async function createClient() {
 
     return supabase
   } catch (error) {
-    console.error('Failed to create Supabase client:', error)
+    if (!isNextControlFlow(error)) {
+      console.error('Failed to create Supabase client:', error)
+    }
     throw error
   }
 })
