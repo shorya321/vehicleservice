@@ -124,7 +124,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
     
     setIsUpdating(true)
     try {
-      await updatePaymentStatus(booking.id, paymentStatusToUpdate)
+      // The booking type must be passed here too: without it the action wrote every
+      // payment status to `bookings`, so a business booking updated nothing.
+      await updatePaymentStatus(
+        booking.id,
+        paymentStatusToUpdate,
+        booking.bookingType || 'customer'
+      )
       toast.success(`Payment status updated to ${paymentStatusToUpdate}`)
       router.refresh()
     } catch (error) {

@@ -222,9 +222,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     }
   }
 
-  const handleUpdatePaymentStatus = async (bookingId: string, status: 'completed' | 'failed' | 'refunded') => {
+  const handleUpdatePaymentStatus = async (
+    bookingId: string,
+    status: 'completed' | 'failed' | 'refunded',
+    bookingType: 'customer' | 'business'
+  ) => {
     try {
-      await updatePaymentStatus(bookingId, status)
+      // The action needs the type to pick the table, exactly as the status update does.
+      await updatePaymentStatus(bookingId, status, bookingType)
       toast.success(`Payment status updated to ${status}`)
       router.refresh()
     } catch (error) {
@@ -486,7 +491,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation()
-                                handleUpdatePaymentStatus(booking.id, 'completed')
+                                handleUpdatePaymentStatus(booking.id, 'completed', booking.bookingType || 'customer')
                               }}
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
@@ -498,7 +503,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation()
-                                handleUpdatePaymentStatus(booking.id, 'refunded')
+                                handleUpdatePaymentStatus(booking.id, 'refunded', booking.bookingType || 'customer')
                               }}
                             >
                               <RefreshCw className="mr-2 h-4 w-4" />

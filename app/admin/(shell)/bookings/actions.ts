@@ -642,36 +642,53 @@ export async function updateBookingStatus(
 export async function updatePaymentStatus(
   bookingId: string,
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded',
+  bookingType: 'customer' | 'business',
   paymentError?: string
 ) {
   const adminClient = createAdminClient()
-  
+
+  // Same rule as updateBookingStatus above: the id alone does not say which table
+  // the booking lives in. This used to be hardcoded to `bookings`, so every business
+  // booking updated zero rows, which PostgREST does not report as an error, and the
+  // caller showed a success toast for a write that never happened.
+  const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
+
   const updateData: any = {
     payment_status: status,
     updated_at: new Date().toISOString()
   }
-  
-  if (status === 'completed') {
-    updateData.paid_at = new Date().toISOString()
+
+  // `business_bookings` carries neither of these columns, only payment_status.
+  if (tableName === 'bookings') {
+    if (status === 'completed') {
+      updateData.paid_at = new Date().toISOString()
+    }
+
+    if (status === 'failed' && paymentError) {
+      updateData.payment_error = paymentError
+    }
   }
-  
-  if (status === 'failed' && paymentError) {
-    updateData.payment_error = paymentError
-  }
-  
-  const { error } = await adminClient
-    .from('bookings')
+
+  // Select the touched row back so a no-match is an error instead of a silent success.
+  const { data: updated, error } = await adminClient
+    .from(tableName)
     .update(updateData)
     .eq('id', bookingId)
-  
+    .select('id')
+
   if (error) {
     console.error('Error updating payment status:', error)
     throw new Error('Failed to update payment status')
   }
-  
+
+  if (!updated || updated.length === 0) {
+    console.error(`Error updating payment status: no ${tableName} row for id ${bookingId}`)
+    throw new Error('Failed to update payment status')
+  }
+
   revalidatePath('/admin/bookings')
   revalidatePath(`/admin/bookings/${bookingId}`)
-  
+
   return { success: true }
 }
 
