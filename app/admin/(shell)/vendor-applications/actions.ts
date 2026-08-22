@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/actions'
+import { removeVehicleImages } from '@/lib/vehicles/server-storage'
 import { revalidatePath } from 'next/cache'
 
 export async function getVendorApplicationsStats() {
@@ -165,6 +166,16 @@ export async function deleteVendorApplication(id: string) {
   await requireAdmin()
   const supabase = createAdminClient()
 
+  // Read the image URLs first. `vehicles.business_id` is ON DELETE CASCADE, so
+  // deleting the application destroys that vendor's vehicles along with it, and
+  // with them the only record of where their images live. Verified: the cascade
+  // clears `vendor_direct_bookings` before it reaches `vehicles`, so the
+  // RESTRICT on `vendor_direct_bookings.vehicle_id` never blocks this.
+  const { data: vehicles } = await supabase
+    .from('vehicles')
+    .select('primary_image_url')
+    .eq('business_id', id)
+
   const { error } = await supabase
     .from('vendor_applications')
     .delete()
@@ -175,12 +186,29 @@ export async function deleteVendorApplication(id: string) {
     throw new Error(error.message)
   }
 
+  // Only after the row is gone, so a failed delete never destroys live images.
+  // Best-effort by design: this never throws, so a storage hiccup cannot report
+  // a delete that actually succeeded as a failure.
+  await removeVehicleImages((vehicles ?? []).map((vehicle) => vehicle.primary_image_url))
+
   revalidatePath('/admin/vendor-applications')
 }
 
 export async function bulkDeleteVendorApplications(ids: string[]) {
   await requireAdmin()
+
+  if (ids.length === 0) {
+    return { count: 0 }
+  }
+
   const supabase = createAdminClient()
+
+  // Same cascade as the single delete above, so the same read-then-delete
+  // ordering applies.
+  const { data: vehicles } = await supabase
+    .from('vehicles')
+    .select('primary_image_url')
+    .in('business_id', ids)
 
   const { error } = await supabase
     .from('vendor_applications')
@@ -190,6 +218,8 @@ export async function bulkDeleteVendorApplications(ids: string[]) {
   if (error) {
     throw new Error(error.message)
   }
+
+  await removeVehicleImages((vehicles ?? []).map((vehicle) => vehicle.primary_image_url))
 
   revalidatePath('/admin/vendor-applications')
   return { count: ids.length }

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import { removeVehicleImage } from "@/lib/vehicles/server-storage"
+import { removeVehicleImage, removeVehicleImages } from "@/lib/vehicles/server-storage"
 import {
   adminVehicleMutationSchema,
   firstIssueMessage,
@@ -423,15 +423,32 @@ export async function bulkDeleteAdminVehicles(ids: string[]) {
     return { error: 'Only admins can delete vehicles' }
   }
 
-  const { error } = await supabase
+  // A Server Action is a public endpoint, so an empty list is not only the
+  // disabled-button case. Refuse it rather than issuing a delete that matches
+  // nothing and reporting success.
+  if (ids.length === 0) {
+    return { error: 'No vehicles selected' }
+  }
+
+  // Deleted and read back in one statement so the URLs come from the rows that
+  // were actually removed. Reading them first would be a guess: if the delete
+  // matched fewer rows than the read, the images of the survivors would be
+  // deleted out from under them.
+  const { data: deleted, error } = await supabase
     .from('vehicles')
     .delete()
     .in('id', ids)
+    .select('primary_image_url')
 
   if (error) {
     console.error('Error bulk deleting vehicles:', error)
     return { error: error.message }
   }
+
+  // Best-effort, and only after the rows are gone. Previously omitted here
+  // while the single-vehicle delete did it, so every use of Delete Selected
+  // left its images behind in the bucket forever.
+  await removeVehicleImages((deleted ?? []).map((vehicle) => vehicle.primary_image_url))
 
   revalidatePath('/admin/vehicles')
   revalidatePath('/vendor/vehicles')
