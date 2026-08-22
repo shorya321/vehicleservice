@@ -1,31 +1,34 @@
 import { createClient } from '@/lib/supabase/client'
+import { createUploadClient } from '@/lib/supabase/upload-client'
 import { storagePathFromUrl } from './paths'
+
+export { optimizeImage, type OptimizeImageOptions } from './optimize-image'
 
 export interface UploadResult {
   url: string | null
   error: string | null
-}
-
-export interface OptimizeImageOptions {
-  maxWidth?: number
-  maxHeight?: number
-  quality?: number
+  /** True when sending the same bytes again, on a fresh path, could succeed. */
+  retryable: boolean
 }
 
 export interface UploadImageOptions {
   bucket: string
+  /** Path chosen by the server when it signed this upload. */
   path: string
+  /** Token from `createSignedUploadUrl`. This is what authorizes the write. */
+  token: string
 }
 
 /**
- * Nothing in this module is cancellable. Neither `canvas.toBlob` nor the
- * Supabase storage client accepts an `AbortSignal`. These bounds exist so a
- * stalled step surfaces an error instead of leaving the caller's spinner
- * running forever; the underlying request may still be in flight.
+ * The upload is cancelled with an `AbortSignal` injected through the client's
+ * `global.fetch`, because storage-js declares `signal` on `FileOptions` and
+ * never reads it. `withTimeout` stays as a backstop for the case where the
+ * signal is somehow ignored.
  */
-const OPTIMIZE_TIMEOUT_MS = 15_000
 const UPLOAD_TIMEOUT_MS = 60_000
 const DELETE_TIMEOUT_MS = 10_000
+
+const TIMEOUT_MESSAGE = 'Upload timed out. Check your connection and try again.'
 
 export function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback
@@ -51,130 +54,99 @@ export async function withTimeout<T>(
   }
 }
 
-/** Resolves with `fallback` if `promise` has not settled within `ms`. */
-async function withTimeoutFallback<T>(
-  promise: PromiseLike<T>,
-  ms: number,
-  fallback: T
-): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined
+function hasHttpStatus(error: unknown): error is { status: number } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    typeof error.status === 'number'
+  )
+}
 
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>((resolve) => {
-        timer = setTimeout(() => resolve(fallback), ms)
-      }),
-    ])
-  } finally {
-    clearTimeout(timer)
-  }
+function hasOriginalError(error: unknown): error is { originalError: unknown } {
+  return typeof error === 'object' && error !== null && 'originalError' in error
 }
 
 /**
- * Downscales and re-encodes an image on the client before upload.
+ * A second attempt is only worth the caller's time when the first failed for a
+ * reason that is not about this request's content. A 4xx is a verdict: 403 is
+ * the storage policy saying no, 409 is the path already taken, 413 and 415 are
+ * the file itself being wrong. Resending the same bytes changes none of them.
+ * A 5xx, or a fetch-level `TypeError`, is the transport, which can differ.
  *
- * Always emits image/jpeg, which every bucket in this project whitelists.
- * Falls back to the original file if the canvas is unavailable, if encoding
- * fails, or if encoding stalls, so a browser quirk degrades quality rather
- * than blocking the upload. The stall case is real: `canvas.toBlob` is not
- * guaranteed to invoke its callback once the canvas exceeds the platform's
- * maximum area (iOS Safari gives up around 16.7 MP), which a large phone
- * photo hits, and without the bound the returned promise never settles.
+ * The timeout is deliberately excluded. The caller has already waited a full
+ * minute, and doubling that is a worse answer than an error they can act on.
  */
-export async function optimizeImage(
-  file: File,
-  { maxWidth = 1920, maxHeight = 1920, quality = 0.85 }: OptimizeImageOptions = {}
-): Promise<File> {
-  const encoded = new Promise<File>((resolve, reject) => {
-    const reader = new FileReader()
+function isRetryable(error: unknown): boolean {
+  if (hasHttpStatus(error)) {
+    return error.status >= 500
+  }
 
-    reader.onload = (event) => {
-      const img = new Image()
-
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-
-        if (!ctx) {
-          resolve(file)
-          return
-        }
-
-        let { width, height } = img
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width
-            width = maxWidth
-          }
-        } else if (height > maxHeight) {
-          width = (width * maxHeight) / height
-          height = maxHeight
-        }
-
-        canvas.width = width
-        canvas.height = height
-        ctx.drawImage(img, 0, 0, width, height)
-
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              resolve(file)
-              return
-            }
-
-            resolve(new File([blob], file.name, { type: 'image/jpeg' }))
-          },
-          'image/jpeg',
-          quality
-        )
-      }
-
-      img.onerror = () => reject(new Error('Failed to load image'))
-      img.src = event.target?.result as string
-    }
-
-    reader.onerror = () => reject(new Error('Failed to read file'))
-    reader.readAsDataURL(file)
-  })
-
-  return withTimeoutFallback(encoded, OPTIMIZE_TIMEOUT_MS, file)
+  return hasOriginalError(error) && error.originalError instanceof TypeError
 }
 
-/** Uploads a file straight from the browser to Supabase Storage. */
+/**
+ * Uploads a file straight from the browser to Supabase Storage, using a URL
+ * the server already signed.
+ *
+ * Nothing here touches `supabase.auth`. That is the point: resolving a bearer
+ * token in the browser means `auth.getSession()`, which waits on the GoTrue
+ * Web Lock with no timeout, and a lock held elsewhere in the app used to stall
+ * this upload until the 60 second race fired with no request ever sent. The
+ * signed token carries the permission instead, so a held lock cannot reach us.
+ */
 export async function uploadImage(
   file: File,
-  { bucket, path }: UploadImageOptions
+  { bucket, path, token }: UploadImageOptions
 ): Promise<UploadResult> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS)
+
   try {
-    const supabase = createClient()
+    const supabase = createUploadClient(controller.signal)
 
     const { data, error } = await withTimeout(
-      supabase.storage.from(bucket).upload(path, file, {
+      supabase.storage.from(bucket).uploadToSignedUrl(path, token, file, {
         cacheControl: '3600',
-        upsert: false,
         contentType: file.type,
       }),
       UPLOAD_TIMEOUT_MS,
-      'Upload timed out. Check your connection and try again.'
+      TIMEOUT_MESSAGE
     )
 
     if (error) {
-      return { url: null, error: error.message }
+      // storage-js catches the abort and turns it into a StorageUnknownError
+      // whose message is whatever the browser called it, so the signal is the
+      // truth here, not the text.
+      if (controller.signal.aborted) {
+        return { url: null, error: TIMEOUT_MESSAGE, retryable: false }
+      }
+
+      return { url: null, error: error.message, retryable: isRetryable(error) }
     }
 
     const {
       data: { publicUrl },
     } = supabase.storage.from(bucket).getPublicUrl(data.path)
 
-    return { url: publicUrl, error: null }
+    return { url: publicUrl, error: null, retryable: false }
   } catch (error: unknown) {
-    return { url: null, error: getErrorMessage(error, 'Upload failed') }
+    return { url: null, error: getErrorMessage(error, 'Upload failed'), retryable: false }
+  } finally {
+    clearTimeout(timer)
+    // Cancels the request on the backstop path too, and is a no-op once the
+    // response has already arrived.
+    controller.abort()
   }
 }
 
-/** Deletes an object addressed by its public URL. */
+/**
+ * Deletes an object addressed by its public URL.
+ *
+ * Still on the browser client, and so still exposed to the auth lock, because
+ * this only ever runs fire-and-forget from an error path. A stall here is
+ * invisible to the user and blocks no form.
+ */
 export async function deleteImageByUrl(
   url: string,
   bucket: string

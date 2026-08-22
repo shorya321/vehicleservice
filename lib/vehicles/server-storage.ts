@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { storagePathFromUrl } from '@/lib/storage/paths'
-import { VEHICLE_BUCKET } from './image-upload'
+import { VEHICLE_BUCKET } from './bucket'
 
 /**
  * Server-only. Removes vehicle images with the service-role client.

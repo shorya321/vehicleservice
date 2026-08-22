@@ -1,6 +1,22 @@
-import { deleteImageByUrl, optimizeImage, uploadImage, type UploadResult } from '@/lib/storage/image-upload'
+import {
+  deleteImageByUrl,
+  optimizeImage,
+  uploadImage,
+  withTimeout,
+  type UploadResult,
+} from '@/lib/storage/image-upload'
+import { VEHICLE_BUCKET } from './bucket'
+import { signVehicleImageUpload } from './sign-upload'
 
-export const VEHICLE_BUCKET = 'vehicles'
+export { VEHICLE_BUCKET }
+
+/**
+ * Bounded because a Server Action POST answered with a proxy redirect leaves
+ * the client promise pending forever. See the header comment in `proxy.ts`.
+ */
+const SIGN_TIMEOUT_MS = 15_000
+
+const SIGN_FAILED = 'Could not start the upload. Refresh the page and try again.'
 
 interface UploadVehicleImageArgs {
   businessId: string
@@ -10,10 +26,18 @@ interface UploadVehicleImageArgs {
 /**
  * Optimizes and uploads a vehicle's primary image from the browser.
  *
- * Path is `{businessId}/{uuid}.jpg`, matching the shape the admin upload
- * already used. The vendor server action previously wrote
- * `vehicles/{businessId}/{vehicleId}/...` inside the `vehicles` bucket, which
- * doubled the prefix in the public URL.
+ * The server signs the upload and picks the path, then the browser writes to
+ * it with the returned token. Nothing in this path calls `supabase.auth` in
+ * the browser, which is deliberate: that is the call that waits on the GoTrue
+ * Web Lock with no timeout, and a lock held elsewhere in the app used to stall
+ * the upload for its whole 60 second budget without sending a request.
+ *
+ * Retried at most once, and only when the first attempt reported a transport
+ * failure. The retry signs again rather than reusing the token: a signed URL
+ * is single use, and the fresh uuid also avoids a 409 in the case where the
+ * first attempt reached the server before the browser gave up on it. The cost
+ * is at most one unreferenced object, the same harmless leftover a failed save
+ * already produces and which `rollbackVehicleImage` exists for.
  */
 export async function uploadVehicleImage({
   businessId,
@@ -21,15 +45,34 @@ export async function uploadVehicleImage({
 }: UploadVehicleImageArgs): Promise<UploadResult> {
   try {
     const optimized = await optimizeImage(file)
-    const path = `${businessId}/${crypto.randomUUID()}.jpg`
+    const first = await signAndUpload(businessId, optimized)
 
-    return await uploadImage(optimized, { bucket: VEHICLE_BUCKET, path })
+    if (!first.retryable) {
+      return first
+    }
+
+    return await signAndUpload(businessId, optimized)
   } catch (error: unknown) {
     return {
       url: null,
       error: error instanceof Error ? error.message : 'Failed to process image',
+      retryable: false,
     }
   }
+}
+
+async function signAndUpload(businessId: string, file: File): Promise<UploadResult> {
+  const { path, token, error } = await withTimeout(
+    signVehicleImageUpload(businessId, file.type),
+    SIGN_TIMEOUT_MS,
+    SIGN_FAILED
+  )
+
+  if (error || !path || !token) {
+    return { url: null, error: error ?? SIGN_FAILED, retryable: false }
+  }
+
+  return uploadImage(file, { bucket: VEHICLE_BUCKET, path, token })
 }
 
 /** Best-effort rollback of an upload whose vehicle row failed to save. */

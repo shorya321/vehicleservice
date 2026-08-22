@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
-import { useState, useEffect, useLayoutEffect, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
@@ -49,6 +49,9 @@ export function PublicHeader({
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const supabase = useMemo(() => createClient(), [])
   const [mounted, setMounted] = useState(false)
+  const userId = user?.id ?? null
+  /** Which user's profile is already loaded, so the fetch below runs once. */
+  const loadedProfileId = useRef<string | null>(initialProfile?.id ?? null)
 
   useLayoutEffect(() => {
     setMounted(true)
@@ -74,38 +77,55 @@ export function PublicHeader({
   }, [])
 
   useEffect(() => {
-    let isMounted = true
-
     // Only listen for auth CHANGES (sign out, sign in on another tab, etc.)
-    // Initial state comes from server props, no need to fetch it
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted) return
+    // Initial state comes from server props, no need to fetch it.
+    //
+    // This callback must stay synchronous. auth-js awaits every subscriber
+    // while holding the GoTrue Web Lock, and every other browser-side Supabase
+    // call waits on that lock with no timeout at all, so awaiting a query in
+    // here stalls the whole origin for the length of that round trip, in every
+    // tab. The profile fetch therefore lives in its own effect below, which
+    // runs after the lock has been released.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
 
-        const currentUser = session?.user || null
-        setUser(currentUser)
-
-        if (currentUser) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single()
-
-          if (profileData && isMounted) {
-            setProfile(profileData)
-          }
-        } else {
-          setProfile(null)
-        }
+      if (!currentUser) {
+        loadedProfileId.current = null
+        setProfile(null)
       }
-    )
+    })
 
     return () => {
-      isMounted = false
       subscription.unsubscribe()
     }
   }, [supabase])
+
+  useEffect(() => {
+    // Skipped when the server already sent this user's profile, which is the
+    // common case, so this normally costs nothing.
+    if (!userId || loadedProfileId.current === userId) {
+      return
+    }
+
+    let isMounted = true
+    loadedProfileId.current = userId
+
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+      .then(({ data }) => {
+        if (data && isMounted) {
+          setProfile(data)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [supabase, userId])
 
   const handleSignOut = async () => {
     // Clear client state immediately for instant UI update
