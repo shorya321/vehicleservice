@@ -54,13 +54,18 @@ async function renderTemplate(
 /**
  * Runs bookkeeping alongside a send without ever letting it affect the send.
  *
- * These calls are deliberately not awaited: an owner's booking must not wait on a log
- * write. But a bare `void promise` has no rejection handler, and an unhandled rejection
- * terminates the Node process on current runtimes. Today logEmail and recordSendOutcome
- * both swallow their own errors, so this is belt and braces, but it makes "bookkeeping
- * cannot break a send" a property of the call site rather than of their internals.
+ * The returned promise can never reject: every failure is caught and logged in here, so
+ * "bookkeeping cannot break a send" is a property of this function rather than of
+ * logEmail's and recordSendOutcome's internals. Callers await it purely to keep the work
+ * attached to the request.
+ *
+ * That await is what stops the delivery log from silently losing rows on a serverless
+ * host. Detached, the insert is a fresh HTTPS request issued after the send has already
+ * resolved, and the instance freezes on top of it - which is how business bookings on the
+ * Vercel-served custom domain produced no log row at all. Nobody waits on it in practice:
+ * every business send runs inside after(), which is past the flushed response.
  */
-function fireAndForget(start: () => Promise<unknown> | undefined, label: string): void {
+function trackBookkeeping(start: () => Promise<unknown> | undefined, label: string): Promise<void> {
   try {
     // A thunk, not a promise. Handing over an already-started promise would run the
     // bookkeeping call BEFORE entering this function, so a synchronous throw would
@@ -70,13 +75,17 @@ function fireAndForget(start: () => Promise<unknown> | undefined, label: string)
 
     // Guard the shape too: if a bookkeeping function ever returns a non-promise, calling
     // .catch on it would throw for the same reason.
-    if (!work || typeof work.catch !== 'function') return;
+    if (!work || typeof work.catch !== 'function') return Promise.resolve();
 
-    void work.catch((error: unknown) => {
-      console.error(`[send-email] ${label} failed:`, error);
-    });
+    return work.then(
+      () => undefined,
+      (error: unknown) => {
+        console.error(`[send-email] ${label} failed:`, error);
+      }
+    );
   } catch (error) {
     console.error(`[send-email] ${label} could not be scheduled:`, error);
+    return Promise.resolve();
   }
 }
 
@@ -164,7 +173,7 @@ async function sendViaResend(params: SendEmailParams, config: ResolvedMailConfig
     // know at the point the caller has to be answered.
     console.error(`Failed to send email to ${params.to}:`, raceError.message);
 
-    fireAndForget(() => logEmail({
+    await trackBookkeeping(() => logEmail({
       ...logBase,
       status: 'failed',
       error: { code: 'timeout', message: raceError.message },
@@ -180,7 +189,7 @@ async function sendViaResend(params: SendEmailParams, config: ResolvedMailConfig
   if (error) {
     console.error(`Failed to send email to ${params.to}:`, error);
 
-    fireAndForget(() => logEmail({
+    await trackBookkeeping(() => logEmail({
       ...logBase,
       status: 'failed',
       error: { code: 'resend_error', message: error.message || 'Failed to send email' },
@@ -193,7 +202,7 @@ async function sendViaResend(params: SendEmailParams, config: ResolvedMailConfig
     };
   }
 
-  fireAndForget(() => logEmail({ ...logBase, status: 'sent', messageId: emailData?.id }), 'delivery log');
+  await trackBookkeeping(() => logEmail({ ...logBase, status: 'sent', messageId: emailData?.id }), 'delivery log');
 
   return { success: true, emailId: emailData?.id, provider: 'platform_smtp' };
 }
@@ -214,10 +223,10 @@ async function sendViaSmtp(params: SendEmailParams, config: ResolvedMailConfig):
 
     const tenantId = config.provider === 'business_smtp' ? config.businessAccountId : null;
     if (tenantId) {
-      fireAndForget(() => recordSendOutcome(tenantId, true), 'send health');
+      await trackBookkeeping(() => recordSendOutcome(tenantId, true), 'send health');
     }
 
-    fireAndForget(() => logEmail({
+    await trackBookkeeping(() => logEmail({
       config,
       kind: params.kind ?? 'email',
       to: params.to,
@@ -240,7 +249,7 @@ async function sendViaSmtp(params: SendEmailParams, config: ResolvedMailConfig):
 
     const tenantId = isTenantTransport ? config.businessAccountId : null;
     if (tenantId) {
-      fireAndForget(() => recordSendOutcome(tenantId, false, safe.message), 'send health');
+      await trackBookkeeping(() => recordSendOutcome(tenantId, false, safe.message), 'send health');
     }
 
     // One retry on platform credentials, if the tenant has not opted out.
@@ -261,7 +270,7 @@ async function sendViaSmtp(params: SendEmailParams, config: ResolvedMailConfig):
       try {
         const retry = await deliver({ config: platform, ...message });
 
-        fireAndForget(() => logEmail({
+        await trackBookkeeping(() => logEmail({
           config: platform,
           kind: params.kind ?? 'email',
           to: params.to,
@@ -280,7 +289,7 @@ async function sendViaSmtp(params: SendEmailParams, config: ResolvedMailConfig):
       } catch (retryError) {
         const retrySafe = toSafeSmtpError(retryError, platform);
 
-        fireAndForget(() => logEmail({
+        await trackBookkeeping(() => logEmail({
           config: platform,
           kind: params.kind ?? 'email',
           to: params.to,
@@ -297,7 +306,7 @@ async function sendViaSmtp(params: SendEmailParams, config: ResolvedMailConfig):
       }
     }
 
-    fireAndForget(() => logEmail({
+    await trackBookkeeping(() => logEmail({
       config,
       kind: params.kind ?? 'email',
       to: params.to,

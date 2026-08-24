@@ -542,16 +542,20 @@ export async function updateBookingStatus(
 
   // Send email notifications for business bookings
   if (bookingType === 'business') {
-    // after(): a tenant's own SMTP server is a multi round-trip conversation, so these
-    // un-awaited sends would be abandoned when the instance froze after the response.
+    // after() runs this once the response has been flushed, so the admin never waits on
+    // mail. The sends are awaited in there because after() keeps the invocation alive only
+    // while the promise its callback returns is pending: a callback that merely starts them
+    // returns on the first tick, and on a serverless host the instance then freezes on top
+    // of the send and its delivery-log row.
     after(async () => {
+    const sends: Promise<unknown>[] = []
     try {
       const emailDetails = await getBusinessBookingEmailDetails(bookingId)
       if (emailDetails) {
         if (status === 'cancelled') {
           // Send customer cancellation email
           if (emailDetails.customerEmail) {
-            sendBusinessCustomerBookingCancelledEmail({
+            sends.push(sendBusinessCustomerBookingCancelledEmail({
               businessAccountId: emailDetails.businessAccountId,
               customerName: emailDetails.customerName,
               customerEmail: emailDetails.customerEmail,
@@ -562,12 +566,12 @@ export async function updateBookingStatus(
               dropoffLocation: emailDetails.dropoffLocation,
               pickupDateTime: emailDetails.pickupDateTime,
               cancellationReason,
-            }).catch((err: unknown) => console.error('Failed to send customer cancel email:', err))
+            }).catch((err: unknown) => console.error('Failed to send customer cancel email:', err)))
           }
 
           // To the owner and to the staff member who created it. No actor is passed:
           // an admin is not a business member, so nobody's own action is being echoed.
-          notifyBusinessBookingCancelled(
+          sends.push(notifyBusinessBookingCancelled(
             buildBusinessSideRecipients({
               ownerEmail: emailDetails.businessEmail || null,
               ownerName: emailDetails.businessName,
@@ -590,14 +594,14 @@ export async function updateBookingStatus(
               currency: emailDetails.currency,
               walletUrl: `${getAppUrl()}/business/wallet`,
             }
-          ).catch((err: unknown) => console.error('Failed to send business cancel email:', err))
+          ).catch((err: unknown) => console.error('Failed to send business cancel email:', err)))
         } else {
           // Two audiences, two templates. The passenger gets one written in the
           // business's voice to its customer; the owner gets the internal one that opens
           // "Hi {businessName}". Sending the owner template to the passenger, as this did,
           // greeted a customer of Acme Hotel as "Hi Acme Hotel,".
           if (emailDetails.customerEmail) {
-            sendBusinessCustomerBookingStatusUpdateEmail({
+            sends.push(sendBusinessCustomerBookingStatusUpdateEmail({
               businessAccountId: emailDetails.businessAccountId,
               email: emailDetails.customerEmail,
               businessName: emailDetails.businessName,
@@ -609,13 +613,13 @@ export async function updateBookingStatus(
               pickupDateTime: emailDetails.pickupDateTime,
               previousStatus,
               newStatus: status,
-            }).catch((err: unknown) => console.error('Failed to send customer status email:', err))
+            }).catch((err: unknown) => console.error('Failed to send customer status email:', err)))
           }
 
           // The creator copy is gated to 'confirmed' inside the notify layer: this
           // sender carries every status, and staff were scoped to the one that changes
           // what they tell the guest.
-          notifyBusinessBookingStatus(
+          sends.push(notifyBusinessBookingStatus(
             buildBusinessSideRecipients({
               ownerEmail: emailDetails.businessEmail || null,
               ownerName: emailDetails.businessName,
@@ -633,12 +637,16 @@ export async function updateBookingStatus(
               previousStatus,
               newStatus: status,
             }
-          ).catch((err: unknown) => console.error('Failed to send business status email:', err))
+          ).catch((err: unknown) => console.error('Failed to send business status email:', err)))
         }
       }
     } catch (emailError) {
       console.error('Failed to send status update emails:', emailError)
     }
+
+    // Outside the catch: a send already handed over must still be drained even if the
+    // lookup above threw partway through.
+    await Promise.allSettled(sends)
     })
   }
 

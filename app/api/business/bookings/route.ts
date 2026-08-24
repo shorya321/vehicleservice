@@ -25,6 +25,16 @@ import { activityLogger } from '@/lib/business/activity/log';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 /**
+ * Mail goes out inside after(), which runs on the platform's clock, not the response's.
+ * A tenant's own SMTP server is a multi round-trip conversation bounded by
+ * SEND_DEADLINE_MS (25s, lib/email/transport/deliver.ts), so the invocation needs room
+ * past that or it is cut off mid-send with nothing written to the delivery log.
+ *
+ * 60 is the Vercel Hobby ceiling. Raising it needs a plan that allows it.
+ */
+export const maxDuration = 60;
+
+/**
  * POST /api/business/bookings
  * Create new booking with atomic wallet deduction
  */
@@ -236,7 +246,15 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
             }
 
             // Send email notification via internal API
-            await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+            // getAppUrl(), not the bare env var: unset, `${process.env.NEXT_PUBLIC_APP_URL}`
+            // interpolates to the string "undefined" and fetch throws on the URL, which the
+            // catch below then swallows.
+            //
+            // Keep this absolute and pinned to the platform origin. /api/internal/* is
+            // outside the custom-domain allowlist in lib/business/domain-routing.ts, so a
+            // relative URL would be answered with a 307 to /business/login by proxy.ts and
+            // fail as a 200 with an HTML body.
+            await fetch(`${getAppUrl()}/api/internal/send-notification`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -396,14 +414,6 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       const isConverted = displayCurrency !== BUSINESS_BASE_CURRENCY;
       const extrasForOwner = extras.map((e) => ({ ...e, price: toDisplay(e.price) }));
 
-      // These sends are deliberately not awaited: the caller should not wait on mail.
-      //
-      // They are wrapped in after() because a tenant's own SMTP server is a multi
-      // round-trip conversation against a host of unknown latency. Against Resend's
-      // single HTTPS POST an un-awaited promise usually completed before the serverless
-      // instance froze; against SMTP it frequently would not, and the mail would be
-      // dropped non-deterministically under load. after() keeps the invocation alive
-      // past the response without delaying it.
       // The creator is the caller, so this costs no queries: requireBusinessAuth already
       // carries the member's id, name and address. Every other trigger site has to look
       // the creator up, because there the actor is usually not the person who booked it.
@@ -419,10 +429,25 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         },
       });
 
+      // The caller does not wait on mail: everything here runs inside after(), which
+      // Next runs once the response has been flushed.
+      //
+      // Every send must be awaited in there, though. after() keeps the invocation alive
+      // only for as long as the promise its callback returns is pending, so an async
+      // callback that merely starts three promises returns on the first tick and extends
+      // the invocation by nothing. On a long-lived Node host the orphans still finish; on
+      // a serverless host the instance freezes at the response and takes the send and its
+      // delivery-log row with it. That is how business bookings made on the Vercel-served
+      // custom domain went out with no mail and no row in the delivery log at all.
+      //
+      // allSettled, not all: each send carries its own .catch, so nothing can reject here,
+      // and one bad recipient must not abandon the others.
       after(async () => {
+        const sends: Promise<unknown>[] = [];
+
         // To the owner, and to the staff member who created it. One send when they are the
         // same person; see lib/business/email/recipients.ts for the full rule.
-        notifyBusinessBookingCreated(recipients, {
+        sends.push(notifyBusinessBookingCreated(recipients, {
           businessAccountId: user.businessAccountId,
           businessName: businessAccount.business_name,
           bookingNumber: booking.booking_number,
@@ -448,11 +473,11 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
           extras: extrasForOwner,
         }).catch((err: unknown) => {
           console.error('Failed to send booking confirmation email:', err);
-        });
+        }));
 
         // Send confirmation to customer
         if (booking.customer_email) {
-          sendBusinessCustomerBookingConfirmationEmail({
+          sends.push(sendBusinessCustomerBookingConfirmationEmail({
             businessAccountId: user.businessAccountId,
             customerName: booking.customer_name,
             customerEmail: booking.customer_email,
@@ -472,7 +497,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
             extras,
           }).catch((err: unknown) => {
             console.error('Failed to send customer booking confirmation email:', err);
-          });
+          }));
         } else {
           console.warn('No customer email on booking; customer was not notified', {
             bookingId,
@@ -484,7 +509,7 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         // ADMIN_NOTIFICATION_EMAIL nor RESEND_FROM_EMAIL is set, and the booking has
         // already succeeded and deducted the wallet, so never let that surface.
         try {
-          sendNewBookingNotificationEmail({
+          sends.push(sendNewBookingNotificationEmail({
             adminEmail: getAdminEmail(),
             bookingId: bookingId as string,
             bookingReference: booking.booking_number,
@@ -503,10 +528,12 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
             bookingDetailsUrl: `${getAppUrl()}/admin/bookings/${bookingId}`,
           }).catch((err: unknown) => {
             console.error('Failed to send admin booking notification email:', err);
-          });
+          }));
         } catch (err: unknown) {
           console.error('Admin notification email not configured:', err);
         }
+
+        await Promise.allSettled(sends);
       });
     }
 
@@ -552,7 +579,15 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
             }
 
             // Send email notification via internal API
-            await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+            // getAppUrl(), not the bare env var: unset, `${process.env.NEXT_PUBLIC_APP_URL}`
+            // interpolates to the string "undefined" and fetch throws on the URL, which the
+            // catch below then swallows.
+            //
+            // Keep this absolute and pinned to the platform origin. /api/internal/* is
+            // outside the custom-domain allowlist in lib/business/domain-routing.ts, so a
+            // relative URL would be answered with a 307 to /business/login by proxy.ts and
+            // fail as a 200 with an HTML body.
+            await fetch(`${getAppUrl()}/api/internal/send-notification`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

@@ -16,11 +16,22 @@ import {
 import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-emails';
 import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/business/email/services/business-emails';
 import { notifyBusinessBookingRescheduled } from '@/lib/business/email/notify';
+import { getAppUrl } from '@/lib/email/config';
 import {
   buildBusinessSideRecipients,
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients';
 import { formatBookingDateTime } from '@/lib/business/utils/timezone';
+
+/**
+ * Mail goes out inside after(), which runs on the platform's clock, not the response's.
+ * A tenant's own SMTP server is a multi round-trip conversation bounded by
+ * SEND_DEADLINE_MS (25s, lib/email/transport/deliver.ts), so the invocation needs room
+ * past that or it is cut off mid-send with nothing written to the delivery log.
+ *
+ * 60 is the Vercel Hobby ceiling. Raising it needs a plan that allows it.
+ */
+export const maxDuration = 60;
 
 /**
  * PATCH /api/business/bookings/[id]/datetime
@@ -193,7 +204,7 @@ export const PATCH = requireBusinessAuth(
             previousDatetime: previousDatetime,
             newDatetime: newPickupDatetime,
             modificationReason: reason,
-            bookingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/vendor/bookings/${bookingId}`,
+            bookingUrl: `${getAppUrl()}/vendor/bookings/${bookingId}`,
           });
         } catch (emailError) {
           console.error('Failed to send vendor notification email:', emailError);
@@ -215,11 +226,14 @@ export const PATCH = requireBusinessAuth(
         .eq('id', booking.business_account_id)
         .single();
 
-      // Not awaited, and wrapped in after() because a tenant's own SMTP server is a
-      // multi round-trip conversation against a host of unknown latency. Without it the
-      // promise is frequently dropped when the serverless instance freezes after the
-      // response, and the mail is silently lost under load.
+      // The caller does not wait on mail: this runs inside after(), once the response has
+      // been flushed. The sends are awaited in there because after() keeps the invocation
+      // alive only while the promise its callback returns is pending, and a callback that
+      // merely starts them returns on the first tick. On a serverless host that lets the
+      // instance freeze on top of the send and its delivery-log row.
       after(async () => {
+        const sends: Promise<unknown>[] = [];
+
         // Rescheduling used to tell the vendor and the passenger and say nothing to the
         // business, so the account that owns the trip could be the last to know it moved.
         // The creator is skipped when they are the one who moved it.
@@ -230,7 +244,7 @@ export const PATCH = requireBusinessAuth(
           actorMemberId: user.businessId,
         });
 
-        notifyBusinessBookingRescheduled(recipients, {
+        sends.push(notifyBusinessBookingRescheduled(recipients, {
           businessAccountId: user.businessAccountId,
           businessName: businessAccount?.business_name || 'Your booking provider',
           bookingId: booking.id,
@@ -243,10 +257,10 @@ export const PATCH = requireBusinessAuth(
           modificationReason: reason,
         }).catch((err: unknown) => {
           console.error('Failed to send business datetime change email:', err);
-        });
+        }));
 
         if (booking.customer_email) {
-          sendBusinessCustomerDatetimeChangedEmail({
+          sends.push(sendBusinessCustomerDatetimeChangedEmail({
             businessAccountId: user.businessAccountId,
             customerName: booking.customer_name,
             customerEmail: booking.customer_email,
@@ -259,8 +273,10 @@ export const PATCH = requireBusinessAuth(
             modificationReason: reason,
           }).catch((err: unknown) => {
             console.error('Failed to send customer datetime change email:', err);
-          });
+          }));
         }
+
+        await Promise.allSettled(sends);
       });
 
       // Fetch updated booking to return

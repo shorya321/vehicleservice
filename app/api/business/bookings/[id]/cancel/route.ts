@@ -36,6 +36,16 @@ import {
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 
 /**
+ * Mail goes out inside after(), which runs on the platform's clock, not the response's.
+ * A tenant's own SMTP server is a multi round-trip conversation bounded by
+ * SEND_DEADLINE_MS (25s, lib/email/transport/deliver.ts), so the invocation needs room
+ * past that or it is cut off mid-send with nothing written to the delivery log.
+ *
+ * 60 is the Vercel Hobby ceiling. Raising it needs a plan that allows it.
+ */
+export const maxDuration = 60;
+
+/**
  * POST /api/business/bookings/[id]/cancel
  * Cancel booking. The wallet is not touched.
  */
@@ -203,12 +213,14 @@ export const POST = requireBusinessAuth(
         const rates = await getExchangeRates();
         const toDisplay = (aed: number) => convertFromAed(aed, displayCurrency, rates);
 
-        // These sends are deliberately not awaited, and are wrapped in after() because a
-        // tenant's own SMTP server is a multi round-trip conversation against a host of
-        // unknown latency. An un-awaited promise would frequently be dropped when the
-        // serverless instance froze after the response; after() keeps the invocation
-        // alive past the response without delaying it.
+        // The caller does not wait on mail: this runs inside after(), once the response
+        // has been flushed. The sends are awaited in there because after() keeps the
+        // invocation alive only while the promise its callback returns is pending, and a
+        // callback that merely starts them returns on the first tick. On a serverless host
+        // that lets the instance freeze on top of the send and its delivery-log row.
         after(async () => {
+          const sends: Promise<unknown>[] = [];
+
           // To the owner, and to the staff member who created the booking - unless that is
           // the person who just cancelled it, who watched it succeed on screen.
           const recipients = buildBusinessSideRecipients({
@@ -218,7 +230,7 @@ export const POST = requireBusinessAuth(
             actorMemberId: user.businessId,
           });
 
-          notifyBusinessBookingCancelled(recipients, {
+          sends.push(notifyBusinessBookingCancelled(recipients, {
             businessAccountId: user.businessAccountId,
             businessName: businessAccount.business_name,
             bookingNumber: cancelledBooking.booking_number,
@@ -237,11 +249,11 @@ export const POST = requireBusinessAuth(
             walletUrl: `${getAppUrl()}/business/wallet`,
           }).catch((err: unknown) => {
             console.error('Failed to send business cancellation email:', err);
-          });
+          }));
 
           // Send cancellation email to customer
           if (cancelledBooking.customer_email) {
-            sendBusinessCustomerBookingCancelledEmail({
+            sends.push(sendBusinessCustomerBookingCancelledEmail({
               businessAccountId: user.businessAccountId,
               customerName: cancelledBooking.customer_name,
               customerEmail: cancelledBooking.customer_email,
@@ -254,8 +266,10 @@ export const POST = requireBusinessAuth(
               cancellationReason: body.cancellation_reason,
             }).catch((err: unknown) => {
               console.error('Failed to send customer cancellation email:', err);
-            });
+            }));
           }
+
+          await Promise.allSettled(sends);
         });
 
         // Create in-app notification. The type string is left as it is: it is

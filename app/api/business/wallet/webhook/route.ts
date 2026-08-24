@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { apiSuccess, apiError } from '@/lib/business/api-utils';
+import { getAppUrl } from '@/lib/email/config';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-12-18.acacia',
@@ -255,7 +256,15 @@ export async function POST(request: NextRequest) {
           const previousBalance = transaction.balance_after - transaction.amount;
 
           // Send email via internal API
-          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+          // getAppUrl(), not the bare env var: unset, `${process.env.NEXT_PUBLIC_APP_URL}`
+          // interpolates to the string "undefined" and fetch throws on the URL, which the
+          // catch below then swallows.
+          //
+          // Keep this absolute and pinned to the platform origin. /api/internal/* is
+          // outside the custom-domain allowlist in lib/business/domain-routing.ts, so a
+          // relative URL would be answered with a 307 to /business/login by proxy.ts and
+          // fail as a 200 with an HTML body.
+          await fetch(`${getAppUrl()}/api/internal/send-notification`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -381,7 +390,15 @@ export async function POST(request: NextRequest) {
           const previousBalance = transaction.balance_after - transaction.amount;
 
           // Send email via internal API
-          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/send-notification`, {
+          // getAppUrl(), not the bare env var: unset, `${process.env.NEXT_PUBLIC_APP_URL}`
+          // interpolates to the string "undefined" and fetch throws on the URL, which the
+          // catch below then swallows.
+          //
+          // Keep this absolute and pinned to the platform origin. /api/internal/* is
+          // outside the custom-domain allowlist in lib/business/domain-routing.ts, so a
+          // relative URL would be answered with a 307 to /business/login by proxy.ts and
+          // fail as a 200 with an HTML body.
+          await fetch(`${getAppUrl()}/api/internal/send-notification`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

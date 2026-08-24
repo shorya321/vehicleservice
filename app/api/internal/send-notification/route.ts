@@ -13,6 +13,7 @@ import {
   sendWalletFrozenEmail,
   sendSpendingLimitReachedEmail,
 } from '@/lib/email/services/wallet-emails';
+import { getAppUrl } from '@/lib/email/config';
 
 /**
  * POST: Send email notification
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       businessPhone: businessAccount.business_phone,
       businessAddress: businessAccount.address,
       currency: businessAccount.currency || 'AED',
-      walletUrl: `${process.env.NEXT_PUBLIC_APP_URL}/business/wallet`,
+      walletUrl: `${getAppUrl()}/business/wallet`,
       ...email_data,
     };
 
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
           freezeReason: baseEmailData.freezeReason || 'Administrative action',
           frozenBy: baseEmailData.frozenBy || 'System',
           freezeDate: baseEmailData.freezeDate ? new Date(baseEmailData.freezeDate) : new Date(),
-          supportUrl: `${process.env.NEXT_PUBLIC_APP_URL}/support`,
+          supportUrl: `${getAppUrl()}/support`,
         });
         break;
 
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
           currentSpend: baseEmailData.currentSpend,
           rejectedTransactionAmount: baseEmailData.rejectedTransactionAmount,
           resetDate: baseEmailData.resetDate ? new Date(baseEmailData.resetDate) : undefined,
-          supportUrl: `${process.env.NEXT_PUBLIC_APP_URL}/support`,
+          supportUrl: `${getAppUrl()}/support`,
         });
         break;
 
