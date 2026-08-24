@@ -18,6 +18,10 @@ import { AddonSelection, SelectedAddon, childAgesComplete } from './addon-select
 import { formatGuestSummary, getSeatedCount } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { calculateAddonsTotal } from '@/lib/business/wizard-pricing';
+import {
+  childSeatShortfall,
+  childSeatShortfallMessage,
+} from '@/lib/business/child-seat-requirement';
 import { getBookingTimezone, bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
 
 interface Location {
@@ -83,6 +87,27 @@ export function ReviewStep({
   };
   const seatedCount = getSeatedCount(guests);
   const guestSummary = formatGuestSummary(guests);
+
+  // Each child and infant needs its own restraint. AddonSelection already refuses to go over
+  // this number; without the check below nothing required reaching it, so a booking for two
+  // infants and no seat at all went through without a word and was accepted by the API.
+  const childSeatCapacity = guests.children + guests.infants;
+  const seatsSelected = (formData.selected_addons ?? [])
+    .filter((s) => s.requires_child_age)
+    .reduce((n, s) => n + s.quantity, 0);
+
+  /**
+   * Gate only once the catalogue is in and actually offers a seat.
+   *
+   * While it is loading, or if every child-seat addon has been deactivated in admin, there is no
+   * control on screen to satisfy the rule with. Disabling Confirm then would be a dead end rather
+   * than a validation message. The server still refuses the booking in that case.
+   */
+  const seatAddonsAvailable =
+    !isLoadingAddons && addonsByCategory.some((c) => c.addons.some((a) => a.requires_child_age));
+  const seatShortfall = seatAddonsAvailable
+    ? childSeatShortfall(seatsSelected, childSeatCapacity)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -323,12 +348,24 @@ export function ReviewStep({
         </p>
       )}
 
+      {/* The seats themselves. Shown above the button rather than inside Additional Services so
+          it sits where the eye already is when Confirm refuses to move. */}
+      {seatShortfall > 0 && (
+        <p className="text-sm text-destructive" role="alert">
+          {childSeatShortfallMessage(seatShortfall, childSeatCapacity)}
+        </p>
+      )}
+
       {/* Actions */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
           Back
         </Button>
-        <Button type="button" onClick={onSubmit} disabled={!hasBalance || isSubmitting || !agesComplete}>
+        <Button
+          type="button"
+          onClick={onSubmit}
+          disabled={!hasBalance || isSubmitting || !agesComplete || seatShortfall > 0}
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

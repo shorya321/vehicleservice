@@ -17,6 +17,10 @@ interface PriceCalculationParams {
    * `requires_child_age`. Child seats are capped at children + infants. Optional so the callers
    * that never sell child seats (price previews) need no change; omitting it when a child seat IS
    * selected is rejected outright rather than silently skipping the cap.
+   *
+   * Supplying it also turns on the floor: children + infants above zero requires exactly that
+   * many seats. Every caller that actually creates a booking passes both, so in practice the
+   * rule is always on where it matters.
    */
   children?: number;
   infants?: number;
@@ -107,6 +111,11 @@ export async function calculateBusinessBookingPrice(
   let addonsPrice = 0;
   const verifiedAddons: VerifiedAddon[] = [];
 
+  // Seats across every age-requiring addon. Declared out here, not inside the block
+  // below: the floor has to run even when nothing was selected, which is precisely the
+  // case that used to slip through.
+  let ageSeatsRequested = 0;
+
   if (params.selectedAddons && params.selectedAddons.length > 0) {
     const addonIds = params.selectedAddons.map((a) => a.addon_id);
     const { data: dbAddons } = await supabase
@@ -131,9 +140,6 @@ export async function calculateBusinessBookingPrice(
         }) => [a.id, a]
       )
     );
-
-    // Counts seats across every age-requiring addon, checked against children + infants below.
-    let ageSeatsRequested = 0;
 
     for (const selected of params.selectedAddons) {
       const dbAddon = addonMap.get(selected.addon_id);
@@ -194,6 +200,22 @@ export async function calculateBusinessBookingPrice(
           error: `${ageSeatsRequested} child seat(s) selected but the booking has ${childSeatCapacity} child/infant guest(s)`,
         };
       }
+    }
+  }
+
+  // The check above is the ceiling. This is the floor, and it sits outside the block
+  // on purpose: a request with no addons at all skips that block entirely, which is how
+  // a booking for two infants and zero child seats used to be accepted without a word.
+  //
+  // Only enforced when the caller supplied the breakdown. Every caller that can create a
+  // booking does (the bookings API, the quotation preflight, and the conversion itself);
+  // leaving it conditional keeps a future price-preview caller from being forced to.
+  if (params.children !== undefined && params.infants !== undefined) {
+    const childSeatCapacity = params.children + params.infants;
+    if (ageSeatsRequested < childSeatCapacity) {
+      return {
+        error: `${childSeatCapacity} child/infant guest(s) on this booking but only ${ageSeatsRequested} child seat(s) selected`,
+      };
     }
   }
 

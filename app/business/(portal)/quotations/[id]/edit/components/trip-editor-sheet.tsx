@@ -40,6 +40,11 @@ import { getAvailableVehicleTypesForRoute } from '../../../../bookings/new/actio
 import { roundAed, applyMarkup } from '@/lib/business/quotations/pricing';
 import { MarkupInput } from './markup-input';
 import { AddonPicker, addonsReadyToSave, toPersistableAddons, type DraftAddon } from './addon-picker';
+import {
+  childSeatShortfall,
+  childSeatShortfallMessage,
+  draftSeatCount,
+} from '@/lib/business/child-seat-requirement';
 import type { LocationSearchResult } from '@/lib/types/location';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
 
@@ -126,6 +131,12 @@ export function TripEditorSheet({
   const [toQuery, setToQuery] = useState('');
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
+  /**
+   * Whether the addon catalogue offers a child seat at all. Starts false so the seat rule below
+   * cannot block Save before AddonPicker has reported, and stays false if every seat addon has
+   * been deactivated in admin, where the rule would otherwise be unsatisfiable on screen.
+   */
+  const [seatAddonsAvailable, setSeatAddonsAvailable] = useState(false);
 
   /**
    * "Now" in Dubai wall-clock as 'yyyy-MM-ddTHH:mm', the lower bound for the two pickers.
@@ -275,6 +286,19 @@ export function TripEditorSheet({
     nowLocal && draft.pickup_datetime && bookingUtcToLocalInput(draft.pickup_datetime) < nowLocal
   );
 
+  /**
+   * Every child and infant on the trip needs its own restraint.
+   *
+   * AddonPicker already refuses to go over children + infants, but nothing required reaching it,
+   * so a trip could declare two infants, carry no seat at all, and be added with no message. The
+   * conversion would then be refused by calculateBusinessBookingPrice long after the quotation
+   * was sent to the customer.
+   */
+  const childSeatCapacity = draft.children + draft.infants;
+  const seatShortfall = seatAddonsAvailable
+    ? childSeatShortfall(draftSeatCount(draft.addons as DraftAddon[]), childSeatCapacity)
+    : 0;
+
   const canSave =
     routeReady &&
     guestsValid &&
@@ -283,7 +307,10 @@ export function TripEditorSheet({
     draft.dropoff_address.trim().length >= 5 &&
     // A child seat without an age fails the zod schema and the DB CHECK; block it here so the
     // operator sees which field is missing instead of a save-time error.
-    addonsReadyToSave(draft.addons as DraftAddon[]);
+    addonsReadyToSave(draft.addons as DraftAddon[]) &&
+    // Independent of the line above: that one checks the ages on the seats chosen, this one
+    // checks that enough seats were chosen at all.
+    seatShortfall === 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -542,8 +569,14 @@ export function TripEditorSheet({
                 <AddonPicker
                   value={draft.addons as DraftAddon[]}
                   onChange={setAddons}
-                  childSeatCapacity={draft.children + draft.infants}
+                  childSeatCapacity={childSeatCapacity}
+                  onSeatAddonsAvailable={setSeatAddonsAvailable}
                 />
+                {seatShortfall > 0 && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {childSeatShortfallMessage(seatShortfall, childSeatCapacity)}
+                  </p>
+                )}
               </FieldGroup>
             )}
 

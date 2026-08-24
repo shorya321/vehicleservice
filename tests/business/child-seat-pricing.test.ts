@@ -102,8 +102,11 @@ describe('calculateBusinessBookingPrice — child seats', () => {
   it('prices a child seat and returns its ages for persistence', async () => {
     const result = await calculateBusinessBookingPrice(makeSupabase(), {
       ...base,
+      // One child, one seat. Exactly meets the floor below; previously this read
+      // children: 1, infants: 1 with a single seat, which the floor now rejects.
       children: 1,
-      infants: 1,
+      infants: 0,
+      passengerCount: 2,
       selectedAddons: [{ addon_id: SEAT, quantity: 1, child_ages: [0] }],
     })
 
@@ -232,5 +235,88 @@ describe('calculateBusinessBookingPrice — child seats', () => {
       ],
     })
     expect(result).toEqual({ error: 'Infant Car Seat: one child age is required per seat' })
+  })
+
+  /**
+   * The floor. Every case above is a ceiling: they stop a booking carrying MORE seats than it
+   * has children. None of them stopped a booking carrying fewer, and a request with no addons
+   * at all skipped the addon block entirely, so two infants and zero seats was accepted in
+   * silence. That is the bug these lock.
+   */
+  describe('requires one seat per child and infant', () => {
+    it('rejects a booking with children and no addons at all', async () => {
+      // The regression case: selectedAddons omitted, so the whole addon block is skipped.
+      const result = await calculateBusinessBookingPrice(makeSupabase(), {
+        ...base,
+        children: 1,
+        infants: 1,
+        passengerCount: 3,
+      })
+      expect(result).toEqual({
+        error: '2 child/infant guest(s) on this booking but only 0 child seat(s) selected',
+      })
+    })
+
+    it('rejects a booking with children whose addons are all non-seats', async () => {
+      const result = await calculateBusinessBookingPrice(makeSupabase(), {
+        ...base,
+        children: 0,
+        infants: 1,
+        passengerCount: 2,
+        selectedAddons: [{ addon_id: WIFI, quantity: 1 }],
+      })
+      expect(result).toEqual({
+        error: '1 child/infant guest(s) on this booking but only 0 child seat(s) selected',
+      })
+    })
+
+    it('rejects a partially seated booking', async () => {
+      const result = await calculateBusinessBookingPrice(makeSupabase(), {
+        ...base,
+        children: 2,
+        infants: 1,
+        passengerCount: 4,
+        selectedAddons: [{ addon_id: SEAT, quantity: 2, child_ages: [0, 3] }],
+      })
+      expect(result).toEqual({
+        error: '3 child/infant guest(s) on this booking but only 2 child seat(s) selected',
+      })
+    })
+
+    it('accepts a fully seated booking, counting across different seat addons', async () => {
+      const result = await calculateBusinessBookingPrice(makeSupabase(), {
+        ...base,
+        children: 1,
+        infants: 1,
+        selectedAddons: [
+          { addon_id: SEAT, quantity: 1, child_ages: [0] },
+          { addon_id: OTHER_SEAT, quantity: 1, child_ages: [6] },
+        ],
+      })
+      expect('error' in result).toBe(false)
+    })
+
+    it('leaves a booking with no children or infants alone', async () => {
+      // The overwhelming majority of real traffic. Must behave exactly as before.
+      const result = await calculateBusinessBookingPrice(makeSupabase(), {
+        ...base,
+        children: 0,
+        infants: 0,
+        selectedAddons: [{ addon_id: WIFI, quantity: 1 }],
+      })
+      expect('error' in result).toBe(false)
+      if ('error' in result) return
+      expect(result.totalPrice).toBe(208)
+    })
+
+    it('skips the floor entirely when the breakdown was not supplied', async () => {
+      // A caller that passes no breakdown cannot be measured against one. The existing
+      // guard still catches the dangerous half of that (a seat selected with no breakdown).
+      const result = await calculateBusinessBookingPrice(makeSupabase(), {
+        ...base,
+        selectedAddons: [{ addon_id: WIFI, quantity: 1 }],
+      })
+      expect('error' in result).toBe(false)
+    })
   })
 })

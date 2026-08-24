@@ -84,10 +84,25 @@ interface AddonPickerProps {
   onChange: (addons: DraftAddon[]) => void;
   /** children + infants on this trip. Child seats are capped at this, and hidden when it is 0. */
   childSeatCapacity: number;
+  /**
+   * Fired once the catalogue lands, with whether it offers any child seat at all.
+   *
+   * The sheet blocks Save until every child has a seat, and needs this to know the rule is
+   * satisfiable. With every seat addon deactivated in admin there is no control to satisfy it
+   * with, and a permanently disabled Save would be a trap rather than a validation message.
+   * Optional, so the component's existing contract is unchanged.
+   */
+  onSeatAddonsAvailable?: (available: boolean) => void;
   disabled?: boolean;
 }
 
-export function AddonPicker({ value, onChange, childSeatCapacity, disabled }: AddonPickerProps) {
+export function AddonPicker({
+  value,
+  onChange,
+  childSeatCapacity,
+  onSeatAddonsAvailable,
+  disabled,
+}: AddonPickerProps) {
   const [options, setOptions] = useState<QuotationAddonOption[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,6 +122,19 @@ export function AddonPicker({ value, onChange, childSeatCapacity, disabled }: Ad
       cancelled = true;
     };
   }, []);
+
+  /**
+   * Report seat availability once the catalogue has settled.
+   *
+   * Its own effect rather than a call inside the fetch above, so the fetch keeps its empty
+   * dependency list and the callback can stay in the dependencies here. A failed fetch leaves
+   * `options` empty and therefore reports false, which is what the sheet needs: it keeps Save
+   * usable instead of enforcing a rule with no control on screen to satisfy it.
+   */
+  useEffect(() => {
+    if (loading) return;
+    onSeatAddonsAvailable?.(options.some((o) => o.requires_child_age));
+  }, [loading, options, onSeatAddonsAvailable]);
 
   const selectedById = useMemo(
     () => new Map(value.map((a) => [a.addon_id, a])),
