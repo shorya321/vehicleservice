@@ -75,11 +75,40 @@ export interface UnifiedBooking {
   vehicleTypes?: {
     name: string;
     description: string | null;
-    passengerCapacity: number;
-    luggageCapacity: number;
+    passengerCapacity: number | null;
+    luggageCapacity: number | null;
     vehicleCategories?: {
       name: string;
     } | null;
+  };
+}
+
+/**
+ * PostgREST returns embedded rows with their real column names, so an embed has to be
+ * converted before it can satisfy the camelCase shape declared above.
+ *
+ * These two mappers exist because assigning the raw row straight through, which is what
+ * both branches used to do, type-checks and then hands every caller `undefined` for
+ * `passengerCapacity`, `luggageCapacity` and `vehicleCategories`. Nothing surfaces it:
+ * the aliased embed is absent from the generated `Database` types, so `tsc` has no
+ * opinion, and the reader just renders a blank. The vendor bookings list lost its whole
+ * vehicle-category badge to this for as long as the badge has existed.
+ */
+function mapLocationEmbed(row: any): UnifiedBooking['fromLocations'] {
+  if (!row) return undefined;
+  return { name: row.name, city: row.city ?? null };
+}
+
+function mapVehicleTypeEmbed(row: any): UnifiedBooking['vehicleTypes'] {
+  if (!row) return undefined;
+  return {
+    name: row.name,
+    description: row.description ?? null,
+    passengerCapacity: row.passenger_capacity ?? null,
+    luggageCapacity: row.luggage_capacity ?? null,
+    vehicleCategories: row.vehicle_categories
+      ? { name: row.vehicle_categories.name }
+      : null,
   };
 }
 
@@ -152,9 +181,9 @@ export async function getUnifiedBookingDetails(
       customerNotes: data.customer_notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      fromLocations: data.from_locations,
-      toLocations: data.to_locations,
-      vehicleTypes: data.vehicle_types,
+      fromLocations: mapLocationEmbed(data.from_locations),
+      toLocations: mapLocationEmbed(data.to_locations),
+      vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),
     };
   }
 
@@ -210,9 +239,9 @@ export async function getUnifiedBookingDetails(
       customerNotes: data.customer_notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      fromLocations: data.from_locations,
-      toLocations: data.to_locations,
-      vehicleTypes: data.vehicle_types,
+      fromLocations: mapLocationEmbed(data.from_locations),
+      toLocations: mapLocationEmbed(data.to_locations),
+      vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),
     };
   }
 
@@ -431,6 +460,57 @@ export async function createBookingAssignment(params: {
 
   const supabase = await createClient();
 
+  // `unique_booking_vendor` is UNIQUE (booking_id, vendor_id) and is NOT partial, so for a
+  // customer booking a vendor can only ever own one row, whatever its status. Handing this
+  // vendor the job again therefore cannot be an insert: it would collide with the row the
+  // cancel above just wrote, raise 23505, and leave the booking with no active assignment at
+  // all, its availability already released. Reactivate that row instead.
+  //
+  // Only for customer bookings. Business rows leave `booking_id` null, Postgres treats nulls
+  // as distinct, the index never fires, and their several assignments are real history that
+  // reusing a row would erase.
+  if (params.bookingId) {
+    const { data: existing } = await supabase
+      .from('booking_assignments')
+      .select('id')
+      .eq('booking_id', params.bookingId)
+      .eq('vendor_id', params.vendorId)
+      .maybeSingle();
+
+    if (existing) {
+      // A fresh offer, so nothing from the previous round may survive: an inherited driver,
+      // vehicle or hold would have this booking holding resources it was never accepted for.
+      const { data, error } = await supabase
+        .from('booking_assignments')
+        .update({
+          status: 'pending',
+          assigned_at: new Date().toISOString(),
+          assigned_by: params.assignedBy,
+          notes: params.notes ?? null,
+          accepted_at: null,
+          rejected_at: null,
+          rejection_reason: null,
+          cancelled_at: null,
+          cancellation_reason: null,
+          completed_at: null,
+          driver_id: null,
+          vehicle_id: null,
+          estimated_duration_hours: null,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq('id', existing.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error reactivating booking assignment:', error);
+        return { data: null, cancelledAssignment, error };
+      }
+
+      return { data, cancelledAssignment, error: null };
+    }
+  }
+
   const assignment: Record<string, unknown> = {
     booking_id: params.bookingId || null,
     business_booking_id: params.businessBookingId || null,
@@ -452,7 +532,9 @@ export async function createBookingAssignment(params: {
 
   if (error) {
     console.error('Error creating booking assignment:', error);
-    return { data: null, cancelledAssignment: null, error };
+    // Report the cancellation that already happened. Returning null here told the caller
+    // nothing had changed, while the booking had in fact just lost its active assignment.
+    return { data: null, cancelledAssignment, error };
   }
 
   return { data, cancelledAssignment, error: null };
