@@ -54,7 +54,7 @@ export function SenderChecklist({ preset, fromEmail, tenantDomain }: SenderCheck
   const domain = domainOf(fromEmail) ?? tenantDomain ?? 'yourdomain.com';
 
   return (
-    <LuxuryCard>
+    <LuxuryCard className="hidden">
       <LuxuryCardHeader>
         <LuxuryCardTitle>Before your first email</LuxuryCardTitle>
         <LuxuryCardDescription>
