@@ -14,7 +14,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-12-18.acacia',
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Symmetric with app/api/payment/webhook/route.ts, which reads
+// STRIPE_BOOKING_WEBHOOK_SECRET and falls back to STRIPE_WEBHOOK_SECRET. Without the
+// same fallback shape here, an operator who registers two destinations and sets only
+// STRIPE_WEBHOOK_SECRET (to the booking endpoint's secret) gets a wallet endpoint that
+// fails signature verification forever, with no symptom other than uncredited wallets.
+const webhookSecret = process.env.STRIPE_WALLET_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET!;
 
 /**
  * Helper function to save payment method after successful payment
@@ -152,6 +157,8 @@ export async function POST(request: NextRequest) {
     return apiError('Webhook signature verification failed', 400);
   }
 
+  console.log('Wallet webhook received:', { eventId: event.id, type: event.type });
+
   // Handle checkout.session.completed event
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
@@ -170,9 +177,34 @@ export async function POST(request: NextRequest) {
     }
     const paymentIntentId = session.payment_intent as string;
 
-    if (!businessAccountId || !amount) {
-      console.error('Missing metadata in Stripe session:', session.metadata);
+    // Not a wallet top-up. Answering 4xx here marks a delivery failure on a perfectly
+    // valid event, and Stripe disables a destination that keeps failing - taking the
+    // wallet credits down with it. Acknowledge and move on, the same contract as
+    // app/api/payment/webhook/route.ts.
+    if (!businessAccountId) {
+      console.log('Wallet webhook: ignoring session without business_account_id', {
+        eventId: event.id,
+        sessionId: session.id,
+      });
+      return apiSuccess({ message: 'Event ignored: not a wallet payment' });
+    }
+
+    // Our event, but unusable. 400 is right: retrying will not help.
+    if (!amount) {
+      console.error('Missing amount in Stripe session:', session.metadata);
       return apiError('Invalid session metadata', 400);
+    }
+
+    // Always 'paid' while the flow is card-only, so this changes nothing today. It stops
+    // an async payment method (added later at the Stripe end, with no code change here)
+    // from crediting a session whose money has not actually arrived.
+    if (session.payment_status !== 'paid') {
+      console.log('Wallet webhook: session not paid yet, skipping credit', {
+        eventId: event.id,
+        sessionId: session.id,
+        paymentStatus: session.payment_status,
+      });
+      return apiSuccess({ message: 'Event ignored: session not paid' });
     }
 
     // Use admin client to add credits
@@ -306,8 +338,22 @@ export async function POST(request: NextRequest) {
     const amount = paymentIntent.amount / 100; // Convert cents to dollars
     const paymentIntentId = paymentIntent.id;
 
-    if (!businessAccountId || !amount) {
-      console.error('Missing metadata in PaymentIntent:', paymentIntent.metadata);
+    // Every customer booking payment also emits payment_intent.succeeded, and this
+    // destination is subscribed to it. Those PaymentIntents carry metadata.bookingId,
+    // not business_account_id. Failing them marks this destination as broken and Stripe
+    // eventually disables it. Acknowledge instead - see the equivalent guard in
+    // app/api/payment/webhook/route.ts, which ignores wallet PaymentIntents the same way.
+    if (!businessAccountId) {
+      console.log('Wallet webhook: ignoring PaymentIntent without business_account_id', {
+        eventId: event.id,
+        paymentIntentId,
+      });
+      return apiSuccess({ message: 'Event ignored: not a wallet payment' });
+    }
+
+    // Our event, but unusable. 400 is right: retrying will not help.
+    if (!amount) {
+      console.error('Missing amount in PaymentIntent:', paymentIntent.metadata);
       return apiError('Invalid PaymentIntent metadata', 400);
     }
 

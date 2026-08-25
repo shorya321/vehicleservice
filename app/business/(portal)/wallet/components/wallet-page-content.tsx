@@ -148,7 +148,16 @@ export function WalletPageContent({
       const response = await fetch('/api/business/wallet/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: numAmount, currency: rechargeCurrency }),
+        body: JSON.stringify({
+          amount: numAmount,
+          currency: rechargeCurrency,
+          // Tenants reach this portal on their own subdomain or custom domain, and the
+          // Supabase session cookie is host-only. The server cannot read the real host
+          // reliably across the split Coolify/Vercel deployment, so tell it where this
+          // browser actually is; it validates the value against this business's own
+          // domains before handing it to Stripe as the return URL.
+          origin: window.location.origin,
+        }),
       });
 
       const result = await response.json();

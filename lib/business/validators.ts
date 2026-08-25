@@ -107,6 +107,14 @@ export const walletRechargeSchema = z.object({
     .min(10, 'Minimum recharge amount is $10')
     .max(10000, 'Maximum recharge amount is $10,000'),
   currency: z.string().optional().default('aed'),
+  /**
+   * window.location.origin from the caller, so the payment gateway can return the payer
+   * to the host that actually holds their session cookie. Never used as given: the route
+   * matches it against this tenant's own domains (lib/business/tenant-origin.ts) and
+   * ignores anything else. Optional and unconstrained on purpose - a stricter rule here
+   * would 400 the whole recharge for a browser still running an older client bundle.
+   */
+  origin: z.string().optional(),
 });
 
 export type WalletRechargeInput = z.infer<typeof walletRechargeSchema>;
