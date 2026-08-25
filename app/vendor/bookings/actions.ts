@@ -5,6 +5,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { AvailabilityService } from '@/lib/availability/service'
 import { getBookingFromAssignment } from '@/lib/bookings/unified-service'
+import { getCurrentVendorId } from '@/lib/vendor/get-vendor-id'
+import type {
+  VendorBookingAddon,
+  VendorBookingDetail,
+  VendorBookingDetailResult,
+  VendorBookingPassenger,
+  VendorBookingReschedule,
+} from '@/lib/vendor/bookings/types'
 import { parseDurationHours, tripEndFrom } from '@/lib/vendor/bookings/duration'
 import {
   findResourceConflicts,
@@ -714,6 +722,8 @@ export async function acceptAndAssignResources(
   // Revalidate paths - don't let cache revalidation failures block the response
   try {
     revalidatePath('/vendor/bookings')
+    // The detail route renders this same assignment, so the list alone is not enough.
+    revalidatePath(`/vendor/bookings/${assignmentId}`)
     revalidatePath('/vendor/availability')
     revalidatePath('/admin/bookings')
     // Revalidate booking detail pages (works for both customer and business)
@@ -835,6 +845,8 @@ export async function rejectAssignment(
   }
 
   revalidatePath('/vendor/bookings')
+  // The detail route renders this same assignment, so the list alone is not enough.
+  revalidatePath(`/vendor/bookings/${assignmentId}`)
   revalidatePath('/admin/bookings')
   revalidatePath('/admin/dashboard')
   if (booking) {
@@ -1125,6 +1137,8 @@ export async function updateAssignmentDuration(
 
   try {
     revalidatePath('/vendor/bookings')
+    // The detail route renders this same assignment, so the list alone is not enough.
+    revalidatePath(`/vendor/bookings/${assignmentId}`)
     revalidatePath('/vendor/availability')
     revalidatePath('/admin/bookings')
     revalidatePath(`/admin/bookings/${booking.id}`)
@@ -1269,6 +1283,8 @@ export async function completeBooking(assignmentId: string) {
   }
 
   revalidatePath('/vendor/bookings')
+  // The detail route renders this same assignment, so the list alone is not enough.
+  revalidatePath(`/vendor/bookings/${assignmentId}`)
   revalidatePath('/admin/bookings')
   revalidatePath(`/admin/bookings/${booking.id}`)
   if (booking.bookingType === 'customer') {
@@ -1276,4 +1292,275 @@ export async function completeBooking(assignmentId: string) {
   }
 
   return { success: true }
+}
+/**
+ * A uuid, loosely. Guards the route parameter before it reaches Postgres: a non-uuid in a
+ * `.eq()` against a uuid column raises 22P02 rather than returning no rows, which would turn
+ * a mistyped URL into a 500 instead of a 404.
+ */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Most interesting assignment first, for the legacy booking-id fallback below. */
+const FALLBACK_STATUS_RANK: Record<string, number> = {
+  accepted: 0,
+  pending: 1,
+  completed: 2,
+}
+
+/**
+ * Loads one assignment for the signed-in vendor, with everything the detail page shows.
+ *
+ * Keyed on `booking_assignments.id`, not on a booking id. Vendor ownership exists only on the
+ * assignment row, and for business bookings a booking id does not identify one: the
+ * `unique_booking_vendor` index covers `(booking_id, vendor_id)`, and business rows leave
+ * `booking_id` null, which Postgres treats as distinct.
+ *
+ * A booking id passed in the slot still resolves, because vendor mail sent before this route
+ * existed links that way. It answers with a redirect to the canonical assignment URL rather
+ * than rendering, so there is only ever one address for a job.
+ */
+export async function getVendorBookingDetail(
+  id: string
+): Promise<VendorBookingDetailResult> {
+  if (!UUID_PATTERN.test(id)) return { status: 'not_found' }
+
+  // Throws when the signed-in user has no approved vendor application. That is a hard stop,
+  // but on a page it should read as "no such booking" rather than surfacing the error
+  // boundary: an unapproved vendor has no bookings to be denied.
+  let vendorId: string
+  try {
+    vendorId = await getCurrentVendorId()
+  } catch {
+    return { status: 'not_found' }
+  }
+
+  const adminClient = createAdminClient()
+
+  const { data: assignment } = await adminClient
+    .from('booking_assignments')
+    .select(
+      `
+      id, booking_id, business_booking_id, vendor_id, status,
+      assigned_at, accepted_at, rejected_at, rejection_reason,
+      completed_at, cancelled_at, cancellation_reason,
+      estimated_duration_hours, notes,
+      driver:vendor_drivers(id, first_name, last_name, phone, license_number),
+      vehicle:vehicles(id, make, model, year, registration_number, seats)
+    `
+    )
+    .eq('id', id)
+    .maybeSingle()
+
+  // Not an assignment id. Try it as a booking id belonging to this vendor before giving up,
+  // so links in already-delivered mail keep working.
+  if (!assignment) {
+    const { data: candidates } = await adminClient
+      .from('booking_assignments')
+      .select('id, status, assigned_at')
+      .or(`booking_id.eq.${id},business_booking_id.eq.${id}`)
+      .eq('vendor_id', vendorId)
+
+    if (!candidates || candidates.length === 0) return { status: 'not_found' }
+
+    const [best] = [...candidates].sort((a, b) => {
+      const rank =
+        (FALLBACK_STATUS_RANK[a.status] ?? 9) - (FALLBACK_STATUS_RANK[b.status] ?? 9)
+      if (rank !== 0) return rank
+      return new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+    })
+
+    return { status: 'redirect', assignmentId: best.id }
+  }
+
+  // The whole security boundary. `getUnifiedBookingDetails` below reads with the service role
+  // and takes no vendor id, so it enforces nothing on its own; the assigned-bookings list is
+  // safe only because of its own `.eq('vendor_id', ...)`. Without this comparison the route
+  // would serve every booking in the system to any signed-in vendor.
+  if (assignment.vendor_id !== vendorId) return { status: 'not_found' }
+
+  const booking = await getBookingFromAssignment(assignment.id)
+  if (!booking) return { status: 'not_found' }
+
+  const isBusiness = booking.bookingType === 'business'
+
+  const [extras, addonRows, passengerRows, rescheduleRows, holdRows] = await Promise.all([
+    isBusiness
+      ? adminClient
+          .from('business_bookings')
+          .select(
+            'adults, children, infants, reference_number, business_account_id'
+          )
+          .eq('id', booking.id)
+          .maybeSingle()
+      : adminClient
+          .from('bookings')
+          .select('adults, children, infants, luggage_count')
+          .eq('id', booking.id)
+          .maybeSingle(),
+
+    isBusiness
+      ? adminClient
+          .from('business_booking_addons')
+          .select('id, quantity, child_ages, addon:addon_id(name, category, icon)')
+          .eq('business_booking_id', booking.id)
+      : adminClient
+          .from('booking_amenities')
+          .select(
+            'id, quantity, child_ages, amenity_type, addon:addon_id(name, category, icon)'
+          )
+          .eq('booking_id', booking.id),
+
+    isBusiness
+      ? Promise.resolve({ data: [] as any[] })
+      : adminClient
+          .from('booking_passengers')
+          .select('id, first_name, last_name, email, phone, is_primary')
+          .eq('booking_id', booking.id)
+          .order('is_primary', { ascending: false }),
+
+    // Business only: the FK on this table points at `business_bookings` despite the
+    // `booking_id` column name, so running it for a customer booking would match nothing.
+    isBusiness
+      ? adminClient
+          .from('booking_datetime_modifications')
+          .select('id, previous_datetime, new_datetime, modification_reason, created_at')
+          .eq('booking_id', booking.id)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] as any[] }),
+
+    adminClient
+      .from('resource_schedules')
+      .select('start_datetime, end_datetime')
+      .eq('booking_assignment_id', assignment.id)
+      .limit(1),
+  ])
+
+  const extraRow = (extras as any)?.data as any
+
+  let clientName: string | null = null
+  if (isBusiness && extraRow?.business_account_id) {
+    const { data: account } = await adminClient
+      .from('business_accounts')
+      .select('business_name')
+      .eq('id', extraRow.business_account_id)
+      .maybeSingle()
+    clientName = (account as any)?.business_name ?? null
+  }
+
+  // The two add-on tables disagree on column names and on how they price. Only the operational
+  // half is carried across, so one card renders both.
+  const addons: VendorBookingAddon[] = ((addonRows as any)?.data || []).map((row: any) => ({
+    id: row.id,
+    name: row.addon?.name || row.amenity_type || 'Additional service',
+    category: row.addon?.category ?? null,
+    icon: row.addon?.icon ?? null,
+    quantity: row.quantity ?? 1,
+    childAges: row.child_ages ?? null,
+  }))
+
+  const passengers: VendorBookingPassenger[] = ((passengerRows as any)?.data || []).map(
+    (row: any) => ({
+      id: row.id,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      email: row.email ?? null,
+      phone: row.phone ?? null,
+      isPrimary: !!row.is_primary,
+    })
+  )
+
+  const reschedules: VendorBookingReschedule[] = ((rescheduleRows as any)?.data || []).map(
+    (row: any) => ({
+      id: row.id,
+      previousDatetime: row.previous_datetime,
+      newDatetime: row.new_datetime,
+      reason: row.modification_reason ?? null,
+      createdAt: row.created_at,
+    })
+  )
+
+  const holdRow = ((holdRows as any)?.data || [])[0]
+  const driver = (assignment as any).driver
+  const vehicle = (assignment as any).vehicle
+
+  const detail: VendorBookingDetail = {
+    assignmentId: assignment.id,
+    assignmentStatus: assignment.status,
+    assignedAt: assignment.assigned_at,
+    acceptedAt: assignment.accepted_at,
+    rejectedAt: assignment.rejected_at,
+    rejectionReason: assignment.rejection_reason,
+    completedAt: assignment.completed_at,
+    cancelledAt: assignment.cancelled_at,
+    cancellationReason: assignment.cancellation_reason,
+    assignmentNotes: assignment.notes,
+    estimatedDurationHours: assignment.estimated_duration_hours,
+    hold: holdRow
+      ? { startDatetime: holdRow.start_datetime, endDatetime: holdRow.end_datetime }
+      : null,
+    driver: driver
+      ? {
+          id: driver.id,
+          firstName: driver.first_name,
+          lastName: driver.last_name,
+          phone: driver.phone,
+          licenseNumber: driver.license_number,
+        }
+      : null,
+    vehicle: vehicle
+      ? {
+          id: vehicle.id,
+          make: vehicle.make,
+          model: vehicle.model,
+          year: vehicle.year,
+          registrationNumber: vehicle.registration_number,
+          seats: vehicle.seats ?? null,
+        }
+      : null,
+
+    bookingId: booking.id,
+    bookingType: booking.bookingType,
+    bookingNumber: booking.bookingNumber,
+    tripNumber: booking.tripNumber,
+    referenceNumber: extraRow?.reference_number ?? null,
+    bookingStatus: booking.bookingStatus,
+    clientName,
+
+    pickupDatetime: booking.pickupDatetime,
+    pickupAddress: booking.pickupAddress || '',
+    dropoffAddress: booking.dropoffAddress || '',
+    fromLocationName: booking.fromLocations?.name ?? null,
+    toLocationName: booking.toLocations?.name ?? null,
+
+    adults: extraRow?.adults ?? 0,
+    children: extraRow?.children ?? 0,
+    infants: extraRow?.infants ?? 0,
+    passengerCount: booking.passengerCount,
+    luggageCount: isBusiness ? null : extraRow?.luggage_count ?? null,
+
+    vehicleTypeName: booking.vehicleTypes?.name ?? null,
+    vehicleTypeCategory: booking.vehicleTypes?.vehicleCategories?.name ?? null,
+    vehicleTypePassengerCapacity: booking.vehicleTypes?.passengerCapacity ?? null,
+    vehicleTypeLuggageCapacity: booking.vehicleTypes?.luggageCapacity ?? null,
+
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    customerPhone: booking.customerPhone,
+    customerNotes: booking.customerNotes,
+
+    addons,
+    passengers,
+    reschedules,
+
+    totalPrice: booking.totalPrice,
+
+    // Read the clock here, where it is legitimate, not during render.
+    pickupHasPassed:
+      assignment.status === 'pending' &&
+      !!booking.pickupDatetime &&
+      new Date(booking.pickupDatetime).getTime() < Date.now(),
+  }
+
+  return { status: 'ok', detail }
 }

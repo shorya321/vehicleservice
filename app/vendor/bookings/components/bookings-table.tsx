@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Table,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { 
   MoreHorizontal, 
+  Eye,
   CheckCircle,
   XCircle,
   Calendar,
@@ -131,7 +133,12 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               bookings.map((assignment) => (
                 <TableRow key={assignment.id}>
                   <TableCell className="font-mono text-sm">
-                    {assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'}
+                    <Link
+                      href={`/vendor/bookings/${assignment.id}`}
+                      className="font-medium underline-offset-4 hover:underline"
+                    >
+                      {assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
@@ -282,6 +289,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem asChild>
+                          <Link href={`/vendor/bookings/${assignment.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         
                         {assignment.status === 'pending' && (

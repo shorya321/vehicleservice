@@ -114,7 +114,7 @@ function assignmentToCalendarEvent(
     source: 'online',
     occupies,
     status,
-    href: '/vendor/bookings',
+    href: `/vendor/bookings/${assignment.id}`,
     details: {
       bookingNumber: bookingData?.booking_number,
       tripNumber: bookingData?.trip_number,

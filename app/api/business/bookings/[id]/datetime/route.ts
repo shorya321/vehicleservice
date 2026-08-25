@@ -204,7 +204,7 @@ export const PATCH = requireBusinessAuth(
             previousDatetime: previousDatetime,
             newDatetime: newPickupDatetime,
             modificationReason: reason,
-            bookingUrl: `${getAppUrl()}/vendor/bookings/${bookingId}`,
+            bookingUrl: `${getAppUrl()}/vendor/bookings/${assignment.id}`,
           });
         } catch (emailError) {
           console.error('Failed to send vendor notification email:', emailError);
