@@ -75,6 +75,28 @@ export function FormTimePicker({
   const isMinuteDisabled = (minute: number) =>
     minHour >= 0 && selectedHour === minHour && minute < minMinute
 
+  /**
+   * A modal Radix Dialog/Sheet arms react-remove-scroll, which listens for wheel and
+   * touchmove on `document` and preventDefault()s anything outside the dialog's own
+   * subtree. This popover portals to <body>, so it counts as outside and the Hour/Min
+   * columns freeze. Stopping the event on the popover keeps it from ever reaching that
+   * document listener; on a non-modal page there is no such listener and this is a no-op.
+   *
+   * A ref callback, not an effect keyed on `open`: Radix mounts and unmounts the content
+   * a commit apart from the state flip, so an effect reads the outgoing node on close and
+   * a null one on open, and the live node ends up with no listener at all.
+   */
+  const bindScrollEscape = React.useCallback((node: HTMLDivElement | null) => {
+    if (!node) return
+    const stop = (e: Event) => e.stopPropagation()
+    node.addEventListener("wheel", stop)
+    node.addEventListener("touchmove", stop)
+    return () => {
+      node.removeEventListener("wheel", stop)
+      node.removeEventListener("touchmove", stop)
+    }
+  }, [])
+
   React.useEffect(() => {
     if (!open) return
     requestAnimationFrame(() => {
@@ -122,7 +144,7 @@ export function FormTimePicker({
           <Clock className="ml-auto h-4 w-4 text-muted-foreground" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className={cn("w-[200px] p-0", popoverClassName)} align="start">
+      <PopoverContent ref={bindScrollEscape} className={cn("w-[200px] p-0", popoverClassName)} align="start">
         <div className="flex h-[248px]">
           <div className="flex-1 flex flex-col">
             <div className="time-column-header">Hour</div>
