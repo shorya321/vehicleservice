@@ -92,7 +92,7 @@ export function CancelBookingButton({
           variant="outline"
           size="sm"
           disabled
-          className="h-10 px-4 border-destructive/30 text-destructive"
+          className="border-destructive/30 text-destructive"
         >
           <XCircle className="mr-2 h-4 w-4" />
           Cancel Booking
@@ -110,7 +110,7 @@ export function CancelBookingButton({
         <Button
           variant="outline"
           size="sm"
-          className="h-10 px-4 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all"
+          className="border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all"
         >
           <XCircle className="mr-2 h-4 w-4" />
           Cancel Booking

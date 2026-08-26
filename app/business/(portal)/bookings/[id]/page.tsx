@@ -177,9 +177,10 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
         </div>
         {/* Actions */}
         {(showCancel || canEditDateTime) && (
-          // Wraps because the cancel control can now carry a line of explanation
-          // beneath it, which does not fit beside the reschedule button on a phone.
-          <div className="flex flex-wrap items-start gap-3 sm:items-center">
+          // Top-aligned, and wrapping: the cancel control can carry a line of
+          // explanation beneath it. Centring would push its button above the
+          // reschedule button, and on a phone the pair does not fit on one line.
+          <div className="flex flex-wrap items-start gap-3">
             {canEditDateTime && (
               <EditDateTimeButton
                 bookingId={id}
