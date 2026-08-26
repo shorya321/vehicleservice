@@ -43,6 +43,14 @@ function formatSentAt(iso: string): string {
 
 interface EmailLogTableProps {
   initialLogs: EmailLogEntry[];
+  /**
+   * Keyset cursor for the row after the last of initialLogs, or null when there is no
+   * next page. It has to be seeded from the server: initialLogs comes from the page's
+   * own query, so nothing here can derive the boundary, and starting at null made the
+   * first "Load more" send no cursor and re-fetch page one.
+   */
+  initialCursor: string | null;
+  initialHasMore: boolean;
 }
 
 const STATUS_STYLES: Record<EmailLogEntry['status'], { label: string; className: string }> = {
@@ -60,12 +68,14 @@ const STATUS_STYLES: Record<EmailLogEntry['status'], { label: string; className:
   },
 };
 
-export function EmailLogTable({ initialLogs }: EmailLogTableProps) {
+export function EmailLogTable({ initialLogs, initialCursor, initialHasMore }: EmailLogTableProps) {
   const [logs, setLogs] = useState(initialLogs);
   const [status, setStatus] = useState('all');
   const [search, setSearch] = useState('');
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(initialLogs.length >= 25);
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
+  // The server's own answer, not the old `initialLogs.length >= 25` guess, which offered
+  // a Load more button whenever the log happened to hold exactly one full page.
+  const [hasMore, setHasMore] = useState(initialHasMore);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
 

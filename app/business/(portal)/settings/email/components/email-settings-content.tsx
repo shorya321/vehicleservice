@@ -16,6 +16,9 @@ import type { EmailLogEntry, EmailSettings } from './types';
 interface EmailSettingsContentProps {
   initialSettings: EmailSettings | null;
   initialLogs: EmailLogEntry[];
+  /** Keyset cursor for the row after the last of initialLogs, or null when there is no next page. */
+  initialLogsCursor: string | null;
+  initialLogsHasMore: boolean;
   platformFallbackFrom: string;
   memberEmail: string;
   /** The tenant's verified custom domain, or null when they have not set one up. */
@@ -25,6 +28,8 @@ interface EmailSettingsContentProps {
 export function EmailSettingsContent({
   initialSettings,
   initialLogs,
+  initialLogsCursor,
+  initialLogsHasMore,
   platformFallbackFrom,
   memberEmail,
   tenantDomain,
@@ -64,7 +69,11 @@ export function EmailSettingsContent({
         </LuxuryTabsContent>
 
         <LuxuryTabsContent value="log">
-          <EmailLogTable initialLogs={initialLogs} />
+          <EmailLogTable
+            initialLogs={initialLogs}
+            initialCursor={initialLogsCursor}
+            initialHasMore={initialLogsHasMore}
+          />
         </LuxuryTabsContent>
       </LuxuryTabs>
     </div>

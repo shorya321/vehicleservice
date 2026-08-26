@@ -14,6 +14,9 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+/** Rows shown before the log table's first "Load more". Must match DEFAULT_LIMIT in the logs route. */
+const LOG_PAGE_SIZE = 25;
+
 /**
  * Columns safe to render. smtp_password_encrypted is deliberately absent, and the
  * column-level GRANT would reject it from a session client anyway.
@@ -53,8 +56,13 @@ export default async function BusinessEmailSettingsPage() {
           'error_code, error_message, duration_ms, attempt, created_at'
       )
       .eq('business_account_id', member.businessAccountId)
+      // created_at is not unique (timestamptz DEFAULT now(), and now() is transaction
+      // start time), so the id tiebreaker has to match the one the logs route orders by,
+      // or the cursor minted below can point at the wrong side of a tie. One extra row is
+      // fetched to learn whether a next page exists, the same trick the route uses.
       .order('created_at', { ascending: false })
-      .limit(25),
+      .order('id', { ascending: false })
+      .limit(LOG_PAGE_SIZE + 1),
     admin
       .from('business_accounts')
       .select('business_email, custom_domain, custom_domain_verified')
@@ -75,6 +83,19 @@ export default async function BusinessEmailSettingsPage() {
     };
   }
 
+  // The first page is delivered by this component, so the cursor for the page after it
+  // has to come from here too. Without it the table opened with cursor === null, the
+  // first "Load more" sent no cursor, and the route answered with the newest 25 rows a
+  // second time - 25 duplicate React keys appended to the list.
+  const allLogs = (logRows ?? []) as unknown as EmailLogEntry[];
+  const logsHasMore = allLogs.length > LOG_PAGE_SIZE;
+  const logsPage = logsHasMore ? allLogs.slice(0, LOG_PAGE_SIZE) : allLogs;
+  const lastLog = logsPage[logsPage.length - 1];
+  // Format is the route's own `${created_at}|${id}`. It validates the halves against
+  // /^[\d:.T+-]+Z?$/ and a UUID pattern and silently drops a cursor that fails either,
+  // which would put the duplicate rows straight back.
+  const logsCursor = logsHasMore && lastLog ? `${lastLog.created_at}|${lastLog.id}` : null;
+
   return (
     <PageContainer>
       <PageHeader
@@ -83,7 +104,9 @@ export default async function BusinessEmailSettingsPage() {
       />
       <EmailSettingsContent
         initialSettings={settings}
-        initialLogs={(logRows ?? []) as unknown as EmailLogEntry[]}
+        initialLogs={logsPage}
+        initialLogsCursor={logsCursor}
+        initialLogsHasMore={logsHasMore}
         platformFallbackFrom={process.env.RESEND_FROM_EMAIL ?? 'our default address'}
         // business_users.email is null on accounts created before the 20260720 backfill,
         // which would leave the test dialog with an empty recipient and a dead Send
