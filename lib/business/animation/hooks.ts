@@ -7,38 +7,74 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, useRef, MutableRefObject } from 'react';
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useSyncExternalStore,
+  MutableRefObject,
+} from 'react';
 import { useInView as useFramerInView } from 'motion/react';
 import { viewportOptions } from './config';
 
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
 /**
- * Hook to detect reduced motion preference
- * Returns true if user prefers reduced motion
+ * Module scope on purpose: useSyncExternalStore resubscribes whenever this identity
+ * changes, so it must not be recreated per render.
+ */
+function subscribeToReducedMotion(onStoreChange: () => void): () => void {
+  if (typeof window.matchMedia !== 'function') return () => {};
+
+  const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+  mediaQuery.addEventListener('change', onStoreChange);
+
+  return () => {
+    mediaQuery.removeEventListener('change', onStoreChange);
+  };
+}
+
+function getReducedMotionSnapshot(): boolean {
+  // React only calls this on the client, but matchMedia is still absent in jsdom and in
+  // some embedded webviews, where the old lazy initializer threw.
+  if (typeof window.matchMedia !== 'function') return false;
+
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+function getReducedMotionServerSnapshot(): boolean {
+  return false;
+}
+
+/**
+ * Whether the viewer asked for reduced motion. False on the server and on the first
+ * client render, then the real value.
+ *
+ * This used to read matchMedia inside a useState initializer, which runs during render.
+ * The server has no window, so it could only ever produce false, while the client's very
+ * first render - the hydration render - saw the real preference. For a reduce-motion
+ * viewer the two disagreed before any effect had run.
+ *
+ * That mattered because app/business/(portal)/template.tsx branches the tree SHAPE on
+ * this value, and it wraps every portal page: one branch is a bare fragment, the other is
+ * AnimatePresence, which renders its children as an array and so pushes a React tree
+ * fork. React 19 derives useId from the fiber tree id at each fork, so the mismatched
+ * branch shifted every useId underneath - the shadcn FormItem ids and the Radix Tabs
+ * baseId - and React gave up and client-rendered the whole page instead of hydrating it.
+ * Measured by id prefix (_R_ = hydrated, _r_ = client-rendered), every portal page went
+ * to 100% client-rendered ids with the preference on.
+ *
+ * useSyncExternalStore rather than useState + useEffect: getServerSnapshot is used for
+ * SSR *and* for the hydration render, so the first client render always matches the
+ * server, and no state is set from an effect.
  */
 export function useReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot
   );
-
-  useEffect(() => {
-    // Check if we're in the browser
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    // Listen for changes
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-
-  return prefersReducedMotion;
 }
 
 /**
