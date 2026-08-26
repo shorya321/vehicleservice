@@ -217,15 +217,22 @@ export function BusinessThemeProvider({
     setTheme(newTheme);
   };
 
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return (
-      <div className="business-mesh-bg" style={{ minHeight: "100vh" }}>
-        {children}
-      </div>
-    );
-  }
-
+  // The provider is rendered unconditionally, on purpose.
+  //
+  // This used to return the bare <div> until `mounted` flipped, to "prevent a
+  // hydration mismatch". It did not prevent one - server and first client render
+  // both saw mounted === false, so hydration always matched. What it did do was
+  // change the element type at this position on the very next render: <div> became
+  // <Provider><div>. React cannot reconcile a changed type, so it threw the whole
+  // portal away and rebuilt it, unmounting and remounting every page under the
+  // layout on each load. Measured on /business/settings/email: 3 mounts and 2
+  // unmounts of BusinessPortalContent per load, against 1 and 0 with the branch
+  // gone. Every child effect ran three times, and any child state was discarded
+  // twice before the page settled.
+  //
+  // Nothing needs the branch. The sole consumer, useBusinessThemeSafe, carries its
+  // own mounted guard and returns the dark defaults until it flips, so the context
+  // values published here before mount are never the ones a consumer reads.
   return (
     <ThemeProviderContext.Provider
       value={{

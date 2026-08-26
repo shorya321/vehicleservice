@@ -114,8 +114,13 @@ const LuxuryTableRow = forwardRef<HTMLTableRowElement, LuxuryTableRowProps>(
     const prefersReducedMotion = useReducedMotion();
 
     const baseClasses = cn(
-      'border-b border-[var(--business-border-subtle)] transition-colors relative',
-      'hover:bg-[var(--business-primary-500)]/5',
+      'border-b border-[var(--business-border-subtle)] transition-[background-color,box-shadow] relative',
+      // Not `bg-[var(--business-primary-500)]/5`: Tailwind cannot apply an opacity
+      // modifier to an arbitrary var(), because it has no colour to inject the alpha
+      // into. That class compiled to no rule at all, so rows had no hover tint. The
+      // variable is always a hex (globals.css default, or safeHex in theme-vars.ts),
+      // so color-mix can dilute it directly.
+      'hover:bg-[color-mix(in_srgb,var(--business-primary-500)_5%,transparent)]',
       clickable && 'cursor-pointer',
       className
     );
@@ -127,7 +132,7 @@ const LuxuryTableRow = forwardRef<HTMLTableRowElement, LuxuryTableRowProps>(
           ref={ref}
           className={cn(
             baseClasses,
-            'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-[var(--business-primary-500)] before:scale-y-0 before:origin-center before:transition-transform hover:before:scale-y-100'
+            'hover:shadow-[inset_3px_0_0_0_var(--business-primary-500)]'
           )}
           initial="rest"
           whileHover="hover"
@@ -142,7 +147,7 @@ const LuxuryTableRow = forwardRef<HTMLTableRowElement, LuxuryTableRowProps>(
         ref={ref}
         className={cn(
           baseClasses,
-          'hover:before:absolute hover:before:left-0 hover:before:top-0 hover:before:bottom-0 hover:before:w-[3px] hover:before:bg-[var(--business-primary-500)]'
+          'hover:shadow-[inset_3px_0_0_0_var(--business-primary-500)]'
         )}
         {...props}
       />
