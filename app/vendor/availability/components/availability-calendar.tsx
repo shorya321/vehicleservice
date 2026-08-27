@@ -7,6 +7,8 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './calendar-styles.css'
 import { toast } from 'sonner'
+
+import { cn } from '@/lib/utils'
 import { markResourceUnavailable, removeUnavailability, getVendorCalendarEvents } from '../actions'
 import {
   type CalendarDriver,
@@ -18,7 +20,14 @@ import { CalendarLegend } from './calendar-legend'
 import { FleetTimeline } from './fleet-timeline'
 import { ConflictBanner } from './conflict-banner'
 import { CalendarFilters } from './calendar-filters'
-import { CalendarToolbar, MonthYearJump, TOOLBAR_BTN, type CustomEvent } from './calendar-toolbar'
+import {
+  CalendarToolbar,
+  MonthYearJump,
+  TOGGLE_ITEM,
+  TOGGLE_LIST,
+  TOOLBAR_BTN,
+  type CustomEvent,
+} from './calendar-toolbar'
 import { UnavailabilityDialog, type UnavailabilitySubmission } from './unavailability-dialog'
 import { eventStyleGetter } from './event-colors'
 import { startOfBookingDayUtc } from '@/lib/utils/timezone'
@@ -34,7 +43,6 @@ import { conflictsByResource, findResourceConflicts } from '@/lib/availability/c
 import { FLEET_SPANS, type FleetSpan } from '@/lib/availability/timeline'
 import { AlertCircle } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
 
 const localizer = momentLocalizer(moment)
 
@@ -336,8 +344,13 @@ export function AvailabilityCalendar({
       {/* Calendar / Fleet */}
       <div
         className={cn(
-          'bg-background rounded-lg p-4 border relative',
-          mode === 'calendar' && 'h-[clamp(420px,70vh,760px)] overflow-y-auto'
+          'relative rounded-lg border bg-background p-4',
+          // Month grows the page: its `min-height: 620px` used to force a
+          // scrollbar nested inside the page's own, which carried the toolbar
+          // out of view. Week and Day keep the clamp, because react-big-calendar
+          // scrolls the time grid internally and `scrollToTime` needs a bounded
+          // height or the day opens at 00:00 on six hours of empty track.
+          mode === 'calendar' && view !== 'month' && 'h-[clamp(420px,70vh,760px)] overflow-y-auto'
         )}
       >
         {isLoading && (
@@ -406,10 +419,10 @@ export function AvailabilityCalendar({
               </div>
 
               <Tabs value={fleetSpan} onValueChange={(v) => setFleetSpan(v as FleetSpan)}>
-                <TabsList>
-                  <TabsTrigger value="day">Day</TabsTrigger>
-                  <TabsTrigger value="3day">3 Days</TabsTrigger>
-                  <TabsTrigger value="week">Week</TabsTrigger>
+                <TabsList className={TOGGLE_LIST}>
+                  <TabsTrigger value="day" className={TOGGLE_ITEM}>Day</TabsTrigger>
+                  <TabsTrigger value="3day" className={TOGGLE_ITEM}>3 Days</TabsTrigger>
+                  <TabsTrigger value="week" className={TOGGLE_ITEM}>Week</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>

@@ -28,7 +28,19 @@ const MONTH_LABELS = [
 // Mirrors the SelectTrigger look (border-border, neutral text, h-9, normal case) so
 // the nav/view buttons match the Month/Year dropdowns instead of the gold outline.
 export const TOOLBAR_BTN =
-  'inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50'
+  'inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50'
+
+/** One selected-state language for every toggle group on this page: gold fill,
+ *  near-black label. `--accent` / `--accent-foreground` are the only gold pair
+ *  the vendor theme writes inline in BOTH modes (#BA955E on #09090B, 7.1:1);
+ *  `--primary-foreground` is white in light mode, which would be 2.8:1. Stock
+ *  shadcn paints the active pill `bg-background` on `bg-muted`: 1.04:1 here in
+ *  light, and in dark an active tab DARKER than its own track. */
+export const TOGGLE_LIST =
+  'inline-flex h-9 items-center justify-center gap-1 rounded-md border border-border bg-muted p-1 text-muted-foreground'
+
+export const TOGGLE_ITEM =
+  'inline-flex h-7 items-center justify-center whitespace-nowrap rounded px-3 py-0 text-sm font-medium transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-none'
 
 /** Month + year dropdowns that jump straight to any month. Shared by the
  *  react-big-calendar toolbar and the Fleet toolbar, which previously had no way
@@ -107,7 +119,7 @@ export function CalendarToolbar({
             <button
               key={name}
               type="button"
-              className={cn(TOOLBAR_BTN, view === name && 'bg-accent text-accent-foreground')}
+              className={cn(TOOLBAR_BTN, view === name && 'border-accent bg-accent text-accent-foreground')}
               onClick={() => onView(name)}
             >
               {name.charAt(0).toUpperCase() + name.slice(1)}

@@ -35,6 +35,10 @@ interface FleetTimelineProps {
 /** Height of one sub-row of bars. Lanes grow in multiples of this when trips overlap. */
 const ROW_HEIGHT = 26
 const LANE_LABEL_WIDTH = 'w-44'
+/** The same 11rem in pixels. The now-marker is positioned against the whole
+ *  scrolled row (label column plus track), so a percentage of the track
+ *  alone will not place it. */
+const LANE_LABEL_PX = 176
 
 /** Shared empty set, so lanes with no clash do not allocate one per render. */
 const EMPTY_CONFLICTS: Set<string> = new Set()
@@ -95,11 +99,17 @@ function Bar({
           : { backgroundColor: color, color: 'white' }),
       }}
     >
+      {/* Crop marks, not a rule. The box is wider than the job so the label
+          fits; these say where the job really ends without crossing a glyph. */}
       {widened && (
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 w-[2px] bg-current opacity-40"
-          style={{ left: Math.max(1, bar.naturalWidthPx) }}
+          className="pointer-events-none absolute inset-y-0 w-px opacity-70"
+          style={{
+            left: Math.max(1, bar.naturalWidthPx),
+            backgroundImage:
+              'linear-gradient(to bottom, currentColor 0 4px, transparent 4px calc(100% - 4px), currentColor calc(100% - 4px) 100%)',
+          }}
         />
       )}
 
@@ -117,14 +127,12 @@ function Lane({
   lane,
   ticks,
   trackWidth,
-  nowLeftPct,
   conflictIds,
   onSelectEvent,
 }: {
   lane: TimelineLane
   ticks: TimelineTick[]
   trackWidth: number
-  nowLeftPct: number | null
   conflictIds: Set<string>
   onSelectEvent: (event: CalendarEvent) => void
 }) {
@@ -166,21 +174,16 @@ function Lane({
           ))}
         </div>
 
-        {nowLeftPct !== null && (
-          <div
-            className="pointer-events-none absolute inset-y-0 z-10 border-l-2 border-primary/70"
-            style={{ left: `${nowLeftPct}%` }}
-          />
-        )}
-
         {lane.resource.outOfService ? (
           <div className="absolute inset-x-0 top-0.5 h-[22px] rounded bg-muted px-2 text-[11px] leading-[22px] text-muted-foreground">
             {lane.resource.outOfService}
           </div>
         ) : lane.bars.length === 0 ? (
-          <span className="absolute inset-0 flex items-center justify-center text-[11px] text-muted-foreground/70">
+          // Sticky rather than centred: centring spans the whole scrolled track,
+          // which parks the label off screen on anything wider than a day.
+          <div className="pointer-events-none sticky left-44 top-0 z-0 w-max py-1 pl-3 text-[11px] leading-[22px] text-muted-foreground/70">
             Free all period
-          </span>
+          </div>
         ) : null}
 
         {lane.bars.map((bar) => (
@@ -343,13 +346,26 @@ export function FleetTimeline({
       {/* One scroll container for the axis and every lane, so the header cannot
           drift out of step with the bars underneath it. */}
       <div ref={scrollRef} className="max-h-[clamp(360px,60vh,640px)] overflow-auto">
-        <div className="w-max min-w-full">
+        <div className="relative w-max min-w-full">
+          {/* Where we are now, drawn once rather than once per lane. As a
+              positioned z-0 element placed first it paints above the lane rows
+              and group bands, so the line is continuous down the board, but
+              below the sticky name column, the sticky axis and every lane
+              track, so it can no longer cut through a label. */}
+          {nowLeftPct !== null && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 z-0 w-px bg-accent/80"
+              style={{ left: LANE_LABEL_PX + (nowLeftPct / 100) * trackWidth }}
+            />
+          )}
+
           {/* Time axis */}
-          <div className="sticky top-0 z-30 flex border-b bg-muted/95 backdrop-blur">
+          <div className="sticky top-0 z-30 flex border-b bg-muted">
             <div
               className={cn(
                 LANE_LABEL_WIDTH,
-                'sticky left-0 z-10 shrink-0 border-r border-border/60 bg-muted/95'
+                'sticky left-0 z-10 shrink-0 border-r border-border/60 bg-muted'
               )}
             />
             <div className="relative h-7 shrink-0" style={{ width: trackWidth }}>
@@ -368,6 +384,15 @@ export function FleetTimeline({
                   {tick.label}
                 </span>
               ))}
+
+              {nowLeftPct !== null && (
+                <span
+                  className="absolute bottom-0 z-10 -translate-x-1/2 rounded-t-[3px] bg-accent px-1.5 py-px text-[10px] font-semibold uppercase leading-none tracking-wide text-accent-foreground"
+                  style={{ left: `${nowLeftPct}%` }}
+                >
+                  Now
+                </span>
+              )}
             </div>
           </div>
 
@@ -387,7 +412,6 @@ export function FleetTimeline({
                 }}
                 ticks={ticks}
                 trackWidth={trackWidth}
-                nowLeftPct={nowLeftPct}
                 conflictIds={EMPTY_CONFLICTS}
                 onSelectEvent={onSelectEvent}
               />
@@ -403,7 +427,6 @@ export function FleetTimeline({
                   lane={lane}
                   ticks={ticks}
                   trackWidth={trackWidth}
-                  nowLeftPct={nowLeftPct}
                   conflictIds={conflictsByResource.get(lane.resource.id) ?? EMPTY_CONFLICTS}
                   onSelectEvent={onSelectEvent}
                 />
@@ -420,7 +443,6 @@ export function FleetTimeline({
                   lane={lane}
                   ticks={ticks}
                   trackWidth={trackWidth}
-                  nowLeftPct={nowLeftPct}
                   conflictIds={conflictsByResource.get(lane.resource.id) ?? EMPTY_CONFLICTS}
                   onSelectEvent={onSelectEvent}
                 />

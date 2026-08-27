@@ -18,10 +18,6 @@
   border-bottom: 1px solid hsl(var(--border));
 }
 
-.vendor-calendar .rbc-today {
-  background-color: hsl(var(--primary) / 0.05);
-}
-
 .vendor-calendar .rbc-off-range-bg {
   background-color: hsl(var(--muted) / 0.3);
 }
@@ -50,31 +46,6 @@
   opacity: 0.75;
 }
 
-.vendor-calendar .rbc-toolbar {
-  margin-bottom: 20px;
-}
-
-.vendor-calendar .rbc-toolbar button {
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-  background-color: transparent;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.vendor-calendar .rbc-toolbar button:hover {
-  background-color: hsl(var(--accent));
-}
-
-.vendor-calendar .rbc-toolbar button.rbc-active {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-color: hsl(var(--primary));
-}
-
 .vendor-calendar .rbc-month-view,
 .vendor-calendar .rbc-time-view,
 .vendor-calendar .rbc-agenda-view {
@@ -95,8 +66,8 @@
    events fit at render time. On a short viewport that left rows ~56px tall,
    which clipped the second and third chip in a day without producing the
    "+N more" link that is supposed to stand in for them. A floor on the grid
-   keeps every row tall enough for two chips plus the link; the calendar box
-   scrolls when the viewport cannot give it that much. */
+   keeps every row tall enough for two chips plus the link; the page scrolls
+   when the viewport cannot give it that much. */
 .vendor-calendar .rbc-month-view {
   min-height: 620px;
 }
@@ -119,6 +90,18 @@
 .vendor-calendar .rbc-day-bg {
   background-color: hsl(var(--background));
   border-right: 1px solid hsl(var(--border));
+}
+
+/* Today. This has to out-specify `.rbc-day-bg` above, which is the same
+   weight and comes later. That is why the old `.rbc-today` rule painted
+   nothing at all. The date number carries the second, non-colour cue. */
+.vendor-calendar .rbc-day-bg.rbc-today {
+  background-color: hsl(var(--primary) / 0.12);
+}
+
+.vendor-calendar .rbc-date-cell.rbc-now button {
+  color: hsl(var(--primary));
+  font-weight: 700;
 }
 
 /* Date number in cells */

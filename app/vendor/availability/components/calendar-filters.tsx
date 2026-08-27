@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { TOGGLE_ITEM, TOGGLE_LIST } from './calendar-toolbar'
 import type { CalendarDriver, CalendarEventSource, CalendarVehicle } from '../types'
 import type { ResourceTypeFilter, SourceFilter } from '@/lib/availability/filters'
 
@@ -70,13 +71,13 @@ function FilterControls({
           value={filterType}
           onValueChange={(v) => onFilterTypeChange(v as ResourceTypeFilter)}
         >
-          <TabsList className={cn(stacked && 'w-full')}>
-            <TabsTrigger value="all" className={cn(stacked && 'flex-1')}>All</TabsTrigger>
-            <TabsTrigger value="vehicle" className={cn(stacked && 'flex-1')}>
+          <TabsList className={cn(TOGGLE_LIST, stacked && 'w-full')}>
+            <TabsTrigger value="all" className={cn(TOGGLE_ITEM, stacked && 'flex-1')}>All</TabsTrigger>
+            <TabsTrigger value="vehicle" className={cn(TOGGLE_ITEM, stacked && 'flex-1')}>
               <Car className="mr-2 h-4 w-4" />
               Vehicles
             </TabsTrigger>
-            <TabsTrigger value="driver" className={cn(stacked && 'flex-1')}>
+            <TabsTrigger value="driver" className={cn(TOGGLE_ITEM, stacked && 'flex-1')}>
               <User className="mr-2 h-4 w-4" />
               Drivers
             </TabsTrigger>
@@ -124,7 +125,7 @@ function FilterControls({
         </Select>
       </div>
 
-      <div className={cn('flex items-center gap-2', stacked ? 'pt-2' : 'ml-auto pb-2')}>
+      <div className={cn('flex items-center gap-2', stacked ? 'pt-2' : 'pb-2')}>
         <Switch id="show-released" checked={showReleased} onCheckedChange={onShowReleasedChange} />
         <Label htmlFor="show-released" className="cursor-pointer font-normal">
           Show completed &amp; cancelled
@@ -152,12 +153,12 @@ export function CalendarFilters(props: CalendarFiltersProps) {
       <div className="space-y-2">
         <Label>View</Label>
         <Tabs value={mode} onValueChange={(v) => onModeChange(v as 'calendar' | 'fleet')}>
-          <TabsList>
-            <TabsTrigger value="calendar">
+          <TabsList className={TOGGLE_LIST}>
+            <TabsTrigger value="calendar" className={TOGGLE_ITEM}>
               <CalendarDays className="mr-2 h-4 w-4" />
               Calendar
             </TabsTrigger>
-            <TabsTrigger value="fleet">
+            <TabsTrigger value="fleet" className={TOGGLE_ITEM}>
               <LayoutList className="mr-2 h-4 w-4" />
               Fleet
             </TabsTrigger>
