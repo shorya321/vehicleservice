@@ -9,49 +9,59 @@ export function Hero({ todayDate }: { todayDate: string }) {
     >
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
         <div className="home-hero-color-wash pointer-events-none absolute inset-0" />
+        <div className="home-hero-grain pointer-events-none absolute inset-0" />
       </div>
 
-      <div className="luxury-container relative z-10 pb-[clamp(4rem,8vw,6.5rem)] pt-[clamp(3rem,7vw,5.5rem)]">
-        <div className="mx-auto max-w-[52rem] text-center">
-          <div className="hero-reveal hero-reveal--eyebrow">
-            <p className="mx-auto text-[0.6875rem] font-medium tracking-[0.2em] uppercase text-[var(--gold-text)]">
-              Airport & city transfers, fixed-price
-            </p>
-          </div>
+      <div className="luxury-container relative z-10 pb-[clamp(4.5rem,9vw,7rem)] pt-[clamp(3rem,7vw,5.5rem)]">
+        <div className="mx-auto flex max-w-[58rem] flex-col items-center text-center">
+          <p className="hero-reveal hero-reveal--eyebrow editorial-eyebrow hero-eyebrow">
+            {/* One flex child. Loose text nodes become separate flex items and
+                wrap into columns once the rules take their share of the row. */}
+            <span>
+              Airport &amp; city transfers,{' '}
+              <span className="text-[var(--gold-text)]">fixed-price</span>
+            </span>
+          </p>
 
           <h1
             id="hero-headline"
-            className="hero-reveal hero-reveal--headline mt-5 font-display text-[clamp(2.75rem,6.5vw,5.25rem)] font-medium leading-[1.12] tracking-[-0.015em] text-[var(--text-primary)]"
+            className="hero-reveal hero-reveal--headline hero-headline mt-7 text-[clamp(2.5rem,6.2vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.032em] text-[var(--text-primary)]"
           >
-            Infinia Transfers
-            <br />
-            Booked Before You Land
+            Booked before you land.
           </h1>
 
-          <p
-            className="hero-reveal hero-reveal--summary mx-auto mt-7 max-w-lg text-base leading-relaxed text-[var(--text-secondary)]"
-          >
+          <p className="hero-reveal hero-reveal--summary hero-summary mx-auto mt-[1.625rem] max-w-[46ch] text-[1.0625rem] leading-[1.62] text-[var(--text-secondary)]">
             Pick a route, choose a vehicle, confirm your transfer. Fixed pricing in your currency across 40+ cities.
           </p>
 
-          <div
-            className="hero-reveal hero-reveal--stats hero-itinerary-stats mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[0.8125rem] tracking-wide text-[var(--text-muted)]"
-          >
-            <span><span className="tabular-nums font-bold text-[var(--gold-text)]">40+</span> cities</span>
-            <span className="hero-itinerary-separator" aria-hidden="true">|</span>
-            <span><span className="tabular-nums font-bold text-[var(--gold-text)]">120+</span> vehicles</span>
-            <span className="hero-itinerary-separator" aria-hidden="true">|</span>
-            <span><span className="tabular-nums font-bold text-[var(--gold-text)]">4.9</span><span aria-hidden="true">&#9733;</span><span className="sr-only"> star</span> rating</span>
+          <div className="hero-booking-reveal mt-[3.25rem] w-full">
+            <SearchForm todayDate={todayDate} />
           </div>
-        </div>
 
-        <div
-          className="hero-itinerary-rule mx-auto mt-12 max-w-lg"
-          aria-hidden="true"
-        />
+          <p className="hero-reveal hero-reveal--trust hero-trust mt-5">
+            <span>Fixed price at booking</span>
+            <span>Flight tracked</span>
+            <span>Free cancellation</span>
+          </p>
 
-        <div className="hero-booking-reveal mx-auto mt-10 max-w-4xl">
-          <SearchForm todayDate={todayDate} />
+          <dl className="hero-reveal hero-reveal--stats hero-stats mt-14">
+            <div>
+              <dt>40+</dt>
+              <dd>Cities</dd>
+            </div>
+            <div>
+              <dt>120+</dt>
+              <dd>Vehicles</dd>
+            </div>
+            <div>
+              <dt>
+                4.9
+                <span className="hero-stats-star" aria-hidden="true">&#9733;</span>
+                <span className="sr-only"> star</span>
+              </dt>
+              <dd>Rating</dd>
+            </div>
+          </dl>
         </div>
       </div>
     </section>

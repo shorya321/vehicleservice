@@ -78,14 +78,12 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
           value={fromInput}
           onChange={handleFromInput}
           onSelect={selectFromLocation}
-          placeholder="Airport, hotel, or address"
+          placeholder="Airport or hotel"
           ariaLabel="Pick-up location"
           selectedLocation={fromLocation}
           variant="hero"
         />
       </div>
-
-      <div className="search-bar-divider" aria-hidden />
 
       {/* To */}
       <div className="search-bar-field search-bar-field--location">
@@ -95,14 +93,12 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
           value={toInput}
           onChange={handleToInput}
           onSelect={selectToLocation}
-          placeholder="Airport, hotel, or address"
+          placeholder="Hotel or address"
           ariaLabel="Drop-off location"
           selectedLocation={toLocation}
           variant="hero"
         />
       </div>
-
-      <div className="search-bar-divider" aria-hidden />
 
       {/* Date */}
       <div className="search-bar-field search-bar-field--compact">
@@ -161,8 +157,6 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
         )}
       </div>
 
-      <div className="search-bar-divider" aria-hidden />
-
       {/* Guests */}
       <div className="search-bar-field search-bar-field--guests">
         <label htmlFor="guests" className="search-bar-label">Guests</label>
@@ -176,7 +170,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
         className="search-bar-submit"
         aria-label="Search transfers"
       >
-        <span className="hidden sm:inline">Search</span>
+        <span>Search</span>
         <ArrowRight className="w-4 h-4" aria-hidden="true" />
       </button>
     </form>
