@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PublicHeader } from '@/components/layout/public-header'
 import { Hero } from '@/components/home/hero'
 import { DeparturePoints } from '@/components/home/departure-points'
+import { Cities } from '@/components/home/cities'
 import { TransportationBenefits } from '@/components/home/transportation-benefits'
 import { VehicleClasses } from '@/components/home/vehicle-classes'
 import { AdditionalServices } from '@/components/home/additional-services'
@@ -75,6 +76,9 @@ export default async function HomePage() {
       <Hero todayDate={todayStr} />
       <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <DeparturePoints todayDate={todayStr} />
+      </div>
+      <div className="bg-[var(--black-rich)]">
+        <Cities />
       </div>
       <div className="bg-[var(--black-void)]">
         <TransportationBenefits />
