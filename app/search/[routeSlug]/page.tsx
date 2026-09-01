@@ -4,8 +4,7 @@ import { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 import { SearchResults } from '../results/components/search-results'
-import { SearchSummary } from '../results/components/search-summary'
-import { getSearchResults, getLocationDetails } from '../results/actions'
+import { getSearchResults } from '../results/actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { resolveRouteSlugs } from '@/lib/utils/slug-resolver'
@@ -67,15 +66,11 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
       ? { originId: resolved.origin.id, destinationId: resolved.destination.id }
       : { fromZoneId: resolved.origin.id, toZoneId: resolved.destination.id }
 
-  const [results, origin, destination] = await Promise.all([
-    getSearchResults({
-      ...searchConfig,
-      date: new Date(date),
-      passengers: parseInt(passengers),
-    }),
-    resolved.type === 'location' ? getLocationDetails(resolved.origin.id) : null,
-    resolved.type === 'location' ? getLocationDetails(resolved.destination.id) : null,
-  ])
+  const results = await getSearchResults({
+    ...searchConfig,
+    date: new Date(date),
+    passengers: parseInt(passengers),
+  })
 
   if (!results) {
     return (
@@ -125,16 +120,7 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
     <PublicLayout>
       <div className="bg-[var(--black-void)] relative min-h-screen">
         <div className="relative z-10">
-          <div className="hidden">
-            <SearchSummary
-              origin={origin}
-              destination={destination}
-              date={new Date(date)}
-              passengers={parseInt(passengers)}
-            />
-          </div>
-
-          <div className="luxury-container py-12 lg:py-16">
+          <div className="luxury-container pt-[clamp(2rem,4vw,3rem)] pb-[clamp(5rem,10vw,8rem)]">
             <SearchResults results={results} searchParams={enrichedSearchParams} />
           </div>
         </div>

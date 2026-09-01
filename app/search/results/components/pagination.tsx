@@ -30,14 +30,14 @@ export function Pagination({
   return (
     <nav
       aria-label="Pagination"
-      className="flex flex-col items-center gap-4 border-t border-[var(--graphite)] mt-4 pt-8 sm:flex-row sm:justify-between"
+      className="mt-14 flex flex-col items-center gap-4 border-t border-[var(--graphite)] pt-8 sm:flex-row sm:justify-between"
     >
-      <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-        <span className="numeric text-[var(--text-secondary)]">
+      <p className="text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)]">
+        <span className="numeric text-[var(--text-primary)]">
           {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}
         </span>{" "}
         of{" "}
-        <span className="numeric text-[var(--text-secondary)]">{totalItems}</span>
+        <span className="numeric text-[var(--text-primary)]">{totalItems}</span>
       </p>
 
       <div className="flex items-center gap-1">
@@ -45,7 +45,7 @@ export function Pagination({
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
           aria-label="Previous page"
-          className="inline-flex h-11 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+          className="inline-flex h-11 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:border-transparent disabled:text-[var(--text-muted)] disabled:opacity-55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
         >
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           Prev
@@ -67,7 +67,7 @@ export function Pagination({
                 onClick={() => onPageChange(page)}
                 aria-label={`Page ${page}`}
                 aria-current={active ? 'page' : undefined}
-                className={`inline-flex h-10 min-w-10 items-center justify-center px-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${active ? "numeric text-[1rem] font-semibold text-[var(--gold)]" : "text-[0.875rem] text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+                className={`relative inline-flex h-10 min-w-10 items-center justify-center px-2 text-[0.875rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${active ? "font-medium text-[var(--text-primary)] after:absolute after:inset-x-2 after:bottom-1.5 after:h-[2px] after:bg-[var(--gold)] after:content-['']" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
               >
                 <span className="numeric">{page}</span>
               </button>
@@ -79,7 +79,7 @@ export function Pagination({
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
           aria-label="Next page"
-          className="inline-flex h-11 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+          className="inline-flex h-11 items-center gap-1 rounded-[4px] border border-[var(--graphite)] px-4 text-[0.75rem] uppercase tracking-[0.16em] text-[var(--text-secondary)] transition-[color,border-color,transform] duration-200 hover:border-[var(--gold)] hover:text-[var(--gold)] motion-safe:active:scale-[0.97] disabled:pointer-events-none disabled:border-transparent disabled:text-[var(--text-muted)] disabled:opacity-55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
         >
           Next
           <ChevronRight className="h-4 w-4" aria-hidden="true" />

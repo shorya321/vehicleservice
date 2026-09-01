@@ -5,6 +5,7 @@ import { VehicleTypeResult, VehicleTypesByCategory } from '../actions'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
 import { Pagination } from './pagination'
+import { SortSelect } from './sort-select'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
@@ -25,6 +26,8 @@ interface VehicleTypeCategoryTabsProps {
 type SortOption = 'price-asc' | 'price-desc' | 'capacity' | 'name'
 
 const ITEMS_PER_PAGE = 6
+
+const SORT_OPTIONS = ['price-asc', 'price-desc', 'capacity', 'name'] as const satisfies readonly SortOption[]
 
 const SORT_LABELS: Record<SortOption, string> = {
   'price-asc': 'Price · low to high',
@@ -101,12 +104,16 @@ export function VehicleTypeCategoryTabs({
   }, [tabs])
 
   return (
-    <div className="w-full space-y-10">
+    <div className="w-full">
       <LayoutGroup id="vehicleTypeTabs">
+        {/* No horizontal padding on the tabs: the first one now starts on the
+            same left rail as the heading, the count and the card grid. Six
+            categories scroll rather than wrapping into a block that pushes the
+            first vehicle below the fold on a phone. */}
         <div
           role="tablist"
           aria-label="Vehicle categories"
-          className="flex flex-wrap items-baseline gap-x-6 gap-y-2 border-b border-[var(--graphite)] pb-1"
+          className="scrollbar-hide flex items-baseline gap-x-7 overflow-x-auto border-b border-[var(--graphite)]"
         >
           {tabs.map((tab, tabIndex) => {
             const selected = activeCategory === tab.id
@@ -119,11 +126,11 @@ export function VehicleTypeCategoryTabs({
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveCategory(tab.id)}
                 onKeyDown={(e) => handleTabKeyDown(e, tabIndex)}
-                className={`relative -mb-px rounded px-3 py-2 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--gold-text)] bg-[rgba(var(--gold-rgb),0.12)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+                className={`relative whitespace-nowrap pb-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--gold-text)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
               >
                 <span>{tab.name}</span>
                 <span className={`ml-2 numeric text-[0.6875rem] ${selected ? 'text-[var(--gold-text)]' : 'text-[var(--text-muted)]'}`}>
-                  {String(tab.count).padStart(2, '0')}
+                  {tab.count}
                 </span>
                 {selected && (
                   <motion.span
@@ -139,37 +146,38 @@ export function VehicleTypeCategoryTabs({
         </div>
       </LayoutGroup>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-baseline gap-3">
-          <span className="numeric text-[1.5rem] font-semibold text-[var(--gold-text)]">{sortedVehicles.length}</span>
-          <span className="uppercase tracking-[0.16em] text-[0.6875rem] text-[var(--text-muted)]">
-            vehicles available
+      <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        {/* Figure over caption, matching the hero stats. Set inline at one size
+            the number never read as a figure. */}
+        <p className="flex flex-col gap-1.5">
+          <span className="numeric text-[clamp(1.5rem,2.4vw,1.875rem)] font-medium leading-none tracking-[-0.02em] text-[var(--gold-text)]">
+            {sortedVehicles.length}
           </span>
-        </div>
+          <span className="text-[0.625rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+            Vehicles available
+          </span>
+        </p>
         <div className="flex items-center gap-3">
-          <label htmlFor="vehicle-sort" className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+          <span aria-hidden="true" className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
             Sort
-          </label>
-          <select
-            id="vehicle-sort"
+          </span>
+          <SortSelect<SortOption>
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="h-11 min-w-[10rem] cursor-pointer rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[var(--gold)]/25 [&>option]:text-[#1a1917] [&>option]:bg-[#f8f6f3]"
-          >
-            {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
-              <option key={opt} value={opt}>{SORT_LABELS[opt]}</option>
-            ))}
-          </select>
+            options={SORT_OPTIONS}
+            labels={SORT_LABELS}
+            onChange={setSortBy}
+            label="Sort"
+          />
         </div>
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
-          className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={reduceMotion ? undefined : { opacity: 1 }}
-          exit={reduceMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          className="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3"
+          initial={{ opacity: reduceMotion ? 1 : 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: reduceMotion ? 1 : 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2 }}
           key={`${activeCategory}-${sortBy}-${currentPage}`}
         >
           {paginatedVehicles.map((vehicleType, index) => (

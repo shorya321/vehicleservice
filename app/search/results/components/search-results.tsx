@@ -5,13 +5,13 @@ import { SearchResult } from '../actions'
 import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
 import { EmptyState } from './empty-state'
 import { ResultsGuestPicker } from './results-guest-picker'
+import { ResultsDatePicker } from './results-date-picker'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZonesList } from '@/components/search/zones-list'
-import { Calendar, Clock, MapPin, SlidersHorizontal, X } from 'lucide-react'
+import { Clock, MapPin, SlidersHorizontal, X } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { format } from 'date-fns'
-import { formatPrice } from '@/lib/currency/format'
+import { formatResultPrice } from './format-result-price'
 import { useCurrency } from '@/lib/currency/context'
 
 const filterStaggerVariants = {
@@ -23,6 +23,16 @@ const filterGroupVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const } },
 }
+
+const RAIL_LABEL =
+  'text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]'
+
+/**
+ * Left-aligned sibling of the hero's `.hero-trust` strip. Same 4px gold dot and
+ * same three promises the home page already publishes, restated at the point
+ * where the vehicle is actually chosen rather than four sections earlier.
+ */
+const RESULT_GUARANTEES = ['Fixed price at booking', 'Free cancellation', '24/7 support'] as const
 
 interface SearchResultsProps {
   results: SearchResult | null
@@ -135,71 +145,96 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
 
     return (
     <div className="space-y-12 lg:space-y-16">
-      <h1 className="sr-only">{routeHeading}</h1>
       <motion.section
-        className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.15)] py-8 lg:py-10 px-6 lg:px-8"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        aria-label={routeHeading}
+        // See the note in vehicle-type-grid-card: `animate` must always be
+        // supplied or reduced-motion users never see this section at all.
+        initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: prefersReducedMotion ? 0 : 0.5,
+          delay: prefersReducedMotion ? 0 : 0.1,
+          ease: [0.16, 1, 0.3, 1],
+        }}
       >
-        <div className="grid gap-x-10 gap-y-6 sm:grid-cols-[2fr_auto_auto_auto] sm:items-end">
-          <div>
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--gold-text)]">
-              Route
-            </div>
-            <h1 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
-              {results.originName}
-              <span className="mx-2 text-[var(--gold-text)]" aria-hidden="true">→</span>
-              {results.destinationName}
-            </h1>
+        <p className="editorial-eyebrow">Route</p>
+
+        {/* The one h1 on the page. It used to share the role with an sr-only
+            copy above it, so the route was announced twice. */}
+        <h1 className="mt-[1.15rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)]">
+          {results.originName}
+          <span className="mx-3 font-normal text-[var(--gold-text)]" aria-hidden="true">→</span>
+          {results.destinationName}
+        </h1>
+
+        {(zoneLabel || (results.type !== 'zone' && results.distance)) && (
+          <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.8125rem] text-[var(--text-secondary)]">
             {zoneLabel && (
-              <p className="mt-2 text-[0.75rem] text-[var(--text-muted)]">
-                <MapPin className="mr-1 inline-block h-3 w-3 text-[var(--gold-text)]" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
                 {zoneLabel}
-              </p>
+              </span>
             )}
+            {/* The route name itself is the h1 directly above, so this line
+                carries distance only and no longer repeats it. */}
             {results.type !== 'zone' && results.distance && (
-              <p className="mt-3 flex items-baseline gap-4 text-[0.8125rem] text-[var(--text-secondary)]">
-                <span className="flex items-baseline gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                  <span className="numeric font-medium">{results.distance} km</span>
-                </span>
-                <span className="flex items-baseline gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                  <span>{results.originName} → {results.destinationName}</span>
-                </span>
-              </p>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                <span className="numeric font-medium">{results.distance} km</span>
+              </span>
             )}
+          </p>
+        )}
+
+        {/* Equal-height cells. The previous four-cell row was bottom-aligned,
+            and the Guests cell is taller because it holds a control, so the
+            Date and price labels sat below the Guests label. */}
+        <dl className="mt-7 grid grid-cols-2 gap-y-5 border-t border-[var(--graphite)] pt-5 sm:grid-cols-3">
+          <div className="pr-4">
+            <dt className={RAIL_LABEL}>Date</dt>
+            {/* Editable, like Guests beside it. The two values in this rail
+                used to behave differently: the only way to shift the trip by a
+                day was to go back to the home page and search again. */}
+            <dd className="mt-1">
+              <ResultsDatePicker searchParams={searchParams} />
+            </dd>
           </div>
 
-          <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              Date
-            </div>
-            <div className="numeric mt-1.5 flex items-center gap-1.5 text-[1rem] text-[var(--text-primary)]">
-              <Calendar className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-              {searchParams.date ? format(new Date(searchParams.date), 'EEE · d MMM yyyy') : '-'}
-            </div>
+          <div className="border-l border-[var(--graphite)] pl-4 sm:pl-[clamp(1rem,3vw,2rem)]">
+            <dt className={RAIL_LABEL}>Guests</dt>
+            {/* Guests is the one editable value in this rail. Its default
+                trigger is a full-width bordered box, which read as a stray form
+                field between two plain-text cells. A dashed gold underline
+                keeps the affordance and lets it sit at the same weight as its
+                neighbours. */}
+            <dd className="mt-1">
+              <ResultsGuestPicker
+                searchParams={searchParams}
+                className="inline-flex min-h-9 items-center gap-1.5 border-b border-dashed border-[rgba(var(--gold-rgb),0.45)] bg-transparent pb-0.5 text-[1.0625rem] text-[var(--text-primary)] transition-colors hover:border-[var(--gold-text)]"
+              />
+            </dd>
           </div>
 
-          <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              Guests
-            </div>
-            <div className="mt-1.5">
-              <ResultsGuestPicker searchParams={searchParams} />
-            </div>
-          </div>
-
-          <div className="border-t border-[var(--graphite)] pt-4 sm:border-t-0 sm:border-l sm:border-[var(--graphite)] sm:pl-8 sm:pt-0">
-            <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          <div className="col-span-2 border-t border-[var(--graphite)] pt-5 sm:col-span-1 sm:border-l sm:border-t-0 sm:pl-[clamp(1rem,3vw,2rem)] sm:pt-0">
+            <dt className={RAIL_LABEL}>
               {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
-            </div>
-            <div className="numeric mt-1.5 flex items-center text-[1rem] font-semibold text-[var(--gold-text)]">
-              {formatPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
-            </div>
+            </dt>
+            <dd className="numeric mt-2 text-[1.0625rem] font-semibold text-[var(--gold-text)]">
+              {formatResultPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
+            </dd>
           </div>
-        </div>
+        </dl>
+
+        <ul className="mt-6 flex list-none flex-wrap items-center gap-x-5 gap-y-1.5 p-0 text-[0.6875rem] font-medium uppercase tracking-[0.11em] text-[var(--text-muted)]">
+          {RESULT_GUARANTEES.map((guarantee) => (
+            <li
+              key={guarantee}
+              className="inline-flex items-center gap-2 before:h-1 before:w-1 before:flex-none before:rounded-full before:bg-[var(--gold)] before:opacity-[0.65] before:content-['']"
+            >
+              {guarantee}
+            </li>
+          ))}
+        </ul>
       </motion.section>
 
       {/* Filter bar */}
@@ -276,9 +311,9 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
       {hasActiveFilters && filteredByCategory.length === 0 ? (
         <motion.div
           className="py-12 text-center"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
           <p className="text-[0.875rem] text-[var(--text-secondary)]">No vehicles match your filters.</p>
           <button
