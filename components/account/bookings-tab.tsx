@@ -89,10 +89,13 @@ export function BookingsTab({ userId }: BookingsTabProps) {
     setFilters((prev) => ({ ...prev, page: newPage }))
   }
 
+  // "completed" read booking_status here while the row badges read payment_status,
+  // so "0 completed" could sit directly above rows badged "completed". Travelled
+  // cannot be confused with a payment that cleared.
   const inlineStats = useMemo(() => [
-    { label: "total", value: stats.total },
-    { label: "upcoming", value: stats.upcoming, color: "var(--status-confirmed-text)" },
-    { label: "completed", value: stats.completed, color: "var(--status-completed-text)" },
+    { label: "booked", value: stats.total },
+    { label: "upcoming", value: stats.upcoming },
+    { label: "travelled", value: stats.completed },
     { label: "cancelled", value: stats.cancelled, color: "var(--status-cancelled-text)" },
   ], [stats.total, stats.upcoming, stats.completed, stats.cancelled])
 

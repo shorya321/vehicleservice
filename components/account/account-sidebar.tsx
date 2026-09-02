@@ -4,7 +4,7 @@ import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Camera, Building2, ChevronRight, Clock, CheckCircle2, XCircle } from "lucide-react"
+import { Camera, Clock, CheckCircle2, XCircle } from "lucide-react"
 import { uploadAvatar } from "@/app/account/actions"
 import { toast } from "sonner"
 import { NAV_ITEMS, type TabId } from "./account-nav"
@@ -37,7 +37,7 @@ interface AccountSidebarProps {
 export function AccountSidebar({ user, activeTab, onTabChange, unreadNotifications, vendorApplication }: AccountSidebarProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url)
-  const completion = calculateCompletion(user)
+  const profileComplete = calculateCompletion(user) === 100
 
   const memberSince = new Date(user.created_at).toLocaleDateString("en-US", { timeZone: getBookingTimezone(), 
     month: "long",
@@ -85,12 +85,12 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
                   <Image
                     src={avatarUrl}
                     alt={user.full_name || "User"}
-                    width={56}
-                    height={56}
+                    width={96}
+                    height={96}
                     className="object-cover w-full h-full"
                   />
                 ) : (
-                  <span className="text-lg font-medium text-[var(--gold-text)]">
+                  <span className="text-base font-medium text-[var(--gold-text)]">
                     {user.full_name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                   </span>
                 )}
@@ -115,25 +115,37 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
             </label>
           </div>
           <div className="min-w-0">
-            <p className="text-[1.375rem] font-semibold text-[var(--text-primary)] leading-tight truncate">
+            <p className="text-[1.125rem] font-medium leading-snug text-[var(--text-primary)] [overflow-wrap:anywhere]">
               {user.full_name || "Welcome"}
             </p>
-            <p className="text-sm text-[var(--text-secondary)] truncate">{user.email}</p>
+            <p className="text-[0.8125rem] leading-snug text-[var(--text-muted)] [overflow-wrap:anywhere]">
+              {user.email}
+            </p>
           </div>
         </div>
 
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="account-label">Member since {memberSince}</span>
-            <span className="text-xs font-medium text-[var(--gold-text)] tabular-nums">{completion}%</span>
+        {/* A progress bar tells a customer they are incomplete. A record of
+            what they have travelled tells them they are known. Same space. */}
+        <dl className="account-dl account-dl-inline mt-5">
+          <div>
+            <dt>Member since</dt>
+            <dd>{memberSince}</dd>
           </div>
-          <div className="w-full h-1.5 bg-[var(--charcoal)] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[var(--gold)] transition-all duration-200"
-              style={{ width: `${completion}%` }}
-            />
-          </div>
-        </div>
+          {profileComplete ? null : (
+            <div>
+              <dt>Profile</dt>
+              <dd>
+                <button
+                  type="button"
+                  onClick={() => onTabChange("personal")}
+                  className="account-action"
+                >
+                  Finish setup
+                </button>
+              </dd>
+            </div>
+          )}
+        </dl>
       </div>
 
       {/* Zone B: Navigation */}
@@ -170,14 +182,12 @@ function VendorCTACompact({ vendorApplication }: { vendorApplication: AccountSid
   if (!vendorApplication) {
     return (
       <div className="account-sidebar-zone">
-        <Link
-          href="/become-vendor"
-          className="account-nav-item group"
-        >
-          <Building2 className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left">Become a Vendor</span>
-          <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--gold-text)] transition-colors" />
+        <Link href="/become-vendor" className="account-action">
+          Partner with Infinia
         </Link>
+        <p className="mt-2 text-[0.75rem] leading-relaxed text-[var(--text-muted)]">
+          Run a fleet in the UAE? List your vehicles and take bookings through us.
+        </p>
       </div>
     )
   }
@@ -195,8 +205,8 @@ function VendorCTACompact({ vendorApplication }: { vendorApplication: AccountSid
     <div className="account-sidebar-zone">
       <Link href={config.href} className="account-nav-item group">
         <config.icon className={`w-4 h-4 flex-shrink-0 ${config.className}`} />
-        <span className="flex-1 text-left">{vendorApplication.business_name || "Vendor Application"}</span>
-        <span className={`account-label ${config.className}`}>{config.label}</span>
+        <span className="flex-1 text-left truncate">{vendorApplication.business_name || "Vendor Application"}</span>
+        <span className={`account-label flex-shrink-0 ${config.className}`}>{config.label}</span>
       </Link>
     </div>
   )

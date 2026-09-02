@@ -31,6 +31,11 @@ export interface BookingListItem {
   payment_status: string
   total_price: number
   currency: string
+  /** Already returned by getBookings' select("*"). Needed for the rebook link,
+   *  because /search/results resolves locations by id, not by address text. */
+  from_location_id?: string | null
+  to_location_id?: string | null
+  passenger_count?: number | null
   vehicle_type?: { name: string; image_url?: string } | null
   booking_assignments?: Array<{
     status: string

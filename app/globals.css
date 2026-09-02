@@ -949,7 +949,7 @@
 
   .btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--obsidian), 0 0 0 4px var(--gold);
+    box-shadow: 0 0 0 2px var(--black-void), 0 0 0 4px var(--gold);
   }
 
   .btn-secondary {
@@ -1011,9 +1011,9 @@
 
   .form-label {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.6875rem;
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--gold-text);
     margin-bottom: var(--space-sm);
@@ -4085,8 +4085,9 @@
 .account-layout {
   display: grid;
   grid-template-columns: 1fr;
-  min-height: calc(100vh - 200px);
-  overflow-x: hidden;
+  /* clip, not hidden: hidden makes this a scroll container, which becomes the
+     sticky rail's containing block and offsets it by its own top value. */
+  overflow-x: clip;
 }
 
 @media (min-width: 1024px) {
@@ -4099,23 +4100,22 @@
 /* Sidebar */
 .account-sidebar {
   position: sticky;
-  top: 0;
+  top: 6rem;
   display: flex;
   flex-direction: column;
   height: fit-content;
-  max-height: 100vh;
-  background: var(--black-rich);
-  border-right: 1px solid var(--border-default);
-  border-radius: 8px;
+  max-height: calc(100vh - 8rem);
+  border-right: 1px solid var(--border-subtle);
+  padding-right: var(--space-xl);
   overflow-y: auto;
 }
 
 .account-sidebar-zone {
-  padding: var(--space-lg);
+  padding: var(--space-lg) 0;
 }
 
 .account-sidebar-zone:first-child {
-  padding: var(--space-xl);
+  padding-top: 0;
 }
 
 .account-sidebar-zone + .account-sidebar-zone {
@@ -4123,9 +4123,11 @@
 }
 
 /* Avatar */
+/* 48px, not 72px. The name sits beside it in a 280px column, and at 72px the
+   name and email had no room left and truncated on a 1440px screen. */
 .account-avatar-ring {
-  width: 72px;
-  height: 72px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   padding: 2px;
   background: var(--gold);
@@ -4145,9 +4147,9 @@
 
 /* Label style (uppercase, tracked) */
 .account-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -4164,10 +4166,10 @@
   border: none;
   border-radius: 4px;
   font-size: 0.875rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
-  transition: background-color 150ms var(--ease-luxury), color 150ms var(--ease-luxury);
+  transition: background-color 200ms var(--ease-luxury), color 200ms var(--ease-luxury);
 }
 
 .account-nav-item:hover {
@@ -4178,7 +4180,6 @@
 .account-nav-item.active {
   background: rgba(var(--gold-rgb), 0.1);
   color: var(--gold-text);
-  font-weight: 600;
 }
 
 .account-nav-item:focus-visible {
@@ -4210,8 +4211,8 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding: var(--space-xs) 0 var(--space-md);
-  mask-image: linear-gradient(to right, black 85%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
   scroll-snap-type: x proximity;
 }
 
@@ -4233,7 +4234,7 @@
   white-space: nowrap;
   min-height: 44px;
   cursor: pointer;
-  transition: background-color 150ms var(--ease-luxury), color 150ms var(--ease-luxury);
+  transition: background-color 200ms var(--ease-luxury), color 200ms var(--ease-luxury);
   scroll-snap-align: center;
 }
 
@@ -4245,7 +4246,6 @@
 .account-pill.active {
   background: rgba(var(--gold-rgb), 0.1);
   color: var(--gold-text);
-  font-weight: 600;
 }
 
 .account-pill:focus-visible {
@@ -4256,7 +4256,6 @@
 /* Content Area */
 .account-content {
   min-width: 0;
-  min-height: calc(100vh - 200px);
   padding: 0 var(--space-md);
 }
 
@@ -4306,23 +4305,24 @@
 /* Item Card Pattern: aligned with luxury-card vocabulary */
 .account-item-card {
   padding: var(--space-lg);
-  background: linear-gradient(135deg, rgba(var(--charcoal-rgb), 0.5) 0%, rgba(var(--warm-rgb), 0.3) 100%);
-  border: 1px solid rgba(var(--gold-rgb), 0.1);
-  border-radius: 12px;
-  transition: border-color 200ms var(--ease-luxury), transform 200ms var(--ease-luxury), box-shadow 200ms var(--ease-luxury);
+  background: var(--black-rich);
+  border: 1px solid rgba(var(--gold-rgb), 0.12);
+  border-radius: 8px;
+  transition: border-color 200ms var(--ease-luxury), background-color 200ms var(--ease-luxury);
 }
 
-.account-item-card:hover {
+/* A lift is a click affordance. Only rows that actually open something get one,
+   and the step is in tone rather than in elevation. */
+.account-item-card-interactive:hover {
+  background: var(--black-warm);
   border-color: rgba(var(--gold-rgb), 0.25);
-  transform: translateY(-4px);
-  box-shadow: 0 10px 24px -8px rgba(var(--gold-rgb), 0.18);
 }
 
 /* Account Eyebrow: editorial label with gold rule */
 .account-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.18em;
@@ -4333,7 +4333,7 @@
 
 .account-eyebrow::before {
   content: '';
-  width: 20px;
+  width: 28px;
   height: 1px;
   background-color: var(--gold);
 }
@@ -4351,6 +4351,10 @@
   border-top: 1px solid var(--border-subtle);
 }
 
+.account-section-header {
+  margin-bottom: var(--space-lg);
+}
+
 .account-section-title {
   font-size: clamp(1.5rem, 2.5vw, 2rem);
   font-weight: 600;
@@ -4364,8 +4368,166 @@
   line-height: 1.7;
   color: var(--text-secondary);
   margin-top: var(--space-sm);
-  margin-bottom: var(--space-lg);
   max-width: 65ch;
+}
+
+/* ============================================
+   Account patterns carried over from the booking
+   confirmation, so the two surfaces read as one
+   product. See app/booking/confirmation/components/
+   confirmation-content.tsx for the originals.
+   ============================================ */
+
+/* Route rail: gold ringed dots on a hairline connector. Replaces two
+   isolated dots that were coloured green for pickup and red for the
+   destination, which put the end of a journey in the cancellation colour. */
+.account-route {
+  position: relative;
+  display: grid;
+  gap: 0.6rem;
+  padding-left: 1.55rem;
+}
+
+.account-route::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0.85rem;
+  bottom: 0.85rem;
+  width: 1px;
+  background: rgba(var(--gold-rgb), 0.5);
+}
+
+.account-route-stop {
+  position: relative;
+  min-width: 0;
+}
+
+.account-route-stop::before {
+  content: '';
+  position: absolute;
+  left: -1.55rem;
+  top: 0.4rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  background: var(--black-rich);
+}
+
+/* Segment value. Title role at 1.0625rem / 500, matching SEGMENT_VALUE. */
+.account-route-value {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+/* Status chip. One system, replacing two badge implementations that ran
+   three casings and four semantic hues on a single row. */
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--charcoal);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+  white-space: nowrap;
+}
+
+/* The one place a second colour is spent: something needs the customer. */
+.account-chip-alert {
+  background: var(--status-cancelled-bg);
+  border-color: var(--status-cancelled-border);
+  color: var(--error-text);
+}
+
+/* Booking reference. .numeric with tracking, not the only monospace on the site. */
+.account-ref {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Hairline label and value rows. Used for the standing block in the rail and
+   for the trust rail beneath the content, both in the GuaranteeList shape. */
+.account-dl > div {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.account-dl > div:last-child {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.account-dl dt {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.account-dl dd {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Inline variant: label left, value right, on one line. */
+.account-dl-inline > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-dl-inline dd {
+  text-align: right;
+}
+
+/* Stacked variant: label above a sentence of body copy. */
+.account-dl-stacked dd {
+  margin-top: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+/* Text link CTA. Mirrors .editorial-action rather than adding a fourth
+   button weight to the page. */
+.account-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size var(--duration-fast) var(--ease-luxury);
+}
+
+.account-action:hover {
+  background-size: 100% 1px;
 }
 
 /* Skeleton loading */
@@ -4430,9 +4592,8 @@
     animation: none;
     background: rgba(var(--charcoal-rgb), 0.7);
   }
-  .account-item-card:hover {
+  .btn-primary:hover {
     transform: none;
-    box-shadow: none;
   }
   .account-tab-enter,
   .account-overlay-enter,

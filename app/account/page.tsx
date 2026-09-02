@@ -96,7 +96,7 @@ export default async function AccountPage({
   return (
     <PublicLayout>
       <div className="bg-[var(--black-void)]">
-        <div className="luxury-container py-8 md:py-12">
+        <div className="luxury-container pt-[clamp(3rem,7vw,5rem)] pb-[clamp(4rem,9vw,6.5rem)]">
           <AccountClient
             initialTab={tab}
             user={{

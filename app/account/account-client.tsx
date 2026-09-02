@@ -10,7 +10,9 @@ import { PreferencesTab } from "@/components/account/preferences-tab"
 import { BookingsTab } from "@/components/account/bookings-tab"
 import { ReviewsTab } from "@/components/account/reviews-tab"
 import { NotificationsTab } from "@/components/account/notifications-tab"
+import { AccountTrustRail } from "@/components/account/trust-rail"
 import { VALID_TABS, type TabId } from "@/components/account/account-nav"
+import { getBookingTimezone } from "@/lib/utils/timezone"
 
 interface AccountClientProps {
   initialTab?: string
@@ -85,8 +87,28 @@ export function AccountClient({
     return () => window.removeEventListener("popstate", onPopState)
   }, [])
 
+  const memberSince = new Date(user.created_at).toLocaleDateString("en-US", {
+    timeZone: getBookingTimezone(),
+    month: "long",
+    year: "numeric",
+  })
+
   return (
-    <div className="account-layout">
+    <>
+      {/* The page had no heading of any kind, so the largest type on it belonged
+          to a tab. This is the CheckoutHeading recipe, so the account now opens
+          the way checkout and the booking confirmation do. */}
+      <header className="mb-[clamp(2rem,5vw,3rem)]">
+        <p className="account-eyebrow">Account</p>
+        <h1 className="mt-[0.4rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
+          {user.full_name || "Your account"}
+        </h1>
+        <p className="mt-3 text-[0.9375rem] text-[var(--text-secondary)] tabular-nums">
+          Member since {memberSince}
+        </p>
+      </header>
+
+      <div className="account-layout">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AccountSidebar
@@ -126,7 +148,13 @@ export function AccountClient({
         <div className={activeTab === "notifications" ? "account-tab-active" : "account-tab-hidden"}>
           <NotificationsTab userId={user.id} />
         </div>
+
+        {/* This is the page a customer opens when something has gone wrong, and
+            it carried no guarantee, no cancellation window and no way to reach
+            anyone. Ported from the confirmation page's GuaranteeList. */}
+        <AccountTrustRail />
       </main>
-    </div>
+      </div>
+    </>
   )
 }

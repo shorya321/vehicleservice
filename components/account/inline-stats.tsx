@@ -1,6 +1,11 @@
 interface StatItem {
   label: string
   value: number
+  /**
+   * Reserved for a figure that genuinely needs attention. A zero never gets one:
+   * "0 cancelled" is good news, and painting it in the alarm colour said the
+   * opposite. Colour only lands when the value is non zero.
+   */
   color?: string
 }
 
@@ -10,19 +15,21 @@ interface InlineStatsProps {
 
 export function InlineStats({ stats }: InlineStatsProps) {
   return (
-    <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap" role="group" aria-label="Statistics">
-      {stats.map((stat, i) => (
-        <span key={stat.label} className="flex items-center gap-0.5 sm:gap-1">
-          {i > 0 && <span className="text-[var(--text-muted)] mx-0.5 sm:mx-1" aria-hidden="true">&middot;</span>}
-          <span
-            className={`text-sm sm:text-base font-semibold tabular-nums lining-nums ${stat.color ? '' : 'text-[var(--text-primary)]'}`}
-            style={stat.color ? { color: stat.color } : undefined}
-          >
-            {stat.value}
+    <div className="flex items-baseline gap-x-4 gap-y-1 flex-wrap" role="group" aria-label="Statistics">
+      {stats.map((stat) => {
+        const emphasise = Boolean(stat.color) && stat.value > 0
+        return (
+          <span key={stat.label} className="flex items-baseline gap-1.5">
+            <span
+              className={`text-base font-semibold tabular-nums lining-nums ${emphasise ? "" : "text-[var(--text-primary)]"}`}
+              style={emphasise ? { color: stat.color } : undefined}
+            >
+              {stat.value}
+            </span>
+            <span className="account-label">{stat.label}</span>
           </span>
-          <span className="text-xs text-[var(--text-muted)] uppercase tracking-[0.12em]">{stat.label}</span>
-        </span>
-      ))}
+        )
+      })}
     </div>
   )
 }

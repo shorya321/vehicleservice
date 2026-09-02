@@ -71,10 +71,20 @@ export function AccountMobileHeader({ user, activeTab, onTabChange, unreadNotifi
             </span>
           )}
         </div>
-        <p className="text-[1.125rem] font-medium text-[var(--text-primary)] truncate flex-1">
-          {user.full_name || "Welcome"}
+        {/* No name here: the page heading directly above already carries it,
+            and repeating it just crowded the email out of the row. */}
+        <p className="min-w-0 flex-1 truncate text-[0.8125rem] leading-snug text-[var(--text-muted)]">
+          {user.email}
         </p>
-        <span className="text-xs font-medium text-[var(--gold-text)] tabular-nums flex-shrink-0">{completion}%</span>
+        {completion < 100 && (
+          <button
+            type="button"
+            onClick={() => onTabChange("personal")}
+            className="account-action flex-shrink-0"
+          >
+            Finish setup
+          </button>
+        )}
       </div>
 
       {/* Pill Navigation */}

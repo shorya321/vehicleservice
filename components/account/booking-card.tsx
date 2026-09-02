@@ -1,10 +1,10 @@
 "use client"
 
 import { memo, useMemo } from "react"
-import { Calendar, Clock, Car, ChevronRight, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import Link from "next/link"
 import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from '@/lib/currency/context'
-import { getBookingTimezone } from '@/lib/utils/timezone'
+import { getBookingTimezone, bookingToday } from '@/lib/utils/timezone'
 import type { BookingListItem } from "./types"
 
 interface BookingCardProps {
@@ -12,29 +12,56 @@ interface BookingCardProps {
   onClick: () => void
 }
 
-const STATUS_CONFIG: Record<string, { style: string; icon: typeof Clock }> = {
-  confirmed: { style: "bg-[var(--status-confirmed-bg)] text-[var(--status-confirmed-text)] border-[var(--status-confirmed-border)]", icon: CheckCircle2 },
-  completed: { style: "bg-[var(--status-completed-bg)] text-[var(--status-completed-text)] border-[var(--status-completed-border)]", icon: CheckCircle2 },
-  cancelled: { style: "bg-[var(--status-cancelled-bg)] text-[var(--status-cancelled-text)] border-[var(--status-cancelled-border)]", icon: XCircle },
-  pending: { style: "bg-[var(--status-pending-bg)] text-[var(--status-pending-text)] border-[var(--status-pending-border)]", icon: Clock },
+/**
+ * One chip, not two. The card previously carried a booking status badge and a
+ * payment status badge side by side, both as semantic fills, so a single row
+ * put blue, green and amber next to gold. Booking status is the chip; payment
+ * only speaks when it wants something, which is what makes the colour mean
+ * anything when it does appear.
+ */
+const STATUS_LABEL: Record<string, string> = {
+  confirmed: "Confirmed",
+  completed: "Travelled",
+  cancelled: "Cancelled",
+  pending: "Pending",
+  assigned: "Confirmed",
 }
 
-const PAYMENT_CONFIG: Record<string, { style: string; icon: typeof Clock }> = {
-  completed: { style: "bg-[var(--status-completed-bg)] text-[var(--status-completed-text)] border-[var(--status-completed-border)]", icon: CheckCircle2 },
-  processing: { style: "bg-[var(--status-processing-bg)] text-[var(--status-processing-text)] border-[var(--status-processing-border)]", icon: Clock },
-  failed: { style: "bg-[var(--status-failed-bg)] text-[var(--status-failed-text)] border-[var(--status-failed-border)]", icon: AlertCircle },
-  refunded: { style: "bg-[var(--status-refunded-bg)] text-[var(--status-refunded-text)] border-[var(--status-refunded-border)]", icon: AlertCircle },
+/**
+ * Only states that want something from the customer, or that they would be
+ * surprised not to see. "processing" is transient and the booking status
+ * already covers it, so surfacing it just puts a second chip back on the row.
+ */
+const PAYMENT_LABEL: Record<string, string> = {
+  pending: "Payment pending",
+  failed: "Payment failed",
+  refunded: "Refunded",
+}
+
+/** Sentence case for anything the maps above do not name, never raw DB casing. */
+function titleCase(value: string): string {
+  if (!value) return ""
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
 }
 
 export const BookingCard = memo(function BookingCard({ booking, onClick }: BookingCardProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
 
-  const { formattedDate, formattedTime } = useMemo(() => {
+  /** Date and time were split across two grid columns. They are one fact. */
+  const formattedWhen = useMemo(() => {
     const d = new Date(booking.pickup_datetime)
-    return {
-      formattedDate: d.toLocaleDateString("en-US", { timeZone: getBookingTimezone(), weekday: "short", month: "short", day: "numeric" }),
-      formattedTime: d.toLocaleTimeString("en-US", { timeZone: getBookingTimezone(), hour: "2-digit", minute: "2-digit" }),
-    }
+    const date = d.toLocaleDateString("en-US", {
+      timeZone: getBookingTimezone(),
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    })
+    const time = d.toLocaleTimeString("en-US", {
+      timeZone: getBookingTimezone(),
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    return `${date} at ${time}`
   }, [booking.pickup_datetime])
 
   const formattedPrice = useMemo(
@@ -45,85 +72,86 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
   const assignment = booking.booking_assignments?.[0]
   const vendorName = assignment?.vendor?.business_name
 
-  const bookingStatusConfig = STATUS_CONFIG[booking.booking_status] || STATUS_CONFIG.pending
-  const BookingStatusIcon = bookingStatusConfig.icon
-  const paymentConfig = PAYMENT_CONFIG[booking.payment_status] || PAYMENT_CONFIG.processing
-  const PaymentIcon = paymentConfig.icon
+  const statusLabel = STATUS_LABEL[booking.booking_status] ?? titleCase(booking.booking_status)
+  const isCancelled = booking.booking_status === "cancelled"
 
-  const dateIconColor = booking.booking_status === "cancelled"
-    ? "text-[var(--text-muted)]"
-    : booking.booking_status === "completed"
-      ? "text-[var(--status-completed-text)]"
-      : "text-[var(--status-confirmed-text)]"
+  /** Hidden on the happy path. Anything abnormal still surfaces. */
+  const paymentLabel = booking.payment_status
+    ? PAYMENT_LABEL[booking.payment_status] ?? null
+    : null
+  const paymentNeedsAction =
+    booking.payment_status === "failed" || booking.payment_status === "pending"
+
+  /**
+   * Rebooking a route already travelled is the highest intent action a
+   * returning customer has. /search/results needs location ids rather than
+   * addresses, so the link only renders when the booking carries both.
+   */
+  const rebookHref = useMemo(() => {
+    if (!booking.from_location_id || !booking.to_location_id) return null
+    const params = new URLSearchParams({
+      from: booking.from_location_id,
+      to: booking.to_location_id,
+      date: bookingToday(),
+      passengers: String(booking.passenger_count && booking.passenger_count > 0 ? booking.passenger_count : 1),
+    })
+    return `/search/results?${params.toString()}`
+  }, [booking.from_location_id, booking.to_location_id, booking.passenger_count])
+
+  const reference = booking.trip_number || booking.booking_number
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full account-item-card text-left group"
-      aria-label={`View booking ${booking.trip_number || booking.booking_number}`}
-    >
-      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-        {/* Left: Route Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className="text-sm font-mono text-[var(--gold-text)] min-w-0 truncate max-w-full">#{booking.trip_number || booking.booking_number}</span>
-            <span aria-label={`Booking status: ${booking.booking_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 flex-shrink-0 ${bookingStatusConfig.style}`}>
-              <BookingStatusIcon className="w-3 h-3" />
-              {booking.booking_status}
-            </span>
-            <span aria-label={`Payment: ${booking.payment_status}`} className={`px-2 py-0.5 text-xs font-medium rounded border inline-flex items-center gap-1 flex-shrink-0 ${paymentConfig.style}`}>
-              <PaymentIcon className="w-3 h-3" />
-              {booking.payment_status}
-            </span>
-          </div>
+    <div className="account-item-card account-item-card-interactive">
+      <button
+        onClick={onClick}
+        className="w-full text-left"
+        aria-label={`View booking ${reference}`}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+          {/* Reference, status, route, and when. One reading order at every width. */}
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="account-ref">{reference}</span>
+              <span className={`account-chip ${isCancelled ? "account-chip-alert" : ""}`}>
+                {statusLabel}
+              </span>
+              {paymentLabel && (
+                <span className={`account-chip ${paymentNeedsAction ? "account-chip-alert" : ""}`}>
+                  {paymentLabel}
+                </span>
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-[var(--status-completed-bg)] flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
-                <div className="w-2 h-2 rounded-full bg-[var(--status-completed-text)]" />
+            <div className="account-route">
+              <div className="account-route-stop">
+                <p className="account-route-value">{booking.pickup_address}</p>
               </div>
-              <p className="text-sm text-[var(--text-primary)] truncate">{booking.pickup_address}</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-[var(--status-cancelled-bg)] flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
-                <div className="w-2 h-2 rounded-full bg-[var(--error-text)]" />
+              <div className="account-route-stop">
+                <p className="account-route-value">{booking.dropoff_address}</p>
               </div>
-              <p className="text-sm text-[var(--text-primary)] truncate">{booking.dropoff_address}</p>
             </div>
-          </div>
-        </div>
 
-        {/* Middle: Date/Time & Vehicle */}
-        <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-2 sm:gap-4 lg:gap-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] tabular-nums">
-            <Calendar className={`w-4 h-4 ${dateIconColor}`} />
-            <span>{formattedDate}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] tabular-nums">
-            <Clock className={`w-4 h-4 ${dateIconColor}`} />
-            <span>{formattedTime}</span>
-          </div>
-          {booking.vehicle_type && (
-            <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-              <Car className="w-4 h-4 text-[var(--gold-text)]" />
-              <span>{booking.vehicle_type.name}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Price & Arrow */}
-        <div className="flex items-center justify-between lg:justify-end gap-4">
-          <div className="text-right">
-            <p className="text-lg font-semibold text-[var(--gold-text)] tabular-nums lining-nums">
-              {formattedPrice}
+            <p className="text-[0.75rem] leading-snug text-[var(--text-muted)] tabular-nums">
+              {formattedWhen}
+              {booking.vehicle_type?.name ? ` · ${booking.vehicle_type.name}` : ""}
             </p>
-            {vendorName && (
-              <p className="text-xs text-[var(--text-muted)]">{vendorName}</p>
-            )}
           </div>
-          <ChevronRight className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--gold)] transition-colors" />
+
+          {/* The figure the customer opened the page to check. */}
+          <div className="flex flex-shrink-0 flex-col items-start gap-1 sm:items-end sm:text-right">
+            <span className="t-price">{formattedPrice}</span>
+            {vendorName && <span className="text-xs text-[var(--text-muted)]">{vendorName}</span>}
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+
+      {rebookHref && (
+        <div className="mt-4 border-t border-[var(--border-subtle)] pt-3">
+          <Link href={rebookHref} className="account-action">
+            Book this route again
+          </Link>
+        </div>
+      )}
+    </div>
   )
 })
