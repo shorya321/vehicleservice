@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   companyName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: pdfColors.primary,
+    color: pdfColors.goldText,
     marginBottom: 4,
   },
   companyInfo: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: pdfColors.primary,
+    color: pdfColors.goldText,
     textAlign: 'right',
   },
   headerSubtitle: {
@@ -97,6 +97,14 @@ const styles = StyleSheet.create({
     color: pdfColors.textLight,
     textAlign: 'right',
     marginTop: 2,
+  },
+  /**
+   * The shared pdfStyles.totalValue is still on pdfColors.primary, which the business wallet
+   * PDFs depend on. Overridden here rather than at the token, so this customer-facing invoice
+   * reads in brand gold without repainting those documents.
+   */
+  totalValue: {
+    color: pdfColors.goldText,
   },
 });
 
@@ -266,7 +274,7 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
         <View style={styles.summaryBox} wrap={false}>
           <View style={pdfStyles.totalRow}>
             <Text style={pdfStyles.totalLabel}>Total Paid</Text>
-            <Text style={pdfStyles.totalValue}>{data.totalDisplay}</Text>
+            <Text style={[pdfStyles.totalValue, styles.totalValue]}>{data.totalDisplay}</Text>
           </View>
           {data.showAedNote && (
             <Text style={{ fontSize: 8, color: pdfColors.textLight, marginTop: 6, textAlign: 'right' }}>

@@ -8,6 +8,17 @@ import { StyleSheet } from '@react-pdf/renderer';
 export const pdfColors = {
   primary: '#1e40af',
   secondary: '#64748b',
+  /**
+   * Brand gold, matching --gold in app/globals.css. Correct as a rule or a fill; too light to
+   * set type on the white PDF page.
+   */
+  gold: '#c6aa88',
+  /**
+   * Gold for TYPE on a light ground, matching --gold-text, which the site darkens from #c6aa88
+   * for exactly this reason. A PDF page is always the light theme, so document type that wants
+   * to read as gold uses this and never `gold` above.
+   */
+  goldText: '#6b5530',
   success: '#10b981',
   error: '#ef4444',
   warning: '#f59e0b',
