@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   companyName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: pdfColors.gold,
+    color: pdfColors.goldDeep,
     marginBottom: 4,
   },
   companyInfo: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: pdfColors.gold,
+    color: pdfColors.goldDeep,
     textAlign: 'right',
   },
   headerSubtitle: {
@@ -103,11 +103,12 @@ const styles = StyleSheet.create({
    * PDFs depend on. Overridden here rather than at the token, so this customer-facing invoice
    * reads in brand gold without repainting those documents.
    *
-   * The value is --gold itself, not the site's darkened --gold-text: the invoice is a brand
-   * document and has to carry the same gold the customer just saw on the confirmation page.
+   * The value is --gold-deep, the brand's own hover gold. --gold reads at 2.2:1 on the white
+   * page and looked washed out; --gold-text is a different hue family. This is the step on the
+   * brand's spectrum that stays recognisably the site's gold and still holds on paper.
    */
   totalValue: {
-    color: pdfColors.gold,
+    color: pdfColors.goldDeep,
   },
 });
 
