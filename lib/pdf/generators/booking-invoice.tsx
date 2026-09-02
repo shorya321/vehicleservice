@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   companyName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: pdfColors.goldText,
+    color: pdfColors.gold,
     marginBottom: 4,
   },
   companyInfo: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: pdfColors.goldText,
+    color: pdfColors.gold,
     textAlign: 'right',
   },
   headerSubtitle: {
@@ -102,9 +102,12 @@ const styles = StyleSheet.create({
    * The shared pdfStyles.totalValue is still on pdfColors.primary, which the business wallet
    * PDFs depend on. Overridden here rather than at the token, so this customer-facing invoice
    * reads in brand gold without repainting those documents.
+   *
+   * The value is --gold itself, not the site's darkened --gold-text: the invoice is a brand
+   * document and has to carry the same gold the customer just saw on the confirmation page.
    */
   totalValue: {
-    color: pdfColors.goldText,
+    color: pdfColors.gold,
   },
 });
 

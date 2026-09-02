@@ -9,14 +9,15 @@ export const pdfColors = {
   primary: '#1e40af',
   secondary: '#64748b',
   /**
-   * Brand gold, matching --gold in app/globals.css. Correct as a rule or a fill; too light to
-   * set type on the white PDF page.
+   * Brand gold, the exact --gold from app/globals.css and the gold a customer sees on the site.
+   * This is the invoice's accent, chosen so the document matches the brand rather than the
+   * site's light-mode text token. Note it measures 2.2:1 on the white page, so it is for the
+   * masthead, the title and the total only, never for body copy.
    */
   gold: '#c6aa88',
   /**
-   * Gold for TYPE on a light ground, matching --gold-text, which the site darkens from #c6aa88
-   * for exactly this reason. A PDF page is always the light theme, so document type that wants
-   * to read as gold uses this and never `gold` above.
+   * The darkened companion, matching --gold-text, which the site substitutes for gold TYPE on
+   * light grounds. Kept available for anything that must survive a greyscale print or meet AA.
    */
   goldText: '#6b5530',
   success: '#10b981',
