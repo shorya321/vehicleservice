@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, memo } from 'react'
+import { useState, memo, useEffect, useRef } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
 import { ArrowRight, Lock, ChevronUp, ChevronDown } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
@@ -46,6 +46,27 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
 
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const barRef = useRef<HTMLDivElement>(null)
+
+  /* `--sticky-bar-h` is what the form column pads itself by so the bar does not cover the
+     last field. It was read but never defined, so the 7rem fallback always won, and the
+     bar is taller than that once the terms checkbox appears on the last step. Publish the
+     real height instead. Set on the root so the wrapper can read it without a re-render. */
+  useEffect(() => {
+    const node = barRef.current
+    if (!node) return
+
+    const root = document.documentElement
+    const observer = new ResizeObserver(([entry]) => {
+      root.style.setProperty('--sticky-bar-h', `${entry.target.getBoundingClientRect().height}px`)
+    })
+    observer.observe(node)
+
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--sticky-bar-h')
+    }
+  }, [])
 
   const formattedDate = pickupDate
     ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -53,11 +74,16 @@ export const MobileStickyBar = memo(function MobileStickyBar({
 
   return (
     <motion.div
+      ref={barRef}
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-[rgba(var(--gold-rgb),0.12)] bg-[var(--charcoal)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      initial={reduceMotion ? false : { y: 60, opacity: 0 }}
-      animate={reduceMotion ? undefined : { y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      // `animate` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
+      // equivalent and is not: useReducedMotion() is false during SSR, so the
+      // offscreen state is serialised into the markup and never animated back
+      // once hydration flips the flag. Reduced motion collapses offset+duration.
+      initial={{ y: reduceMotion ? 0 : 60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: reduceMotion ? 0 : 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="px-4 py-3 space-y-3">
         {/* Route + Price + Toggle Row */}
@@ -90,10 +116,10 @@ export const MobileStickyBar = memo(function MobileStickyBar({
           {detailsOpen && (
             <motion.div
               id="mobile-itinerary-drawer"
-              initial={reduceMotion ? false : { opacity: 0, gridTemplateRows: '0fr' }}
-              animate={reduceMotion ? undefined : { opacity: 1, gridTemplateRows: '1fr' }}
-              exit={reduceMotion ? undefined : { opacity: 0, gridTemplateRows: '0fr' }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, gridTemplateRows: '0fr' }}
+              animate={{ opacity: 1, gridTemplateRows: '1fr' }}
+              exit={{ opacity: 0, gridTemplateRows: '0fr' }}
+              transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
               className="grid"
             >
               <div className="overflow-hidden min-h-0">
@@ -188,13 +214,17 @@ export const MobileStickyBar = memo(function MobileStickyBar({
           </button>
         )}
 
-        {/* Security note on last step */}
-        {isLastStep && (
-          <p className="flex items-center justify-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            <Lock className="h-3 w-3 text-[var(--gold-text)]" aria-hidden="true" />
-            Encrypted · SSL secure
-          </p>
-        )}
+        {/* The desktop reassurance block sits far below the fold on mobile, where it does
+            no work at the moment of decision. Carry one line of it in the bar instead. */}
+        {/* Tier 3: sentence case, matching the desktop card. An uppercase tracked line is a
+            label treatment, and this is a sentence. */}
+        <p className="flex items-center justify-center gap-2 text-[0.75rem] text-[var(--text-muted)]">
+          <Lock className="h-3 w-3 text-[var(--gold-text)]" aria-hidden="true" />
+          {/* Matches OrderSummary's line on the same step: the desktop card merged its two
+              stacked reassurances ("You won't be charged yet" above "ENCRYPTED · SSL SECURE")
+              into one, and the two surfaces must not now say different things. */}
+          {isLastStep ? 'Encrypted · you are not charged yet' : 'Free cancellation · 24h'}
+        </p>
       </div>
     </motion.div>
   )

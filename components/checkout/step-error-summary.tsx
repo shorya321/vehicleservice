@@ -23,9 +23,13 @@ export function StepErrorSummary({ errors, fieldNames }: StepErrorSummaryProps) 
 
   return (
     <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: -8, scaleY: 0.96 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0, scaleY: 1 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      // `animate` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
+      // equivalent and is not: useReducedMotion() is false during SSR, so
+      // opacity:0 is serialised into the markup and never animated back once
+      // hydration flips the flag. Reduced motion collapses offset and duration.
+      initial={{ opacity: 0, y: reduceMotion ? 0 : -8, scaleY: reduceMotion ? 1 : 0.96 }}
+      animate={{ opacity: 1, y: 0, scaleY: 1 }}
+      transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
       style={{ transformOrigin: 'top' }}
     >
       <div

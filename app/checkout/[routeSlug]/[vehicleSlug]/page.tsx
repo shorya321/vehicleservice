@@ -4,8 +4,6 @@ import { redirect, notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
-import { CheckoutHeading } from '@/components/checkout/checkout-heading'
-import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { getVehicleType, getLocationDetails, getActiveAddons } from '../../actions'
 import { createClient } from '@/lib/supabase/server'
@@ -185,12 +183,23 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   const guests = resolveGuestsForVehicle(sp, vehicleType.passenger_capacity)
   const passengers = getSeatedCount(guests)
 
+  // "Change vehicle" goes back to this route's results rather than popping history, which
+  // sends a direct arrival off site.
+  const changeParams = new URLSearchParams({
+    date: pickupDate,
+    passengers: String(passengers),
+    adults: String(guests.adults),
+    children: String(guests.children),
+    infants: String(guests.infants),
+  })
+  const changeHref = `/search/${routeSlug}?${changeParams.toString()}`
+
   return (
     <PublicLayout>
       <div className="bg-[var(--black-void)] min-h-screen">
         <div className="luxury-container py-8 md:py-16 lg:py-20">
-          <ProgressBar currentStep={3} />
-          <CheckoutHeading />
+          {/* The stepper and heading live inside CheckoutWrapper, which owns the wizard
+              step. They used to render here with a hardcoded step that never advanced. */}
           <CheckoutWrapper
             route={routeDetails}
             vehicleType={vehicleType}
@@ -201,6 +210,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
+            changeHref={changeHref}
           />
         </div>
       </div>

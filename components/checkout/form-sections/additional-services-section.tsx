@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { UseFormReturn, useFormState } from 'react-hook-form'
 import { motion, useReducedMotion } from 'motion/react'
 import { DynamicIcon } from 'lucide-react/dynamic'
@@ -32,6 +32,16 @@ interface AdditionalServicesSectionProps {
   addonsByCategory: CheckoutAddonsByCategory[]
   /** Drives the child-seat cap: seats can never outnumber the children + infants on the booking. */
   guests: GuestBreakdown
+  /**
+   * Hands an imperative "remove this addon" function up to BookingForm, so the summary card's
+   * ledger rows can be dismissed from the sidebar.
+   *
+   * A callback handle rather than lifted state: `rawSelected` below carries the customer's
+   * literal request and is deliberately separate from the capped view derived from it, and
+   * hoisting that pair into BookingForm would move the child-seat budget logic with it. The
+   * same shape BookingForm already uses for `onFormReady`.
+   */
+  onRemoveReady?: (remove: (addonId: string) => void) => void
 }
 
 /** 0 renders as "Under 1". 12 is the ceiling. The Guests picker labels adults as "Age 12+". */
@@ -70,7 +80,8 @@ export function AdditionalServicesSection({
   form,
   vehicleType,
   addonsByCategory,
-  guests
+  guests,
+  onRemoveReady
 }: AdditionalServicesSectionProps) {
   const { setValue } = form
   const reduceMotion = useReducedMotion()
@@ -174,6 +185,24 @@ export function AdditionalServicesSection({
     setRawSelected(newSelected)
   }
 
+  /**
+   * Removal from the summary card's ledger. Written against `rawSelected` rather than the capped
+   * `selectedAddons` view so it removes what the customer actually asked for, and so the
+   * child-seat budget frees up by the full requested quantity.
+   */
+  const removeAddon = useCallback((addonId: string) => {
+    setRawSelected(prev => {
+      if (!prev.has(addonId)) return prev
+      const next = new Map(prev)
+      next.delete(addonId)
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    onRemoveReady?.(removeAddon)
+  }, [onRemoveReady, removeAddon])
+
   const setChildAge = (addon: CheckoutAddon, index: number, age: number | null) => {
     const newSelected = new Map(selectedAddons)
     const current = newSelected.get(addon.id)
@@ -272,23 +301,23 @@ export function AdditionalServicesSection({
           const isChildSeatCategory = category.addons.every(a => a.requires_child_age)
           return (
             <div key={category.category} className="space-y-3">
+              {/* The right slot used to hold an option tally, which tells the customer nothing
+                  they cannot already see, while the fact that decides whether the group is even
+                  relevant hung below the rule on a `-mt-1` orphan paragraph. They swap. */}
               <div className="checkout-category-header">
                 <span className="checkout-category-title">{category.category}</span>
-                <span className="checkout-category-count">
-                  {category.addons.length} {category.addons.length === 1 ? 'option' : 'options'}
-                </span>
+                {category.category.toLowerCase().includes('luggage') && (
+                  <span className="checkout-category-note">
+                    {vehicleType.luggage_capacity} bags included with your vehicle
+                  </span>
+                )}
+                {isChildSeatCategory && (
+                  <span className="checkout-category-note">
+                    {ageSeatsSelected} of {childSeatCapacity} seat{childSeatCapacity === 1 ? '' : 's'} selected
+                    {' · '}one per child or infant on this booking
+                  </span>
+                )}
               </div>
-              {category.category.toLowerCase().includes('luggage') && (
-                <p className="text-xs text-[var(--text-muted)] -mt-1">
-                  {vehicleType.luggage_capacity} bags included with your vehicle
-                </p>
-              )}
-              {isChildSeatCategory && (
-                <p className="text-xs text-[var(--text-muted)] -mt-1">
-                  {ageSeatsSelected} of {childSeatCapacity} seat{childSeatCapacity === 1 ? '' : 's'} selected
-                  {' · '}one per child or infant on this booking
-                </p>
-              )}
               <div className="checkout-services-grid">
                 {category.addons.map((addon) => {
                   const selected = getSelectedAddon(addon.id)
@@ -296,6 +325,9 @@ export function AdditionalServicesSection({
                   const quantity = selected?.quantity || 0
                   const isFree = addon.price === 0
 
+                  // One anatomy for both pricing types: icon, name/description, money, control.
+                  // The per-unit card used to be a column with the stepper alone in a full-width
+                  // band whose right half was empty until something was selected.
                   if (addon.pricing_type === 'per_unit') {
                     return (
                       <div
@@ -305,55 +337,63 @@ export function AdditionalServicesSection({
                           isSelected && "selected"
                         )}
                       >
-                        <div className="checkout-service-card-header">
-                          <div className="checkout-service-icon">
-                            <AddonIcon iconName={addon.icon} />
-                          </div>
-                          <div className="checkout-service-content">
-                            <p className="checkout-service-name">{addon.name}</p>
-                            <p className="checkout-service-description">
-                              {addon.description || `Up to ${addon.max_quantity} available`}
-                            </p>
-                          </div>
-                          <span className="checkout-service-price">
-                            {formatAddonPrice(addon.price)}<span className="checkout-service-price-unit">/ea</span>
-                          </span>
+                        <div className="checkout-service-icon">
+                          <AddonIcon iconName={addon.icon} />
                         </div>
-                        <div className="checkout-service-card-controls">
-                          <div className="checkout-quantity-controls">
-                            <button
-                              type="button"
-                              className="checkout-quantity-btn"
-                              onClick={() => updateQuantity(addon, quantity - 1)}
-                              disabled={quantity === 0}
-                              aria-label={`Decrease ${addon.name} quantity`}
-                            >
-                              <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-                            </button>
-                            <motion.span
-                              key={quantity}
-                              className="checkout-quantity-value"
-                              initial={reduceMotion ? false : { opacity: 0.4 }}
-                              animate={reduceMotion ? undefined : { opacity: 1 }}
-                              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                              {quantity}
-                            </motion.span>
-                            <button
-                              type="button"
-                              className="checkout-quantity-btn"
-                              onClick={() => updateQuantity(addon, quantity + 1)}
-                              disabled={quantity >= effectiveMax(addon, quantity)}
-                              aria-label={`Increase ${addon.name} quantity`}
-                            >
-                              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                            </button>
-                          </div>
-                          {isSelected && (
-                            <span className="checkout-service-line-total">
-                              {formatAddonPrice(addon.price * quantity)}
+                        <div className="checkout-service-content">
+                          <p className="checkout-service-name">{addon.name}</p>
+                          <p className="checkout-service-description">
+                            {addon.description || `Up to ${addon.max_quantity} available`}
+                          </p>
+                        </div>
+                        {/* Leads with the line total once there is one, and demotes the unit
+                            price beneath it. `+` on every price, and the unit spelled out:
+                            "15.00 AED/ea" and "+25.00 AED" were two grammars for one idea. */}
+                        <div className="checkout-service-price-cell">
+                          {isSelected ? (
+                            <>
+                              <span className="checkout-service-line-total">
+                                {formatAddonPrice(addon.price * quantity)}
+                              </span>
+                              <span className="checkout-service-price-unit">
+                                +{formatAddonPrice(addon.price)} each
+                              </span>
+                            </>
+                          ) : (
+                            <span className="checkout-service-price">
+                              +{formatAddonPrice(addon.price)}
+                              <span className="checkout-service-price-unit"> each</span>
                             </span>
                           )}
+                        </div>
+                        <div className="checkout-quantity-controls">
+                          <button
+                            type="button"
+                            className="checkout-quantity-btn"
+                            onClick={() => updateQuantity(addon, quantity - 1)}
+                            disabled={quantity === 0}
+                            aria-label={`Decrease ${addon.name} quantity`}
+                          >
+                            <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                          <motion.span
+                            key={quantity}
+                            className="checkout-quantity-value"
+                            initial={{ opacity: reduceMotion ? 1 : 0.4 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: reduceMotion ? 0 : 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          >
+                            {quantity}
+                          </motion.span>
+                          <button
+                            type="button"
+                            className="checkout-quantity-btn"
+                            onClick={() => updateQuantity(addon, quantity + 1)}
+                            disabled={quantity >= effectiveMax(addon, quantity)}
+                            aria-label={`Increase ${addon.name} quantity`}
+                          >
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
                         </div>
                         {renderAgeFields(addon, selected)}
                       </div>
@@ -387,7 +427,7 @@ export function AdditionalServicesSection({
                       aria-label={`${addon.name}${isFree ? ' (free)' : `, ${formatAddonPrice(addon.price)}`}`}
                     >
                       <div className="checkout-service-checkbox">
-                        {isSelected && <Check className="h-3 w-3 text-[var(--onyx)]" aria-hidden="true" />}
+                        {isSelected && <Check className="h-3.5 w-3.5 text-[var(--onyx)]" aria-hidden="true" />}
                       </div>
                       <div className="checkout-service-icon">
                         <AddonIcon iconName={addon.icon} />
@@ -395,15 +435,19 @@ export function AdditionalServicesSection({
                       <div className="checkout-service-content">
                         <p className="checkout-service-name">{addon.name}</p>
                         <p className="checkout-service-description">{addon.description}</p>
-                        {renderAgeFields(addon, selected)}
                       </div>
-                      {isFree ? (
-                        <span className="checkout-service-badge-free">Included</span>
-                      ) : (
-                        <span className="checkout-service-price">
-                          +{formatAddonPrice(addon.price)}
-                        </span>
-                      )}
+                      <div className="checkout-service-price-cell">
+                        {isFree ? (
+                          <span className="checkout-service-badge-free">Included</span>
+                        ) : (
+                          <span className="checkout-service-price">
+                            +{formatAddonPrice(addon.price)}
+                          </span>
+                        )}
+                      </div>
+                      {/* Moved out of `.checkout-service-content` so `flex: 1 0 100%` can drop it
+                          to its own row. The click guard below still matches by closest(). */}
+                      {renderAgeFields(addon, selected)}
                     </div>
                   )
                 })}

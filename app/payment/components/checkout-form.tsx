@@ -56,11 +56,11 @@ interface CheckoutFormProps {
   amount: number
   /** Routing key only. Drives the Stripe return_url. Never rendered. */
   bookingNumber: string
-  /** Customer-facing reference shown on screen. */
+  /** Customer-facing reference. Rendered by the page heading now, not by this form. */
   tripNumber: string
 }
 
-export function CheckoutForm({ bookingId, amount, bookingNumber, tripNumber }: CheckoutFormProps) {
+export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const stripe = useStripe()
   const elements = useElements()
@@ -132,32 +132,28 @@ export function CheckoutForm({ bookingId, amount, bookingNumber, tripNumber }: C
   }
 
   return (
+    // Flat on the page ground under a section rule, matching the form sections on steps 3 and 4.
+    // The bordered card and its "Payment Details" header bar re-introduced the header-bar card
+    // pattern the direction avoids everywhere else in the funnel.
     <motion.div
-      className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden"
+      // Deliberately not `.checkout-form-section`: that class carries `contain: content`, and
+      // paint containment around a third-party iframe that resizes itself over postMessage is
+      // not a risk worth taking for styling it otherwise contributes nothing to here.
       initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 xl:px-8 py-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-        <Lock className="w-4 h-4 text-[var(--gold-text)] flex-shrink-0" aria-hidden="true" />
-        <h2 className="text-[1.25rem] font-semibold text-[var(--text-primary)]">Payment Details</h2>
+      <div className="checkout-section-header">
+        <h2 className="checkout-section-title">Card details</h2>
       </div>
 
-      <div className="px-6 xl:px-8 py-6">
-        {/* Amount Display */}
-        <div className="flex flex-col items-center justify-center py-6 px-5 mb-6 bg-[rgba(var(--gold-rgb),0.04)]">
-          <p className="t-label mb-2">Amount to Pay</p>
-          <p className="text-[2.25rem] sm:text-[2.75rem] font-semibold tabular-nums tracking-tight text-[var(--gold-text)]">
-            {formatPrice(amount, currentCurrency, exchangeRates)}
-          </p>
-          <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-[var(--black-warm)] rounded-[4px] text-[0.8125rem] text-[var(--text-secondary)] max-w-full">
-            Trip #: <code className="font-mono text-[var(--gold-text)] truncate">{tripNumber}</code>
-          </span>
-        </div>
-
-        <p className="flex items-center justify-center gap-1.5 text-[0.75rem] text-[var(--text-muted)] mb-6">
-          <ShieldCheck className="w-3.5 h-3.5 text-[var(--success)]" aria-hidden="true" />
+      <div>
+        {/* The centred "Amount to Pay" figure that sat here printed the total a second time in
+            the same viewport, in gold at 44px, while the summary card printed it in white. The
+            ledger holds the number and the Pay button restates it; a third copy was noise.
+            The trip reference moved up to the page heading. */}
+        <p className="flex items-center gap-1.5 text-[0.75rem] text-[var(--text-muted)] mb-6">
+          <ShieldCheck className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
           Processed securely by Stripe · SSL encrypted
         </p>
 

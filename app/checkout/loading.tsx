@@ -1,157 +1,123 @@
-function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-muted ${className ?? ''}`} />
-}
+import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * Skeleton for the checkout page.
+ *
+ * It previously painted with `luxury-black` / `luxury-darkGray`, which resolve but are
+ * dark-only hardcodes that never flip with the theme, so in light mode it flashed a black
+ * page before a light one loaded. Everything here goes through `[var(--token)]` instead,
+ * and the shape matches the shipped page: four funnel steps, a left-aligned eyebrow and
+ * heading, a flat form column and the summary card.
+ */
 export default function CheckoutLoading() {
   return (
-    <div className="bg-luxury-black min-h-screen">
-      {/* Progress Bar */}
-      <div className="border-b border-luxury-gold/10 bg-luxury-darkGray/50 backdrop-blur-md">
-        <div className="luxury-container py-3">
-          <div className="flex items-center justify-center gap-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Skeleton className="h-7 w-7 rounded-full bg-luxury-gold/10" />
-                <Skeleton className="h-3 w-16 bg-luxury-gold/10" />
-                {i < 2 && <Skeleton className="h-0.5 w-12 bg-luxury-gold/10" />}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="luxury-container py-12 md:py-16 lg:py-20">
-        {/* Checkout Heading */}
-        <div className="text-center mb-10 space-y-3">
-          <Skeleton className="h-9 w-72 mx-auto bg-luxury-gold/10" />
-          <Skeleton className="h-4 w-96 mx-auto bg-luxury-gold/10" />
+    <div className="bg-[var(--black-void)] min-h-screen">
+      <div className="luxury-container py-8 md:py-16 lg:py-20">
+        {/* Progress: four steps, left-aligned on the rail */}
+        <div className="mb-12 flex items-center">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center">
+              <Skeleton className="h-3 w-20 bg-[var(--charcoal)]" />
+              {i < 3 && <Skeleton className="h-[1.5px] w-8 sm:w-12 mx-2 sm:mx-3 bg-[var(--charcoal)]" />}
+            </div>
+          ))}
         </div>
 
-        {/* Main Content: Form + Sidebar */}
-        <div className="grid gap-8 lg:grid-cols-12">
-          {/* Left Column - Booking Form */}
-          <div className="lg:col-span-7 xl:col-span-8 space-y-6">
-            {/* Personal Details Section */}
-            <div className="rounded-lg border border-luxury-gold/10 bg-luxury-darkGray/60 backdrop-blur-md p-6 space-y-5">
-              <Skeleton className="h-6 w-36 bg-luxury-gold/10" />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20 bg-luxury-gold/10" />
-                  <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20 bg-luxury-gold/10" />
-                  <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-28 bg-luxury-gold/10" />
-                  <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-32 bg-luxury-gold/10" />
-                  <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-                </div>
-              </div>
-            </div>
+        {/* Heading block */}
+        <div className="mb-12 space-y-4">
+          <Skeleton className="h-3 w-40 bg-[var(--charcoal)]" />
+          <Skeleton className="h-10 w-full max-w-md bg-[var(--charcoal)]" />
+          <Skeleton className="h-5 w-full max-w-xl bg-[var(--charcoal)]" />
+        </div>
 
-            {/* Trip Details Section */}
-            <div className="rounded-lg border border-luxury-gold/10 bg-luxury-darkGray/60 backdrop-blur-md p-6 space-y-5">
-              <Skeleton className="h-6 w-28 bg-luxury-gold/10" />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24 bg-luxury-gold/10" />
-                  <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24 bg-luxury-gold/10" />
-                  <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-32 bg-luxury-gold/10" />
-                <Skeleton className="h-11 w-full rounded-md bg-luxury-gold/10" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-28 bg-luxury-gold/10" />
-                <Skeleton className="h-20 w-full rounded-md bg-luxury-gold/10" />
-              </div>
-            </div>
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+          {/* Form column */}
+          <div className="flex-1 min-w-0 space-y-10">
+            <div className="space-y-6">
+              <Skeleton className="h-3 w-36 bg-[var(--charcoal)]" />
 
-            {/* Addons Section */}
-            <div className="rounded-lg border border-luxury-gold/10 bg-luxury-darkGray/60 backdrop-blur-md p-6 space-y-5">
-              <Skeleton className="h-6 w-40 bg-luxury-gold/10" />
-              <div className="grid gap-4 sm:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-luxury-gold/10">
-                    <Skeleton className="h-10 w-10 rounded-lg bg-luxury-gold/10 flex-shrink-0" />
-                    <div className="flex-1 space-y-1.5">
-                      <Skeleton className="h-4 w-28 bg-luxury-gold/10" />
-                      <Skeleton className="h-3 w-16 bg-luxury-gold/10" />
-                    </div>
-                    <Skeleton className="h-5 w-10 rounded-full bg-luxury-gold/10" />
+              {/* Route rail */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 border-t border-[var(--graphite)] pt-5">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="space-y-2.5">
+                    <Skeleton className="h-2.5 w-16 bg-[var(--charcoal)]" />
+                    <Skeleton className="h-5 w-28 bg-[var(--charcoal)]" />
                   </div>
                 ))}
               </div>
+
+              {/* Vehicle */}
+              <div className="flex gap-4 items-center border-t border-[rgba(var(--gold-rgb),0.1)] pt-5">
+                <Skeleton className="w-full sm:w-[168px] aspect-[16/9] rounded-[4px] bg-[var(--charcoal)]" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-2.5 w-24 bg-[var(--charcoal)]" />
+                  <Skeleton className="h-5 w-40 bg-[var(--charcoal)]" />
+                  <Skeleton className="h-3 w-32 bg-[var(--charcoal)]" />
+                </div>
+              </div>
+
+              {/* Field pairs */}
+              {[0, 1].map((row) => (
+                <div key={row} className="grid md:grid-cols-2 gap-4">
+                  {[0, 1].map((col) => (
+                    <div key={col} className="space-y-2.5">
+                      <Skeleton className="h-2.5 w-24 bg-[var(--charcoal)]" />
+                      <Skeleton className="h-[52px] w-full rounded-[4px] bg-[var(--charcoal)]" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-6 border-t border-[rgba(var(--gold-rgb),0.1)] pt-10">
+              <Skeleton className="h-3 w-44 bg-[var(--charcoal)]" />
+              {[0, 1].map((row) => (
+                <div key={row} className="grid md:grid-cols-2 gap-4">
+                  {[0, 1].map((col) => (
+                    <div key={col} className="space-y-2.5">
+                      <Skeleton className="h-2.5 w-24 bg-[var(--charcoal)]" />
+                      <Skeleton className="h-[52px] w-full rounded-[4px] bg-[var(--charcoal)]" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <Skeleton className="h-[120px] w-full rounded-[4px] bg-[var(--charcoal)]" />
             </div>
           </div>
 
-          {/* Right Column - Order Summary Sidebar */}
-          <div className="lg:col-span-5 xl:col-span-4">
-            <div className="rounded-lg border border-luxury-gold/10 bg-luxury-darkGray/60 backdrop-blur-md p-6 space-y-5 lg:sticky lg:top-24">
-              <Skeleton className="h-6 w-32 bg-luxury-gold/10" />
-
-              {/* Vehicle Info */}
-              <div className="flex items-center gap-3 pb-4 border-b border-luxury-gold/10">
-                <Skeleton className="h-16 w-24 rounded-md bg-luxury-gold/10" />
-                <div className="space-y-1.5">
-                  <Skeleton className="h-5 w-32 bg-luxury-gold/10" />
-                  <Skeleton className="h-3 w-20 bg-luxury-gold/10" />
-                </div>
+          {/* Summary card */}
+          <div className="hidden lg:block w-[380px] xl:w-[420px] flex-shrink-0">
+            <div className="rounded-[8px] border border-[rgba(var(--gold-rgb),0.12)] bg-[var(--black-rich)] overflow-hidden">
+              <div className="px-6 xl:px-8 py-5 space-y-3">
+                <Skeleton className="h-2.5 w-24 bg-[var(--charcoal)]" />
+                <Skeleton className="h-6 w-44 bg-[var(--charcoal)]" />
+                <Skeleton className="h-4 w-full bg-[var(--charcoal)]" />
+                <Skeleton className="h-3 w-32 bg-[var(--charcoal)]" />
               </div>
-
-              {/* Route Info */}
-              <div className="space-y-3 pb-4 border-b border-luxury-gold/10">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4 rounded-full bg-luxury-gold/10" />
-                  <Skeleton className="h-4 w-40 bg-luxury-gold/10" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4 rounded-full bg-luxury-gold/10" />
-                  <Skeleton className="h-4 w-44 bg-luxury-gold/10" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4 rounded-full bg-luxury-gold/10" />
-                  <Skeleton className="h-4 w-32 bg-luxury-gold/10" />
-                </div>
-              </div>
-
-              {/* Price Breakdown */}
-              <div className="space-y-3 pb-4 border-b border-luxury-gold/10">
+              <div className="border-t border-[rgba(var(--gold-rgb),0.15)] px-6 xl:px-8 py-5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24 bg-luxury-gold/10" />
-                  <Skeleton className="h-4 w-16 bg-luxury-gold/10" />
+                  <Skeleton className="h-2.5 w-12 bg-[var(--charcoal)]" />
+                  <Skeleton className="h-8 w-32 bg-[var(--charcoal)]" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-20 bg-luxury-gold/10" />
-                  <Skeleton className="h-4 w-16 bg-luxury-gold/10" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-16 bg-luxury-gold/10" />
-                  <Skeleton className="h-4 w-14 bg-luxury-gold/10" />
-                </div>
+                <Skeleton className="h-3 w-full bg-[var(--charcoal)]" />
               </div>
-
-              {/* Total */}
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-6 w-16 bg-luxury-gold/10" />
-                <Skeleton className="h-7 w-24 bg-luxury-gold/10" />
+              <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-4">
+                <Skeleton className="h-[52px] w-full rounded-[4px] bg-[var(--charcoal)]" />
+                <Skeleton className="h-3 w-40 mx-auto bg-[var(--charcoal)]" />
               </div>
+            </div>
 
-              {/* CTA Button */}
-              <Skeleton className="h-12 w-full rounded-md bg-luxury-gold/10" />
-
-              {/* Terms */}
-              <Skeleton className="h-3 w-full bg-luxury-gold/10" />
+            {/* Reassurance block, now under its own section header */}
+            <div className="mt-8">
+              <Skeleton className="h-3 w-52 bg-[var(--charcoal)]" />
+              <div className="mt-5 space-y-4">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="border-b border-[var(--graphite)] pb-4 space-y-2">
+                    <Skeleton className="h-2.5 w-24 bg-[var(--charcoal)]" />
+                    <Skeleton className="h-4 w-full bg-[var(--charcoal)]" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

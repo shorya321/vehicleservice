@@ -94,6 +94,8 @@ interface BookingFormProps {
   user: any
   profile: any
   addonsByCategory: CheckoutAddonsByCategory[]
+  /** Where "Change vehicle" goes back to. Built server-side. */
+  changeHref: string
   currentStep: number
   direction: 1 | -1
   onGoNext: () => void
@@ -108,6 +110,8 @@ interface BookingFormProps {
     setAgreeToTerms: (value: boolean) => void
     trigger: (fields: string[]) => Promise<boolean>
     handleContinue: () => void
+    /** No-op until AdditionalServicesSection mounts on the extras step and registers itself. */
+    removeAddon: (addonId: string) => void
   }) => void
 }
 
@@ -121,6 +125,7 @@ export function BookingForm({
   user,
   profile,
   addonsByCategory,
+  changeHref,
   currentStep,
   direction,
   onGoNext,
@@ -254,6 +259,18 @@ export function BookingForm({
   // left both a missing child age and an unticked terms box failing silently on the final step.
   const onInvalid = useCallback(() => setStepValidationAttempted(true), [])
 
+  // AdditionalServicesSection owns the addon selection (and the child-seat budget derived from
+  // it), so removal has to be delegated back into it. It registers itself on mount; this
+  // wrapper is stable and reads the ref at call time, so no extra render is needed and a call
+  // made while the section is unmounted is simply a no-op.
+  const removeAddonRef = useRef<((addonId: string) => void) | null>(null)
+  const handleRemoveReady = useCallback((remove: (addonId: string) => void) => {
+    removeAddonRef.current = remove
+  }, [])
+  const removeAddon = useCallback((addonId: string) => {
+    removeAddonRef.current?.(addonId)
+  }, [])
+
   const formMethodsRef = useRef({
     submit: handleSubmit(onSubmit, onInvalid),
     isSubmitting: loading,
@@ -261,6 +278,7 @@ export function BookingForm({
     setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value),
     trigger: async (fields: string[]) => trigger(fields as (keyof BookingFormData)[]),
     handleContinue,
+    removeAddon,
   })
   formMethodsRef.current = {
     submit: handleSubmit(onSubmit, onInvalid),
@@ -269,6 +287,7 @@ export function BookingForm({
     setAgreeToTerms: (value: boolean) => setValue('agreeToTerms', value),
     trigger: async (fields: string[]) => trigger(fields as (keyof BookingFormData)[]),
     handleContinue,
+    removeAddon,
   }
 
   useEffect(() => {
@@ -280,6 +299,7 @@ export function BookingForm({
         setAgreeToTerms: (value: boolean) => formMethodsRef.current.setAgreeToTerms(value),
         trigger: (fields: string[]) => formMethodsRef.current.trigger(fields),
         handleContinue: () => formMethodsRef.current.handleContinue(),
+        removeAddon: (addonId: string) => formMethodsRef.current.removeAddon(addonId),
       })
     }
   }, [loading, agreeToTerms, onFormReady])
@@ -292,6 +312,7 @@ export function BookingForm({
         vehicleType={vehicleType}
         guests={guests}
         setGuests={setGuests}
+        changeHref={changeHref}
         onDateTimeChange={onDateTimeChange}
       />
       <PassengerInfoSection form={form} />
@@ -302,20 +323,25 @@ export function BookingForm({
         vehicleType={vehicleType}
         addonsByCategory={addonsByCategory}
         guests={guests}
+        onRemoveReady={handleRemoveReady}
       />
       <PaymentMethodSection form={form} />
     </div>,
-  ], [form, route, vehicleType, guests, setGuests, onDateTimeChange, addonsByCategory])
+  ], [form, route, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady])
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-0" aria-label="Booking form">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={currentStep}
-          initial={reduceMotion ? false : { opacity: 0, y: direction * 16 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          exit={reduceMotion ? undefined : { opacity: 0, y: direction * -8 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          // `animate` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
+          // equivalent and is not: useReducedMotion() is false during SSR, so
+          // opacity:0 is serialised into the markup and never animated back once
+          // hydration flips the flag. Reduced motion collapses offset and duration.
+          initial={{ opacity: 0, y: reduceMotion ? 0 : direction * 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: reduceMotion ? 0 : direction * -8 }}
+          transition={{ duration: reduceMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1] }}
         >
           {stepValidationAttempted && (
             <StepErrorSummary
@@ -330,7 +356,6 @@ export function BookingForm({
             currentStep={currentStep}
             totalSteps={TOTAL_STEPS}
             onBack={onGoBack}
-            onContinue={handleContinue}
           />
         </motion.div>
       </AnimatePresence>

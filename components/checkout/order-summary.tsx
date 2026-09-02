@@ -2,11 +2,11 @@
 
 import { useState, memo } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Info, Lock } from 'lucide-react'
+import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Lock } from 'lucide-react'
+import { TrustBlock } from './trust-block'
+import { BookingLedger } from './booking-ledger'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
-import { formatPrice } from '@/lib/currency/format'
-import { useCurrency } from '@/lib/currency/context'
 
 interface OrderSummaryProps {
   route: RouteDetails
@@ -16,35 +16,15 @@ interface OrderSummaryProps {
   pickupTime?: string
   currentStep?: number
   onSubmit?: () => void
+  /** Advances the wizard from the details step. The card previously showed a disabled
+      sentence here, in the exact spot the eye looks for the button. */
+  onContinue?: () => void
   isSubmitting?: boolean
   agreeToTerms?: boolean
   onAgreeToTermsChange?: (checked: boolean) => void
   selectedAddons?: OrderSummaryAddon[]
-}
-
-function PriceRow({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: string
-  tone?: 'positive'
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <span className="text-[var(--text-secondary)]">{label}</span>
-      <span
-        className={
-          tone === 'positive'
-            ? 'font-medium tabular-nums text-[var(--gold-text)]'
-            : 'font-medium tabular-nums text-[var(--text-primary)]'
-        }
-      >
-        {value}
-      </span>
-    </div>
-  )
+  /** Only wired on the extras step, where AdditionalServicesSection is mounted to receive it. */
+  onRemoveAddon?: (addonId: string) => void
 }
 
 export const OrderSummary = memo(function OrderSummary({
@@ -55,16 +35,14 @@ export const OrderSummary = memo(function OrderSummary({
   pickupTime,
   currentStep,
   onSubmit,
+  onContinue,
   isSubmitting = false,
   agreeToTerms = false,
   onAgreeToTermsChange,
   selectedAddons = [],
+  onRemoveAddon,
 }: OrderSummaryProps) {
-  const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = useReducedMotion()
-
-  const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
-  const isConverted = currentCurrency !== 'AED'
 
   const [promoCode, setPromoCode] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
@@ -91,84 +69,36 @@ export const OrderSummary = memo(function OrderSummary({
   }
 
   return (
+    <>
     <motion.aside
       aria-label="Order summary"
       className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden"
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      // `whileInView` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
+      // equivalent and is not: useReducedMotion() is false during SSR, so opacity:0 is
+      // serialised into the markup and never animated back once hydration flips the
+      // flag. Reduced motion collapses offset and duration.
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: reduceMotion ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Vehicle + Route Header */}
-      <div className="px-6 xl:px-8 py-5">
-        <div className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          {vehicleType.category}
-        </div>
-        <h2 className="mt-1 text-[1.375rem] font-semibold text-[var(--text-primary)]">
-          {vehicleType.name}
-        </h2>
-
-        <div className="mt-4 flex items-center gap-1.5 text-[0.875rem] text-[var(--text-secondary)]">
-          <span>{route.origin.name}</span>
-          <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
-          <span>{route.destination.name}</span>
-        </div>
-
-        {(formattedDate || pickupTime) && (
-          <div className="mt-1.5 text-[0.875rem] tabular-nums text-[var(--text-muted)]">
-            {formattedDate}{formattedDate && pickupTime ? ' · ' : ''}{pickupTime}
-          </div>
-        )}
-
-        <div className="mt-1 text-[0.8125rem] text-[var(--text-muted)]">
-          {passengers} pax · {vehicleType.luggage_capacity} bags
-        </div>
-      </div>
-
-      {/* Price Breakdown */}
-      <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-2.5 text-[0.875rem]">
-        <PriceRow label="Base fare" value={formatUserPrice(basePrice)} />
-        {selectedAddons.map((addon) => (
-          <PriceRow
-            key={addon.id}
-            label={`${addon.name}${addon.quantity > 1 ? ` × ${addon.quantity}` : ''}`}
-            value={formatUserPrice(addon.total_price)}
-          />
-        ))}
-        {promoDiscount > 0 && (
-          <PriceRow
-            label="Promo discount"
-            value={`−${formatUserPrice(promoDiscount)}`}
-            tone="positive"
-          />
-        )}
-      </div>
-
-      {/* Total */}
-      <div className="border-t border-[rgba(var(--gold-rgb),0.15)] bg-[rgba(var(--gold-rgb),0.03)] px-6 xl:px-8 py-5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-            Total
-          </span>
-          <motion.span
-            key={total}
-            className="text-[1.75rem] font-medium tabular-nums tracking-tight text-[var(--text-primary)] inline-block"
-            initial={reduceMotion ? false : { scale: 1.04, color: 'var(--gold-text)' }}
-            animate={reduceMotion ? undefined : { scale: 1, color: 'var(--text-primary)' }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {formatUserPrice(total)}
-          </motion.span>
-        </div>
-        {isConverted && (
-          <p className="mt-2 flex items-start gap-2 text-[0.75rem] text-[var(--text-muted)]">
-            <Info className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
-            <span>
-              Shown in {currentCurrency}. Charged in AED ({formatPrice(total, 'AED', exchangeRates)}).
-            </span>
-          </p>
-        )}
-      </div>
+      {/* Vehicle header, itemised ledger and total. Shared verbatim with the payment step so
+          the same card follows the customer through to the card form. */}
+      <BookingLedger
+        category={vehicleType.category}
+        vehicleName={vehicleType.name}
+        originName={route.origin.name}
+        destinationName={route.destination.name}
+        dateLabel={formattedDate}
+        timeLabel={pickupTime}
+        passengers={passengers}
+        luggage={vehicleType.luggage_capacity}
+        basePrice={basePrice}
+        addons={selectedAddons}
+        promoDiscount={promoDiscount}
+        total={total}
+        onRemoveAddon={onRemoveAddon}
+      />
 
       {/* Promo Code. Compact toggle */}
       <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-4">
@@ -176,7 +106,7 @@ export const OrderSummary = memo(function OrderSummary({
           type="button"
           onClick={() => setShowPromo(!showPromo)}
           aria-expanded={showPromo}
-          className="flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+          className="flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
         >
           <Tag className="h-3 w-3" aria-hidden="true" />
           Have a code?
@@ -263,22 +193,37 @@ export const OrderSummary = memo(function OrderSummary({
                 Accept the terms and privacy policy to continue
               </p>
             )}
-
-            <p className="text-center text-[0.75rem] text-[var(--text-muted)]">
-              You won&apos;t be charged yet
-            </p>
           </>
         ) : (
-          <p className="text-center text-[0.8125rem] text-[var(--text-muted)]">
-            Complete all steps to proceed
-          </p>
+          /* This was a disabled sentence gating nothing, sitting in the exact spot the
+             eye searches for the button. It becomes the action for this step. */
+          onContinue && (
+            <button
+              type="button"
+              onClick={onContinue}
+              className="checkout-btn-primary w-full"
+            >
+              Continue to extras
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )
         )}
 
-        <p className="flex items-center justify-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        {/* One reassurance, sentence case. It used to be an uppercase tracked line stacked
+            under a second one ("You won't be charged yet"), which made a single fact read as
+            two worries. The "not charged yet" promise now rides on this line. */}
+        <p className="flex items-center justify-center gap-2 text-[0.75rem] text-[var(--text-muted)]">
           <Lock className="h-3 w-3 text-[var(--gold-text)]" aria-hidden="true" />
-          Encrypted · SSL secure
+          {(currentStep === undefined || currentStep === 1)
+            ? 'Encrypted · you are not charged yet'
+            : 'Encrypted · SSL secure'}
         </p>
       </footer>
     </motion.aside>
+
+    {/* Fills the empty half of the column, and answers the page having had exactly one
+        line of trust copy. Every claim here is from the Terms. */}
+    <TrustBlock />
+    </>
   )
 })

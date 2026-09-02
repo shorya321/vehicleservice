@@ -3008,6 +3008,9 @@
 }
 
 .checkout-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   font-family: var(--font-body);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -3018,6 +3021,37 @@
   color: var(--text-secondary);
 }
 
+/* The eyebrow rule. This class already carried the editorial eyebrow's exact metrics
+   and was missing only its 28px gold rule. */
+.checkout-section-title::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  flex: none;
+  background-color: var(--gold);
+}
+
+/* ── Field labels ──
+   One Label role across both form sections. Sentence-case body labels used to argue
+   with the uppercase section labels sitting directly above them. */
+.checkout-field-label {
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--text-muted);
+}
+
+.checkout-field-optional {
+  margin-left: 0.4rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
 .checkout-section-icon {
   display: none;
 }
@@ -3026,89 +3060,143 @@
   padding: 0;
 }
 
-/* ── Route ── */
-.checkout-transfer-route {
-  display: flex;
-  align-items: stretch;
-  gap: 1rem;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
+/* ── Route ──
+   A definition-list rail, matching the pattern the search-results rebuild introduced:
+   equal-height cells divided by hairlines, so every label sits on one baseline. The
+   previous treatment stacked two blocks around a floating arrow, which put the labels
+   at three different heights and rendered the distance as fine print. */
+.checkout-route-rail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 0;
+  margin: 0;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--graphite);
 }
 
-.checkout-route-point {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+@media (min-width: 640px) {
+  .checkout-route-rail {
+    grid-template-columns: 1fr 1fr 0.72fr;
+  }
+}
+
+.checkout-route-rail > div {
+  padding-left: 1.35rem;
+  border-left: 1px solid var(--graphite);
+}
+
+.checkout-route-rail > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Below the three-column breakpoint the distance drops to its own full-width row
+   rather than being squeezed into a half cell. */
+@media (max-width: 639px) {
+  .checkout-route-rail > .checkout-route-distance-cell {
+    grid-column: 1 / -1;
+    padding-left: 0;
+    padding-top: 1rem;
+    border-left: 0;
+    border-top: 1px solid var(--graphite);
+  }
+}
+
+/* On a phone, two half-width cells break a destination name mid-word — "Atlantis - The Palm"
+   wraps at roughly 150px. The rail stacks, and the dividers rotate from vertical to horizontal
+   so the structure survives the change. */
+@media (max-width: 520px) {
+  .checkout-route-rail {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .checkout-route-rail > div {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .checkout-route-rail > div + div {
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--graphite);
+  }
+
+  .checkout-route-rail > .checkout-route-distance-cell {
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
 }
 
 .checkout-route-label {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
-.checkout-route-name {
+.checkout-route-value {
+  margin: 0;
   font-family: var(--font-body);
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.0625rem;
+  font-weight: 500;
   line-height: 1.3;
   color: var(--text-primary);
 }
 
 .checkout-route-city {
+  display: block;
+  margin-top: 0.2rem;
   font-size: 0.8125rem;
+  font-weight: 400;
   color: var(--text-muted);
 }
 
-.checkout-route-connector {
+/* Figure over caption. The one number in this block reads as a number.
+
+   Deliberately NOT gold and NOT the largest figure on the page. Distance is the least
+   decision-relevant number here, and while it carried --gold-text at 1.65rem it out-ranked
+   the total in the summary card, which is backwards on a checkout. Gold is reserved for the
+   28px section rules and for money in motion. */
+.checkout-route-figure {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0 0.5rem;
+  gap: 0.3rem;
+  margin: 0;
 }
 
-.checkout-route-connector-icon {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold-text);
-}
-
-.checkout-route-distance {
-  font-size: 0.6875rem;
+.checkout-route-figure b {
+  font-size: 1.375rem;
   font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Tier 3: sentence case. The uppercase treatment made a unit caption compete with the
+   tier-2 field labels sitting directly beside it. */
+.checkout-route-figure span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   color: var(--text-muted);
-  white-space: nowrap;
 }
 
 /* ── Vehicle ── */
 .checkout-vehicle-selected {
   display: flex;
-  gap: 1rem;
-  padding: 1.25rem 0;
+  gap: 1.15rem;
+  align-items: center;
+  padding: 1.35rem 0 0;
   background: transparent;
   border: none;
   border-radius: 0;
   border-top: 1px solid rgba(var(--gold-rgb), 0.1);
   margin-top: 1.5rem;
-}
-
-.checkout-vehicle-image {
-  width: 140px;
-  height: 90px;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
 }
 
 .checkout-vehicle-info {
@@ -3129,8 +3217,11 @@
 
 .checkout-vehicle-name {
   font-family: var(--font-body);
-  font-size: 1.125rem;
-  font-weight: 600;
+  /* It is the one product on the page, and it was set smaller and heavier than the summary
+     card's copy of the same name. Matches that treatment's weight, one step below its size. */
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
@@ -3151,8 +3242,11 @@
 
 .checkout-vehicle-change {
   align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0;
-  background: transparent;
+  background-color: transparent;
   border: none;
   font-family: var(--font-body);
   font-size: 0.75rem;
@@ -3161,12 +3255,21 @@
   text-transform: uppercase;
   color: var(--gold-text);
   cursor: pointer;
-  transition: color 200ms ease;
+  text-decoration: none;
+  white-space: nowrap;
+  /* Underline-from-zero, matching .editorial-action. */
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size var(--duration-fast) var(--ease-luxury),
+              color var(--duration-fast) var(--ease-luxury);
 }
 
-.checkout-vehicle-change:hover {
-  color: var(--text-primary);
-  background: transparent;
+.checkout-vehicle-change:hover,
+.checkout-vehicle-change:focus-visible {
+  color: var(--gold-text-hover);
+  background-size: 100% 1px;
 }
 
 .checkout-vehicle-change:focus-visible {
@@ -3198,24 +3301,42 @@
   margin-bottom: 0.25rem;
 }
 
+/* Tier 2, identical to .checkout-field-label and .checkout-route-label. These three were
+   0.6875/500/.18em, 0.625/600/.16em and 0.625/600/.16em respectively — three near-misses of
+   one role, which left the uppercase system with no internal ranking. */
 .checkout-category-title {
   font-family: var(--font-body);
-  font-size: 0.6875rem;
-  font-weight: 500;
+  font-size: 0.625rem;
+  font-weight: 600;
   color: var(--text-muted);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.checkout-category-count {
+/* Replaces .checkout-category-count. The slot used to hold an option tally, which tells the
+   customer nothing they cannot see; it now carries the fact that decides whether the group is
+   relevant at all ("2 bags included with your vehicle"). */
+.checkout-category-note {
   font-size: 0.75rem;
+  line-height: 1.4;
   color: var(--text-muted);
+  text-align: right;
 }
 
-/* ── Service Cards (interactive: keep card styling) ── */
+/* ── Service Cards (interactive: keep card styling) ──
+
+   A single column at every width, and one card anatomy for both pricing types:
+
+     [icon] [name / description] ····· [price] [control]
+
+   The previous `repeat(auto-fill, minmax(280px, 1fr))` resolved to two columns in the form
+   rail, so a category with three addons left a half-width hole beside the third — the first
+   thing the eye landed on. It also blew the cards out to ~900px between 768px (where the grid
+   collapsed) and 1024px (where the sidebar appears). A list also makes each addon rhyme with
+   the ledger line it becomes in the summary card. */
 .checkout-services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.75rem;
   content-visibility: auto;
   contain-intrinsic-size: auto 200px;
@@ -3224,7 +3345,10 @@
 .checkout-service-card {
   display: flex;
   align-items: center;
+  /* wrap so the child-age fields drop to their own full-width row below the control */
+  flex-wrap: wrap;
   gap: 0.875rem;
+  min-height: 76px;
   padding: 1rem 1.125rem;
   background: var(--black-warm);
   border: 1px solid rgba(var(--gold-rgb), 0.08);
@@ -3266,25 +3390,11 @@
   background: var(--charcoal);
 }
 
+/* Same row as a fixed-price card now. Only the cursor differs, because the card itself is not
+   the toggle here — the stepper is. The old column layout put a 44px stepper alone in a
+   full-width band whose right half was empty at quantity 0. */
 .checkout-service-card--per-unit {
-  flex-direction: column;
-  align-items: stretch;
   cursor: default;
-}
-
-.checkout-service-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.checkout-service-card-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(var(--gold-rgb), 0.08);
 }
 
 .checkout-quantity-controls {
@@ -3333,21 +3443,34 @@
   text-align: center;
 }
 
+/* Right-hand money cell. Carries the unit price on its own until the addon is selected, then
+   leads with the line total and demotes the unit price beneath it. */
+.checkout-service-price-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  flex-shrink: 0;
+  text-align: right;
+}
+
 .checkout-service-line-total {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--text-primary);
 }
 
 /* Per-seat child ages. Rendered inside a service card once a child seat is selected. One field
-   per unit, so a quantity of 2 asks for two ages. */
+   per unit, so a quantity of 2 asks for two ages. `flex: 1 0 100%` drops the block to its own
+   row now that the card is a single wrapping flex line. */
 .checkout-service-ages {
   display: flex;
+  flex: 1 0 100%;
   flex-wrap: wrap;
   gap: 0.625rem;
-  margin-top: 0.75rem;
+  margin-top: 0.25rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--graphite);
 }
@@ -3419,9 +3542,11 @@
   }
 }
 
+/* 24px, up from 20. It was the smallest interactive target on a screen whose steppers are
+   44px, and it is the control that adds money. */
 .checkout-service-checkbox {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border: 1px solid var(--graphite);
   border-radius: 4px;
   display: flex;
@@ -3451,16 +3576,23 @@
   to { transform: scale(1); opacity: 1; }
 }
 
+/* 4px to match the card it sits inside — a 6px tile in a 4px card is the kind of mismatch
+   nobody names and everybody registers. Glyph demoted out of gold: an addon icon is not an
+   accent. */
 .checkout-service-icon {
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold-text);
+  color: var(--text-secondary);
   flex-shrink: 0;
   background: rgba(var(--gold-rgb), 0.06);
-  border-radius: 6px;
+  border-radius: 4px;
+}
+
+.checkout-service-card.selected .checkout-service-icon {
+  color: var(--gold-text);
 }
 
 .checkout-service-content {
@@ -3481,17 +3613,23 @@
   line-height: 1.4;
 }
 
+/* Gold leaves the unselected state. Every addon price carrying --gold-text meant a category of
+   five put five gold figures on screen before the customer had chosen anything. */
 .checkout-service-price {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--gold-text);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
+.checkout-service-card.selected .checkout-service-price {
+  color: var(--text-primary);
+}
+
 .checkout-service-price-unit {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 400;
   color: var(--text-muted);
 }
@@ -3534,6 +3672,38 @@
 
 .checkout-payment-method.selected {
   border-color: var(--gold);
+}
+
+/* Card is the only method, so the row states a fact rather than pretending to offer a choice.
+   A radio group with one option is not a control. */
+.checkout-payment-method--static {
+  cursor: default;
+}
+
+.checkout-payment-method--static:hover {
+  border-color: rgba(var(--gold-rgb), 0.08);
+}
+
+.checkout-payment-marks {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.checkout-payment-mark {
+  height: 22px;
+  padding: 0 0.4rem;
+  display: flex;
+  align-items: center;
+  background: var(--charcoal);
+  border: 1px solid var(--graphite);
+  border-radius: 3px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .checkout-payment-radio {
@@ -3608,6 +3778,31 @@
 }
 
 /* ── Responsive ── */
+
+/* A per-unit row carries a 132px stepper as well as a price, which leaves nothing for the name
+   on a phone. Below this width the name takes its own line and the money row sits under it.
+   Fixed-price rows have no stepper and stay on one line. Scoped to `--per-unit` because the
+   card's DOM order (checkbox, icon, content, price, control) only wraps cleanly here. */
+@media (max-width: 560px) {
+  .checkout-service-card--per-unit .checkout-service-icon {
+    display: none;
+  }
+
+  .checkout-service-card--per-unit .checkout-service-content {
+    flex: 1 1 100%;
+  }
+
+  .checkout-service-card--per-unit .checkout-service-price-cell {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .checkout-service-card--per-unit .checkout-quantity-controls {
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 480px) {
   .checkout-payment-method {
     gap: 0.625rem;
@@ -3634,28 +3829,14 @@
 }
 
 @media (max-width: 768px) {
-  .checkout-transfer-route {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.75rem;
-  }
-
-  .checkout-route-connector {
-    flex-direction: row;
-    padding: 0.5rem 0;
-  }
-
   .checkout-vehicle-selected {
     flex-direction: column;
-    gap: 0.75rem;
+    align-items: flex-start;
+    gap: 0.9rem;
   }
 
   .checkout-vehicle-change {
-    text-align: center;
-  }
-
-  .checkout-services-grid {
-    grid-template-columns: 1fr;
+    align-self: flex-start;
   }
 
   .checkout-service-card {
@@ -3664,9 +3845,9 @@
   }
 
   .checkout-service-checkbox {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
   }
 
   .checkout-service-icon {
@@ -3676,7 +3857,12 @@
   }
 }
 
-/* Checkout Buttons: matches DESIGN.md §5 */
+/* Checkout Buttons: matches DESIGN.md §5
+
+   The funnel's primary action was a flat fill with a colour-swap hover, in a design system that
+   already ships a three-stop gradient on `.search-bar-submit`. It takes the same grammar here:
+   a lit top edge, the body in --gold, a weighted foot. `--gold-ink` is the same near-black the
+   home page's submit uses, and it clears AA on every stop of the ramp. */
 .checkout-btn-primary {
   position: relative;
   display: inline-flex;
@@ -3685,8 +3871,14 @@
   gap: 0.5rem;
   height: 3.25rem;
   padding: 0 2rem;
-  background: var(--gold);
-  color: var(--onyx);
+  background: linear-gradient(
+    180deg,
+    var(--gold-cream) 0%,
+    var(--gold) 42%,
+    var(--gold-medium) 100%
+  );
+  color: var(--gold-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
   font-family: var(--font-body);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -3694,7 +3886,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 200ms ease, transform 200ms ease;
+  transition: background 200ms ease, transform 200ms ease, filter 120ms ease;
 }
 
 .checkout-btn-primary::after {
@@ -3709,7 +3901,12 @@
 }
 
 .checkout-btn-primary:hover:not(:disabled) {
-  background: var(--gold-deep);
+  background: linear-gradient(
+    180deg,
+    var(--gold-light) 0%,
+    var(--gold-medium) 45%,
+    var(--gold-deep) 100%
+  );
   transform: translateY(-2px);
 }
 
@@ -3717,21 +3914,33 @@
   opacity: 1;
 }
 
+/* There was no press state at all: hover and active rendered identically, so the button gave no
+   feedback on the one interaction that costs money. */
+.checkout-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.97);
+}
+
 .checkout-btn-primary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
+/* The global focus ring is `2px solid var(--gold)`, which on a gold button is invisible. This is
+   the only control in the funnel that needs to opt out of it. */
 .checkout-btn-primary:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--text-primary);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .checkout-btn-primary {
-    transition: background-color 200ms ease;
+    transition: background 200ms ease;
   }
   .checkout-btn-primary:hover:not(:disabled) {
+    transform: none;
+  }
+  .checkout-btn-primary:active:not(:disabled) {
     transform: none;
   }
   .checkout-btn-primary::after {
@@ -3850,6 +4059,12 @@
 .checkout-form-section textarea:hover:not(:focus),
 .checkout-form-section select:hover:not(:focus) {
   border-color: rgba(var(--gold-rgb), 0.15);
+}
+
+/* The native resize grabber was the only piece of borrowed OS chrome on the page. The field is
+   tall enough not to need it. */
+.checkout-form-section textarea {
+  resize: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

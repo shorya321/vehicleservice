@@ -37,7 +37,8 @@ function getStripeAppearance(isDark: boolean) {
         border: `1px solid rgba(198, 170, 136, ${borderAlpha})`,
         backgroundColor: surface,
         color: text,
-        padding: '14px 16px',
+        // 15px + 15px + 22px line box ≈ 52px, matching the `h-[52px]` inputs on steps 3 and 4.
+        padding: '15px 16px',
         transition: 'border-color 200ms ease, box-shadow 200ms ease',
         boxShadow: 'none',
       },
@@ -53,13 +54,15 @@ function getStripeAppearance(isDark: boolean) {
         border: '1px solid #ef4444',
         boxShadow: '0 0 0 4px rgba(239, 68, 68, 0.1)',
       },
+      // Tier 2, identical to `.checkout-field-label`, so a Stripe label and a checkout label
+      // are the same object. It was 11px/500/.12em against the form's 10px/600/.16em.
       '.Label': {
         color: muted,
-        fontSize: '11px',
-        fontWeight: '500',
-        letterSpacing: '0.12em',
+        fontSize: '10px',
+        fontWeight: '600',
+        letterSpacing: '0.16em',
         textTransform: 'uppercase',
-        marginBottom: '8px',
+        marginBottom: '10px',
       },
       '.Error': {
         color: '#ef4444',
@@ -78,16 +81,20 @@ function getStripeAppearance(isDark: boolean) {
         color: secondary,
         fontSize: '13px',
       },
+      // Card is the only enabled method, so the accordion wraps exactly one item and its box
+      // is pure chrome — the same header-bar card pattern the funnel drops everywhere else.
       '.AccordionItem': {
-        border: `1px solid rgba(198, 170, 136, ${borderAlpha})`,
-        borderRadius: '8px',
-        backgroundColor: surface,
+        border: 'none',
+        borderRadius: '0px',
+        backgroundColor: 'transparent',
         boxShadow: 'none',
+        padding: '0px',
       },
       '.AccordionItem--selected': {
-        border: `1px solid rgba(198, 170, 136, ${selectedBorderAlpha})`,
-        backgroundColor: surface,
+        border: 'none',
+        backgroundColor: 'transparent',
         boxShadow: 'none',
+        padding: '0px',
       },
       '.Tab': {
         boxShadow: 'none',

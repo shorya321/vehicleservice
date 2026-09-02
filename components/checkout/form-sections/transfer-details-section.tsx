@@ -3,9 +3,10 @@
 import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { UseFormReturn } from 'react-hook-form'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowRight, Briefcase, Users } from 'lucide-react'
+import { Briefcase, Users } from 'lucide-react'
 import { FormDatePicker } from '@/components/ui/form-date-picker'
 import { FormTimePicker } from '@/components/ui/form-time-picker'
 import { parse, format } from 'date-fns'
@@ -13,12 +14,25 @@ import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { GuestSelector } from '@/components/home/hero/guest-selector'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 
+/** One field-label treatment, hoisted so it cannot drift between the two form sections. */
+const FIELD_LABEL = 'checkout-field-label mb-2.5 block'
+
+/** Matches the media grading on the vehicle cards, so the same photo reads the same way
+    on the search results and here. Flips with the theme. */
+const MEDIA_TOKENS = [
+  '[--media-filter:saturate(0.94)_contrast(1.02)_brightness(1)]',
+  'dark:[--media-filter:saturate(0.96)_contrast(1.04)_brightness(0.94)]',
+].join(' ')
+
 interface TransferDetailsSectionProps {
   form: UseFormReturn<any>
   route: RouteDetails
   vehicleType: VehicleTypeDetails
   guests: GuestBreakdown
   setGuests: (value: GuestBreakdown) => void
+  /** Where "Change vehicle" goes. Built server-side, so a direct arrival with no history
+      to pop still lands on the right search results. */
+  changeHref: string
   onDateTimeChange?: (date: string, time: string) => void
 }
 
@@ -28,6 +42,7 @@ export function TransferDetailsSection({
   vehicleType,
   guests,
   setGuests,
+  changeHref,
   onDateTimeChange
 }: TransferDetailsSectionProps) {
   const { register, formState: { errors }, watch, setValue } = form
@@ -55,42 +70,50 @@ export function TransferDetailsSection({
       </div>
 
       <div className="checkout-section-content space-y-6">
-        {/* Route */}
-        <div className="checkout-transfer-route">
-          <div className="checkout-route-point">
-            <span className="checkout-route-label">Pickup</span>
-            <p className="checkout-route-name">{route.origin.name}</p>
-            {route.origin.city && (
-              <span className="checkout-route-city">{route.origin.city}</span>
-            )}
+        {/* Route. A definition-list rail rather than two text stacks around a floating
+            arrow: every label lands on one baseline, and the distance reads as a figure. */}
+        <dl className="checkout-route-rail">
+          <div>
+            <dt className="checkout-route-label">Pickup</dt>
+            <dd className="checkout-route-value">
+              {route.origin.name}
+              {route.origin.city && (
+                <span className="checkout-route-city">{route.origin.city}</span>
+              )}
+            </dd>
           </div>
 
-          <div className="checkout-route-connector">
-            <ArrowRight className="h-4 w-4 text-[var(--gold-text)]" aria-hidden="true" />
-            {route.distance_km > 0 && (
-              <span className="checkout-route-distance">{route.distance_km} km</span>
-            )}
+          <div>
+            <dt className="checkout-route-label">Drop-off</dt>
+            <dd className="checkout-route-value">
+              {route.destination.name}
+              {route.destination.city && (
+                <span className="checkout-route-city">{route.destination.city}</span>
+              )}
+            </dd>
           </div>
 
-          <div className="checkout-route-point">
-            <span className="checkout-route-label">Drop-off</span>
-            <p className="checkout-route-name">{route.destination.name}</p>
-            {route.destination.city && (
-              <span className="checkout-route-city">{route.destination.city}</span>
-            )}
-          </div>
-        </div>
+          {route.distance_km > 0 && (
+            <div className="checkout-route-distance-cell">
+              <dt className="checkout-route-label">Distance</dt>
+              <dd className="checkout-route-figure">
+                <b>{route.distance_km}</b>
+                <span>Kilometres</span>
+              </dd>
+            </div>
+          )}
+        </dl>
 
         {/* Vehicle */}
         <div className="checkout-vehicle-selected">
           {vehicleType.image_url && (
-            <div className="relative w-full h-[120px] sm:w-[140px] sm:h-[90px] flex-shrink-0 rounded overflow-hidden bg-[var(--black-warm)]">
+            <div className={`relative w-full sm:w-[168px] aspect-[16/9] flex-shrink-0 rounded-[4px] overflow-hidden bg-[var(--black-warm)] border border-[var(--graphite)] ${MEDIA_TOKENS}`}>
               <Image
                 src={vehicleType.image_url}
                 alt={vehicleType.name}
                 fill
-                sizes="(max-width: 640px) 100vw, 140px"
-                className="object-contain p-2"
+                sizes="(max-width: 640px) 100vw, 168px"
+                className="object-cover [filter:var(--media-filter)]"
               />
             </div>
           )}
@@ -99,29 +122,25 @@ export function TransferDetailsSection({
             <h3 className="checkout-vehicle-name">{vehicleType.name}</h3>
             <div className="checkout-vehicle-specs">
               <span className="checkout-vehicle-spec">
-                <Users className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                <Users className="h-3.5 w-3.5 text-[var(--text-muted)]" aria-hidden="true" />
                 {vehicleType.passenger_capacity} seats
               </span>
               <span className="checkout-vehicle-spec">
-                <Briefcase className="h-3.5 w-3.5 text-[var(--gold-text)]" aria-hidden="true" />
+                <Briefcase className="h-3.5 w-3.5 text-[var(--text-muted)]" aria-hidden="true" />
                 {vehicleType.luggage_capacity} bags
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            className="checkout-vehicle-change"
-            onClick={() => window.history.back()}
-          >
-            Change
-          </button>
+          <Link href={changeHref} className="checkout-vehicle-change">
+            Change vehicle
+          </Link>
         </div>
 
         {/* Date and Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="pickupDate" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-              Pickup Date
+            <Label htmlFor="pickupDate" className={FIELD_LABEL}>
+              Pickup date
             </Label>
             <FormDatePicker
               value={pickupDateValue}
@@ -135,8 +154,8 @@ export function TransferDetailsSection({
             )}
           </div>
           <div>
-            <Label htmlFor="pickupTime" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-              Pickup Time
+            <Label htmlFor="pickupTime" className={FIELD_LABEL}>
+              Pickup time
             </Label>
             <FormTimePicker
               id="pickupTime"
@@ -154,38 +173,41 @@ export function TransferDetailsSection({
           </div>
         </div>
 
-        {/* Flight Number */}
-        <div>
-          <Label htmlFor="flightNumber" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-            Flight Number
-            <span className="text-[var(--text-muted)] ml-1.5">(optional)</span>
-          </Label>
-          <Input
-            id="flightNumber"
-            placeholder="e.g., EK 123"
-            className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
-            {...register('flightNumber')}
-            aria-describedby="flightNumber-hint"
-          />
-          <p id="flightNumber-hint" className="text-xs text-[var(--text-muted)] mt-1.5">We track your flight for delays</p>
-        </div>
+        {/* Flight number and guests share the two-column grid. Guests previously sat at
+            40% width with its capacity note floating beside it, which broke the rhythm
+            twice in one section. The breakdown is the source of truth; the total is
+            derived, so the two cannot contradict. Capped at this vehicle's capacity. */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="flightNumber" className={FIELD_LABEL}>
+              Flight number
+              <span className="checkout-field-optional">· Optional</span>
+            </Label>
+            <Input
+              id="flightNumber"
+              placeholder="EK 123"
+              className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
+              {...register('flightNumber')}
+              aria-describedby="flightNumber-hint"
+            />
+            <p id="flightNumber-hint" className="text-xs text-[var(--text-muted)] mt-1.5">
+              We track your flight and shift the pickup time for delays.
+            </p>
+          </div>
 
-        {/* Guests. The breakdown is the source of truth; the total is derived, so the two cannot
-            contradict. Capped at this vehicle's capacity. */}
-        <div>
-          <Label className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-            Guests
-          </Label>
-          <div className="flex items-center gap-3">
+          <div>
+            <Label className={FIELD_LABEL}>
+              Guests
+            </Label>
             <GuestSelector
               value={guests}
               onChange={setGuests}
               maxSeated={vehicleType.passenger_capacity}
-              className="flex min-h-11 w-full max-w-xs items-center gap-2 rounded-md border border-[var(--graphite)] bg-transparent px-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[var(--gold)]"
+              className="flex h-[52px] w-full items-center gap-2 rounded-md border border-[var(--graphite)] bg-[var(--black-warm)] px-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[rgba(var(--gold-rgb),0.15)]"
             />
-            <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">
-              Max {vehicleType.passenger_capacity}
-            </span>
+            <p className="text-xs text-[var(--text-muted)] mt-1.5">
+              This vehicle seats up to {vehicleType.passenger_capacity}.
+            </p>
           </div>
         </div>
       </div>

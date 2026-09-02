@@ -3,8 +3,6 @@ import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 import { CheckoutWrapper } from '@/components/checkout/checkout-wrapper'
-import { CheckoutHeading } from '@/components/checkout/checkout-heading'
-import { ProgressBar } from '@/components/checkout/progress-bar'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { getVehicleType, getLocationDetails, getActiveAddons } from './actions'
 import { createClient } from '@/lib/supabase/server'
@@ -163,13 +161,25 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const guests = resolveGuestsForVehicle(params, vehicleType.passenger_capacity)
   const passengers = getSeatedCount(guests)
 
+  // This legacy route has no route slug, so "Change vehicle" goes back to the search
+  // form carrying the same locations rather than popping history.
+  const changeParams = new URLSearchParams({
+    from: params.from,
+    to: params.to,
+    date: pickupDate,
+    passengers: String(passengers),
+    adults: String(guests.adults),
+    children: String(guests.children),
+    infants: String(guests.infants),
+  })
+  const changeHref = `/search/results?${changeParams.toString()}`
+
   return (
     <PublicLayout>
       <div className="min-h-screen bg-[var(--black-void)]">
         <div className="luxury-container py-8 md:py-16 lg:py-20">
-          <ProgressBar currentStep={3} />
-          <CheckoutHeading />
-
+          {/* The stepper and heading live inside CheckoutWrapper, which owns the wizard
+              step. They used to render here with a hardcoded step that never advanced. */}
           <CheckoutWrapper
             route={routeDetails}
             vehicleType={vehicleType}
@@ -180,6 +190,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             user={user}
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
+            changeHref={changeHref}
           />
         </div>
       </div>

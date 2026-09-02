@@ -58,10 +58,14 @@ export function Footer({ siteSettings }: FooterProps) {
       <div className="luxury-container">
         <motion.div
           className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] lg:gap-16"
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          // `whileInView` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
+          // equivalent and is not: useReducedMotion() is false during SSR, so opacity:0 is
+          // serialised into the markup and never animated back once hydration flips the
+          // flag. Reduced motion collapses offset and duration.
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <div>
             <Link

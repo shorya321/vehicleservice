@@ -6,6 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldValidationIcon } from '../field-validation-icon'
 
+/** One field-label treatment, hoisted so it cannot drift between the two form sections. */
+const FIELD_LABEL = 'checkout-field-label mb-2.5 block'
+
 interface PassengerInfoSectionProps {
   form: UseFormReturn<any>
 }
@@ -28,8 +31,8 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
       <div className="checkout-section-content space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="firstName" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-              First Name
+            <Label htmlFor="firstName" className={FIELD_LABEL}>
+              First name
             </Label>
             <div className="relative">
               <Input
@@ -52,8 +55,8 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
             )}
           </div>
           <div>
-            <Label htmlFor="lastName" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-              Last Name
+            <Label htmlFor="lastName" className={FIELD_LABEL}>
+              Last name
             </Label>
             <div className="relative">
               <Input
@@ -79,7 +82,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="email" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
+            <Label htmlFor="email" className={FIELD_LABEL}>
               Email
             </Label>
             <div className="relative">
@@ -103,12 +106,12 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               </p>
             ) : (
               <p id="email-hint" className="text-xs text-[var(--text-muted)] mt-1.5">
-                Booking confirmation sent here
+                Your confirmation and receipt go here.
               </p>
             )}
           </div>
           <div>
-            <Label htmlFor="phone" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
+            <Label htmlFor="phone" className={FIELD_LABEL}>
               Phone
             </Label>
             <div className="relative">
@@ -132,22 +135,22 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               </p>
             ) : (
               <p id="phone-hint" className="text-xs text-[var(--text-muted)] mt-1.5">
-                Include country code, e.g. +971 50 123 4567
+                Your chauffeur calls this number 30 minutes ahead.
               </p>
             )}
           </div>
         </div>
 
         <div>
-          <Label htmlFor="specialRequests" className="mb-2.5 block text-[var(--text-secondary)] text-sm">
-            Special Requests
-            <span className="text-[var(--text-muted)] ml-1.5">(optional)</span>
+          <Label htmlFor="specialRequests" className={FIELD_LABEL}>
+            Special requests
+            <span className="checkout-field-optional">· Optional</span>
           </Label>
           <Textarea
             id="specialRequests"
-            className="min-h-[100px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
+            className="min-h-[120px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)]"
             {...register('specialRequests')}
-            placeholder="Any special requirements or requests"
+            placeholder="Child seat position, extra stop, anything the chauffeur should know"
             rows={3}
           />
         </div>

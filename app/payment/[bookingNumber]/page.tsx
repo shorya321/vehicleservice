@@ -6,13 +6,16 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { PaymentWrapper } from '../components/payment-wrapper'
 import { ProgressBar } from '@/components/checkout/progress-bar'
+import { CheckoutHeading } from '@/components/checkout/checkout-heading'
+import { BookingLedger } from '@/components/checkout/booking-ledger'
+import { TrustBlock } from '@/components/checkout/trust-block'
 import { SecureFooter } from '../components/secure-footer'
-import { GuaranteeCard } from '../components/guarantee-card'
 import { PublicHeader } from '@/components/layout/public-header'
+import { Footer } from '@/components/layout/footer'
+import { getSiteSettings } from '@/lib/site-settings/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { Calendar, Clock, Users, Luggage, HelpCircle } from 'lucide-react'
-import { BookingSummaryPrices } from '../components/booking-summary-prices'
+import { HelpCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import {
@@ -28,8 +31,9 @@ import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 import { buildConfirmationUrl } from '@/lib/utils/url-builder'
 
 export const metadata: Metadata = {
-  title: 'Secure Payment | Infinia Transfers',
-  description: 'Complete your luxury transfer booking with our secure payment system',
+  // The root layout's title template appends ' | Infinia Transfers'.
+  title: 'Confirm and pay',
+  description: 'Confirm your transfer and pay securely. Free to cancel up to 24 hours before pickup.',
 }
 
 interface PaymentRoutePageProps {
@@ -165,11 +169,12 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   profile = profileData
 
   // Fetch currency data
-  const [featuredCurrencies, allCurrencies, rates, defaultCurrency] = await Promise.all([
+  const [featuredCurrencies, allCurrencies, rates, defaultCurrency, siteSettings] = await Promise.all([
     getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getExchangeRatesObject(),
     getDefaultCurrency(),
+    getSiteSettings(),
   ])
 
   const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
@@ -276,14 +281,22 @@ STRIPE_SECRET_KEY=sk_test_...`}
           initialUser={user}
           initialProfile={profile}
         />
-        <header className="text-center pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
+        {/* The same rail every other step opens on: progress, then the 28px gold rule and its
+            eyebrow, then a sentence-case heading, left-aligned. This block used to be centred,
+            Title Case, and eyebrow-less, so the last screen before payment read as a different
+            product. CheckoutHeading already took all three as props. */}
+        <header className="pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
           <div className="luxury-container pt-8 md:pt-12 lg:pt-16">
             <ProgressBar currentStep={4} />
-            <h1 className="editorial-section-title mt-8">
-              Secure Payment
-            </h1>
-            <p className="editorial-body mt-4 mx-auto max-w-[500px]">
-              Complete your booking with our encrypted payment system
+            <CheckoutHeading
+              eyebrow="Secure checkout"
+              title="Confirm and pay"
+              subtitle="Your card is charged once. Free to cancel up to 24 hours before pickup."
+            />
+            {/* The reference used to appear for the first time as a mono chip in the middle of
+                the payment card. It belongs with the heading, quietly. */}
+            <p className="-mt-8 text-[0.8125rem] tabular-nums text-[var(--text-muted)]">
+              Booking {booking.trip_number || booking.booking_number}
             </p>
           </div>
         </header>
@@ -299,78 +312,61 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   tripNumber={booking.trip_number || booking.booking_number}
                 />
               </div>
-              <aside className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24 product-entrance--sidebar" aria-label="Booking summary">
+              {/* `order-first` below lg: the summary used to sit after the card form in DOM
+                  order, so on a phone the customer scrolled the whole of Stripe before seeing
+                  what they were paying for. */}
+              <aside className="order-first lg:order-last w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24 product-entrance--sidebar" aria-label="Booking summary">
                 <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden">
-                  <div className="px-6 xl:px-8 py-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-                    <h2 className="text-[1.375rem] font-semibold text-[var(--text-primary)]">Booking Summary</h2>
-                  </div>
-                  <div className="px-6 xl:px-8 py-6 space-y-5">
-                    {booking.vehicle_type && (
-                      <div className="pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-                        <span className="t-label">
-                          Luxury Transfer
-                        </span>
-                        <h3 className="text-[1.125rem] font-semibold text-[var(--text-primary)] mt-1">{booking.vehicle_type.name}</h3>
-                      </div>
-                    )}
-                    <div className="space-y-3 pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-                      <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--gold)] flex-shrink-0" />
-                        <div>
-                          <span className="t-label block leading-none">Pick-up</span>
-                          <p className="text-[1rem] font-medium text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.pickup_address}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 mt-1.5 rounded-full bg-[var(--gold-deep)] flex-shrink-0" />
-                        <div>
-                          <span className="t-label block leading-none">Drop-off</span>
-                          <p className="text-[1rem] font-medium text-[var(--text-primary)] leading-tight mt-1 break-words">{booking.dropoff_address}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-4 pb-5 border-b border-[rgba(var(--gold-rgb),0.1)]">
-                      <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                        <Calendar className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                        {format(toBookingTz(booking.pickup_datetime), 'MMM dd, yyyy')}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                        <Clock className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                        {format(toBookingTz(booking.pickup_datetime), 'HH:mm')}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                        <Users className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                        {booking.passenger_count} passengers
-                      </span>
-                      {(booking.luggage_count ?? 0) > 0 && (
-                        <span className="flex items-center gap-1.5 text-[0.8125rem] text-[var(--text-secondary)]">
-                          <Luggage className="w-3.5 h-3.5 text-[var(--gold-text)]" aria-hidden="true" />
-                          {booking.luggage_count} luggage
-                        </span>
-                      )}
-                    </div>
-                    <BookingSummaryPrices
-                      basePrice={booking.base_price}
-                      amenitiesPrice={booking.amenities_price ?? 0}
-                      totalPrice={booking.total_price}
-                    />
-                  </div>
-                  <div className="px-6 xl:px-8 py-5 bg-[rgba(var(--graphite-rgb),0.3)] border-t border-[rgba(var(--gold-rgb),0.1)]">
-                    <GuaranteeCard />
+                  {/* The same card the customer has had beside them since step three, drawing
+                      the same data the same way. This aside used to use bullet dots and icon
+                      chips for the route, and printed `Base fare 110.00 / Total 110.00` when
+                      there were no extras, which OrderSummary correctly suppressed. */}
+                  <BookingLedger
+                    category={null}
+                    vehicleName={booking.vehicle_type?.name ?? 'Your transfer'}
+                    originName={booking.pickup_address}
+                    destinationName={booking.dropoff_address}
+                    dateLabel={format(toBookingTz(booking.pickup_datetime), 'EEE, MMM d')}
+                    timeLabel={format(toBookingTz(booking.pickup_datetime), 'HH:mm')}
+                    passengers={booking.passenger_count}
+                    luggage={booking.luggage_count ?? null}
+                    basePrice={booking.base_price}
+                    // One rolled-up line rather than a row per amenity: `booking_amenities`
+                    // stores `amenity_type: 'addon'` and the addon name lives behind `addon_id`,
+                    // so itemising here would need a join this query does not make. Same line
+                    // BookingSummaryPrices showed.
+                    addons={
+                      (booking.amenities_price ?? 0) > 0
+                        ? [{
+                            id: 'amenities',
+                            name: 'Additional services',
+                            quantity: 1,
+                            total_price: booking.amenities_price ?? 0,
+                          }]
+                        : []
+                    }
+                    total={booking.total_price}
+                  />
+                  <div className="px-6 xl:px-8 py-5 border-t border-[rgba(var(--gold-rgb),0.1)]">
                     <Link
                       href="/contact"
-                      className="inline-flex items-center justify-center gap-2 mt-5 min-h-[44px] text-[0.8125rem] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] rounded-[4px]"
+                      className="inline-flex items-center justify-center gap-2 min-h-[44px] text-[0.8125rem] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] rounded-[4px]"
                     >
                       <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       Need help with your booking?
                     </Link>
                   </div>
                 </div>
+
+                {/* Replaces GuaranteeCard, which stated the cancellation terms alone and in
+                    --success green — a fifth accent on the one screen that could least afford
+                    it. The full three guarantees, in the same block as the other two steps. */}
+                <TrustBlock />
               </aside>
             </div>
           </div>
         </main>
-        <SecureFooter />
+        <Footer siteSettings={siteSettings} />
       </div>
     </CurrencyProvider>
   )
