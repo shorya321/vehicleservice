@@ -1,7 +1,6 @@
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { VendorApplicationEditForm } from "./vendor-application-edit-form"
 
@@ -44,26 +43,21 @@ export default async function EditVendorApplicationPage() {
 
   return (
     <div className="bg-[var(--black-void)]">
-      <div className="luxury-container py-8 md:py-12">
-        {/* Back Link */}
-        <Link
-          href="/vendor-application"
-          className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Application Status
-        </Link>
+      <div className="luxury-container pt-[clamp(3rem,7vw,5rem)] pb-[clamp(4rem,9vw,6.5rem)]">
+        <div className="max-w-3xl mx-auto">
+          <Link href="/vendor-application" className="account-action">
+            <span aria-hidden="true">&larr;</span> Back to your application
+          </Link>
 
-        <div className="max-w-3xl mx-auto space-y-8">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl md:text-4xl font-medium text-[var(--text-primary)] mb-2">
-              Edit Application
+          <header className="mt-6 mb-[clamp(2.5rem,5vw,3.5rem)]">
+            <p className="editorial-eyebrow">Partner programme</p>
+            <h1 className="mt-[0.5rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
+              Edit your application
             </h1>
-            <p className="text-[var(--text-muted)]">
-              Update your vendor application details and documents
+            <p className="mt-4 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-[52ch]">
+              Changes are saved against the application already in review. Nothing is resubmitted.
             </p>
-          </div>
+          </header>
 
           {/* Edit Form */}
           <VendorApplicationEditForm

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Building2, Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react"
+import { APPLICATION_STATUS_LABEL } from "@/lib/vendor-application/status"
 
 interface VendorApplication {
   id: string
@@ -31,7 +32,7 @@ const STATUS_CONFIG: Record<string, {
     bgColor: "bg-[var(--status-pending-bg)]",
     borderColor: "border-[var(--status-pending-border)]",
     hoverBorderColor: "hover:border-[var(--status-pending-text)]/50",
-    badgeLabel: "Under Review",
+    badgeLabel: APPLICATION_STATUS_LABEL.pending,
     badgeTextColor: "text-[var(--status-pending-text)]",
     fallbackTitle: "Vendor Application",
     href: "/vendor-application",
@@ -42,7 +43,7 @@ const STATUS_CONFIG: Record<string, {
     bgColor: "bg-[var(--status-completed-bg)]",
     borderColor: "border-[var(--status-completed-border)]",
     hoverBorderColor: "hover:border-[var(--status-completed-text)]/50",
-    badgeLabel: "Approved",
+    badgeLabel: APPLICATION_STATUS_LABEL.approved,
     badgeTextColor: "text-[var(--status-completed-text)]",
     fallbackTitle: "Vendor Portal",
     href: "/vendor/dashboard",
@@ -53,7 +54,7 @@ const STATUS_CONFIG: Record<string, {
     bgColor: "bg-[var(--status-cancelled-bg)]",
     borderColor: "border-[var(--status-cancelled-border)]",
     hoverBorderColor: "hover:border-[var(--error-text)]/50",
-    badgeLabel: "Rejected",
+    badgeLabel: APPLICATION_STATUS_LABEL.rejected,
     badgeTextColor: "text-[var(--error-text)]",
     fallbackTitle: "Application Rejected",
     href: "/vendor-application",

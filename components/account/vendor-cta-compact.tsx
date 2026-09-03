@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Clock, CheckCircle2, XCircle } from "lucide-react"
+import { APPLICATION_STATUS_LABEL } from "@/lib/vendor-application/status"
 
 export interface VendorApplicationSummary {
   id: string
@@ -47,9 +48,9 @@ export function VendorCTACompact({
   }
 
   const statusConfig: Record<string, { icon: typeof Clock; label: string; className: string; href: string }> = {
-    pending: { icon: Clock, label: "Under Review", className: "text-[var(--status-pending-text)]", href: "/vendor-application" },
-    approved: { icon: CheckCircle2, label: "Approved", className: "text-[var(--status-completed-text)]", href: "/vendor/dashboard" },
-    rejected: { icon: XCircle, label: "Rejected", className: "text-[var(--error-text)]", href: "/vendor-application" },
+    pending: { icon: Clock, label: APPLICATION_STATUS_LABEL.pending, className: "text-[var(--status-pending-text)]", href: "/vendor-application" },
+    approved: { icon: CheckCircle2, label: APPLICATION_STATUS_LABEL.approved, className: "text-[var(--status-completed-text)]", href: "/vendor/dashboard" },
+    rejected: { icon: XCircle, label: APPLICATION_STATUS_LABEL.rejected, className: "text-[var(--error-text)]", href: "/vendor-application" },
   }
 
   const config = statusConfig[vendorApplication.status]

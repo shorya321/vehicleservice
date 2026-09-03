@@ -1,20 +1,15 @@
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { ArrowLeft, Settings, AlertTriangle } from "lucide-react"
 import Link from "next/link"
-import { ApplicationStatusAlert } from "@/components/vendor-application/application-status-alert"
-import { ApplicationDetailsCard } from "@/components/vendor-application/application-details-card"
+import { createClient } from "@/lib/supabase/server"
+import { ApplicationDossier, type VendorApplicationRow } from "@/components/vendor-application/application-dossier"
+import { ReviewRail } from "@/components/vendor-application/review-rail"
+import { formatBookingDate } from "@/lib/utils/timezone"
+import { normalizeApplicationStatus } from "@/lib/vendor-application/status"
 
 export const metadata: Metadata = {
   title: "Vendor Application Status | Track Your Application",
   description: "Track the status of your vendor application",
-}
-
-const STATUS_BADGE_COLORS: Record<string, string> = {
-  pending: "bg-yellow-500/20 text-yellow-400",
-  approved: "bg-green-500/20 text-green-400",
-  rejected: "bg-red-500/20 text-red-400",
 }
 
 export default async function VendorApplicationPage() {
@@ -35,95 +30,38 @@ export default async function VendorApplicationPage() {
     redirect("/become-vendor")
   }
 
-  const validStatuses = ["pending", "approved", "rejected"] as const
-  const status = validStatuses.includes(application.status as any)
-    ? (application.status as "pending" | "approved" | "rejected")
-    : "pending"
+  const status = normalizeApplicationStatus(application.status)
+  const row = application as unknown as VendorApplicationRow
 
   return (
     <div className="bg-[var(--black-void)]">
-      <div className="luxury-container py-8 md:py-12">
-        <Link
-          href="/account"
-          className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold)] transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Account
-        </Link>
-
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-medium text-[var(--text-primary)] mb-2">
-              Vendor Application
-            </h1>
-            <p className="text-[var(--text-muted)]">Track the status of your vendor application</p>
-          </div>
-
-          <ApplicationStatusAlert status={status} rejectionReason={application.rejection_reason} />
-
-          <ApplicationDetailsCard
-            application={application}
-            status={status}
-            badgeColor={STATUS_BADGE_COLORS[status]}
-          />
-
-          {status === "pending" && <PendingActionsCard />}
-          {status === "rejected" && <RejectedActionsCard />}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function PendingActionsCard() {
-  return (
-    <div className="account-section">
-      <div className="account-section-header">
-        <div className="account-section-icon">
-          <Settings className="w-5 h-5 text-[var(--gold)]" />
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-[var(--text-primary)]">Application Actions</h3>
-          <p className="text-sm text-[var(--text-muted)]">
-            You can update your application while it&apos;s under review
-          </p>
-        </div>
-      </div>
-      <div className="account-section-content">
-        <p className="text-sm text-[var(--text-muted)] mb-4">
-          Need to update your documents or business information?
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/vendor-application/edit" className="btn btn-primary">
-            Edit Application
+      <div className="luxury-container pt-[clamp(3rem,7vw,5rem)] pb-[clamp(4rem,9vw,6.5rem)]">
+        <div className="mx-auto max-w-[1100px]">
+          <Link href="/account" className="account-action">
+            <span aria-hidden="true">&larr;</span> Back to account
           </Link>
-          <button className="btn btn-secondary">Contact Support</button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-function RejectedActionsCard() {
-  return (
-    <div className="account-section">
-      <div className="account-section-header">
-        <div className="account-section-icon">
-          <AlertTriangle className="w-5 h-5 text-[var(--gold)]" />
+          <header className="mt-6">
+            <p className="editorial-eyebrow">Partner programme</p>
+            <h1 className="mt-[0.5rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
+              Your application
+            </h1>
+            <p className="numeric mt-3 text-[0.875rem] text-[var(--text-secondary)]">
+              Submitted {formatBookingDate(row.created_at)}
+            </p>
+          </header>
+
+          <div className="mt-[clamp(2.5rem,5vw,3.5rem)] lg:grid lg:grid-cols-[2fr_3fr] lg:gap-16 xl:gap-20">
+            <ReviewRail
+              status={status}
+              createdAt={row.created_at}
+              updatedAt={row.updated_at}
+              reviewedAt={row.reviewed_at ?? null}
+              className="lg:sticky lg:top-28 lg:self-start"
+            />
+            <ApplicationDossier application={row} status={status} className="mt-10 lg:mt-0" />
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-[var(--text-primary)]">Next Steps</h3>
-          <p className="text-sm text-[var(--text-muted)]">
-            Review the rejection reason and reapply
-          </p>
-        </div>
-      </div>
-      <div className="account-section-content">
-        <p className="text-sm text-[var(--text-muted)] mb-4">
-          Please review the rejection reason carefully and ensure you meet all requirements before
-          submitting a new application. If you have questions, please contact our support team.
-        </p>
-        <button className="btn btn-secondary">Contact Support</button>
       </div>
     </div>
   )
