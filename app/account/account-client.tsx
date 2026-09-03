@@ -11,6 +11,7 @@ import { BookingsTab } from "@/components/account/bookings-tab"
 import { ReviewsTab } from "@/components/account/reviews-tab"
 import { NotificationsTab } from "@/components/account/notifications-tab"
 import { AccountTrustRail } from "@/components/account/trust-rail"
+import { VendorCTACompact } from "@/components/account/vendor-cta-compact"
 import { VALID_TABS, type TabId } from "@/components/account/account-nav"
 import { getBookingTimezone } from "@/lib/utils/timezone"
 
@@ -153,6 +154,15 @@ export function AccountClient({
             it carried no guarantee, no cancellation window and no way to reach
             anyone. Ported from the confirmation page's GuaranteeList. */}
         <AccountTrustRail />
+
+        {/* The rail is `hidden lg:block` and the mobile header carries only the profile row and
+            the tab bar, so on a phone this invitation did not exist anywhere on the page. Below
+            the guarantees, on the trust rail's own spacing, and only where the rail is absent so
+            desktop never shows it twice. */}
+        <VendorCTACompact
+          vendorApplication={vendorApplication}
+          className="lg:hidden mt-[clamp(2.5rem,6vw,4rem)] border-t border-[var(--border-subtle)] pt-[clamp(2rem,4vw,3rem)]"
+        />
       </main>
       </div>
     </>

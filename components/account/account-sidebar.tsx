@@ -4,11 +4,12 @@ import { getBookingTimezone } from "@/lib/utils/timezone"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Camera, Clock, CheckCircle2, XCircle } from "lucide-react"
+import { Camera } from "lucide-react"
 import { uploadAvatar } from "@/app/account/actions"
 import { toast } from "sonner"
 import { NAV_ITEMS, type TabId } from "./account-nav"
 import { calculateCompletion } from "./types"
+import { VendorCTACompact } from "./vendor-cta-compact"
 
 interface AccountSidebarProps {
   user: {
@@ -202,45 +203,5 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
       {/* Zone C: Vendor CTA */}
       <VendorCTACompact vendorApplication={vendorApplication} />
     </aside>
-  )
-}
-
-function VendorCTACompact({ vendorApplication }: { vendorApplication: AccountSidebarProps["vendorApplication"] }) {
-  if (!vendorApplication) {
-    return (
-      <div className="account-sidebar-zone">
-        {/* This was `.account-action`, the text-link treatment, so the one CTA in the rail read as
-            a sentence rather than as something to press. It is the sanctioned secondary button
-            now: transparent fill and a 1px gold edge, which is loud enough to be found and quiet
-            enough not to compete with the gold-filled primary on the booking detail. Pitch, then
-            the control, rather than a control followed by an explanation of itself. */}
-        <p className="account-label">Partner with Infinia</p>
-        <p className="mt-2 text-[0.75rem] leading-relaxed text-[var(--text-muted)]">
-          Run a fleet in the UAE? List your vehicles and take bookings through us.
-        </p>
-        <Link href="/become-vendor" className="btn btn-secondary mt-4 w-full">
-          Apply to partner
-        </Link>
-      </div>
-    )
-  }
-
-  const statusConfig: Record<string, { icon: typeof Clock; label: string; className: string; href: string }> = {
-    pending: { icon: Clock, label: "Under Review", className: "text-[var(--status-pending-text)]", href: "/vendor-application" },
-    approved: { icon: CheckCircle2, label: "Approved", className: "text-[var(--status-completed-text)]", href: "/vendor/dashboard" },
-    rejected: { icon: XCircle, label: "Rejected", className: "text-[var(--error-text)]", href: "/vendor-application" },
-  }
-
-  const config = statusConfig[vendorApplication.status]
-  if (!config) return null
-
-  return (
-    <div className="account-sidebar-zone">
-      <Link href={config.href} className="account-nav-item group">
-        <config.icon className={`w-4 h-4 flex-shrink-0 ${config.className}`} />
-        <span className="flex-1 text-left truncate">{vendorApplication.business_name || "Vendor Application"}</span>
-        <span className={`account-label flex-shrink-0 ${config.className}`}>{config.label}</span>
-      </Link>
-    </div>
   )
 }
