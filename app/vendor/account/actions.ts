@@ -180,11 +180,22 @@ export async function updatePassword(
   }
 }
 
+/**
+ * The RPC is SECURITY DEFINER, so it bypasses RLS and will happily read, or create, the row for
+ * whatever user id it is handed. This is a server action, so `userId` arrives from the caller and
+ * has to be checked against the session rather than trusted. updateNotificationPreferences below
+ * already did exactly this; the getter was simply missed.
+ */
 export async function getNotificationPreferences(
   userId: string
 ): Promise<NotificationPreferences | null> {
   const supabase = await createClient()
-  
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.id !== userId) {
+    return null
+  }
+
   try {
     // Get or create notification preferences
     const { data, error } = await supabase

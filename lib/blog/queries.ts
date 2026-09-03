@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sanitiseSearchTerm } from '@/lib/supabase/search-term'
 
 /** Strip HTML tags from content and truncate to maxLen characters at the last word boundary */
 function stripHtmlAndTruncate(html: string, maxLen: number): string {
@@ -109,8 +110,11 @@ export const getPublishedPosts = unstable_cache(
         }
       }
 
-      if (options.search) {
-        query = query.or(`title.ilike.%${options.search}%,excerpt.ilike.%${options.search}%`)
+      // /blog?search= is anonymous, and or() takes a filter expression rather than a bound
+      // value. See lib/supabase/search-term.ts.
+      const search = options.search ? sanitiseSearchTerm(options.search) : ''
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`)
       }
 
       query = query

@@ -201,8 +201,20 @@ export async function cancelDeletionRequest(
 // Notification Preferences Actions
 // ============================================================================
 
+/**
+ * The RPC is SECURITY DEFINER, so it bypasses RLS and will happily read, or create, the row for
+ * whatever user id it is handed. This is a server action, so `userId` arrives from the caller and
+ * has to be checked against the session rather than trusted. updateNotificationPreferences below
+ * already did exactly this; the getter was simply missed.
+ */
 export async function getNotificationPreferences(userId: string) {
   const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.id !== userId) {
+    return null
+  }
+
   const { data } = await supabase.rpc("get_or_create_notification_preferences", { p_user_id: userId })
   return data
 }

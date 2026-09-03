@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 import { closeActiveAssignments } from "@/lib/bookings/unified-service"
+import { sanitiseSearchTerm } from "@/lib/supabase/search-term"
 import type { BookingFiltersData } from "./schemas"
 
 export interface BookingFilters {
@@ -16,7 +17,26 @@ export interface BookingFilters {
   limit?: number
 }
 
+/**
+ * The empty result. Returned rather than thrown so the caller renders its ordinary empty state:
+ * a customer who is signed out mid-session should see "no bookings", not a crash.
+ */
+const NO_BOOKINGS = { bookings: [], total: 0, page: 1, totalPages: 0 }
+
+/**
+ * `userId` is supplied by the caller and this is a server action, so it is reachable by anyone
+ * with a session. It is checked against the session rather than trusted, matching what
+ * updateNotificationPreferences in ./actions.ts already does. Without this, passing another
+ * customer's id returned that customer's bookings: the query runs on the admin client, which
+ * bypasses the RLS policy that would otherwise have caught it.
+ */
 export async function getBookings(userId: string, filters: BookingFilters = {}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.id !== userId) {
+    return NO_BOOKINGS
+  }
+
   const adminClient = createAdminClient()
   const limit = filters.limit || 10
   const page = filters.page || 1
@@ -35,12 +55,15 @@ export async function getBookings(userId: string, filters: BookingFilters = {}) 
     `, { count: "exact" })
     .eq("customer_id", userId)
 
-  if (filters.search) {
+  // or() takes a filter expression, not a bound value, so the raw term could close one condition
+  // and open another. See lib/supabase/search-term.ts.
+  const search = filters.search ? sanitiseSearchTerm(filters.search) : ""
+  if (search) {
     query = query.or(
-      `booking_number.ilike.%${filters.search}%,` +
-      `trip_number.ilike.%${filters.search}%,` +
-      `pickup_address.ilike.%${filters.search}%,` +
-      `dropoff_address.ilike.%${filters.search}%`
+      `booking_number.ilike.%${search}%,` +
+      `trip_number.ilike.%${search}%,` +
+      `pickup_address.ilike.%${search}%,` +
+      `dropoff_address.ilike.%${search}%`
     )
   }
 
@@ -74,7 +97,14 @@ export async function getBookings(userId: string, filters: BookingFilters = {}) 
   }
 }
 
+/** Same reasoning as getBookings: the id is checked against the session, never trusted. */
 export async function getBookingStats(userId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.id !== userId) {
+    return { total: 0, upcoming: 0, completed: 0, cancelled: 0 }
+  }
+
   const adminClient = createAdminClient()
 
   const [total, upcoming, completed, cancelled] = await Promise.all([
