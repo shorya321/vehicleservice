@@ -3,41 +3,17 @@ export const dynamic = 'force-dynamic'
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { ArrowLeft, Check } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { VendorApplicationForm } from "@/components/vendor-application/vendor-application-form"
 import { PublicLayout } from "@/components/layout/public-layout"
+import { ApplicationIndex } from "./components/application-index"
+import { PartnerBenefits, PartnerRequirements } from "./components/partner-rail"
 
 export const metadata: Metadata = {
   title: "Become a Vendor | Start Your Transfer Business",
   description: "Apply to list your vehicles and start your rental business with us",
 }
-
-const benefits = [
-  {
-    number: "01",
-    title: "No upfront fees",
-    description: "Commission on completed bookings only. Zero cost to join the platform.",
-  },
-  {
-    number: "02",
-    title: "48-hour review",
-    description: "Every application is reviewed by our team within two business days.",
-  },
-  {
-    number: "03",
-    title: "Weekly payouts",
-    description: "Earnings deposited directly to your bank account each week.",
-  },
-]
-
-const requirements = [
-  "Business contact email, phone and address",
-  "Business registration number",
-  "Current trade license",
-  "Valid insurance policy",
-  "Banking details (optional initially)",
-]
 
 export default async function BecomeVendorPage() {
   const supabase = await createClient()
@@ -88,57 +64,44 @@ export default async function BecomeVendorPage() {
 
             {/* Left Column. Persuasion (sticky on desktop) */}
             <div className="lg:sticky lg:top-28 lg:self-start mb-10 lg:mb-0 motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-              <h1 className="editorial-section-title--promoted [text-wrap:balance] mb-4">
-                Partner with Infinia
+              {/* The site's eyebrow, with its 28px gold rule. This page used a bare
+                  `t-label-accent` in five places and was the only one without it. */}
+              <p className="editorial-eyebrow">Partner programme</p>
+
+              {/* The CheckoutHeading recipe, as on the account page and confirmation.
+                  This was `editorial-section-title--promoted`: a class documented for
+                  mid-page sections, a full weight heavier and ~27% larger than every
+                  other page title in the product. */}
+              <h1 className="mt-[0.5rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
+                Partner with <em className="not-italic font-normal text-[var(--gold-text)]">Infinia</em>
               </h1>
-              <p className="text-[var(--text-secondary)] leading-relaxed mb-10 max-w-md">
-                List your vehicles on our premium transfer platform and grow your business with access to high-value bookings.
+
+              {/* The account CTA's own words. The promise someone clicks and the
+                  promise they land on should be the same one. */}
+              <p className="mt-4 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-[34ch]">
+                Run a fleet in the UAE? List your vehicles and take bookings through us.
               </p>
 
-              {/* Benefits. Typographic, no card wrappers */}
-              <div className="space-y-6 mb-10">
-                {benefits.map((benefit) => (
-                  <div key={benefit.number} className="flex gap-4">
-                    <span className="text-lg font-semibold text-[var(--gold-text)] tabular-nums leading-6 shrink-0">
-                      {benefit.number}
-                    </span>
-                    <div>
-                      <p className="text-[var(--text-primary)] font-semibold leading-6">
-                        {benefit.title}
-                      </p>
-                      <p className="text-sm text-[var(--text-muted)] leading-relaxed mt-0.5">
-                        {benefit.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <PartnerBenefits className="mt-8 max-lg:hidden" />
+              <PartnerRequirements className="mt-8 lg:mt-9" />
 
-              {/* Requirements checklist */}
-              <div className="border-t border-[rgba(var(--gold-text-rgb),0.2)] pt-8">
-                <p className="t-label-accent mb-3">
-                  What you&apos;ll need
-                </p>
-                <ul className="space-y-2.5">
-                  {requirements.map((req) => (
-                    <li key={req} className="flex items-start gap-2.5">
-                      <Check className="w-4 h-4 text-[var(--gold-text)] shrink-0 mt-0.5" aria-hidden="true" />
-                      <span className="text-sm text-[var(--text-secondary)]">{req}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Fills what was ~950px of empty column beside the form. Desktop only:
+                  it tracks a rail that does not exist below `lg`. */}
+              <ApplicationIndex />
             </div>
 
-            {/* Right Column. Application Form */}
-            <div className="motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500 [animation-delay:150ms] [animation-fill-mode:backwards]">
+            {/* Right Column. Application Form.
+                Fade only, no slide. Two large rectangles sliding up together was not an
+                arrival, it was two rectangles moving. It also matters mechanically: a
+                transform on this column would make it the containing block for the
+                docked mobile action inside it, so the bar would sit against the column
+                rather than the viewport for the length of the entrance. */}
+            <div className="motion-safe:animate-in fade-in-0 duration-500 [animation-delay:150ms] [animation-fill-mode:backwards]">
               <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-text-rgb),0.2)] rounded-lg p-6 md:p-8">
                 <div className="mb-8">
-                  <p className="t-label-accent mb-2">
-                    Application
-                  </p>
-                  <h2 className="text-2xl font-semibold text-[var(--text-primary)] [text-wrap:balance]">
-                    Vendor Registration
+                  <p className="editorial-eyebrow">Application</p>
+                  <h2 className="mt-2 t-subhead font-medium">
+                    Vendor registration
                   </h2>
                 </div>
 
@@ -150,8 +113,9 @@ export default async function BecomeVendorPage() {
                 />
               </div>
 
-              {/* Terms */}
-              <p className="text-center text-xs text-[var(--text-muted)] mt-6">
+              {/* Left-aligned with the column it belongs to. It was centered under an
+                  entirely left-aligned rail. */}
+              <p className="mt-6 text-xs text-[var(--text-muted)]">
                 By submitting, you agree to our{" "}
                 <Link href="/terms" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
                   Terms of Service
@@ -161,6 +125,14 @@ export default async function BecomeVendorPage() {
                   Vendor Agreement
                 </Link>
               </p>
+
+              {/* On a phone the figures sit here instead, so the requirements checklist
+                  and the first field arrive sooner. */}
+              <PartnerBenefits className="mt-10 lg:hidden" />
+
+              {/* Clears the docked action, which is out of flow below lg. Last thing on
+                  the page, so nothing after the card can end up underneath it either. */}
+              <div aria-hidden="true" className="h-[152px] sm:h-[116px] lg:hidden" />
             </div>
           </div>
         </div>

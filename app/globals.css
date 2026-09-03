@@ -3052,6 +3052,14 @@
   opacity: 0.75;
 }
 
+/* An invalid field's label has to still read as invalid. `.checkout-field-label` is
+   unlayered, so it otherwise wins outright over the `text-destructive` utility that
+   shadcn's FormLabel adds on error, and the label stays muted while the message below
+   it turns red. */
+.checkout-field-label.text-destructive {
+  color: var(--error-text);
+}
+
 .checkout-section-icon {
   display: none;
 }
