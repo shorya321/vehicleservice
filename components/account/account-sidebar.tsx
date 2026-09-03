@@ -24,7 +24,13 @@ interface AccountSidebarProps {
     created_at: string
   }
   activeTab: TabId
-  onTabChange: (tab: TabId) => void
+  /**
+   * Omitted on the booking detail route, where the sidebar must navigate rather than swap a tab.
+   * The tab callback rewrites the URL against the current pathname, so on /account/bookings/[ref]
+   * it would produce /account/bookings/[ref]?tab=personal and render the wrong panel under the
+   * wrong address. Without it every item renders as a real link back to /account.
+   */
+  onTabChange?: (tab: TabId) => void
   unreadNotifications: number
   vendorApplication: {
     id: string
@@ -135,13 +141,19 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
             <div>
               <dt>Profile</dt>
               <dd>
-                <button
-                  type="button"
-                  onClick={() => onTabChange("personal")}
-                  className="account-action"
-                >
-                  Finish setup
-                </button>
+                {onTabChange ? (
+                  <button
+                    type="button"
+                    onClick={() => onTabChange("personal")}
+                    className="account-action"
+                  >
+                    Finish setup
+                  </button>
+                ) : (
+                  <Link href="/account?tab=personal" className="account-action">
+                    Finish setup
+                  </Link>
+                )}
               </dd>
             </div>
           )}
@@ -153,19 +165,34 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.id
+            const itemBody = (
+              <>
+                <item.icon className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.id === "notifications" && unreadNotifications > 0 && (
+                  <span className="account-badge">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>
+                )}
+              </>
+            )
             return (
               <li key={item.id}>
-                <button
-                  onClick={() => onTabChange(item.id)}
-                  className={`account-nav-item ${isActive ? "active" : ""}`}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  <item.icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.id === "notifications" && unreadNotifications > 0 && (
-                    <span className="account-badge">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>
-                  )}
-                </button>
+                {onTabChange ? (
+                  <button
+                    onClick={() => onTabChange(item.id)}
+                    className={`account-nav-item ${isActive ? "active" : ""}`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {itemBody}
+                  </button>
+                ) : (
+                  <Link
+                    href={`/account?tab=${item.id}`}
+                    className={`account-nav-item ${isActive ? "active" : ""}`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {itemBody}
+                  </Link>
+                )}
               </li>
             )
           })}
@@ -182,12 +209,18 @@ function VendorCTACompact({ vendorApplication }: { vendorApplication: AccountSid
   if (!vendorApplication) {
     return (
       <div className="account-sidebar-zone">
-        <Link href="/become-vendor" className="account-action">
-          Partner with Infinia
-        </Link>
+        {/* This was `.account-action`, the text-link treatment, so the one CTA in the rail read as
+            a sentence rather than as something to press. It is the sanctioned secondary button
+            now: transparent fill and a 1px gold edge, which is loud enough to be found and quiet
+            enough not to compete with the gold-filled primary on the booking detail. Pitch, then
+            the control, rather than a control followed by an explanation of itself. */}
+        <p className="account-label">Partner with Infinia</p>
         <p className="mt-2 text-[0.75rem] leading-relaxed text-[var(--text-muted)]">
           Run a fleet in the UAE? List your vehicles and take bookings through us.
         </p>
+        <Link href="/become-vendor" className="btn btn-secondary mt-4 w-full">
+          Apply to partner
+        </Link>
       </div>
     )
   }

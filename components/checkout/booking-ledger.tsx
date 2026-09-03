@@ -4,13 +4,12 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, Info, X } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
-
-/** Hoisted so the card's label treatment cannot drift copy by copy. Tier 2. */
-const CARD_LABEL = 'text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]'
-const CARD_LABEL_STRONG = 'text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)]'
-
-const BAND = 'px-6 xl:px-8 py-5'
-const BAND_DIVIDER = 'border-t border-[rgba(var(--gold-rgb),0.1)]'
+import {
+  CARD_LABEL,
+  CARD_LABEL_STRONG,
+  BAND,
+  BAND_DIVIDER,
+} from '@/components/booking/itinerary-primitives'
 
 export interface LedgerAddon {
   id: string

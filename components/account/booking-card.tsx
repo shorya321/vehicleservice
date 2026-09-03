@@ -2,6 +2,7 @@
 
 import { memo, useMemo } from "react"
 import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from '@/lib/currency/context'
 import { getBookingTimezone, bookingToday } from '@/lib/utils/timezone'
@@ -9,7 +10,6 @@ import type { BookingListItem } from "./types"
 
 interface BookingCardProps {
   booking: BookingListItem
-  onClick: () => void
 }
 
 /**
@@ -44,7 +44,7 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
 }
 
-export const BookingCard = memo(function BookingCard({ booking, onClick }: BookingCardProps) {
+export const BookingCard = memo(function BookingCard({ booking }: BookingCardProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
 
   /** Date and time were split across two grid columns. They are one fact. */
@@ -101,10 +101,12 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
   const reference = booking.trip_number || booking.booking_number
 
   return (
-    <div className="account-item-card account-item-card-interactive">
-      <button
-        onClick={onClick}
-        className="w-full text-left"
+    <div className="account-item-card account-item-card-interactive group">
+      {/* A link, not a button. The card opened a drawer with no address of its own, so the
+          booking could not be middle-clicked, opened in a second tab, bookmarked or prefetched. */}
+      <Link
+        href={`/account/bookings/${encodeURIComponent(reference)}`}
+        className="block w-full text-left rounded-[4px] focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-4"
         aria-label={`View booking ${reference}`}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
@@ -137,14 +139,27 @@ export const BookingCard = memo(function BookingCard({ booking, onClick }: Booki
             </p>
           </div>
 
-          {/* The figure the customer opened the page to check. */}
+          {/* The figure the customer opened the page to check, and the cue that this row opens
+              something. The whole card was already a link, but a card that only reacts on hover
+              tells a first-time visitor nothing: the affordance has to be legible at rest. Muted
+              standing, gold on hover, and it is a span rather than a link so the row keeps exactly
+              one destination for a screen reader. */}
           <div className="flex flex-shrink-0 flex-col items-start gap-1 sm:items-end sm:text-right">
             <span className="t-price">{formattedPrice}</span>
             {vendorName && <span className="text-xs text-[var(--text-muted)]">{vendorName}</span>}
+            <span
+              aria-hidden="true"
+              className="mt-2 inline-flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)] transition-colors duration-200 group-hover:text-[var(--gold-text)]"
+            >
+              View details
+              <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </span>
           </div>
         </div>
-      </button>
+      </Link>
 
+      {/* Sibling, never nested: an anchor inside an anchor is invalid and the inner one stops
+          working. */}
       {rebookHref && (
         <div className="mt-4 border-t border-[var(--border-subtle)] pt-3">
           <Link href={rebookHref} className="account-action">

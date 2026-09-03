@@ -107,6 +107,35 @@ export async function getBookingStats(userId: string) {
   return { total, upcoming, completed, cancelled }
 }
 
+/**
+ * One select for every full read of a booking. Additive against what getBookingDetails already
+ * fetched: the passenger rows, the child ages a seat add-on carries, and the vehicle capacities
+ * the itinerary card states in words.
+ */
+const BOOKING_DETAIL_SELECT = `
+  *,
+  vehicle_type:vehicle_types(name, image_url, description, passenger_capacity, luggage_capacity),
+  booking_assignments (
+    status,
+    assigned_at,
+    accepted_at,
+    completed_at,
+    vendor:vendor_applications (business_name, business_phone, business_email),
+    driver:vendor_drivers (first_name, last_name, phone),
+    vehicle:vehicles (make, model, year, registration_number)
+  ),
+  booking_passengers (first_name, last_name, email, phone, is_primary),
+  booking_amenities (
+    id,
+    amenity_type,
+    quantity,
+    price,
+    addon_id,
+    child_ages,
+    addon:addons (name, price, description)
+  )
+`
+
 export async function getBookingDetails(bookingId: string) {
   const supabase = await createClient()
 
@@ -119,26 +148,7 @@ export async function getBookingDetails(bookingId: string) {
 
   const { data: booking, error } = await adminClient
     .from("bookings")
-    .select(`
-      *,
-      vehicle_type:vehicle_types(name, image_url, description),
-      booking_assignments (
-        status,
-        assigned_at,
-        accepted_at,
-        completed_at,
-        vendor:vendor_applications (business_name, business_phone, business_email),
-        driver:vendor_drivers (first_name, last_name, phone),
-        vehicle:vehicles (make, model, year, registration_number)
-      ),
-      booking_amenities (
-        id,
-        amenity_type,
-        quantity,
-        price,
-        addon:addons (name, price, description)
-      )
-    `)
+    .select(BOOKING_DETAIL_SELECT)
     .eq("id", bookingId)
     .single()
 
@@ -147,6 +157,62 @@ export async function getBookingDetails(bookingId: string) {
     return { data: null, error: "Booking not found" }
   }
 
+  if (booking.customer_id !== user.id) {
+    return { data: null, error: "Unauthorized" }
+  }
+
+  return { data: booking, error: null }
+}
+
+/**
+ * A reference is what the customer reads off the screen and out of an email, so it is what the
+ * detail page is keyed on. trip_number is NOT NULL and unique; booking_number is the fallback for
+ * anything predating the trip-number migration, which is also the key the invoice route uses.
+ *
+ * Two sequential eq() lookups rather than one or(). The reference arrives from a URL segment, and
+ * PostgREST's or() takes a filter expression, so interpolating user input into it lets a comma or
+ * a parenthesis rewrite the filter tree. eq() binds its value.
+ */
+const REFERENCE_PATTERN = /^[A-Za-z0-9_-]{4,64}$/
+
+export async function getBookingByReference(reference: string) {
+  if (!REFERENCE_PATTERN.test(reference)) {
+    return { data: null, error: "Booking not found" }
+  }
+
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { data: null, error: "Unauthorized" }
+  }
+
+  const adminClient = createAdminClient()
+
+  const lookup = (column: "trip_number" | "booking_number") =>
+    adminClient
+      .from("bookings")
+      .select(BOOKING_DETAIL_SELECT)
+      .eq(column, reference)
+      .maybeSingle()
+
+  let { data: booking, error } = await lookup("trip_number")
+
+  if (!booking && !error) {
+    ;({ data: booking, error } = await lookup("booking_number"))
+  }
+
+  if (error) {
+    console.error("Get booking by reference error:", error)
+    return { data: null, error: "Booking not found" }
+  }
+
+  if (!booking) {
+    return { data: null, error: "Booking not found" }
+  }
+
+  // The admin client bypasses RLS, so ownership is enforced here. The caller turns both this and
+  // the not-found case into a 404, so the page cannot be used to probe which references exist.
   if (booking.customer_id !== user.id) {
     return { data: null, error: "Unauthorized" }
   }
@@ -233,6 +299,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
   }
 
   revalidatePath("/account")
+  revalidatePath("/account/bookings/[reference]", "page")
   revalidatePath("/vendor/bookings")
   revalidatePath("/vendor/availability")
   return {}

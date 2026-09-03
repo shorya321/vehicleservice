@@ -5,7 +5,6 @@ import { Search, Car, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { getBookings, getBookingStats, type BookingFilters } from "@/app/account/booking-actions"
 import { BookingCard } from "./booking-card"
-import { BookingDetailModal } from "./booking-detail-modal"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ContentSection } from "./content-section"
 import { InlineStats } from "./inline-stats"
@@ -37,7 +36,6 @@ export function BookingsTab({ userId }: BookingsTabProps) {
   const [bookings, setBookings] = useState<BookingListItem[]>([])
   const [stats, setStats] = useState({ total: 0, upcoming: 0, completed: 0, cancelled: 0 })
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
   const [filters, setFilters] = useState<BookingFilters>({
     search: "",
     status: "all",
@@ -170,7 +168,6 @@ export function BookingsTab({ userId }: BookingsTabProps) {
             <BookingCard
               key={booking.id}
               booking={booking}
-              onClick={() => setSelectedBookingId(booking.id)}
             />
           ))
         )}
@@ -205,14 +202,6 @@ export function BookingsTab({ userId }: BookingsTabProps) {
         </div>
       )}
 
-      {/* Detail Panel */}
-      {selectedBookingId && (
-        <BookingDetailModal
-          bookingId={selectedBookingId}
-          onClose={() => setSelectedBookingId(null)}
-          onRefresh={() => { fetchData(); fetchStats() }}
-        />
-      )}
     </ContentSection>
   )
 }

@@ -11,6 +11,22 @@ import { getBookingTimezone } from '@/lib/utils/timezone'
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
 import { formatChildAges } from '@/lib/utils/child-ages'
 import { InvoiceDownloadButton } from './invoice-download-button'
+import {
+  CARD,
+  CARD_LABEL,
+  CARD_LABEL_STRONG,
+  BAND,
+  BAND_DIVIDER,
+  SEGMENT_VALUE,
+  SEGMENT_CAPTION,
+  GHOST_BUTTON,
+  EASE_LUXURY,
+  RouteStop,
+  Field,
+  SummaryRow,
+  GuaranteeList,
+  CardMotion,
+} from '@/components/booking/itinerary-primitives'
 
 const formatDate = (d: Date) =>
   new Intl.DateTimeFormat('en-GB', { timeZone: getBookingTimezone(), weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d)
@@ -18,52 +34,8 @@ const formatDate = (d: Date) =>
 const formatTime = (d: Date) =>
   new Intl.DateTimeFormat('en-GB', { timeZone: getBookingTimezone(), hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
 
-/**
- * Hoisted so this page's label treatment cannot drift from the ledger the customer just came
- * through. These are the Tier 2 values from components/checkout/booking-ledger.tsx, verbatim.
- * The page previously used `.t-label` (0.75rem / 0.12em) for card headers, which is the Tier 1
- * section-eyebrow treatment doing a Tier 2 card-label job, so checkout and confirmation ran two
- * label systems inside one flow.
- */
-const CARD_LABEL = 'text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]'
-const CARD_LABEL_STRONG = 'text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)]'
-
-const CARD = 'bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden'
-const BAND = 'px-6 xl:px-8 py-5'
-const BAND_DIVIDER = 'border-t border-[rgba(var(--gold-rgb),0.1)]'
-
-/** Value line inside an itinerary segment. Title role: 1.0625rem / 500. */
-const SEGMENT_VALUE = 'mt-1.5 text-[1.0625rem] font-medium leading-snug text-[var(--text-primary)] break-words'
-/** Tier 3 caption: sentence case, so a unit line cannot compete with the Tier 2 label above it. */
-const SEGMENT_CAPTION = 'mt-1 text-[0.75rem] leading-snug text-[var(--text-muted)]'
-
-const GHOST_BUTTON =
-  'inline-flex min-h-[44px] items-center gap-2 rounded-[4px] border border-[var(--graphite)] px-4 text-[0.75rem] uppercase tracking-[0.14em] text-[var(--text-secondary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]'
-
-const EASE_LUXURY: [number, number, number, number] = [0.16, 1, 0.3, 1]
-
 const MARK_CHECK = 'M21 33L28.5 40.5L43 26'
 const MARK_CROSS = 'M24 24L40 40M40 24L24 40'
-
-/**
- * The three guarantees, copied verbatim from components/checkout/trust-block.tsx, which sources
- * every claim to app/terms/components/terms-content.tsx. Do not add a claim here that is not in
- * the Terms, and do not reword these without changing the Terms first.
- */
-const GUARANTEES = [
-  {
-    label: 'Cancellation',
-    body: 'Free up to 24 hours before pickup. Full refund if we cancel on you.',
-  },
-  {
-    label: 'Waiting time',
-    body: '60 minutes free from your actual landing time, 45 minutes on other pickups.',
-  },
-  {
-    label: 'Your chauffeur',
-    body: 'Meets you inside arrivals with a name board and walks you to the vehicle.',
-  },
-] as const
 
 interface BookingPassenger {
   first_name: string
@@ -167,127 +139,6 @@ function StatusMark({
         />
       </svg>
     </div>
-  )
-}
-
-/**
- * One stop on the route rail. DESIGN.md section 5 names the Itinerary Block as the product's
- * signature and requires the confirmation to re-use it; this screen was the last one still
- * drawing the journey as two sibling label/value cells, which states both ends and never the
- * direction between them. The rail is typographic per that spec: dots and a hairline, no icons.
- */
-function RouteStop({
-  label,
-  address,
-  terminal,
-  reduceMotion,
-}: {
-  label: string
-  address: string
-  terminal?: boolean
-  reduceMotion: boolean
-}) {
-  return (
-    <li className="relative pl-7">
-      {/* Dot sits on the optical centre of the LABEL line (10px type at 1.2 => 6px), not the
-          address, so the rail stays true when a long address wraps to two lines. */}
-      <span
-        aria-hidden="true"
-        className={`absolute left-0 top-[1.5px] h-[9px] w-[9px] rounded-full border border-[var(--gold-text)] ${
-          terminal ? 'bg-[var(--gold-text)]' : 'bg-[var(--black-rich)]'
-        }`}
-      />
-      {!terminal && (
-        // Runs from this dot's underside into the next dot, so it must clear the 1.25rem list
-        // gap plus that dot's own top offset. Scales from the origin it starts at.
-        <motion.span
-          aria-hidden="true"
-          className="absolute bottom-[-1.4rem] left-[4px] top-[10.5px] w-px origin-top bg-[var(--graphite)]"
-          initial={{ scaleY: reduceMotion ? 1 : 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: reduceMotion ? 0 : 0.5, delay: reduceMotion ? 0 : 0.45, ease: EASE_LUXURY }}
-        />
-      )}
-      <p className={CARD_LABEL}>{label}</p>
-      <p className={SEGMENT_VALUE}>{address}</p>
-    </li>
-  )
-}
-
-/** A label/value pair in the passenger card. Kept as a grid cell, not a card. */
-function Field({
-  label,
-  value,
-  className,
-  numeric = false,
-}: {
-  label: string
-  value: React.ReactNode
-  className?: string
-  numeric?: boolean
-}) {
-  return (
-    <div className={`min-w-0 ${className ?? ''}`}>
-      <dt className={CARD_LABEL}>{label}</dt>
-      <dd className={`${numeric ? 'numeric ' : ''}${SEGMENT_VALUE}`}>{value}</dd>
-    </div>
-  )
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <dt className="min-w-0 truncate text-[0.875rem] text-[var(--text-secondary)]">{label}</dt>
-      <dd className="numeric shrink-0 text-[0.875rem] text-[var(--text-primary)]">{value}</dd>
-    </div>
-  )
-}
-
-/** The reassurance rail. Hairline rows, no badges: trust here is the absence of a badge. */
-function GuaranteeList() {
-  return (
-    <section aria-labelledby="guarantees-heading">
-      <h2 id="guarantees-heading" className={CARD_LABEL_STRONG}>
-        Included with every transfer
-      </h2>
-      <dl className="mt-5 flex flex-col">
-        {GUARANTEES.map((item) => (
-          <div key={item.label} className="mb-4 border-b border-[var(--graphite)] pb-4 last:mb-0">
-            <dt className={CARD_LABEL}>{item.label}</dt>
-            <dd className="mt-2 text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
-              {item.body}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  )
-}
-
-function CardMotion({
-  children,
-  reduceMotion,
-  delay,
-  className,
-  ...rest
-}: {
-  children: React.ReactNode
-  reduceMotion: boolean
-  delay: number
-  className?: string
-  id?: string
-  'aria-labelledby'?: string
-}) {
-  return (
-    <motion.section
-      className={className}
-      initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduceMotion ? 0 : 0.5, delay: reduceMotion ? 0 : delay, ease: EASE_LUXURY }}
-      {...rest}
-    >
-      {children}
-    </motion.section>
   )
 }
 
