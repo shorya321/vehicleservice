@@ -33,35 +33,52 @@ export function MenuFooter({ reducedMotion, siteSettings }: MenuFooterProps) {
 
   return (
     <motion.div
-      className="mt-auto pt-4 px-3"
+      className="pt-1 px-4"
       variants={reducedMotion ? undefined : footerVariants}
     >
-      <div className="h-px bg-gradient-to-r from-transparent via-[var(--gold)]/30 to-transparent mb-4" />
-      <p className="text-[10px] font-body tracking-[0.2em] uppercase text-[var(--text-muted)] text-center">
+      {/* Inline gradient for the same reason as the user card's seam: the
+          `via-[var(--gold)]/30` form compiled to nothing. */}
+      <div
+        className="h-px mb-4"
+        aria-hidden="true"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, rgba(var(--gold-rgb),0.35), transparent)',
+        }}
+      />
+      <p className="text-[10px] font-body font-semibold tracking-[0.2em] uppercase text-[var(--text-muted)] text-center">
         Premium Transfer Services
       </p>
-      <p className="footer-logo text-lg text-center mt-1">
+      {/* Kept, but demoted: the wordmark also opens the drawer, so down here it
+          reads as a sign-off rather than a second masthead. */}
+      <p className="footer-logo text-base text-center mt-1 opacity-75">
         {settings.brand_name.includes(' ') ? (
           <>{settings.brand_name.split(' ').slice(0, -1).join(' ')} <span>{settings.brand_name.split(' ').pop()}</span></>
         ) : settings.brand_name}
       </p>
       {activeSocialLinks.length > 0 && (
-        <div className="flex items-center justify-center gap-4 mt-3">
+        <div className="flex items-center justify-center gap-1 mt-3">
           {activeSocialLinks.map(({ platform, url, Icon }) => (
+            /* The 44px touch target stays; only the drawn circle shrinks to
+               36px. Social is the lowest-value action here and used to be the
+               heaviest object on the screen, but hierarchy is not a reason to
+               drop below the tap-target floor. */
             <a
               key={platform}
               href={url}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={platform.charAt(0).toUpperCase() + platform.slice(1)}
-              className="footer-social p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:bg-[var(--gold)]/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+              className="group h-11 w-11 flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
             >
-              <Icon className="w-4 h-4" />
+              <span className="h-9 w-9 flex items-center justify-center rounded-full border border-[rgba(var(--gold-rgb),0.18)] text-[var(--text-muted)] transition-colors duration-200 group-hover:border-[rgba(var(--gold-rgb),0.45)] group-hover:text-[var(--gold-text)] group-active:bg-[rgba(var(--gold-rgb),0.08)]">
+                <Icon className="w-4 h-4" strokeWidth={1.6} />
+              </span>
             </a>
           ))}
         </div>
       )}
-      <p className="text-[10px] font-body text-[var(--text-muted)]/60 text-center mt-3 pb-2" suppressHydrationWarning>
+      <p className="text-[10px] font-body text-[var(--text-muted)] opacity-75 text-center mt-3 pb-2" suppressHydrationWarning>
         &copy; {new Date().getFullYear()} {settings.copyright_text}
       </p>
     </motion.div>

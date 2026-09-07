@@ -27,16 +27,19 @@ export function MenuSection({ label, children, reducedMotion }: MenuSectionProps
     <div className="space-y-2" role="group" aria-labelledby={labelId}>
       <motion.p
         id={labelId}
-        className="flex items-center gap-2 text-[10px] font-body tracking-[0.25em] uppercase text-[var(--gold-text)] px-3"
+        className="flex items-center gap-2 px-4 text-[10px] font-body font-semibold tracking-[0.25em] uppercase text-[var(--gold-text)]"
         variants={reducedMotion ? undefined : labelVariants}
       >
-        <span className="block w-3 h-px bg-[var(--gold)]/60 shrink-0" aria-hidden="true" />
+        {/* Was bg-[var(--gold)]/60, which compiles to nothing on Tailwind 3, so
+            the dash has never been visible. */}
+        <span
+          className="block w-3 h-px bg-[rgba(var(--gold-rgb),0.55)] shrink-0"
+          aria-hidden="true"
+        />
         {label}
       </motion.p>
-      <motion.div
-        className="space-y-0.5"
-        variants={reducedMotion ? undefined : containerVariants}
-      >
+      {/* Rows abut, so a run of them reads as one band under the press wash. */}
+      <motion.div variants={reducedMotion ? undefined : containerVariants}>
         {children}
       </motion.div>
     </div>

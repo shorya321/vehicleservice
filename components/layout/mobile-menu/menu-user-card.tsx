@@ -25,27 +25,27 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
   if (!user) {
     return (
       <motion.div
-        className="px-3 space-y-2"
+        className="px-4 space-y-2"
         variants={reducedMotion ? undefined : cardVariants}
       >
-        <p className="text-[10px] font-body tracking-[0.25em] uppercase text-[var(--text-muted)] text-center">
+        <p className="text-[10px] font-body font-semibold tracking-[0.25em] uppercase text-[var(--text-muted)] text-center">
           Member Access
         </p>
         <div className="flex gap-3">
-        <Link
-          href="/login"
-          onClick={onClose}
-          className="flex-1 py-2.5 min-h-[44px] flex items-center justify-center text-sm font-body rounded-lg border border-[var(--gold)]/30 text-[var(--gold-text)] hover:bg-[var(--gold)]/10 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
-        >
-          Sign In
-        </Link>
-        <Link
-          href="/register"
-          onClick={onClose}
-          className="flex-1 py-2.5 min-h-[44px] flex items-center justify-center text-sm font-body rounded-lg bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold)]/90 transition-colors duration-200 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
-        >
-          Sign Up
-        </Link>
+          <Link
+            href="/login"
+            onClick={onClose}
+            className="flex-1 min-h-[48px] flex items-center justify-center text-sm font-body rounded-lg border border-[rgba(var(--gold-rgb),0.3)] text-[var(--gold-text)] hover:bg-[rgba(var(--gold-rgb),0.1)] active:bg-[rgba(var(--gold-rgb),0.16)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/register"
+            onClick={onClose}
+            className="flex-1 min-h-[48px] flex items-center justify-center text-sm font-body font-medium rounded-lg bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold-deep)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+          >
+            Sign Up
+          </Link>
         </div>
       </motion.div>
     )
@@ -53,10 +53,20 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
 
   return (
     <motion.div
-      className="mx-3 rounded-lg bg-[var(--charcoal)]/50 border border-[var(--gold)]/10 overflow-hidden"
+      className="mx-4 rounded-lg bg-[rgba(var(--charcoal-rgb),0.5)] border border-[rgba(var(--gold-rgb),0.1)] overflow-hidden"
       variants={reducedMotion ? undefined : cardVariants}
     >
-      <div className="h-px bg-gradient-to-r from-transparent via-[var(--gold)]/40 to-transparent" />
+      {/* Gold seam. Written as an inline gradient rather than `via-[...]` so it
+          cannot fall into the same Tailwind opacity-modifier trap that made the
+          card's fill and border invisible. */}
+      <div
+        className="h-px"
+        aria-hidden="true"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, rgba(var(--gold-rgb),0.35), transparent)',
+        }}
+      />
       <div className="p-3 flex items-center gap-3">
         <Avatar className="h-9 w-9">
           <AvatarImage
