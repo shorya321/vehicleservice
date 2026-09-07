@@ -2477,22 +2477,81 @@
     white-space: nowrap;
   }
 
+  /* Footer wordmark only. Same reasoning as .header-logo above: .footer-logo is
+     shared by the footer, the header, the auth screens and the mobile drawer, so
+     the footer's closing scale lives in its own class rather than being pushed
+     into all five consumers. Larger than the header mark on purpose, so the
+     footer reads as the end of the page rather than a repeat of the top of it. */
+  .footer-wordmark {
+    font-size: clamp(1.5rem, 3vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+  }
+
+  /* Footer links speak the header's interaction language: a 1px bar grown from
+     zero width via transform, never via `width`, which would animate layout.
+     Structure is deliberately identical to .nav-link so the two never drift. */
+  .footer-link {
+    position: relative;
+    display: inline-block;
+    color: var(--text-secondary);
+    transition: color var(--duration-fast) var(--ease-luxury);
+  }
+
+  .footer-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--duration-fast) var(--ease-luxury);
+  }
+
+  .footer-link:hover,
+  .footer-link:focus-visible {
+    color: var(--gold-text-hover);
+  }
+
+  .footer-link:hover::after,
+  .footer-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* Hover never fires on touch, so the pressed state carries the feedback there. */
+  .footer-link:active {
+    color: var(--gold-text);
+  }
+
+  /* The drawn box. The tap target is the 44px anchor wrapping it, per the
+     mobile drawer's h-11 -> h-9 pattern, so the 36px square can stay 36px. */
   .footer-social {
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(var(--gold-rgb), 0.2);
+    border: 1px solid var(--graphite);
     border-radius: 8px;
-    color: var(--text-muted);
-    transition: all var(--duration-fast);
+    color: var(--text-secondary);
+    transition:
+      color var(--duration-fast) var(--ease-luxury),
+      border-color var(--duration-fast) var(--ease-luxury),
+      background-color var(--duration-fast) var(--ease-luxury);
   }
 
-  .footer-social:hover {
+  a:hover > .footer-social,
+  a:focus-visible > .footer-social {
     border-color: var(--gold);
-    color: var(--gold);
-    background: rgba(var(--gold-rgb), 0.1);
+    color: var(--gold-text);
+    background: rgba(var(--gold-rgb), 0.08);
+  }
+
+  a:active > .footer-social {
+    background: rgba(var(--gold-rgb), 0.14);
   }
 
   /* Section Top Border */
@@ -5564,8 +5623,17 @@
     .nav-luxury,
     .nav-link,
     .nav-link::after,
-    .btn-cta-header {
+    .btn-cta-header,
+    .footer-link,
+    .footer-link::after,
+    .footer-social {
       transition: none !important;
+    }
+
+    /* The underline still appears on hover, it just arrives rather than grows. */
+    .footer-link:hover::after,
+    .footer-link:focus-visible::after {
+      transform: scaleX(1);
     }
 
     .btn-cta-header:hover {
