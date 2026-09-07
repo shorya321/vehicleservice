@@ -44,12 +44,15 @@ export default async function EditVendorApplicationPage() {
   return (
     <div className="bg-[var(--black-void)]">
       <div className="luxury-container pt-[clamp(3rem,7vw,5rem)] pb-[clamp(4rem,9vw,6.5rem)]">
-        <div className="max-w-3xl mx-auto">
+        {/* The status page's own container and grid, so the eyebrow and the headline land
+            on the same pixels on both pages. This was `max-w-3xl` inside a 1400px
+            container: aligned with neither the header nor the footer. */}
+        <div className="mx-auto max-w-[1100px]">
           <Link href="/vendor-application" className="account-action">
             <span aria-hidden="true">&larr;</span> Back to your application
           </Link>
 
-          <header className="mt-6 mb-[clamp(2.5rem,5vw,3.5rem)]">
+          <header className="mt-6">
             <p className="editorial-eyebrow">Partner programme</p>
             <h1 className="mt-[0.5rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
               Edit your application
@@ -59,9 +62,7 @@ export default async function EditVendorApplicationPage() {
             </p>
           </header>
 
-          {/* Edit Form */}
           <VendorApplicationEditForm
-            userId={user.id}
             application={application}
             defaultValues={{
               businessEmail: application.business_email || profile?.email,
