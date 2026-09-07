@@ -130,11 +130,10 @@ export function CurrencySelector({
             variant="ghost"
             size="sm"
             aria-label={`Select currency, currently ${currentCurrency}`}
-            className={`h-auto gap-1 rounded-full px-3 py-1.5 border border-[color-mix(in_oklch,var(--graphite)_70%,var(--gold)_30%)] hover:border-[rgba(var(--gold-text-rgb),0.4)] hover:bg-transparent hover:text-[var(--gold-text-hover)] text-xs font-medium tracking-[0.06em] text-[var(--text-secondary)] transition-all duration-200 ${className}`}
+            className={`h-11 lg:h-10 gap-1.5 rounded-[4px] px-3.5 border border-[var(--graphite)] hover:border-[var(--gold)] hover:bg-transparent hover:text-[var(--text-primary)] text-xs font-medium tabular-nums tracking-[0.08em] text-[var(--text-secondary)] transition-colors duration-200 ${className}`}
           >
-            <span className="text-sm leading-none">{getCurrencyFlag(currentCurrency)}</span>
             <span>{currentCurrency}</span>
-            <ChevronDown className="h-3 w-3 text-[var(--gold-text)] opacity-60" />
+            <ChevronDown className="h-3 w-3 text-[var(--text-muted)]" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

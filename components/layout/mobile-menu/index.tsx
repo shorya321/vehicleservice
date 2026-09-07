@@ -123,7 +123,7 @@ export function MobileMenu({
 
         {/* Scrollable content */}
         <motion.div
-          className="flex-1 overflow-y-auto py-6 space-y-6 pb-[env(safe-area-inset-bottom,24px)]"
+          className="flex-1 overflow-y-auto py-6 space-y-6 pb-4"
           initial={reducedMotion ? false : 'hidden'}
           animate={reducedMotion ? undefined : 'visible'}
           variants={reducedMotion ? undefined : contentVariants}
@@ -177,6 +177,19 @@ export function MobileMenu({
           {/* Footer */}
           <MenuFooter reducedMotion={reducedMotion} siteSettings={settings} />
         </motion.div>
+
+        {/* Primary action, pinned below the scroll area. The drawer used to end
+            at the Contact section, so under `lg` the booking CTA did not exist
+            anywhere in the interface: not in the bar, not in the menu. */}
+        <div className="relative shrink-0 border-t border-[var(--gold)]/10 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <Link
+            href="/#services"
+            onClick={close}
+            className="btn-cta-header flex h-12 w-full"
+          >
+            Book Transfer
+          </Link>
+        </div>
       </SheetContent>
     </Sheet>
   )

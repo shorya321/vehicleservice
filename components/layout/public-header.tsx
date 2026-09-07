@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
 import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/types'
@@ -45,6 +45,7 @@ export function PublicHeader({
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const [user, setUser] = useState<SupabaseUser | null>(initialUser)
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const supabase = useMemo(() => createClient(), [])
@@ -151,6 +152,16 @@ export function PublicHeader({
     return user?.email?.slice(0, 2).toUpperCase() || 'U'
   }
 
+  /**
+   * Hash links point at sections of the homepage, so they can never identify a
+   * page on their own. Only the real routes get the active treatment, which
+   * keeps Services from reading as current on every homepage visit.
+   */
+  const isCurrentPage = (href: string) => {
+    if (href.includes('#')) return false
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
   // Adjusted nav items for luxury theme
   const navItems = [
     { name: "Services", href: "/#services" },
@@ -165,12 +176,16 @@ export function PublicHeader({
       className={`nav-luxury animate-header-slide-in ${isScrolled ? "scrolled" : ""}`}
     >
       <div className="luxury-container">
-        <div className="flex items-center justify-between">
+        {/* Three-column grid on desktop so the nav is centred against the
+            container rather than against whatever space the wordmark leaves.
+            brand_name is white-label configurable, so justify-between alone
+            moved the nav for every tenant. */}
+        <div className="flex items-center justify-between lg:grid lg:grid-cols-[1fr_auto_1fr]">
           {/* Logo */}
           <Link
             href="/"
             aria-label={`${settings.brand_name}, go to homepage`}
-            className="footer-logo text-2xl hover:opacity-80 transition-opacity duration-200"
+            className="footer-logo header-logo hover:opacity-80 transition-opacity duration-200"
           >
             {settings.header_logo_url ? (
               <Image
@@ -189,31 +204,32 @@ export function PublicHeader({
           </Link>
 
           {/* Navigation Links */}
-          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-12">
+          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-10">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className="nav-link"
+                aria-current={isCurrentPage(item.href) ? 'page' : undefined}
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-5 lg:justify-self-end">
             {/* Theme Toggle */}
-            <ThemeToggle />
+            <ThemeToggle size="sm" />
 
-            {/* Currency Selector. Mounted guard prevents Radix useId hydration mismatch */}
-            {mounted && allCurrencies.length > 1 && (
-              <CurrencySelector className="scale-90 sm:scale-100 origin-right" />
-            )}
+            {/* Currency Selector. Mounted guard prevents Radix useId hydration mismatch.
+                No transform scaling: it resampled the label on fractional device
+                pixel ratios and moved the Radix popper anchor off the trigger. */}
+            {mounted && allCurrencies.length > 1 && <CurrencySelector />}
 
             {mounted && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--gold)]/20 hover:border-[var(--gold)]/40 transition-colors">
+                  <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--graphite)] hover:border-[var(--gold)] transition-colors">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={profile?.avatar_url || undefined}
@@ -285,7 +301,7 @@ export function PublicHeader({
             ) : mounted ? (
               <Link
                 href="/login"
-                className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors duration-200"
+                className="hidden lg:inline-flex items-center gap-1.5 text-sm font-medium tracking-wide text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
               >
                 <User className="w-4 h-4" />
                 Sign In
@@ -294,7 +310,7 @@ export function PublicHeader({
             {/* Book Transfer CTA. Desktop only */}
             <Link
               href="/#services"
-              className="btn-cta-header hidden lg:block"
+              className="btn-cta-header hidden lg:inline-flex"
             >
               Book Transfer
             </Link>
