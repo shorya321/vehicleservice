@@ -89,15 +89,11 @@ export default async function HomePage() {
       <div className="bg-[var(--black-void)]" id="services">
         <AdditionalServices />
       </div>
-      <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+      <div className="border-t border-[var(--graphite)]">
         <Testimonials />
       </div>
-      <div className="bg-[var(--black-void)]">
-        <JoinCommunity />
-      </div>
-      <div className="bg-[var(--black-rich)]" id="faq">
-        <FAQ />
-      </div>
+      <JoinCommunity />
+      <FAQ />
       <Footer siteSettings={siteSettings} />
     </main>
     </CurrencyProvider>

@@ -5441,6 +5441,112 @@
     color: var(--gold);
   }
 
+  /* Pairs with a .btn as one control group. .editorial-action's own
+     0.875rem/0.06em reads a size larger than the button it stands beside, so
+     the two never looked like one group. Matches .btn's metrics instead. */
+  .editorial-action--paired {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    min-height: 44px;
+  }
+
+  /* .editorial-eyebrow leads with a single rule, which reads correctly when the
+     section is left-aligned. A centred stack needs the rule on both sides or the
+     text sits off the section's axis. Same device as .hero-eyebrow. */
+  .editorial-eyebrow--centered {
+    justify-content: center;
+  }
+
+  .editorial-eyebrow--centered::after {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background-color: var(--gold);
+  }
+
+  /* Below the smallest breakpoint the two rules cost more than they earn. */
+  @media (max-width: 400px) {
+    .editorial-eyebrow--centered::before,
+    .editorial-eyebrow--centered::after {
+      display: none;
+    }
+  }
+
+  /* One grid for the narrative/ledger sections that close the home page. They
+     were each on their own column ratio, so two structurally identical sections
+     started their right column 165px apart on the same page. */
+  .editorial-split {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+
+  @media (min-width: 768px) {
+    .editorial-split {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      gap: clamp(3rem, 6vw, 5rem);
+    }
+  }
+
+  /* The rail's first hairline lands on the optical centre of the left column's
+     eyebrow rule, so one line appears to run across the gutter. Pinning the
+     eyebrow's leading inside .editorial-split makes the offset derived rather
+     than a magic number: a 1.125rem line box puts its centred ::before rule at
+     exactly half that, 0.5625rem. */
+  .editorial-split .editorial-eyebrow {
+    line-height: 1.125rem;
+  }
+
+  .editorial-split__rail {
+    margin-top: 0;
+  }
+
+  @media (min-width: 768px) {
+    .editorial-split__rail {
+      margin-top: 0.5625rem;
+    }
+  }
+
+  /* Collapse marker. Two 1px bars rather than a rotated lucide plus, which
+     renders an "x" when open and reads as dismiss rather than collapse. Bar
+     weight matches the hairline rules the list is built from. --gold-text, not
+     --gold: the latter is theme-invariant and nearly invisible on a light
+     ground. */
+  .editorial-disclosure {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .editorial-disclosure::before,
+  .editorial-disclosure::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 1px;
+    background-color: var(--gold-text);
+    transition: transform var(--duration-fast) var(--ease-luxury);
+  }
+
+  .editorial-disclosure::after {
+    transform: rotate(90deg);
+  }
+
+  .editorial-disclosure[data-open='true']::after {
+    transform: rotate(90deg) scaleX(0);
+  }
+
+  /* The open row is marked by lifting its own hairline, not by a nested tinted
+     panel (the No-Nested-Card Rule) and not by a side stripe (banned outright).
+     --gold-text-rgb rather than --gold-rgb: the latter is the same in both
+     themes and in light mode lands lighter than --graphite, which would
+     de-emphasise the row that is meant to stand out. */
+  .editorial-disclosure-row[data-open='true'] {
+    border-color: rgba(var(--gold-text-rgb), 0.45);
+  }
+
   /* Reduced motion override. */
   @media (prefers-reduced-motion: reduce) {
     .editorial-action,
@@ -5449,6 +5555,11 @@
     .pullquote {
       transition: none;
       animation: none;
+    }
+
+    .editorial-disclosure::before,
+    .editorial-disclosure::after {
+      transition: none;
     }
   }
 }

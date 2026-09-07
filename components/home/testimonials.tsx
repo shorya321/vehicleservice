@@ -10,7 +10,7 @@ const ReviewStars = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "l
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`${starSize} ${i < rating ? "text-[var(--gold)] fill-[var(--gold)]" : "text-[var(--text-muted)]/30"}`}
+          className={`${starSize} ${i < rating ? "text-[var(--gold)] fill-[var(--gold)]" : "text-[rgba(var(--text-primary-rgb),0.3)]"}`}
           aria-hidden="true"
         />
       ))}
@@ -53,52 +53,69 @@ export async function Testimonials() {
   return (
     <section
       aria-labelledby="testimonials-heading"
-      className="editorial-section editorial-section--raised editorial-section--spacious"
+      className="editorial-section editorial-section--raised"
     >
       <TestimonialsAnimator>
-        <div className="mx-auto max-w-3xl px-[var(--space-xl)] sm:px-[var(--space-2xl)] text-center">
-          <header>
-            <div className="editorial-eyebrow justify-center">Spoken for</div>
-            <h2 id="testimonials-heading" className="editorial-section-title--promoted mt-5">
-              Travellers on record.
-            </h2>
-            {stats && stats.totalReviews > 0 && (
-              <p
-                className="mt-6 flex items-center justify-center gap-3 text-[var(--text-secondary)]"
-                role="img"
-                aria-label={`Average rating ${stats.averageRating.toFixed(1)} stars from ${stats.totalReviews.toLocaleString()} reviews`}
-              >
-                <Star className="w-4 h-4 text-[var(--gold)] fill-[var(--gold)]" aria-hidden="true" />
-                <span className="numeric text-lg text-[var(--text-primary)]">
-                  {stats.averageRating.toFixed(1)}
-                </span>
-                <span className="text-[0.6875rem] tracking-[0.16em] uppercase text-[var(--text-muted)]">
-                  from {stats.totalReviews.toLocaleString()} reviews
-                </span>
+        <div className="luxury-container">
+          <div className="mx-auto max-w-3xl text-center">
+            <header>
+              <div className="editorial-eyebrow editorial-eyebrow--centered">Spoken for</div>
+              <h2 id="testimonials-heading" className="editorial-section-title--promoted mt-5">
+                Travellers on record.
+              </h2>
+              {stats && stats.totalReviews > 0 && (
+                <p
+                  className="mt-6 flex items-center justify-center gap-3 text-[var(--text-secondary)]"
+                  role="img"
+                  aria-label={`Average rating ${stats.averageRating.toFixed(1)} stars from ${stats.totalReviews.toLocaleString()} reviews`}
+                >
+                  <Star className="w-4 h-4 text-[var(--gold)] fill-[var(--gold)]" aria-hidden="true" />
+                  <span className="numeric text-lg text-[var(--text-primary)]">
+                    {stats.averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-[0.6875rem] tracking-[0.16em] uppercase text-[var(--text-muted)]">
+                    from {stats.totalReviews.toLocaleString()} reviews
+                  </span>
+                </p>
+              )}
+            </header>
+
+            {/* One ledger frame for both states. Filled, it is a record with an
+                entry; empty, it is the same record open at its first unwritten
+                line. A blank gap reads as an oversight, a ruled empty row reads
+                as a book that has been opened. */}
+            <ul className="editorial-list mt-12 text-left">
+              <li>
+                <span className="editorial-list-index numeric">01</span>
+                {hasReviews ? (
+                  <figure className="m-0">
+                    <blockquote className="pullquote">
+                      &ldquo;{pickQuote(visible[0])}&rdquo;
+                    </blockquote>
+                    <figcaption className="pullquote-attribution">
+                      {pickAttribution(visible[0])}
+                    </figcaption>
+                  </figure>
+                ) : (
+                  <span className="editorial-list-title text-[var(--text-muted)]">
+                    Awaiting first entry
+                  </span>
+                )}
+              </li>
+            </ul>
+
+            {!hasReviews && (
+              <p className="mt-8 mx-auto text-[var(--text-secondary)]">
+                Be the first to share your experience.
               </p>
             )}
-          </header>
 
-          {hasReviews ? (
-            <div className="mt-14">
-              <figure className="rounded-2xl bg-[rgba(var(--gold-rgb),0.03)] border-t border-[var(--graphite)] px-8 pt-8 pb-10">
-                <blockquote className="pullquote mx-auto">
-                  &ldquo;{pickQuote(visible[0])}&rdquo;
-                </blockquote>
-                <figcaption className="pullquote-attribution">
-                  {pickAttribution(visible[0])}
-                </figcaption>
-              </figure>
+            <div className="mt-12 flex justify-center">
+              <Link href="/reviews" className="editorial-action">
+                Read every review
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
             </div>
-          ) : (
-            <p className="mt-12 text-[var(--text-muted)]">Be the first to share your experience.</p>
-          )}
-
-          <div className="mt-12 flex justify-center">
-            <Link href="/reviews" className="editorial-action">
-              Read every review
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
           </div>
         </div>
       </TestimonialsAnimator>

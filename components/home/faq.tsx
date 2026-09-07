@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "motion/react"
-import { Plus, ArrowRight } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 interface FaqItem {
@@ -53,15 +53,15 @@ export function FAQ() {
   return (
     <section
       aria-labelledby="faq-heading"
-      className="editorial-section editorial-section--ground editorial-section--compact"
+      className="editorial-section editorial-section--raised"
       id="faq"
     >
       <div className="luxury-container">
-        <div className="grid gap-12 md:grid-cols-[1fr_1.2fr] lg:grid-cols-[0.9fr_1.4fr] lg:gap-20">
+        <div className="editorial-split">
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, amount: 0.3 }}
           >
             <div className="editorial-eyebrow">Asked</div>
@@ -77,7 +77,7 @@ export function FAQ() {
             </Link>
           </motion.div>
 
-          <div className="border-t border-[var(--graphite)]">
+          <div className="editorial-split__rail border-t border-[var(--graphite)]">
             {faqData.map((faq, index) => {
               const isOpen = openIndex === index
               const triggerId = `faq-trigger-${index}`
@@ -86,22 +86,26 @@ export function FAQ() {
               return (
                 <div
                   key={faq.question}
-                  className="border-b border-[var(--graphite)]"
+                  data-open={isOpen}
+                  className="editorial-disclosure-row border-b border-[var(--graphite)]"
                 >
-                  <h3>
+                  {/* Reset the base-layer h3, whose clamp() size, -0.02em
+                      tracking and 1.15 leading otherwise inherit into the row. */}
+                  <h3 className="m-0 text-base font-normal leading-normal tracking-normal">
                     <button
                       id={triggerId}
                       type="button"
                       aria-expanded={isOpen}
                       aria-controls={contentId}
                       onClick={() => toggle(index)}
-                      className="group flex w-full items-center justify-between gap-6 py-6 text-left transition-colors hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]"
+                      className="group flex w-full items-center justify-between gap-6 py-6 text-left transition-colors hover:text-[var(--gold-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
                     >
-                      <span className="text-[1.0625rem] font-medium text-[var(--text-primary)] group-hover:text-[var(--gold-text)]">
+                      <span className="text-[1.125rem] font-medium leading-[1.35] text-[var(--text-primary)] group-hover:text-[var(--gold-text)]">
                         {faq.question}
                       </span>
-                      <Plus
-                        className={`h-4 w-4 shrink-0 text-[var(--gold)] transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}
+                      <span
+                        className="editorial-disclosure"
+                        data-open={isOpen}
                         aria-hidden="true"
                       />
                     </button>
@@ -118,8 +122,8 @@ export function FAQ() {
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         style={{ overflow: "hidden" }}
                       >
-                        <div className="pb-6 pr-10 pl-4 rounded-b bg-[rgba(var(--gold-rgb),0.02)]">
-                          <p className="text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-2xl">
+                        <div className="pb-6 pr-10">
+                          <p className="text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-[60ch]">
                             {faq.answer}
                           </p>
                         </div>
