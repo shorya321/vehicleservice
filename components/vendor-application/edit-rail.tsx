@@ -34,10 +34,19 @@ interface EditRailProps {
   updatedAt: string
   /** Field labels the applicant has changed since the page loaded, in form order. */
   changes: string[]
+  /** The decision being answered, on the resubmit path. Null on an ordinary edit. */
+  rejectionReason?: string | null
   className?: string
 }
 
-export function EditRail({ status, createdAt, updatedAt, changes, className }: EditRailProps) {
+export function EditRail({
+  status,
+  createdAt,
+  updatedAt,
+  changes,
+  rejectionReason,
+  className,
+}: EditRailProps) {
   const [currentId, setCurrentId] = useState<string>(SECTIONS[0].id)
   const edited = updatedAt > createdAt
 
@@ -92,6 +101,19 @@ export function EditRail({ status, createdAt, updatedAt, changes, className }: E
           </div>
         )}
       </dl>
+
+      {/* The applicant is being asked to fix something. They should be able to read what,
+          while they type, rather than holding it from the page they came off. */}
+      {rejectionReason && (
+        <section className="mt-6 border-y border-[var(--graphite)] py-4" aria-labelledby="decision-heading">
+          <h2 id="decision-heading" className="checkout-field-label">
+            Why it was not approved
+          </h2>
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+            {rejectionReason}
+          </p>
+        </section>
+      )}
 
       {/* Decorative to assistive technology: the fieldsets and their legends are the real
           structure, and repeating them here would only add a second, weaker copy.

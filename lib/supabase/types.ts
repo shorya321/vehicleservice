@@ -2862,6 +2862,7 @@ export type Database = {
           id: string
           registration_number: string | null
           rejection_reason: string | null
+          review_history: Json
           reviewed_at: string | null
           reviewed_by: string | null
           status: string | null
@@ -2883,6 +2884,7 @@ export type Database = {
           id?: string
           registration_number?: string | null
           rejection_reason?: string | null
+          review_history?: Json
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null
@@ -2904,6 +2906,7 @@ export type Database = {
           id?: string
           registration_number?: string | null
           rejection_reason?: string | null
+          review_history?: Json
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null

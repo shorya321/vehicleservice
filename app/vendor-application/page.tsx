@@ -57,6 +57,7 @@ export default async function VendorApplicationPage() {
               createdAt={row.created_at}
               updatedAt={row.updated_at}
               reviewedAt={row.reviewed_at ?? null}
+              resubmitted={(row.review_history?.length ?? 0) > 0}
               className="lg:sticky lg:top-28 lg:self-start"
             />
             <ApplicationDossier application={row} status={status} className="mt-10 lg:mt-0" />

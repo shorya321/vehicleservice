@@ -173,7 +173,7 @@ export interface VendorApplicationRejectedEmailData {
   name: string;
   applicationReference: string;
   rejectionReason: string;
-  reapplyUrl?: string;
+  resubmitUrl?: string;
 }
 
 // Admin notification emails

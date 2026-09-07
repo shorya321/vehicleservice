@@ -8,14 +8,15 @@ interface VendorApplicationRejectedEmailProps {
   name: string;
   applicationReference: string;
   rejectionReason: string;
-  reapplyUrl?: string;
+  /** The applicant's own edit page. They answer this decision on the row they already have. */
+  resubmitUrl?: string;
 }
 
 export const VendorApplicationRejectedEmail = ({
   name,
   applicationReference,
   rejectionReason,
-  reapplyUrl,
+  resubmitUrl,
 }: VendorApplicationRejectedEmailProps) => {
   return (
     <EmailLayout
@@ -46,17 +47,18 @@ export const VendorApplicationRejectedEmail = ({
         This is usually about service area coverage, fleet requirements or vendor capacity in your region rather than the quality of your service.
       </Text>
 
-      {reapplyUrl && (
+      {resubmitUrl && (
         <>
           <Text style={emailStyles.text}>
-            <strong>Can you reapply?</strong>
+            <strong>Can you resubmit?</strong>
           </Text>
 
           <Text style={emailStyles.text}>
-            Yes. You can submit a new application after 30 days. Address the feedback above when you do.
+            Yes, and there is no waiting period. Update your application to address the feedback
+            above and send it back to us. You keep the same reference.
           </Text>
 
-          <Button href={reapplyUrl}>Submit New Application</Button>
+          <Button href={resubmitUrl}>Update and Resubmit</Button>
         </>
       )}
 

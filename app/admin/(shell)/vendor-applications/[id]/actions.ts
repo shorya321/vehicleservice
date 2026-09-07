@@ -153,7 +153,9 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
 
     // Send rejection email
     const appUrl = getAppUrl();
-    const reapplyUrl = `${appUrl}/become-vendor`;
+    // The applicant's own application, not the apply form. /become-vendor redirects any
+    // existing applicant straight back to their status page, so it was never a way in.
+    const resubmitUrl = `${appUrl}/vendor-application/edit`;
 
     const applicantEmail = await resolveApplicantEmail(supabase, application);
 
@@ -167,7 +169,7 @@ export async function rejectVendorApplication(data: RejectApplicationData) {
       name: application.business_name,
       applicationReference: application.id,
       rejectionReason: data.rejectionReason,
-      reapplyUrl,
+      resubmitUrl,
     });
 
     if (!emailResult.success) {

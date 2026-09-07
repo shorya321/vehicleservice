@@ -38,9 +38,10 @@ import {
   OptionalTag,
 } from "@/components/vendor-application/field-primitives"
 import { EditRail } from "@/components/vendor-application/edit-rail"
+import { createApplicationSchema } from "@/components/vendor-application/schema"
 import { normalizeApplicationStatus } from "@/lib/vendor-application/status"
 import { vendorApplicationSchema, VendorApplicationFormData } from "../schemas"
-import { updateVendorApplication } from "../actions"
+import { resubmitVendorApplication, updateVendorApplication } from "../actions"
 
 /**
  * `businessCountryCode` carries `.default("AE")`, so the schema's input and output types
@@ -86,6 +87,16 @@ const expiryPickerProps = {
   endMonth: new Date(new Date().getFullYear() + 10, 11),
 }
 
+/**
+ * Which of the two writes this form is filing.
+ *
+ * `edit` amends a row already in review and leaves its status alone. `resubmit` puts a
+ * declined row back in the queue, so it parses the stricter create schema: a document that
+ * has lapsed since the decision cannot be resubmitted, where on the edit path an already
+ * expired document is deliberately tolerated.
+ */
+export type EditFormMode = "edit" | "resubmit"
+
 interface VendorApplicationEditFormProps {
   application: {
     id: string
@@ -104,12 +115,18 @@ interface VendorApplicationEditFormProps {
     banking_details: unknown
   }
   defaultValues?: { businessEmail?: string | null; businessPhone?: string | null }
+  mode?: EditFormMode
+  /** Shown in the rail on the resubmit path, so the applicant can read it while they type. */
+  rejectionReason?: string | null
 }
 
 export function VendorApplicationEditForm({
   application,
   defaultValues,
+  mode = "edit",
+  rejectionReason,
 }: VendorApplicationEditFormProps) {
+  const isResubmit = mode === "resubmit"
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   // Held across the redirect. router.push does not resolve, so clearing this in `finally`
@@ -125,7 +142,7 @@ export function VendorApplicationEditForm({
   const banking = (application.banking_details ?? {}) as Record<string, string>
 
   const form = useForm<EditFormInput, unknown, VendorApplicationFormData>({
-    resolver: zodResolver(vendorApplicationSchema),
+    resolver: zodResolver(isResubmit ? createApplicationSchema : vendorApplicationSchema),
     defaultValues: {
       businessName: application.business_name || "",
       businessEmail: application.business_email || defaultValues?.businessEmail || "",
@@ -164,18 +181,22 @@ export function VendorApplicationEditForm({
     setIsSubmitting(true)
     setSubmitError("")
     try {
-      const result = await updateVendorApplication(application.id, data)
+      const result = isResubmit
+        ? await resubmitVendorApplication(application.id, data)
+        : await updateVendorApplication(application.id, data)
       if (result.error) {
         setSubmitError(result.error)
         toast.error(result.error)
         return
       }
-      toast.success("Changes saved")
+      toast.success(isResubmit ? "Application resubmitted" : "Changes saved")
       setIsLeaving(true)
       router.push("/vendor-application")
     } catch (error) {
       console.error("[VendorApplicationEditForm] save failed:", error)
-      const message = "We could not save your changes. Check your connection and try again."
+      const message = isResubmit
+        ? "We could not resubmit your application. Check your connection and try again."
+        : "We could not save your changes. Check your connection and try again."
       setSubmitError(message)
       toast.error(message)
     } finally {
@@ -192,6 +213,7 @@ export function VendorApplicationEditForm({
         createdAt={application.created_at}
         updatedAt={application.updated_at}
         changes={changes}
+        rejectionReason={isResubmit ? rejectionReason : null}
         className="mb-10 lg:mb-0 lg:sticky lg:top-28 lg:self-start"
       />
 
@@ -643,7 +665,7 @@ export function VendorApplicationEditForm({
                 className="checkout-btn-primary w-full sm:w-auto sm:min-w-[190px]"
               >
                 {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-                Save changes
+                {isResubmit ? "Resubmit" : "Save changes"}
               </button>
 
               <button
@@ -665,7 +687,9 @@ export function VendorApplicationEditForm({
               </button>
 
               <p className="text-sm leading-relaxed text-[var(--text-secondary)] sm:max-w-[30ch]">
-                Your application stays in review while you edit.
+                {isResubmit
+                  ? "Resubmitting puts your application back in the queue for review."
+                  : "Your application stays in review while you edit."}
               </p>
             </div>
           </div>

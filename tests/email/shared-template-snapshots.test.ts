@@ -264,7 +264,7 @@ const CASES: readonly Case[] = [
     name: 'Dunes Fleet',
     applicationReference: 'VA-9',
     rejectionReason: 'Insurance documents expired.',
-    reapplyUrl: 'https://infiniatransfers.com/vendor/apply',
+    resubmitUrl: 'https://infiniatransfers.com/vendor-application/edit',
   }],
   ['vendor/booking-assigned', VendorBookingAssignedEmail, {
     vendorName: 'Dunes Fleet',

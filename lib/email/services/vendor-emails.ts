@@ -76,7 +76,7 @@ export async function sendVendorApplicationRejectedEmail(
       name: data.name,
       applicationReference: data.applicationReference,
       rejectionReason: data.rejectionReason,
-      reapplyUrl: data.reapplyUrl,
+      resubmitUrl: data.resubmitUrl,
     },
   });
 }

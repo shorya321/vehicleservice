@@ -56,7 +56,9 @@ const STATUS_CONFIG: Record<string, {
     hoverBorderColor: "hover:border-[var(--error-text)]/50",
     badgeLabel: APPLICATION_STATUS_LABEL.rejected,
     badgeTextColor: "text-[var(--error-text)]",
-    fallbackTitle: "Application Rejected",
+    // The badge already carries the state. The title names the thing being opened, which
+    // is an application the applicant can still answer and resubmit.
+    fallbackTitle: "Vendor Application",
     href: "/vendor-application",
   },
 }

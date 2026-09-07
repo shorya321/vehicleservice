@@ -24,13 +24,15 @@ interface ReviewRailProps {
   createdAt: string
   updatedAt: string
   reviewedAt: string | null
+  /** True once a decision has been answered and the row put back in the queue. */
+  resubmitted?: boolean
   className?: string
 }
 
 const GUIDANCE: Record<ApplicationStatus, string> = {
   pending: `Every detail stays editable until a decision is made. We review inside ${REVIEW_WINDOW_HOURS} hours.`,
   approved: 'Add your vehicles and payout details to start taking bookings.',
-  rejected: 'Our team can tell you exactly what to change before you apply again.',
+  rejected: 'Answer the decision above and resubmit. You keep the same application and the same reference.',
 }
 
 /**
@@ -40,7 +42,14 @@ const GUIDANCE: Record<ApplicationStatus, string> = {
  * and a connector, no icons. It replaced a tinted banner, a duplicate status badge and a sentence
  * of prose that carried the 48 hour promise. Here the promise is a dated stop.
  */
-export function ReviewRail({ status, createdAt, updatedAt, reviewedAt, className }: ReviewRailProps) {
+export function ReviewRail({
+  status,
+  createdAt,
+  updatedAt,
+  reviewedAt,
+  resubmitted = false,
+  className,
+}: ReviewRailProps) {
   const reduceMotion = useReducedMotion() ?? false
   const decided = status !== 'pending'
   const decidedAt = reviewedAt ?? updatedAt
@@ -71,7 +80,7 @@ export function ReviewRail({ status, createdAt, updatedAt, reviewedAt, className
             reduceMotion={reduceMotion}
           />
           <RouteStop
-            label="In review"
+            label={resubmitted && !decided ? 'Resubmitted' : 'In review'}
             meta={
               decided
                 ? undefined
@@ -103,6 +112,11 @@ export function ReviewRail({ status, createdAt, updatedAt, reviewedAt, className
           {status === 'pending' && (
             <Link href="/vendor-application/edit" className="btn btn-primary w-full justify-center">
               Edit details
+            </Link>
+          )}
+          {status === 'rejected' && (
+            <Link href="/vendor-application/edit" className="btn btn-primary w-full justify-center">
+              Update and resubmit
             </Link>
           )}
           {status === 'approved' && (

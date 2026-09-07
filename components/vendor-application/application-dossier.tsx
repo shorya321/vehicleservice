@@ -44,6 +44,16 @@ export interface VendorApplicationBanking {
   swift_code?: string | null
 }
 
+/** One superseded decision, as archive_vendor_application_review() writes it. */
+export interface VendorApplicationReviewEntry {
+  status?: string | null
+  rejection_reason?: string | null
+  admin_notes?: string | null
+  reviewed_at?: string | null
+  reviewed_by?: string | null
+  resubmitted_at?: string | null
+}
+
 export interface VendorApplicationRow {
   created_at: string
   updated_at: string
@@ -59,6 +69,7 @@ export interface VendorApplicationRow {
   rejection_reason?: string | null
   reviewed_at?: string | null
   admin_notes?: string | null
+  review_history?: VendorApplicationReviewEntry[] | null
   reviewer?: { full_name?: string | null; email?: string | null } | null
 }
 
@@ -92,6 +103,7 @@ export function ApplicationDossier({
       documents.insurance_policy_number ||
       documents.insurance_expiry
   )
+  const history = [...(application.review_history ?? [])].reverse()
   const maskedAccount = maskTail(banking.account_number)
   const maskedIban = maskTail(banking.iban)
   const hasSettlement = Boolean(
@@ -190,6 +202,32 @@ export function ApplicationDossier({
             {maskedIban && <Field label="IBAN" value={maskedIban} numeric />}
             {banking.swift_code && <Field label="SWIFT" value={banking.swift_code} numeric />}
           </dl>
+        </DossierCard>
+      )}
+
+      {/* A resubmission clears the live decision, so without this the feedback the applicant
+          is answering would vanish the moment they answered it. Newest first. */}
+      {history.length > 0 && (
+        <DossierCard
+          id="history"
+          heading={history.length === 1 ? 'Previous decision' : 'Previous decisions'}
+          delay={0.25}
+          reduceMotion={reduceMotion}
+        >
+          <ol className="m-0 list-none space-y-5 p-0">
+            {history.map((entry, index) => (
+              <li key={entry.resubmitted_at ?? entry.reviewed_at ?? index}>
+                <p className={SEGMENT_CAPTION}>
+                  {entry.reviewed_at ? formatBookingDate(entry.reviewed_at) : 'Not approved'}
+                </p>
+                {entry.rejection_reason && (
+                  <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+                    {entry.rejection_reason}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
         </DossierCard>
       )}
 

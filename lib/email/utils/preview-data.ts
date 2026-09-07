@@ -127,7 +127,7 @@ export const emailTemplates: EmailTemplate[] = [
     category: 'vendor',
     description: 'Notification that vendor application was rejected',
     subject: 'Vendor Application Update - Infinia Transfers',
-    variables: ['name', 'applicationReference', 'rejectionReason', 'reapplyUrl'],
+    variables: ['name', 'applicationReference', 'rejectionReason', 'resubmitUrl'],
   },
   {
     id: 'vendorBookingAssigned',
@@ -420,7 +420,7 @@ export const emailPreviewData: Record<EmailTemplateType, any> = {
     applicationReference: 'VA-2024-5678',
     rejectionReason:
       'Incomplete documentation. Please submit your business license and insurance certificates.',
-    reapplyUrl: `${getAppUrl()}/become-vendor`,
+    resubmitUrl: `${getAppUrl()}/vendor-application/edit`,
   },
   vendorBookingAssigned: {
     vendorName: 'Ahmed Transportation LLC',
