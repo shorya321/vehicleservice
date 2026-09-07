@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
+import { cn } from '@/lib/utils'
 
 /**
  * The Itinerary Block, as shared parts.
@@ -117,16 +118,19 @@ export function Field({
   value,
   className,
   numeric = false,
+  valueClassName,
 }: {
   label: string
   value: React.ReactNode
   className?: string
   numeric?: boolean
+  /** Opt-in override for the value line. Omitted, the value keeps SEGMENT_VALUE verbatim. */
+  valueClassName?: string
 }) {
   return (
     <div className={`min-w-0 ${className ?? ''}`}>
       <dt className={CARD_LABEL}>{label}</dt>
-      <dd className={`${numeric ? 'numeric ' : ''}${SEGMENT_VALUE}`}>{value}</dd>
+      <dd className={cn(numeric && 'numeric', SEGMENT_VALUE, valueClassName)}>{value}</dd>
     </div>
   )
 }

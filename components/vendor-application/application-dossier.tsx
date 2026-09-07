@@ -10,6 +10,7 @@ import {
   SEGMENT_CAPTION,
   SEGMENT_VALUE,
 } from '@/components/booking/itinerary-primitives'
+import { cn } from '@/lib/utils'
 import { formatBookingDate } from '@/lib/utils/timezone'
 import {
   expiryState,
@@ -17,6 +18,16 @@ import {
   maskTail,
   type ApplicationStatus,
 } from '@/lib/vendor-application/status'
+
+/**
+ * Business and Licensing read as reference data, not as an itinerary, so their values sit a step
+ * below SEGMENT_VALUE's title role. Settlement and Review keep the shared size deliberately.
+ *
+ * `leading-snug` is restated because tailwind-merge treats a font-size utility as conflicting with
+ * `leading-*` (text-sm carries its own line-height), so without it the size change would quietly
+ * loosen the leading as well.
+ */
+const DOSSIER_VALUE = 'text-sm leading-snug'
 
 export interface VendorApplicationDocuments {
   trade_license_number?: string | null
@@ -110,15 +121,29 @@ export function ApplicationDossier({
         reduceMotion={reduceMotion}
       >
         <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-          <Field label="Legal name" value={application.business_name} />
+          <Field label="Legal name" value={application.business_name} valueClassName={DOSSIER_VALUE} />
           {application.registration_number && (
-            <Field label="Registration number" value={application.registration_number} numeric />
+            <Field
+              label="Registration number"
+              value={application.registration_number}
+              numeric
+              valueClassName={DOSSIER_VALUE}
+            />
           )}
-          {application.business_email && <Field label="Email" value={application.business_email} />}
-          {application.business_phone && <Field label="Phone" value={application.business_phone} numeric />}
-          {location && <Field label="Location" value={location} />}
+          {application.business_email && (
+            <Field label="Email" value={application.business_email} valueClassName={DOSSIER_VALUE} />
+          )}
+          {application.business_phone && (
+            <Field label="Phone" value={application.business_phone} numeric valueClassName={DOSSIER_VALUE} />
+          )}
+          {location && <Field label="Location" value={location} valueClassName={DOSSIER_VALUE} />}
           {application.business_description && (
-            <Field label="Description" value={application.business_description} className="sm:col-span-2" />
+            <Field
+              label="Description"
+              value={application.business_description}
+              className="sm:col-span-2"
+              valueClassName={DOSSIER_VALUE}
+            />
           )}
         </dl>
       </DossierCard>
@@ -127,11 +152,21 @@ export function ApplicationDossier({
         <DossierCard id="licensing" heading="Licensing" delay={0.2} reduceMotion={reduceMotion}>
           <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
             {documents.trade_license_number && (
-              <Field label="Trade licence" value={documents.trade_license_number} numeric />
+              <Field
+                label="Trade licence"
+                value={documents.trade_license_number}
+                numeric
+                valueClassName={DOSSIER_VALUE}
+              />
             )}
             <ExpiryField label="Licence expires" value={documents.trade_license_expiry} />
             {documents.insurance_policy_number && (
-              <Field label="Insurance policy" value={documents.insurance_policy_number} numeric />
+              <Field
+                label="Insurance policy"
+                value={documents.insurance_policy_number}
+                numeric
+                valueClassName={DOSSIER_VALUE}
+              />
             )}
             <ExpiryField label="Policy expires" value={documents.insurance_expiry} />
           </dl>
@@ -227,7 +262,7 @@ function ExpiryField({ label, value }: { label: string; value: string | null | u
   return (
     <div className="min-w-0">
       <dt className={CARD_LABEL}>{label}</dt>
-      <dd className={`numeric ${SEGMENT_VALUE}`}>{formatted}</dd>
+      <dd className={cn('numeric', SEGMENT_VALUE, DOSSIER_VALUE)}>{formatted}</dd>
       {state.kind === 'lapsed' && (
         <dd className="mt-2">
           <span className="account-chip account-chip-alert">{state.label}</span>
