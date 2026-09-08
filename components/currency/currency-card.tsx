@@ -10,6 +10,7 @@
  */
 
 import { forwardRef } from 'react'
+import { Check } from 'lucide-react'
 import { getCurrencyFlag, getCurrencySymbol } from '@/lib/currency/format'
 import type { CurrencyInfo } from '@/lib/currency/types'
 
@@ -64,10 +65,13 @@ export const CurrencyCard = forwardRef<HTMLButtonElement, CurrencyCardProps>(
           {getCurrencySymbol(currency.code)}
         </span>
 
+        {/* Same icon, size and colour the header dropdown uses for the current
+            currency, so "selected" reads identically on both surfaces. Decorative:
+            role="radio" + aria-checked above already announce the state. */}
         {isSelected && (
-          <span
+          <Check
             aria-hidden="true"
-            className="absolute top-[7px] right-[7px] h-[5px] w-[5px] rounded-full bg-[var(--gold-text)]"
+            className="absolute top-1.5 right-1.5 h-3.5 w-3.5 text-[var(--gold-text)]"
           />
         )}
       </button>
