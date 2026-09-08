@@ -4,7 +4,6 @@ import { requireAdmin } from "@/lib/auth/actions"
 import { RouteForm } from "../components/route-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/server"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -14,14 +13,6 @@ export const metadata: Metadata = {
 
 export default async function NewRoutePage() {
   await requireAdmin()
-  
-  // Fetch locations for the form
-  const supabase = await createClient()
-  const { data: locations } = await supabase
-    .from('locations')
-    .select('*, location_types(*)')
-    .eq('is_active', true)
-    .order('name')
 
   return (
       <div className="max-w-4xl mx-auto">
@@ -37,7 +28,7 @@ export default async function NewRoutePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <RouteForm locations={locations || []} />
+            <RouteForm />
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -16,18 +16,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { LocationPicker, type LocationPickerInitialValue } from "@/components/locations/location-picker"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { createRoute, updateRoute } from "../actions"
 import { RouteWithLocations } from "@/lib/types/route"
-import { LocationWithType } from "@/lib/types/location"
 import { Loader2 } from "lucide-react"
 
 const routeSchema = z.object({
@@ -49,12 +42,27 @@ type RouteFormValues = z.infer<typeof routeSchema>
 
 interface RouteFormProps {
   route?: RouteWithLocations
-  locations: LocationWithType[]
 }
 
-export function RouteForm({ route, locations }: RouteFormProps) {
+function toInitialLocation(
+  id: string | null | undefined,
+  name: string | null | undefined
+): LocationPickerInitialValue | null {
+  return id && name ? { id, name } : null
+}
+
+export function RouteForm({ route }: RouteFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+
+  // The pickers search live, so the selected names are tracked here rather
+  // than looked up in a preloaded locations array.
+  const [originName, setOriginName] = useState<string | null>(
+    route?.origin_location?.name ?? null
+  )
+  const [destinationName, setDestinationName] = useState<string | null>(
+    route?.destination_location?.name ?? null
+  )
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(routeSchema),
@@ -70,40 +78,27 @@ export function RouteForm({ route, locations }: RouteFormProps) {
     },
   })
 
+  const { setValue } = form
 
+  /**
+   * Regenerate route name and slug once both endpoints are known. Names are
+   * passed in explicitly so this never reads a value the caller just wrote.
+   */
+  const syncGeneratedFields = useCallback(
+    (origin: string | null, destination: string | null) => {
+      if (!origin || !destination) return
 
-  const generateSlug = () => {
-    const originId = form.getValues('origin_location_id')
-    const destinationId = form.getValues('destination_location_id')
-    
-    if (originId && destinationId) {
-      const origin = locations.find(loc => loc.id === originId)
-      const destination = locations.find(loc => loc.id === destinationId)
-      
-      if (origin && destination) {
-        const slug = `${origin.name}-to-${destination.name}`
+      setValue('route_name', `${origin} to ${destination}`)
+      setValue(
+        'route_slug',
+        `${origin}-to-${destination}`
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-+|-+$/g, '')
-        
-        form.setValue('route_slug', slug)
-      }
-    }
-  }
-
-  const generateRouteName = () => {
-    const originId = form.getValues('origin_location_id')
-    const destinationId = form.getValues('destination_location_id')
-    
-    if (originId && destinationId) {
-      const origin = locations.find(loc => loc.id === originId)
-      const destination = locations.find(loc => loc.id === destinationId)
-      
-      if (origin && destination) {
-        form.setValue('route_name', `${origin.name} to ${destination.name}`)
-      }
-    }
-  }
+      )
+    },
+    [setValue]
+  )
 
   const onSubmit = async (data: RouteFormValues) => {
     try {
@@ -136,27 +131,23 @@ export function RouteForm({ route, locations }: RouteFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Origin Location</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    generateRouteName()
-                    generateSlug()
-                  }} 
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select origin location" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name} ({location.location_types?.label || 'Location'})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <LocationPicker
+                    id="origin-location"
+                    value={field.value || null}
+                    initialLocation={toInitialLocation(
+                      route?.origin_location_id,
+                      route?.origin_location?.name
+                    )}
+                    onChange={(id, name) => {
+                      field.onChange(id ?? "")
+                      setOriginName(name)
+                      syncGeneratedFields(name, destinationName)
+                    }}
+                    placeholder="Search origin location..."
+                    ariaLabel="Origin location"
+                  />
+                </FormControl>
                 <FormDescription>
                   Location where the journey starts
                 </FormDescription>
@@ -171,27 +162,23 @@ export function RouteForm({ route, locations }: RouteFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Destination Location</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    generateRouteName()
-                    generateSlug()
-                  }} 
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select destination location" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name} ({location.location_types?.label || 'Location'})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <LocationPicker
+                    id="destination-location"
+                    value={field.value || null}
+                    initialLocation={toInitialLocation(
+                      route?.destination_location_id,
+                      route?.destination_location?.name
+                    )}
+                    onChange={(id, name) => {
+                      field.onChange(id ?? "")
+                      setDestinationName(name)
+                      syncGeneratedFields(originName, name)
+                    }}
+                    placeholder="Search destination location..."
+                    ariaLabel="Destination location"
+                  />
+                </FormControl>
                 <FormDescription>
                   Location where the journey ends
                 </FormDescription>

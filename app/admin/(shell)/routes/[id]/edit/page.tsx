@@ -6,9 +6,7 @@ import { RouteForm } from "../../components/route-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getRoute } from "../../actions"
-import { createClient } from "@/lib/supabase/server"
 import { ArrowLeft } from "lucide-react"
-import { LocationWithType } from "@/lib/types/location"
 
 export const metadata: Metadata = {
   title: 'Edit Route - Admin Portal',
@@ -29,31 +27,6 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
     notFound()
   }
 
-  // Fetch locations for the form
-  const supabase = await createClient()
-  const { data: locations } = await supabase
-    .from('locations')
-    .select('*, location_types(*)')
-    .eq('is_active', true)
-    .order('name')
-
-  // Ensure route's origin and destination are always in the list
-  // (Supabase default limit is 1000 rows, or locations may be inactive)
-  const locationList = (locations || []) as unknown as LocationWithType[]
-  const locationIds = new Set(locationList.map(l => l.id))
-  const missingIds = [route.origin_location_id, route.destination_location_id]
-    .filter((id): id is string => !!id && !locationIds.has(id))
-
-  if (missingIds.length > 0) {
-    const { data: missingLocations } = await supabase
-      .from('locations')
-      .select('*, location_types(*)')
-      .in('id', missingIds)
-    if (missingLocations) {
-      locationList.unshift(...(missingLocations as unknown as LocationWithType[]))
-    }
-  }
-
   return (
       <div className="max-w-4xl mx-auto">
         <Card>
@@ -68,7 +41,7 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <RouteForm route={route} locations={locationList} />
+            <RouteForm route={route} />
           </CardContent>
         </Card>
       </div>

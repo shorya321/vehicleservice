@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { SearchInput } from "@/components/ui/search-input"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,35 +21,89 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
-import { Location } from "@/lib/types/location"
+import {
+  LocationPicker,
+  type LocationPickerInitialValue,
+} from "@/components/locations/location-picker"
 
 interface RouteFiltersProps {
   filters: RouteFilters
   onFiltersChange: (filters: RouteFilters) => void
 }
 
+const ALL = 'all'
+
 export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFiltersProps) {
   const [localSearch, setLocalSearch] = useState(filters.search || "")
   const [advancedOpen, setAdvancedOpen] = useState(false)
-  const [originLocationId, setOriginLocationId] = useState<string>(filters.originLocationId || 'all')
-  const [destinationLocationId, setDestinationLocationId] = useState<string>(filters.destinationLocationId || 'all')
-  const [locations, setLocations] = useState<Location[]>([])
+  const [originLocationId, setOriginLocationId] = useState<string>(filters.originLocationId || ALL)
+  const [destinationLocationId, setDestinationLocationId] = useState<string>(filters.destinationLocationId || ALL)
+
+  // Filters arrive from the URL as bare ids, so the display names have to be
+  // resolved separately. At most two rows, versus the ~1000-row (silently
+  // truncated) location dump this component used to load on every mount.
+  const [originInitial, setOriginInitial] = useState<LocationPickerInitialValue | null>(null)
+  const [destinationInitial, setDestinationInitial] = useState<LocationPickerInitialValue | null>(null)
+  const [namesReady, setNamesReady] = useState(false)
 
   useEffect(() => {
-    const loadLocations = async () => {
-      const supabase = createClient()
-      const { data } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('is_active', true)
-        .order('name')
+    const originId = filters.originLocationId && filters.originLocationId !== ALL
+      ? filters.originLocationId
+      : null
+    const destinationId = filters.destinationLocationId && filters.destinationLocationId !== ALL
+      ? filters.destinationLocationId
+      : null
 
-      if (data) {
-        setLocations(data)
+    if (!originId && !destinationId) {
+      setOriginInitial(null)
+      setDestinationInitial(null)
+      setNamesReady(true)
+      return
+    }
+
+    let cancelled = false
+
+    const resolveNames = async () => {
+      try {
+        const supabase = createClient()
+        const ids = [originId, destinationId].filter((id): id is string => !!id)
+        const { data, error } = await supabase
+          .from('locations')
+          .select('id, name')
+          .in('id', ids)
+
+        if (cancelled) return
+
+        if (error) {
+          console.error('Failed to resolve filter location names:', error)
+        }
+
+        const namesById = new Map((data || []).map((row) => [row.id, row.name]))
+        const originName = originId ? namesById.get(originId) : undefined
+        const destinationName = destinationId ? namesById.get(destinationId) : undefined
+
+        setOriginInitial(originId && originName ? { id: originId, name: originName } : null)
+        setDestinationInitial(
+          destinationId && destinationName ? { id: destinationId, name: destinationName } : null
+        )
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Failed to resolve filter location names:', error)
+        }
+      } finally {
+        if (!cancelled) {
+          setNamesReady(true)
+        }
       }
     }
-    loadLocations()
-  }, [])
+
+    setNamesReady(false)
+    resolveNames()
+
+    return () => {
+      cancelled = true
+    }
+  }, [filters.originLocationId, filters.destinationLocationId])
 
   const handleSearchSubmit = (value: string) => {
     onFiltersChange({ ...filters, search: value, page: 1 })
@@ -59,7 +112,7 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
   const handleActiveChange = (isActive: string) => {
     onFiltersChange({ 
       ...filters, 
-      isActive: isActive === 'all' ? 'all' : isActive === 'true' ? true : false, 
+      isActive: isActive === ALL ? ALL : isActive === 'true' ? true : false, 
       page: 1 
     })
   }
@@ -67,33 +120,39 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
   const handlePopularChange = (isPopular: string) => {
     onFiltersChange({ 
       ...filters, 
-      isPopular: isPopular === 'all' ? 'all' : isPopular === 'true' ? true : false, 
+      isPopular: isPopular === ALL ? ALL : isPopular === 'true' ? true : false, 
       page: 1 
     })
   }
 
+  const resetLocationFilters = () => {
+    setOriginLocationId(ALL)
+    setDestinationLocationId(ALL)
+    setOriginInitial(null)
+    setDestinationInitial(null)
+  }
+
   const handleClearFilters = () => {
     setLocalSearch("")
-    setOriginLocationId('all')
-    setDestinationLocationId('all')
+    resetLocationFilters()
     onFiltersChange({ 
       page: 1, 
       limit: filters.limit || 10,
-      isActive: 'all',
-      isPopular: 'all'
+      isActive: ALL,
+      isPopular: ALL
     })
   }
 
   const handleApplyAdvancedFilters = () => {
     const newFilters: RouteFilters = { ...filters, page: 1 }
     
-    if (originLocationId && originLocationId !== 'all') {
+    if (originLocationId && originLocationId !== ALL) {
       newFilters.originLocationId = originLocationId
     } else {
       delete newFilters.originLocationId
     }
     
-    if (destinationLocationId && destinationLocationId !== 'all') {
+    if (destinationLocationId && destinationLocationId !== ALL) {
       newFilters.destinationLocationId = destinationLocationId
     } else {
       delete newFilters.destinationLocationId
@@ -105,16 +164,13 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
 
   const activeFilterCount = [
     filters.search,
-    filters.isActive && filters.isActive !== 'all' ? filters.isActive : null,
-    filters.isPopular && filters.isPopular !== 'all' ? filters.isPopular : null,
-    filters.originLocationId && filters.originLocationId !== 'all' ? filters.originLocationId : null,
-    filters.destinationLocationId && filters.destinationLocationId !== 'all' ? filters.destinationLocationId : null,
+    filters.isActive && filters.isActive !== ALL ? filters.isActive : null,
+    filters.isPopular && filters.isPopular !== ALL ? filters.isPopular : null,
+    filters.originLocationId && filters.originLocationId !== ALL ? filters.originLocationId : null,
+    filters.destinationLocationId && filters.destinationLocationId !== ALL ? filters.destinationLocationId : null,
   ].filter(Boolean).length
 
   const hasActiveFilters = activeFilterCount > 0
-
-  const pickupLocations = locations.filter(loc => loc.allow_pickup)
-  const dropoffLocations = locations.filter(loc => loc.allow_dropoff)
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -128,28 +184,28 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
         />
         
         <Select 
-          value={filters.isActive === true ? 'true' : filters.isActive === false ? 'false' : 'all'} 
+          value={filters.isActive === true ? 'true' : filters.isActive === false ? 'false' : ALL} 
           onValueChange={handleActiveChange}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All status</SelectItem>
+            <SelectItem value={ALL}>All status</SelectItem>
             <SelectItem value="true">Active</SelectItem>
             <SelectItem value="false">Inactive</SelectItem>
           </SelectContent>
         </Select>
 
         <Select 
-          value={filters.isPopular === true ? 'true' : filters.isPopular === false ? 'false' : 'all'} 
+          value={filters.isPopular === true ? 'true' : filters.isPopular === false ? 'false' : ALL} 
           onValueChange={handlePopularChange}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All routes</SelectItem>
+            <SelectItem value={ALL}>All routes</SelectItem>
             <SelectItem value="true">Popular</SelectItem>
             <SelectItem value="false">Regular</SelectItem>
           </SelectContent>
@@ -172,66 +228,70 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80" align="end">
+          <PopoverContent
+            className="w-80"
+            align="end"
+            // Without this the origin field is autofocused on open, which pops
+            // its suggestion list straight over the Reset/Apply buttons.
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium text-sm">Advanced Filters</h4>
                 <p className="text-xs text-muted-foreground">
-                  Filter routes by origin and destination
+                  Search for an origin and destination to filter routes
                 </p>
               </div>
               
               <Separator />
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Navigation className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="origin" className="text-sm">
+                    <Label htmlFor="origin-location-filter" className="text-sm">
                       Origin Location
                     </Label>
                   </div>
-                  <Select
-                    value={originLocationId}
-                    onValueChange={setOriginLocationId}
-                  >
-                    <SelectTrigger className="w-40 h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All locations</SelectItem>
-                      {pickupLocations.map((location) => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {namesReady ? (
+                    <LocationPicker
+                      id="origin-location-filter"
+                      value={originLocationId === ALL ? null : originLocationId}
+                      initialLocation={originInitial}
+                      onChange={(id, name) => {
+                        setOriginLocationId(id ?? ALL)
+                        setOriginInitial(id && name ? { id, name } : null)
+                      }}
+                      placeholder="All locations"
+                      ariaLabel="Filter by origin location"
+                    />
+                  ) : (
+                    <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="destination" className="text-sm">
+                    <Label htmlFor="destination-location-filter" className="text-sm">
                       Destination Location
                     </Label>
                   </div>
-                  <Select
-                    value={destinationLocationId}
-                    onValueChange={setDestinationLocationId}
-                  >
-                    <SelectTrigger className="w-40 h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All locations</SelectItem>
-                      {dropoffLocations.map((location) => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {namesReady ? (
+                    <LocationPicker
+                      id="destination-location-filter"
+                      value={destinationLocationId === ALL ? null : destinationLocationId}
+                      initialLocation={destinationInitial}
+                      onChange={(id, name) => {
+                        setDestinationLocationId(id ?? ALL)
+                        setDestinationInitial(id && name ? { id, name } : null)
+                      }}
+                      placeholder="All locations"
+                      ariaLabel="Filter by destination location"
+                    />
+                  ) : (
+                    <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+                  )}
                 </div>
               </div>
 
@@ -241,10 +301,7 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setOriginLocationId('all')
-                    setDestinationLocationId('all')
-                  }}
+                  onClick={resetLocationFilters}
                 >
                   Reset
                 </Button>
