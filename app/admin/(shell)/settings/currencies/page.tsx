@@ -204,7 +204,8 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
             <AlertDescription>
               Currency conversion is for display purposes only. Customers see prices in their
               preferred currency, but all payments are processed in {defaultCurrencyCode}.
-              Featured currencies appear in the quick selector dropdown on the frontend.
+              Featured currencies appear in the quick selector dropdown and lead the
+              Featured row in the full currency picker on the frontend.
             </AlertDescription>
           </Alert>
 
