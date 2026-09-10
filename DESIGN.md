@@ -21,38 +21,38 @@ colors:
   destructive: "#ef4444"
 typography:
   display:
-    fontFamily: "TT Commons Pro, Inter, system-ui, sans-serif"
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "clamp(2.75rem, 6vw, 5rem)"
     fontWeight: 600
     lineHeight: 1.05
     letterSpacing: "-0.02em"
   headline:
-    fontFamily: "TT Commons Pro, Inter, system-ui, sans-serif"
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "clamp(1.75rem, 3vw, 2.5rem)"
     fontWeight: 600
     lineHeight: 1.15
     letterSpacing: "-0.02em"
   title:
-    fontFamily: "TT Commons Pro, Inter, system-ui, sans-serif"
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 500
     lineHeight: 1.35
     letterSpacing: "0"
   body:
-    fontFamily: "TT Commons Pro, Inter, system-ui, sans-serif"
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.7
     letterSpacing: "0.01em"
   numeric:
-    fontFamily: "TT Commons Pro, Inter, system-ui, sans-serif"
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: "0"
     fontFeature: "\"tnum\" 1, \"lnum\" 1"
   label:
-    fontFamily: "TT Commons Pro, Inter, system-ui, sans-serif"
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1.2
@@ -113,7 +113,7 @@ components:
 
 **Creative North Star: "The Composed Itinerary"**
 
-The system is a dark, editorially-disciplined surface for a booking product that treats every traveller fact (origin, destination, time, vehicle class, passenger count, bag count, price) as typographic material. Black-warm grounds, vellum-gold accents, TT Commons Pro at varying weights and scales. The vocabulary is taken from luggage tags, ledger pages, and itinerary cards rather than rideshare apps or chauffeur marketing.
+The system is a dark, editorially-disciplined surface for a booking product that treats every traveller fact (origin, destination, time, vehicle class, passenger count, bag count, price) as typographic material. Black-warm grounds, vellum-gold accents, Inter at varying weights and scales. The vocabulary is taken from luggage tags, ledger pages, and itinerary cards rather than rideshare apps or chauffeur marketing.
 
 This system rejects the first-order category reflex of "luxury transport → black + gold gradient banner + stock sedan photo." It commits to dark, but uses the gold as a typographic and edge accent, never as a fill on large surfaces. Numbers are treated as display elements. Spacing is generous on brand surfaces, dense on product surfaces. Motion is restrained: ease-out exponential curves, short durations, no bounce, no parallax inside the booking flow.
 
@@ -121,7 +121,7 @@ The same tokens render the marketing home (brand register) and the booking journ
 
 **Key Characteristics:**
 - Dark-warm grounds tinted toward gold (chroma never zero), never `#000`, never `#fff`.
-- Single geometric sans (TT Commons Pro) at committed weight and scale contrasts, with generous body line-height.
+- Single grotesque sans (Inter) at committed weight and scale contrasts, with generous body line-height.
 - Vellum gold as a typographic detail and edge stroke, **not** as a fill on more than ~10% of any surface.
 - Numbers (prices, times, distances, durations) carry tabular figures and a slight weight bump.
 - Motion exists to confirm state, never to entertain. `prefers-reduced-motion` is honored everywhere.
@@ -157,19 +157,19 @@ A warm-cold dark palette, tinted, with a single accent family used like a maker'
 
 ## 3. Typography
 
-**Primary Font:** TT Commons Pro (with Inter, system-ui, sans-serif fallback)
-**Numeric Font:** TT Commons Pro with `font-variant-numeric: tabular-nums lining-nums`. Numbers are aligned vertically and weighted up half a step.
+**Primary Font:** Inter (with system-ui, sans-serif fallback)
+**Numeric Font:** Inter with `font-variant-numeric: tabular-nums lining-nums`. Numbers are aligned vertically and weighted up half a step.
 
-**Character:** A single geometric sans used at committed weight and scale contrasts. Display sizes run heavy (600) for authority; body runs light (400) for readability. Hierarchy lives in size jumps and weight steps, not in font-family switching. The result reads editorial first, technical second, never SaaS, never rideshare. Emphasis comes from gold color and weight contrast.
+**Character:** A single grotesque sans used at committed weight and scale contrasts. Display sizes run heavy (600) for authority; body runs light (400) for readability. Hierarchy lives in size jumps and weight steps, not in font-family switching. The result reads editorial first, technical second, never SaaS, never rideshare. Emphasis comes from gold color and weight contrast.
 
 ### Hierarchy
 
-- **Display** (TT Commons Pro 600, `clamp(2.75rem, 6vw, 5rem)`, line-height 1.05): hero titles, peak-moment headlines (confirmation page, hero), once per surface.
-- **Headline** (TT Commons Pro 600, `clamp(1.75rem, 3vw, 2.5rem)`, line-height 1.15): section titles, page H1 inside the booking flow.
-- **Title** (TT Commons Pro 500, `1.125rem`, line-height 1.35): card titles, form section labels, list-item primary lines.
-- **Body** (TT Commons Pro 400, `1rem`, line-height 1.7, max line length 65-75ch): paragraph text, descriptions, helper copy.
-- **Numeric** (TT Commons Pro 500, `1rem`, tabular figures): prices, durations, distances, passenger counts, bag counts, vehicle counts. Numbers are first-class citizens, not body text.
-- **Label** (TT Commons Pro 500, `0.75rem`, letter-spacing 0.12em, uppercase): eyebrows, status pills, step indicators.
+- **Display** (Inter 600, `clamp(2.75rem, 6vw, 5rem)`, line-height 1.05): hero titles, peak-moment headlines (confirmation page, hero), once per surface.
+- **Headline** (Inter 600, `clamp(1.75rem, 3vw, 2.5rem)`, line-height 1.15): section titles, page H1 inside the booking flow.
+- **Title** (Inter 500, `1.125rem`, line-height 1.35): card titles, form section labels, list-item primary lines.
+- **Body** (Inter 400, `1rem`, line-height 1.7, max line length 65-75ch): paragraph text, descriptions, helper copy.
+- **Numeric** (Inter 500, `1rem`, tabular figures): prices, durations, distances, passenger counts, bag counts, vehicle counts. Numbers are first-class citizens, not body text.
+- **Label** (Inter 500, `0.75rem`, letter-spacing 0.12em, uppercase): eyebrows, status pills, step indicators.
 
 ### Named Rules
 
