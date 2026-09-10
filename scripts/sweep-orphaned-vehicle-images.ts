@@ -5,10 +5,11 @@
  * from abandoned add-vehicle forms (the image uploads before the row is saved).
  *
  * !! The `vehicles` bucket is SHARED. It also stores blog featured images,
- * vehicle-category images and vehicle-type images -- app/admin/blog/...,
- * app/admin/vehicle-categories/... and app/admin/vehicle-types/... all upload
- * into `.from('vehicles')`. A naive "not referenced by vehicles.primary_image_url"
- * sweep would delete every blog and category image on the site.
+ * vehicle-category images, vehicle-type images and route images --
+ * app/admin/blog/..., app/admin/vehicle-categories/...,
+ * app/admin/vehicle-types/... and app/admin/routes/... all upload into
+ * `.from('vehicles')`. A naive "not referenced by vehicles.primary_image_url"
+ * sweep would delete every blog, category and route image on the site.
  *
  * Two independent guards:
  *
@@ -17,8 +18,9 @@
  *   2. Only vehicle-owned path shapes are ever candidates:
  *        - `{uuid}/...`            current layout, folder = vendor_applications.id
  *        - `vehicles/{uuid}/...`   legacy doubled-prefix layout
- *      Everything else (`blog/`, `categories/`, `vehicle-types/`) is skipped
- *      outright, so a missed reference cannot destroy a non-vehicle image.
+ *      Everything else (`blog/`, `categories/`, `vehicle-types/`, `routes/`) is
+ *      skipped outright, so a missed reference cannot destroy a non-vehicle
+ *      image.
  *
  * Deletes via the Storage API, not `delete from storage.objects` -- the latter
  * removes the metadata row but leaves the file in the backend.
@@ -43,6 +45,7 @@ const REFERENCES: { table: string; column: string }[] = [
   { table: 'vehicle_categories', column: 'image_url' },
   { table: 'blog_posts', column: 'featured_image_url' },
   { table: 'blog_categories', column: 'image_url' },
+  { table: 'routes', column: 'image_url' },
 ]
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

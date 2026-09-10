@@ -61,6 +61,8 @@ export async function getPublicRoutes(
       searchCount: 0,
       distance: route.distance_km || 0,
       duration: route.estimated_duration_minutes || 0,
+      image: route.image_url,
+      imageAlt: route.image_alt,
       isPopular: route.is_popular === true,
     }
   })

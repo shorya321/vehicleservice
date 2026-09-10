@@ -22,6 +22,8 @@ export interface PopularRoute {
   searchCount: number
   distance: number
   duration: number
+  image: string | null
+  imageAlt: string | null
 }
 
 interface PopularRoutesProps {

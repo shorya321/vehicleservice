@@ -2464,6 +2464,8 @@ export type Database = {
           distance_km: number | null
           estimated_duration_minutes: number | null
           id: string
+          image_alt: string | null
+          image_url: string | null
           is_active: boolean | null
           is_popular: boolean | null
           origin_location_id: string
@@ -2477,6 +2479,8 @@ export type Database = {
           distance_km?: number | null
           estimated_duration_minutes?: number | null
           id?: string
+          image_alt?: string | null
+          image_url?: string | null
           is_active?: boolean | null
           is_popular?: boolean | null
           origin_location_id: string
@@ -2490,6 +2494,8 @@ export type Database = {
           distance_km?: number | null
           estimated_duration_minutes?: number | null
           id?: string
+          image_alt?: string | null
+          image_url?: string | null
           is_active?: boolean | null
           is_popular?: boolean | null
           origin_location_id?: string
@@ -3861,6 +3867,8 @@ export type Database = {
           distance_km: number
           estimated_duration_minutes: number
           id: string
+          image_alt: string | null
+          image_url: string | null
           origin_city: string
           origin_location_id: string
           origin_name: string

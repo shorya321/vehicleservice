@@ -1,11 +1,5 @@
 import type { PopularRoute } from '@/components/search/popular-routes'
-import {
-  collapseCorridors,
-  railHeight,
-  RAIL_MIN,
-  RAIL_MAX,
-  RAIL_MID,
-} from '@/lib/routes/corridors'
+import { collapseCorridors } from '@/lib/routes/corridors'
 
 /**
  * Builds a PopularRoute with the fields collapseCorridors actually reads.
@@ -27,6 +21,8 @@ function route(partial: Partial<PopularRoute> & Pick<PopularRoute, 'id'>): Popul
     searchCount: 0,
     distance: 10,
     duration: 12,
+    image: null,
+    imageAlt: null,
     ...partial,
   }
 }
@@ -146,28 +142,86 @@ describe('collapseCorridors', () => {
     expect(result[0].distance).toBe(16)
     expect(result[0].duration).toBe(18)
   })
-})
 
-describe('railHeight', () => {
-  it('gives the shortest corridor the minimum rail', () => {
-    expect(railHeight(11, 11, 22)).toBe(RAIL_MIN)
+  /**
+   * The photo lives on the route row, and an admin editing one direction has no
+   * way to know which direction the home page happens to render. Without this,
+   * an image uploaded to the mirror would silently never appear.
+   */
+  it('adopts the mirror direction\'s image when the kept direction has none', () => {
+    const result = collapseCorridors([
+      route({ id: 'r1', originLocationId: 'atlantis', destinationLocationId: 'burj' }),
+      route({
+        id: 'r2',
+        originLocationId: 'burj',
+        destinationLocationId: 'atlantis',
+        image: 'https://cdn.example/burj.webp',
+        imageAlt: 'The Burj Khalifa at dusk',
+      }),
+    ])
+
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('r1')
+    expect(result[0].image).toBe('https://cdn.example/burj.webp')
+    expect(result[0].imageAlt).toBe('The Burj Khalifa at dusk')
   })
 
-  it('gives the longest corridor the maximum rail', () => {
-    expect(railHeight(22, 11, 22)).toBe(RAIL_MAX)
+  it('keeps the first-seen direction\'s image when both carry one', () => {
+    const result = collapseCorridors([
+      route({
+        id: 'r1',
+        originLocationId: 'atlantis',
+        destinationLocationId: 'burj',
+        image: 'https://cdn.example/kept.webp',
+        imageAlt: 'kept',
+      }),
+      route({
+        id: 'r2',
+        originLocationId: 'burj',
+        destinationLocationId: 'atlantis',
+        image: 'https://cdn.example/mirror.webp',
+        imageAlt: 'mirror',
+      }),
+    ])
+
+    expect(result[0].image).toBe('https://cdn.example/kept.webp')
+    expect(result[0].imageAlt).toBe('kept')
   })
 
-  it('scales linearly in between', () => {
-    // Midpoint of 11..22 is 16.5, so it should land halfway up the rail range.
-    expect(railHeight(16.5, 11, 22)).toBe(Math.round((RAIL_MIN + RAIL_MAX) / 2))
+  it('leaves the image null when neither direction has one', () => {
+    const result = collapseCorridors([
+      route({ id: 'r1', originLocationId: 'a', destinationLocationId: 'b' }),
+      route({ id: 'r2', originLocationId: 'b', destinationLocationId: 'a' }),
+    ])
+
+    expect(result[0].image).toBeNull()
+    expect(result[0].imageAlt).toBeNull()
   })
 
-  /** Guards a divide-by-zero when every popular route is the same distance. */
-  it('falls back to the mid rail when every corridor is the same length', () => {
-    expect(railHeight(14, 14, 14)).toBe(RAIL_MID)
-  })
+  /** The mirror is folded in for its photo only; nothing else may leak across. */
+  it('does not take the mirror\'s endpoints along with its image', () => {
+    const result = collapseCorridors([
+      route({
+        id: 'r1',
+        originLocationId: 'atlantis',
+        destinationLocationId: 'burj',
+        originName: 'Atlantis - The Palm',
+        destinationName: 'Burj Khalifa',
+        originSlug: 'atlantis-the-palm',
+      }),
+      route({
+        id: 'r2',
+        originLocationId: 'burj',
+        destinationLocationId: 'atlantis',
+        originName: 'Burj Khalifa',
+        destinationName: 'Atlantis - The Palm',
+        originSlug: 'burj-khalifa',
+        image: 'https://cdn.example/burj.webp',
+      }),
+    ])
 
-  it('returns whole pixels', () => {
-    expect(Number.isInteger(railHeight(13, 11, 22))).toBe(true)
+    expect(result[0].originName).toBe('Atlantis - The Palm')
+    expect(result[0].originSlug).toBe('atlantis-the-palm')
+    expect(result[0].image).toBe('https://cdn.example/burj.webp')
   })
 })

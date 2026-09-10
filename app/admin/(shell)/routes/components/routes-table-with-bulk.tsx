@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from "react"
+import Image from "next/image"
 import { RouteWithDetails } from "@/lib/types/route"
 import {
   Table,
@@ -21,6 +22,7 @@ import {
   Clock, 
   Star,
   StarOff,
+  Image as ImageIcon,
   MoreHorizontal,
   Check,
   X
@@ -160,6 +162,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                   }}
                 />
               </TableHead>
+              <TableHead className="w-24">Image</TableHead>
               <TableHead>Route</TableHead>
               <TableHead>Distance/Duration</TableHead>
               <TableHead>Popularity</TableHead>
@@ -175,6 +178,23 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                     checked={selectedIds.includes(route.id)}
                     onCheckedChange={(checked) => handleSelectRoute(route.id, checked as boolean)}
                   />
+                </TableCell>
+                <TableCell>
+                  <div className="relative h-10 w-16 overflow-hidden rounded-md bg-muted">
+                    {route.image_url ? (
+                      <Image
+                        src={route.image_url}
+                        alt={route.image_alt || route.route_name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">

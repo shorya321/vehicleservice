@@ -1,6 +1,7 @@
 "use client"
 import Image from 'next/image'
 import { motion, useReducedMotion } from "motion/react"
+import { SCRIM, SCRIM_TOKENS } from '@/lib/home/photo-scrim'
 
 interface City {
   name: string
@@ -35,27 +36,6 @@ const CITIES: City[] = [
     alt: 'Abras crossing the creek in front of the old Deira waterfront',
   },
 ]
-
-/**
- * Photo grading and scrim alphas, lifted verbatim from the artifact and scoped
- * to this section rather than added to globals.css.
- *
- * Both follow the theme on purpose. In light the photo keeps its brightness and
- * the scrim washes it toward off-white, so the card reads pale and airy under
- * dark caption text. In dark the photo is dimmed to 60% and the scrim settles
- * toward near-black under light caption text. --void-rgb and --rich-rgb already
- * flip on their own, so the gradients below are written once.
- */
-const SCRIM_TOKENS = [
-  '[--scrim-anchor:0.84] dark:[--scrim-anchor:0.90]',
-  '[--scrim-mid:0.52]',
-  '[--scrim-open:0.10]',
-  '[--media-filter:saturate(0.86)_contrast(0.98)_brightness(1)]',
-  'dark:[--media-filter:saturate(0.9)_contrast(1.05)_brightness(0.6)]',
-].join(' ')
-
-const SCRIM =
-  'bg-[linear-gradient(to_top,rgba(var(--void-rgb),var(--scrim-anchor))_0%,rgba(var(--rich-rgb),var(--scrim-mid))_44%,rgba(var(--void-rgb),var(--scrim-open))_100%),linear-gradient(to_right,rgba(var(--void-rgb),var(--scrim-mid))_0%,transparent_64%)]'
 
 /**
  * Reveal props are shaped so that `whileInView` is ALWAYS supplied, and reduced

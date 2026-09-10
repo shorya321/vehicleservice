@@ -26,14 +26,10 @@ export interface Corridor {
   destinationLocationId: string
   distance: number
   duration: number
+  /** Public URL of the route photo, from either direction. See collapseCorridors. */
+  image: string | null
+  imageAlt: string | null
 }
-
-/** Rail length in px for the shortest corridor in the set. */
-export const RAIL_MIN = 30
-/** Rail length in px for the longest corridor in the set. */
-export const RAIL_MAX = 76
-/** Used when every corridor is the same distance, so there is no range to scale across. */
-export const RAIL_MID = 48
 
 /**
  * Order-independent key for a pair of endpoints.
@@ -53,17 +49,30 @@ function pairKey(a: string, b: string): string {
  * `buildSearchUrl` turns into an href, and only a direction that exists as a row
  * in `routes` is guaranteed to resolve. The reverse is recorded as a flag, not
  * by rewriting the link.
+ *
+ * The photo is the one thing taken from either direction. It lives on the route
+ * row, and an admin editing "Burj Khalifa to Atlantis" has no way to know that
+ * the home page happens to render the opposite direction — so an image uploaded
+ * to the mirror would silently never appear. The kept direction still wins when
+ * both carry one.
  */
 export function collapseCorridors(routes: PopularRoute[]): Corridor[] {
-  const seen = new Set<string>()
+  const seen = new Map<string, Corridor>()
   const corridors: Corridor[] = []
 
   for (const route of routes) {
     const key = pairKey(route.originLocationId, route.destinationLocationId)
-    if (seen.has(key)) continue
+    const kept = seen.get(key)
 
-    seen.add(key)
-    corridors.push({
+    if (kept) {
+      if (!kept.image && route.image) {
+        kept.image = route.image
+        kept.imageAlt = route.imageAlt
+      }
+      continue
+    }
+
+    const corridor: Corridor = {
       id: route.id,
       originName: route.originName,
       destinationName: route.destinationName,
@@ -73,24 +82,13 @@ export function collapseCorridors(routes: PopularRoute[]): Corridor[] {
       destinationLocationId: route.destinationLocationId,
       distance: route.distance,
       duration: route.duration,
-    })
+      image: route.image,
+      imageAlt: route.imageAlt,
+    }
+
+    seen.set(key, corridor)
+    corridors.push(corridor)
   }
 
   return corridors
-}
-
-/**
- * Rail length in px for one distance, scaled across the set's own range.
- *
- * The rail is the section's only quantitative device, so it is scaled to the
- * routes actually on screen rather than to an absolute km figure: whatever the
- * six corridors happen to be, the shortest reads short and the longest reads
- * long. Returns RAIL_MID when min and max are equal, which both guards the
- * divide-by-zero and is the honest answer — with no range there is nothing to
- * compare.
- */
-export function railHeight(distance: number, min: number, max: number): number {
-  if (max <= min) return RAIL_MID
-  const ratio = (distance - min) / (max - min)
-  return Math.round(RAIL_MIN + ratio * (RAIL_MAX - RAIL_MIN))
 }

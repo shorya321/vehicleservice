@@ -53,7 +53,9 @@ export async function getPopularRoutes(): Promise<PopularRoute[]> {
     startingPrice: 0, // Pricing is per vehicle type, not at route level
     searchCount: 0, // No longer tracking search counts
     distance: route.distance_km,
-    duration: route.estimated_duration_minutes
+    duration: route.estimated_duration_minutes,
+    image: route.image_url,
+    imageAlt: route.image_alt
   }))
 
   return result

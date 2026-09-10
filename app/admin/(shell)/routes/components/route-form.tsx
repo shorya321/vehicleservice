@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { createRoute, updateRoute } from "../actions"
 import { RouteWithLocations } from "@/lib/types/route"
+import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-upload"
 import { Loader2 } from "lucide-react"
 
 const routeSchema = z.object({
@@ -33,6 +34,7 @@ const routeSchema = z.object({
   estimated_duration_minutes: z.coerce.number().int().positive("Duration must be positive"),
   is_active: z.boolean(),
   is_popular: z.boolean(),
+  image_alt: z.string().max(255).optional(),
 }).refine((data) => data.origin_location_id !== data.destination_location_id, {
   message: "Origin and destination must be different",
   path: ["destination_location_id"],
@@ -55,6 +57,12 @@ export function RouteForm({ route }: RouteFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
+  // The image is not registered with react-hook-form: ImageUpload carries its
+  // own size and MIME validation and hands back File objects, so it is held as
+  // plain state and folded into the payload at submit time.
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(route?.image_url || null)
+
   // The pickers search live, so the selected names are tracked here rather
   // than looked up in a preloaded locations array.
   const [originName, setOriginName] = useState<string | null>(
@@ -75,6 +83,7 @@ export function RouteForm({ route }: RouteFormProps) {
       estimated_duration_minutes: route?.estimated_duration_minutes || 0,
       is_active: route?.is_active ?? true,
       is_popular: route?.is_popular ?? false,
+      image_alt: route?.image_alt || "",
     },
   })
 
@@ -100,15 +109,49 @@ export function RouteForm({ route }: RouteFormProps) {
     [setValue]
   )
 
+  const handleImageChange = (files: File[]) => {
+    if (files.length === 0) return
+
+    const file = files[0]
+    setImageFile(file)
+
+    const reader = new FileReader()
+    reader.onloadend = () => setImagePreview(reader.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  const handleImageRemove = () => {
+    setImageFile(null)
+    setImagePreview(null)
+  }
+
   const onSubmit = async (data: RouteFormValues) => {
     try {
       setIsLoading(true)
-      
+
+      // imageBase64 set means a new upload, existingImage set means keep the
+      // URL already on the row, both null means the admin removed the image.
+      let imageBase64: string | null = null
+      if (imageFile) {
+        const reader = new FileReader()
+        imageBase64 = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(imageFile)
+        })
+      }
+
+      const payload = {
+        ...data,
+        image_alt: data.image_alt || null,
+        imageBase64,
+        existingImage: !imageBase64 && imagePreview ? imagePreview : null,
+      }
+
       if (route) {
-        await updateRoute(route.id, data)
+        await updateRoute(route.id, payload)
         toast.success("Route updated successfully")
       } else {
-        await createRoute(data)
+        await createRoute(payload)
         toast.success("Route created successfully")
       }
       
@@ -291,6 +334,35 @@ export function RouteForm({ route }: RouteFormProps) {
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-6 rounded-lg border p-4">
+          <ImageUpload
+            label="Route Image"
+            description="Shown on the home page Routes rail. Landscape, at least 680x420px. Optional: routes without one fall back to a gradient plate."
+            value={imagePreview || undefined}
+            onChange={handleImageChange}
+            onRemove={handleImageRemove}
+            disabled={isLoading}
+          />
+
+          <FormField
+            control={form.control}
+            name="image_alt"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Image Alt Text</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormDescription>
+                  What the photo shows, for screen readers. Leave blank to fall back to
+                  &ldquo;Origin to Destination&rdquo;.
+                </FormDescription>
+                <FormMessage />
               </FormItem>
             )}
           />
