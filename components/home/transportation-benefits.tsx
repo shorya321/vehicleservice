@@ -38,11 +38,20 @@ export function TransportationBenefits() {
       className="editorial-section editorial-section--ground"
     >
       <div className="luxury-container">
+        {/*
+          `whileInView` is ALWAYS supplied, with reduced motion collapsing only
+          the duration and offset. The `whileInView={reduceMotion ? undefined :
+          ...}` shape this file used to carry looks equivalent and is not:
+          useReducedMotion() resolves false during SSR, so motion serialises
+          opacity: 0 into the markup, then after hydration flips true,
+          whileInView becomes undefined, and nothing animates the section back.
+          Reduced-motion users got a permanently invisible section.
+        */}
         <motion.header
           className="max-w-2xl"
-          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, amount: 0.4 }}
         >
           <div className="editorial-eyebrow">The promise</div>
@@ -54,21 +63,26 @@ export function TransportationBenefits() {
           </p>
         </motion.header>
 
-        <ol className="editorial-list mt-12">
+        {/* Straight 1 to 3 at 900px, with no 2-col step: three items in two
+            columns leaves one of them stranded on its own row. */}
+        <ol className="mt-12 grid grid-cols-1 gap-5 min-[900px]:grid-cols-3">
           {benefits.map((p, index) => (
             <motion.li
               key={p.index}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+              className="promise-card"
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: reduceMotion ? 0 : 0.45,
+                delay: reduceMotion ? 0 : index * 0.06,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               viewport={{ once: true, amount: 0.2 }}
             >
-              <span className="editorial-list-index numeric">{p.index}</span>
-              <div>
-                <h3 className="editorial-list-title">{p.title}</h3>
-                <p className="editorial-list-body">{p.body}</p>
-              </div>
-              <span className="editorial-list-meta hidden md:inline-block">{p.meta}</span>
+              <span className="promise-card__index numeric">{p.index}</span>
+              <h3 className="editorial-list-title">{p.title}</h3>
+              <p className="editorial-list-body">{p.body}</p>
+              <span className="promise-card__foot editorial-list-meta">{p.meta}</span>
             </motion.li>
           ))}
         </ol>

@@ -5156,6 +5156,12 @@
     --gold-text-hover: #8B7355 !important;
     --graphite: #cccccc !important;
   }
+
+  /* A 1px hollow figure prints as very nearly nothing. Fill it back in. */
+  .promise-card__index {
+    color: var(--gold-text) !important;
+    -webkit-text-stroke: 0 !important;
+  }
 }
 
 /* ============================================
@@ -5485,6 +5491,73 @@
 
   .route-stub:hover .route-stub__ring { border-color: var(--gold); }
   .route-stub:hover .route-stub__cta { color: var(--gold-text-hover); }
+
+  /* ------------------------------------------------------------------
+     Promise card: the tile used by the home "Specifics, not adjectives."
+     section (components/home/transportation-benefits.tsx).
+
+     Deliberately shares the --stub-* ground with .route-stub above rather
+     than inventing a second card physics two sections down the page. Sits
+     here, next to it, for that reason.
+
+     Written here rather than as Tailwind arbitrary values for the same
+     reasons the route-stub block is: ease-[var(--ease-luxury)] emits no
+     rule at all, and neither does rgba-over-a-var border colour.
+     ------------------------------------------------------------------ */
+  .promise-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  .promise-card:hover {
+    border-color: rgba(var(--gold-rgb), 0.4);
+  }
+
+  /* Hover never fires on touch. Without this a tap has no feedback at all. */
+  .promise-card:active {
+    border-color: rgba(var(--gold-rgb), 0.55);
+  }
+
+  /* The hollow figure. Solid is declared first and deliberately: a
+     -webkit-text-stroke the browser does not understand leaves
+     `color: transparent` behind on its own, i.e. an invisible numeral. */
+  .promise-card__index {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: var(--font-body);
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--gold-text);
+  }
+
+  /* Strokes with --gold-text, not --gold. A glyph is type, whatever it is
+     drawn with, and theme-invariant --gold measures ~2:1 on the light tile
+     ground. --gold-text is the same #c6aa88 in dark and a deep #6b5530 in
+     light, which carries the outline at ~6.9:1 on both. */
+  @supports (-webkit-text-stroke: 1px currentColor) {
+    .promise-card__index {
+      color: transparent;
+      -webkit-text-stroke: 1px var(--gold-text);
+    }
+  }
+
+  /* margin-top: auto is what levels the rule across cards whose bodies run to
+     different lengths, the same device as .route-stub__top's flex: 1. */
+  .promise-card__foot {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--graphite);
+  }
 
   /* Editorial pull-quote: testimonial style. */
   .pullquote {
