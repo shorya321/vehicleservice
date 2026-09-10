@@ -26,22 +26,42 @@ const RULE = 'absolute left-1 w-px bg-[var(--graphite)]'
 
 const NAME = 'text-[1.0625rem] font-medium leading-[1.25] tracking-[-0.012em] text-[var(--text-primary)]'
 
-/** Shared by every cell so the six tiles share one set of edges and inner padding. */
+/**
+ * Shared by every cell so the six tiles share one set of edges and inner padding.
+ *
+ * The shell itself is .route-stub in globals.css: the ground gradient, the
+ * hairline, the inner top highlight, the ambient shadow and the hover cannot be
+ * written as Tailwind arbitrary values (ease-[var(--ease-luxury)] and
+ * bg-[var(--gold)]/40 both compile to nothing). The press feedback moved there
+ * too, as a border change: the `active:` background tint that used to live here
+ * is painted over by the ground gradient and would never have shown.
+ *
+ * ring-offset stays --black-rich: the offset ring is drawn outside the card, on
+ * the section ground, not on the card's own.
+ */
 const CELL =
-  'group flex h-full flex-col p-7 transition-colors hover:bg-[rgba(var(--gold-rgb),0.06)] ' +
-  'active:bg-[rgba(var(--gold-rgb),0.10)] focus-visible:outline-none focus-visible:ring-2 ' +
-  'focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]'
+  'route-stub group focus-visible:outline-none focus-visible:ring-2 ' +
+  'focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 ' +
+  'focus-visible:ring-offset-[var(--black-rich)]'
 
-const FOOT = 'mt-6 flex items-center gap-3 border-t border-[var(--graphite)] pt-[1.1rem]'
+/** The perforation separates the foot now, so no rule and no margins of its own. */
+const FOOT = 'route-stub__foot flex items-center gap-3'
+
+/** Two notches bitten out of the card's side edges. Decorative, never announced. */
+const PERFORATION = (
+  <span className="route-stub__perf" aria-hidden="true">
+    <span className="route-stub__notch route-stub__notch--l" />
+    <span className="route-stub__notch route-stub__notch--r" />
+  </span>
+)
 
 /**
- * --gold-text, never --gold: the gold spectrum is theme-invariant (#c6aa88 in
- * both), which is correct for rules and fills but fails contrast as text on the
- * light ground. --gold-text darkens to #6b5530 in light mode.
+ * Colour lives in .route-stub__cta: neutral at rest, --gold-text on hover. The
+ * card no longer spends the accent on anything that is just sitting there.
  */
 const CTA =
-  'inline-flex items-center gap-1.5 whitespace-nowrap text-[0.6875rem] font-semibold ' +
-  'uppercase tracking-[0.12em] text-[var(--gold-text)]'
+  'route-stub__cta inline-flex items-center gap-1.5 whitespace-nowrap ' +
+  'text-[0.6875rem] font-semibold uppercase tracking-[0.12em]'
 
 export function DeparturePointsClient({ corridors, todayDate }: DeparturePointsClientProps) {
   const reduceMotion = useReducedMotion()
@@ -76,16 +96,16 @@ export function DeparturePointsClient({ corridors, todayDate }: DeparturePointsC
         >
           <div className="editorial-eyebrow">Routes</div>
           <h2 id="routes-heading" className="editorial-section-title mt-5">
-            Short hops and long runs.
+            The routes travellers book most.
           </h2>
           <p className="editorial-body mt-6">
             Every corridor drawn to length. Open one to see vehicles, capacity, and the final number for your date.
           </p>
         </motion.header>
 
-        {/* The 1px gap over a --graphite ground draws the hairlines between
-            cells, the same way components/home/cities.tsx builds its grid. */}
-        <ul className="mt-12 grid grid-cols-1 gap-px border-y border-[var(--graphite)] bg-[var(--graphite)] min-[620px]:grid-cols-2 min-[950px]:grid-cols-3">
+        {/* A real gap, not a 1px seam over a --graphite ground: the tiles carry
+            their own edges now, so the grid has nothing left to draw. */}
+        <ul className="mt-12 grid grid-cols-1 gap-5 min-[620px]:grid-cols-2 min-[950px]:grid-cols-3">
           {corridors.map((corridor, index) => {
             const href = corridor.originSlug && corridor.destinationSlug
               ? buildSearchUrl(corridor.originSlug, corridor.destinationSlug, { date: todayDate, passengers: 2 })
@@ -96,7 +116,6 @@ export function DeparturePointsClient({ corridors, todayDate }: DeparturePointsC
             return (
               <motion.li
                 key={corridor.id}
-                className="bg-[var(--black-rich)]"
                 initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{
@@ -117,51 +136,57 @@ export function DeparturePointsClient({ corridors, todayDate }: DeparturePointsC
                   */}
                   {/*
                     content-start matters: without it the `auto` rows stretch to
-                    fill the flex-1 box and soak up the leftover height, so the
-                    gap between the marks stops being the rail and the distance
+                    fill the box and soak up the leftover height, so the gap
+                    between the marks stops being the rail and the distance
                     encoding is damped. Pinning the rows keeps dot-to-ring at
-                    exactly one line box + the rail.
+                    exactly one line box + the rail. The slack is absorbed by
+                    .route-stub__top instead, which is what holds the
+                    perforation level across cards of differing rail length.
                   */}
-                  <div
-                    className="grid flex-1 content-start grid-cols-[9px_minmax(0,1fr)] gap-x-4"
-                    style={{ gridTemplateRows: `auto ${rail}px auto` }}
-                  >
-                    <span className={MARK_CELL} aria-hidden="true">
-                      <span className={MARK_BOX}>
-                        <span className="block h-[9px] w-[9px] rounded-full bg-[var(--gold)]" />
+                  <div className="route-stub__top">
+                    <div
+                      className="grid content-start grid-cols-[9px_minmax(0,1fr)] gap-x-4"
+                      style={{ gridTemplateRows: `auto ${rail}px auto` }}
+                    >
+                      <span className={MARK_CELL} aria-hidden="true">
+                        <span className={MARK_BOX}>
+                          <span className="route-stub__dot" />
+                        </span>
+                        {/* Runs from the dot's centre to the bottom of this row,
+                            so the rule meets the mark however the name wraps. */}
+                        <span className={`${RULE} bottom-0`} style={{ top: HALF_LINE }} />
                       </span>
-                      {/* Runs from the dot's centre to the bottom of this row,
-                          so the rule meets the mark however the name wraps. */}
-                      <span className={`${RULE} bottom-0`} style={{ top: HALF_LINE }} />
-                    </span>
-                    <span className={NAME}>{corridor.originName}</span>
+                      <span className={NAME}>{corridor.originName}</span>
 
-                    <span className="relative block">
-                      <span aria-hidden="true" className={`${RULE} bottom-0 top-0`} />
-                      {/*
-                        NOT aria-hidden. The rule and the marks are decorative,
-                        but this is the distance itself, and the footer carries
-                        only the duration — hiding it would leave a screen
-                        reader with half the figures.
-                        --text-secondary, not --text-muted: muted fails WCAG AA
-                        at this size over the light ground (see cities.tsx).
-                      */}
-                      <span className="numeric absolute left-[14px] top-1/2 -translate-y-1/2 whitespace-nowrap text-[0.6875rem] text-[var(--text-secondary)]">
-                        {corridor.distance} km
+                      <span className="relative block">
+                        <span aria-hidden="true" className={`${RULE} bottom-0 top-0`} />
+                        {/*
+                          NOT aria-hidden. The rule and the marks are decorative,
+                          but this is the distance itself, and the footer carries
+                          only the duration — hiding it would leave a screen
+                          reader with half the figures.
+                          --text-secondary, not --text-muted: muted fails WCAG AA
+                          at this size over the light ground (see cities.tsx).
+                        */}
+                        <span className="numeric absolute left-[14px] top-1/2 -translate-y-1/2 whitespace-nowrap text-[0.6875rem] text-[var(--text-secondary)]">
+                          {corridor.distance} km
+                        </span>
                       </span>
-                    </span>
-                    <span aria-hidden="true" />
+                      <span aria-hidden="true" />
 
-                    <span className={MARK_CELL} aria-hidden="true">
-                      {/* Mirror of the origin rule: top of the row down to the
-                          ring's centre, closing the run. */}
-                      <span className={`${RULE} top-0`} style={{ height: HALF_LINE }} />
-                      <span className={MARK_BOX}>
-                        <span className="block h-[9px] w-[9px] rounded-full border border-[var(--gold)] bg-[var(--black-rich)]" />
+                      <span className={MARK_CELL} aria-hidden="true">
+                        {/* Mirror of the origin rule: top of the row down to the
+                            ring's centre, closing the run. */}
+                        <span className={`${RULE} top-0`} style={{ height: HALF_LINE }} />
+                        <span className={MARK_BOX}>
+                          <span className="route-stub__ring" />
+                        </span>
                       </span>
-                    </span>
-                    <span className={NAME}>{corridor.destinationName}</span>
+                      <span className={NAME}>{corridor.destinationName}</span>
+                    </div>
                   </div>
+
+                  {PERFORATION}
 
                   <div className={`${FOOT} justify-between`}>
                     <span className="numeric text-[0.8125rem] text-[var(--text-secondary)]">
@@ -184,7 +209,6 @@ export function DeparturePointsClient({ corridors, todayDate }: DeparturePointsC
               also the section's only "all routes" affordance now that the
               header link is gone. */}
           <motion.li
-            className="bg-[var(--black-rich)]"
             initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{
@@ -194,8 +218,10 @@ export function DeparturePointsClient({ corridors, todayDate }: DeparturePointsC
             }}
             viewport={{ once: true, amount: 0.2 }}
           >
-            <Link href="/routes" className={CELL}>
-              <div className="flex-1">
+            {/* No perforation and no ground of its own: this is a way out of
+                the section, not a transfer. */}
+            <Link href="/routes" className={`${CELL} route-stub--all`}>
+              <div className="route-stub__top">
                 <span className={`block ${NAME}`}>All routes</span>
                 <span className="mt-2 block text-[0.875rem] leading-[1.55] text-[var(--text-secondary)]">
                   Every corridor we cover, with distance and drive time.

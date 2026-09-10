@@ -149,6 +149,19 @@
   --hero-bar-shadow: 0 1px 2px rgba(26, 25, 23, 0.05), 0 24px 56px -32px rgba(26, 25, 23, 0.28);
   --hero-wash-opacity: 0.72;
   --hero-grain-opacity: 0.10;
+  /* Route stub ground (components/home/departure-points-client.tsx).
+     Light follows the theme, dark is a fixed ink plate. Both step UP from the
+     section, which --charcoal could not do: it is lighter than --black-rich in
+     dark but darker in light, so the same card floated in one theme and sank
+     in the other. */
+  --stub-top: #fdfcfa;
+  --stub-mid: #f4f1ec;
+  --stub-bot: #eeeae3;
+  --stub-line: var(--graphite);
+  --stub-edge: rgba(255, 255, 255, 0.95);
+  --stub-shadow: 0 1px 2px rgba(31, 27, 20, 0.05), 0 14px 32px -18px rgba(31, 27, 20, 0.3);
+  --stub-all-image: none;
+  --stub-all-line: var(--graphite);
 }
 
 /* Dark mode: original luxury palette */
@@ -248,6 +261,15 @@
   --hero-bar-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 28px 64px -32px rgba(0, 0, 0, 0.95);
   --hero-wash-opacity: 0.96;
   --hero-grain-opacity: 0.3;
+  /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
+  --stub-top: #262422;
+  --stub-mid: #1a1918;
+  --stub-bot: #121110;
+  --stub-line: rgba(255, 255, 255, 0.13);
+  --stub-edge: rgba(255, 255, 255, 0.085);
+  --stub-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 24px 48px -30px rgba(0, 0, 0, 0.9);
+  --stub-all-image: linear-gradient(to bottom, #1c1b19, #121110);
+  --stub-all-line: rgba(255, 255, 255, 0.22);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -303,6 +325,15 @@
     --hero-bar-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 28px 64px -32px rgba(0, 0, 0, 0.95);
     --hero-wash-opacity: 0.96;
     --hero-grain-opacity: 0.3;
+    /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
+    --stub-top: #262422;
+    --stub-mid: #1a1918;
+    --stub-bot: #121110;
+    --stub-line: rgba(255, 255, 255, 0.13);
+    --stub-edge: rgba(255, 255, 255, 0.085);
+    --stub-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 24px 48px -30px rgba(0, 0, 0, 0.9);
+    --stub-all-image: linear-gradient(to bottom, #1c1b19, #121110);
+    --stub-all-line: rgba(255, 255, 255, 0.22);
 }
 }
 
@@ -5107,6 +5138,15 @@
   :root {
     --black-rich: #ffffff !important;
     --black-void: #ffffff !important;
+    --charcoal: #ffffff !important;
+    --stub-top: #ffffff !important;
+    --stub-mid: #ffffff !important;
+    --stub-bot: #ffffff !important;
+    --stub-line: #cccccc !important;
+    --stub-edge: transparent !important;
+    --stub-shadow: none !important;
+    --stub-all-image: none !important;
+    --stub-all-line: #cccccc !important;
     --text-primary: #111111 !important;
     --text-secondary: #333333 !important;
     --text-muted: #666666 !important;
@@ -5301,6 +5341,150 @@
     padding-top: clamp(5rem, 12vw, 9rem);
     padding-bottom: clamp(5rem, 12vw, 9rem);
   }
+
+  /* ------------------------------------------------------------------
+     Route stub: the transfer-ticket card used by the home Routes grid
+     (components/home/departure-points-client.tsx).
+
+     Written here rather than as Tailwind arbitrary values because three
+     of these declarations do not survive the compiler: ease-[var(--ease-luxury)]
+     emits no rule at all, bg-[var(--gold)]/40 emits no rule at all, and the
+     perforation is a repeating linear-gradient with an explicit background-size.
+     ------------------------------------------------------------------ */
+
+  /* The ground is a vertical gradient plus a 1px inner highlight along the top
+     edge, which is where a raised surface catches light, over a wide low-opacity
+     ambient shadow. See the --stub-* tokens for why it is not --charcoal. */
+  .route-stub {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  .route-stub:hover {
+    border-color: rgba(var(--gold-rgb), 0.4);
+  }
+
+  /* The press tint this replaces was a background-color, which a gradient
+     background-image paints straight over. Hover never fires on touch, so
+     losing this silently would leave a tap with no feedback at all. */
+  .route-stub:active {
+    border-color: rgba(var(--gold-rgb), 0.55);
+  }
+
+  /* flex: 1 on the body, fixed padding on the foot, so the perforation lands
+     at the same height on every card however long the rail inside it runs. */
+  .route-stub__top {
+    flex: 1 1 auto;
+    padding: 1.5rem 1.5rem 1.35rem;
+  }
+
+  .route-stub__foot {
+    padding: 1.25rem 1.5rem 1.4rem;
+  }
+
+  .route-stub__perf {
+    position: relative;
+    height: 1px;
+    margin: 0 1.5rem;
+  }
+
+  .route-stub__perf::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(to right, var(--stub-line) 0 4px, transparent 4px 9px);
+    background-size: 9px 1px;
+    background-repeat: repeat-x;
+  }
+
+  /* Centred ON the card edge: the perf is inset 1.5rem (24px) and the notch is
+     17px wide including its border, so -32px puts its centre on the edge. The
+     card's overflow: hidden clips the outer half, leaving a bite rather than a
+     drawn circle. The fill is --black-rich because that is the ground THIS
+     section sits on (.editorial-section--raised); a notch filled with any other
+     colour stops reading as a hole punched through the edge. */
+  .route-stub__notch {
+    position: absolute;
+    top: 50%;
+    width: 15px;
+    height: 15px;
+    margin-top: -7.5px;
+    border-radius: 50%;
+    background-color: var(--black-rich);
+    border: 1px solid var(--stub-line);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  .route-stub__notch--l {
+    left: -32px;
+  }
+
+  .route-stub__notch--r {
+    right: -32px;
+  }
+
+  .route-stub:hover .route-stub__notch {
+    border-color: rgba(var(--gold-rgb), 0.4);
+  }
+
+  /* The sixth cell is a way out of the section, not a ticket: dashed edge, no
+     lift and no perforation. In light it drops its ground entirely; in dark a
+     transparent tile among ink plates reads as a hole in the grid, so it keeps
+     a flatter ink of its own. Dimming it with opacity was tried and rejected:
+     it read as disabled rather than as a different kind of object. */
+  .route-stub--all {
+    background-color: transparent;
+    background-image: var(--stub-all-image);
+    border-style: dashed;
+    border-color: var(--stub-all-line);
+    box-shadow: none;
+  }
+
+  /* ---- the accent ----
+     The origin dot and the CTA carry gold at rest. The destination ring stays
+     neutral on purpose: it is an outline, and filling the pair with the same
+     colour would stop the two marks reading as start and end. The ring is the
+     one that moves on hover. */
+  .route-stub__dot,
+  .route-stub__ring {
+    display: block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+
+  /* --gold here, not --gold-text: this is a filled shape, not type, so the
+     theme-invariant gold is the right one. */
+  .route-stub__dot {
+    background-color: var(--gold);
+  }
+
+  /* Filled with the card's own ground so it reads as an outline. --stub-mid,
+     not --stub-bot: the ring sits partway down the gradient. */
+  .route-stub__ring {
+    border: 1px solid var(--text-secondary);
+    background-color: var(--stub-mid);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  /* --gold-text, never --gold: the gold spectrum is theme-invariant and fails
+     contrast as type on the light ground. --gold-text darkens to #6b5530 there. */
+  .route-stub__cta {
+    color: var(--gold-text);
+    transition: color 200ms var(--ease-luxury);
+  }
+
+  .route-stub:hover .route-stub__ring { border-color: var(--gold); }
+  .route-stub:hover .route-stub__cta { color: var(--gold-text-hover); }
 
   /* Editorial pull-quote: testimonial style. */
   .pullquote {
