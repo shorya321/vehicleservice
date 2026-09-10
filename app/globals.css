@@ -647,66 +647,6 @@
       0 0 30px -10px rgba(var(--gold-rgb), 0.2);
   }
 
-  /* Fleet Section - Tabs per HTML Design */
-  .fleet-tabs {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-3xl);
-    padding: var(--space-xs);
-    background: rgba(var(--graphite-rgb), 0.5);
-    border-radius: 12px;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .fleet-tab {
-    padding: var(--space-md) var(--space-xl);
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all var(--duration-fast);
-  }
-
-  .fleet-tab:hover:not(.active) {
-    color: var(--text-primary);
-    background: rgba(var(--gold-rgb), 0.1);
-  }
-
-  .fleet-tab.active {
-    background: var(--gold);
-    color: var(--onyx);
-  }
-
-  /* Fleet Card */
-  .fleet-card {
-    background: linear-gradient(135deg, var(--charcoal) 0%, rgba(var(--charcoal-rgb), 0.8) 100%);
-    border: 1px solid rgba(var(--gold-rgb), 0.1);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: transform var(--duration-normal) var(--ease-luxury),
-                box-shadow var(--duration-normal) var(--ease-luxury),
-                border-color var(--duration-normal) var(--ease-luxury);
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-
-  .fleet-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(var(--gold-rgb), 0.3);
-    box-shadow:
-      0 25px 50px -12px rgba(var(--charcoal-rgb), 0.35),
-      0 0 30px -10px rgba(var(--gold-rgb), 0.2);
-  }
-
   /* Testimonial Section */
   .testimonial-featured {
     position: relative;
@@ -5557,6 +5497,121 @@
     margin-top: auto;
     padding-top: 1rem;
     border-top: 1px solid var(--graphite);
+  }
+
+  /* ------------------------------------------------------------------
+     Fleet card + class rail: the home "A small fleet, kept in order."
+     section (components/home/vehicle-classes-client.tsx).
+
+     Same --stub-* ground as .route-stub and .promise-card above. Three
+     card physics on one page would read as three different products, so
+     the fleet borrows the one already established rather than inventing
+     a fourth. Sits here, next to them, for that reason.
+
+     Here rather than in Tailwind arbitrary values for the same reasons
+     the two blocks above are: ease-[var(--ease-luxury)] emits no rule at
+     all, and neither does rgba-over-a-var border colour.
+     ------------------------------------------------------------------ */
+  .fleet-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  .fleet-card:hover {
+    border-color: rgba(var(--gold-rgb), 0.4);
+  }
+
+  /* Hover never fires on touch. Without this a tap has no feedback at all. */
+  .fleet-card:active {
+    border-color: rgba(var(--gold-rgb), 0.55);
+  }
+
+  /* The plate carries its own ground: an image that has not loaded, or a
+     vehicle shot with a transparent edge, should not show the card's warm
+     gradient through it. */
+  .fleet-card__plate {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--black-warm);
+    border-bottom: 1px solid var(--stub-line);
+  }
+
+  .fleet-card__img {
+    object-fit: cover;
+    transition: transform 700ms var(--ease-luxury);
+  }
+
+  .fleet-card:hover .fleet-card__img {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fleet-card__img,
+    .fleet-card:hover .fleet-card__img {
+      transition: none;
+      transform: none;
+    }
+  }
+
+  /* margin-top: auto on the description levels the body copy across cards of
+     unequal name length, the same device as .promise-card__foot. */
+  .fleet-card__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  /* ---- the class rail ----
+     A vertical list of hairlines rather than a row of pills: it reads as a
+     table of contents beside the fleet, and it survives six classes at
+     320px where a pill row would wrap into a block. */
+  .fleet-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.8125rem 0.25rem;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-align: left;
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--graphite);
+    cursor: pointer;
+    transition: color 200ms var(--ease-luxury), padding-left 200ms var(--ease-luxury);
+  }
+
+  .fleet-tab:hover {
+    color: var(--text-primary);
+    padding-left: 0.625rem;
+  }
+
+  /* --gold-text, never --gold: the gold spectrum is theme-invariant and
+     fails contrast as type on the light ground. */
+  .fleet-tab[aria-selected='true'] {
+    color: var(--gold-text);
+    font-weight: 600;
+    padding-left: 0.625rem;
+  }
+
+  .fleet-tab__count {
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--text-muted);
   }
 
   /* Editorial pull-quote: testimonial style. */
