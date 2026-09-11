@@ -5870,6 +5870,36 @@
     border-color: rgba(var(--gold-rgb), 0.55);
   }
 
+  /* Onboard extras tiles, "Quietly included"
+     (components/home/additional-services.tsx).
+
+     Light takes the same --stub-* card ground as .promise-card, so the page
+     keeps one card physics. --charcoal cannot do it: in light it is darker
+     than the section ground and the text tiles sank into grey slabs. Dark
+     keeps the original charcoal plate, which already floats there, and the
+     photo tiles keep no edge at all. `border: 0` rather than a transparent
+     border in dark, which would let a 1px ring of ground show round the photo. */
+  .extras-tile {
+    border: 1px solid var(--stub-line);
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+  }
+
+  .extras-tile--text {
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+  }
+
+  .dark .extras-tile {
+    border: 0;
+    box-shadow: none;
+  }
+
+  .dark .extras-tile--text {
+    background-color: var(--charcoal);
+    background-image: none;
+    border: 1px solid var(--graphite);
+  }
+
   /* The hollow figure. Solid is declared first and deliberately: a
      -webkit-text-stroke the browser does not understand leaves
      `color: transparent` behind on its own, i.e. an invisible numeral. */

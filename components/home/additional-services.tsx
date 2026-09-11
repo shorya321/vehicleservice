@@ -127,10 +127,10 @@ export function AdditionalServices() {
           {extras.map((extra, index) => (
             <motion.li
               key={extra.title}
-              className={`group relative isolate flex min-h-[15rem] flex-col overflow-hidden rounded-[8px] p-7 ${PLACEMENT[index]} ${
+              className={`extras-tile group relative isolate flex min-h-[15rem] flex-col overflow-hidden rounded-[8px] p-7 ${PLACEMENT[index]} ${
                 extra.image
                   ? 'justify-end'
-                  : 'justify-start border border-[var(--graphite)] bg-[var(--charcoal)]'
+                  : 'justify-start extras-tile--text'
               }`}
               initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
               whileInView={{ opacity: 1, y: 0 }}
