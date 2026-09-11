@@ -31,7 +31,7 @@ function SectionHeader() {
   return (
     <>
       <div className="editorial-eyebrow">The fleet</div>
-      <h2 id="fleet-heading" className="editorial-section-title--promoted mt-5">
+      <h2 id="fleet-heading" className="editorial-section-title mt-5">
         A small fleet, kept in order.
       </h2>
       <p className="editorial-body mt-6">

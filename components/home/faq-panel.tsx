@@ -23,7 +23,7 @@ export function FaqPanel({ openIndex, onToggle }: FaqPanelProps): React.JSX.Elem
     <div className="faq-board">
       <div>
         <div className="editorial-eyebrow faq-board__eyebrow">Asked</div>
-        <h2 id="faq-heading" className="faq-board__title mt-5">
+        <h2 id="faq-heading" className="editorial-section-title mt-5">
           Questions travellers actually ask.
         </h2>
         <p className="faq-board__body mt-[1.125rem]">

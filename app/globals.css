@@ -6117,18 +6117,6 @@
     letter-spacing: 0.2em;
   }
 
-  /* 3.25rem rather than the reference's 3.5rem: .luxury-container's column
-     is ~20px narrower, and at 3.5rem the second sentence drops a third line. */
-  .account-plate__title,
-  .faq-board__title {
-    font-family: var(--font-body);
-    font-size: clamp(2rem, 4.2vw, 3.25rem);
-    font-weight: 600;
-    line-height: 1.06;
-    letter-spacing: -0.028em;
-    color: var(--text-primary);
-  }
-
   .account-plate__body,
   .faq-board__body {
     max-width: 66ch;
