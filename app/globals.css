@@ -5967,7 +5967,7 @@
 
   .record-score__avg {
     font-family: var(--font-body);
-    font-size: clamp(3.25rem, 7vw, 4.75rem);
+    font-size: clamp(2.5rem, 4.5vw, 3.25rem);
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.045em;
