@@ -5833,9 +5833,9 @@
   .record-quote {
     margin: 0;
     font-family: var(--font-body);
-    font-size: clamp(1.125rem, 1.8vw, 1.4375rem);
+    font-size: clamp(1rem, 1.4vw, 1.1875rem);
     font-weight: 500;
-    line-height: 1.5;
+    line-height: 1.6;
     letter-spacing: -0.012em;
     color: var(--text-primary);
     text-wrap: pretty;
