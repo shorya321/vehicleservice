@@ -5,6 +5,7 @@ import {
   pickHomeQuote,
   type HomeReview,
 } from "@/lib/reviews/home-record"
+import { applyDevPreview } from "@/lib/reviews/home-record-preview"
 import { TestimonialsAnimator } from "./testimonials-animator"
 import { TestimonialsRecord } from "./testimonials-record"
 
@@ -28,14 +29,20 @@ export async function Testimonials() {
   // renders the empty record rather than breaking the home page.
   const [featuredResult, statsResult] = await Promise.all([getFeaturedReviews(), getReviewStats()])
   const featured: HomeReview[] = featuredResult.data ?? []
-  const quote =
+  const realQuote =
     pickHomeQuote(featured, []) ?? pickHomeQuote([], await loadFallbackReviews())
-  const stats = statsResult.data
+  // Sample copy fills the empty record on the local dev server only. Real
+  // visitors (any production build) always get real reviews or the empty state.
+  const { quote, stats, isPreview } = applyDevPreview(
+    { quote: realQuote, stats: statsResult.data },
+    process.env.NODE_ENV
+  )
 
   return (
     <section
       aria-labelledby="testimonials-heading"
       className="editorial-section editorial-section--raised"
+      data-preview={isPreview ? "dev-sample" : undefined}
     >
       <TestimonialsAnimator>
         <div className="luxury-container">
