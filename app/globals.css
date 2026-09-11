@@ -2422,6 +2422,54 @@
     outline-offset: 2px;
   }
 
+  /* Header Book button, styled to the Corridor reference: sentence case,
+     8px corners, and an arrow that nudges right on hover. Its own class so
+     the mobile menu's full-width .btn-cta-header keeps its current look.
+     Transitions live here because arbitrary ease-[...] utilities compile to
+     no rule on TW 3.4. */
+  .btn-book-header {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.65;
+    white-space: nowrap;
+    color: var(--onyx);
+    background: var(--gold);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: background-color 450ms var(--ease-luxury),
+      transform 450ms var(--ease-luxury),
+      box-shadow 450ms var(--ease-luxury);
+  }
+
+  .btn-book-header:hover {
+    background: var(--gold-medium);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(var(--gold-rgb), 0.35);
+  }
+
+  .btn-book-header:active {
+    transform: scale(0.985);
+    box-shadow: none;
+  }
+
+  .btn-book-header:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
+  .btn-book-header-arrow {
+    transition: transform 500ms var(--ease-luxury);
+  }
+
+  .btn-book-header:hover .btn-book-header-arrow {
+    transform: translateX(4px);
+  }
+
   /* Footer */
   .footer-logo {
     font-family: var(--font-body);
@@ -6701,6 +6749,13 @@
     border-bottom-color: var(--graphite) !important;
   }
 
+  /* Dark mode only: the scrolled header takes the footer's rich black
+     (--black-rich, #100f0e) instead of the page's void, so the two bars that
+     frame the page share one ground. Light mode keeps --black-void. */
+  .dark .nav-luxury.scrolled {
+    background: var(--black-rich) !important;
+  }
+
   .nav-luxury.has-border {
     background: var(--black-void) !important;
     border-bottom-color: var(--graphite) !important;
@@ -6733,12 +6788,16 @@
     .nav-link,
     .nav-link::after,
     .btn-cta-header,
+    .btn-book-header,
+    .btn-book-header-arrow,
     .footer-link,
     .footer-social {
       transition: none !important;
     }
 
-    .btn-cta-header:hover {
+    .btn-cta-header:hover,
+    .btn-book-header:hover,
+    .btn-book-header:hover .btn-book-header-arrow {
       transform: none;
       box-shadow: none;
     }

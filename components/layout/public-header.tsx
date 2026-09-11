@@ -307,12 +307,12 @@ export function PublicHeader({
                 Sign In
               </Link>
             ) : null}
-            {/* Book Transfer CTA. Desktop only */}
+            {/* Book CTA. Desktop only */}
             <Link
               href="/#services"
-              className="btn-cta-header hidden lg:inline-flex"
+              className="btn-book-header hidden lg:inline-flex"
             >
-              Book Transfer
+              Book <span aria-hidden="true" className="btn-book-header-arrow">&rarr;</span>
             </Link>
             <HamburgerButton
               isOpen={isMenuOpen}
