@@ -35,11 +35,6 @@ const CTA =
   'route-stub__cta inline-flex items-center gap-1.5 whitespace-nowrap ' +
   'text-[0.6875rem] font-semibold uppercase tracking-[0.12em]'
 
-/** Two-digit sequence, so 01 sits under 10 without the column shifting. */
-function ordinal(index: number): string {
-  return String(index + 1).padStart(2, '0')
-}
-
 export function DeparturePointsClient({
   corridors,
   totalCorridors,
@@ -194,7 +189,7 @@ export function DeparturePointsClient({
         whileInView="shown"
         viewport={{ once: true, amount: 0.2 }}
       >
-        {corridors.map((corridor, index) => {
+        {corridors.map((corridor) => {
           const href = corridor.originSlug && corridor.destinationSlug
             ? buildSearchUrl(corridor.originSlug, corridor.destinationSlug, { date: todayDate, passengers: 2 })
             : `/search/results?from=${corridor.originLocationId}&to=${corridor.destinationLocationId}&date=${todayDate}&passengers=2`
@@ -225,16 +220,14 @@ export function DeparturePointsClient({
                         A short fade at the foot of the plate, NOT the Cities
                         band's full scrim. That scrim is sized to carry caption
                         text over the photograph; here the caption sits below the
-                        plate and the only thing on the image is the numeral
-                        chip, which brings its own ground. Applied here the same
-                        scrim only washes the photography out.
+                        plate and nothing is laid over the image. Applied here
+                        the same scrim only washes the photography out.
                       */}
                       <span className="corridor-card__plate-veil" aria-hidden="true" />
                     </>
                   ) : (
                     <span className="corridor-card__plate-fallback" aria-hidden="true" />
                   )}
-                  <span className="corridor-card__seq numeric">{ordinal(index)}</span>
                 </div>
 
                 <div className="route-stub__top flex flex-col gap-4">

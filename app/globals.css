@@ -5802,27 +5802,6 @@
     background-image: repeating-linear-gradient(100deg, rgba(0, 0, 0, 0.1) 0 1px, transparent 1px 8px);
   }
 
-  /* A chip on the card's own ground, not a numeral floating on the photo. The
-     scrim anchors at the BOTTOM of the plate and opens to 0.10 at the top, and
-     it washes toward off-white in light and near-black in dark -- so no single
-     text colour laid over the image survives both themes and any photograph.
-     The chip brings its own ground and sidesteps the whole problem. */
-  .corridor-card__seq {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    z-index: 2;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    background-color: var(--stub-top);
-    border: 1px solid var(--stub-line);
-    color: var(--gold-text);
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    line-height: 1;
-  }
-
   .corridor-card__figs {
     display: flex;
     align-items: baseline;
