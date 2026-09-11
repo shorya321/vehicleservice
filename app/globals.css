@@ -6792,16 +6792,12 @@
     transition: background-color var(--duration-fast) var(--ease-luxury), border-color var(--duration-fast) var(--ease-luxury), padding var(--duration-fast) var(--ease-luxury) !important;
   }
 
+  /* The scrolled header takes the footer's ground (--black-rich: #f3f1ee in
+     light, #100f0e in dark) instead of the page's void, so the two bars that
+     frame the page share one colour in both themes. */
   .nav-luxury.scrolled {
-    background: var(--black-void) !important;
-    border-bottom-color: var(--graphite) !important;
-  }
-
-  /* Dark mode only: the scrolled header takes the footer's rich black
-     (--black-rich, #100f0e) instead of the page's void, so the two bars that
-     frame the page share one ground. Light mode keeps --black-void. */
-  .dark .nav-luxury.scrolled {
     background: var(--black-rich) !important;
+    border-bottom-color: var(--graphite) !important;
   }
 
   .nav-luxury.has-border {
