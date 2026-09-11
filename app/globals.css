@@ -5894,7 +5894,8 @@
 
   /* Sizes follow the Corridor reference, which runs a step smaller than the
      page's editorial defaults so the plate reads as one compact block. */
-  .account-plate__eyebrow {
+  .account-plate__eyebrow,
+  .faq-board__eyebrow {
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.2em;
@@ -5902,7 +5903,8 @@
 
   /* 3.25rem rather than the reference's 3.5rem: .luxury-container's column
      is ~20px narrower, and at 3.5rem the second sentence drops a third line. */
-  .account-plate__title {
+  .account-plate__title,
+  .faq-board__title {
     font-family: var(--font-body);
     font-size: clamp(2rem, 4.2vw, 3.25rem);
     font-weight: 600;
@@ -5911,7 +5913,8 @@
     color: var(--text-primary);
   }
 
-  .account-plate__body {
+  .account-plate__body,
+  .faq-board__body {
     max-width: 66ch;
     font-size: 1rem;
     line-height: 1.65;
@@ -5928,8 +5931,9 @@
 
   /* The reference's compact button: sentence case, 8px corners, 47px tall,
      against .btn's uppercase 53px. Scoped so the page's other buttons keep
-     their own metrics. */
-  .account-plate .btn {
+     their own metrics. Shared with the FAQ's "Write to support". */
+  .account-plate .btn,
+  .faq-board .btn {
     gap: 0.75rem;
     padding: 0.75rem 1.375rem;
     border-radius: 8px;
@@ -5962,6 +5966,164 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     color: var(--gold-text);
+  }
+
+  /* ------------------------------------------------------------------
+     Asked: the home FAQ (components/home/faq-panel.tsx).
+
+     Follows the Corridor reference: an intro column beside a stack of
+     separate answer cards drawn as outlines, with the --stub-line border
+     shared by .promise-card and .account-plate. Plain CSS because rgba-over-a-var
+     and arbitrary easing compile to no rule as Tailwind values. Intro
+     type is shared with the .account-plate__* rules above.
+     ------------------------------------------------------------------ */
+  .faq-board {
+    display: grid;
+    gap: 2.125rem;
+  }
+
+  @media (min-width: 940px) {
+    .faq-board {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: 4rem;
+      align-items: start;
+    }
+  }
+
+  /* "Write to support" is a plain .btn-secondary, sized by the shared
+     .account-plate .btn rule, so it matches the page's other outline buttons. */
+  .faq-board__support {
+    margin-top: 1.625rem;
+  }
+
+  .faq-board__support:hover svg {
+    transform: translateX(4px);
+  }
+
+  .faq-board__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  /* Outline only: no fill, no gradient, no shadow. The card is its border. */
+  .faq-card {
+    overflow: hidden;
+    background-color: transparent;
+    border: 1px solid var(--stub-line);
+    border-radius: 12px;
+    transition: border-color 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* --gold-text-rgb rather than --gold-rgb: the latter is the same in both
+     themes and on the light ground lands lighter than the resting border. */
+  .faq-card[data-open='true'] {
+    border-color: rgba(var(--gold-text-rgb), 0.45);
+  }
+
+  .faq-card__q {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 1.0625rem 3rem 1.0625rem 1.25rem;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.012em;
+    color: var(--text-primary);
+    /* The base h1-h6 rule sets balance, which this button inherits through
+       its h3; balance splits a short question into two near-equal lines and
+       strands the marker in a wide gap on phones. */
+    text-wrap: pretty;
+    transition: color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .faq-card__q:hover {
+    color: var(--gold-text);
+  }
+
+  /* Inset, because the card's overflow: hidden clips an outset ring. */
+  .faq-card__q:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
+    border-radius: 11px;
+  }
+
+  /* Plus that folds into a minus: the vertical bar turns flat on open.
+     --gold-text, not --gold, which is nearly invisible on the light ground. */
+  .faq-card__marker {
+    position: absolute;
+    top: 50%;
+    right: 1.25rem;
+    width: 11px;
+    height: 11px;
+    transform: translateY(-50%);
+  }
+
+  .faq-card__marker::before,
+  .faq-card__marker::after {
+    content: '';
+    position: absolute;
+    background-color: var(--gold-text);
+    transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .faq-card__marker::before {
+    top: 50%;
+    left: 0;
+    width: 11px;
+    height: 1.5px;
+    transform: translateY(-50%);
+  }
+
+  .faq-card__marker::after {
+    top: 0;
+    left: 50%;
+    width: 1.5px;
+    height: 11px;
+    transform: translateX(-50%);
+  }
+
+  .faq-card[data-open='true'] .faq-card__marker::after {
+    transform: translateX(-50%) rotate(90deg);
+  }
+
+  .faq-card__a {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .faq-card[data-open='true'] .faq-card__a {
+    grid-template-rows: 1fr;
+  }
+
+  .faq-card__a > div {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .faq-card__a p {
+    max-width: 62ch;
+    padding: 0 1.25rem 1.125rem;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-card,
+    .faq-card__q,
+    .faq-card__a,
+    .faq-card__marker::before,
+    .faq-card__marker::after {
+      transition: none;
+    }
   }
 
   /* ------------------------------------------------------------------
@@ -6250,80 +6412,6 @@
     }
   }
 
-  /* One grid for the narrative/ledger sections that close the home page. They
-     were each on their own column ratio, so two structurally identical sections
-     started their right column 165px apart on the same page. */
-  .editorial-split {
-    display: grid;
-    gap: var(--space-2xl);
-  }
-
-  @media (min-width: 768px) {
-    .editorial-split {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-      gap: clamp(3rem, 6vw, 5rem);
-    }
-  }
-
-  /* The rail's first hairline lands on the optical centre of the left column's
-     eyebrow rule, so one line appears to run across the gutter. Pinning the
-     eyebrow's leading inside .editorial-split makes the offset derived rather
-     than a magic number: a 1.125rem line box puts its centred ::before rule at
-     exactly half that, 0.5625rem. */
-  .editorial-split .editorial-eyebrow {
-    line-height: 1.125rem;
-  }
-
-  .editorial-split__rail {
-    margin-top: 0;
-  }
-
-  @media (min-width: 768px) {
-    .editorial-split__rail {
-      margin-top: 0.5625rem;
-    }
-  }
-
-  /* Collapse marker. Two 1px bars rather than a rotated lucide plus, which
-     renders an "x" when open and reads as dismiss rather than collapse. Bar
-     weight matches the hairline rules the list is built from. --gold-text, not
-     --gold: the latter is theme-invariant and nearly invisible on a light
-     ground. */
-  .editorial-disclosure {
-    position: relative;
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-  }
-
-  .editorial-disclosure::before,
-  .editorial-disclosure::after {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    top: 50%;
-    height: 1px;
-    background-color: var(--gold-text);
-    transition: transform var(--duration-fast) var(--ease-luxury);
-  }
-
-  .editorial-disclosure::after {
-    transform: rotate(90deg);
-  }
-
-  .editorial-disclosure[data-open='true']::after {
-    transform: rotate(90deg) scaleX(0);
-  }
-
-  /* The open row is marked by lifting its own hairline, not by a nested tinted
-     panel (the No-Nested-Card Rule) and not by a side stripe (banned outright).
-     --gold-text-rgb rather than --gold-rgb: the latter is the same in both
-     themes and in light mode lands lighter than --graphite, which would
-     de-emphasise the row that is meant to stand out. */
-  .editorial-disclosure-row[data-open='true'] {
-    border-color: rgba(var(--gold-text-rgb), 0.45);
-  }
-
   /* Reduced motion override. */
   @media (prefers-reduced-motion: reduce) {
     .editorial-action,
@@ -6332,11 +6420,6 @@
     .pullquote {
       transition: none;
       animation: none;
-    }
-
-    .editorial-disclosure::before,
-    .editorial-disclosure::after {
-      transition: none;
     }
   }
 }
