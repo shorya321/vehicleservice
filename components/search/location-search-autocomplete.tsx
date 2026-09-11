@@ -351,7 +351,7 @@ function LocationSearchAutocompleteBase({
       {isHero ? (
         <MapPin
           className={cn(
-            'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10',
+            'absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10',
             selectedLocation
               ? 'text-[var(--gold-text)]'
               : 'text-[var(--text-muted)]'
@@ -382,7 +382,7 @@ function LocationSearchAutocompleteBase({
         aria-activedescendant={activeDescendantId}
         className={cn(
           isHero
-            ? 'search-bar-input search-bar-input--location pl-9 pr-8'
+            ? 'search-bar-input search-bar-input--location pl-6 pr-8'
             : 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pr-8'
         )}
       />
