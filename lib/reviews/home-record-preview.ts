@@ -18,9 +18,9 @@ export const PREVIEW_QUOTE: HomeReview = {
   id: 'dev-preview',
   rating: 5,
   review_text:
-    'The flight landed two hours late at one in the morning and the car was still there. Nobody asked me for another dirham.',
+    'Booked a late pickup for my parents. Their flight was delayed almost two hours but the driver waited, kept me updated on WhatsApp and helped with the bags. Clean car, cold water, fair price. Will book again for our Abu Dhabi trip.',
   route_from: 'Dubai Intl (DXB)',
-  route_to: 'Abu Dhabi Corniche',
+  route_to: 'Dubai Marina',
   created_at: '2026-03-14T06:00:00.000Z',
 }
 
