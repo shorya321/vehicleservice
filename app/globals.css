@@ -2450,51 +2450,32 @@
 
   /* Footer wordmark only. Same reasoning as .header-logo above: .footer-logo is
      shared by the footer, the header, the auth screens and the mobile drawer, so
-     the footer's closing scale lives in its own class rather than being pushed
-     into all five consumers. Larger than the header mark on purpose, so the
-     footer reads as the end of the page rather than a repeat of the top of it. */
+     the footer's scale lives in its own class rather than being pushed into all
+     five consumers. Sized to the Corridor reference: a quiet sign-off, set by
+     weight rather than size. */
   .footer-wordmark {
-    font-size: clamp(1.5rem, 3vw, 1.875rem);
-    line-height: 1.15;
-    letter-spacing: -0.014em;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
-  /* Footer links speak the header's interaction language: a 1px bar grown from
-     zero width via transform, never via `width`, which would animate layout.
-     Structure is deliberately identical to .nav-link so the two never drift. */
+  /* Footer links: colour-only hover, as in the Corridor reference. No bar
+     under the text; the footer is a list of plain places to go. */
   .footer-link {
-    position: relative;
     display: inline-block;
     color: var(--text-secondary);
-    transition: color var(--duration-fast) var(--ease-luxury);
-  }
-
-  .footer-link::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: var(--gold);
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform var(--duration-fast) var(--ease-luxury);
+    transition: color 400ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .footer-link:hover,
   .footer-link:focus-visible {
-    color: var(--gold-text-hover);
-  }
-
-  .footer-link:hover::after,
-  .footer-link:focus-visible::after {
-    transform: scaleX(1);
+    color: var(--gold-text);
   }
 
   /* Hover never fires on touch, so the pressed state carries the feedback there. */
   .footer-link:active {
-    color: var(--gold-text);
+    color: var(--gold-text-hover);
   }
 
   /* The drawn box. The tap target is the 44px anchor wrapping it, per the
@@ -2523,6 +2504,163 @@
 
   a:active > .footer-social {
     background: rgba(var(--gold-rgb), 0.14);
+  }
+
+  /* ------------------------------------------------------------------
+     Site footer (components/layout/footer-panel.tsx).
+
+     Follows the Corridor reference: brand plus three link columns, three
+     outlined guarantee cards, then one bottom row with the copyright on the
+     left and legal plus socials on the right. Plain CSS for the same reason
+     as .faq-board: rgba-over-a-var and arbitrary easing emit no rule as
+     Tailwind values.
+     ------------------------------------------------------------------ */
+  .site-footer {
+    background-color: var(--black-rich);
+    border-top: 1px solid var(--graphite);
+    padding: clamp(3.5rem, 6vw, 5.25rem) 0 1.75rem;
+  }
+
+  .site-footer__top {
+    display: grid;
+    gap: 2.125rem;
+  }
+
+  @media (min-width: 880px) {
+    .site-footer__top {
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: 2.5rem;
+    }
+  }
+
+  .site-footer__blurb {
+    margin-top: 0.75rem;
+    max-width: 32ch;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  /* Resets the base-layer h4 size, family and tracking. */
+  .site-footer__head {
+    margin: 0 0 1rem;
+    font-family: var(--font-body);
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .site-footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  .site-footer__address {
+    font-style: normal;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+
+  .site-footer__guarantees {
+    display: grid;
+    gap: 0.875rem;
+    margin: 2.75rem 0 1.625rem;
+  }
+
+  @media (min-width: 760px) {
+    .site-footer__guarantees {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* Outline only, same as .faq-card: no fill, no gradient, no shadow. */
+  .site-footer__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+    padding: 1.25rem 1.375rem;
+    background-color: transparent;
+    border: 1px solid var(--stub-line);
+    border-radius: 12px;
+  }
+
+  .site-footer__card-label {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+  }
+
+  .site-footer__card p {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.375rem;
+    border-top: 1px solid var(--graphite);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* Sized here, not inherited from __bottom: the base-layer p rule sets its
+     own font-size and would win over an inherited value. */
+  .site-footer__meta {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .site-footer__end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+
+  .site-footer__legal {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .site-footer__legal .footer-link {
+    color: var(--text-muted);
+  }
+
+  .site-footer__legal .footer-link:hover,
+  .site-footer__legal .footer-link:focus-visible {
+    color: var(--gold-text);
+  }
+
+  /* The 44px tap target is 4px wider than the drawn box on each side, so the
+     row pulls right by that much to line the last box up with the rules. */
+  .site-footer__social {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    margin: 0 -0.25rem 0 0;
+    padding: 0;
+    list-style: none;
   }
 
   /* Section Top Border */
@@ -6596,15 +6734,8 @@
     .nav-link::after,
     .btn-cta-header,
     .footer-link,
-    .footer-link::after,
     .footer-social {
       transition: none !important;
-    }
-
-    /* The underline still appears on hover, it just arrives rather than grows. */
-    .footer-link:hover::after,
-    .footer-link:focus-visible::after {
-      transform: scaleX(1);
     }
 
     .btn-cta-header:hover {
