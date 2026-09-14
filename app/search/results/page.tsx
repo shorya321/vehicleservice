@@ -3,8 +3,7 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 import { SearchResults } from './components/search-results'
-import { SearchSummary } from './components/search-summary'
-import { getSearchResults, getLocationDetails } from './actions'
+import { getSearchResults } from './actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 
 export const metadata = {
@@ -37,28 +36,24 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
     redirect('/')
   }
 
-  const [results, origin, destination] = await Promise.all([
-    getSearchResults({
-      originId: from,
-      destinationId: to,
-      fromZoneId: fromZone,
-      toZoneId: toZone,
-      routeId: routeId,
-      date: new Date(date),
-      passengers: parseInt(passengers)
-    }),
-    from ? getLocationDetails(from) : null,
-    to ? getLocationDetails(to) : null,
-  ])
+  const results = await getSearchResults({
+    originId: from,
+    destinationId: to,
+    fromZoneId: fromZone,
+    toZoneId: toZone,
+    routeId: routeId,
+    date: new Date(date),
+    passengers: parseInt(passengers)
+  })
 
   // Handle error case
   if (!results) {
     return (
       <PublicLayout>
-        <div className="min-h-screen bg-[var(--black-void)]">
-          <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-            <div className="luxury-container py-24">
-              <div className="mx-auto max-w-xl">
+        <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
+          <section className="editorial-section editorial-section--raised editorial-section--spacious grow">
+            <div className="luxury-container">
+              <div className="max-w-2xl">
                 <div className="editorial-eyebrow">Search failed</div>
                 <h2 className="editorial-section-title mt-5">
                   Couldn&rsquo;t load results.
@@ -71,7 +66,7 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
                 </Link>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </PublicLayout>
     )
@@ -84,21 +79,13 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-[var(--black-void)]">
-        <SearchSummary
-          origin={origin}
-          destination={destination}
-          date={new Date(date)}
-          passengers={parseInt(passengers)}
+      {/* SearchResults emits its own full-bleed bands, each with its own
+          container, so this page supplies only the page ground. */}
+      <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
+        <SearchResults
+          results={results}
+          searchParams={params}
         />
-        <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-          <div className="luxury-container py-12 lg:py-16">
-            <SearchResults
-              results={results}
-              searchParams={params}
-            />
-          </div>
-        </div>
       </div>
     </PublicLayout>
   )

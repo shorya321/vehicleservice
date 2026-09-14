@@ -126,7 +126,7 @@ export function VehicleTypeCategoryTabs({
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveCategory(tab.id)}
                 onKeyDown={(e) => handleTabKeyDown(e, tabIndex)}
-                className={`relative whitespace-nowrap pb-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "text-[var(--gold-text)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+                className={`relative whitespace-nowrap pb-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] ${selected ? "text-[var(--gold-text)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
               >
                 <span>{tab.name}</span>
                 <span className={`ml-2 numeric text-[0.6875rem] ${selected ? 'text-[var(--gold-text)]' : 'text-[var(--text-muted)]'}`}>
@@ -173,7 +173,7 @@ export function VehicleTypeCategoryTabs({
 
       <AnimatePresence mode="wait">
         <motion.div
-          className="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3"
+          className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
           initial={{ opacity: reduceMotion ? 1 : 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: reduceMotion ? 1 : 0 }}

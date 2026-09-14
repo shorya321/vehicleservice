@@ -86,7 +86,12 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
   return (
     <motion.article
       aria-label={unavailable ? `${vehicleType.name}, sold out` : vehicleType.name}
-      className={`vehicle-card-surface group relative flex h-full flex-col rounded-[8px] border border-[var(--graphite)] bg-[var(--charcoal)] p-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${MEDIA_TOKENS} ${unavailable ? 'opacity-50' : 'hover:-translate-y-1 hover:border-[rgba(var(--gold-rgb),0.35)] hover:shadow-[0_12px_24px_-6px_rgba(var(--gold-rgb),0.15),0_4px_10px_-4px_rgba(var(--gold-rgb),0.1)] focus-within:border-[rgba(var(--gold-rgb),0.35)]'}`}
+      // Ground, border, radius, shadow, hover and easing all live in
+      // `.vehicle-card` (globals.css), which is `.fleet-card`'s physics. They
+      // were arbitrary values here, and three of them emitted no rule at all:
+      // Tailwind 3.4 drops `ease-[cubic-bezier(...)]`, so this card had been
+      // animating on the default ease the whole time.
+      className={`vehicle-card group ${MEDIA_TOKENS} ${unavailable ? 'vehicle-card--out' : ''}`}
       // `animate` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
       // equivalent and is not: useReducedMotion() is false during SSR, so
       // opacity:0 is serialised into the markup and never animated back once
@@ -99,7 +104,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
         ease: [0.16, 1, 0.3, 1],
       }}
     >
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-[8px] bg-[var(--black-warm)]">
+      <div className="vehicle-card__plate">
         {imageError ? (
           <div className="absolute inset-0 bg-[var(--charcoal)] flex items-center justify-center">
             <div className="text-center px-4">
@@ -115,7 +120,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
               fill
               // The first row is the LCP element on this page.
               priority={index < 3}
-              className="object-cover [filter:var(--media-filter)] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+              className="vehicle-card__img [filter:var(--media-filter)]"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setImageError(true)}
             />
@@ -123,7 +128,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
         )}
       </div>
 
-      <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
+      <div className="vehicle-card__body">
         {/* Which tab this belongs to. Real information in the All view, where
             the categories are otherwise invisible. It used to sit on the photo,
             which is what forced a scrim over the vehicle. */}
@@ -151,7 +156,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
 
         {/* Fixed columns so the two figures line up across every card in the
             row, whatever the digit count. */}
-        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-[var(--graphite)] pt-4">
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-[var(--stub-line)] pt-4">
           <div className="flex items-baseline gap-2">
             <dt className={SPEC_LABEL}>Passengers</dt>
             <dd className="numeric text-[1rem] text-[var(--text-primary)]">{vehicleType.capacity}</dd>
@@ -180,7 +185,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           </div>
 
           {unavailable ? (
-            <span className="flex-none rounded-[4px] border border-[var(--graphite)] px-4 py-2.5 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+            <span className="flex-none rounded-[4px] border border-[var(--stub-line)] px-4 py-2.5 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
               Sold out
             </span>
           ) : (
@@ -189,7 +194,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
             // affordance and keeps its own focus ring.
             <Link
               href={selectionUrl}
-              className="inline-flex min-h-[48px] flex-none items-center gap-2 rounded-[4px] bg-[linear-gradient(180deg,var(--gold-cream)_0%,var(--gold)_38%,var(--gold-medium)_100%)] px-6 text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-[var(--onyx)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28),0_10px_24px_-14px_rgba(var(--gold-rgb),0.5)] transition-all duration-300 hover:brightness-[1.06] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] after:absolute after:inset-0 after:rounded-[8px] after:content-['']"
+              className="inline-flex min-h-[48px] flex-none items-center gap-2 rounded-[4px] bg-[linear-gradient(180deg,var(--gold-cream)_0%,var(--gold)_38%,var(--gold-medium)_100%)] px-6 text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-[var(--onyx)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28),0_10px_24px_-14px_rgba(var(--gold-rgb),0.5)] transition-all duration-300 hover:brightness-[1.06] hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--stub-bot)] after:absolute after:inset-0 after:rounded-[8px] after:content-['']"
               aria-label={`Select ${vehicleType.name}`}
             >
               Select

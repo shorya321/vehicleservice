@@ -75,23 +75,23 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
   if (!results) {
     return (
       <PublicLayout>
-        <div className="bg-[var(--black-void)] min-h-screen relative">
-          <div className="luxury-container py-20 relative z-10">
-            <div className="text-center bg-[var(--charcoal)] border border-[var(--graphite)] rounded-lg p-12 max-w-2xl mx-auto">
-              <h2 className="t-headline mb-4">
-                Unable to Load Search Results
-              </h2>
-              <p className="t-body mb-8">
-                We&apos;re experiencing some issues. Please try again.
-              </p>
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center h-14 px-8 rounded-md bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-sans font-semibold uppercase tracking-wider transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-luxury-black"
-              >
-                Return to Home
-              </Link>
+        <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
+          <section className="editorial-section editorial-section--raised editorial-section--spacious grow">
+            <div className="luxury-container">
+              <div className="max-w-2xl">
+                <div className="editorial-eyebrow">Search failed</div>
+                <h2 className="editorial-section-title mt-5">
+                  Couldn&rsquo;t load results.
+                </h2>
+                <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
+                  A network or system issue interrupted the search. Try again, or start a new one from the home page.
+                </p>
+                <Link href="/" className="btn btn-primary mt-8 inline-flex">
+                  Return to home
+                </Link>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
       </PublicLayout>
     )
@@ -118,12 +118,10 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
 
   return (
     <PublicLayout>
-      <div className="bg-[var(--black-void)] relative min-h-screen">
-        <div className="relative z-10">
-          <div className="luxury-container pt-[clamp(2rem,4vw,3rem)] pb-[clamp(5rem,10vw,8rem)]">
-            <SearchResults results={results} searchParams={enrichedSearchParams} />
-          </div>
-        </div>
+      {/* SearchResults emits its own full-bleed bands, each with its own
+          container, so this page supplies only the page ground. */}
+      <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
+        <SearchResults results={results} searchParams={enrichedSearchParams} />
       </div>
     </PublicLayout>
   )

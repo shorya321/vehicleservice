@@ -6,6 +6,14 @@ import { motion, useReducedMotion } from 'motion/react'
 import { ResultsGuestPicker } from './results-guest-picker'
 
 interface EmptyStateProps {
+  /**
+   * The resolved place names. `searchParams.from`/`to` are location UUIDs on the
+   * canonical route, so they can never be shown to a person. When the search
+   * failed before the names resolved these are undefined and the two cells are
+   * left out, rather than falling back to an id.
+   */
+  originName?: string
+  destinationName?: string
   searchParams: {
     from?: string
     to?: string
@@ -19,7 +27,7 @@ interface EmptyStateProps {
   }
 }
 
-export function EmptyState({ searchParams }: EmptyStateProps) {
+export function EmptyState({ originName, destinationName, searchParams }: EmptyStateProps) {
   const reduceMotion = useReducedMotion()
 
   // Results are filtered by vehicle capacity, so an empty result for a group is just as likely to be
@@ -29,11 +37,20 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
   const isGroup = partySize > 1
 
   return (
+    // Self-wrapping band. This is returned from four different call sites in
+    // search-results, and the page no longer supplies a container of its own.
+    <section className="editorial-section editorial-section--raised editorial-section--spacious grow">
+      <div className="luxury-container">
     <motion.div
-      className="mx-auto max-w-xl py-20"
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="max-w-2xl"
+      // `animate` is ALWAYS supplied. `animate={reduceMotion ? undefined : ...}`
+      // looks equivalent and is not: useReducedMotion() is false during SSR, so
+      // opacity:0 was serialised into the markup and never animated back once
+      // hydration flipped the flag, and this whole panel stayed invisible for
+      // reduced-motion users. Reduced motion collapses offset and duration.
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="editorial-eyebrow">No results</div>
       <h2 className="editorial-section-title mt-5">
@@ -65,7 +82,8 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           New search
         </Link>
-        <Link href="/search" className="editorial-action">
+        {/* /search has no page.tsx, so this used to 404. The route index lives at /routes. */}
+        <Link href="/routes" className="editorial-action">
           Explore popular routes
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
@@ -75,20 +93,20 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
         </Link>
       </div>
 
-      {(searchParams.from || searchParams.to || searchParams.date) && (
+      {(originName || destinationName || searchParams.date) && (
         <>
           <hr className="hairline-gold mt-12" />
           <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-2 pt-0 text-[0.8125rem] text-[var(--text-secondary)] sm:grid-cols-4">
-          {searchParams.from && (
+          {originName && (
             <div>
               <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">From</dt>
-              <dd className="mt-1 truncate">{searchParams.from}</dd>
+              <dd className="mt-1 truncate">{originName}</dd>
             </div>
           )}
-          {searchParams.to && (
+          {destinationName && (
             <div>
               <dt className="text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)]">To</dt>
-              <dd className="mt-1 truncate">{searchParams.to}</dd>
+              <dd className="mt-1 truncate">{destinationName}</dd>
             </div>
           )}
           {searchParams.date && (
@@ -107,5 +125,7 @@ export function EmptyState({ searchParams }: EmptyStateProps) {
         </>
       )}
     </motion.div>
+      </div>
+    </section>
   )
 }

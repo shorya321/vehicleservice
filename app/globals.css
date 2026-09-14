@@ -2168,21 +2168,10 @@
     background: var(--graphite);
   }
 
-  /* Vehicle Card */
-  .vehicle-card {
-    background: linear-gradient(135deg, var(--charcoal) 0%, rgba(var(--charcoal-rgb), 0.8) 100%);
-    border: 1px solid rgba(var(--gold-rgb), 0.1);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: all var(--duration-normal) var(--ease-luxury);
-  }
-
-  .vehicle-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(var(--gold-rgb), 0.25);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
-  }
-
+  /* Vehicle image plate. The `.vehicle-card` rules that used to sit here were
+     dead (no importer anywhere) and collided by name with the search results
+     card in the fleet-card block below, whose lift they would have silently
+     reinstated. Removed rather than renamed. */
   .vehicle-image {
     aspect-ratio: 16/10;
     background-size: cover;
@@ -6430,6 +6419,167 @@
     flex-direction: column;
     gap: 0.75rem;
     padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  /* ------------------------------------------------------------------
+     Search results: the vehicle card and the trip summary
+     (app/search/results/components/*).
+
+     .fleet-card above and the search card render the same object: a
+     vehicle on a 16/9 plate with a name, a spec row and a price. They
+     used to disagree on ground, border, shadow and hover, so the same car
+     looked like it sat on two different sites. This is the fleet card's
+     physics with the body geometry the results grid needs.
+
+     Here rather than in Tailwind arbitrary values for the same reasons as
+     the three blocks above, plus one more: ease-[var(--ease-luxury)]
+     emits no rule at all, neither does rgba-over-a-var border colour, and
+     --stub-shadow is a two-layer comma list that cannot ride inside a
+     shadow-[...] utility.
+     ------------------------------------------------------------------ */
+  .vehicle-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  .vehicle-card:hover,
+  .vehicle-card:focus-within {
+    border-color: rgba(var(--gold-rgb), 0.4);
+  }
+
+  /* Hover never fires on touch. Without this a tap has no feedback at all. */
+  .vehicle-card:active {
+    border-color: rgba(var(--gold-rgb), 0.55);
+  }
+
+  /* Sold out: still readable, no longer inviting a tap. */
+  .vehicle-card--out {
+    opacity: 0.55;
+  }
+
+  .vehicle-card--out:hover,
+  .vehicle-card--out:active,
+  .vehicle-card--out:focus-within {
+    border-color: var(--stub-line);
+  }
+
+  /* The plate carries its own ground, so a vehicle shot with a transparent
+     edge does not show the card's warm gradient through it. */
+  .vehicle-card__plate {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--black-warm);
+    border-bottom: 1px solid var(--stub-line);
+  }
+
+  .vehicle-card__img {
+    object-fit: cover;
+    transition: transform 700ms var(--ease-luxury);
+  }
+
+  .vehicle-card:hover .vehicle-card__img {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vehicle-card,
+    .vehicle-card__img,
+    .vehicle-card:hover .vehicle-card__img {
+      transition: none;
+      transform: none;
+    }
+  }
+
+  .vehicle-card__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  /* ---- trip summary ----
+     The ledger under the route heading: date, guests, journey where the
+     route has one, and the fare this route starts from.
+
+     Deliberately not .itinerary-block, which looks like the obvious reuse
+     and is the wrong choice three times over. It is the old flat
+     --charcoal card, so adopting it would re-import, on the most
+     prominent element of the page, exactly the mismatch .vehicle-card
+     above just removed. Its .itinerary-segment is a baseline-aligned
+     single-column label/value list, while this is a horizontal ledger
+     holding two interactive triggers whose control heights break baseline
+     alignment. And nothing in the app renders it, so "reuse" would buy
+     consistency with nothing.
+
+     The caller sets --trip-cols, because a zone pair has no routes row
+     and therefore no distance cell to show. */
+  .trip-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+  }
+
+  /* A panel, not a target: no hover state, unlike every card above. */
+  .trip-summary__cell {
+    padding: 1.25rem 1.5rem;
+    min-width: 0;
+  }
+
+  .trip-summary__cell + .trip-summary__cell {
+    border-top: 1px solid var(--stub-line);
+  }
+
+  @media (min-width: 640px) {
+    .trip-summary {
+      grid-template-columns: repeat(var(--trip-cols, 3), minmax(0, 1fr));
+    }
+
+    .trip-summary__cell + .trip-summary__cell {
+      border-top: 0;
+      border-left: 1px solid var(--stub-line);
+    }
+  }
+
+  .trip-summary__label {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .trip-summary__value {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .trip-summary__value--price {
+    color: var(--gold-text);
+    font-weight: 600;
   }
 
   /* ---- the class rail ----
