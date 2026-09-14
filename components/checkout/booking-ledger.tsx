@@ -28,6 +28,9 @@ interface BookingLedgerProps {
   timeLabel?: string
   passengers: number
   luggage?: number | null
+  /** Kilometres, where the route has a figure. The checkout header used to carry this
+      on its own; the card is now its only home, so it must not silently vanish. */
+  distanceKm?: number | null
   basePrice: number
   addons?: LedgerAddon[]
   promoDiscount?: number
@@ -131,6 +134,7 @@ export function BookingLedger({
   timeLabel,
   passengers,
   luggage,
+  distanceKm,
   basePrice,
   addons = [],
   promoDiscount = 0,
@@ -173,6 +177,8 @@ export function BookingLedger({
           {passengers} pax
           {/* A booking with no luggage recorded should say nothing, not "0 bags". */}
           {luggage ? ` · ${luggage} bags` : ''}
+          {/* Same guard: a zone pair has no distance, and "0 km" is worse than silence. */}
+          {distanceKm ? ` · ${distanceKm} km` : ''}
         </div>
       </div>
 

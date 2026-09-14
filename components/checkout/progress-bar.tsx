@@ -21,7 +21,7 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
 
   return (
     <motion.div
-      className="mb-12"
+      className="mt-8"
       // `animate` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
       // equivalent and is not: useReducedMotion() is false during SSR, so
       // opacity:0 is serialised into the markup and never animated back once

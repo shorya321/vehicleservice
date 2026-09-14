@@ -3362,129 +3362,25 @@
 }
 
 /* ── Route ──
-   A definition-list rail, matching the pattern the search-results rebuild introduced:
-   equal-height cells divided by hairlines, so every label sits on one baseline. The
-   previous treatment stacked two blocks around a floating arrow, which put the labels
-   at three different heights and rendered the distance as fine print. */
-.checkout-route-rail {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem 0;
-  margin: 0;
-  padding-top: 1.15rem;
-  border-top: 1px solid var(--graphite);
-}
+   The rail that lived here is gone, and so is the band-1 strip that briefly replaced it.
+   Origin, destination, pickup, guests and distance all read from the summary card beside
+   the form (and its mobile sticky-bar drawer), which states them once. Anything that
+   restates them in the form column is the same data twice on one screen. */
 
-@media (min-width: 640px) {
-  .checkout-route-rail {
-    grid-template-columns: 1fr 1fr 0.72fr;
-  }
-}
+/* ── Order summary ──
 
-.checkout-route-rail > div {
-  padding-left: 1.35rem;
-  border-left: 1px solid var(--graphite);
-}
-
-.checkout-route-rail > div:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-
-/* Below the three-column breakpoint the distance drops to its own full-width row
-   rather than being squeezed into a half cell. */
-@media (max-width: 639px) {
-  .checkout-route-rail > .checkout-route-distance-cell {
-    grid-column: 1 / -1;
-    padding-left: 0;
-    padding-top: 1rem;
-    border-left: 0;
-    border-top: 1px solid var(--graphite);
-  }
-}
-
-/* On a phone, two half-width cells break a destination name mid-word — "Atlantis - The Palm"
-   wraps at roughly 150px. The rail stacks, and the dividers rotate from vertical to horizontal
-   so the structure survives the change. */
-@media (max-width: 520px) {
-  .checkout-route-rail {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .checkout-route-rail > div {
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  .checkout-route-rail > div + div {
-    padding-top: 1rem;
-    margin-top: 1rem;
-    border-top: 1px solid var(--graphite);
-  }
-
-  .checkout-route-rail > .checkout-route-distance-cell {
-    padding-top: 1rem;
-    margin-top: 1rem;
-  }
-}
-
-.checkout-route-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.checkout-route-value {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 1.0625rem;
-  font-weight: 500;
-  line-height: 1.3;
-  color: var(--text-primary);
-}
-
-.checkout-route-city {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 0.8125rem;
-  font-weight: 400;
-  color: var(--text-muted);
-}
-
-/* Figure over caption. The one number in this block reads as a number.
-
-   Deliberately NOT gold and NOT the largest figure on the page. Distance is the least
-   decision-relevant number here, and while it carried --gold-text at 1.65rem it out-ranked
-   the total in the summary card, which is backwards on a checkout. Gold is reserved for the
-   28px section rules and for money in motion. */
-.checkout-route-figure {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin: 0;
-}
-
-.checkout-route-figure b {
-  font-size: 1.375rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-/* Tier 3: sentence case. The uppercase treatment made a unit caption compete with the
-   tier-2 field labels sitting directly beside it. */
-.checkout-route-figure span {
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  color: var(--text-muted);
+   One card physic for the whole page. This is the --stub-* plate every card on the home
+   page and the search results runs on: a tone step, a hairline, a lit top edge, no blur
+   and no glow. It replaces a flat --black-rich fill with a gold-at-12% border, which was
+   a card grammar nothing else on the site used, and which sank rather than rose on the
+   light ground. A panel, not a target, so it takes no hover. */
+.checkout-summary-card {
+  background-color: var(--stub-bot);
+  background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+  border: 1px solid var(--stub-line);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+  overflow: hidden;
 }
 
 /* ── Vehicle ── */
@@ -3492,12 +3388,12 @@
   display: flex;
   gap: 1.15rem;
   align-items: center;
-  padding: 1.35rem 0 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  border-top: 1px solid rgba(var(--gold-rgb), 0.1);
-  margin-top: 1.5rem;
+  padding: 1rem 1.125rem;
+  background-color: var(--stub-bot);
+  background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+  border: 1px solid var(--stub-line);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
 }
 
 .checkout-vehicle-info {
@@ -3578,20 +3474,6 @@
   outline-offset: 2px;
 }
 
-/* ── Passenger ── */
-.checkout-passenger-card {
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  margin-bottom: 0;
-}
-
-.checkout-passenger-card:last-child {
-  margin-bottom: 0;
-}
-
-
 /* ── Addon Categories ── */
 .checkout-category-header {
   display: flex;
@@ -3602,9 +3484,10 @@
   margin-bottom: 0.25rem;
 }
 
-/* Tier 2, identical to .checkout-field-label and .checkout-route-label. These three were
-   0.6875/500/.18em, 0.625/600/.16em and 0.625/600/.16em respectively — three near-misses of
-   one role, which left the uppercase system with no internal ranking. */
+/* Tier 2, identical to .checkout-field-label. The pair used to be a trio with
+   .checkout-route-label at 0.6875/500/.18em against these two at 0.625/600/.16em: three
+   near-misses of one role, which left the uppercase system with no internal ranking. The
+   route label is gone. */
 .checkout-category-title {
   font-family: var(--font-body);
   font-size: 0.625rem;
@@ -3643,6 +3526,9 @@
   contain-intrinsic-size: auto 200px;
 }
 
+/* An outline, not a plate. Five of these stack in one column, so five lit --stub-* plates
+   read as a wall of chrome next to the one summary card that has to stand out. The border
+   carries the whole card: hover moves border-color only, no lift, no fill swap, no glow. */
 .checkout-service-card {
   display: flex;
   align-items: center;
@@ -3651,11 +3537,13 @@
   gap: 0.875rem;
   min-height: 76px;
   padding: 1rem 1.125rem;
-  background: var(--black-warm);
-  border: 1px solid rgba(var(--gold-rgb), 0.08);
-  border-radius: 4px;
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid var(--stub-line);
+  border-radius: 8px;
+  box-shadow: none;
   cursor: pointer;
-  transition: border-color 200ms ease, background-color 200ms ease, transform 100ms ease;
+  transition: border-color 200ms var(--ease-luxury), transform 100ms ease;
 }
 
 .checkout-service-card:active {
@@ -3663,8 +3551,7 @@
 }
 
 .checkout-service-card:hover {
-  border-color: rgba(var(--gold-rgb), 0.25);
-  background: rgba(var(--gold-rgb), 0.03);
+  border-color: rgba(var(--gold-rgb), 0.4);
 }
 
 .checkout-service-card:focus-visible {
@@ -3672,9 +3559,11 @@
   outline-offset: 2px;
 }
 
+/* Selection reads through the border and the gold checkbox fill below, not through a
+   background swap. `--charcoal` sank the selected card on the light ground, so the one
+   card the traveller had chosen was the one that looked switched off. */
 .checkout-service-card.selected {
   border-color: var(--gold);
-  background: var(--charcoal);
 }
 
 .checkout-service-card--free {
@@ -3682,13 +3571,11 @@
 }
 
 .checkout-service-card--free:hover {
-  border-color: rgba(var(--gold-rgb), 0.25);
-  background: rgba(var(--gold-rgb), 0.03);
+  border-color: rgba(var(--gold-rgb), 0.4);
 }
 
 .checkout-service-card--free.selected {
   border-color: var(--gold);
-  background: var(--charcoal);
 }
 
 /* Same row as a fixed-price card now. Only the cursor differs, because the card itself is not
@@ -3949,12 +3836,6 @@
 }
 
 /* ── Payment Method ── */
-.checkout-payment-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
 .checkout-payment-method {
   display: flex;
   align-items: center;
@@ -4005,37 +3886,6 @@
   letter-spacing: 0.06em;
   color: var(--text-secondary);
   white-space: nowrap;
-}
-
-.checkout-payment-radio {
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--graphite);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: border-color 150ms ease;
-}
-
-.checkout-payment-method.selected .checkout-payment-radio {
-  border-color: var(--gold);
-}
-
-.checkout-payment-radio-inner {
-  width: 10px;
-  height: 10px;
-  background: var(--gold);
-  border-radius: 50%;
-  opacity: 0;
-  transform: scale(0);
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-
-.checkout-payment-method.selected .checkout-payment-radio-inner {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .checkout-payment-icon {
@@ -4110,16 +3960,6 @@
     padding: 0.875rem 1rem;
   }
 
-  .checkout-payment-radio {
-    width: 18px;
-    height: 18px;
-  }
-
-  .checkout-payment-radio-inner {
-    width: 8px;
-    height: 8px;
-  }
-
   .checkout-payment-name {
     font-size: 0.8125rem;
   }
@@ -4134,6 +3974,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.9rem;
+    padding: 0.875rem;
   }
 
   .checkout-vehicle-change {
@@ -4158,69 +3999,52 @@
   }
 }
 
-/* Checkout Buttons: matches DESIGN.md §5
+/* Checkout Buttons: follows `.search-bar-submit`
 
-   The funnel's primary action was a flat fill with a colour-swap hover, in a design system that
-   already ships a three-stop gradient on `.search-bar-submit`. It takes the same grammar here:
-   a lit top edge, the body in --gold, a weighted foot. `--gold-ink` is the same near-black the
-   home page's submit uses, and it clears AA on every stop of the ramp. */
+   This carried a three-stop gradient copied from the hero submit as it was then. That
+   button has since gone flat (80d8fa8: "flat gold, sentence case, 8px corners, a 2px lift
+   and a 4px arrow nudge on hover"), and the header Book button with it, so the gradient
+   was the last one left on the site. Same grammar as the hero again: flat --gold, --onyx
+   type, 8px, 52px tall. */
 .checkout-btn-primary {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  height: 3.25rem;
-  padding: 0 2rem;
-  background: linear-gradient(
-    180deg,
-    var(--gold-cream) 0%,
-    var(--gold) 42%,
-    var(--gold-medium) 100%
-  );
-  color: var(--gold-ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  gap: 0.75rem;
+  min-height: 52px;
+  padding: 0 1.75rem;
+  background: var(--gold);
+  color: var(--onyx);
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  border: none;
-  border-radius: 4px;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 200ms ease, transform 200ms ease, filter 120ms ease;
-}
-
-.checkout-btn-primary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: 0 10px 20px -5px rgba(var(--gold-rgb), 0.15), 0 4px 8px -4px rgba(var(--gold-rgb), 0.1);
-  opacity: 0;
-  transition: opacity 200ms ease;
-  pointer-events: none;
+  transition: background-color 450ms var(--ease-luxury), transform 450ms var(--ease-luxury),
+    box-shadow 450ms var(--ease-luxury);
 }
 
 .checkout-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(
-    180deg,
-    var(--gold-light) 0%,
-    var(--gold-medium) 45%,
-    var(--gold-deep) 100%
-  );
+  background: var(--gold-medium);
   transform: translateY(-2px);
-}
-
-.checkout-btn-primary:hover:not(:disabled)::after {
-  opacity: 1;
+  box-shadow: 0 10px 20px -5px rgba(var(--gold-rgb), 0.35);
 }
 
 /* There was no press state at all: hover and active rendered identically, so the button gave no
    feedback on the one interaction that costs money. */
 .checkout-btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  filter: brightness(0.97);
+  transform: scale(0.985);
+  box-shadow: none;
 }
+
+/* No arrow nudge, deliberately. The hero submit nudges its trailing arrow on hover, but
+   this class is shared with the payment page's submit, whose only icon is a leading Lock
+   that becomes a spinning Loader2 while the charge is in flight. A transform there would
+   both move the wrong icon and fight `animate-spin`. */
 
 .checkout-btn-primary:disabled {
   opacity: 0.4;
@@ -4236,16 +4060,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .checkout-btn-primary {
-    transition: background 200ms ease;
+    transition: background-color 200ms ease;
   }
-  .checkout-btn-primary:hover:not(:disabled) {
-    transform: none;
-  }
+
+  .checkout-btn-primary:hover:not(:disabled),
   .checkout-btn-primary:active:not(:disabled) {
     transform: none;
-  }
-  .checkout-btn-primary::after {
-    display: none;
   }
 }
 

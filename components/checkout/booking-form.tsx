@@ -308,7 +308,6 @@ export function BookingForm({
     <div key="booking-details">
       <TransferDetailsSection
         form={form}
-        route={route}
         vehicleType={vehicleType}
         guests={guests}
         setGuests={setGuests}
@@ -327,7 +326,7 @@ export function BookingForm({
       />
       <PaymentMethodSection form={form} />
     </div>,
-  ], [form, route, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady])
+  ], [form, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady])
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-0" aria-label="Booking form">

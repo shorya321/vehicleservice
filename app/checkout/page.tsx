@@ -176,8 +176,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-[var(--black-void)]">
-        <div className="luxury-container py-8 md:py-16 lg:py-20">
+      {/* CheckoutWrapper emits its own full-bleed bands, each with its own container, so
+          this shell supplies only the page ground. `min-h-screen` would overshoot by the
+          80px of `main.pt-20` and paint `--black-void` under the last band. */}
+      <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
           {/* The stepper and heading live inside CheckoutWrapper, which owns the wizard
               step. They used to render here with a hardcoded step that never advanced. */}
           <CheckoutWrapper
@@ -192,7 +194,6 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             addonsByCategory={addonsData.addonsByCategory}
             changeHref={changeHref}
           />
-        </div>
       </div>
     </PublicLayout>
   )

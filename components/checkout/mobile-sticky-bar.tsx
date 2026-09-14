@@ -131,6 +131,10 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                       ...(formattedDate ? [{ label: 'Date', value: formattedDate }] : []),
                       ...(pickupTime ? [{ label: 'Time', value: pickupTime }] : []),
                       { label: 'Passengers', value: String(passengers) },
+                      // A zone pair has no distance; the row is dropped rather than printing "0 km".
+                      ...(route.distance_km > 0
+                        ? [{ label: 'Distance', value: `${route.distance_km} km` }]
+                        : []),
                     ].map((item, index) => (
                       <div
                         key={item.label}

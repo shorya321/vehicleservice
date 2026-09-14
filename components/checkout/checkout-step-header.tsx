@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { ProgressBar } from './progress-bar'
 import { CheckoutHeading } from './checkout-heading'
 
@@ -30,15 +32,26 @@ const COPY = [
 
 interface CheckoutStepHeaderProps {
   currentStep: number
+  /** Where "Back to vehicles" goes. Built server-side so a direct arrival, which has no
+      history to pop, still lands on the right search results. */
+  changeHref: string
 }
 
-export function CheckoutStepHeader({ currentStep }: CheckoutStepHeaderProps) {
+export function CheckoutStepHeader({ currentStep, changeHref }: CheckoutStepHeaderProps) {
   const copy = COPY[currentStep] ?? COPY[0]
 
   return (
     <>
+      <Link href={changeHref} className="editorial-action">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Back to vehicles
+      </Link>
+
       <ProgressBar currentStep={toFunnelStep(currentStep)} />
-      <CheckoutHeading title={copy.title} subtitle={copy.subtitle} />
+
+      <div className="mt-8">
+        <CheckoutHeading title={copy.title} subtitle={copy.subtitle} />
+      </div>
     </>
   )
 }

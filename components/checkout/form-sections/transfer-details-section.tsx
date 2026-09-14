@@ -10,7 +10,7 @@ import { Briefcase, Users } from 'lucide-react'
 import { FormDatePicker } from '@/components/ui/form-date-picker'
 import { FormTimePicker } from '@/components/ui/form-time-picker'
 import { parse, format } from 'date-fns'
-import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
+import { VehicleTypeDetails } from '@/app/checkout/actions'
 import { GuestSelector } from '@/components/home/hero/guest-selector'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 
@@ -26,7 +26,6 @@ const MEDIA_TOKENS = [
 
 interface TransferDetailsSectionProps {
   form: UseFormReturn<any>
-  route: RouteDetails
   vehicleType: VehicleTypeDetails
   guests: GuestBreakdown
   setGuests: (value: GuestBreakdown) => void
@@ -38,7 +37,6 @@ interface TransferDetailsSectionProps {
 
 export function TransferDetailsSection({
   form,
-  route,
   vehicleType,
   guests,
   setGuests,
@@ -70,44 +68,14 @@ export function TransferDetailsSection({
       </div>
 
       <div className="checkout-section-content space-y-6">
-        {/* Route. A definition-list rail rather than two text stacks around a floating
-            arrow: every label lands on one baseline, and the distance reads as a figure. */}
-        <dl className="checkout-route-rail">
-          <div>
-            <dt className="checkout-route-label">Pickup</dt>
-            <dd className="checkout-route-value">
-              {route.origin.name}
-              {route.origin.city && (
-                <span className="checkout-route-city">{route.origin.city}</span>
-              )}
-            </dd>
-          </div>
-
-          <div>
-            <dt className="checkout-route-label">Drop-off</dt>
-            <dd className="checkout-route-value">
-              {route.destination.name}
-              {route.destination.city && (
-                <span className="checkout-route-city">{route.destination.city}</span>
-              )}
-            </dd>
-          </div>
-
-          {route.distance_km > 0 && (
-            <div className="checkout-route-distance-cell">
-              <dt className="checkout-route-label">Distance</dt>
-              <dd className="checkout-route-figure">
-                <b>{route.distance_km}</b>
-                <span>Kilometres</span>
-              </dd>
-            </div>
-          )}
-        </dl>
+        {/* The route, the date, the guest count and the distance are stated once, in the
+            summary card beside this form (and its mobile drawer). The inputs below edit
+            those values; nothing here restates them as read-only text. */}
 
         {/* Vehicle */}
         <div className="checkout-vehicle-selected">
           {vehicleType.image_url && (
-            <div className={`relative w-full sm:w-[168px] aspect-[16/9] flex-shrink-0 rounded-[4px] overflow-hidden bg-[var(--black-warm)] border border-[var(--graphite)] ${MEDIA_TOKENS}`}>
+            <div className={`relative w-full sm:w-[168px] aspect-[16/9] flex-shrink-0 rounded-[6px] overflow-hidden bg-[var(--black-warm)] border border-[var(--stub-line)] ${MEDIA_TOKENS}`}>
               <Image
                 src={vehicleType.image_url}
                 alt={vehicleType.name}

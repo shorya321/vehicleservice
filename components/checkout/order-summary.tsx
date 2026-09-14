@@ -3,7 +3,6 @@
 import { useState, memo } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Lock } from 'lucide-react'
-import { TrustBlock } from './trust-block'
 import { BookingLedger } from './booking-ledger'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
@@ -69,10 +68,10 @@ export const OrderSummary = memo(function OrderSummary({
   }
 
   return (
-    <>
     <motion.aside
-      aria-label="Order summary"
-      className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden"
+      // Named by the visible eyebrow in checkout-wrapper, not by a duplicate string.
+      aria-labelledby="order-summary-heading"
+      className="checkout-summary-card"
       // `whileInView` is ALWAYS supplied. The `reduceMotion ? undefined` idiom looks
       // equivalent and is not: useReducedMotion() is false during SSR, so opacity:0 is
       // serialised into the markup and never animated back once hydration flips the
@@ -93,6 +92,7 @@ export const OrderSummary = memo(function OrderSummary({
         timeLabel={pickupTime}
         passengers={passengers}
         luggage={vehicleType.luggage_capacity}
+        distanceKm={route.distance_km}
         basePrice={basePrice}
         addons={selectedAddons}
         promoDiscount={promoDiscount}
@@ -101,12 +101,12 @@ export const OrderSummary = memo(function OrderSummary({
       />
 
       {/* Promo Code. Compact toggle */}
-      <div className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-4">
+      <div className="border-t border-[var(--stub-line)] px-6 xl:px-8 py-4">
         <button
           type="button"
           onClick={() => setShowPromo(!showPromo)}
           aria-expanded={showPromo}
-          className="flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+          className="flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--stub-bot)]"
         >
           <Tag className="h-3 w-3" aria-hidden="true" />
           Have a code?
@@ -125,7 +125,7 @@ export const OrderSummary = memo(function OrderSummary({
             <button
               type="button"
               onClick={applyPromoCode}
-              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]"
+              className="h-10 px-4 text-[0.75rem] font-medium border border-[var(--graphite)] rounded text-[var(--gold-text)] hover:bg-[var(--charcoal)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--stub-bot)]"
             >
               Apply
             </button>
@@ -143,7 +143,7 @@ export const OrderSummary = memo(function OrderSummary({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-[rgba(var(--gold-rgb),0.1)] px-6 xl:px-8 py-5 space-y-4">
+      <footer className="border-t border-[var(--stub-line)] px-6 xl:px-8 py-5 space-y-4">
         {(currentStep === undefined || currentStep === 1) ? (
           <>
             {onAgreeToTermsChange && (
@@ -220,10 +220,5 @@ export const OrderSummary = memo(function OrderSummary({
         </p>
       </footer>
     </motion.aside>
-
-    {/* Fills the empty half of the column, and answers the page having had exactly one
-        line of trust copy. Every claim here is from the Terms. */}
-    <TrustBlock />
-    </>
   )
 })

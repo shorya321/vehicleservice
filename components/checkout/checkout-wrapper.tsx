@@ -111,80 +111,101 @@ export function CheckoutWrapper({
   }, [])
 
   return (
-    // A fragment, not a wrapping div: the header keeps the `mb-12` each of its two parts
-    // already carries, and the three elements stay direct children of `luxury-container`
-    // exactly as they were when the server page rendered them.
+    // Two full-bleed bands, the same grammar the home page and the rebuilt search results
+    // run on. Each carries its own `.luxury-container`; the page shell supplies only the
+    // ground. Neither band takes a seam, and both sit on `--black-void`: the same token
+    // `main.pt-20`, the page shell and `body` already paint, so the header, the heading
+    // and the form read as one surface. Band 2 used to be `--raised` with a graphite
+    // hairline, which cut the page in two under the heading.
     <>
-      <CheckoutStepHeader currentStep={currentStep} />
+      <section className="editorial-section editorial-section--ground editorial-section--compact">
+        <div className="luxury-container">
+          <CheckoutStepHeader currentStep={currentStep} changeHref={changeHref} />
+        </div>
+      </section>
 
-      <div className="space-y-6">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-          {/* Main Booking Form */}
-          <div className="flex-1 min-w-0 pb-[var(--sticky-bar-h,7rem)] lg:pb-0">
-            <BookingForm
-              route={route}
-              vehicleType={vehicleType}
-              initialDate={initialDate}
-              initialTime={initialTime}
-              initialPassengers={initialPassengers}
-              initialGuests={initialGuests}
-              user={user}
-              profile={profile}
-              addonsByCategory={addonsByCategory}
-              changeHref={changeHref}
-              currentStep={currentStep}
-              direction={direction}
-              onGoNext={goNext}
-              onGoBack={goBack}
-              onPassengersChange={handlePassengersChange}
-              onDateTimeChange={handleDateTimeChange}
-              onAddonsChange={handleAddonsChange}
-              onFormReady={handleFormReady}
-            />
-          </div>
-
-          {/* Order Summary Sidebar - Desktop only */}
-          <div className="hidden lg:block w-[380px] xl:w-[420px] flex-shrink-0">
-            <div className="lg:sticky lg:top-28">
-              <OrderSummary
+      <section className="editorial-section editorial-section--ground grow">
+        <div className="luxury-container">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+            {/* Main Booking Form */}
+            <div className="flex-1 min-w-0">
+              <BookingForm
                 route={route}
                 vehicleType={vehicleType}
-                passengers={currentPassengers}
-                pickupDate={pickupDate}
-                pickupTime={pickupTime}
+                initialDate={initialDate}
+                initialTime={initialTime}
+                initialPassengers={initialPassengers}
+                initialGuests={initialGuests}
+                user={user}
+                profile={profile}
+                addonsByCategory={addonsByCategory}
+                changeHref={changeHref}
                 currentStep={currentStep}
-                onSubmit={formMethods.submit}
-                onContinue={formMethods.handleContinue}
-                isSubmitting={formMethods.isSubmitting}
-                agreeToTerms={formMethods.agreeToTerms}
-                onAgreeToTermsChange={formMethods.setAgreeToTerms}
-                selectedAddons={selectedAddons}
-                // Only on the extras step: AdditionalServicesSection owns the selection and is
-                // unmounted on step 0, so there would be nothing to remove from there anyway.
-                onRemoveAddon={currentStep === 1 ? formMethods.removeAddon : undefined}
+                direction={direction}
+                onGoNext={goNext}
+                onGoBack={goBack}
+                onPassengersChange={handlePassengersChange}
+                onDateTimeChange={handleDateTimeChange}
+                onAddonsChange={handleAddonsChange}
+                onFormReady={handleFormReady}
               />
             </div>
-          </div>
-        </div>
 
-        {/* Mobile Sticky Bar */}
-        <MobileStickyBar
-          route={route}
-          vehicleType={vehicleType}
-          totalPrice={totalPrice}
-          basePrice={basePrice}
-          passengers={currentPassengers}
-          pickupDate={pickupDate}
-          pickupTime={pickupTime}
-          selectedAddons={selectedAddons}
-          onContinue={formMethods.handleContinue}
-          onSubmit={formMethods.submit}
-          isSubmitting={formMethods.isSubmitting}
-          isLastStep={isLastStep}
-          agreeToTerms={formMethods.agreeToTerms}
-          onAgreeToTermsChange={formMethods.setAgreeToTerms}
-        />
-      </div>
+            {/* Order Summary Sidebar - Desktop only */}
+            <div className="hidden lg:block w-[380px] xl:w-[420px] flex-shrink-0">
+              <div className="lg:sticky lg:top-28">
+                {/* The same eyebrow markup the four form sections use, so both columns
+                    open on one 11px label row and the summary plate lands level with the
+                    vehicle plate beside it. Inside the sticky wrapper, so it travels with
+                    the card. */}
+                <div className="checkout-section-header">
+                  <h2 id="order-summary-heading" className="checkout-section-title">Order summary</h2>
+                </div>
+                <OrderSummary
+                  route={route}
+                  vehicleType={vehicleType}
+                  passengers={currentPassengers}
+                  pickupDate={pickupDate}
+                  pickupTime={pickupTime}
+                  currentStep={currentStep}
+                  onSubmit={formMethods.submit}
+                  onContinue={formMethods.handleContinue}
+                  isSubmitting={formMethods.isSubmitting}
+                  agreeToTerms={formMethods.agreeToTerms}
+                  onAgreeToTermsChange={formMethods.setAgreeToTerms}
+                  selectedAddons={selectedAddons}
+                  // Only on the extras step: AdditionalServicesSection owns the selection and is
+                  // unmounted on step 0, so there would be nothing to remove from there anyway.
+                  onRemoveAddon={currentStep === 1 ? formMethods.removeAddon : undefined}
+                />
+              </div>
+            </div>
+            </div>
+        </div>
+      </section>
+
+      {/* Clears the fixed bar, which reports its own height as `--sticky-bar-h`. It used
+          to be bottom padding on the form column; with a band below that, the space has
+          to come after the last band instead. */}
+      <div aria-hidden="true" className="h-[var(--sticky-bar-h,7rem)] lg:hidden" />
+
+      {/* Mobile Sticky Bar */}
+      <MobileStickyBar
+    route={route}
+    vehicleType={vehicleType}
+    totalPrice={totalPrice}
+    basePrice={basePrice}
+    passengers={currentPassengers}
+    pickupDate={pickupDate}
+    pickupTime={pickupTime}
+    selectedAddons={selectedAddons}
+    onContinue={formMethods.handleContinue}
+    onSubmit={formMethods.submit}
+    isSubmitting={formMethods.isSubmitting}
+    isLastStep={isLastStep}
+    agreeToTerms={formMethods.agreeToTerms}
+    onAgreeToTermsChange={formMethods.setAgreeToTerms}
+      />
     </>
   )
 }
