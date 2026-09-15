@@ -5962,36 +5962,34 @@
   }
 
   /* ------------------------------------------------------------------
-     Your account: the home membership plate
-     (components/home/join-community-plate.tsx).
+     Your account: the home membership section
+     (components/home/join-community-plate.tsx, components/home/saved-route/).
 
-     Same --stub-* ground as .promise-card ("Specifics, not adjectives.")
-     so the page keeps one card physics: near-white in light, ink in dark.
-     The text therefore follows the theme tokens. Plain CSS because
-     rgba-over-a-var compiles to no rule as a Tailwind arbitrary value.
+     Layout after the Arrivals Cascade account section: copy and a checklist
+     left, a sample account on a phone right. Everything else is the home
+     page's own vocabulary so the section reads as one of its neighbours:
+     the ruled eyebrow, editorial list type, hairline rows, the gold
+     .btn-primary with a quiet underlined link, and the --stub-* card ground
+     (.promise-card) for the route card. Nothing tilts and nothing is filled
+     black. Plain CSS because rgba-over-a-var compiles to no rule as a
+     Tailwind arbitrary value.
      ------------------------------------------------------------------ */
   .account-plate {
     display: grid;
-    gap: 2.125rem;
-    padding: clamp(2.25rem, 5vw, 3.75rem);
-    background-color: var(--stub-bot);
-    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-    border: 1px solid var(--stub-line);
-    border-radius: 18px;
-    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    gap: 3rem;
     color: var(--text-primary);
   }
 
-  @media (min-width: 900px) {
+  @media (min-width: 940px) {
     .account-plate {
-      grid-template-columns: 1fr 1fr;
-      gap: 3.75rem;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 4rem;
       align-items: center;
     }
   }
 
   /* Sizes follow the Corridor reference, which runs a step smaller than the
-     page's editorial defaults so the plate reads as one compact block. */
+     page's editorial defaults. Shared with the FAQ board next door. */
   .account-plate__eyebrow,
   .faq-board__eyebrow {
     font-size: 0.625rem;
@@ -6007,11 +6005,46 @@
     color: var(--text-secondary);
   }
 
+  .account-plate__checks {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--stub-line);
+  }
+
+  .account-plate__checks > li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 0.875rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--stub-line);
+  }
+
+  .account-plate__checks b,
+  .account-plate__checks .editorial-list-body {
+    display: block;
+  }
+
+  .account-plate__checks .editorial-list-body {
+    margin-top: 0.125rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+
+  .account-plate__icon {
+    width: 18px;
+    height: 18px;
+    margin-top: 0.125rem;
+    stroke-width: 1.5;
+    color: var(--gold-text);
+  }
+
   .account-plate__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem 1.5rem;
     margin-top: 1.75rem;
   }
 
@@ -6027,30 +6060,218 @@
     text-transform: none;
   }
 
-  .account-plate__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
+  /* Same quiet link as After you book's "Manage a booking". */
+  .account-plate__quiet {
+    padding-bottom: 2px;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 28%, transparent);
+    transition: border-color 0.3s ease;
   }
 
-  .account-plate__list > li {
+  .account-plate__quiet:hover {
+    border-color: var(--gold);
+  }
+
+  .account-plate__quiet:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
+  }
+
+  /* The saved-route card: .promise-card physics (stub gradient, hairline,
+     inset edge, stub shadow) around a crop of the hero's street map. The
+     hero-map-* fills come from the hero's own rules, so the two maps flip
+     with the theme together. Strokes are in map units, and this crop draws
+     at about half the hero's scale, so the thin ones are thickened here. */
+  .saved-route {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+  }
+
+  .saved-route__head,
+  .saved-route__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+  }
+
+  .saved-route__head .editorial-list-meta {
+    font-size: 0.625rem;
+    letter-spacing: 0.2em;
+  }
+
+  .saved-route__fixed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+  }
+
+  .saved-route__fixed::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
+  .saved-route__map {
+    position: relative;
+    aspect-ratio: 1220 / 800;
+    border-block: 1px solid var(--stub-line);
+    background-color: var(--hero-map-water);
+  }
+
+  .saved-route__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .saved-route .hero-map-road { stroke-width: 2.2; }
+  .saved-route .hero-map-coast { stroke-width: 2.5; }
+  .saved-route .hero-map-casing { stroke-width: 15; }
+  .saved-route .hero-map-major { stroke-width: 11; }
+
+  .saved-route__casing,
+  .saved-route__ahead,
+  .saved-route__trail {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .saved-route__casing {
+    stroke: var(--hero-map-major);
+    stroke-width: 24;
+  }
+
+  .saved-route__ahead {
+    stroke: rgba(var(--gold-rgb), 0.55);
+    stroke-width: 5;
+    stroke-dasharray: 2 13;
+  }
+
+  .saved-route__trail {
+    stroke: var(--gold-text);
+    stroke-width: 9;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+  }
+
+  .saved-route__trail--rest {
+    stroke-dasharray: 0.58 1;
+    stroke-dashoffset: 0;
+  }
+
+  .saved-route__pin {
+    fill: var(--hero-map-land);
+    stroke: var(--gold-text);
+    stroke-width: 5;
+  }
+
+  .saved-route__pin--end {
+    fill: var(--gold-text);
+    stroke: var(--hero-map-land);
+    stroke-width: 4;
+  }
+
+  .saved-route__halo {
+    fill: rgba(var(--gold-rgb), 0.22);
+  }
+
+  .saved-route__car-glow { fill: rgba(var(--gold-rgb), 0.2); }
+  .saved-route__car-body {
+    fill: var(--gold);
+    stroke: var(--onyx);
+    stroke-width: 2.5;
+  }
+  .saved-route__car-glass { fill: var(--onyx); opacity: 0.72; }
+
+  /* Moving vehicle by default; the resting one when motion is reduced. Both
+     stay in the tree, so the markup is the same either way. */
+  .saved-route__resting { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .saved-route__moving { display: none; }
+    .saved-route__resting { display: inline; }
+  }
+
+  /* Labels are HTML so their text keeps its own size at every card width. */
+  .saved-route__label {
+    position: absolute;
     display: grid;
-    grid-template-columns: 26px 1fr;
-    gap: 0.875rem;
-    padding: 0.875rem 0;
-    border-bottom: 1px solid var(--stub-line);
-    font-size: 0.9375rem;
-    line-height: 1.65;
+    gap: 0.125rem;
+    padding: 0.4375rem 0.625rem;
+    border: 1px solid var(--stub-line);
+    border-radius: 6px;
+    background-color: var(--stub-top);
+    box-shadow: var(--stub-shadow);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .saved-route__label b {
+    font-size: 0.75rem;
+    font-weight: 500;
     color: var(--text-primary);
   }
 
-  .account-plate__index {
-    padding-top: 0.3125rem;
+  .saved-route__label span {
     font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+    color: var(--text-muted);
+  }
+
+  /* Pickup sits at the right edge, so its label hangs below-left of the pin,
+     clear of the road the route leaves by. Drop-off is at the left edge on
+     the coast, so its label sits above-right, out over the water. */
+  .saved-route__label--pickup {
+    transform: translate(calc(-100% + 0.75rem), 1.25rem);
+  }
+
+  .saved-route__label--dropoff {
+    transform: translate(-0.75rem, calc(-100% - 1.5rem));
+  }
+
+  /* On a phone the map is too small for two lines per label; keep names. */
+  @media (max-width: 479px) {
+    .saved-route__label span {
+      display: none;
+    }
+  }
+
+  .saved-route__foot b {
+    display: block;
+  }
+
+  .saved-route__facts {
+    display: block;
+    margin-top: 0.1875rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+
+  /* Drawn like the page's outline button, but a picture of one: not a link. */
+  .saved-route__rebook {
+    flex: none;
+    padding: 0.4375rem 0.875rem;
+    border: 1px solid rgba(var(--gold-rgb), 0.55);
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--gold-text);
   }
 
@@ -6152,7 +6373,7 @@
     margin-top: 0.5rem;
   }
 
-  /* Compact button, same metrics as .account-plate .btn. */
+  /* Compact button, same metrics as .faq-board .btn. */
   .after-book-plate .btn {
     gap: 0.75rem;
     padding: 0.75rem 1.375rem;
@@ -6315,8 +6536,8 @@
     }
   }
 
-  /* "Write to support" is a plain .btn-secondary, sized by the shared
-     .account-plate .btn rule, so it matches the page's other outline buttons. */
+  /* "Write to support" is a plain .btn-secondary, sized by the
+     .faq-board .btn rule, so it matches the page's other outline buttons. */
   .faq-board__support {
     margin-top: 1.625rem;
   }

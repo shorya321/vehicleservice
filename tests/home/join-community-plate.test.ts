@@ -1,6 +1,7 @@
 /**
- * The home "Your account" plate. Pins the two links (the old "Sign in" pointed
- * at /auth/login, which has no page) and the four numbered benefits.
+ * The home "Your account" section. Pins the two links (the old "Sign in" pointed
+ * at /auth/login, which has no page), the four checklist rows and the sample
+ * route card, which must stay one labelled image and never claim live tracking.
  */
 import { jsx } from 'react/jsx-runtime'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -26,15 +27,24 @@ describe('JoinCommunityPlate', () => {
     expect(render()).not.toContain('/auth/login')
   })
 
-  it('lists four benefits numbered 01 to 04', () => {
+  it('lists four benefits, each with a title and an icon', () => {
     const html = render()
     expect(html.match(/<li\b/g)).toHaveLength(4)
-    for (const n of ['01', '02', '03', '04']) {
-      expect(html).toContain(`>${n}<`)
+    expect(html.match(/account-plate__icon/g)).toHaveLength(4)
+    for (const title of ['Details on file', 'Rebook in two taps', 'Every trip on record', 'Priority support']) {
+      expect(html).toContain(`<b class="editorial-list-title">${title}</b>`)
     }
   })
 
-  it('carries no em dash, en dash or ellipsis', () => {
-    expect(withoutSvg(render())).not.toMatch(/[–—…]/)
+  it('renders the saved route as one labelled image', () => {
+    expect(render()).toContain('role="img" aria-label="Sample saved route from DXB Terminal 3 to Palm Jumeirah"')
+  })
+
+  it('never frames the route as live tracking, which customers do not have', () => {
+    expect(withoutSvg(render())).not.toMatch(/live|track/i)
+  })
+
+  it('carries no em dash, en dash, ellipsis or curly quote', () => {
+    expect(withoutSvg(render())).not.toMatch(/[–—…‘’“”]/)
   })
 })

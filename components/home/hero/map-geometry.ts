@@ -18,8 +18,8 @@ const CELL = 36
 const BOUNDS = { minX: -120, maxX: 1720, minY: -80, maxY: 1000 }
 
 /* Unit vector from the trunk towards the coast. */
-const TO_SEA_X = -0.387
-const TO_SEA_Y = -0.922
+export const TO_SEA_X = -0.387
+export const TO_SEA_Y = -0.922
 
 export const VIEW_BOX = '0 20 1600 880'
 
@@ -46,9 +46,9 @@ function mulberry32(seed: number): () => number {
   }
 }
 
-const coastY = (x: number): number => 620 + SLOPE * x + 9 * Math.sin(x / 93) + 5 * Math.sin(x / 37)
-const szrY = (x: number): number => 770 + SLOPE * x + 3 * Math.sin(x / 140)
-const khailY = (x: number): number => 945 + SLOPE * x + 5 * Math.sin(x / 170)
+export const coastY = (x: number): number => 620 + SLOPE * x + 9 * Math.sin(x / 93) + 5 * Math.sin(x / 37)
+export const szrY = (x: number): number => 770 + SLOPE * x + 3 * Math.sin(x / 140)
+export const khailY = (x: number): number => 945 + SLOPE * x + 5 * Math.sin(x / 170)
 const r1 = (n: number): string => n.toFixed(1)
 
 function polyline(fn: (x: number) => number, from: number, to: number, step: number): string {
