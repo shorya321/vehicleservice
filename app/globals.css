@@ -147,8 +147,19 @@
   --hero-bar-line: rgba(26, 25, 23, 0.13);
   --hero-bar-hover: rgba(26, 25, 23, 0.028);
   --hero-bar-shadow: 0 1px 2px rgba(26, 25, 23, 0.05), 0 24px 56px -32px rgba(26, 25, 23, 0.28);
-  --hero-wash-opacity: 0.72;
-  --hero-grain-opacity: 0.10;
+  /* Hero street map (components/home/hero/hero-map.tsx). The fade resolves
+     to the ground the next section starts on. */
+  --hero-map-land: #f3f0eb;
+  --hero-map-block: #ebe6de;
+  --hero-map-park: #e4e5d7;
+  --hero-map-water: #dfe5e4;
+  --hero-map-coast: #c9d3d2;
+  --hero-map-road: rgba(40, 36, 30, 0.11);
+  --hero-map-major: #ffffff;
+  --hero-map-casing: rgba(40, 36, 30, 0.17);
+  --hero-map-runway: #dcd6cc;
+  --hero-map-fade-end: var(--black-void);
+  --hero-stats-edge: rgba(26, 25, 23, 0.08);
   /* Route stub ground (components/home/departure-points-client.tsx).
      Light follows the theme, dark is a fixed ink plate. Both step UP from the
      section, which --charcoal could not do: it is lighter than --black-rich in
@@ -260,8 +271,17 @@
   --hero-bar-line: var(--stub-line);
   --hero-bar-hover: rgba(255, 255, 255, 0.03);
   --hero-bar-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
-  --hero-wash-opacity: 1;
-  --hero-grain-opacity: 0.22;
+  --hero-map-land: #0d0c0b;
+  --hero-map-block: #121110;
+  --hero-map-park: #0f110d;
+  --hero-map-water: #060708;
+  --hero-map-coast: #1c2121;
+  --hero-map-road: rgba(255, 255, 255, 0.06);
+  --hero-map-major: #1d1b19;
+  --hero-map-casing: rgba(255, 255, 255, 0.07);
+  --hero-map-runway: #1f1d1a;
+  --hero-map-fade-end: var(--black-rich);
+  --hero-stats-edge: rgba(255, 255, 255, 0.07);
   /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
   --stub-top: #262422;
   --stub-mid: #1a1918;
@@ -325,8 +345,17 @@
     --hero-bar-line: var(--stub-line);
     --hero-bar-hover: rgba(255, 255, 255, 0.03);
     --hero-bar-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
-    --hero-wash-opacity: 1;
-    --hero-grain-opacity: 0.22;
+    --hero-map-land: #0d0c0b;
+    --hero-map-block: #121110;
+    --hero-map-park: #0f110d;
+    --hero-map-water: #060708;
+    --hero-map-coast: #1c2121;
+    --hero-map-road: rgba(255, 255, 255, 0.06);
+    --hero-map-major: #1d1b19;
+    --hero-map-casing: rgba(255, 255, 255, 0.07);
+    --hero-map-runway: #1f1d1a;
+    --hero-map-fade-end: var(--black-rich);
+    --hero-stats-edge: rgba(255, 255, 255, 0.07);
     /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
     --stub-top: #262422;
     --stub-mid: #1a1918;
@@ -1413,66 +1442,74 @@
   }
 
   /* ── Home hero ──
-     One directed light source rather than three undirected washes. The key sits
-     behind the headline instead of behind the nav; a crown and vignette built
-     from --void-rgb resolve to the exact colour the next section starts on, so
-     the same rules lighten the frame in light mode and darken it in dark, and
-     no wash layer is clipped at the section seam. */
+     A stylised street map (coast, Palm, Creek, trunk roads) sits behind the
+     content. The fade clears the headline and search bar, then resolves top and
+     bottom to the grounds above and below so no seam shows. In dark the bottom
+     lands on --black-rich, where Routes opens. */
   .home-hero-color {
-    --hero-bronze-oklch: oklch(57% 0.055 67);
-    --hero-fill-oklch: oklch(52% 0.03 250);
-    background:
-      linear-gradient(180deg, rgba(var(--void-rgb), 1) 0%, rgba(var(--rich-rgb), 0.92) 54%, rgba(var(--void-rgb), 1) 100%);
+    background: var(--black-void);
   }
 
-  .home-hero-color-wash {
-    opacity: var(--hero-wash-opacity);
-    background:
-      /* key light, behind the headline */
-      radial-gradient(ellipse 54% 42% at 50% 46%, rgba(var(--gold-rgb), 0.26) 0%, rgba(var(--gold-rgb), 0.08) 46%, transparent 74%),
-      /* warm bounce along the floor, resolved before the seam */
-      radial-gradient(ellipse 92% 24% at 50% 92%, color-mix(in oklch, var(--hero-bronze-oklch) 24%, transparent) 0%, transparent 68%),
-      /* cool fill from screen left, so the key reads as directional */
-      radial-gradient(ellipse 40% 46% at 6% 60%, color-mix(in oklch, var(--hero-fill-oklch) 20%, transparent) 0%, transparent 70%);
-  }
-
-  .home-hero-color-wash::before {
-    content: '';
+  .hero-map-svg {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(180deg, rgba(var(--void-rgb), 0.88) 0%, rgba(var(--void-rgb), 0.3) 14%, transparent 28%),
-      radial-gradient(ellipse 80% 72% at 50% 50%, transparent 52%, rgba(var(--void-rgb), 0.6) 100%);
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
-  /* Dark only. The rig above ends on --black-void, but in dark the next
-     section (Routes) opens on --black-rich, so two blacks met at the graphite
-     line. Ground and frame now resolve to --rich-rgb at the bottom edge. The
-     cool fill read as a grey-blue smudge on near-black and the bronze floor
-     bounce as a brown band above the seam, so dark keeps the key light alone.
-     Light mode is untouched. */
-  .dark .home-hero-color {
-    background:
-      linear-gradient(180deg, rgba(var(--void-rgb), 1) 0%, color-mix(in srgb, var(--black-void) 60%, var(--black-rich)) 42%, rgba(var(--rich-rgb), 1) 100%);
+  .hero-map-water { fill: var(--hero-map-water); }
+  .hero-map-land { fill: var(--hero-map-land); }
+  .hero-map-block { fill: var(--hero-map-block); }
+  .hero-map-park { fill: var(--hero-map-park); }
+
+  .hero-map-road {
+    fill: none;
+    stroke: var(--hero-map-road);
+    stroke-width: 1.2;
+    stroke-linecap: round;
   }
 
-  .dark .home-hero-color-wash {
-    background:
-      radial-gradient(ellipse 60% 46% at 50% 44%, rgba(var(--gold-rgb), 0.2) 0%, rgba(var(--gold-rgb), 0.06) 48%, transparent 76%);
+  .hero-map-coast {
+    fill: none;
+    stroke: var(--hero-map-coast);
+    stroke-width: 1.5;
   }
 
-  .dark .home-hero-color-wash::before {
-    background:
-      linear-gradient(180deg, rgba(var(--void-rgb), 0.88) 0%, rgba(var(--void-rgb), 0.3) 14%, transparent 28%),
-      linear-gradient(0deg, rgba(var(--rich-rgb), 1) 0%, rgba(var(--rich-rgb), 0) 22%),
-      radial-gradient(ellipse 80% 72% at 50% 50%, transparent 55%, rgba(var(--rich-rgb), 0.55) 100%);
+  .hero-map-casing,
+  .hero-map-major {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  /* Flat radial gradients band on wide displays. Fine grain breaks it up. */
-  .home-hero-grain {
-    opacity: var(--hero-grain-opacity);
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  .hero-map-casing { stroke: var(--hero-map-casing); stroke-width: 10; }
+  .hero-map-major { stroke: var(--hero-map-major); stroke-width: 7; }
+
+  .hero-map-creek,
+  .hero-map-creek-edge,
+  .hero-map-palm,
+  .hero-map-palm-edge {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .hero-map-creek { stroke: var(--hero-map-water); stroke-width: 18; }
+  .hero-map-creek-edge { stroke: var(--hero-map-coast); stroke-width: 21; }
+  .hero-map-palm { stroke: var(--hero-map-land); stroke-width: 6; }
+  .hero-map-palm-edge { stroke: var(--hero-map-coast); stroke-width: 8.5; }
+
+  .hero-map-runway {
+    fill: none;
+    stroke: var(--hero-map-runway);
+    stroke-width: 9;
+  }
+
+  .hero-map-fade {
+    background:
+      radial-gradient(ellipse 40% 48% at 50% 44%, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 86%, transparent) 42%, transparent 100%),
+      linear-gradient(180deg, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 40%, transparent) 22%, transparent 40%, transparent 78%, var(--hero-map-fade-end) 100%);
   }
 
   .hero-reveal {
@@ -1542,12 +1579,9 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 0 1.25rem;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    gap: 0.5rem 1.375rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
   }
 
   .hero-trust > span {
@@ -1558,54 +1592,63 @@
 
   .hero-trust > span::before {
     content: '';
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--gold);
-    opacity: 0.65;
   }
 
   /* Figure over caption. The old row set number and label at one size with
      literal pipe separators, so nothing read as a figure. */
+  /* Caption over figure, on a pill so the figures hold over the map. */
   .hero-stats {
     display: flex;
     justify-content: center;
-    gap: clamp(2.5rem, 7vw, 5.5rem);
+    gap: clamp(1.5rem, 5vw, 3.5rem);
+    padding: 0.875rem 1.625rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--black-void) 72%, transparent);
+    box-shadow: 0 0 0 1px var(--hero-stats-edge);
   }
 
   .hero-stats > div {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex-direction: column-reverse;
+    gap: 2px;
   }
 
   .hero-stats dt {
-    font-size: clamp(1.5rem, 2.4vw, 1.875rem);
+    font-size: 1.625rem;
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.2;
     letter-spacing: -0.02em;
-    color: var(--gold-text);
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums lining-nums;
   }
 
   .hero-stats dd {
     margin: 0;
-    font-size: 0.625rem;
-    font-weight: 500;
+    font-size: 0.6875rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
 
   .hero-stats .hero-stats-star {
+    color: var(--gold);
     font-size: 0.7em;
-    vertical-align: 0.18em;
-    margin-left: 0.1em;
+    vertical-align: 0.2em;
+    margin-left: 3px;
   }
 
   @media (max-width: 480px) {
     .hero-stats {
-      gap: 2rem;
+      gap: 1.5rem;
+      padding: 0.75rem 1.125rem;
+    }
+
+    .hero-stats dt {
+      font-size: 1.3125rem;
     }
   }
 

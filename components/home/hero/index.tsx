@@ -1,3 +1,4 @@
+import { HeroMap } from './hero-map'
 import { SearchForm } from './search-form'
 
 export function Hero({ todayDate }: { todayDate: string }) {
@@ -8,8 +9,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
       className="home-hero-color home-hero-motion relative bg-[var(--black-void)] pt-[clamp(5rem,12vw,6.5rem)]"
     >
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
-        <div className="home-hero-color-wash pointer-events-none absolute inset-0" />
-        <div className="home-hero-grain pointer-events-none absolute inset-0" />
+        <HeroMap />
       </div>
 
       <div className="luxury-container relative z-10 pb-[clamp(4.5rem,9vw,7rem)] pt-[clamp(3rem,7vw,5.5rem)]">
@@ -25,7 +25,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
 
           <h1
             id="hero-headline"
-            className="hero-reveal hero-reveal--headline hero-headline mt-7 text-[clamp(2.5rem,6.2vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.032em] text-[var(--text-primary)]"
+            className="hero-reveal hero-reveal--headline hero-headline mt-[1.625rem] text-[clamp(2.5rem,6.2vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.032em] text-[var(--text-primary)]"
           >
             Booked before you land.
           </h1>
@@ -34,7 +34,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
             Pick a route, choose a vehicle, confirm your transfer. Fixed pricing in your currency across 40+ cities.
           </p>
 
-          <div className="hero-booking-reveal mt-[3.25rem] w-full">
+          <div className="hero-booking-reveal mt-12 w-full">
             <SearchForm todayDate={todayDate} />
           </div>
 
@@ -44,7 +44,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
             <span>Free cancellation</span>
           </p>
 
-          <dl className="hero-reveal hero-reveal--stats hero-stats mt-14">
+          <dl className="hero-reveal hero-reveal--stats hero-stats mt-12">
             <div>
               <dt>40+</dt>
               <dd>Cities</dd>
