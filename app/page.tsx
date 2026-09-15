@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { PublicHeader } from '@/components/layout/public-header'
 import { Hero } from '@/components/home/hero'
+import { AfterYouBook } from '@/components/home/after-you-book'
 import { DeparturePoints } from '@/components/home/departure-points'
 import { Cities } from '@/components/home/cities'
 import { TransportationBenefits } from '@/components/home/transportation-benefits'
@@ -74,6 +75,7 @@ export default async function HomePage() {
         siteSettings={siteSettings}
       />
       <Hero todayDate={todayStr} />
+      <AfterYouBook />
       <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <DeparturePoints todayDate={todayStr} />
       </div>

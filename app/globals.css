@@ -6055,6 +6055,245 @@
   }
 
   /* ------------------------------------------------------------------
+     After you book: the plate under the hero
+     (components/home/after-you-book/).
+
+     Same --stub-* ground as .account-plate, so it is near-white in light
+     and ink in dark and the text follows the theme tokens. The map colours
+     are mixed from --text-primary and --gold-text instead of new tokens, so
+     they flip with the theme without a third copy in the dark blocks.
+     ------------------------------------------------------------------ */
+  .after-book-section {
+    background-color: var(--hero-map-fade-end);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .after-book-plate {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: grid;
+    gap: 1.75rem;
+    padding: clamp(1.75rem, 5vw, 4.5rem);
+    background-color: var(--stub-bot);
+    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+    border: 1px solid var(--stub-line);
+    border-radius: 28px;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    color: var(--text-primary);
+  }
+
+  /* Dot field behind the map, faded out before it reaches the copy. */
+  .after-book-plate__field {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--text-primary) 14%, transparent) 0.8px,
+      transparent 1px
+    );
+    background-size: 16px 16px;
+    mask-image: linear-gradient(to bottom, transparent 45%, #000 75%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 45%, #000 75%);
+  }
+
+  .after-book-plate__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    max-width: 34rem;
+  }
+
+  .after-book-plate__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3125rem 0.6875rem;
+    border: 1px solid var(--stub-line);
+    border-radius: 999px;
+    font-size: 0.65625rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .after-book-plate__eyebrow i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.2);
+  }
+
+  /* Size, weight and tracking come from .editorial-section-title so this
+     heading matches every section below it. */
+  .after-book-plate__title {
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .after-book-plate__body {
+    margin: 0;
+    max-width: 42ch;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    text-wrap: pretty;
+  }
+
+  .after-book-plate__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Compact button, same metrics as .account-plate .btn. */
+  .after-book-plate .btn {
+    gap: 0.75rem;
+    padding: 0.75rem 1.375rem;
+    border-radius: 8px;
+    letter-spacing: 0.01em;
+    text-transform: none;
+  }
+
+  .after-book-plate__quiet {
+    padding-bottom: 2px;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 28%, transparent);
+    transition: border-color 0.3s ease;
+  }
+
+  .after-book-plate__quiet:hover {
+    border-color: var(--gold);
+  }
+
+  .after-book-plate__quiet:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (min-width: 980px) {
+    .after-book-plate {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      align-items: center;
+      min-height: 460px;
+    }
+
+    .after-book-plate__field {
+      mask-image: linear-gradient(to right, transparent 40%, #000 72%);
+      -webkit-mask-image: linear-gradient(to right, transparent 40%, #000 72%);
+    }
+  }
+
+  /* Zone network. Nodes are centred on their point; labels hang off one side. */
+  .after-book-net {
+    position: relative;
+    height: 300px;
+    margin-inline: 0.5rem;
+  }
+
+  @media (min-width: 980px) {
+    .after-book-net {
+      height: 360px;
+      margin-inline: 0 1rem;
+    }
+  }
+
+  .after-book-net__arcs {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .after-book-net__arc {
+    fill: none;
+    stroke: color-mix(in srgb, var(--gold-text) 60%, transparent);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 6;
+    vector-effect: non-scaling-stroke;
+    animation: after-book-flow 3.2s linear infinite;
+  }
+
+  .after-book-net__node {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: var(--text-primary);
+  }
+
+  .after-book-net__label {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 7px);
+    transform: translateY(calc(-50% + var(--label-dy, 0px)));
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text-muted);
+  }
+
+  .after-book-net__node--left .after-book-net__label {
+    left: auto;
+    right: calc(100% + 7px);
+  }
+
+  .after-book-net__node--hub {
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    background: var(--gold);
+  }
+
+  .after-book-net__node--hub::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    animation: after-book-pulse 3s cubic-bezier(0.22, 0.8, 0.2, 1) infinite;
+  }
+
+  .after-book-net__node--hub .after-book-net__label {
+    left: calc(100% + 10px);
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 559px) {
+    .after-book-net__node--minor .after-book-net__label {
+      display: none;
+    }
+  }
+
+  @keyframes after-book-flow {
+    to { stroke-dashoffset: -36; }
+  }
+
+  @keyframes after-book-pulse {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .after-book-net__arc,
+    .after-book-net__node--hub::after {
+      animation: none;
+    }
+  }
+
+  /* ------------------------------------------------------------------
      Asked: the home FAQ (components/home/faq-panel.tsx).
 
      Follows the Corridor reference: an intro column beside a stack of
