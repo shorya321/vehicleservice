@@ -20,6 +20,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: '--font-jakarta',
   weight: ['500', '600', '700', '800'],
   display: 'swap',
+  // Only admin and business CSS use Jakarta and Playfair. Without preload they
+  // still load on those routes, but the public pages stop fetching them up front.
+  preload: false,
 })
 
 const playfairDisplay = Playfair_Display({
@@ -27,6 +30,7 @@ const playfairDisplay = Playfair_Display({
   variable: '--font-playfair',
   weight: ['400', '700'],
   display: 'swap',
+  preload: false,
 })
 
 export async function generateMetadata(): Promise<Metadata> {

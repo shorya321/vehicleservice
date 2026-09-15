@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic'
 
+import { Suspense } from 'react'
+import type { User } from '@supabase/supabase-js'
 import { bookingToday } from "@/lib/utils/timezone"
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
@@ -31,20 +33,22 @@ export default async function HomePage() {
   const cookieStore = await cookies()
   const todayStr = bookingToday()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // Auth and profile run alongside the cached reads: none of them depends on
+  // the user, so waiting for getUser first only delays the whole page.
+  const loadHeaderUser = async (): Promise<{ user: User | null; profile: HeaderProfile | null }> => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { user: null, profile: null }
 
-  let profile: HeaderProfile | null = null
-  if (user) {
     const { data } = await supabase
       .from('profiles')
       .select(HEADER_PROFILE_COLUMNS)
       .eq('id', user.id)
       .single()
-    profile = data
+    return { user, profile: data }
   }
 
-  // Fetch currency data and site settings
-  const [featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates, siteSettings] = await Promise.all([
+  const [{ user, profile }, featuredCurrencies, allEnabledCurrencies, defaultCurrency, exchangeRates, siteSettings] = await Promise.all([
+    loadHeaderUser(),
     getFeaturedCurrencies(),
     getEnabledCurrencies(),
     getDefaultCurrency(),
@@ -95,8 +99,12 @@ export default async function HomePage() {
       <div className="bg-[var(--black-void)]" id="services">
         <AdditionalServices />
       </div>
+      {/* Testimonials reads uncached review data far below the fold, so it
+          streams in rather than holding back the hero's HTML. */}
       <div className="border-t border-[var(--graphite)]">
-        <Testimonials />
+        <Suspense fallback={null}>
+          <Testimonials />
+        </Suspense>
       </div>
       <JoinCommunity />
       <FAQ />

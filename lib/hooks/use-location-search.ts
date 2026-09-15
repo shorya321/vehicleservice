@@ -68,6 +68,29 @@ function saveRecentSearch(location: LocationSearchResult | Location): void {
   }
 }
 
+// Every autocomplete on a page (the hero has two) wants the same popular list,
+// so one in-flight request serves them all. Reset on failure so a later mount
+// can try again.
+let popularLocationsPromise: Promise<LocationSearchResult[]> | null = null
+
+function loadPopularLocations(
+  supabase: ReturnType<typeof createSearchClient>
+): Promise<LocationSearchResult[]> {
+  if (!popularLocationsPromise) {
+    popularLocationsPromise = (async () => {
+      const { data, error } = await supabase.rpc('get_popular_locations')
+      if (error || !Array.isArray(data)) {
+        throw error ?? new Error('get_popular_locations returned no rows array')
+      }
+      return data as unknown as LocationSearchResult[]
+    })().catch((err: unknown) => {
+      popularLocationsPromise = null
+      throw err
+    })
+  }
+  return popularLocationsPromise
+}
+
 function groupByType(results: LocationSearchResult[]): GroupedLocationResults[] {
   const groups = new Map<string, GroupedLocationResults>()
 
@@ -128,27 +151,23 @@ export function useLocationSearch(
   const cacheRef = useRef(new Map<string, LocationSearchResult[]>())
   const abortRef = useRef<AbortController | null>(null)
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const popularFetchedRef = useRef(false)
 
   useEffect(() => {
     setRecentSearches(getRecentSearches())
   }, [])
 
   useEffect(() => {
-    if (popularFetchedRef.current) return
-    popularFetchedRef.current = true
-
-    const fetchPopular = async () => {
-      try {
-        const { data } = await supabase.rpc('get_popular_locations')
-        if (data && Array.isArray(data)) {
-          setPopularResults(data as unknown as LocationSearchResult[])
-        }
-      } catch {
+    let cancelled = false
+    loadPopularLocations(supabase)
+      .then((rows) => {
+        if (!cancelled) setPopularResults(rows)
+      })
+      .catch(() => {
         // Non-critical. Popular locations are optional
-      }
+      })
+    return () => {
+      cancelled = true
     }
-    fetchPopular()
   }, [supabase])
 
   useEffect(() => {
