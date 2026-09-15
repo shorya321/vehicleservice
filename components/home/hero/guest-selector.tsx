@@ -77,8 +77,10 @@ function StepperRow({
     if (!incrementDisabled) onIncrement()
   }
 
+  // The after: box pads the hit area to 44px (h-8 + 2 x 6px) without
+  // changing the drawn 32px square.
   const buttonClass =
-    'flex h-8 w-8 items-center justify-center rounded-md border border-[var(--graphite)] text-[var(--text-primary)] transition-colors hover:border-[var(--gold)] hover:bg-[var(--charcoal)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--graphite)] disabled:hover:bg-transparent'
+    "relative flex h-8 w-8 items-center justify-center rounded-md after:absolute after:-inset-1.5 after:content-[''] border border-[var(--graphite)] text-[var(--text-primary)] transition-colors hover:border-[var(--gold)] hover:bg-[var(--charcoal)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--graphite)] disabled:hover:bg-transparent"
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -96,7 +98,7 @@ function StepperRow({
         >
           <Minus className="h-4 w-4" aria-hidden />
         </button>
-        <span className="w-8 text-center text-sm font-medium tabular-nums text-[var(--text-primary)]">
+        <span aria-live="polite" className="w-8 text-center text-sm font-medium tabular-nums text-[var(--text-primary)]">
           {value}
         </span>
         <button
@@ -135,7 +137,7 @@ export function GuestSelector({
           id="guests"
           type="button"
           className={className ?? 'search-bar-input search-bar-date-trigger'}
-          aria-label="Select guests"
+          aria-label={`Guests, ${formatGuestSummary(value)}`}
         >
           <Users
             className="w-4 h-4 shrink-0 text-[var(--text-muted)]"

@@ -83,6 +83,9 @@ function Socials({ links }: { links: SiteSettingsConfig['social_links'] }): Reac
 export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
   return (
     <>
+      {/* Outline anchor, so the column heads and guarantee labels below sit
+          under a footer heading instead of under the page's last h3. */}
+      <h2 className="sr-only">Site information</h2>
       <div className="site-footer__top">
         <div>
           <Link
@@ -107,7 +110,7 @@ export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
 
         {FOOTER_LINK_CATEGORIES.map((category) => (
           <div key={category.title}>
-            <h4 className="site-footer__head">{category.title}</h4>
+            <h3 className="site-footer__head">{category.title}</h3>
             <ul className="site-footer__list">
               {category.links.map((link) => (
                 <li key={link.name}>
@@ -119,19 +122,18 @@ export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
         ))}
 
         <div>
-          <h4 className="site-footer__head">Contact</h4>
+          <h3 className="site-footer__head">Contact</h3>
           <ul className="site-footer__list">
             <li>
               <a
                 href={`tel:${settings.support_phone.replace(/\s/g, '')}`}
-                aria-label="Call reservations"
                 className={`${LINK_CLASS} numeric`}
               >
                 {settings.support_phone}
               </a>
             </li>
             <li>
-              <a href={`mailto:${settings.support_email}`} aria-label="Email support" className={LINK_CLASS}>
+              <a href={`mailto:${settings.support_email}`} className={LINK_CLASS}>
                 {settings.support_email}
               </a>
             </li>
@@ -160,9 +162,9 @@ export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
         </p>
         <div className="site-footer__end">
           <nav aria-label="Legal" className="site-footer__legal">
-            <Link href="/privacy" className={LINK_CLASS}>Privacy</Link>
+            <Link href="/privacy" className={`${LINK_CLASS} tap-target`}>Privacy</Link>
             <span aria-hidden="true">&middot;</span>
-            <Link href="/terms" className={LINK_CLASS}>Terms</Link>
+            <Link href="/terms" className={`${LINK_CLASS} tap-target`}>Terms</Link>
           </nav>
           <Socials links={settings.social_links} />
         </div>

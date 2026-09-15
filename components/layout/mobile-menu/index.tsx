@@ -2,7 +2,7 @@
 
 import { motion, type Variants } from 'motion/react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   Sheet,
   SheetContent,
@@ -29,11 +29,11 @@ import {
   Phone,
 } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-import type { Database } from '@/lib/supabase/types'
+import type { HeaderProfile } from '@/components/layout/header-profile'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+type Profile = HeaderProfile
 
 interface MobileMenuProps {
   isOpen: boolean
@@ -69,7 +69,6 @@ export function MobileMenu({
   siteSettings,
 }: MobileMenuProps) {
   const settings = siteSettings ?? DEFAULT_SITE_SETTINGS
-  const router = useRouter()
   const pathname = usePathname()
   const reducedMotion = useReducedMotion() ?? false
 
@@ -83,11 +82,6 @@ export function MobileMenu({
   }
 
   const close = () => onOpenChange(false)
-
-  const navigate = (path: string) => {
-    router.push(path)
-    close()
-  }
 
   const getDashboardPath = () => {
     if (!profile?.role) return '/'
@@ -161,13 +155,13 @@ export function MobileMenu({
             <MenuSection label="Account" reducedMotion={reducedMotion}>
               {(!profile?.role || profile.role === 'customer') ? (
                 <>
-                  <MenuButtonItem label="My Profile" icon={User} onClick={() => navigate('/account?tab=personal')} reducedMotion={reducedMotion} />
-                  <MenuButtonItem label="My Bookings" icon={Car} onClick={() => navigate('/account?tab=bookings')} reducedMotion={reducedMotion} />
-                  <MenuButtonItem label="My Reviews" icon={Star} onClick={() => navigate('/account?tab=reviews')} reducedMotion={reducedMotion} />
-                  <MenuButtonItem label="Partner With Us" icon={Building2} onClick={() => navigate('/become-vendor')} reducedMotion={reducedMotion} active={isCurrent('/become-vendor')} />
+                  <MenuNavItem href="/account?tab=personal" label="My Profile" icon={User} onClick={close} reducedMotion={reducedMotion} />
+                  <MenuNavItem href="/account?tab=bookings" label="My Bookings" icon={Car} onClick={close} reducedMotion={reducedMotion} />
+                  <MenuNavItem href="/account?tab=reviews" label="My Reviews" icon={Star} onClick={close} reducedMotion={reducedMotion} />
+                  <MenuNavItem href="/become-vendor" label="Partner With Us" icon={Building2} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/become-vendor')} />
                 </>
               ) : (
-                <MenuButtonItem label="Go to Dashboard" icon={LayoutDashboard} onClick={() => navigate(getDashboardPath())} reducedMotion={reducedMotion} />
+                <MenuNavItem href={getDashboardPath()} label="Go to Dashboard" icon={LayoutDashboard} onClick={close} reducedMotion={reducedMotion} />
               )}
               {/* Held off from the routine rows by a hairline. The three
                   /account rows above all share one pathname, so none of them

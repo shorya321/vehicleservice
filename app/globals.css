@@ -1611,13 +1611,15 @@
     box-shadow: 0 0 0 1px var(--hero-stats-edge);
   }
 
+  /* dt is the caption ("Cities"), dd the figure: the term names the value. */
   .hero-stats > div {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 2px;
   }
 
-  .hero-stats dt {
+  .hero-stats dd {
+    margin: 0;
     font-size: 1.625rem;
     font-weight: 500;
     line-height: 1.2;
@@ -1626,8 +1628,7 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  .hero-stats dd {
-    margin: 0;
+  .hero-stats dt {
     font-size: 0.6875rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -1647,7 +1648,7 @@
       padding: 0.75rem 1.125rem;
     }
 
-    .hero-stats dt {
+    .hero-stats dd {
       font-size: 1.3125rem;
     }
   }
@@ -1768,6 +1769,14 @@
 
   .search-bar-field:focus-within {
     background: rgba(var(--gold-rgb), 0.05);
+  }
+
+  /* The date and guests triggers are buttons with outline and underline both
+     removed, which left a 5% tint as the only keyboard cue (WCAG 2.4.7).
+     :focus-visible on a button matches keyboard focus only, so mouse users
+     see no change. Text inputs keep the caret and tint. */
+  .search-bar-field:has(button.search-bar-input:focus-visible) {
+    box-shadow: inset 0 0 0 2px var(--gold);
   }
 
   /* Single column: hairline above every field but the first. */
@@ -2607,6 +2616,35 @@
   /* Hover never fires on touch, so the pressed state carries the feedback there. */
   .footer-link:active {
     color: var(--gold-text-hover);
+  }
+
+  /* Invisible hit box of at least 44px, centred on a small inline link, so the
+     drawn text keeps its size and nothing reflows. Use only where neighbours
+     are 44px apart; stacked lists fill their gap instead (below). */
+  .tap-target {
+    position: relative;
+  }
+
+  .tap-target::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+
+  /* Footer columns sit 0.625rem apart, too tight for 44px boxes without
+     overlap, so each link's hit area grows into half the gap on both sides. */
+  .site-footer__list .footer-link {
+    position: relative;
+  }
+
+  .site-footer__list .footer-link::after {
+    content: '';
+    position: absolute;
+    inset: -0.3125rem 0;
   }
 
   /* The drawn box. The tap target is the 44px anchor wrapping it, per the

@@ -1,4 +1,4 @@
-import { getPopularRoutes } from '@/app/actions'
+import { getCachedPopularRoutes } from '@/lib/home/catalog'
 import { collapseCorridors } from '@/lib/routes/corridors'
 import { DeparturePointsClient } from './departure-points-client'
 
@@ -17,7 +17,7 @@ import { DeparturePointsClient } from './departure-points-client'
 const MAX_CORRIDORS = 10
 
 export async function DeparturePoints({ todayDate }: { todayDate: string }) {
-  const routes = await getPopularRoutes()
+  const routes = await getCachedPopularRoutes()
   const collapsed = collapseCorridors(routes)
   const corridors = collapsed.slice(0, MAX_CORRIDORS)
 

@@ -17,10 +17,13 @@ interface DeparturePointsClientProps {
 
 const NAME = 'text-[1.0625rem] font-medium leading-[1.25] tracking-[-0.012em] text-[var(--text-primary)]'
 
+// Inset outline, not an offset ring: the rail is overflow-x:auto with no
+// horizontal padding, so anything drawn outside the card was clipped at the
+// rail's left and right edges. An outline also paints over the photo plate,
+// where an inset box-shadow would sit underneath it.
 const CELL =
-  'route-stub corridor-card group focus-visible:outline-none focus-visible:ring-2 ' +
-  'focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 ' +
-  'focus-visible:ring-offset-[var(--black-rich)]'
+  'route-stub corridor-card group focus-visible:outline focus-visible:outline-2 ' +
+  'focus-visible:outline-[var(--gold)] focus-visible:-outline-offset-2'
 
 const FOOT = 'route-stub__foot flex items-center gap-3'
 
@@ -182,8 +185,7 @@ export function DeparturePointsClient({
         id="routes-rail"
         className="route-rail mt-12"
         tabIndex={0}
-        role="group"
-        aria-label="Popular routes, scroll horizontally"
+        aria-label="Popular routes"
         variants={railReveal}
         initial="hidden"
         whileInView="shown"
@@ -198,7 +200,7 @@ export function DeparturePointsClient({
             <motion.li key={corridor.id} className="corridor-slot" variants={slotReveal}>
               <Link
                 href={href}
-                aria-label={`Search transfers from ${corridor.originName} to ${corridor.destinationName}`}
+                aria-label={`Search transfers from ${corridor.originName} to ${corridor.destinationName}, ${corridor.distance} km, ${corridor.duration} min`}
                 className={CELL}
               >
                 {/*
@@ -213,7 +215,7 @@ export function DeparturePointsClient({
                         src={corridor.image}
                         alt={corridor.imageAlt || `${corridor.originName} to ${corridor.destinationName}`}
                         fill
-                        sizes="(min-width: 900px) 340px, 78vw"
+                        sizes="(min-width: 1280px) 320px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                         className="z-0 object-cover [filter:var(--media-filter)]"
                       />
                       {/*
@@ -296,7 +298,7 @@ export function DeparturePointsClient({
             {corridors.length} of {totalCorridors}{' '}
             {totalCorridors === 1 ? 'corridor' : 'corridors'}
           </span>
-          <Link href="/routes" className={CTA}>
+          <Link href="/routes" className={`${CTA} tap-target`}>
             Open the route index
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>

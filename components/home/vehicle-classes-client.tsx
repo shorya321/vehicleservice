@@ -168,10 +168,14 @@ export function VehicleClassesClient({ categories }: VehicleClassesClientProps) 
             id={`panel-${activeCategory.categoryId}`}
             aria-labelledby={`tab-${activeCategory.categoryId}`}
             className="grid gap-5 min-[640px]:grid-cols-2"
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: -12 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            // Same rule as the header above: always supply `animate`. With
+            // `animate={reduceMotion ? undefined : ...}` the SSR pass (hook
+            // false) serialises opacity 0, the hook flips true on hydration,
+            // and nothing ever brings the panel back.
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
+            transition={{ duration: reduceMotion ? 0 : 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
             {activeCategory.vehicleTypes.map((vehicle, index) => {
               const isHero = index === 0 && activeCategory.vehicleTypes.length >= HERO_MIN_VEHICLES
@@ -179,9 +183,9 @@ export function VehicleClassesClient({ categories }: VehicleClassesClientProps) 
                 <motion.article
                   key={vehicle.id}
                   className={`fleet-card ${isHero ? 'min-[640px]:col-span-2' : ''}`}
-                  initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                  animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.4, delay: reduceMotion ? 0 : index * 0.06, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {/* The wide crop belongs to the wide card. Below 640px the hero
                       spans one column like the rest, and 21/8 there is a letterbox. */}

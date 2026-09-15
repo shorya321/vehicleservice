@@ -19,6 +19,7 @@ import { getEnabledCurrencies, getFeaturedCurrencies, getDefaultCurrency, getExc
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
 import { getSiteSettings } from '@/lib/site-settings/server'
+import { HEADER_PROFILE_COLUMNS, type HeaderProfile } from '@/components/layout/header-profile'
 
 export const metadata = {
   title: 'Infinia Transfers - Airport & City Transfers, Fixed-Price',
@@ -32,11 +33,11 @@ export default async function HomePage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  let profile = null
+  let profile: HeaderProfile | null = null
   if (user) {
     const { data } = await supabase
       .from('profiles')
-      .select('*')
+      .select(HEADER_PROFILE_COLUMNS)
       .eq('id', user.id)
       .single()
     profile = data
@@ -68,12 +69,15 @@ export default async function HomePage() {
       >
         Skip to main content
       </a>
-    <main id="main-content" className="bg-[var(--black-void)]">
+    {/* Header and footer sit outside <main> so they keep their banner and
+        contentinfo landmarks, and the skip link lands past the navigation. */}
+    <div className="bg-[var(--black-void)]">
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
         siteSettings={siteSettings}
       />
+    <main id="main-content" tabIndex={-1} className="outline-none">
       <Hero todayDate={todayStr} />
       <AfterYouBook />
       <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
@@ -85,7 +89,7 @@ export default async function HomePage() {
       <div className="bg-[var(--black-void)]">
         <TransportationBenefits />
       </div>
-      <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]" id="fleet">
+      <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <VehicleClasses />
       </div>
       <div className="bg-[var(--black-void)]" id="services">
@@ -96,8 +100,9 @@ export default async function HomePage() {
       </div>
       <JoinCommunity />
       <FAQ />
-      <Footer siteSettings={siteSettings} />
     </main>
+      <Footer siteSettings={siteSettings} />
+    </div>
     </CurrencyProvider>
   )
 }

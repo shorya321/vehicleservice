@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-import type { Database } from '@/lib/supabase/types'
+import { HEADER_PROFILE_COLUMNS, type HeaderProfile } from '@/components/layout/header-profile'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,12 +22,19 @@ import { CurrencySelector } from '@/components/currency/currency-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useCurrency } from '@/lib/currency/context'
 import { HamburgerButton } from '@/components/layout/mobile-menu/hamburger-button'
-import { MobileMenu } from '@/components/layout/mobile-menu'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+// The drawer (motion + Radix Sheet) is client-only behind the mounted gate
+// already, so it loads after hydration instead of in every page's header bundle.
+const MobileMenu = dynamic(
+  () => import('@/components/layout/mobile-menu').then((m) => m.MobileMenu),
+  { ssr: false }
+)
+
+type Profile = HeaderProfile
 
 interface PublicHeaderProps {
   initialUser?: SupabaseUser | null
@@ -114,7 +121,7 @@ export function PublicHeader({
 
     supabase
       .from('profiles')
-      .select('*')
+      .select(HEADER_PROFILE_COLUMNS)
       .eq('id', userId)
       .single()
       .then(({ data }) => {
@@ -229,7 +236,7 @@ export function PublicHeader({
             {mounted && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--graphite)] hover:border-[var(--gold)] transition-colors">
+                  <Button variant="ghost" size="icon" aria-label="Account menu" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--graphite)] hover:border-[var(--gold)] transition-colors">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={profile?.avatar_url || undefined}
@@ -252,43 +259,57 @@ export function PublicHeader({
                       </p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+                  <DropdownMenuSeparator className="bg-[rgba(var(--gold-rgb),0.1)]" />
                   {(!profile?.role || profile.role === 'customer') ? (
                     <>
-                      <DropdownMenuItem onClick={() => router.push('/account?tab=personal')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        My Profile
+                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                        <Link href="/account?tab=personal">
+                          <User className="mr-2 h-4 w-4" />
+                          My Profile
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/account?tab=bookings')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <Car className="mr-2 h-4 w-4" />
-                        My Bookings
+                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                        <Link href="/account?tab=bookings">
+                          <Car className="mr-2 h-4 w-4" />
+                          My Bookings
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/account?tab=reviews')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <Star className="mr-2 h-4 w-4" />
-                        My Reviews
+                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                        <Link href="/account?tab=reviews">
+                          <Star className="mr-2 h-4 w-4" />
+                          My Reviews
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/become-vendor')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                        <Building2 className="mr-2 h-4 w-4" />
-                        Partner With Us
+                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                        <Link href="/become-vendor">
+                          <Building2 className="mr-2 h-4 w-4" />
+                          Partner With Us
+                        </Link>
                       </DropdownMenuItem>
                     </>
                   ) : profile.role === 'admin' ? (
-                    <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Go to Dashboard
+                    <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                      <Link href="/admin/dashboard">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </Link>
                     </DropdownMenuItem>
                   ) : profile.role === 'vendor' ? (
-                    <DropdownMenuItem onClick={() => router.push('/vendor/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Go to Dashboard
+                    <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                      <Link href="/vendor/dashboard">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </Link>
                     </DropdownMenuItem>
                   ) : profile.role === 'business' ? (
-                    <DropdownMenuItem onClick={() => router.push('/business/dashboard')} className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[var(--gold)]/10 cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Go to Dashboard
+                    <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
+                      <Link href="/business/dashboard">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Go to Dashboard
+                      </Link>
                     </DropdownMenuItem>
                   ) : null}
-                  <DropdownMenuSeparator className="bg-[var(--gold)]/10" />
+                  <DropdownMenuSeparator className="bg-[rgba(var(--gold-rgb),0.1)]" />
                   <DropdownMenuItem
                     className="text-red-700 dark:text-red-400 focus:text-red-700 dark:focus:text-red-400 hover:bg-red-700/10 dark:hover:bg-red-500/10 cursor-pointer"
                     onClick={handleSignOut}

@@ -65,7 +65,7 @@ export function JoinCommunityPlate(): React.JSX.Element {
             Create a free account
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </Link>
-          <Link href="/login" className="account-plate__quiet">
+          <Link href="/login" className="account-plate__quiet tap-target">
             Sign in
           </Link>
         </div>

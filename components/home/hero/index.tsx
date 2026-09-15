@@ -46,20 +46,20 @@ export function Hero({ todayDate }: { todayDate: string }) {
 
           <dl className="hero-reveal hero-reveal--stats hero-stats mt-12">
             <div>
-              <dt>40+</dt>
-              <dd>Cities</dd>
+              <dt>Cities</dt>
+              <dd>40+</dd>
             </div>
             <div>
-              <dt>120+</dt>
-              <dd>Vehicles</dd>
+              <dt>Vehicles</dt>
+              <dd>120+</dd>
             </div>
             <div>
-              <dt>
+              <dt>Rating</dt>
+              <dd>
                 4.9
                 <span className="hero-stats-star" aria-hidden="true">&#9733;</span>
                 <span className="sr-only"> star</span>
-              </dt>
-              <dd>Rating</dd>
+              </dd>
             </div>
           </dl>
         </div>

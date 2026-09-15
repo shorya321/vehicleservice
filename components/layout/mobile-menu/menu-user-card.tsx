@@ -4,9 +4,9 @@ import { motion, type Variants } from 'motion/react'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-import type { Database } from '@/lib/supabase/types'
+import type { HeaderProfile } from '@/components/layout/header-profile'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+type Profile = HeaderProfile
 
 interface MenuUserCardProps {
   user: SupabaseUser | null

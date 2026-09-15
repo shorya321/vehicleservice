@@ -3,14 +3,21 @@ import { useCallback, useLayoutEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowRight, CalendarDays } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { format, parse } from 'date-fns'
 import type { LocationSearchResult } from '@/lib/types/location'
 import { LocationSearchAutocomplete } from '@/components/search/location-search-autocomplete'
 import { buildSearchUrl } from '@/lib/utils/url-builder'
-import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { GuestSelector } from './guest-selector'
 import { getSeatedCount, type GuestBreakdown } from './guest-breakdown'
+
+// react-day-picker only renders once the date popover opens, so it stays out of
+// the hero's first-load bundle. The placeholder holds the month grid's size.
+const Calendar = dynamic(
+  () => import('@/components/ui/calendar').then((m) => m.Calendar),
+  { ssr: false, loading: () => <div className="h-[19rem] w-[17.5rem]" aria-hidden="true" /> }
+)
 
 export function SearchForm({ todayDate }: { todayDate: string }) {
   const router = useRouter()
@@ -68,7 +75,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
     <form
       onSubmit={handleSearch}
       className="search-bar"
-      aria-labelledby="hero-headline"
+      aria-label="Transfer search"
     >
       {/* From */}
       <div className="search-bar-field search-bar-field--location">
@@ -110,6 +117,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
                 id="travel-date"
                 type="button"
                 className="search-bar-input search-bar-date-trigger"
+                aria-label={`Date, ${format(parse(selectedDate, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}`}
               >
                 <CalendarDays
                   className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
@@ -145,6 +153,7 @@ export function SearchForm({ todayDate }: { todayDate: string }) {
             id="travel-date"
             type="button"
             className="search-bar-input search-bar-date-trigger"
+            aria-label={`Date, ${format(parse(selectedDate, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}`}
           >
             <CalendarDays
               className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
