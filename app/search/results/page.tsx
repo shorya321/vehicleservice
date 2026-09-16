@@ -85,7 +85,7 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
       <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
         <SearchResults
           results={results}
-          routeMap={<RouteBandMap origin={results.originPoint} destination={results.destinationPoint} />}
+          routeMap={<RouteBandMap />}
           searchParams={params}
         />
       </div>

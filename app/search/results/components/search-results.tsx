@@ -7,6 +7,7 @@ import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
 import { EmptyState } from './empty-state'
 import { ResultsGuestPicker } from './results-guest-picker'
 import { ResultsDatePicker } from './results-date-picker'
+import { RouteConnector } from './route-connector'
 import { PopularRoutesList } from './popular-routes-list'
 import { VehicleCategoriesList } from './vehicle-categories-list'
 import { ZonesList } from '@/components/search/zones-list'
@@ -185,15 +186,18 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
               New search
             </Link>
 
-            <div className="mt-8 max-w-2xl">
+            <div className="mt-8 max-w-4xl">
               <p className="editorial-eyebrow">Your route</p>
 
               {/* The one h1 on the page, on the same type ramp as every home h2
                   rather than a bespoke clamp of its own. */}
-              <h1 className="editorial-section-title mt-5">
-                {results.originName}
-                <span className="mx-3 font-normal text-[var(--gold-text)]" aria-hidden="true">→</span>
-                {results.destinationName}
+              <h1 className="route-heading editorial-section-title mt-5">
+                <span className="route-heading__place">{results.originName}</span>
+                {/* Decorative, so the relationship it draws is spelled out for a
+                    screen reader - which the bare arrow it replaces never was. */}
+                <RouteConnector />
+                <span className="sr-only"> to </span>
+                <span className="route-heading__place">{results.destinationName}</span>
               </h1>
 
               {zoneLabel && (

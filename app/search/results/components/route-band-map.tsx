@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { HERO_MAP } from '@/components/home/hero/map-geometry'
-import { projectRoute, VIEW_BOX, type GeoPoint } from './route-projection'
 
 const LAND_CLIP_ID = 'route-band-map-land'
 
-interface RouteBandMapProps {
-  origin?: GeoPoint
-  destination?: GeoPoint
-}
+/**
+ * The window drawn, in the hero map's own units. `y` sits below the map's own
+ * framing so the city's diagonal reads across the band rather than under it.
+ */
+const VIEW_BOX = '120 157 1180 560'
 
 /**
  * The street map behind the search page's route band.
@@ -25,14 +25,13 @@ interface RouteBandMapProps {
  * would run in the browser on every search, and ~20KB of path data would join
  * the route's JS bundle.
  *
- * The trip is drawn from the two locations' real coordinates, placed by
- * route-projection.ts. Where it cannot place them - a zone pair, which has no
- * locations, or a route in another city - the line and pins are left out and
- * the map is plain background. Nothing is drawn from invented positions.
+ * Texture only: no trip is drawn on it. That moved into the heading, as
+ * `.route-connector`, because a line drawn here has to share this viewBox to
+ * keep its pins on real features and a phone-width crop then loses both of
+ * them. Saying it once, where it survives every width, beats saying it twice.
  */
-export function RouteBandMap({ origin, destination }: RouteBandMapProps): React.JSX.Element {
+export function RouteBandMap(): React.JSX.Element {
   const m = HERO_MAP
-  const trip = projectRoute(origin, destination)
 
   return (
     <div className="route-band__map" aria-hidden="true">
@@ -70,23 +69,6 @@ export function RouteBandMap({ origin, destination }: RouteBandMapProps): React.
 
         <path d={m.coast} className="hero-map-coast" />
 
-        {/* Inside the city svg, and therefore under `.route-band__fade`, which
-            is the point: the trip belongs to the drawing. It surfaces where the
-            wash thins and ghosts away behind the heading, rather than sitting on
-            the band as a graphic laid over it. */}
-        {trip && (
-          <>
-            {/* Casing keeps the line legible where it crosses a white trunk. */}
-            <path d={trip.d} className="route-band__trip-casing" />
-            <path d={trip.d} pathLength={1} className="route-band__trip-line" />
-
-            <circle cx={trip.from.x} cy={trip.from.y} r="13" className="route-band__halo" />
-            <circle cx={trip.from.x} cy={trip.from.y} r="5.5" className="route-band__pin" />
-
-            <circle cx={trip.to.x} cy={trip.to.y} r="13" className="route-band__halo" />
-            <circle cx={trip.to.x} cy={trip.to.y} r="5.5" className="route-band__pin" />
-          </>
-        )}
       </svg>
 
       <div className="route-band__fade" />

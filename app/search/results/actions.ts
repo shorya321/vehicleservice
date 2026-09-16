@@ -94,23 +94,10 @@ export interface VehiclesByCategory {
   minPrice: number
 }
 
-/** A location's real position, for drawing the trip on the route band's map. */
-export interface SearchGeoPoint {
-  lat: number
-  lng: number
-}
-
 export interface SearchResult {
   type: 'route' | 'routes' | 'categories' | 'redirect' | 'zone' | 'zones'
   originName: string
   destinationName?: string
-  /**
-   * Origin and destination coordinates, where the result resolved to real
-   * locations. A zone pair has none: zones are areas, not points. Consumed by
-   * route-projection.ts, which returns null for anything it cannot place.
-   */
-  originPoint?: SearchGeoPoint
-  destinationPoint?: SearchGeoPoint
   routeId?: string
   routeName?: string
   distance?: number
@@ -123,17 +110,6 @@ export interface SearchResult {
   zones?: ZoneResult[]
   categories?: CategoryResult[]
   redirectTo?: string
-}
-
-/** `latitude`/`longitude` are numeric columns, so they arrive as string | number | null. */
-function toGeoPoint(loc: { latitude?: unknown; longitude?: unknown } | null | undefined):
-  SearchGeoPoint | undefined {
-  if (!loc) return undefined
-  const lat = Number(loc.latitude)
-  const lng = Number(loc.longitude)
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return undefined
-  if (lat === 0 && lng === 0) return undefined
-  return { lat, lng }
 }
 
 export async function getSearchResults(params: {
@@ -231,8 +207,6 @@ export async function getSearchResults(params: {
             type: 'zone',
             originName: originDetails.name,
             destinationName: destinationDetails.name,
-            originPoint: toGeoPoint(originDetails),
-            destinationPoint: toGeoPoint(destinationDetails),
             zone: {
               fromZone: {
                 id: fromZone.id,
@@ -484,8 +458,6 @@ export async function getSearchResults(params: {
     type: 'route',
     originName: originDetails.name,
     destinationName: destinationDetails.name,
-    originPoint: toGeoPoint(originDetails),
-    destinationPoint: toGeoPoint(destinationDetails),
     routeId: route.id,
     routeName: route.route_name,
     distance: route.distance_km,
@@ -763,8 +735,6 @@ async function getRouteById(
             type: 'zone',
             originName: route.origin_location.name,
             destinationName: route.destination_location.name,
-            originPoint: toGeoPoint(route.origin_location),
-            destinationPoint: toGeoPoint(route.destination_location),
             zone: {
               fromZone: {
                 id: fromZone.id,
@@ -803,8 +773,6 @@ async function getRouteById(
     type: 'route',
     originName: route.origin_location.name,
     destinationName: route.destination_location.name,
-    originPoint: toGeoPoint(route.origin_location),
-    destinationPoint: toGeoPoint(route.destination_location),
     route: {
       id: route.id,
       routeName: route.route_name,
@@ -955,7 +923,7 @@ async function getLocationDetailsWithZone(locationId: string) {
     
     const { data, error } = await supabase
       .from('locations')
-      .select('id, name, city, country_code, slug, zone_id, latitude, longitude')
+      .select('id, name, city, country_code, slug, zone_id')
       .eq('id', locationId)
       .maybeSingle()
 

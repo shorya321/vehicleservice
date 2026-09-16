@@ -6915,66 +6915,171 @@
   .route-band__svg .hero-map-casing { stroke-width: 8.5; }
   .route-band__svg .hero-map-major { stroke-width: 6; }
 
-  /* The trip drawn on the map: the one thing here the home hero has no reason
-     to carry. It lives inside the city svg, so .route-band__fade washes over it
-     exactly as it washes over the streets, and it reads as part of the drawing
-     rather than a graphic on top of the band. */
-  .route-band__trip-casing {
-    fill: none;
+  /* ---- the route heading ----
+     A flex row, so the connector can take whatever width the two names leave
+     and the heading reads as origin, road, destination rather than a label with
+     a symbol in it. The names are wrapped rather than left as bare text nodes:
+     an anonymous flex item cannot be given `min-width: 0`, and a long place
+     name then refuses to shrink and overflows the band. */
+  .route-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .route-heading__place {
+    min-width: 0;
+  }
+
+  /* ---- the route connector ----
+     The line between the two place names, in place of the arrow. Elements
+     rather than one scaled SVG: the heading stretches this to fill the gap, and
+     a single SVG scaled that far would enlarge the dots and the car with it.
+     Only the track stretches; everything else is `em` and holds its
+     proportions. */
+  .route-connector {
+    display: flex;
+    flex: 1 1 4em;
+    align-items: center;
+    gap: 0.3em;
+    min-width: 2.5em;
+    height: 1em;
+    margin-inline: 0.55em;
+  }
+
+  /* The endpoints follow .saved-route__pin on the home page: pickup is a hollow
+     gold ring, drop-off is filled gold inside a soft halo. Both keep the same
+     outer diameter, as the two pins there do (both r=11). The ring is drawn
+     with an inset shadow rather than a border so it does not grow by its own
+     width, and the halo is a second spread shadow rather than a pseudo-element,
+     which would paint over the dot it surrounds. */
+  .route-connector__start,
+  .route-connector__end {
+    flex: none;
+    width: 0.28em;
+    height: 0.28em;
+    border-radius: 50%;
+  }
+
+  .route-connector__start {
+    background-color: var(--black-void);
+    box-shadow: inset 0 0 0 0.07em var(--gold-text);
+  }
+
+  .route-connector__end {
+    background-color: var(--gold-text);
+    box-shadow:
+      0 0 0 0.05em var(--black-void),
+      0 0 0 0.13em rgba(var(--gold-rgb), 0.22);
+  }
+
+  /* The road ahead. Round dots on a repeating background, which is the rhythm
+     .saved-route__ahead gets from `stroke-dasharray: 2 13`, but sized in `em`
+     so the spacing never changes with the connector's width. */
+  .route-connector__track {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 0.14em;
+    border-radius: 999px;
+    /* Two layers, as the saved-route map has: the dotted run of
+       .saved-route__ahead sitting on the solid road .saved-route__casing draws
+       beneath it. Dots alone read as a row of specks; the casing is what makes
+       it a road. The casing is gold rather than that map's --hero-map-major,
+       which is white on the map and would disappear against this band. */
+    background-image:
+      radial-gradient(circle closest-side, rgba(var(--gold-rgb), 0.6) 99%, transparent 100%),
+      linear-gradient(rgba(var(--gold-rgb), 0.17), rgba(var(--gold-rgb), 0.17));
+    background-size: 0.22em 0.075em, 100% 100%;
+    background-repeat: repeat-x, no-repeat;
+    background-position: left center, center;
+  }
+
+  /* The trail, solid, filling in behind the vehicle. */
+  .route-connector__trail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    border-radius: 999px;
+    background-color: var(--gold-text);
+    animation: route-connector-trail 5s linear infinite;
+  }
+
+  .route-connector__vehicle {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0.75em;
+    height: 0.33em;
+    margin-top: -0.165em;
+    margin-left: -0.375em;
+    animation: route-connector-drive 5s linear infinite;
+  }
+
+  .route-connector__vehicle svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* Outlined, or the car vanishes into the trail it is towing: both are
+     --gold-text. Same reason .saved-route__car-body carries an --onyx stroke. */
+  .route-connector__car-body {
+    fill: var(--gold-text);
     stroke: var(--black-void);
-    stroke-width: 7;
-    stroke-linecap: round;
+    stroke-width: 1.8;
+  }
+
+  .route-connector__car-glass {
+    fill: var(--black-void);
     opacity: 0.55;
   }
 
-  .route-band__trip-line {
-    fill: none;
-    stroke: var(--gold-text);
-    stroke-width: 3.2;
-    stroke-linecap: round;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: route-band-draw 1100ms var(--ease-luxury) 180ms both;
+  /* One loop: wait at pickup, drive, wait at drop-off. Both animations share
+     these stops, so the fill always ends under the car. */
+  @keyframes route-connector-trail {
+    0%, 14% { width: 0; }
+    86%, 100% { width: 100%; }
   }
 
-  @keyframes route-band-draw {
-    to { stroke-dashoffset: 0; }
+  @keyframes route-connector-drive {
+    0%, 14% { left: 0; }
+    86%, 100% { left: 100%; }
   }
 
-  .route-band__halo {
-    fill: rgba(var(--gold-rgb), 0.22);
-  }
-
-  .route-band__pin {
-    fill: var(--gold-text);
-    stroke: var(--black-void);
-    stroke-width: 2.2;
-  }
-
+  /* Parked partway along, the resting state .saved-route__trail--rest uses. */
   @media (prefers-reduced-motion: reduce) {
-    .route-band__trip-line {
+    .route-connector__trail {
       animation: none;
-      stroke-dashoffset: 0;
+      width: 58%;
+    }
+
+    .route-connector__vehicle {
+      animation: none;
+      left: 58%;
     }
   }
 
   /* ---- trip ledger ----
      Date, guests, journey where the route has one, and the fare this route
-     starts from, on one baseline rule under the route heading.
+     starts from, on one baseline row under the route heading.
 
      It replaces a boxed card (.trip-summary, a stub-gradient panel with a
      border, a radius and a drop shadow) for two reasons. That card used the
      same physics as the .vehicle-card grid one band below, so the page opened
      with a card sitting above a grid of cards; and its four equal columns gave
      the fare, the one number a visitor came for, exactly the weight of the
-     date. A single gold hairline separates the facts from the headline without
-     adding a second object to the band.
+     date. Nothing rules the facts off from the heading: spacing alone separates
+     them, so the band carries no divider of its own.
 
      Deliberately not .itinerary-block, which looks like the obvious reuse and
      is the wrong choice twice over. It is the old flat --charcoal card, so
      adopting it would re-import the mismatch just described. And its
      .itinerary-segment is a single-column label/value list, while this is a
-     horizontal rule holding two interactive triggers.
+     horizontal row holding two interactive triggers.
 
      The fare is pushed to the far end with margin-left:auto rather than given a
      column, so a zone pair, which has no routes row and therefore no distance,
@@ -6987,7 +7092,6 @@
     gap: 0.875rem clamp(1.125rem, 3.4vw, 2.125rem);
     margin: 0;
     padding-top: 1.375rem;
-    border-top: 1px solid rgba(var(--gold-rgb), 0.24);
   }
 
   .trip-ledger__item {
