@@ -4,6 +4,7 @@ import { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 import { SearchResults } from '../results/components/search-results'
+import { RouteBandMap } from '../results/components/route-band-map'
 import { getSearchResults } from '../results/actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { parseRouteSlug } from '@/lib/utils/slug'
@@ -121,7 +122,7 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
       {/* SearchResults emits its own full-bleed bands, each with its own
           container, so this page supplies only the page ground. */}
       <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
-        <SearchResults results={results} searchParams={enrichedSearchParams} />
+        <SearchResults results={results} routeMap={<RouteBandMap origin={results.originPoint} destination={results.destinationPoint} />} searchParams={enrichedSearchParams} />
       </div>
     </PublicLayout>
   )

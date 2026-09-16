@@ -2028,7 +2028,7 @@
     transition: transform var(--duration-fast) var(--ease-luxury);
   }
 
-  /* Also used by the search-results trip-summary card, whose trigger is styled through its own
+  /* Also used by the search-results trip ledger, whose trigger is styled through its own
      className and carries no `.search-bar-date-trigger`, hence the trigger-agnostic selector. The
      child combinator keeps this from reaching any other Radix `data-state` element. */
   [data-state='open'] > .search-bar-chevron {
@@ -6869,67 +6869,149 @@
     padding: 1.25rem 1.5rem 1.5rem;
   }
 
-  /* ---- trip summary ----
-     The ledger under the route heading: date, guests, journey where the
-     route has one, and the fare this route starts from.
+  /* ---- the route band ----
+     Band 1 of the search page carries the home hero's street map, cropped
+     tighter (see route-band-map.tsx). `.editorial-section` is already
+     positioned, so the layer needs nothing here but the section clipped.
 
-     Deliberately not .itinerary-block, which looks like the obvious reuse
-     and is the wrong choice three times over. It is the old flat
-     --charcoal card, so adopting it would re-import, on the most
-     prominent element of the page, exactly the mismatch .vehicle-card
-     above just removed. Its .itinerary-segment is a baseline-aligned
-     single-column label/value list, while this is a horizontal ledger
-     holding two interactive triggers whose control heights break baseline
-     alignment. And nothing in the app renders it, so "reuse" would buy
-     consistency with nothing.
-
-     The caller sets --trip-cols, because a zone pair has no routes row
-     and therefore no distance cell to show. */
-  .trip-summary {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    background-color: var(--stub-bot);
-    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-    border: 1px solid var(--stub-line);
-    border-radius: 8px;
-    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+     The fade is the hero's, with one change at the bottom stop. The hero
+     resolves into --hero-map-fade-end because what opens below it differs by
+     theme; what opens below this band is always .editorial-section--raised,
+     so it resolves into --black-rich in both. */
+  .route-band {
+    overflow: hidden;
   }
 
-  /* A panel, not a target: no hover state, unlike every card above. */
-  .trip-summary__cell {
-    padding: 1.25rem 1.5rem;
+  .route-band__map {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .route-band__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* The hero's fade. Only the bottom stop differs: the hero resolves into
+     --hero-map-fade-end because what opens below it differs by theme, and what
+     opens below this band is always .editorial-section--raised. */
+  .route-band__fade {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 46% 62% at 32% 46%, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 84%, transparent) 46%, transparent 100%),
+      linear-gradient(180deg, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 42%, transparent) 20%, transparent 44%, transparent 72%, var(--black-rich) 100%);
+  }
+
+  /* Strokes are in map units, and a 1428-unit window renders them about 1.12x
+     the apparent weight they carry in the hero's 1600, so the heavier ones are
+     trimmed. Same reason .saved-route thickens them, opposite direction. */
+  .route-band__svg .hero-map-road { stroke-width: 1.1; }
+  .route-band__svg .hero-map-coast { stroke-width: 1.4; }
+  .route-band__svg .hero-map-casing { stroke-width: 8.5; }
+  .route-band__svg .hero-map-major { stroke-width: 6; }
+
+  /* The trip drawn on the map: the one thing here the home hero has no reason
+     to carry. It lives inside the city svg, so .route-band__fade washes over it
+     exactly as it washes over the streets, and it reads as part of the drawing
+     rather than a graphic on top of the band. */
+  .route-band__trip-casing {
+    fill: none;
+    stroke: var(--black-void);
+    stroke-width: 7;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+
+  .route-band__trip-line {
+    fill: none;
+    stroke: var(--gold-text);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: route-band-draw 1100ms var(--ease-luxury) 180ms both;
+  }
+
+  @keyframes route-band-draw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .route-band__halo {
+    fill: rgba(var(--gold-rgb), 0.22);
+  }
+
+  .route-band__pin {
+    fill: var(--gold-text);
+    stroke: var(--black-void);
+    stroke-width: 2.2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .route-band__trip-line {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* ---- trip ledger ----
+     Date, guests, journey where the route has one, and the fare this route
+     starts from, on one baseline rule under the route heading.
+
+     It replaces a boxed card (.trip-summary, a stub-gradient panel with a
+     border, a radius and a drop shadow) for two reasons. That card used the
+     same physics as the .vehicle-card grid one band below, so the page opened
+     with a card sitting above a grid of cards; and its four equal columns gave
+     the fare, the one number a visitor came for, exactly the weight of the
+     date. A single gold hairline separates the facts from the headline without
+     adding a second object to the band.
+
+     Deliberately not .itinerary-block, which looks like the obvious reuse and
+     is the wrong choice twice over. It is the old flat --charcoal card, so
+     adopting it would re-import the mismatch just described. And its
+     .itinerary-segment is a single-column label/value list, while this is a
+     horizontal rule holding two interactive triggers.
+
+     The fare is pushed to the far end with margin-left:auto rather than given a
+     column, so a zone pair, which has no routes row and therefore no distance,
+     closes the gap instead of leaving a hole. That is what --trip-cols used to
+     be for. */
+  .trip-ledger {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.875rem clamp(1.125rem, 3.4vw, 2.125rem);
+    margin: 0;
+    padding-top: 1.375rem;
+    border-top: 1px solid rgba(var(--gold-rgb), 0.24);
+  }
+
+  .trip-ledger__item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
     min-width: 0;
   }
 
-  .trip-summary__cell + .trip-summary__cell {
-    border-top: 1px solid var(--stub-line);
-  }
-
-  @media (min-width: 640px) {
-    .trip-summary {
-      grid-template-columns: repeat(var(--trip-cols, 3), minmax(0, 1fr));
-    }
-
-    .trip-summary__cell + .trip-summary__cell {
-      border-top: 0;
-      border-left: 1px solid var(--stub-line);
-    }
-  }
-
-  .trip-summary__label {
+  .trip-ledger__label {
     font-family: var(--font-body);
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     font-weight: 500;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--text-muted);
+    white-space: nowrap;
   }
 
-  .trip-summary__value {
+  .trip-ledger__value {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin: 0;
     font-family: var(--font-body);
     font-size: 1.0625rem;
     font-weight: 500;
@@ -6938,9 +7020,24 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  .trip-summary__value--price {
-    color: var(--gold-text);
+  .trip-ledger__item--price {
+    margin-left: auto;
+  }
+
+  .trip-ledger__item--price .trip-ledger__value {
+    font-size: clamp(1.45rem, 3.2vw, 1.95rem);
     font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--gold-text);
+  }
+
+  /* Below this the row has wrapped anyway, so margin-left:auto would only pull
+     the fare against the right edge of whatever line it landed on. */
+  @media (max-width: 680px) {
+    .trip-ledger__item--price {
+      margin-left: 0;
+      width: 100%;
+    }
   }
 
   /* ---- the class rail ----

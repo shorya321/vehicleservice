@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 import { SearchResults } from './components/search-results'
+import { RouteBandMap } from './components/route-band-map'
 import { getSearchResults } from './actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 
@@ -84,6 +85,7 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
       <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
         <SearchResults
           results={results}
+          routeMap={<RouteBandMap origin={results.originPoint} destination={results.destinationPoint} />}
           searchParams={params}
         />
       </div>

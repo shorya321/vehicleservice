@@ -47,6 +47,13 @@ const BOOKING_STEPS = [
 
 interface SearchResultsProps {
   results: SearchResult | null
+  /**
+   * The route band's street map, rendered by the page. It is a server
+   * component (see route-band-map.tsx) and this file is a client component, so
+   * it arrives as a slot rather than an import: its geometry is built in
+   * nested loops at module load, which has no business running in the browser.
+   */
+  routeMap?: React.ReactNode
   searchParams: {
     from?: string
     to?: string
@@ -73,7 +80,7 @@ function ResultsBand({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function SearchResults({ results, searchParams }: SearchResultsProps) {
+export function SearchResults({ results, routeMap, searchParams }: SearchResultsProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const prefersReducedMotion = useReducedMotion()
   const vehicleTypes = useMemo(() => results?.vehicleTypes ?? [], [results?.vehicleTypes])
@@ -135,11 +142,10 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
           : `${results.zone.fromZone.name} → ${results.zone.toZone.name}`)
       : null
 
-    // A zone pair has no routes row, so it has no distance. The cell is left
-    // out rather than filled with a placeholder, and the panel is told how many
-    // cells it is laying out.
+    // A zone pair has no routes row, so it has no distance. The fact is left
+    // out rather than filled with a placeholder; the ledger closes the gap on
+    // its own, which is why it no longer needs a column count.
     const journey = results.type !== 'zone' && results.distance ? results.distance : null
-    const tripCols = journey ? 4 : 3
 
     return (
       <>
@@ -154,7 +160,7 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             nobody can see. */}
         <motion.section
           aria-label={routeHeading}
-          className="editorial-section editorial-section--ground editorial-section--compact"
+          className="route-band editorial-section editorial-section--ground editorial-section--compact"
           // This band is above the fold on load, so it animates on mount rather
           // than in view. See the note in vehicle-type-grid-card: `animate` must
           // always be supplied or reduced-motion users never see it at all.
@@ -166,7 +172,11 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
             ease: [0.16, 1, 0.3, 1],
           }}
         >
-          <div className="luxury-container">
+          {routeMap}
+
+          {/* The map layer is absolutely positioned, so it would paint over
+              static content no matter what order the DOM is in. */}
+          <div className="luxury-container relative z-10">
             {/* The only way back to a fresh search. It used to exist solely on
                 the query-param route, inside SearchSummary; the canonical route
                 had none at all. */}
@@ -194,25 +204,23 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
               )}
             </div>
 
-            {/* Date and Guests stay editable. Distance, where the route has one,
-                moves in here instead of sitting on its own line above. */}
-            <dl
-              className="trip-summary mt-12"
-              style={{ '--trip-cols': tripCols } as React.CSSProperties}
-            >
-              <div className="trip-summary__cell">
-                <dt className="trip-summary__label">Date</dt>
-                <dd className="trip-summary__value">
+            {/* Date and Guests stay editable. Distance, where the route has
+                one, sits between them and the fare rather than on its own line
+                above. */}
+            <dl className="trip-ledger mt-10">
+              <div className="trip-ledger__item">
+                <dt className="trip-ledger__label">Date</dt>
+                <dd className="trip-ledger__value">
                   <ResultsDatePicker searchParams={searchParams} />
                 </dd>
               </div>
 
-              <div className="trip-summary__cell">
-                <dt className="trip-summary__label">Guests</dt>
+              <div className="trip-ledger__item">
+                <dt className="trip-ledger__label">Guests</dt>
                 {/* The one editable value that is not already a button-looking
                     control. A dashed gold underline keeps the affordance and
                     lets it sit at the same weight as its neighbours. */}
-                <dd className="trip-summary__value">
+                <dd className="trip-ledger__value">
                   <ResultsGuestPicker
                     searchParams={searchParams}
                     className="inline-flex min-h-9 items-center gap-1.5 border-b border-dashed border-[rgba(var(--gold-rgb),0.45)] bg-transparent pb-0.5 text-[1.0625rem] text-[var(--text-primary)] transition-colors hover:border-[var(--gold-text)]"
@@ -221,20 +229,20 @@ export function SearchResults({ results, searchParams }: SearchResultsProps) {
               </div>
 
               {journey && (
-                <div className="trip-summary__cell">
-                  <dt className="trip-summary__label">Journey</dt>
-                  <dd className="trip-summary__value">
+                <div className="trip-ledger__item">
+                  <dt className="trip-ledger__label">Journey</dt>
+                  <dd className="trip-ledger__value">
                     <Clock className="h-3.5 w-3.5 flex-none text-[var(--gold-text)]" aria-hidden="true" />
                     <span className="numeric">{journey} km</span>
                   </dd>
                 </div>
               )}
 
-              <div className="trip-summary__cell">
-                <dt className="trip-summary__label">
+              <div className="trip-ledger__item trip-ledger__item--price">
+                <dt className="trip-ledger__label">
                   {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
                 </dt>
-                <dd className="trip-summary__value trip-summary__value--price numeric">
+                <dd className="trip-ledger__value numeric">
                   {formatResultPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
                 </dd>
               </div>
