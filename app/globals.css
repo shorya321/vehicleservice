@@ -5853,6 +5853,12 @@
     border-top: 1px solid var(--graphite);
   }
 
+  /* margin-top: auto collapses to zero on the tallest card, which put its body
+     flush on the rule. Match the 1rem the rule keeps below. */
+  .promise-card .editorial-list-body {
+    margin-bottom: 1rem;
+  }
+
   /* ------------------------------------------------------------------
      Travellers on record: the home review section
      (components/home/testimonials-record.tsx).
@@ -7096,7 +7102,7 @@
 
   .trip-ledger__item {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.625rem;
     min-width: 0;
   }

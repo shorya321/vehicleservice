@@ -12,7 +12,7 @@ const benefits: Benefit[] = [
   {
     index: "01",
     title: "Booked in under two minutes.",
-    body: "Search any route, pick a vehicle, create a free account at checkout. One-time setup, then every return booking is even faster. No partner ads or upsell screens between you and the confirmation.",
+    body: "Search a route, pick a vehicle, sign up free at checkout. Every return booking after that is faster, with no ads or upsells before confirmation.",
     meta: "Search → Select → Confirm",
   },
   {

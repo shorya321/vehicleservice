@@ -29,7 +29,7 @@ const BOOKING_STEPS = [
   {
     index: '01',
     title: 'Choose your vehicle',
-    body: 'Every class that runs this transfer, with its passenger and luggage capacity. The price shown is the full fare.',
+    body: 'Every class on this route, with seats and bags. The price shown is the full fare.',
     foot: 'On this page',
   },
   {
@@ -41,7 +41,7 @@ const BOOKING_STEPS = [
   {
     index: '03',
     title: 'Meet your chauffeur',
-    body: 'Your chauffeur is at the pickup point. Every transfer includes 45 minutes of free waiting, and an hour on tracked airport arrivals.',
+    body: '45 minutes of free waiting at pickup, or an hour on tracked airport arrivals.',
     foot: 'Name board at the door',
   },
 ] as const
