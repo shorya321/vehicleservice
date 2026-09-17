@@ -293,7 +293,8 @@ export function AdditionalServicesSection({
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Additional Services</h2>
+        <h2 className="checkout-section-title">Extras</h2>
+        <span className="checkout-section-note">Charged once, with the fare</span>
       </div>
 
       <div className="checkout-section-content space-y-6">
@@ -426,9 +427,6 @@ export function AdditionalServicesSection({
                       aria-pressed={isSelected}
                       aria-label={`${addon.name}${isFree ? ' (free)' : `, ${formatAddonPrice(addon.price)}`}`}
                     >
-                      <div className="checkout-service-checkbox">
-                        {isSelected && <Check className="h-3.5 w-3.5 text-[var(--onyx)]" aria-hidden="true" />}
-                      </div>
                       <div className="checkout-service-icon">
                         <AddonIcon iconName={addon.icon} />
                       </div>
@@ -444,6 +442,13 @@ export function AdditionalServicesSection({
                             +{formatAddonPrice(addon.price)}
                           </span>
                         )}
+                      </div>
+                      {/* The control sits where the stepper sits on a per-unit card. It used to
+                          lead the row, which gave the two card types two different left edges and
+                          pushed the icon, the name and the price of every fixed addon out of line
+                          with the ones above it. */}
+                      <div className="checkout-service-checkbox">
+                        {isSelected && <Check className="h-3.5 w-3.5 text-[var(--onyx)]" aria-hidden="true" />}
                       </div>
                       {/* Moved out of `.checkout-service-content` so `flex: 1 0 100%` can drop it
                           to its own row. The click guard below still matches by closest(). */}

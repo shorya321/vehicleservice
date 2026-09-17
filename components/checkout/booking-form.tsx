@@ -101,6 +101,9 @@ interface BookingFormProps {
   onGoNext: () => void
   onGoBack: () => void
   onPassengersChange?: (passengers: number) => void
+  /** The adults/children/infants behind that count. The summary card states the split, and the
+      count alone cannot be un-summed: swapping an adult for an infant leaves it unchanged. */
+  onGuestsChange?: (guests: GuestBreakdown) => void
   onDateTimeChange?: (date: string, time: string) => void
   onAddonsChange?: (addons: OrderSummaryAddon[]) => void
   onFormReady?: (formMethods: {
@@ -131,6 +134,7 @@ export function BookingForm({
   onGoNext,
   onGoBack,
   onPassengersChange,
+  onGuestsChange,
   onDateTimeChange,
   onAddonsChange,
   onFormReady
@@ -176,6 +180,12 @@ export function BookingForm({
       onPassengersChange(passengers)
     }
   }, [passengers, onPassengersChange])
+
+  useEffect(() => {
+    if (onGuestsChange) {
+      onGuestsChange(guests)
+    }
+  }, [guests, onGuestsChange])
 
   useEffect(() => {
     if (onAddonsChange) {

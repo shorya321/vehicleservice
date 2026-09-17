@@ -3,7 +3,8 @@
 import { motion, useReducedMotion } from 'motion/react'
 
 interface CheckoutHeadingProps {
-  eyebrow?: string
+  /** `null` drops the eyebrow row entirely, for callers whose step rail already names the step. */
+  eyebrow?: string | null
   title?: string
   subtitle?: string
 }
@@ -29,10 +30,10 @@ export function CheckoutHeading({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduceMotion ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <p className="editorial-eyebrow">{eyebrow}</p>
+      {eyebrow ? <p className="editorial-eyebrow">{eyebrow}</p> : null}
       {/* The shared ramp, not a bespoke clamp. Every h1 and h2 below a hero is one
           size across home, search results and now checkout. */}
-      <h1 className="editorial-section-title mt-5">{title}</h1>
+      <h1 className={eyebrow ? 'editorial-section-title mt-5' : 'editorial-section-title'}>{title}</h1>
       <p className="editorial-body mt-6">{subtitle}</p>
     </motion.div>
   )

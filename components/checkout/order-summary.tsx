@@ -6,11 +6,31 @@ import { Tag, ChevronDown, ChevronUp, ArrowRight, Check, Lock } from 'lucide-rea
 import { BookingLedger } from './booking-ledger'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
+import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
+
+/**
+ * Pickup wall-clock plus the route's estimate, as a wall-clock string.
+ *
+ * Deliberately not a Date: both ends are already in the operating timezone (the picker writes
+ * one, the route stores minutes), so this is arithmetic on a displayed time and converting it
+ * through a Date would only invite a zone shift. Returns null rather than guessing when either
+ * input is missing or malformed.
+ */
+function arrivalClock(pickupTime?: string, durationMinutes?: number | null): string | null {
+  if (!pickupTime || !durationMinutes) return null
+  const [h, m] = pickupTime.split(':').map(Number)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null
+  const total = h * 60 + m + durationMinutes
+  const hh = Math.floor(total / 60) % 24
+  return `${String(hh).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
 
 interface OrderSummaryProps {
   route: RouteDetails
   vehicleType: VehicleTypeDetails
   passengers: number
+  /** The adults/children/infants behind `passengers`, where the form has told us. */
+  guests?: GuestBreakdown
   pickupDate?: string
   pickupTime?: string
   currentStep?: number
@@ -30,6 +50,7 @@ export const OrderSummary = memo(function OrderSummary({
   route,
   vehicleType,
   passengers,
+  guests,
   pickupDate,
   pickupTime,
   currentStep,
@@ -57,6 +78,8 @@ export const OrderSummary = memo(function OrderSummary({
     ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     : ''
 
+  const arrival = arrivalClock(pickupTime, route.estimated_duration_minutes)
+
   const applyPromoCode = () => {
     if (process.env.NODE_ENV === 'development' && promoCode.toUpperCase() === 'SAVE10') {
       setPromoDiscount(basePrice * 0.1)
@@ -81,6 +104,20 @@ export const OrderSummary = memo(function OrderSummary({
       viewport={{ once: true }}
       transition={{ duration: reduceMotion ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
+      {/* The stub's cap. The eyebrow used to sit outside the card, level with the form's first
+          section label; inside it, it names the object rather than the column, and the route's
+          two hard numbers get the slot opposite. */}
+      <div className="checkout-stub-cap">
+        <h2 id="order-summary-heading" className="checkout-section-title">Your transfer</h2>
+        {(route.distance_km || route.estimated_duration_minutes) ? (
+          <span className="checkout-stub-ref">
+            {route.distance_km ? `${Math.round(route.distance_km)} km` : ''}
+            {route.distance_km && route.estimated_duration_minutes ? ' · ' : ''}
+            {route.estimated_duration_minutes ? `${route.estimated_duration_minutes} min` : ''}
+          </span>
+        ) : null}
+      </div>
+
       {/* Vehicle header, itemised ledger and total. Shared verbatim with the payment step so
           the same card follows the customer through to the card form. */}
       <BookingLedger
@@ -91,8 +128,12 @@ export const OrderSummary = memo(function OrderSummary({
         dateLabel={formattedDate}
         timeLabel={pickupTime}
         passengers={passengers}
+        guestBreakdown={guests ?? null}
         luggage={vehicleType.luggage_capacity}
-        distanceKm={route.distance_km}
+        seats={vehicleType.passenger_capacity}
+        pickupNote={pickupTime ? `Pickup ${pickupTime}` : null}
+        arrivalNote={arrival ? `Arrive about ${arrival}` : null}
+        alwaysShowBase
         basePrice={basePrice}
         addons={selectedAddons}
         promoDiscount={promoDiscount}

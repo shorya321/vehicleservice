@@ -25,7 +25,8 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Passenger Information</h2>
+        <h2 className="checkout-section-title">Lead passenger</h2>
+        <span className="checkout-section-note">The chauffeur calls this number on arrival</span>
       </div>
 
       <div className="checkout-section-content space-y-6">
@@ -143,7 +144,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
 
         <div>
           <Label htmlFor="specialRequests" className={FIELD_LABEL}>
-            Special requests
+            Notes for the chauffeur
             <span className="checkout-field-optional">· Optional</span>
           </Label>
           <Textarea

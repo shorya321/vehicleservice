@@ -3405,6 +3405,23 @@
   background-color: var(--gold);
 }
 
+/* The caption opposite a section label. Tier 3, sentence case: it states a fact about the
+   section ("Editable until 24 hours before pickup"), so it must not compete with the uppercase
+   label it sits beside. */
+.checkout-section-note {
+  flex: none;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .checkout-section-note {
+    display: none;
+  }
+}
+
 /* ── Field labels ──
    One Label role across both form sections. Sentence-case body labels used to argue
    with the uppercase section labels sitting directly above them. */
@@ -3462,6 +3479,169 @@
   border-radius: 8px;
   box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
   overflow: hidden;
+}
+
+/* ── The stub ──
+
+   The card is the object being bought, so it is drawn as a transfer stub: the vehicle above
+   the tear, the trip and the money below it. The plate, the hairline and the lit edge are the
+   ones above, unchanged. The perforation is the only new mark on the page, and it belongs to
+   this product rather than to a card vocabulary. */
+.checkout-stub-cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.5rem 0;
+}
+
+.checkout-stub-ref {
+  flex: none;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* The tear. Notches are filled with the page ground so the card reads as two halves of one
+   object rather than as two stacked cards. */
+.checkout-stub-perf {
+  position: relative;
+  height: 1.125rem;
+  margin-block: 0.25rem;
+}
+
+.checkout-stub-perf::before {
+  content: '';
+  position: absolute;
+  inset-inline: 1.25rem;
+  top: 50%;
+  border-top: 1px dashed var(--stub-line);
+}
+
+.checkout-stub-perf span {
+  position: absolute;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--stub-line);
+  border-radius: 50%;
+  background-color: var(--black-void);
+  transform: translateY(-50%);
+}
+
+.checkout-stub-perf span:first-child { left: -0.5rem; }
+.checkout-stub-perf span:last-child { right: -0.5rem; }
+
+/* The route line, on the same flex grammar as .route-heading on the search results: the two
+   names take what they need and the connector fills the rest. */
+.checkout-stub-route {
+  display: flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.checkout-stub-route__place {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.checkout-stub-route__place:last-child {
+  text-align: right;
+}
+
+.checkout-stub-route__name {
+  font-weight: 500;
+}
+
+.checkout-stub-route__note {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--text-muted);
+}
+
+/* On a phone the two names cannot share a line with a road between them: "Atlantis - The Palm"
+   alone wraps twice at 390px. The row becomes the itinerary it already is, origin above
+   destination, with the connector running the full width between them. Nothing is dropped and
+   nothing is truncated; only the axis changes. */
+@media (max-width: 480px) {
+  .checkout-stub-route {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .checkout-stub-route__place:last-child {
+    text-align: left;
+  }
+
+  .checkout-stub-route .route-connector {
+    width: 100%;
+    margin-inline: 0;
+    margin-block: 0.6rem;
+  }
+}
+
+/* The vehicle's own facts, above the tear: what the product is, as opposed to what the trip is. */
+.checkout-stub-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  margin-top: 0.6rem;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--text-muted);
+}
+
+/* The connector's endpoints are punched out of the ground they sit on. On the search heading
+   that is the page; here it is the raised plate, so the three colours that read as "hole"
+   have to follow the card. */
+.checkout-stub-route .route-connector__start {
+  background-color: var(--stub-mid);
+}
+
+.checkout-stub-route .route-connector__end {
+  box-shadow:
+    0 0 0 0.05em var(--stub-mid),
+    0 0 0 0.13em rgba(var(--gold-rgb), 0.22);
+}
+
+.checkout-stub-route .route-connector__car-body {
+  stroke: var(--stub-mid);
+}
+
+.checkout-stub-route .route-connector__car-glass {
+  fill: var(--stub-mid);
+}
+
+.checkout-stub-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  margin-top: 0.9rem;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--text-muted);
+}
+
+.checkout-stub-facts strong {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* The form column's own action row, so the step can be finished without looking right.
+   No `display` here on purpose: this class is unlayered and would beat Tailwind's `hidden`
+   utility, which is what keeps the row off mobile (the sticky bar carries the action there). */
+.checkout-form-actions {
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 2rem;
 }
 
 /* ── Vehicle ── */
@@ -3760,11 +3940,16 @@
   color: var(--text-muted);
 }
 
+/* The chevron is drawn here rather than left to the platform. A native select paints its own
+   arrow hard against the right border, inside whatever padding the box has, so at 0.625rem it sat
+   on the edge with no air, and its size and colour changed with the browser. This is the same
+   chevron the rest of the checkout's triggers use, inset from the edge, in the theme's own ink.
+   `padding-right` reserves its lane so a long option label can never run underneath it. */
 .checkout-service-age-select {
   /* Matches .checkout-quantity-btn's touch target so the row lines up on mobile. */
   min-height: 44px;
   width: 100%;
-  padding: 0 0.625rem;
+  padding: 0 2.25rem 0 0.625rem;
   border: 1px solid var(--graphite);
   border-radius: 4px;
   background-color: var(--charcoal);
@@ -3773,6 +3958,24 @@
   font-size: 0.8125rem;
   cursor: pointer;
   transition: border-color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'><path d='M1 1.5 6 6.5 11 1.5' stroke='%23625e5b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 11px 8px;
+}
+
+/* Same chevron, the dark theme's ink. Both the class the toggle sets and the OS preference, or
+   the arrow keeps the light stroke on a dark field. */
+.dark .checkout-service-age-select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'><path d='M1 1.5 6 6.5 11 1.5' stroke='%23a8a4a0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .checkout-service-age-select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'><path d='M1 1.5 6 6.5 11 1.5' stroke='%23a8a4a0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  }
 }
 
 .checkout-service-age-select:hover {
@@ -3823,6 +4026,20 @@
   justify-content: center;
   flex-shrink: 0;
   transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+/* One control column for both card types. The stepper is 122px wide; a bare 24px checkbox beside
+   it puts the two price columns at two different right edges, which is the thing the eye reads as
+   "these are different kinds of row". The checkbox keeps its own 24px hit target and is centred in
+   the stepper's footprint instead. Dropped on a phone, where the row has no width to spend. */
+.checkout-service-card > .checkout-service-checkbox {
+  margin-inline: 49px;
+}
+
+@media (max-width: 640px) {
+  .checkout-service-card > .checkout-service-checkbox {
+    margin-inline: 0;
+  }
 }
 
 .checkout-service-card.selected .checkout-service-checkbox {
@@ -3954,19 +4171,11 @@
   flex-shrink: 0;
 }
 
-.checkout-payment-mark {
-  height: 22px;
-  padding: 0 0.4rem;
-  display: flex;
-  align-items: center;
-  background: var(--charcoal);
+/* The scheme marks carry their own white plate (components/checkout/card-brand-marks.tsx), so the
+   row only has to give them a hairline and keep them from being stretched by the flex row. */
+.checkout-payment-marks > svg {
+  flex: none;
   border: 1px solid var(--graphite);
-  border-radius: 3px;
-  font-size: 0.5625rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-  white-space: nowrap;
 }
 
 .checkout-payment-icon {
@@ -4011,27 +4220,52 @@
 
 /* ── Responsive ── */
 
-/* A per-unit row carries a 132px stepper as well as a price, which leaves nothing for the name
-   on a phone. Below this width the name takes its own line and the money row sits under it.
-   Fixed-price rows have no stepper and stay on one line. Scoped to `--per-unit` because the
-   card's DOM order (checkbox, icon, content, price, control) only wraps cleanly here. */
+/* A per-unit row carries a 122px stepper as well as a price, which leaves nothing for the name on
+   a phone, so the card becomes two rows: what it is on top, what it costs and how to choose it
+   underneath. This used to be scoped to `--per-unit`, with the icon dropped to buy width, which
+   left a phone showing two different card anatomies in one list: iconless two-row rows for seats
+   and luggage, icon'd single-row rows for WiFi and pets. A grid states both shapes once, so every
+   card in the list keeps the same skeleton and the same icon at every width. */
 @media (max-width: 560px) {
-  .checkout-service-card--per-unit .checkout-service-icon {
-    display: none;
+  .checkout-service-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon content content"
+      "price price control";
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.75rem;
   }
 
-  .checkout-service-card--per-unit .checkout-service-content {
-    flex: 1 1 100%;
+  .checkout-service-icon {
+    grid-area: icon;
   }
 
-  .checkout-service-card--per-unit .checkout-service-price-cell {
+  .checkout-service-content {
+    grid-area: content;
+  }
+
+  .checkout-service-price-cell {
+    grid-area: price;
     flex-direction: row;
     align-items: baseline;
     gap: 0.4rem;
   }
 
-  .checkout-service-card--per-unit .checkout-quantity-controls {
-    margin-left: auto;
+  .checkout-quantity-controls {
+    grid-area: control;
+    justify-self: end;
+  }
+
+  .checkout-service-card > .checkout-service-checkbox {
+    grid-area: control;
+    justify-self: end;
+  }
+
+  /* The child-age fields are a row of their own under both. */
+  .checkout-service-ages {
+    grid-column: 1 / -1;
   }
 }
 

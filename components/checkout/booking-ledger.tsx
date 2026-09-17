@@ -1,9 +1,10 @@
 'use client'
 
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowRight, Info, X } from 'lucide-react'
+import { Info, X } from 'lucide-react'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
+import { RouteConnector } from '@/app/search/results/components/route-connector'
 import {
   CARD_LABEL,
   CARD_LABEL_STRONG,
@@ -28,15 +29,37 @@ interface BookingLedgerProps {
   timeLabel?: string
   passengers: number
   luggage?: number | null
+  /** Seats the vehicle has, as opposed to `passengers`, the number travelling. Stated on the
+      stub's vehicle band, above the tear, because it describes the product rather than the trip. */
+  seats?: number | null
+  /** Adults/children/infants, where the caller knows the split. The trip's guest line reads
+      better as the real breakdown than as a single total, and a 6-pax booking with 2 infants is
+      a materially different trip from six adults. Falls back to `{passengers} pax`. */
+  guestBreakdown?: { adults: number; children: number; infants: number } | null
+  /** Pickup and arrival, pre-formatted by the caller in the operating timezone. */
+  pickupNote?: string | null
+  arrivalNote?: string | null
+  /** Checkout shows `Base fare` from the start, so the ledger is a ledger before any extra is
+      added. The payment page keeps the original behaviour: no breakdown until there is one. */
+  alwaysShowBase?: boolean
   /** Kilometres, where the route has a figure. The checkout header used to carry this
       on its own; the card is now its only home, so it must not silently vanish. */
   distanceKm?: number | null
+  /** Minutes, where the route has an estimate. Same guard as `distanceKm`: a zone pair has
+      none, and "0 min" is worse than silence. */
+  durationMinutes?: number | null
   basePrice: number
   addons?: LedgerAddon[]
   promoDiscount?: number
   total: number
   /** Omitted on the payment step, where the booking is already created and priced. */
   onRemoveAddon?: (addonId: string) => void
+  /**
+   * `compact` tightens every band for the mobile drawer, which is 390px wide and sits inside a
+   * fixed bar. Same bands, same order, same content: only the padding changes, so the phone and
+   * the desktop card cannot drift apart in what they state.
+   */
+  density?: 'comfortable' | 'compact'
 }
 
 /**
@@ -134,56 +157,100 @@ export function BookingLedger({
   timeLabel,
   passengers,
   luggage,
+  seats,
+  guestBreakdown,
+  pickupNote,
+  arrivalNote,
+  alwaysShowBase = false,
   distanceKm,
+  durationMinutes,
   basePrice,
   addons = [],
   promoDiscount = 0,
   total,
   onRemoveAddon,
+  density = 'comfortable',
 }: BookingLedgerProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = useReducedMotion()
+
+  const band = density === 'compact' ? 'px-4 py-3.5' : BAND
 
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, exchangeRates)
   const isConverted = currentCurrency !== 'AED'
 
   // A single row repeating the number directly below it reads as a broken breakdown, not a
   // simple one, so the block only appears once there is something to break down.
-  const hasBreakdown = addons.length > 0 || promoDiscount > 0
+  const hasBreakdown = alwaysShowBase || addons.length > 0 || promoDiscount > 0
 
   return (
     <>
-      <div className={BAND}>
+      {/* Above the tear: the product. */}
+      <div className={`${band} pb-4`}>
         {category && <div className={CARD_LABEL}>{category}</div>}
         <h2 className="mt-1 text-[1.375rem] font-semibold text-[var(--text-primary)]">
           {vehicleName}
         </h2>
 
-        <div className="mt-4 flex items-center gap-1.5 text-[0.875rem] text-[var(--text-secondary)]">
-          <span>{originName}</span>
-          <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
-          <span>{destinationName}</span>
-        </div>
-
-        {(dateLabel || timeLabel) && (
-          <div className="mt-1.5 text-[0.875rem] tabular-nums text-[var(--text-muted)]">
-            {dateLabel}
-            {dateLabel && timeLabel ? ' · ' : ''}
-            {timeLabel}
+        {(seats || luggage) && (
+          <div className="checkout-stub-specs">
+            {seats ? <span>{seats} seats</span> : null}
+            {/* A booking with no luggage recorded should say nothing, not "0 bags". */}
+            {luggage ? <span>{luggage} bags</span> : null}
           </div>
         )}
+      </div>
 
-        <div className="mt-1 text-[0.8125rem] text-[var(--text-muted)]">
-          {passengers} pax
-          {/* A booking with no luggage recorded should say nothing, not "0 bags". */}
-          {luggage ? ` · ${luggage} bags` : ''}
-          {/* Same guard: a zone pair has no distance, and "0 km" is worse than silence. */}
-          {distanceKm ? ` · ${distanceKm} km` : ''}
+      {/* The tear. Decorative: it marks where the vehicle stops and the journey starts, which
+          is the one division the customer already has in their head. */}
+      <div className="checkout-stub-perf" aria-hidden="true">
+        <span />
+        <span />
+      </div>
+
+      {/* Below the tear: the journey. The connector is the search page's, drawn once more so
+          the trip is the same object it was on the results. */}
+      <div className={`${band} pt-2`}>
+        <div className="checkout-stub-route">
+          <span className="checkout-stub-route__place">
+            <span className="checkout-stub-route__name">{originName}</span>
+            {pickupNote ? <span className="checkout-stub-route__note">{pickupNote}</span> : null}
+          </span>
+          <RouteConnector />
+          <span className="checkout-stub-route__place">
+            <span className="checkout-stub-route__name">{destinationName}</span>
+            {arrivalNote ? <span className="checkout-stub-route__note">{arrivalNote}</span> : null}
+          </span>
+        </div>
+
+        <div className="checkout-stub-facts">
+          {(dateLabel || timeLabel) && (
+            <span>
+              <strong>
+                {dateLabel}
+                {dateLabel && timeLabel ? ' · ' : ''}
+                {timeLabel}
+              </strong>
+            </span>
+          )}
+          {guestBreakdown ? (
+            <>
+              <span>{guestBreakdown.adults} adults</span>
+              {guestBreakdown.children ? <span>{guestBreakdown.children} children</span> : null}
+              {guestBreakdown.infants ? <span>{guestBreakdown.infants} infants</span> : null}
+            </>
+          ) : (
+            <span>{passengers} pax</span>
+          )}
+          {/* Distance and duration ride in the stub's cap on checkout. Where a caller has no cap
+              to put them in, they belong here. */}
+          {distanceKm ? <span>{distanceKm} km</span> : null}
+          {durationMinutes ? <span>{durationMinutes} min</span> : null}
         </div>
       </div>
 
       {hasBreakdown && (
-        <div className={`${BAND_DIVIDER} ${BAND} text-[0.875rem]`}>
+        <div className={`${BAND_DIVIDER} ${band} text-[0.875rem]`}>
           <LedgerRow label="Base fare" value={formatUserPrice(basePrice)} />
 
           {/* `initial={false}` so rows already present when the card mounts render at rest;
@@ -226,7 +293,7 @@ export function BookingLedger({
         </div>
       )}
 
-      <div className={`border-t border-[rgba(var(--gold-rgb),0.15)] bg-[rgba(var(--gold-rgb),0.03)] ${BAND}`}>
+      <div className={`border-t border-[rgba(var(--gold-rgb),0.15)] bg-[rgba(var(--gold-rgb),0.03)] ${band}`}>
         <div className="flex items-baseline justify-between gap-3">
           <span className={CARD_LABEL_STRONG}>Total</span>
           <motion.span

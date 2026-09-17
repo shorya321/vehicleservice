@@ -2,13 +2,11 @@
 
 import { UseFormReturn } from 'react-hook-form'
 import { CreditCard } from 'lucide-react'
+import { CARD_BRAND_MARKS } from '../card-brand-marks'
 
 interface PaymentMethodSectionProps {
   form: UseFormReturn<any>
 }
-
-/** The marks the gateway accepts. Stated, not selectable. */
-const ACCEPTED = ['Visa', 'Mastercard', 'Amex'] as const
 
 /**
  * `form` stays on the contract and stays unused: `paymentMethod` is seeded to 'card' in
@@ -41,10 +39,8 @@ export function PaymentMethodSection({ form: _form }: PaymentMethodSectionProps)
             </p>
           </div>
           <div className="checkout-payment-marks" aria-label="Accepted cards">
-            {ACCEPTED.map((brand) => (
-              <span key={brand} className="checkout-payment-mark">
-                {brand}
-              </span>
+            {CARD_BRAND_MARKS.map(({ key, Mark }) => (
+              <Mark key={key} />
             ))}
           </div>
         </div>

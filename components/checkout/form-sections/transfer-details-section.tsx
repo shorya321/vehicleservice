@@ -64,7 +64,8 @@ export function TransferDetailsSection({
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Transfer Details</h2>
+        <h2 className="checkout-section-title">Transfer details</h2>
+        <span className="checkout-section-note">Editable until 24 hours before pickup</span>
       </div>
 
       <div className="checkout-section-content space-y-6">
@@ -141,11 +142,26 @@ export function TransferDetailsSection({
           </div>
         </div>
 
-        {/* Flight number and guests share the two-column grid. Guests previously sat at
+        {/* Guests and flight number share the two-column grid. Guests previously sat at
             40% width with its capacity note floating beside it, which broke the rhythm
             twice in one section. The breakdown is the source of truth; the total is
             derived, so the two cannot contradict. Capped at this vehicle's capacity. */}
         <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label className={FIELD_LABEL}>
+              Guests
+            </Label>
+            <GuestSelector
+              value={guests}
+              onChange={setGuests}
+              maxSeated={vehicleType.passenger_capacity}
+              className="flex h-[52px] w-full items-center gap-2 rounded-md border border-[var(--graphite)] bg-[var(--black-warm)] px-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[rgba(var(--gold-rgb),0.15)]"
+            />
+            <p className="text-xs text-[var(--text-muted)] mt-1.5">
+              This vehicle seats up to {vehicleType.passenger_capacity}.
+            </p>
+          </div>
+
           <div>
             <Label htmlFor="flightNumber" className={FIELD_LABEL}>
               Flight number
@@ -160,21 +176,6 @@ export function TransferDetailsSection({
             />
             <p id="flightNumber-hint" className="text-xs text-[var(--text-muted)] mt-1.5">
               We track your flight and shift the pickup time for delays.
-            </p>
-          </div>
-
-          <div>
-            <Label className={FIELD_LABEL}>
-              Guests
-            </Label>
-            <GuestSelector
-              value={guests}
-              onChange={setGuests}
-              maxSeated={vehicleType.passenger_capacity}
-              className="flex h-[52px] w-full items-center gap-2 rounded-md border border-[var(--graphite)] bg-[var(--black-warm)] px-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[rgba(var(--gold-rgb),0.15)]"
-            />
-            <p className="text-xs text-[var(--text-muted)] mt-1.5">
-              This vehicle seats up to {vehicleType.passenger_capacity}.
             </p>
           </div>
         </div>

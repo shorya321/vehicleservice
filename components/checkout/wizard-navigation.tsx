@@ -11,19 +11,22 @@ interface WizardNavigationProps {
 }
 
 /**
- * Desktop-only, and Back-only.
+ * The row that closes the form column: Back, on the extras step only.
  *
- * This row used to carry a full-width gold "Continue to extras" while OrderSummary rendered an
- * identical one in the sticky sidebar, roughly 600px away. Two primaries with the same label
- * meant neither read as *the* button, and it put two gold objects in one viewport in a design
- * whose accent depends on scarcity.
+ * The details step renders nothing here. It had a "Nothing is charged yet" line, which the
+ * summary card beside it already says in its own lock line, and a reassurance repeated on one
+ * screen reads as two worries rather than one fact.
  *
- * The sidebar keeps the action: it is `lg:sticky lg:top-28`, so it is never off screen, and it
- * sits with the price it commits to. On the first step there is nothing to go back to, so this
- * renders nothing at all and the form ends on its last field.
+ * The row carries no primary. There is exactly one "Continue to extras" on the page and it lives in
+ * the summary card: the card is `lg:sticky lg:top-28`, so unlike a button at the end of a long
+ * form it is on screen at every scroll position, and it sits with the price it commits to. Both
+ * steps then take their primary from the same place, which is also where the terms checkbox the
+ * payment step depends on lives. A second gold button 600px away made neither one read as *the*
+ * button, in a design whose accent works by being scarce.
  *
- * Below `lg` the MobileStickyBar carries the primary action and this component is hidden, so
- * mobile never had the duplicate.
+ * Below `lg` the MobileStickyBar is that one place. This row is hidden there on the first step
+ * and shows Back alone on the second, which mobile does need: the bar has no back, and the
+ * browser's own back button leaves checkout entirely.
  */
 export function WizardNavigation({
   currentStep,
@@ -34,7 +37,7 @@ export function WizardNavigation({
   if (isFirstStep) return null
 
   return (
-    <div className="hidden lg:flex justify-start pt-8">
+    <div className="checkout-form-actions flex">
       <button
         type="button"
         onClick={onBack}

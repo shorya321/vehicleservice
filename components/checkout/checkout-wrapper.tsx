@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { BookingForm } from './booking-form'
 import { OrderSummary } from './order-summary'
 import { MobileStickyBar } from './mobile-sticky-bar'
@@ -44,6 +44,10 @@ interface CheckoutWrapperProps {
 
 const TOTAL_STEPS = 2
 
+/** The fixed site header the scroll target has to clear. `h-20` on desktop, a little less on a
+    phone; one value covers both, since overshooting shows a sliver of the band above. */
+const HEADER_CLEARANCE = 96
+
 export function CheckoutWrapper({
   route,
   vehicleType,
@@ -59,6 +63,7 @@ export function CheckoutWrapper({
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
   const [currentPassengers, setCurrentPassengers] = useState(initialPassengers)
+  const [currentGuests, setCurrentGuests] = useState<GuestBreakdown>(initialGuests)
   const [pickupDate, setPickupDate] = useState(initialDate)
   const [pickupTime, setPickupTime] = useState(initialTime)
   const [selectedAddons, setSelectedAddons] = useState<OrderSummaryAddon[]>([])
@@ -102,6 +107,43 @@ export function CheckoutWrapper({
     setCurrentPassengers(count)
   }, [])
 
+  const handleGuestsChange = useCallback((next: GuestBreakdown) => {
+    setCurrentGuests(next)
+  }, [])
+
+  /**
+   * Take the new step's header with you.
+   *
+   * The wizard swaps the form in place, and the page does not move: pressing "Continue to
+   * extras" from the bottom of the passenger fields left the viewport where it was, which is
+   * somewhere in the middle of the extras list. The new step's title, its progress rail and its
+   * back control were all above the fold, so the step looked like it had started halfway
+   * through. Going back had the same problem in reverse.
+   *
+   * Skipped on the first render: an arrival must not be yanked anywhere, and a direct link to
+   * checkout can legitimately restore a scroll position.
+   */
+  const stepHeaderRef = useRef<HTMLDivElement>(null)
+  const hasStepped = useRef(false)
+
+  useEffect(() => {
+    if (!hasStepped.current) {
+      hasStepped.current = true
+      return
+    }
+
+    const node = stepHeaderRef.current
+    if (!node) return
+
+    // Focus first, without scrolling, so a screen reader announces the step it just moved to and
+    // the keyboard lands at the top of the new step rather than wherever the pressed button was.
+    node.focus({ preventScroll: true })
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const top = node.getBoundingClientRect().top + window.scrollY - HEADER_CLEARANCE
+    window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? 'instant' : 'smooth' })
+  }, [currentStep])
+
   const handleAddonsChange = useCallback((addons: OrderSummaryAddon[]) => {
     setSelectedAddons(addons)
   }, [])
@@ -118,13 +160,21 @@ export function CheckoutWrapper({
     // and the form read as one surface. Band 2 used to be `--raised` with a graphite
     // hairline, which cut the page in two under the heading.
     <>
-      <section className="editorial-section editorial-section--ground editorial-section--compact">
+      {/* The two bands are one surface, so they share one seam rather than each spending a
+          full editorial gap on it: 192px of empty ground used to sit between the subtitle and
+          the first field. Utilities, which outrank the layered .editorial-section padding. */}
+      <section className="editorial-section editorial-section--ground editorial-section--compact pb-8">
         <div className="luxury-container">
-          <CheckoutStepHeader currentStep={currentStep} changeHref={changeHref} />
+          {/* `tabIndex={-1}` makes this focusable programmatically only: it is the anchor the
+              step change scrolls and moves focus to. `outline-none` because a mouse-driven step
+              change must not paint a ring on a non-interactive block. */}
+          <div ref={stepHeaderRef} tabIndex={-1} className="outline-none">
+            <CheckoutStepHeader currentStep={currentStep} changeHref={changeHref} onBack={goBack} />
+          </div>
         </div>
       </section>
 
-      <section className="editorial-section editorial-section--ground grow">
+      <section className="editorial-section editorial-section--ground grow pt-10">
         <div className="luxury-container">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
             {/* Main Booking Form */}
@@ -145,6 +195,7 @@ export function CheckoutWrapper({
                 onGoNext={goNext}
                 onGoBack={goBack}
                 onPassengersChange={handlePassengersChange}
+                onGuestsChange={handleGuestsChange}
                 onDateTimeChange={handleDateTimeChange}
                 onAddonsChange={handleAddonsChange}
                 onFormReady={handleFormReady}
@@ -154,17 +205,13 @@ export function CheckoutWrapper({
             {/* Order Summary Sidebar - Desktop only */}
             <div className="hidden lg:block w-[380px] xl:w-[420px] flex-shrink-0">
               <div className="lg:sticky lg:top-28">
-                {/* The same eyebrow markup the four form sections use, so both columns
-                    open on one 11px label row and the summary plate lands level with the
-                    vehicle plate beside it. Inside the sticky wrapper, so it travels with
-                    the card. */}
-                <div className="checkout-section-header">
-                  <h2 id="order-summary-heading" className="checkout-section-title">Order summary</h2>
-                </div>
+                {/* The eyebrow lives inside the card now, as the stub's cap, so the plate
+                    starts at the top of the sticky wrapper. */}
                 <OrderSummary
                   route={route}
                   vehicleType={vehicleType}
                   passengers={currentPassengers}
+                  guests={currentGuests}
                   pickupDate={pickupDate}
                   pickupTime={pickupTime}
                   currentStep={currentStep}
@@ -196,9 +243,13 @@ export function CheckoutWrapper({
     totalPrice={totalPrice}
     basePrice={basePrice}
     passengers={currentPassengers}
+    guests={currentGuests}
     pickupDate={pickupDate}
     pickupTime={pickupTime}
     selectedAddons={selectedAddons}
+    // Same condition the desktop card uses: AdditionalServicesSection owns the selection and
+    // is unmounted on step 0, so there would be nothing to remove from there anyway.
+    onRemoveAddon={currentStep === 1 ? formMethods.removeAddon : undefined}
     onContinue={formMethods.handleContinue}
     onSubmit={formMethods.submit}
     isSubmitting={formMethods.isSubmitting}
