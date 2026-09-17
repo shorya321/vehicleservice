@@ -109,9 +109,15 @@ function getStripeAppearance(isDark: boolean) {
       '.Tab:hover': {
         boxShadow: 'none',
       },
+      // The Link "save my details" group. Transparent, it floated as three loose fields and an
+      // "Optional" chip with nothing holding them together, directly under a bordered card row.
+      // A hairline and the field surface make it one block, the way every grouped control on the
+      // checkout steps reads.
       '.Block': {
         boxShadow: 'none',
-        backgroundColor: 'transparent',
+        backgroundColor: surface,
+        border: `1px solid rgba(198, 170, 136, ${borderAlpha})`,
+        borderRadius: '4px',
       },
     },
   }

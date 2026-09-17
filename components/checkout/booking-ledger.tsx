@@ -192,13 +192,15 @@ export function BookingLedger({
           {vehicleName}
         </h2>
 
-        {(seats || luggage) && (
+        {/* Ternary, not `&&`: with no seats recorded and `luggage` at 0, `seats || luggage`
+            is the number 0, and React renders that as a literal "0" under the vehicle name. */}
+        {(seats || luggage) ? (
           <div className="checkout-stub-specs">
             {seats ? <span>{seats} seats</span> : null}
             {/* A booking with no luggage recorded should say nothing, not "0 bags". */}
             {luggage ? <span>{luggage} bags</span> : null}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* The tear. Decorative: it marks where the vehicle stops and the journey starts, which

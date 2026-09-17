@@ -8,7 +8,6 @@ import { PaymentWrapper } from '../components/payment-wrapper'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { BookingLedger } from '@/components/checkout/booking-ledger'
-import { TrustBlock } from '@/components/checkout/trust-block'
 import { SecureFooter } from '../components/secure-footer'
 import { PublicHeader } from '@/components/layout/public-header'
 import { Footer } from '@/components/layout/footer'
@@ -288,21 +287,29 @@ STRIPE_SECRET_KEY=sk_test_...`}
         <header className="pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
           <div className="luxury-container pt-8 md:pt-12 lg:pt-16">
             <ProgressBar currentStep={4} />
+            {/* No eyebrow, matching the checkout steps: the rail directly above already names
+                the step, and "Secure checkout" over a step called Payment is one sentence twice. */}
             <CheckoutHeading
-              eyebrow="Secure checkout"
+              eyebrow={null}
               title="Confirm and pay"
               subtitle="Your card is charged once. Free to cancel up to 24 hours before pickup."
             />
             {/* The reference used to appear for the first time as a mono chip in the middle of
-                the payment card. It belongs with the heading, quietly. */}
-            <p className="-mt-8 text-[0.8125rem] tabular-nums text-[var(--text-muted)]">
+                the payment card. It belongs with the heading, quietly. The `-mt-8` it used to
+                carry was tuned against an older heading block and now pulled this line on top
+                of the subtitle. */}
+            <p className="mt-4 text-[0.8125rem] tabular-nums text-[var(--text-muted)]">
               Booking {booking.trip_number || booking.booking_number}
             </p>
           </div>
         </header>
         <main className="flex-1 pb-16">
           <div className="luxury-container">
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
+            {/* `lg:items-start`, not `items-start`: in the column direction that property is the
+                horizontal one, so it shrank the form column to the Stripe iframe's own content
+                width and left it 34px narrower than the summary card above it. It is only wanted
+                once the layout is a row, where it stops the sticky aside stretching. */}
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 lg:items-start">
               <div className="flex-1 min-w-0">
                 <PaymentWrapper
                   clientSecret={clientSecret}
@@ -315,8 +322,17 @@ STRIPE_SECRET_KEY=sk_test_...`}
               {/* `order-first` below lg: the summary used to sit after the card form in DOM
                   order, so on a phone the customer scrolled the whole of Stripe before seeing
                   what they were paying for. */}
-              <aside className="order-first lg:order-last w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24 product-entrance--sidebar" aria-label="Booking summary">
-                <div className="bg-[var(--black-rich)] border border-[rgba(var(--gold-rgb),0.12)] rounded-[8px] overflow-hidden">
+              {/* `max-w-[520px]` while the columns are stacked: at 834px the card stretched to
+                  738px, which pulled the route's two place names to opposite ends of a 400px
+                  dashed line and left every ledger row half empty. It is the same card as on
+                  checkout, so it keeps roughly the same measure until it becomes the rail. */}
+              <aside className="order-first lg:order-last w-full max-w-[520px] lg:max-w-none lg:w-[380px] xl:w-[420px] flex-shrink-0 lg:sticky lg:top-24 product-entrance--sidebar" aria-label="Booking summary">
+                <div className="checkout-summary-card">
+                  {/* The cap the same card opens on at checkout, so the customer arrives at a
+                      card they have already been reading for two steps. */}
+                  <div className="checkout-stub-cap">
+                    <h2 className="checkout-section-title">Your transfer</h2>
+                  </div>
                   {/* The same card the customer has had beside them since step three, drawing
                       the same data the same way. This aside used to use bullet dots and icon
                       chips for the route, and printed `Base fare 110.00 / Total 110.00` when
@@ -329,7 +345,9 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     dateLabel={format(toBookingTz(booking.pickup_datetime), 'EEE, MMM d')}
                     timeLabel={format(toBookingTz(booking.pickup_datetime), 'HH:mm')}
                     passengers={booking.passenger_count}
-                    luggage={booking.luggage_count ?? null}
+                    luggage={booking.vehicle_type?.luggage_capacity ?? null}
+                    seats={booking.vehicle_type?.passenger_capacity ?? null}
+                    pickupNote={`Pickup ${format(toBookingTz(booking.pickup_datetime), 'HH:mm')}`}
                     basePrice={booking.base_price}
                     // One rolled-up line rather than a row per amenity: `booking_amenities`
                     // stores `amenity_type: 'addon'` and the addon name lives behind `addon_id`,
@@ -347,10 +365,10 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     }
                     total={booking.total_price}
                   />
-                  <div className="px-6 xl:px-8 py-5 border-t border-[rgba(var(--gold-rgb),0.1)]">
+                  <div className="px-6 xl:px-8 py-5 border-t border-[var(--stub-line)]">
                     <Link
                       href="/contact"
-                      className="inline-flex items-center justify-center gap-2 min-h-[44px] text-[0.8125rem] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] rounded-[4px]"
+                      className="inline-flex items-center justify-center gap-2 min-h-[44px] text-[0.8125rem] text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--stub-bot)] rounded-[4px]"
                     >
                       <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       Need help with your booking?
@@ -358,10 +376,6 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   </div>
                 </div>
 
-                {/* Replaces GuaranteeCard, which stated the cancellation terms alone and in
-                    --success green — a fifth accent on the one screen that could least afford
-                    it. The full three guarantees, in the same block as the other two steps. */}
-                <TrustBlock />
               </aside>
             </div>
           </div>
