@@ -8858,79 +8858,241 @@
   }
 }
 
-
 /* ==================================================================
-   Booking confirmation: the issued ticket
+   Booking confirmation: Saturday at Ten
    (app/booking/confirmation/components/confirmation-content.tsx)
 
-   The page keeps its layout. What changes is the ink, the ground and
-   two things it was making the reader work out.
+   The day and the time at poster size over the search page's street map,
+   held in place on a desktop while the booking scrolls beside it as a
+   column of the checkout's own transfer stubs.
 
-   These classes are confirmation-only ON PURPOSE. The card, the route
-   stop and the guarantee list all come from
-   components/booking/itinerary-primitives.tsx, which the account
-   booking detail page renders too; styling them there would move a
-   page nobody asked to move. See reference-match-scope-is-the-named-element.
+   Almost everything here is borrowed: .checkout-summary-card is the plate,
+   .checkout-stub-* is the cap, route, perforation and specs, .trip-ledger is
+   the reference and price row, .checkout-btn-* are the actions, and the map
+   is RouteBandMap. This block only adds the layout and the few pieces that
+   have no home elsewhere.
 
-   Unlayered, like the other page blocks at the foot of this file, so
-   the arbitrary gold values survive Tailwind 3.4's compile. None of
+   Unlayered like the other page blocks at the foot of this file. None of
    these set `display` on an element a utility needs to hide.
    ------------------------------------------------------------------ */
 
-/* ---- the plate ----
-   This was the last customer page still drawn on the flat panel that
-   .checkout-summary-card, .vehicle-card and .route-stub replaced. */
-.confirm-card {
-  background-color: var(--stub-bot);
-  background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-  border: 1px solid var(--stub-line);
-  border-radius: 8px;
-  box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+.confirm-sat {
+  position: relative;
   overflow: hidden;
+  background-color: var(--black-void);
 }
 
-/* ---- the reference ----
-   The one string a traveller reads back to a driver or types into a
-   support form. It was set at 1.0625rem, the same size as the
-   departure time below it. */
-.confirm-reference {
-  margin-top: 0.5rem;
-  font-size: 1.75rem;
+/* The map is only the top of the page. RouteBandMap fades itself into
+   --black-rich; this second fade takes it the rest of the way into the page
+   ground, which is --black-void here. */
+.confirm-sat__map {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 44rem;
+  pointer-events: none;
+}
+
+.confirm-sat__map::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 14rem;
+  background: linear-gradient(to bottom, transparent, var(--black-void));
+}
+
+.confirm-sat__split {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  padding-block: clamp(3rem, 7vw, 5rem);
+}
+
+@media (min-width: 1040px) {
+  .confirm-sat__split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+    gap: clamp(3rem, 6vw, 5.5rem);
+  }
+
+  .confirm-sat__left {
+    position: sticky;
+    top: 6.5rem;
+    align-self: start;
+  }
+}
+
+@media (min-width: 1280px) {
+  .confirm-sat__split { grid-template-columns: minmax(0, 1fr) minmax(0, 32rem); }
+}
+
+.confirm-sat__status { display: flex; align-items: center; gap: 0.875rem; }
+
+.confirm-sat__big {
+  margin-top: 1.75rem;
+  font-family: var(--font-body);
+  font-size: clamp(3.25rem, 8.5vw, 7rem);
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.12em;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.confirm-sat__big > span { display: block; }
+
+.confirm-sat__big em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold-text);
   font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Status headlines are sentences, not a day and a time, so they step down. */
+.confirm-sat__big--sentence { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+
+.confirm-sat__lede {
+  max-width: 38ch;
+  margin-top: 1.75rem;
+  font-size: 1.1875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.confirm-sat__lede strong { font-weight: 500; color: var(--text-primary); }
+
+.confirm-sat__left .trip-ledger {
+  margin-top: 2.25rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.confirm-sat__left .trip-ledger__item--price { margin-left: 0; }
+
+.confirm-sat__reference { letter-spacing: 0.08em; }
+
+.confirm-sat__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.875rem 1.5rem;
+  margin-top: 2.25rem;
+}
+
+.confirm-sat__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.75rem;
+  margin-top: 1rem;
+}
+
+/* ---- the column ---- */
+
+.confirm-sat__right { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+
+.confirm-sat__card--lift {
+  box-shadow: inset 0 1px 0 var(--stub-edge), 0 2px 4px rgba(31, 27, 20, 0.05), 0 30px 60px -30px rgba(31, 27, 20, 0.38);
+}
+
+.dark .confirm-sat__card--lift {
+  box-shadow: inset 0 1px 0 var(--stub-edge), 0 2px 4px rgba(0, 0, 0, 0.5), 0 40px 70px -34px rgba(0, 0, 0, 0.95);
+}
+
+.confirm-sat__band { padding: 1.25rem 1.5rem; }
+
+.confirm-sat__band--rule { border-top: 1px solid rgba(var(--gold-rgb), 0.1); }
+
+.confirm-sat__cat {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.confirm-sat__vehicle {
+  margin-top: 0.25rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   color: var(--text-primary);
 }
 
-@media (max-width: 420px) {
-  .confirm-reference { font-size: 1.375rem; letter-spacing: 0.08em; }
-}
-
-/* ---- the departure ----
-   Third in the itinerary card and, until now, set at the same weight
-   as the two addresses above it. */
-.confirm-departure {
-  font-size: 1.375rem;
-  letter-spacing: -0.01em;
-}
-
-/* ---- the total ----
-   .t-price is shared with the checkout and the account pages, so this
-   is a local step up rather than a change to the ramp. */
-.confirm-total {
-  font-size: 1.75rem;
+.confirm-sat__label {
+  font-size: 0.625rem;
   font-weight: 600;
-  line-height: 1.1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* The day, in the promise cards' hollow numerals. */
+.confirm-sat__day li {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding-block: 0.875rem;
+  border-top: 1px solid rgba(var(--gold-rgb), 0.18);
+}
+
+.confirm-sat__day li:first-child { padding-top: 0; border-top: 0; }
+
+.confirm-sat__time {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--gold-text);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+@supports (-webkit-text-stroke: 1px currentColor) {
+  .confirm-sat__time {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--gold-text);
+  }
+}
+
+.confirm-sat__what { font-size: 0.875rem; line-height: 1.55; color: var(--text-secondary); }
+
+@media (max-width: 380px) {
+  .confirm-sat__day li { grid-template-columns: minmax(0, 1fr); gap: 0.35rem; }
+}
+
+.confirm-sat__ledger > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.confirm-sat__ledger > div + div { margin-top: 0.625rem; }
+.confirm-sat__ledger dt { min-width: 0; color: var(--text-secondary); }
+.confirm-sat__ledger dd { flex: none; font-weight: 500; color: var(--text-primary); font-variant-numeric: tabular-nums lining-nums; }
+
+.confirm-sat__total {
+  border-top: 1px solid rgba(var(--gold-rgb), 0.15);
+  background: rgba(var(--gold-rgb), 0.03);
+}
+
+.confirm-sat__total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.confirm-sat__total-figure {
+  font-size: 1.875rem;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* ---- the charge line ----
-   Sits where the checkout summary's "Encrypted, SSL secure" sits, and
-   says the thing that is true once the charge has gone through. */
-.confirm-charge {
+.confirm-sat__charge {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -8941,126 +9103,41 @@
   color: var(--text-muted);
 }
 
-.confirm-charge svg { flex: none; color: var(--gold-text); }
+.confirm-sat__charge svg { flex: none; color: var(--gold-text); }
 
-/* ---- the route ----
-   The ink of the connector that the search heading, the home rail and
-   the checkout stub all draw a road with, on the vertical rail this
-   card already had. Nothing moves; the dots and the line change hue. */
-.confirm-stop { position: relative; padding-left: 1.75rem; }
+/* The passenger, read back in the checkout's own filled fields. */
+.confirm-sat__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.confirm-sat__fields .confirm-sat__wide { grid-column: 1 / -1; }
 
-.confirm-stop::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 1.5px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background-color: var(--stub-top);
-  box-shadow: inset 0 0 0 2px var(--gold-text);
+.confirm-sat__field-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.confirm-stop--end::before {
-  background-color: var(--gold-text);
-  box-shadow: 0 0 0 2px var(--stub-top), 0 0 0 4px rgba(var(--gold-rgb), 0.22);
+.confirm-sat__field {
+  margin-top: 0.4rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: var(--black-warm);
+  border-radius: 8px;
+  overflow-wrap: break-word;
 }
 
-.confirm-stop--start::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 10.5px;
-  bottom: -1.4rem;
-  width: 1px;
-  background-image: repeating-linear-gradient(to bottom, rgba(var(--gold-rgb), 0.55) 0 3px, transparent 3px 7px);
+@media (max-width: 420px) {
+  .confirm-sat__fields { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* ---- the tear ----
-   The checkout summary is torn between the vehicle and the journey.
-   This card already changes subject in the same place, so the rule
-   there becomes the same perforation. The holes are filled with the
-   page ground, and the card's overflow clips their outer half, which
-   is what makes them read as punched rather than drawn. */
-.confirm-perf {
-  position: relative;
-  height: 1.125rem;
-  margin-block: 0.25rem;
-}
+.confirm-sat__hint { margin-top: 0.9rem; font-size: 0.8125rem; line-height: 1.6; color: var(--text-muted); }
+.confirm-sat__hint a { color: var(--text-primary); text-decoration: underline; text-underline-offset: 4px; }
+.confirm-sat__hint a:hover { color: var(--gold-text); }
 
-.confirm-perf::before {
-  content: '';
-  position: absolute;
-  inset-inline: 1.25rem;
-  top: 50%;
-  border-top: 1px dashed var(--stub-line);
-}
-
-.confirm-perf span {
-  position: absolute;
-  top: 50%;
-  width: 1rem;
-  height: 1rem;
-  border: 1px solid var(--stub-line);
-  border-radius: 50%;
-  background-color: var(--black-void);
-  transform: translateY(-50%);
-}
-
-.confirm-perf span:first-child { left: -0.5rem; }
-.confirm-perf span:last-child { right: -0.5rem; }
-
-/* ---- the day ----
-   The card used to say "5 minutes before the scheduled time" and "45
-   minutes past the scheduled pickup" and leave the reader to do
-   arithmetic the page had already done. Same card, same heading, same
-   promises, stated as clock times. */
-.confirm-day { display: flex; flex-direction: column; }
-
-.confirm-day li {
-  display: grid;
-  grid-template-columns: 4.25rem minmax(0, 1fr);
-  gap: 0.25rem 1.25rem;
-  padding-block: 0.875rem;
-  border-top: 1px solid rgba(var(--gold-rgb), 0.18);
-}
-
-.confirm-day li:first-child { padding-top: 0; border-top: 0; }
-
-.confirm-day__time {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  color: var(--gold-text);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-.confirm-day__what { font-size: 0.9375rem; line-height: 1.65; color: var(--text-secondary); }
-.confirm-day__what strong { font-weight: 500; color: var(--text-primary); }
-
-@media (max-width: 380px) {
-  .confirm-day li { grid-template-columns: 1fr; gap: 0.2rem; }
-}
-
-/* ---- the guarantees ----
-   The only uncarded block on a page of cards, and what the sticky rail
-   ends on, so the rail stopped reading as a column. Carding it also
-   closes most of the dead ground the rail left beneath itself. */
-.confirm-guarantee-row {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(var(--gold-rgb), 0.18);
-}
-
-.confirm-guarantee-row:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-/* ---- paper ---- */
 @media print {
-  .confirm-card { background-image: none; box-shadow: none; }
-  .confirm-perf span { background-color: #fff; }
+  .confirm-sat__map { display: none; }
+  .confirm-sat__left { position: static; }
+  .confirm-sat__big { font-size: 3rem; }
 }
