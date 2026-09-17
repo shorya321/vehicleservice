@@ -26,8 +26,17 @@ const formatShortDate = (d: Date) =>
     .format(d)
     .replace(',', '')
 
-/** "Saturday", for the headline. */
-const formatWeekday = (d: Date) => new Intl.DateTimeFormat('en-GB', { timeZone: tz(), weekday: 'long' }).format(d)
+/**
+ * "Saturday, 26 September" for the headline, with the year added only when the pickup is not in
+ * the current year, so a booking made in December for January still reads unambiguously.
+ */
+const formatHeadlineDate = (d: Date) => {
+  const part = (opts: Intl.DateTimeFormatOptions, date: Date = d) =>
+    new Intl.DateTimeFormat('en-GB', { timeZone: tz(), ...opts }).format(date)
+  const sameYear = part({ year: 'numeric' }) === part({ year: 'numeric' }, new Date())
+  const date = `${part({ day: 'numeric' })} ${part({ month: 'long' })}${sameYear ? '' : ` ${part({ year: 'numeric' })}`}`
+  return `${part({ weekday: 'long' })}, ${date}`
+}
 
 const formatTime = (d: Date) =>
   new Intl.DateTimeFormat('en-GB', { timeZone: tz(), hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
@@ -310,7 +319,7 @@ export function ConfirmationContent({
 
           {headlineIsTime && pickupDate ? (
             <h1 className="confirm-sat__big">
-              <span>{formatWeekday(pickupDate)},</span>
+              <span>{formatHeadlineDate(pickupDate)}</span>
               <span>
                 <em>{formatTime(pickupDate)}.</em>
               </span>

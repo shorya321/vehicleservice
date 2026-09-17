@@ -8929,17 +8929,20 @@
 .confirm-sat__status { display: flex; align-items: center; gap: 0.875rem; }
 
 .confirm-sat__big {
-  margin-top: 1.75rem;
+  margin-top: 1.5rem;
   font-family: var(--font-body);
-  font-size: clamp(3.25rem, 8.5vw, 7rem);
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
   font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
   color: var(--text-primary);
   text-wrap: balance;
 }
 
 .confirm-sat__big > span { display: block; }
+
+/* The date is a longer line than the time, so it sits a step smaller. */
+.confirm-sat__big > span:first-child { font-size: 0.72em; letter-spacing: -0.02em; }
 
 .confirm-sat__big em {
   font-style: italic;
@@ -8949,12 +8952,12 @@
 }
 
 /* Status headlines are sentences, not a day and a time, so they step down. */
-.confirm-sat__big--sentence { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+.confirm-sat__big--sentence { font-size: clamp(2rem, 4vw, 3rem); }
 
 .confirm-sat__lede {
-  max-width: 38ch;
-  margin-top: 1.75rem;
-  font-size: 1.1875rem;
+  max-width: 40ch;
+  margin-top: 1.5rem;
+  font-size: 1.0625rem;
   line-height: 1.55;
   color: var(--text-secondary);
 }
@@ -9139,5 +9142,5 @@
 @media print {
   .confirm-sat__map { display: none; }
   .confirm-sat__left { position: static; }
-  .confirm-sat__big { font-size: 3rem; }
+  .confirm-sat__big { font-size: 2.25rem; }
 }
