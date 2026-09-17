@@ -285,15 +285,23 @@ STRIPE_SECRET_KEY=sk_test_...`}
             Title Case, and eyebrow-less, so the last screen before payment read as a different
             product. CheckoutHeading already took all three as props. */}
         <header className="pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
-          <div className="luxury-container pt-8 md:pt-12 lg:pt-16">
+          {/* The rail starts where the checkout steps start theirs. This block used to add a
+              second top padding on top of the header's own, which put the rail 35px below the
+              line the previous two steps open on. */}
+          <div className="luxury-container pt-4 md:pt-6 lg:pt-8">
             <ProgressBar currentStep={4} />
             {/* No eyebrow, matching the checkout steps: the rail directly above already names
                 the step, and "Secure checkout" over a step called Payment is one sentence twice. */}
-            <CheckoutHeading
-              eyebrow={null}
-              title="Confirm and pay"
-              subtitle="Your card is charged once. Free to cancel up to 24 hours before pickup."
-            />
+            {/* `mt-8`, the gap CheckoutStepHeader puts between the rail and the heading on both
+                checkout steps. Without it the rail sat 30px above the h1 here against 62px
+                there, so the last step read as a tighter page than the two before it. */}
+            <div className="mt-8">
+              <CheckoutHeading
+                eyebrow={null}
+                title="Confirm and pay"
+                subtitle="Your card is charged once. Free to cancel up to 24 hours before pickup."
+              />
+            </div>
             {/* The reference used to appear for the first time as a mono chip in the middle of
                 the payment card. It belongs with the heading, quietly. The `-mt-8` it used to
                 carry was tuned against an older heading block and now pulled this line on top
