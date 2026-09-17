@@ -55,7 +55,7 @@ export const FOOTER_GUARANTEES = [
   },
   {
     label: 'Airport pickup',
-    body: 'We track your flight. 60 minutes of free waiting from the moment you land.',
+    body: 'We track your flight. 45 minutes of free waiting from the moment you land.',
   },
 ] as const
 

@@ -41,7 +41,7 @@ const BOOKING_STEPS = [
   {
     index: '03',
     title: 'Meet your chauffeur',
-    body: '45 minutes of free waiting at pickup, or an hour on tracked airport arrivals.',
+    body: '45 minutes of free waiting at pickup, tracked airport arrivals included.',
     foot: 'Name board at the door',
   },
 ] as const

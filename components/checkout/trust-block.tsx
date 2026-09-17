@@ -5,7 +5,7 @@
  *
  * Every claim here is contractual, not marketing. Sources:
  *  - Free cancellation up to 24h  -> app/terms/components/terms-content.tsx (Cancellation)
- *  - 60 / 45 minutes free waiting -> app/terms/components/terms-content.tsx (Waiting Time)
+ *  - 45 minutes free waiting      -> app/terms/components/terms-content.tsx (Waiting Time)
  *  - What the fixed fare includes -> app/terms/components/terms-content.tsx (Pricing)
  *  - Name board in arrivals       -> app/terms/components/terms-content.tsx (Service Delivery)
  *
@@ -18,7 +18,7 @@ const GUARANTEES = [
   },
   {
     label: 'Waiting time',
-    body: '60 minutes free from your actual landing time, 45 minutes on other pickups.',
+    body: '45 minutes free, from your actual landing time on tracked airport arrivals.',
   },
   {
     label: 'Your chauffeur',

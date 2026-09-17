@@ -23,7 +23,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
   {
     question: "What happens if my flight is delayed?",
     answer:
-      "We track the flight number you provided and shift the pickup time automatically. The chauffeur waits up to 60 minutes past the rescheduled arrival at no extra charge. Extended waiting can be added at checkout.",
+      "We track the flight number you provided and shift the pickup time automatically. The chauffeur waits up to 45 minutes past the rescheduled arrival at no extra charge. Extended waiting can be added at checkout.",
   },
   {
     question: "How do I find my driver at the airport?",

@@ -487,7 +487,7 @@ export function ConfirmationContent({
                   </li>
                   <li className="flex gap-4">
                     <span aria-hidden="true" className="numeric shrink-0 text-[0.75rem] tracking-[0.14em] text-[var(--gold-text)]">02</span>
-                    <span>Your chauffeur will wait up to 15 minutes past the scheduled pickup (60 minutes for airport pickups).</span>
+                    <span>Your chauffeur will wait up to 45 minutes past the scheduled pickup, or past your actual landing time on airport pickups.</span>
                   </li>
                 </ol>
               </div>
