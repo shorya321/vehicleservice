@@ -43,6 +43,7 @@ export function VerificationDocumentsSection({ form }: { form: VendorForm }) {
     <SectionShell
       id="vendor-section-documents"
       title="Verification documents"
+      ordinal="02"
       note="Read by our review team only. Both must still be current on the day you apply."
     >
       <div className="grid gap-5 md:grid-cols-2">

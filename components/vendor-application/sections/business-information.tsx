@@ -43,6 +43,7 @@ export function BusinessInformationSection({ form }: { form: VendorForm }) {
     <SectionShell
       id="vendor-section-business"
       title="Business information"
+      ordinal="01"
       note="Core details about your company."
     >
       <FormField

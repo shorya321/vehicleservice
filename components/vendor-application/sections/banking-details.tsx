@@ -27,6 +27,7 @@ export function BankingDetailsSection({ form }: { form: VendorForm }) {
     <SectionShell
       id="vendor-section-banking"
       title="Banking details"
+      ordinal="03"
       /* This section is skippable, and the page never said so in its first clause.
          Five fields that can be left empty looked like five fields that could not. */
       note="Skip this section if you would rather. You can add payout details later from your vendor dashboard, and nothing is paid out until you do."

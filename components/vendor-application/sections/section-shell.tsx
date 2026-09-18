@@ -4,6 +4,8 @@ interface SectionShellProps {
   /** Anchors the left rail's index. Kept off the fieldset's own semantics. */
   id: string
   title: string
+  /** "01", "02"... matching the rail's index on the apply page. */
+  ordinal?: string
   /** One sentence. Leads with what the applicant needs to decide, not with our process. */
   note: ReactNode
   children: ReactNode
@@ -17,12 +19,13 @@ interface SectionShellProps {
  * this form used to carry are gone. `.checkout-section-title` brings the 28px gold
  * rule that every other eyebrow in the product has and this page did not.
  */
-export function SectionShell({ id, title, note, children }: SectionShellProps) {
+export function SectionShell({ id, title, ordinal, note, children }: SectionShellProps) {
   return (
     <fieldset id={id} className="checkout-form-section border-0 p-0 m-0 scroll-mt-32">
       <legend className="sr-only">{title}</legend>
       <div className="mb-6">
         <p className="checkout-section-title" aria-hidden="true">
+          {ordinal && <span className="tabular-nums text-[var(--gold-text)]">{ordinal}</span>}
           {title}
         </p>
         <p className="mt-2.5 text-sm text-[var(--text-muted)] max-w-[52ch]">{note}</p>

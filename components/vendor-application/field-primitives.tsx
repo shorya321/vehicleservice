@@ -12,15 +12,18 @@
  * ring at 15% blooms outside it.
  */
 export const FIELD_BASE = [
-  "bg-[var(--black-warm)] border-[var(--graphite)] rounded-[4px]",
+  // The checkout field surface: a lighter ground than the card, a gold hairline and a
+  // 10px radius. It was a solid --black-warm fill on a graphite border, the only
+  // form in the product that read heavier than the card it sat on.
+  "bg-[rgba(var(--void-rgb),0.55)] border-[rgba(var(--gold-rgb),0.24)] rounded-[10px] px-5",
   "text-[var(--text-primary)] placeholder:text-[var(--text-muted)]",
-  "hover:border-[rgba(var(--gold-rgb),0.3)]",
+  "hover:border-[rgba(var(--gold-rgb),0.4)]",
   "focus-visible:outline-none focus-visible:border-[var(--gold)]",
   "focus-visible:ring-4 focus-visible:ring-[rgba(var(--gold-rgb),0.15)]",
   "transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
 ].join(" ")
 
-export const FIELD_INPUT = `h-[52px] ${FIELD_BASE}`
+export const FIELD_INPUT = `h-14 ${FIELD_BASE}`
 
 /**
  * Uppercase micro-caps, as on checkout. Sentence-case labels sitting under an

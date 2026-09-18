@@ -52,9 +52,9 @@ const REQUIREMENTS: ReadonlyArray<{ label: string; body: string }> = [
 
 export function PartnerBenefits({ className = "" }: { className?: string }) {
   return (
-    <ul className={`editorial-list ${className}`}>
+    <ul className={`editorial-list vendor-figures ${className}`}>
       {BENEFITS.map((benefit) => (
-        <li key={benefit.figure} className="grid-cols-[3.5rem_1fr]">
+        <li key={benefit.figure} className="grid-cols-[4.5rem_1fr]">
           <span className="editorial-list-index">{benefit.figure}</span>
           <div>
             <p className="editorial-list-title">{benefit.title}</p>

@@ -1512,6 +1512,43 @@
       linear-gradient(180deg, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 40%, transparent) 22%, transparent 40%, transparent 78%, var(--hero-map-fade-end) 100%);
   }
 
+  /* The same map behind the top of /become-vendor. It reaches up under the fixed
+     header (main's pt-20) the way home's does, and fades to the page ground well
+     before the form runs out, so it never sits under a field. The radial keeps the
+     title column legible; on a phone the column is the whole width, so the map is
+     simply quieter there. */
+  .vendor-mapband {
+    position: absolute;
+    inset-inline: 0;
+    top: -5rem;
+    height: 47.5rem;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .vendor-mapband__fade {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 34% 42% at 22% 46%, color-mix(in srgb, var(--black-void) 88%, transparent) 0%, color-mix(in srgb, var(--black-void) 55%, transparent) 55%, transparent 100%),
+      linear-gradient(180deg, color-mix(in srgb, var(--black-void) 70%, transparent) 0%, transparent 16%, transparent 58%, var(--black-void) 100%);
+  }
+
+  @media (max-width: 1023px) {
+    .vendor-mapband { height: 32rem; opacity: 0.55; }
+  }
+
+  /* The rail's 0% / 48h / 7d at the home stats pill's figure size. They were 12px
+     labels: numbers someone decides on get display type (DESIGN.md). */
+  .vendor-figures .editorial-list-index {
+    font-size: 1.625rem;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
   .hero-reveal {
     opacity: 0;
     transform: translate3d(0, 18px, 0);

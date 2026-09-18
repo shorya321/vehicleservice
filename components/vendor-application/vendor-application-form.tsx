@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { createVendorApplication } from "@/app/become-vendor/actions"
 import { Form } from "@/components/ui/form"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { ArrowRight, Loader2 } from "lucide-react"
 import {
   createApplicationSchema,
   type VendorApplicationFormInput,
@@ -16,6 +16,7 @@ import {
 import { BusinessInformationSection } from "./sections/business-information"
 import { VerificationDocumentsSection } from "./sections/verification-documents"
 import { BankingDetailsSection } from "./sections/banking-details"
+import { ApplicationProgressReporter } from "./application-progress"
 
 interface VendorApplicationFormProps {
   defaultValues?: {
@@ -133,14 +134,18 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="vendor-form" aria-busy={isSubmitting}>
+        <ApplicationProgressReporter control={form.control} />
         <BusinessInformationSection form={form} />
+        <SectionPerforation />
         <VerificationDocumentsSection form={form} />
+        <SectionPerforation />
         <BankingDetailsSection form={form} />
 
         {/* The end of the longest form in the product was its quietest moment: a
             160px button and nothing else. The 48-hour promise lived in the left rail,
             well off-screen by the time anyone reached this. */}
-        <div className="mt-10 pt-8 border-t border-[rgba(var(--gold-rgb),0.12)]">
+        <SectionPerforation className="max-lg:hidden" />
+        <div className="max-lg:mt-10">
           <p aria-live="polite" className="sr-only">
             {submitError}
           </p>
@@ -166,10 +171,11 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
             <button
               type="submit"
               disabled={isBusy}
-              className="checkout-btn-primary w-full sm:w-auto sm:min-w-[190px]"
+              className="checkout-btn-primary w-full sm:w-auto sm:min-w-[230px]"
             >
               {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               Submit application
+              {!isBusy && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
             </button>
             <p className="text-sm leading-relaxed text-[var(--text-secondary)] sm:max-w-[34ch]">
               Reviewed within{" "}
@@ -180,5 +186,22 @@ export function VendorApplicationForm({ defaultValues }: VendorApplicationFormPr
         </div>
       </form>
     </Form>
+  )
+}
+
+/**
+ * The checkout stub's perforation between sections, notches and all. It bleeds to the
+ * card's edges by the card's own padding (p-6 md:p-8 on the apply page), so the notches
+ * bite the card rather than floating inside it.
+ */
+function SectionPerforation({ className = "" }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`checkout-stub-perf -mx-6 md:-mx-8 !my-9 ${className}`}
+    >
+      <span />
+      <span />
+    </div>
   )
 }

@@ -1,6 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import {
+  useApplicationProgress,
+  type ApplicationProgress,
+} from "@/components/vendor-application/application-progress"
 
 /**
  * The left rail's running marker.
@@ -15,13 +19,29 @@ import { useEffect, useState } from "react"
  * structure, and repeating them here would only add a second, weaker copy.
  */
 const SECTIONS = [
-  { id: "vendor-section-business", ordinal: "01", label: "Business information" },
-  { id: "vendor-section-documents", ordinal: "02", label: "Verification documents" },
-  { id: "vendor-section-banking", ordinal: "03", label: "Banking details", meta: "Optional" },
+  { id: "vendor-section-business", ordinal: "01", label: "Business information", key: "business" },
+  { id: "vendor-section-documents", ordinal: "02", label: "Verification documents", key: "documents" },
+  { id: "vendor-section-banking", ordinal: "03", label: "Banking details", key: "banking" },
 ] as const
+
+/**
+ * "4 of 8" per section. Banking reads "Optional" until something is typed in it, since
+ * "0 of 5" there would read as work outstanding on a section that can be skipped.
+ */
+function sectionMeta(
+  key: keyof ApplicationProgress,
+  progress: ApplicationProgress | null
+): { text: string; started: boolean } {
+  const section = progress?.[key]
+  if (!section || (key === "banking" && section.filled === 0)) {
+    return { text: key === "banking" ? "Optional" : "", started: false }
+  }
+  return { text: `${section.filled} of ${section.total}`, started: section.filled > 0 }
+}
 
 export function ApplicationIndex() {
   const [currentId, setCurrentId] = useState<string>(SECTIONS[0].id)
+  const progress = useApplicationProgress()
 
   useEffect(() => {
     const nodes = SECTIONS.map((section) => document.getElementById(section.id)).filter(
@@ -48,11 +68,12 @@ export function ApplicationIndex() {
   }, [])
 
   return (
-    <div aria-hidden="true">
-      <p className="editorial-eyebrow">Application</p>
+    <div aria-hidden="true" className="mt-10">
+      <p className="editorial-eyebrow">Your progress</p>
       <ol className="mt-4 list-none p-0 m-0">
         {SECTIONS.map((section) => {
           const isCurrent = section.id === currentId
+          const meta = sectionMeta(section.key, progress)
           return (
             <li
               key={section.id}
@@ -72,7 +93,13 @@ export function ApplicationIndex() {
                 {section.ordinal}
               </span>
               <span className={`text-sm ${isCurrent ? "font-medium" : ""}`}>{section.label}</span>
-              <span className="t-label text-[0.625rem]">{"meta" in section ? section.meta : ""}</span>
+              <span
+                className={`t-label text-[0.625rem] tabular-nums ${
+                  isCurrent && meta.started ? "text-[var(--gold-text)]" : ""
+                }`}
+              >
+                {meta.text}
+              </span>
             </li>
           )
         })}
