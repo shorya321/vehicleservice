@@ -220,7 +220,7 @@ export function BusinessInformationSection({ form }: { form: VendorForm }) {
             <FormControl>
               <Textarea
                 placeholder="Tell us about your fleet, the vehicles you run, and how long you have been operating."
-                className={`${FIELD_BASE} min-h-[100px] resize-none py-3.5 focus-visible:ring-offset-0`}
+                className={`${FIELD_BASE} min-h-[120px] resize-none py-3.5`}
                 {...field}
               />
             </FormControl>

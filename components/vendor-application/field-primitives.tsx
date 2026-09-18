@@ -2,28 +2,20 @@
  * One field treatment for the vendor application, hoisted so it cannot drift between
  * the three sections.
  *
- * The old inline string stacked shadcn's `focus-visible:ring-2 ring-primary
- * border-primary` against the form's own `focus:ring-1 ring-[gold-text]/20
- * border-[gold-text]`. Two different variants, so tailwind-merge could not reconcile
- * them and the resolved ring width and border colour came down to stylesheet order.
- * Worse, `Input` carries `focus-visible:outline-none`, which cancels the 2px gold
- * outline the rest of the app relies on. This is one focus state, on one variant,
- * built to the spec in DESIGN.md section 5: the border goes to Vellum Gold and a 4px
- * ring at 15% blooms outside it.
+ * It is the checkout passenger field, class for class (components/checkout/
+ * form-sections/passenger-info-section.tsx): a --black-warm fill on a graphite border,
+ * 52px tall, `Input`'s own 6px radius and 12px inset. Focus is `Input`'s default, a
+ * gold border with a 2px gold ring, so a field looks and behaves the same whether it
+ * is reached from checkout or from here. Hover comes from `.checkout-form-section`,
+ * which both forms' sections carry.
  */
 export const FIELD_BASE = [
-  // The checkout field surface: a lighter ground than the card, a gold hairline and a
-  // 10px radius. It was a solid --black-warm fill on a graphite border, the only
-  // form in the product that read heavier than the card it sat on.
-  "bg-[rgba(var(--void-rgb),0.55)] border-[rgba(var(--gold-rgb),0.24)] rounded-[10px] px-5",
+  "bg-[var(--black-warm)] border-[var(--graphite)]",
   "text-[var(--text-primary)] placeholder:text-[var(--text-muted)]",
-  "hover:border-[rgba(var(--gold-rgb),0.4)]",
-  "focus-visible:outline-none focus-visible:border-[var(--gold)]",
-  "focus-visible:ring-4 focus-visible:ring-[rgba(var(--gold-rgb),0.15)]",
-  "transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+  "focus:ring-1 focus:border-[var(--gold)]",
 ].join(" ")
 
-export const FIELD_INPUT = `h-14 ${FIELD_BASE}`
+export const FIELD_INPUT = `h-[52px] ${FIELD_BASE}`
 
 /**
  * Uppercase micro-caps, as on checkout. Sentence-case labels sitting under an
