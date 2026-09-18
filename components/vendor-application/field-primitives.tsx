@@ -4,15 +4,20 @@
  *
  * It is the checkout passenger field, class for class (components/checkout/
  * form-sections/passenger-info-section.tsx): a --black-warm fill on a graphite border,
- * 52px tall, `Input`'s own 6px radius and 12px inset. Focus is `Input`'s default, a
- * gold border with a 2px gold ring, so a field looks and behaves the same whether it
- * is reached from checkout or from here. Hover comes from `.checkout-form-section`,
- * which both forms' sections carry.
+ * 52px tall, `Input`'s own 6px radius and 12px inset. Hover comes from
+ * `.checkout-form-section`, which both forms' sections carry.
+ *
+ * Focus is checkout's ring (primary border, 2px primary ring, no offset), set on
+ * `focus:` so every field type draws the same one. The primitives disagreed: `Input`
+ * rings on `focus-visible`, which a mouse click on a button trigger never matches, so
+ * Country and both expiry dates showed 1px on click; `Textarea` adds a 2px
+ * `ring-offset`, so the description ring sat further out and read larger.
  */
 export const FIELD_BASE = [
   "bg-[var(--black-warm)] border-[var(--graphite)]",
   "text-[var(--text-primary)] placeholder:text-[var(--text-muted)]",
-  "focus:ring-1 focus:border-[var(--gold)]",
+  "focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0",
+  "focus-visible:ring-offset-0",
 ].join(" ")
 
 export const FIELD_INPUT = `h-[52px] ${FIELD_BASE}`

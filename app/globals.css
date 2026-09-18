@@ -3399,7 +3399,11 @@
   border: none;
   border-radius: 0;
   overflow: visible;
-  contain: content;
+  /* layout + style only. `content` also adds paint containment, which clips anything
+     drawn outside the section box: every field touching the section edge lost that
+     side of its 2px focus ring (left column the left, full width both, the last field
+     its bottom). */
+  contain: layout style;
 }
 
 .checkout-form-section + .checkout-form-section {
