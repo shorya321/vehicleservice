@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { Car } from "lucide-react"
 import { formatBookingDate } from "@/lib/utils/timezone"
@@ -20,6 +21,8 @@ interface OverviewTabProps {
    */
   overview: AccountOverview
   recentAlerts: NotificationListItem[]
+  /** The street map behind the dispatch band. Server-rendered, handed down as a slot. */
+  routeMap?: ReactNode
   /** Switches panel in place, the way the rail does. Omitted where the shell has to navigate. */
   onTabChange?: (tab: TabId) => void
 }
@@ -34,7 +37,7 @@ interface OverviewTabProps {
  *
  * Every figure here is derived from rows the account already owns; nothing new is written.
  */
-export function OverviewTab({ overview, recentAlerts, onTabChange }: OverviewTabProps) {
+export function OverviewTab({ overview, recentAlerts, routeMap, onTabChange }: OverviewTabProps) {
   const counts = overview.counts
   const nextTransfer = overview.nextTransfer
   const alerts = recentAlerts
@@ -46,7 +49,7 @@ export function OverviewTab({ overview, recentAlerts, onTabChange }: OverviewTab
       </h2>
 
       {nextTransfer ? (
-        <DispatchBand transfer={nextTransfer} asOf={overview.asOf} />
+        <DispatchBand transfer={nextTransfer} asOf={overview.asOf} routeMap={routeMap} />
       ) : (
         <EmptyState
           icon={Car}

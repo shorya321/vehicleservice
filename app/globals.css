@@ -5036,19 +5036,54 @@
 
 /* The band. A gold rule across the top rather than a fill: the one thing on the page that
    outranks everything else, marked in the same way the checkout marks its active step. */
+/* No box. The next transfer is a band with the city behind it, the way the search results and
+   the confirmation open — same cartography, same fade, so a customer who booked yesterday meets
+   the same picture here. A card would have been a fourth plate on a page that already has three;
+   the map does the separating instead of a border. */
 .account-dispatch {
-  /* The same plate as every other card on the site, with a gold rule across the top: this one
-     outranks everything else on the page, and that is how the checkout marks its live step. */
-  background-color: var(--stub-bot);
-  background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-  border: 1px solid var(--stub-line);
-  border-top: 2px solid var(--gold);
-  border-radius: 0 0 8px 8px;
-  box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
-  padding: clamp(1.25rem, 3vw, 2rem);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.75rem, 3.5vw, 2.75rem) clamp(1.25rem, 2.5vw, 2rem) clamp(1.5rem, 3vw, 2.25rem);
   display: flex;
   flex-direction: column;
   gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  /* The same hairline and corner every other box on the site carries — .account-item-card,
+     .checkout-summary-card, .route-stub, .vehicle-card. The plate's gradient and shadow stay
+     off: the map is the fill here, so the border is doing the defining on its own. */
+  border: 1px solid var(--stub-line);
+  border-radius: 8px;
+}
+
+.account-dispatch__map {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The hero's fade, resolving into --black-void at both ends because that is what the account
+   page opens on in either theme. The radial keeps the headline's corner legible over the
+   street fabric; without it the italic gold hour sat on top of the roads. */
+.account-dispatch__map::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 52% 66% at 28% 42%, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 82%, transparent) 48%, transparent 100%),
+    /* Sideways, so the fabric settles into the edges rather than slamming against the hairline.
+       Narrower than it was before the border went back on: the border defines the edge now, so
+       the fade only has to take the hard stop off it. */
+    linear-gradient(90deg, var(--black-void) 0%, transparent 11%, transparent 89%, var(--black-void) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--black-void) 55%, transparent) 0%, transparent 34%, transparent 62%, var(--black-void) 100%);
+}
+
+/* Everything the band says sits above the map. */
+.account-dispatch > *:not(.account-dispatch__map) {
+  position: relative;
+  z-index: 1;
+}
+
+@media print {
+  .account-dispatch__map { display: none; }
 }
 
 .account-dispatch-head {
@@ -5074,7 +5109,10 @@
 
   .account-dispatch-meta {
     flex-shrink: 0;
-    align-items: flex-start;
+    /* Baseline, not flex-start: "Days to go" is 0.625rem and the reference beside it is
+       0.8125rem, so aligning their boxes left the two labels sitting on different lines. This
+       aligns the text itself. */
+    align-items: baseline;
     gap: 1.75rem;
   }
 
@@ -5141,7 +5179,32 @@
 
 .account-dispatch .account-route-stop::before {
   top: 0.3rem;
-  background: var(--black-rich);
+  background: var(--black-void);
+}
+
+/* The connector, drawn per stop rather than across the whole rail.
+
+   .account-route::before spans the rail with a fixed 0.85rem inset at each end, which lands on
+   the dot when a stop is one line of text. Here each stop is a label above a value, so the dot
+   moved up to 0.3rem and that fixed bottom inset left the line running well past the last dot
+   and out of the group. Drawing it from each dot to the next one instead means it ends where
+   the last dot is, whatever the stops are made of. */
+.account-dispatch .account-route::before {
+  display: none;
+}
+
+.account-dispatch .account-route-stop:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  /* The dot is 9px wide at left:-1.55rem, so its centre is 4px in — the same x the rail's own
+     connector uses. */
+  left: calc(-1.55rem + 4px);
+  width: 1px;
+  /* From just under this dot (0.3rem + 9px) down to the next dot's centre, which is the row gap
+     plus that dot's own 0.58rem offset below this stop's bottom edge. */
+  top: 0.87rem;
+  bottom: -1.83rem;
+  background: var(--graphite);
 }
 
 .account-dispatch-ledger {

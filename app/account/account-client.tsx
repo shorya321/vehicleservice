@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { AccountSidebar } from "@/components/account/account-sidebar"
@@ -53,6 +53,8 @@ interface AccountClientProps {
   /** Read on the server so the landing panel does not open on a skeleton. */
   overview: AccountOverview
   recentAlerts: NotificationListItem[]
+  /** RouteBandMap, rendered on the server and passed through to the dispatch band. */
+  routeMap?: ReactNode
 }
 
 export function AccountClient({
@@ -64,6 +66,7 @@ export function AccountClient({
   unreadNotifications,
   overview,
   recentAlerts,
+  routeMap,
 }: AccountClientProps) {
   const [activeTab, setActiveTabState] = useState(() => resolveTab(initialTab))
   const pathname = usePathname()
@@ -161,7 +164,12 @@ export function AccountClient({
         {/* The landing panel. The guarantees the confirmation page makes live inside it, so they
             are stated once instead of repeating under every form on all six tabs. */}
         <div className={activeTab === "overview" ? "account-tab-active" : "account-tab-hidden"}>
-          <OverviewTab overview={overview} recentAlerts={recentAlerts} onTabChange={handleTabChange} />
+          <OverviewTab
+            overview={overview}
+            recentAlerts={recentAlerts}
+            routeMap={routeMap}
+            onTabChange={handleTabChange}
+          />
         </div>
         <div className={activeTab === "personal" ? "account-tab-active" : "account-tab-hidden"}>
           <PersonalInfoTab user={user} onTabChange={handleTabChange} />

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { AccountClient } from "./account-client"
 import { getAccountData } from "./account-data"
+import { RouteBandMap } from "@/app/search/results/components/route-band-map"
 import { getAccountOverview } from "./overview-actions"
 import { getRecentNotifications } from "./notification-actions"
 import type { NotificationListItem } from "@/components/account/types"
@@ -80,6 +81,7 @@ export default async function AccountPage({
             unreadNotifications={unreadNotifications}
             overview={overview}
             recentAlerts={(recentAlerts.data as NotificationListItem[] | null) ?? []}
+            routeMap={<RouteBandMap />}
           />
         </div>
       </div>

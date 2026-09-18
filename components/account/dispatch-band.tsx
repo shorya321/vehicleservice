@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, type ReactNode } from "react"
 import Link from "next/link"
 import { Clock } from "lucide-react"
 import { formatPrice } from "@/lib/currency/format"
@@ -74,9 +74,17 @@ interface DispatchBandProps {
    * HTML. It also means this band and the counts beside it are measured against one instant.
    */
   asOf: string
+  /**
+   * The street map behind the band, handed in as a slot.
+   *
+   * RouteBandMap builds ~20KB of path data in a pair of nested loops at module load, and this is
+   * a client component: imported here, that build would run in the browser on every visit and
+   * the paths would join the route's JS bundle. The confirmation page passes it the same way.
+   */
+  routeMap?: ReactNode
 }
 
-export function DispatchBand({ transfer, asOf }: DispatchBandProps) {
+export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
 
   const pickup = useMemo(() => new Date(transfer.pickup_datetime), [transfer.pickup_datetime])
@@ -108,6 +116,8 @@ export function DispatchBand({ transfer, asOf }: DispatchBandProps) {
 
   return (
     <section className="account-dispatch" aria-labelledby="account-dispatch-heading">
+      {routeMap && <div className="account-dispatch__map print:hidden">{routeMap}</div>}
+
       <div className="account-dispatch-head">
         <div className="min-w-0">
           <p className="account-eyebrow">{countdownLabel(days)}</p>
