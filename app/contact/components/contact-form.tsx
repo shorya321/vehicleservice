@@ -30,8 +30,9 @@ const subjectOptions = [
 const inputClass =
   'w-full h-[52px] bg-[var(--black-warm)] border border-[var(--graphite)] rounded-[4px] px-4 text-[0.9375rem] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[rgba(var(--gold-rgb),0.15)] transition-[border,box-shadow] duration-200 disabled:opacity-60'
 
-const labelClass =
-  'block text-[0.75rem] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2'
+const labelClass = 'checkout-field-label block mb-2'
+
+const cardClass = 'checkout-summary-card p-8 md:p-10'
 
 export function ContactForm() {
   const [isSuccess, setIsSuccess] = useState(false)
@@ -70,7 +71,7 @@ export function ContactForm() {
   if (isSuccess) {
     return (
       <div
-        className="bg-[var(--charcoal)] border border-[var(--graphite)] rounded-[8px] p-8 md:p-10 flex flex-col items-center justify-center min-h-[400px] text-center"
+        className={`${cardClass} flex flex-col items-center justify-center min-h-[400px] text-center`}
         style={{ animation: 'contactFadeIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both' }}
       >
         <div className="w-14 h-14 rounded-full bg-[rgba(var(--gold-rgb),0.15)] flex items-center justify-center mb-5">
@@ -85,7 +86,7 @@ export function ContactForm() {
         <button
           type="button"
           onClick={() => setIsSuccess(false)}
-          className="text-[0.875rem] font-medium text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] rounded-[4px] px-5 py-3 transition-colors"
+          className="text-[0.875rem] font-medium text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--stub-bot)] rounded-[4px] px-5 py-3 transition-colors"
         >
           Send another message
         </button>
@@ -96,14 +97,18 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="bg-[var(--charcoal)] border border-[var(--graphite)] rounded-[8px] p-8 md:p-10"
+      className={cardClass}
     >
-      <h2 className="text-[1.25rem] font-semibold text-[var(--text-primary)] mb-1 [text-wrap:balance]">
+      <h2 className="text-[1.25rem] font-semibold text-[var(--text-primary)] mb-1.5 [text-wrap:balance]">
         Send us a message
       </h2>
       <p className="text-[0.875rem] tracking-[0.01em] text-[var(--text-secondary)] mb-8 [text-wrap:pretty]">
-        We read every message and respond promptly.
+        We read every message. A person answers it, not an autoresponder.
       </p>
+
+      <div className="checkout-section-header">
+        <p className="checkout-section-title">Who you are</p>
+      </div>
 
       <div className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -189,6 +194,12 @@ export function ContactForm() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="mt-10 pt-10 border-t border-[rgba(var(--gold-rgb),0.1)]">
+        <div className="checkout-section-header">
+          <p className="checkout-section-title">What you need</p>
+        </div>
 
         <div>
           <label htmlFor="contact-message" className={labelClass}>
@@ -199,7 +210,7 @@ export function ContactForm() {
             {...register('message')}
             className={`${inputClass} h-auto min-h-[140px] py-3`}
             rows={5}
-            placeholder="Tell us how we can help..."
+            placeholder="Tell us how we can help. A route, a date and a booking reference get you the fastest answer."
             aria-invalid={errors.message ? 'true' : undefined}
             aria-describedby={errors.message ? 'message-error' : undefined}
           />
@@ -213,17 +224,21 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-[52px] rounded-[4px] font-medium text-[0.875rem] tracking-[0.04em] uppercase bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold-medium)] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-5px_rgba(198,170,136,0.15),0_4px_8px_-4px_rgba(198,170,136,0.1)] active:bg-[var(--gold-deep)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--charcoal)] transition-[color,background-color,transform,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2"
+          className="w-full h-[52px] mt-6 rounded-[4px] font-medium text-[0.875rem] tracking-[0.04em] uppercase bg-[var(--gold)] text-[var(--onyx)] hover:bg-[var(--gold-medium)] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-5px_rgba(198,170,136,0.15),0_4px_8px_-4px_rgba(198,170,136,0.1)] active:bg-[var(--gold-deep)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--stub-bot)] transition-[color,background-color,transform,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Sending...
+              Sending
             </>
           ) : (
             'Send Message'
           )}
         </button>
+
+        <p className="mt-3.5 text-[0.75rem] leading-relaxed text-[var(--text-muted)] [text-wrap:pretty]">
+          We reply from info@infiniatransfers.com. Your details are never passed to a third party.
+        </p>
       </div>
     </form>
   )

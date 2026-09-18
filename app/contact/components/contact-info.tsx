@@ -1,4 +1,4 @@
-import { MapPin, Mail, Clock, LucideIcon } from 'lucide-react'
+import { MapPin, Mail, Phone, Clock, ArrowRight, LucideIcon } from 'lucide-react'
 
 interface ContactLine {
   text: string
@@ -11,6 +11,9 @@ interface ContactEntry {
   lines: ContactLine[]
   muted?: boolean
 }
+
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]'
 
 const contactEntries: ContactEntry[] = [
   {
@@ -26,6 +29,13 @@ const contactEntries: ContactEntry[] = [
     label: 'Email',
     lines: [
       { text: 'info@infiniatransfers.com', href: 'mailto:info@infiniatransfers.com' },
+    ],
+  },
+  {
+    icon: Phone,
+    label: 'Phone',
+    lines: [
+      { text: '+971 50 123 4567', href: 'tel:+971501234567' },
     ],
   },
   {
@@ -52,7 +62,7 @@ function ContactEntryRow({ entry }: { entry: ContactEntry }) {
             <a
               key={line.text}
               href={line.href}
-              className="block text-[0.9375rem] leading-relaxed tracking-[0.01em] text-[var(--text-primary)] hover:text-[var(--gold-text-hover)] rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] link-underline-grow"
+              className={`block text-[0.9375rem] leading-relaxed tracking-[0.01em] text-[var(--text-primary)] hover:text-[var(--gold-text-hover)] rounded-[2px] link-underline-grow ${FOCUS_RING}`}
             >
               {line.text}
             </a>
@@ -70,6 +80,17 @@ function ContactEntryRow({ entry }: { entry: ContactEntry }) {
   )
 }
 
+function SideCard({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="border border-[var(--stub-line)] rounded-[12px] p-6">
+      <h3 className="text-[0.625rem] font-bold tracking-[0.2em] uppercase text-[var(--gold-text)] mb-2.5">
+        {label}
+      </h3>
+      {children}
+    </div>
+  )
+}
+
 export function ContactInfo() {
   return (
     <div>
@@ -77,7 +98,7 @@ export function ContactInfo() {
       <div className="flex flex-col gap-3 mb-6 lg:hidden">
         <a
           href="mailto:info@infiniatransfers.com"
-          className="flex items-center justify-center gap-2.5 h-[52px] rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] text-[var(--text-primary)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--gold-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] transition-colors duration-200"
+          className={`flex items-center justify-center gap-2.5 h-[52px] rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] text-[var(--text-primary)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--gold-text-hover)] transition-colors duration-200 ${FOCUS_RING}`}
         >
           <Mail className="w-4 h-4" />
           <span className="text-[0.875rem] font-medium">info@infiniatransfers.com</span>
@@ -85,7 +106,7 @@ export function ContactInfo() {
       </div>
 
       {/* Contact detail list. Responsive via internal class toggles */}
-      <h2 className="hidden lg:block text-[1.125rem] font-medium text-[var(--text-primary)] mb-6 [text-wrap:balance]">
+      <h2 className="hidden lg:block text-[1.25rem] font-semibold text-[var(--text-primary)] mb-6 [text-wrap:balance]">
         Contact details
       </h2>
       <div className="divide-y divide-[var(--graphite)]">
@@ -94,6 +115,29 @@ export function ContactInfo() {
             <ContactEntryRow entry={entry} />
           </div>
         ))}
+      </div>
+
+      <div className="mt-8 flex flex-col gap-3.5">
+        <SideCard label="Travelling today">
+          <p className="text-[0.875rem] leading-[1.65] tracking-[0.01em] text-[var(--text-secondary)] mb-[1.125rem] [text-wrap:pretty]">
+            If your pickup is inside the next 12 hours, call the desk instead of writing. We
+            track your flight and hold the car for 45 minutes after you land.
+          </p>
+          <a
+            href="tel:+971501234567"
+            className={`btn btn-secondary gap-3 px-[1.375rem] py-3 rounded-[8px] tracking-[0.01em] normal-case ${FOCUS_RING}`}
+          >
+            Call the desk
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </SideCard>
+
+        <SideCard label="Corporate accounts">
+          <p className="text-[0.875rem] leading-[1.65] tracking-[0.01em] text-[var(--text-secondary)] [text-wrap:pretty]">
+            Monthly invoicing, priority booking and a named account manager. Pick Corporate
+            Services in the form and we set it up in one call.
+          </p>
+        </SideCard>
       </div>
     </div>
   )

@@ -1,20 +1,56 @@
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]'
+
 export function ContactHero() {
   return (
-    <section className="pt-16 pb-10 md:pt-20 md:pb-12 bg-[var(--black-void)]">
+    <section className="editorial-section editorial-section--ground editorial-section--compact">
       <div className="luxury-container">
-        <div className="w-10 h-px bg-[var(--gold)] mb-5" aria-hidden="true" />
-        <p className="text-[0.75rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-4">
-          Get in Touch
-        </p>
+        <p className="editorial-eyebrow">Get in touch</p>
 
-        <h1 className="text-[clamp(2.5rem,5vw,3.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)] mb-4 [text-wrap:balance]">
-          Contact
+        <h1 className="editorial-section-title mt-5 max-w-[28ch]">
+          Talk to the people who run the transfer.
         </h1>
 
-        <p className="text-[0.9375rem] leading-relaxed tracking-[0.01em] text-[var(--text-secondary)] max-w-xl [text-wrap:pretty]">
-          Questions about a booking, corporate inquiries, or general feedback.
-          Our concierge team responds within 24 hours.
+        <p className="editorial-body mt-6">
+          Questions about a booking, corporate accounts, or feedback on a journey you have
+          already taken. Every message reaches the concierge desk in Business Bay.
         </p>
+
+        <dl className="trip-ledger mt-10">
+          <div className="trip-ledger__item">
+            <dt className="trip-ledger__label">Reply</dt>
+            <dd className="trip-ledger__value">Within 24 hours</dd>
+          </div>
+
+          <div className="trip-ledger__item">
+            <dt className="trip-ledger__label">Desk</dt>
+            <dd className="trip-ledger__value numeric">Open 24 / 7</dd>
+          </div>
+
+          <div className="trip-ledger__item">
+            <dt className="trip-ledger__label">Email</dt>
+            <dd className="trip-ledger__value">
+              <a
+                href="mailto:info@infiniatransfers.com"
+                className={`text-[var(--text-primary)] hover:text-[var(--gold-text-hover)] rounded-[2px] link-underline-grow ${FOCUS_RING}`}
+              >
+                info@infiniatransfers.com
+              </a>
+            </dd>
+          </div>
+
+          <div className="trip-ledger__item sm:ml-auto">
+            <dt className="trip-ledger__label">Phone</dt>
+            <dd className="trip-ledger__value numeric">
+              <a
+                href="tel:+971501234567"
+                className={`text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] rounded-[2px] link-underline-grow ${FOCUS_RING}`}
+              >
+                +971 50 123 4567
+              </a>
+            </dd>
+          </div>
+        </dl>
       </div>
     </section>
   )
