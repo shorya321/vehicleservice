@@ -30,7 +30,7 @@ export function ContactPromises() {
   return (
     <section
       aria-labelledby="contact-promises-heading"
-      className="editorial-section editorial-section--ground editorial-section--compact border-t border-[var(--graphite)]"
+      className="editorial-section editorial-section--ground editorial-section--compact"
     >
       <div className="luxury-container">
         <header className="max-w-2xl">

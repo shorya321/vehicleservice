@@ -23,7 +23,7 @@ export default function ContactPage() {
 
       <section
         id="contact-form"
-        className="editorial-section editorial-section--raised border-t border-[var(--graphite)]"
+        className="editorial-section editorial-section--raised"
       >
         <div className="luxury-container">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:items-start">
@@ -37,7 +37,7 @@ export default function ContactPage() {
 
       <section
         aria-labelledby="contact-faq-heading"
-        className="editorial-section editorial-section--raised border-t border-[var(--graphite)]"
+        className="editorial-section editorial-section--raised"
       >
         <div className="luxury-container">
           <ContactFaq />
