@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Search, Car, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/currency/format"
+import { useCurrency } from "@/lib/currency/context"
 import { getBookings, getBookingStats, type BookingFilters } from "@/app/account/booking-actions"
 import { BookingCard } from "./booking-card"
+import { TripLedgerRow } from "./trip-ledger-row"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ContentSection } from "./content-section"
 import { InlineStats } from "./inline-stats"
@@ -14,6 +17,11 @@ import type { BookingListItem } from "./types"
 
 interface BookingsTabProps {
   userId: string
+  /**
+   * Lifetime spend, already totalled on the server. Null when the account holds bookings in more
+   * than one currency, where a single sum would mean nothing.
+   */
+  spend?: { amount: number; currency: string } | null
 }
 
 const STATUS_OPTIONS = [
@@ -32,9 +40,10 @@ const PAYMENT_OPTIONS = [
   { value: "refunded", label: "Refunded" },
 ]
 
-export function BookingsTab({ userId }: BookingsTabProps) {
+export function BookingsTab({ userId, spend }: BookingsTabProps) {
+  const { currentCurrency, exchangeRates } = useCurrency()
   const [bookings, setBookings] = useState<BookingListItem[]>([])
-  const [stats, setStats] = useState({ total: 0, upcoming: 0, completed: 0, cancelled: 0 })
+  const [stats, setStats] = useState({ total: 0, upcoming: 0, completed: 0, travelled: 0, cancelled: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState<BookingFilters>({
     search: "",
@@ -90,18 +99,59 @@ export function BookingsTab({ userId }: BookingsTabProps) {
   // "completed" read booking_status here while the row badges read payment_status,
   // so "0 completed" could sit directly above rows badged "completed". Travelled
   // cannot be confused with a payment that cleared.
+  //
+  // It now reads stats.travelled, which counts a pickup that is in the past and was not
+  // cancelled. booking_status only reaches "completed" when a vendor closes the job, so this
+  // row used to report "0 travelled" above a list of trips the customer had plainly taken.
+  //
+  // A figure of zero is dropped rather than printed. Four counts of which three were zero, in
+  // 11px, is not a summary of an account; it is noise above the thing being summarised.
+  /**
+   * Split by the clock, not by booking_status: that column only reaches "completed" when a
+   * vendor closes the job, which often never happens, so grouping on it would have left a trip
+   * taken three weeks ago sitting under "Upcoming".
+   */
+  const { upcoming, travelled } = useMemo(() => {
+    const now = Date.now()
+    const upcoming: BookingListItem[] = []
+    const travelled: BookingListItem[] = []
+    for (const booking of bookings) {
+      const isAhead =
+        booking.booking_status !== "cancelled" && new Date(booking.pickup_datetime).getTime() >= now
+      ;(isAhead ? upcoming : travelled).push(booking)
+    }
+    return { upcoming, travelled }
+  }, [bookings])
+
   const inlineStats = useMemo(() => [
     { label: "booked", value: stats.total },
     { label: "upcoming", value: stats.upcoming },
-    { label: "travelled", value: stats.completed },
+    { label: "travelled", value: stats.travelled },
     { label: "cancelled", value: stats.cancelled, color: "var(--status-cancelled-text)" },
-  ], [stats.total, stats.upcoming, stats.completed, stats.cancelled])
+  ].filter((stat) => stat.value > 0), [stats.total, stats.upcoming, stats.travelled, stats.cancelled])
+
+  const spendLabel = useMemo(
+    () => (spend && spend.amount > 0 ? formatPrice(spend.amount, currentCurrency, exchangeRates) : null),
+    [spend, currentCurrency, exchangeRates]
+  )
 
   return (
     <ContentSection
-      title="Bookings"
+      title="Trips"
       eyebrow="My Transfers"
-      action={<InlineStats stats={inlineStats} />}
+      action={
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <InlineStats stats={inlineStats} />
+          {spendLabel && (
+            <span className="flex items-baseline gap-1.5">
+              <span className="text-base font-semibold tabular-nums lining-nums text-[var(--gold-text)]">
+                {spendLabel}
+              </span>
+              <span className="account-label">all time</span>
+            </span>
+          )}
+        </div>
+      }
     >
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-3 mb-6">
@@ -140,8 +190,13 @@ export function BookingsTab({ userId }: BookingsTabProps) {
         </div>
       </div>
 
-      {/* List */}
-      <div key={`${filters.status}-${filters.paymentStatus}-${pagination.page}`} className="space-y-3 account-tab-enter">
+      {/* List, in two registers.
+
+          A transfer still ahead of the customer keeps the full card: it is the only one they can
+          still act on. Everything already travelled becomes a ledger row, because four identical
+          grey plates gave the same weight to the trip happening on Saturday and one taken in
+          September, and said nothing about which of them wanted attention. */}
+      <div key={`${filters.status}-${filters.paymentStatus}-${pagination.page}`} className="account-tab-enter">
         {isLoading ? (
           <ListSkeleton rows={3} />
         ) : bookings.length === 0 ? (
@@ -164,12 +219,29 @@ export function BookingsTab({ userId }: BookingsTabProps) {
             }
           />
         ) : (
-          bookings.map((booking) => (
-            <BookingCard
-              key={booking.id}
-              booking={booking}
-            />
-          ))
+          <>
+            {upcoming.length > 0 && (
+              <section aria-labelledby="trips-upcoming">
+                <h3 id="trips-upcoming" className="editorial-list-meta">Upcoming</h3>
+                <div className="mt-4 space-y-3">
+                  {upcoming.map((booking) => (
+                    <BookingCard key={booking.id} booking={booking} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {travelled.length > 0 && (
+              <section aria-labelledby="trips-travelled" className={upcoming.length > 0 ? "mt-10" : undefined}>
+                <h3 id="trips-travelled" className="editorial-list-meta">Travelled</h3>
+                <ul className="editorial-list mt-4">
+                  {travelled.map((booking) => (
+                    <TripLedgerRow key={booking.id} booking={booking} />
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
         )}
       </div>
 

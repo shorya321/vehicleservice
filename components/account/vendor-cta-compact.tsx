@@ -37,11 +37,14 @@ export function VendorCTACompact({
             enough not to compete with the gold-filled primary on the booking detail. Pitch, then
             the control, rather than a control followed by an explanation of itself. */}
         <p className="account-label">Partner with Infinia</p>
-        <p className="mt-2 text-[0.75rem] leading-relaxed text-[var(--text-muted)]">
-          Run a fleet in the UAE? List your vehicles and take bookings through us.
+        <p className="mt-2 text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+          Run a fleet in the UAE? List your vehicles and take bookings from travellers already on
+          this page.
         </p>
-        <Link href="/become-vendor" className="btn btn-secondary mt-4 w-full">
-          Apply to partner
+        {/* A text link, not a bordered button. In the rail the button was the heaviest thing on
+            the page after the primary CTA in the header, for the least urgent action on it. */}
+        <Link href="/become-vendor" className="account-action mt-3">
+          Apply to partner &rarr;
         </Link>
       </div>
     )

@@ -86,11 +86,12 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
   }
 
   return (
-    <div>
+    <div className="account-split">
+      <div className="min-w-0">
       <ContentSection
-        title="Change Password"
+        title="Keys to the account"
         eyebrow="Security"
-        description="Update your password to keep your account secure"
+        description="Your trip history, your receipts and the card you paid with all sit behind this password."
       >
         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
           <div>
@@ -167,15 +168,11 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
             </div>
           </div>
 
-          <div className="text-xs text-[var(--text-muted)] space-y-1">
-            <p>Password requirements:</p>
-            <ul className="list-disc list-inside space-y-0.5 ml-2">
-              <li>At least 8 characters</li>
-              <li>One uppercase letter</li>
-              <li>One lowercase letter</li>
-              <li>One number</li>
-            </ul>
-          </div>
+          {/* One line, not a bulleted list of four. The rule is short enough to read as a
+              sentence, and set as a list it was the tallest thing in the form. */}
+          <p className="text-[0.8125rem] leading-relaxed text-[var(--text-muted)]">
+            Eight characters or more, with one capital, one lower-case letter and one number.
+          </p>
 
           <div className="pt-2 flex justify-end">
             <button
@@ -195,18 +192,20 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
           </div>
         </form>
       </ContentSection>
+      </div>
 
-      {/* Danger Zone. Flat charcoal region, not a card */}
-      <div className="mt-[clamp(2rem,4vw,3.5rem)] rounded-[8px] bg-[var(--charcoal)] p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Trash2 className="w-5 h-5 text-[var(--error-text)]" />
-          <div>
-            <h3 className="text-base font-medium text-[var(--error-text)]">Delete Account</h3>
-            <p className="text-sm text-[var(--text-muted)]">
-              Permanently delete your account and all associated data
-            </p>
-          </div>
-        </div>
+      {/* Closing the account is a consequence, so it reads as one: a quiet bordered column
+          stating what is lost and what the law keeps, not a filled red panel shouting in the
+          middle of the page. */}
+      <aside className="account-item-card account-aside-card" aria-labelledby="delete-account-heading">
+        <p className="account-label">Closing the account</p>
+        <h3 id="delete-account-heading" className="mt-1.5 text-[1.0625rem] font-medium text-[var(--text-primary)]">
+          Delete this account
+        </h3>
+        <p className="mt-3 text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+          Deleting removes your profile, your saved details and your access to past receipts.
+          Transfers already travelled stay on record for tax and insurance, as the law requires.
+        </p>
 
         {pendingDeletionRequest ? (
           <div className="flex items-start gap-3 p-4 rounded-md bg-[var(--status-pending-bg)]">
@@ -289,15 +288,18 @@ export function SecurityTab({ userId, pendingDeletionRequest }: SecurityTabProps
             </div>
           </form>
         ) : (
-          <button
-            onClick={() => setShowDeleteSection(true)}
-            className="btn border border-[var(--status-cancelled-border)] text-[var(--error-text)] hover:bg-[var(--status-cancelled-bg)]"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete My Account
-          </button>
+          <>
+            <hr className="my-5 h-px border-0 bg-[var(--border-subtle)]" />
+            <button
+              onClick={() => setShowDeleteSection(true)}
+              className="account-action text-[var(--error-text)]"
+            >
+              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+              Request deletion
+            </button>
+          </>
         )}
-      </div>
+      </aside>
     </div>
   )
 }

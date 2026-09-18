@@ -222,8 +222,8 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
 
   return (
     <ContentSection
-      title="Notifications"
-      eyebrow="Updates"
+      title="What changed on your transfers"
+      eyebrow="Alerts"
       action={
         <div className="flex flex-wrap items-center gap-3">
           <InlineStats stats={inlineStats} />

@@ -4543,11 +4543,23 @@
   max-height: calc(100vh - 8rem);
   border-right: 1px solid var(--border-subtle);
   padding-right: var(--space-xl);
+  /* The rail itself no longer scrolls: it clipped the vendor block mid-sentence, and with no
+     visible scrollbar on a trackpad that read as a broken layout rather than as more content.
+     .account-sidebar-nav scrolls instead, so the zones above and below it always stay on screen. */
+  overflow: hidden;
+}
+
+/* Zone B. min-height:0 is what lets a flex child shrink below its content and scroll. */
+.account-sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .account-sidebar-zone {
   padding: var(--space-lg) 0;
+  flex-shrink: 0;
 }
 
 .account-sidebar-zone:first-child {
@@ -4738,20 +4750,37 @@
   color: var(--gold-text);
 }
 
-/* Item Card Pattern: aligned with luxury-card vocabulary */
+/* Item Card Pattern: THE card physic, shared with the rest of the site.
+
+   This was a flat --black-rich fill with a gold-tinted hairline, which is not what any other
+   surface uses: home's .route-stub and .promise-card, search's .vehicle-card and checkout's
+   .checkout-summary-card are all one plate — a tone-step gradient, a 1px --stub-line, 8px, a lit
+   top inner edge and a wide ambient shadow. The account now uses the same one, so a card here
+   and a card on checkout are the same object. Light and dark both come from the --stub-* tokens,
+   whose dark values are fixed ink rather than theme-derived. */
 .account-item-card {
   padding: var(--space-lg);
-  background: var(--black-rich);
-  border: 1px solid rgba(var(--gold-rgb), 0.12);
+  background-color: var(--stub-bot);
+  background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+  border: 1px solid var(--stub-line);
   border-radius: 8px;
-  transition: border-color 200ms var(--ease-luxury), background-color 200ms var(--ease-luxury);
+  box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+  transition: border-color 200ms var(--ease-luxury);
 }
 
-/* A lift is a click affordance. Only rows that actually open something get one,
-   and the step is in tone rather than in elevation. */
+/* A click affordance, in the site's terms: a link-card moves its border colour and nothing
+   else. Changing the fill would have fought the gradient, which is what the plate is. */
 .account-item-card-interactive:hover {
-  background: var(--black-warm);
-  border-color: rgba(var(--gold-rgb), 0.25);
+  border-color: rgba(var(--gold-rgb), 0.45);
+}
+
+/* The plate, tinted: an unread alert. The tint has to be a layer ON the gradient, because a
+   background-color would sit underneath it and never show — which is exactly what happened to
+   the unread state when these cards moved onto the plate. First layer listed paints on top. */
+.account-item-card--accent {
+  background-image:
+    linear-gradient(rgba(var(--gold-rgb), 0.08), rgba(var(--gold-rgb), 0.08)),
+    linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
 }
 
 /* Account Eyebrow: editorial label with gold rule */
@@ -4964,6 +4993,402 @@
 
 .account-action:hover {
   background-size: 100% 1px;
+}
+
+/* ============================================
+   Overview tab: the dispatch band and the
+   standing figures beneath it.
+
+   The account used to open on the personal
+   details form. This is the panel that answers
+   the question a transfer customer actually
+   arrives with, in the confirmation page's own
+   typography, so the two read as one product.
+   ============================================ */
+
+/* Page header: identity left, the two actions right, stacking on a phone. */
+.account-page-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-lg);
+}
+
+.account-page-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .account-page-head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-2xl);
+  }
+
+  .account-page-head-actions {
+    flex-shrink: 0;
+  }
+}
+
+/* The band. A gold rule across the top rather than a fill: the one thing on the page that
+   outranks everything else, marked in the same way the checkout marks its active step. */
+.account-dispatch {
+  /* The same plate as every other card on the site, with a gold rule across the top: this one
+     outranks everything else on the page, and that is how the checkout marks its live step. */
+  background-color: var(--stub-bot);
+  background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
+  border: 1px solid var(--stub-line);
+  border-top: 2px solid var(--gold);
+  border-radius: 0 0 8px 8px;
+  box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.account-dispatch-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.account-dispatch-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+@media (min-width: 768px) {
+  .account-dispatch-head {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-xl);
+  }
+
+  .account-dispatch-meta {
+    flex-shrink: 0;
+    align-items: flex-start;
+    gap: 1.75rem;
+  }
+
+  .account-dispatch-countdown {
+    text-align: right;
+  }
+}
+
+/* The headline, at the confirmation page's numbers: the day above, the hour in italic gold
+   beneath it. See .confirm-sat__big in this file for the original. Stepped down one size,
+   because here it sits inside a card rather than across a full band. */
+.account-dispatch-big {
+  margin-top: 0.75rem;
+  font-family: var(--font-body);
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.account-dispatch-big > span {
+  display: block;
+}
+
+.account-dispatch-big > span:first-child {
+  font-size: 0.72em;
+  letter-spacing: -0.02em;
+}
+
+.account-dispatch-big em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold-text);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.account-dispatch-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (min-width: 900px) {
+  .account-dispatch-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 16rem);
+    gap: var(--space-2xl);
+  }
+}
+
+.account-dispatch-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+/* The route inside the band carries a label above each stop, which the booking rows do not, so
+   the dot has to clear the label rather than the address. */
+.account-dispatch .account-route {
+  gap: 1.25rem;
+}
+
+.account-dispatch .account-route-stop::before {
+  top: 0.3rem;
+  background: var(--black-rich);
+}
+
+.account-dispatch-ledger {
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.account-dispatch-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-subtle);
+}
+
+@media (min-width: 640px) {
+  .account-dispatch-foot {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xl);
+  }
+}
+
+/* Standing figures. The hollow numeral the confirmation spends on its pickup time and the home
+   page spends on its promise indices: the account's own numbers earn the same treatment.
+   `0` never appears here — the tab only renders figures that carry information. */
+.account-figure {
+  font-family: var(--font-body);
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--gold-text);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+@supports (-webkit-text-stroke: 1px currentColor) {
+  .account-figure {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--gold-text);
+  }
+}
+
+/* A price sits in this row beside the counts, and at 2.75rem hollow it would wrap. */
+.account-overview-figures .account-figure {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.account-overview-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-lg);
+  margin-top: clamp(2rem, 4vw, 3rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+@media (min-width: 768px) {
+  .account-overview-figures {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.account-overview-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 3.5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+@media (min-width: 1100px) {
+  .account-overview-split {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* Alert rows: .editorial-list, with a narrower index column than an editorial section needs. */
+.editorial-list > li.account-alert-row {
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: 1.125rem 0;
+  align-items: start;
+}
+
+/* Read rows drop out of gold: the index still holds the column, it just stops speaking. */
+.account-alert-index-read {
+  color: var(--text-muted);
+}
+
+/* The countdown block, left of the reference in the band's head. */
+.account-dispatch-countdown {
+  flex-shrink: 0;
+}
+
+.account-dispatch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* A transfer waiting to be written about: the route, and the one thing to do with it. */
+.editorial-list > li.account-review-row {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .editorial-list > li.account-review-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+/* A travelled transfer, as a ledger row rather than a fifth identical card. The date holds the
+   left column and the fare lines up on the right, where figures can be compared down a column. */
+.editorial-list > li.account-trip-row {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .editorial-list > li.account-trip-row {
+    grid-template-columns: 5rem minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+/* On a phone the action sits under the route rather than in a column of its own. */
+.account-trip-row-action {
+  display: flex;
+  align-items: center;
+}
+
+/* Content beside a standing aside: the form and what it still wants, the settings and the
+   consequence of changing them. One column until there is room for two. */
+.account-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+@media (min-width: 1100px) {
+  .account-split {
+    grid-template-columns: minmax(0, 1fr) 19rem;
+    gap: clamp(2.5rem, 4vw, 3.5rem);
+    align-items: start;
+  }
+}
+
+/* The card that sits in that second column. */
+.account-aside-card {
+  padding: var(--space-lg);
+}
+
+@media (min-width: 1100px) {
+  .account-aside-card {
+    position: sticky;
+    top: 6rem;
+  }
+}
+
+/* ============================================
+   Account fields, on the checkout recipe.
+
+   The account had its own: a 56px control on a
+   translucent void fill with a gold-tinted edge,
+   under a gold label. Checkout's is a 52px
+   control on --black-warm with a --graphite edge,
+   under a muted label. A customer fills one of
+   these in and then the other, so they are the
+   same control now. Scoped to .account-content so
+   nothing outside this page moves; the rules the
+   checkout fields themselves use are at
+   .checkout-field-label above.
+   ============================================ */
+.account-content .form-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--text-muted);
+  margin-bottom: 0.625rem;
+}
+
+.account-content .luxury-input {
+  height: 52px;
+  padding: 0 1rem;
+  background: var(--black-warm);
+  border: 1px solid var(--graphite);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  transition: border-color 200ms var(--ease-luxury), box-shadow 200ms var(--ease-luxury);
+}
+
+.account-content .luxury-input::placeholder {
+  color: var(--text-muted);
+}
+
+.account-content .luxury-input:focus,
+.account-content .luxury-input:focus-visible {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(var(--gold-rgb), 0.15);
+}
+
+/* An icon sits inside the control on search rows, so the text starts clear of it. */
+.account-content .luxury-input.pl-11 {
+  padding-left: 2.75rem;
+}
+
+/* A select draws its own chevron in the right inset, and at 1rem the longest option ran
+   underneath it. */
+.account-content select.luxury-input {
+  padding-right: 2.25rem;
+}
+
+/* A textarea is the one field that is not 52px tall. */
+.account-content textarea.luxury-input {
+  height: auto;
+  min-height: 100px;
+  padding: 0.875rem 1rem;
+  line-height: 1.6;
+}
+
+/* The date picker renders a button rather than an input, and has to sit on the same line. */
+.account-content button.luxury-input {
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+/* The plain count beside a rail item, as distinct from the unread badge, which is a fill. */
+.account-nav-count {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--text-muted);
 }
 
 /* Skeleton loading */

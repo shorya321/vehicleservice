@@ -10,21 +10,26 @@ import { updateProfile } from "@/app/account/actions"
 import { personalInfoSchema, type PersonalInfoFormData } from "@/app/account/schemas"
 import { toast } from "sonner"
 import { ContentSection } from "./content-section"
+import { AvatarUpload } from "./avatar-upload"
+import { ProfileChecklist } from "./profile-checklist"
 
 interface PersonalInfoTabProps {
   user: {
     id: string
     full_name: string | null
     email: string
+    avatar_url: string | null
     phone: string | null
     date_of_birth: string | null
     address_street: string | null
     address_city: string | null
     address_country: string | null
   }
+  /** Lets the checklist send the customer to Security in place, the way the rail does. */
+  onTabChange?: (tab: "security") => void
 }
 
-export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
+export function PersonalInfoTab({ user, onTabChange }: PersonalInfoTabProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<PersonalInfoFormData>({
@@ -53,11 +58,26 @@ export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="account-split">
+      <div className="min-w-0">
       <ContentSection
-        title="Personal Information"
+        title="The details we travel on"
         eyebrow="Profile"
-        description="Update your personal details to complete your profile"
+        description="A chauffeur calls the number on this page when a pickup point is busy. Everything else is optional, and none of it is needed to book."
       >
+        {/* The photo moved here from the rail, where it sat under a page header carrying the
+            same name and email. */}
+        <AvatarUpload
+          userId={user.id}
+          fullName={user.full_name}
+          email={user.email}
+          avatarUrl={user.avatar_url}
+        />
+
+        <div className="form-subsection">
+          <h3 className="account-eyebrow">Who is travelling</h3>
+        </div>
+
         <div className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div>
@@ -131,10 +151,15 @@ export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
             </div>
           </div>
         </div>
-      </ContentSection>
 
-      <ContentSection title="Address">
-        <div className="space-y-6">
+        <div className="form-subsection">
+          <h3 className="account-eyebrow">Billing address</h3>
+          <p className="mt-3 text-[0.8125rem] leading-relaxed text-[var(--text-muted)]">
+            Printed on your receipts. Never used for a pickup.
+          </p>
+        </div>
+
+        <div className="mt-6 space-y-6">
           <div className="grid grid-cols-1">
             <div>
               <label htmlFor="address_street" className="form-label">Street Address</label>
@@ -169,23 +194,46 @@ export function PersonalInfoTab({ user }: PersonalInfoTabProps) {
           </div>
         </div>
 
-        <div className="pt-6 flex justify-end">
-          <button
-            type="submit"
-            disabled={isLoading || !form.formState.isDirty}
-            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Changes"
+        {/* The save button is greyed until the form is dirty, which is right, but on a page
+            opened with nothing typed that left a pale button floating in space with no
+            explanation. It sits on a hairline now, beside a line saying what saving does, and a
+            way back out appears only once there is something to discard. */}
+        <div className="mt-8 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[0.8125rem] leading-relaxed text-[var(--text-muted)]">
+            Changes apply to transfers you book from now on.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-shrink-0">
+            {form.formState.isDirty && (
+              <button
+                type="button"
+                onClick={() => form.reset()}
+                disabled={isLoading}
+                className="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                Discard
+              </button>
             )}
-          </button>
+            <button
+              type="submit"
+              disabled={isLoading || !form.formState.isDirty}
+              className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
         </div>
       </ContentSection>
+      </div>
+
+      <ProfileChecklist user={user} onTabChange={onTabChange} />
+      </div>
     </form>
   )
 }

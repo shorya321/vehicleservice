@@ -1,28 +1,23 @@
 "use client"
 
 import { useRef, useEffect, useCallback } from "react"
-import Image from "next/image"
 import { NAV_ITEMS, type TabId } from "./account-nav"
-import { calculateCompletion } from "./types"
 
 interface AccountMobileHeaderProps {
-  user: {
-    full_name: string | null
-    email: string
-    avatar_url: string | null
-    phone: string | null
-    date_of_birth: string | null
-    address_street: string | null
-    address_city: string | null
-    address_country: string | null
-  }
   activeTab: TabId
   onTabChange: (tab: TabId) => void
   unreadNotifications: number
 }
 
-export function AccountMobileHeader({ user, activeTab, onTabChange, unreadNotifications }: AccountMobileHeaderProps) {
-  const completion = calculateCompletion(user)
+/**
+ * The tab bar, on a phone.
+ *
+ * This used to open with a compact profile row — avatar, email and a "Finish setup" link. All
+ * three now sit in the page header directly above it, which on a phone put the email on screen
+ * twice and offered "Finish setup" twice in a row. The avatar here was never the upload control
+ * either; that lives in the desktop rail. So the row went, and the pills start at the top.
+ */
+export function AccountMobileHeader({ activeTab, onTabChange, unreadNotifications }: AccountMobileHeaderProps) {
   const pillContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -54,39 +49,6 @@ export function AccountMobileHeader({ user, activeTab, onTabChange, unreadNotifi
 
   return (
     <div className="lg:hidden min-w-0">
-      {/* Compact Profile Row */}
-      <div className="flex items-center gap-3 px-4 py-4">
-        <div className="w-11 h-11 rounded-full bg-[var(--charcoal)] flex items-center justify-center overflow-hidden flex-shrink-0">
-          {user.avatar_url ? (
-            <Image
-              src={user.avatar_url}
-              alt={user.full_name || "User"}
-              width={44}
-              height={44}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <span className="text-sm font-medium text-[var(--gold-text)]">
-              {user.full_name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
-            </span>
-          )}
-        </div>
-        {/* No name here: the page heading directly above already carries it,
-            and repeating it just crowded the email out of the row. */}
-        <p className="min-w-0 flex-1 truncate text-[0.8125rem] leading-snug text-[var(--text-muted)]">
-          {user.email}
-        </p>
-        {completion < 100 && (
-          <button
-            type="button"
-            onClick={() => onTabChange("personal")}
-            className="account-action flex-shrink-0"
-          >
-            Finish setup
-          </button>
-        )}
-      </div>
-
       {/* Pill Navigation */}
       <div ref={pillContainerRef} className="account-pill-bar" role="tablist" aria-label="Account sections" onKeyDown={handlePillKeyDown}>
         <div className="flex gap-1.5 min-w-max px-4">

@@ -1,14 +1,7 @@
 "use client"
 
-import { getBookingTimezone } from "@/lib/utils/timezone"
-import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
-import { Camera } from "lucide-react"
-import { uploadAvatar } from "@/app/account/actions"
-import { toast } from "sonner"
 import { NAV_ITEMS, type TabId } from "./account-nav"
-import { calculateCompletion } from "./types"
 import { VendorCTACompact } from "./vendor-cta-compact"
 
 interface AccountSidebarProps {
@@ -33,6 +26,8 @@ interface AccountSidebarProps {
    */
   onTabChange?: (tab: TabId) => void
   unreadNotifications: number
+  /** Beside "Trips", so the rail says how much history there is before you open it. */
+  tripCount?: number
   vendorApplication: {
     id: string
     status: string
@@ -41,128 +36,18 @@ interface AccountSidebarProps {
   } | null
 }
 
-export function AccountSidebar({ user, activeTab, onTabChange, unreadNotifications, vendorApplication }: AccountSidebarProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url)
-  const profileComplete = calculateCompletion(user) === 100
-
-  const memberSince = new Date(user.created_at).toLocaleDateString("en-US", { timeZone: getBookingTimezone(), 
-    month: "long",
-    year: "numeric",
-  })
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file")
-      return
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB")
-      return
-    }
-
-    setIsUploading(true)
-    const formData = new FormData()
-    formData.append("file", file)
-
-    const result = await uploadAvatar(user.id, formData)
-    setIsUploading(false)
-
-    if (result.error) {
-      toast.error(result.error)
-    } else if (result.url) {
-      setAvatarUrl(result.url)
-      toast.success("Avatar updated")
-    }
-  }
-
+/**
+ * The rail: navigation, and then the standing invitation to list a fleet.
+ *
+ * It used to open with a profile chip — avatar, name and email — directly beneath a page header
+ * carrying the same name and the same email in larger type. The chip is gone. The avatar went
+ * with it, to the Profile tab, which is where the rest of the fields it belongs with already
+ * live; the rail is navigation now and nothing else.
+ */
+export function AccountSidebar({ activeTab, onTabChange, unreadNotifications, tripCount, vendorApplication }: AccountSidebarProps) {
   return (
     <aside className="account-sidebar">
-      {/* Zone A: Profile Summary */}
-      <div className="account-sidebar-zone">
-        <div className="flex items-center gap-3">
-          <div className="relative group flex-shrink-0">
-            <div className="account-avatar-ring">
-              <div className="account-avatar-inner">
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt={user.full_name || "User"}
-                    width={96}
-                    height={96}
-                    className="object-cover w-full h-full"
-                  />
-                ) : (
-                  <span className="text-base font-medium text-[var(--gold-text)]">
-                    {user.full_name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
-            </div>
-            <label
-              className="absolute inset-0 flex items-center justify-center bg-[var(--onyx)]/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200"
-              aria-label="Upload profile photo"
-            >
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarUpload}
-                disabled={isUploading}
-              />
-              {isUploading ? (
-                <div className="w-4 h-4 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Camera className="w-4 h-4 text-[var(--gold)]" aria-hidden="true" />
-              )}
-            </label>
-          </div>
-          <div className="min-w-0">
-            <p className="text-[1.125rem] font-medium leading-snug text-[var(--text-primary)] [overflow-wrap:anywhere]">
-              {user.full_name || "Welcome"}
-            </p>
-            <p className="text-[0.8125rem] leading-snug text-[var(--text-muted)] [overflow-wrap:anywhere]">
-              {user.email}
-            </p>
-          </div>
-        </div>
-
-        {/* A progress bar tells a customer they are incomplete. A record of
-            what they have travelled tells them they are known. Same space. */}
-        <dl className="account-dl account-dl-inline mt-5">
-          <div>
-            <dt>Member since</dt>
-            <dd>{memberSince}</dd>
-          </div>
-          {profileComplete ? null : (
-            <div>
-              <dt>Profile</dt>
-              <dd>
-                {onTabChange ? (
-                  <button
-                    type="button"
-                    onClick={() => onTabChange("personal")}
-                    className="account-action"
-                  >
-                    Finish setup
-                  </button>
-                ) : (
-                  <Link href="/account?tab=personal" className="account-action">
-                    Finish setup
-                  </Link>
-                )}
-              </dd>
-            </div>
-          )}
-        </dl>
-      </div>
-
-      {/* Zone B: Navigation */}
-      <nav className="account-sidebar-zone flex-1" aria-label="Account">
+      <nav className="account-sidebar-nav" aria-label="Account">
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.id
@@ -172,6 +57,9 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.id === "notifications" && unreadNotifications > 0 && (
                   <span className="account-badge">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>
+                )}
+                {item.id === "bookings" && typeof tripCount === "number" && tripCount > 0 && (
+                  <span className="account-nav-count">{tripCount}</span>
                 )}
               </>
             )
@@ -200,7 +88,6 @@ export function AccountSidebar({ user, activeTab, onTabChange, unreadNotificatio
         </ul>
       </nav>
 
-      {/* Zone C: Vendor CTA */}
       <VendorCTACompact vendorApplication={vendorApplication} />
     </aside>
   )

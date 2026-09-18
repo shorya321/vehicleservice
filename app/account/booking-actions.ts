@@ -102,12 +102,13 @@ export async function getBookingStats(userId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || user.id !== userId) {
-    return { total: 0, upcoming: 0, completed: 0, cancelled: 0 }
+    return { total: 0, upcoming: 0, completed: 0, travelled: 0, cancelled: 0 }
   }
 
   const adminClient = createAdminClient()
+  const nowIso = new Date().toISOString()
 
-  const [total, upcoming, completed, cancelled] = await Promise.all([
+  const [total, upcoming, completed, travelled, cancelled] = await Promise.all([
     adminClient
       .from("bookings")
       .select("*", { count: "exact", head: true })
@@ -118,13 +119,27 @@ export async function getBookingStats(userId: string) {
       .select("*", { count: "exact", head: true })
       .eq("customer_id", userId)
       .eq("booking_status", "confirmed")
-      .gte("pickup_datetime", new Date().toISOString())
+      .gte("pickup_datetime", nowIso)
       .then(r => r.count || 0),
     adminClient
       .from("bookings")
       .select("*", { count: "exact", head: true })
       .eq("customer_id", userId)
       .eq("booking_status", "completed")
+      .then(r => r.count || 0),
+    // Travelled, by the clock rather than by booking_status.
+    //
+    // booking_status only reaches "completed" when a vendor closes the job, which in practice
+    // often does not happen, so the "travelled" figure read 0 to a customer looking at a list
+    // of trips they had plainly already taken. A pickup in the past that was never cancelled
+    // has been travelled. `completed` is kept above: it is the vendor's own count, and the two
+    // are different questions.
+    adminClient
+      .from("bookings")
+      .select("*", { count: "exact", head: true })
+      .eq("customer_id", userId)
+      .neq("booking_status", "cancelled")
+      .lt("pickup_datetime", nowIso)
       .then(r => r.count || 0),
     adminClient
       .from("bookings")
@@ -134,7 +149,7 @@ export async function getBookingStats(userId: string) {
       .then(r => r.count || 0),
   ])
 
-  return { total, upcoming, completed, cancelled }
+  return { total, upcoming, completed, travelled, cancelled }
 }
 
 /**

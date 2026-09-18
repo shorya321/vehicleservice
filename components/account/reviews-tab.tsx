@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Search, MessageSquare, ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { Search, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react"
 import { getMyReviews, getReviewStats, getEligibleBookings, deleteReview, type ReviewFilters } from "@/app/account/review-actions"
 import { ReviewCard } from "./review-card"
 import { ReviewFormModal } from "./review-form-modal"
 import { toast } from "sonner"
 import { useDebounce } from "@/lib/hooks/use-debounce"
+import { formatBookingDate } from "@/lib/utils/timezone"
 import { ContentSection } from "./content-section"
 import { InlineStats } from "./inline-stats"
 import { ListSkeleton } from "./list-skeleton"
@@ -113,34 +114,60 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
     { label: "approved", value: stats.approved, color: "var(--status-completed-text)" },
   ], [stats.total, stats.pending, stats.approved])
 
-  const writeReviewButton = eligibleBookings.length > 0 ? (
-    <button onClick={() => setShowCreateModal(true)} className="btn btn-primary text-sm">
-      <Plus className="w-4 h-4" />
-      Write Review
-    </button>
-  ) : undefined
+  /**
+   * The heading names the work outstanding rather than the section.
+   *
+   * With nothing published, this tab used to be four filter controls over an empty list: filters
+   * for nothing, above the word "Reviews". It now opens on the transfers that can actually be
+   * written about.
+   */
+  const waiting = eligibleBookings.length
+  const heading =
+    waiting === 0
+      ? stats.total > 0
+        ? "Everything you have travelled has been reviewed"
+        : "Reviews you write will live here"
+      : waiting === 1
+        ? "One transfer is waiting for a word"
+        : `${waiting} transfers are waiting for a word`
+
+  /** Filters over an empty list are controls for nothing, so they wait until there is a list. */
+  const hasFilters = Boolean(filters.search) || filters.status !== "all" || filters.ratingRange !== "all"
+  const showFilters = reviews.length > 0 || hasFilters
 
   return (
     <ContentSection
-      title="Reviews"
-      eyebrow="Feedback"
-      action={
-        <div className="flex flex-wrap items-center gap-3">
-          <InlineStats stats={inlineStats} />
-          {writeReviewButton}
-        </div>
-      }
+      title={heading}
+      eyebrow="Reviews"
+      description="A review names the chauffeur and the operator who actually drove you. It is the only thing the next traveller reads, and nothing is published until the desk has read it."
+      action={stats.total > 0 ? <InlineStats stats={inlineStats} /> : undefined}
     >
-      {/* Eligible bookings prompt */}
+      {/* The transfers that can be written about, offered as the act rather than as a count. */}
       {eligibleBookings.length > 0 && (
-        <div className="mb-6 py-3 px-4 rounded-md bg-[var(--gold)]/5 border border-[var(--border-accent)]">
-          <p className="text-sm text-[var(--gold-text)]">
-            {eligibleBookings.length} completed booking{eligibleBookings.length > 1 ? "s" : ""} awaiting review
-          </p>
-        </div>
+        <ul className="editorial-list mb-8">
+          {eligibleBookings.map((booking) => (
+            <li key={booking.id} className="account-review-row">
+              <div className="min-w-0">
+                <p className="editorial-list-title">
+                  {booking.pickup_address} <span aria-hidden="true">&rarr;</span>{" "}
+                  <span className="sr-only">to</span>
+                  {booking.dropoff_address}
+                </p>
+                <p className="editorial-list-body tabular-nums">
+                  {formatBookingDate(booking.pickup_datetime, "d MMMM")}
+                  {booking.vehicle_types?.name ? ` · ${booking.vehicle_types.name}` : ""}
+                </p>
+              </div>
+              <button type="button" onClick={() => setShowCreateModal(true)} className="account-action">
+                Write a review
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
 
       {/* Filters */}
+      {showFilters && (
       <div className="flex flex-col md:flex-row gap-3 mb-6">
         <div className="flex-1 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
@@ -186,23 +213,30 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
           </select>
         </div>
       </div>
+      )}
 
       {/* List */}
       <div key={`${filters.sortBy}-${filters.status}-${filters.ratingRange}`} className="space-y-3 account-tab-enter">
         {isLoading ? (
           <ListSkeleton rows={3} />
         ) : reviews.length === 0 ? (
+          /* With transfers listed above waiting to be written about, "share your experience
+             after your next transfer" contradicted the page. This states what published means. */
           <EmptyState
             icon={MessageSquare}
             title={
-              filters.search || filters.status !== "all" || filters.ratingRange !== "all"
+              hasFilters
                 ? "No matching reviews"
-                : "Share your experience after your next transfer"
+                : eligibleBookings.length > 0
+                  ? "Nothing published yet"
+                  : "Share your experience after your next transfer"
             }
             description={
-              filters.search || filters.status !== "all" || filters.ratingRange !== "all"
+              hasFilters
                 ? "Try adjusting your filters"
-                : "Your feedback helps other travellers and the drivers who serve you"
+                : eligibleBookings.length > 0
+                  ? "A review appears here once the desk has read it, usually within a day, and then on the route and the vehicle it was written about."
+                  : "Your feedback helps other travellers and the drivers who serve you"
             }
           />
         ) : (

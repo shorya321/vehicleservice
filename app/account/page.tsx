@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { AccountClient } from "./account-client"
 import { getAccountData } from "./account-data"
+import { getAccountOverview } from "./overview-actions"
+import { getRecentNotifications } from "./notification-actions"
+import type { NotificationListItem } from "@/components/account/types"
 
 export const metadata: Metadata = {
   title: "My Account | Manage Your Profile & Bookings",
@@ -33,6 +36,15 @@ export default async function AccountPage({
   if (!profile) {
     redirect("/login")
   }
+
+  // The overview is the landing panel, so its content is read here rather than from an effect on
+  // mount: the next transfer is the one thing on this page worth server-rendering, and fetching
+  // it client-side meant every visit opened on a skeleton. Both run for any tab, because the rail
+  // switches panels in place and the data has to be present when it does.
+  const [overview, recentAlerts] = await Promise.all([
+    getAccountOverview(user.id),
+    getRecentNotifications(3),
+  ])
 
   // Role guard: only customers can access the account page
   if (profile.role && profile.role !== 'customer') {
@@ -66,6 +78,8 @@ export default async function AccountPage({
             deletionRequest={deletionRequest}
             vendorApplication={vendorApplication}
             unreadNotifications={unreadNotifications}
+            overview={overview}
+            recentAlerts={(recentAlerts.data as NotificationListItem[] | null) ?? []}
           />
         </div>
       </div>

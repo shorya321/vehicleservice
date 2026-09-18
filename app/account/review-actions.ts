@@ -126,6 +126,12 @@ export async function getEligibleBookings() {
     return { data: null, error: "Not authenticated" }
   }
 
+  // Eligibility is measured by the clock, not by booking_status.
+  //
+  // booking_status only reaches "completed" when a vendor closes the job, which in practice
+  // often never happens, so this returned nothing for customers with a list of trips they had
+  // plainly taken — the Reviews tab offered no transfer to review and said so. A pickup that is
+  // in the past and was not cancelled has been travelled, and can be written about.
   const { data: bookings } = await supabase
     .from("bookings")
     .select(`
@@ -133,7 +139,8 @@ export async function getEligibleBookings() {
       booking_status, vehicle_type_id, vehicle_types(name, image_url)
     `)
     .eq("customer_id", user.id)
-    .eq("booking_status", "completed")
+    .neq("booking_status", "cancelled")
+    .lt("pickup_datetime", new Date().toISOString())
     .order("pickup_datetime", { ascending: false })
 
   const { data: existingReviews } = await supabase

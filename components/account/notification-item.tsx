@@ -45,7 +45,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
       role="article"
       className={`account-item-card ${
         !notification.is_read
-          ? "border-[var(--border-accent)] bg-[var(--gold)]/5 animate-[glow-settle_600ms_var(--ease-luxury)]"
+          ? "account-item-card--accent border-[var(--border-accent)] animate-[glow-settle_600ms_var(--ease-luxury)]"
           : "opacity-75"
       }`}
     >

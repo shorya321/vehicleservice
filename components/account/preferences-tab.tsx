@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Mail, CreditCard, Shield, Megaphone, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { updateNotificationPreferences } from "@/app/account/actions"
 import { toast } from "sonner"
-import { ContentSection } from "./content-section"
 
 interface PreferencesTabProps {
   userId: string
@@ -17,10 +16,10 @@ interface PreferencesTabProps {
 }
 
 const PREFERENCE_ITEMS = [
-  { key: "email_booking_updates" as const, id: "booking-updates", label: "Booking Confirmations", description: "Receive emails about booking confirmations and updates", icon: Mail },
-  { key: "email_payment_alerts" as const, id: "payment-alerts", label: "Payment Receipts", description: "Receive emails about payments and receipts", icon: CreditCard },
-  { key: "email_security_alerts" as const, id: "security-alerts", label: "Security Alerts", description: "Receive emails about account security and login activity", icon: Shield },
-  { key: "email_system_updates" as const, id: "promotional", label: "Promotional Offers", description: "Receive emails about special offers and promotions", icon: Megaphone },
+  { key: "email_booking_updates" as const, id: "booking-updates", label: "Booking Confirmations", description: "Receive emails about booking confirmations and updates" },
+  { key: "email_payment_alerts" as const, id: "payment-alerts", label: "Payment Receipts", description: "Receive emails about payments and receipts" },
+  { key: "email_security_alerts" as const, id: "security-alerts", label: "Security Alerts", description: "Receive emails about account security and login activity" },
+  { key: "email_system_updates" as const, id: "promotional", label: "Promotional Offers", description: "Receive emails about special offers and promotions" },
 ]
 
 export function PreferencesTab({ userId, preferences }: PreferencesTabProps) {
@@ -48,21 +47,24 @@ export function PreferencesTab({ userId, preferences }: PreferencesTabProps) {
     }
   }
 
+  /**
+   * The switches sit beside the feed they govern rather than on a tab of their own, so this is a
+   * column heading rather than a page heading: turning off an email you have just read should not
+   * mean going to look for somewhere else to do it.
+   */
   return (
-    <ContentSection
-      title="Email Notifications"
-      eyebrow="Settings"
-      description="Choose which email notifications you'd like to receive"
-    >
-      <div className="divide-y divide-[var(--border-subtle)]">
+    <aside className="min-w-0" aria-labelledby="email-prefs-heading">
+      <p id="email-prefs-heading" className="account-eyebrow">
+        Which of these reach you by email
+      </p>
+      <div className="mt-5 divide-y divide-[var(--border-subtle)]">
         {PREFERENCE_ITEMS.map((item) => (
-          <div key={item.id} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-            <item.icon className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" />
+          <div key={item.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
             <div className="flex-1 min-w-0">
               <label htmlFor={item.id} className="block text-sm font-medium text-[var(--text-primary)] cursor-pointer">
                 {item.label}
               </label>
-              <p className="text-xs text-[var(--text-muted)] mt-0.5">{item.description}</p>
+              <p className="text-xs leading-relaxed text-[var(--text-muted)] mt-0.5">{item.description}</p>
             </div>
             <button
               id={item.id}
@@ -97,10 +99,11 @@ export function PreferencesTab({ userId, preferences }: PreferencesTabProps) {
       )}
 
       <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
-        <p className="text-xs text-[var(--text-muted)]">
-          We&apos;ll always send you important account-related emails regardless of these settings.
+        <p className="text-xs leading-relaxed text-[var(--text-muted)]">
+          Whatever these say, a transfer that changes on the day still reaches you. That one is not
+          optional.
         </p>
       </div>
-    </ContentSection>
+    </aside>
   )
 }

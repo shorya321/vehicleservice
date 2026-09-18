@@ -18,12 +18,18 @@ const GUARANTEES: ReadonlyArray<{ label: string; body: string }> = [
   },
 ]
 
-export function AccountTrustRail() {
+/**
+ * `className` is a prop for the same reason VendorCTACompact's is: the rail sits below the
+ * content on its own hairline in one place and beside the alert list, in a column, on the
+ * overview. Same rows, different surrounding space.
+ */
+export function AccountTrustRail({
+  className = "mt-[clamp(2.5rem,6vw,4rem)] border-t border-[var(--border-subtle)] pt-[clamp(2rem,4vw,3rem)]",
+}: {
+  className?: string
+} = {}) {
   return (
-    <section
-      className="mt-[clamp(2.5rem,6vw,4rem)] border-t border-[var(--border-subtle)] pt-[clamp(2rem,4vw,3rem)]"
-      aria-labelledby="account-trust-heading"
-    >
+    <section className={className} aria-labelledby="account-trust-heading">
       <h2 id="account-trust-heading" className="account-label">
         Every transfer, as standard
       </h2>
