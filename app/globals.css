@@ -7821,6 +7821,13 @@
     background-position: left center, center;
   }
 
+  /* The search h1 is set large, so an em-sized track comes out as a bar there.
+     Pin it to a hairline; the dots, pins and car keep their em sizes. */
+  .route-heading .route-connector__track {
+    height: 2px;
+    background-size: 0.22em 100%, 100% 100%;
+  }
+
   /* The trail, solid, filling in behind the vehicle. */
   .route-connector__trail {
     position: absolute;
