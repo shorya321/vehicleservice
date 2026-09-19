@@ -7,6 +7,7 @@ import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from "@/lib/currency/context"
 import { getBookingTimezone, bookingDayKey } from "@/lib/utils/timezone"
 import type { NextTransfer } from "@/app/account/overview-actions"
+import { CalendarLeaf } from "./calendar-leaf"
 
 /**
  * The next transfer, given the whole top of the page.
@@ -26,6 +27,16 @@ function formatHeadlineDate(d: Date): string {
   const sameYear = part({ year: "numeric" }) === part({ year: "numeric" }, new Date())
   const date = `${part({ day: "numeric" })} ${part({ month: "long" })}${sameYear ? "" : ` ${part({ year: "numeric" })}`}`
   return `${part({ weekday: "long" })}, ${date}`
+}
+
+/** One date part in the operating timezone, e.g. { month: "short" } gives "Sept". */
+function datePart(d: Date, opts: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: tz(), ...opts }).format(d)
+}
+
+/** "Sat 26 Sept", beside the countdown. */
+function formatShortDate(d: Date): string {
+  return `${datePart(d, { weekday: "short" })} ${datePart(d, { day: "numeric" })} ${datePart(d, { month: "short" })}`
 }
 
 function formatTime(d: Date): string {
@@ -93,6 +104,10 @@ export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
     [transfer.pickup_datetime, asOf]
   )
 
+  const leafMonth = datePart(pickup, { month: "short" })
+  const leafDay = datePart(pickup, { day: "numeric" })
+  const shortDate = formatShortDate(pickup)
+
   const freeUntil = useMemo(() => {
     const deadline = new Date(pickup.getTime() - CANCELLATION_WINDOW_MS)
     if (deadline.getTime() <= Date.parse(asOf)) return null
@@ -132,12 +147,26 @@ export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
         </div>
 
         <div className="account-dispatch-meta">
-          {/* The countdown as a figure, in the hollow numeral the confirmation spends on its
-              pickup time. A customer scanning this page reads the number before the sentence. */}
+          {/* The countdown beside a calendar leaf of the pickup date. The leaf is the day in the
+              same gold ring-and-halo language as the step ring and the confirmation's clock
+              faces; the words give the count, so the eyebrow's "in 7 days" is not simply
+              repeated as a bare figure. */}
           {days >= 0 && (
             <div className="account-dispatch-countdown">
-              <span className="account-label">{days === 0 ? "Today" : days === 1 ? "Tomorrow" : "Days to go"}</span>
-              {days > 1 && <p className="account-figure mt-1">{String(days).padStart(2, "0")}</p>}
+              <CalendarLeaf month={leafMonth} day={leafDay} />
+              <div className="account-countdown-words">
+                <p className="account-countdown-count">
+                  {days === 0 ? "Today" : days === 1 ? "Tomorrow" : (
+                    <>
+                      {days}
+                      <span>days</span>
+                    </>
+                  )}
+                </p>
+                <p className="account-countdown-sub">
+                  {days > 1 ? `to go, ${shortDate}` : shortDate}
+                </p>
+              </div>
             </div>
           )}
           <div className="flex flex-col items-start gap-2 sm:items-end">

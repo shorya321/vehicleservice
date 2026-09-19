@@ -5188,15 +5188,11 @@
 
   .account-dispatch-meta {
     flex-shrink: 0;
-    /* Baseline, not flex-start: "Days to go" is 0.625rem and the reference beside it is
-       0.8125rem, so aligning their boxes left the two labels sitting on different lines. This
-       aligns the text itself. */
-    align-items: baseline;
+    /* flex-start: the countdown is a calendar leaf beside two lines of text, so aligning
+       baselines would drop the leaf below the reference. The leaf's 3px top offset lines its
+       month strip up with the reference text. */
+    align-items: flex-start;
     gap: 1.75rem;
-  }
-
-  .account-dispatch-countdown {
-    text-align: right;
   }
 }
 
@@ -5309,44 +5305,90 @@
   }
 }
 
-/* Standing figures. The hollow numeral the confirmation spends on its pickup time: the
-   account's own numbers earn the same treatment.
-   `0` never appears here — the tab only renders figures that carry information. */
-.account-figure {
-  font-family: var(--font-body);
-  font-size: clamp(2rem, 4.5vw, 2.75rem);
+/* The countdown: a calendar leaf of the pickup date, then the count in words
+   (components/account/calendar-leaf.tsx). The leaf is the third numeral device and takes the
+   other two's physics: the step ring's 55% gold hairline and soft halo, at the 32px scale of the
+   confirmation's clock faces. The binding pins are the leaf's own ::before / ::after. */
+.account-leaf {
+  position: relative;
+  flex: none;
+  display: grid;
+  grid-template-rows: 11px 1fr;
+  width: 36px;
+  height: 40px;
+  margin-top: 3px;
+  border: 1px solid rgba(var(--gold-rgb), 0.55);
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.1);
+  background-color: var(--stub-top);
+}
+
+.account-leaf::before,
+.account-leaf::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 7px;
+  border-radius: 2px;
+  background-color: var(--gold-text);
+}
+
+.account-leaf::before { left: 9px; }
+.account-leaf::after { right: 9px; }
+
+/* Ink on gold, the Book button's pairing: --gold is theme-invariant, so the strip is the same
+   plate in both themes and --gold-ink reads on it in both. */
+.account-leaf__month {
+  display: grid;
+  place-items: center;
+  border-radius: 5px 5px 0 0;
+  background-color: rgba(var(--gold-rgb), 0.9);
+  font-size: 0.4375rem;
   font-weight: 700;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.account-leaf__day {
+  display: grid;
+  place-items: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.04em;
-  color: var(--gold-text);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-@supports (-webkit-text-stroke: 1px currentColor) {
-  .account-figure {
-    color: transparent;
-    -webkit-text-stroke: 1px var(--gold-text);
-  }
-}
-
-/* A price sits in this row beside the counts, and at 2.75rem hollow it would wrap. */
-.account-overview-figures .account-figure {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-}
-
-.account-overview-figures {
+.account-countdown-words {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-lg);
-  margin-top: clamp(2rem, 4vw, 3rem);
-  padding-bottom: clamp(2rem, 4vw, 3rem);
-  border-bottom: 1px solid var(--border-subtle);
+  gap: 0.3125rem;
 }
 
-@media (min-width: 768px) {
-  .account-overview-figures {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.account-countdown-count {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.account-countdown-count > span {
+  margin-left: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-secondary);
+}
+
+.account-countdown-sub {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .account-overview-split {
@@ -5376,9 +5418,12 @@
   color: var(--text-muted);
 }
 
-/* The countdown block, left of the reference in the band's head. */
+/* The countdown block, left of the reference in the band's head: leaf, then words. */
 .account-dispatch-countdown {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
 }
 
 .account-dispatch-actions {
@@ -6624,9 +6669,8 @@
      language from header to card.
 
      Replaced a 2.75rem hollow outline figure. The confirmation's "On the
-     day" times use this same ring as a clock face (.confirm-sat__clock).
-     .account-figure still draws hollow: prices and counts, which a ring
-     cannot hold.
+     day" times use this same ring as a clock face (.confirm-sat__clock),
+     and the account countdown as a calendar leaf (.account-leaf).
 
      The ring is --gold at 55% rather than --gold-text: it is a border, not
      type, and matches the dot. The figure is type, so it takes --gold-text.
