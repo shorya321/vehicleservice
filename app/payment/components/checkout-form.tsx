@@ -144,7 +144,7 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Card details</h2>
+        <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Card details</h2>
       </div>
 
       <div>

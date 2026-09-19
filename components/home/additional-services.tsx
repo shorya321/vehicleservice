@@ -114,7 +114,10 @@ export function AdditionalServices() {
           transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, amount: 0.4 }}
         >
-          <div className="editorial-eyebrow">Onboard</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill">
+            <i aria-hidden="true" />
+            Onboard
+          </div>
           <h2 id="extras-heading" className="editorial-section-title mt-5">
             Quietly included.
           </h2>

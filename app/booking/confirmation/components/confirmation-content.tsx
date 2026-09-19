@@ -314,7 +314,7 @@ export function ConfirmationContent({
         >
           <div className="confirm-sat__status">
             <StatusMark reduceMotion={reduceMotion} stroke={statusConfig.markStroke} path={statusConfig.markPath} />
-            <p className="editorial-eyebrow">{eyebrow}</p>
+            <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{eyebrow}</p>
           </div>
 
           {headlineIsTime && pickupDate ? (
@@ -382,7 +382,7 @@ export function ConfirmationContent({
         <div className="confirm-sat__right">
           <Rise reduceMotion={reduceMotion} delay={0.1} className="checkout-summary-card confirm-sat__card--lift" aria-labelledby="transfer-heading">
             <div className="checkout-stub-cap">
-              <h2 id="transfer-heading" className="editorial-eyebrow">Your transfer</h2>
+              <h2 id="transfer-heading" className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
               {pickupDate && <span className="checkout-stub-ref">{formatShortDate(pickupDate)}</span>}
             </div>
 

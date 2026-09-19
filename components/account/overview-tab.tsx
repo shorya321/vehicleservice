@@ -74,7 +74,7 @@ export function OverviewTab({ overview, recentAlerts, routeMap, onTabChange }: O
       <div className="account-overview-split">
         <div className="min-w-0">
           <div className="flex items-baseline justify-between gap-4">
-            <p className="account-eyebrow">Latest on your transfers</p>
+            <p className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Latest on your transfers</p>
             {onTabChange ? (
               <button type="button" onClick={() => onTabChange("notifications")} className="account-action">
                 All alerts

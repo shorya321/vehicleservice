@@ -88,7 +88,7 @@ export function CheckoutLoginContent({ returnUrl }: CheckoutLoginContentProps) {
           </div>
 
           <div>
-            <div className="editorial-eyebrow">Secure checkout</div>
+            <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Secure checkout</div>
             <h1 className="editorial-headline mt-6">
               Continue your <em>booking.</em>
             </h1>

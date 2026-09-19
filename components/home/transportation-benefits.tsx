@@ -54,7 +54,10 @@ export function TransportationBenefits() {
           transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, amount: 0.4 }}
         >
-          <div className="editorial-eyebrow">The promise</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill">
+            <i aria-hidden="true" />
+            The promise
+          </div>
           <h2 id="benefits-heading" className="editorial-section-title mt-5">
             Specifics, not adjectives.
           </h2>

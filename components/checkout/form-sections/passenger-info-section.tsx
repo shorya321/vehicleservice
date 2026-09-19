@@ -25,7 +25,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Lead passenger</h2>
+        <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Lead passenger</h2>
         <span className="checkout-section-note">The chauffeur calls this number on arrival</span>
       </div>
 

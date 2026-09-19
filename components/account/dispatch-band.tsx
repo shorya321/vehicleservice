@@ -120,7 +120,7 @@ export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
 
       <div className="account-dispatch-head">
         <div className="min-w-0">
-          <p className="account-eyebrow">{countdownLabel(days)}</p>
+          <p className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{countdownLabel(days)}</p>
           {/* One heading, two lines, as the confirmation sets it: the day above, the hour in
               italic gold beneath. */}
           <h2 id="account-dispatch-heading" className="account-dispatch-big">

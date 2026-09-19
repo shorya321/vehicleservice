@@ -63,7 +63,7 @@ export function ResetPasswordCard() {
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <div className="editorial-eyebrow">Set new password</div>
+      <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Set new password</div>
       <h1 className="editorial-headline mt-6">
         Pick a fresh <em>password.</em>
       </h1>

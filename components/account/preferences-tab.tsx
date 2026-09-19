@@ -54,7 +54,8 @@ export function PreferencesTab({ userId, preferences }: PreferencesTabProps) {
    */
   return (
     <aside className="min-w-0" aria-labelledby="email-prefs-heading">
-      <p id="email-prefs-heading" className="account-eyebrow">
+      <p id="email-prefs-heading" className="account-eyebrow editorial-eyebrow--pill">
+        <i aria-hidden="true" />
         Which of these reach you by email
       </p>
       <div className="mt-5 divide-y divide-[var(--border-subtle)]">

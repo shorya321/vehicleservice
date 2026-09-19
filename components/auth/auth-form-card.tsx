@@ -86,7 +86,8 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <div className="editorial-eyebrow">
+      <div className="editorial-eyebrow editorial-eyebrow--pill">
+        <i aria-hidden="true" />
         {activeTab === "login" ? "Welcome back" : "New here"}
       </div>
       <h1 className="editorial-headline mt-6">

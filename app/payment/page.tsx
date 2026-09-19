@@ -259,7 +259,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
         <div className="pt-24 md:pt-28 pb-16">
           <div className="luxury-container">
             <div className="mx-auto max-w-2xl">
-              <div className="editorial-eyebrow">Payment unavailable</div>
+              <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Payment unavailable</div>
               <h2 className="editorial-section-title mt-5">
                 Can&rsquo;t reach the payment processor.
               </h2>

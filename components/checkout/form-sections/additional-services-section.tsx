@@ -293,7 +293,7 @@ export function AdditionalServicesSection({
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Extras</h2>
+        <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Extras</h2>
         <span className="checkout-section-note">Charged once, with the fare</span>
       </div>
 

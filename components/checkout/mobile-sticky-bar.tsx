@@ -173,7 +173,7 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                     component is what stops the two surfaces disagreeing again. */}
                 <div className="mt-3 overflow-hidden rounded-[8px] border border-[var(--stub-line)] bg-[var(--stub-bot)] bg-gradient-to-b from-[var(--stub-top)] to-[var(--stub-bot)]">
                   <div className="checkout-stub-cap !px-4 !pt-3">
-                    <h2 id="mobile-summary-heading" className="checkout-section-title">Your transfer</h2>
+                    <h2 id="mobile-summary-heading" className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
                     {(route.distance_km || route.estimated_duration_minutes) ? (
                       <span className="checkout-stub-ref">
                         {route.distance_km ? `${Math.round(route.distance_km)} km` : ''}

@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 
 /**
  * Tier 2, the card/field label. Distinct from Tier 1, the section eyebrow
- * (.editorial-eyebrow / .account-eyebrow, 0.6875rem / 0.18em with a 28px gold rule), and from
+ * (.editorial-eyebrow / .account-eyebrow, worn as a gold-dot capsule, .editorial-eyebrow--pill), and from
  * Tier 3, the sentence-case caption. Mixing the tiers is what made checkout and confirmation
  * look like two products.
  */

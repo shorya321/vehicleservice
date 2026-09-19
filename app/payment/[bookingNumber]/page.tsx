@@ -280,8 +280,8 @@ STRIPE_SECRET_KEY=sk_test_...`}
           initialUser={user}
           initialProfile={profile}
         />
-        {/* The same rail every other step opens on: progress, then the 28px gold rule and its
-            eyebrow, then a sentence-case heading, left-aligned. This block used to be centred,
+        {/* The same rail every other step opens on: progress, then the eyebrow in its gold-dot
+            capsule, then a sentence-case heading, left-aligned. This block used to be centred,
             Title Case, and eyebrow-less, so the last screen before payment read as a different
             product. CheckoutHeading already took all three as props. */}
         <header className="pt-20 md:pt-24 pb-8 md:pb-10 product-entrance">
@@ -339,7 +339,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   {/* The cap the same card opens on at checkout, so the customer arrives at a
                       card they have already been reading for two steps. */}
                   <div className="checkout-stub-cap">
-                    <h2 className="checkout-section-title">Your transfer</h2>
+                    <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
                   </div>
                   {/* The same card the customer has had beside them since step three, drawing
                       the same data the same way. This aside used to use bullet dots and icon

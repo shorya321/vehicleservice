@@ -13,7 +13,7 @@ export default function UnauthorizedPage() {
             <AuthLogo className="text-2xl" />
           </div>
           <ShieldAlert className="h-12 w-12 text-destructive" aria-hidden="true" />
-          <div className="editorial-eyebrow mt-6">Access Denied</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill mt-6"><i aria-hidden="true" />Access Denied</div>
           <h1 className="editorial-headline mt-6">
             Not <em>authorized.</em>
           </h1>

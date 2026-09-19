@@ -105,7 +105,10 @@ export function TestimonialsRecord({ quote, attribution, stats, rows }: Testimon
   return (
     <>
       <header className="max-w-2xl">
-        <div className="editorial-eyebrow">Spoken for</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill">
+          <i aria-hidden="true" />
+          Spoken for
+        </div>
         <h2 id="testimonials-heading" className="editorial-section-title mt-5">
           Travellers on record.
         </h2>

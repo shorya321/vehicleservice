@@ -32,7 +32,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
               <AuthLogo className="text-2xl" />
             </div>
             <XCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
-            <div className="editorial-eyebrow mt-6">Invalid Link</div>
+            <div className="editorial-eyebrow editorial-eyebrow--pill mt-6"><i aria-hidden="true" />Invalid Link</div>
             <h1 className="editorial-headline mt-6">
               Invalid <em>link.</em>
             </h1>
@@ -66,7 +66,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
               <AuthLogo className="text-2xl" />
             </div>
             <XCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
-            <div className="editorial-eyebrow mt-6">Verification Failed</div>
+            <div className="editorial-eyebrow editorial-eyebrow--pill mt-6"><i aria-hidden="true" />Verification Failed</div>
             <h1 className="editorial-headline mt-6">
               Verification <em>failed.</em>
             </h1>
@@ -102,7 +102,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
             <AuthLogo className="text-2xl" />
           </div>
           <CheckCircle2 className="h-12 w-12 text-[var(--gold)]" aria-hidden="true" />
-          <div className="editorial-eyebrow mt-6">Verified</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill mt-6"><i aria-hidden="true" />Verified</div>
           <h1 className="editorial-headline mt-6">
             Email <em>confirmed.</em>
           </h1>

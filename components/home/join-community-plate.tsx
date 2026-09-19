@@ -41,7 +41,10 @@ export function JoinCommunityPlate(): React.JSX.Element {
   return (
     <div className="account-plate">
       <div>
-        <div className="editorial-eyebrow account-plate__eyebrow">Your account</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill account-plate__eyebrow">
+          <i aria-hidden="true" />
+          Your account
+        </div>
         <h2 id="membership-heading" className="editorial-section-title mt-5">
           One signup. Every ride faster after that.
         </h2>

@@ -34,7 +34,7 @@ export function ContactPromises() {
     >
       <div className="luxury-container">
         <header className="max-w-2xl">
-          <p className="editorial-eyebrow">After you write</p>
+          <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />After you write</p>
           <h2 id="contact-promises-heading" className="editorial-section-title mt-5">
             Three steps, then it is handled.
           </h2>

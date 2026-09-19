@@ -48,7 +48,7 @@ export function ForgotPasswordCard() {
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <div className="editorial-eyebrow">Password recovery</div>
+      <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Password recovery</div>
       <h1 className="editorial-headline mt-6">
         Send me a <em>reset link.</em>
       </h1>

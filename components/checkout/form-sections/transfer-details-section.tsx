@@ -64,7 +64,7 @@ export function TransferDetailsSection({
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Transfer details</h2>
+        <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Transfer details</h2>
         <span className="checkout-section-note">Editable until 24 hours before pickup</span>
       </div>
 

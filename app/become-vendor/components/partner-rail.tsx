@@ -69,7 +69,8 @@ export function PartnerBenefits({ className = "" }: { className?: string }) {
 export function PartnerRequirements({ className = "" }: { className?: string }) {
   return (
     <section className={className} aria-labelledby="vendor-requirements-heading">
-      <h2 id="vendor-requirements-heading" className="editorial-eyebrow">
+      <h2 id="vendor-requirements-heading" className="editorial-eyebrow editorial-eyebrow--pill">
+        <i aria-hidden="true" />
         What you&apos;ll need
       </h2>
       <dl className="account-dl account-dl-stacked mt-4">

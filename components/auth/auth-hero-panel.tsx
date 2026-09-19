@@ -22,7 +22,7 @@ export function AuthHeroPanel({ animated = true }: AuthHeroPanelProps) {
           </div>
           <div className="flex flex-1 flex-col items-center justify-center gap-8">
             <div className="max-w-md">
-              <div className="editorial-eyebrow">Members</div>
+              <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Members</div>
               <h2 className="editorial-headline mt-4">
                 One account, every <em>itinerary.</em>
               </h2>
@@ -58,7 +58,7 @@ export function AuthHeroPanel({ animated = true }: AuthHeroPanelProps) {
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8">
           <motion.div className="max-w-md" {...fadeUp(0.1, reduceMotion)}>
-            <div className="editorial-eyebrow">Members</div>
+            <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Members</div>
             <h2 className="editorial-headline mt-4">
               One account, every <em>itinerary.</em>
             </h2>

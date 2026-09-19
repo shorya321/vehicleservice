@@ -17,7 +17,7 @@ export function PaymentMethodSection({ form: _form }: PaymentMethodSectionProps)
   return (
     <div className="checkout-form-section">
       <div className="checkout-section-header">
-        <h2 className="checkout-section-title">Payment method</h2>
+        <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Payment method</h2>
       </div>
 
       <div className="checkout-section-content">

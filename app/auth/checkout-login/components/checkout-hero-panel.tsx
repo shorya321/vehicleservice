@@ -43,7 +43,7 @@ export function CheckoutHeroPanel({ from, to, date, passengers }: CheckoutHeroPa
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-10 pb-10 lg:px-12 lg:pb-12">
         <div className="my-auto flex flex-col gap-12 lg:gap-14">
           <div className="max-w-md">
-            <div className="editorial-eyebrow">Secure checkout</div>
+            <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Secure checkout</div>
             <h2 className="editorial-headline mt-6">
               Complete your <em>booking.</em>
             </h2>

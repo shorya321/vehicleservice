@@ -14,7 +14,7 @@ export function ContentSection({ title, description, eyebrow, action, children, 
           without a description no longer needs a hardcoded spacer div. */}
       <div className="account-section-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
-          {eyebrow && <span className="account-eyebrow">{eyebrow}</span>}
+          {eyebrow && <span className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{eyebrow}</span>}
           <h2 className="account-section-title">{title}</h2>
           {description && <p className="account-section-desc">{description}</p>}
         </div>

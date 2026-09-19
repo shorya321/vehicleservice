@@ -108,7 +108,7 @@ export const OrderSummary = memo(function OrderSummary({
           section label; inside it, it names the object rather than the column, and the route's
           two hard numbers get the slot opposite. */}
       <div className="checkout-stub-cap">
-        <h2 id="order-summary-heading" className="checkout-section-title">Your transfer</h2>
+        <h2 id="order-summary-heading" className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
         {(route.distance_km || route.estimated_duration_minutes) ? (
           <span className="checkout-stub-ref">
             {route.distance_km ? `${Math.round(route.distance_km)} km` : ''}

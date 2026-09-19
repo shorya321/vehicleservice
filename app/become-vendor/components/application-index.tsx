@@ -69,7 +69,7 @@ export function ApplicationIndex() {
 
   return (
     <div aria-hidden="true" className="mt-10">
-      <p className="editorial-eyebrow">Your progress</p>
+      <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Your progress</p>
       <ol className="mt-4 list-none p-0 m-0">
         {SECTIONS.map((section) => {
           const isCurrent = section.id === currentId

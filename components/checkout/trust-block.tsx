@@ -32,7 +32,7 @@ export function TrustBlock() {
     // typeset as fine print glued to the bottom of the summary card. Naming the block reframes
     // three legal clauses as three services, at no cost to the claim itself.
     <div className="mt-8">
-      <h2 className="checkout-section-title">Included with every transfer</h2>
+      <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Included with every transfer</h2>
       <dl className="mt-5 flex flex-col">
         {GUARANTEES.map((item) => (
           <div

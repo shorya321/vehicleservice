@@ -5,7 +5,7 @@ export function ContactHero() {
   return (
     <section className="editorial-section editorial-section--ground editorial-section--compact">
       <div className="luxury-container">
-        <p className="editorial-eyebrow">Get in touch</p>
+        <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Get in touch</p>
 
         <h1 className="editorial-section-title mt-5 max-w-[28ch]">
           Talk to the people who run the transfer.

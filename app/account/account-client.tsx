@@ -114,7 +114,7 @@ export function AccountClient({
           upload control lives. */}
       <header className="account-page-head mb-[clamp(2rem,5vw,3rem)]">
         <div className="min-w-0">
-          <p className="account-eyebrow">Account</p>
+          <p className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Account</p>
           <h1 className="mt-[0.4rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
             {user.full_name || "Your account"}
           </h1>

@@ -131,7 +131,10 @@ export function DeparturePointsClient({
           viewport={{ once: true, amount: 0.4 }}
         >
           <header className="max-w-2xl">
-            <div className="editorial-eyebrow">Routes</div>
+            <div className="editorial-eyebrow editorial-eyebrow--pill">
+              <i aria-hidden="true" />
+              Routes
+            </div>
             <h2 id="routes-heading" className="editorial-section-title mt-5">
               The routes travellers book most.
             </h2>

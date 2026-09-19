@@ -75,7 +75,7 @@ export function PersonalInfoTab({ user, onTabChange }: PersonalInfoTabProps) {
         />
 
         <div className="form-subsection">
-          <h3 className="account-eyebrow">Who is travelling</h3>
+          <h3 className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Who is travelling</h3>
         </div>
 
         <div className="space-y-6">
@@ -153,7 +153,7 @@ export function PersonalInfoTab({ user, onTabChange }: PersonalInfoTabProps) {
         </div>
 
         <div className="form-subsection">
-          <h3 className="account-eyebrow">Billing address</h3>
+          <h3 className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Billing address</h3>
           <p className="mt-3 text-[0.8125rem] leading-relaxed text-[var(--text-muted)]">
             Printed on your receipts. Never used for a pickup.
           </p>

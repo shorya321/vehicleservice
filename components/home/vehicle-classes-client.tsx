@@ -30,7 +30,10 @@ function Spec({ label, value }: { label: string; value: string | number }) {
 function SectionHeader() {
   return (
     <>
-      <div className="editorial-eyebrow">The fleet</div>
+      <div className="editorial-eyebrow editorial-eyebrow--pill">
+        <i aria-hidden="true" />
+        The fleet
+      </div>
       <h2 id="fleet-heading" className="editorial-section-title mt-5">
         A small fleet, kept in order.
       </h2>

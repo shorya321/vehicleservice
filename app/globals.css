@@ -3446,6 +3446,30 @@
   background-color: var(--gold);
 }
 
+/* The capsule, on the form section labels. This class is declared outside
+   @layer components, so it outranks the layered .editorial-eyebrow--pill on every
+   property both set; restate those here at a weight the cascade respects. It also
+   gives up flex: 1, which would stretch a bordered capsule across the whole row,
+   and hands that free space to the note beside it instead. */
+.checkout-section-title.editorial-eyebrow--pill {
+  display: inline-flex;
+  flex: none;
+  gap: 0.5rem;
+  font-size: 0.65625rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: inherit;
+  color: var(--text-muted);
+}
+
+.checkout-section-title.editorial-eyebrow--pill::before {
+  content: none;
+}
+
+.checkout-section-title.editorial-eyebrow--pill + .checkout-section-note {
+  margin-left: auto;
+}
+
 /* The caption opposite a section label. Tier 3, sentence case: it states a fact about the
    section ("Editable until 24 hours before pickup"), so it must not compete with the uppercase
    label it sits beside. */
@@ -4844,6 +4868,20 @@
   background-color: var(--gold);
 }
 
+/* .account-eyebrow is declared outside @layer components, so it outranks the
+   layered .editorial-eyebrow--pill no matter how specific that gets. Repeat the
+   three metrics the capsule needs, and kill the rule, at a weight the cascade
+   respects. Its margin-bottom above is deliberately left alone. */
+.account-eyebrow.editorial-eyebrow--pill {
+  gap: 0.5rem;
+  font-size: 0.65625rem;
+  letter-spacing: 0.2em;
+}
+
+.account-eyebrow.editorial-eyebrow--pill::before {
+  content: none;
+}
+
 /* Content Section (flat, no card wrapper) */
 .account-section {
   padding-top: clamp(2rem, 4vw, 3.5rem);
@@ -5760,27 +5798,29 @@
   background: transparent;
 }
 
-@keyframes eyebrow-line-in {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+@keyframes eyebrow-pill-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.auth-hero-panel .editorial-eyebrow::before,
-.auth-panel .editorial-eyebrow::before {
-  width: 40px;
-  transform-origin: left center;
-  animation: eyebrow-line-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
-  background-color: var(--gold-medium);
-}
-
-.dark .auth-hero-panel .editorial-eyebrow::before,
-.dark .auth-panel .editorial-eyebrow::before {
-  background-color: var(--gold);
+/* The auth panels used to wipe a 40px gold rule in with scaleX. That rule is now
+   the capsule every other eyebrow wears, and a capsule cannot be wiped the same
+   way without squashing it, so the entrance is a short fade and rise on the same
+   curve. Nothing else on the site animates its eyebrow. */
+.auth-hero-panel .editorial-eyebrow--pill,
+.auth-panel .editorial-eyebrow--pill {
+  animation: eyebrow-pill-in 0.6s var(--ease-luxury) 0.15s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-hero-panel .editorial-eyebrow::before,
-  .auth-panel .editorial-eyebrow::before {
+  .auth-hero-panel .editorial-eyebrow--pill,
+  .auth-panel .editorial-eyebrow--pill {
     animation: none;
   }
 }
@@ -6754,18 +6794,23 @@
   .record-attr {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     margin-top: 1.625rem;
     font-size: 0.8125rem;
     color: var(--text-muted);
   }
 
+  /* The eyebrow capsule's dot, without the capsule. This is a citation under a
+     quote, sentence case and a full route long, not a label, so it takes the
+     site's marker but not its badge. It used to lead with a 26px gold rule. */
   .record-attr::before {
     content: '';
     flex: none;
-    width: 26px;
-    height: 1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
     background-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.2);
   }
 
   /* ------------------------------------------------------------------
@@ -7134,7 +7179,18 @@
     max-width: 34rem;
   }
 
-  .after-book-plate__eyebrow {
+  /* The plate marker, shared with the home page section labels via
+     .editorial-eyebrow--pill. The 28px rule that .editorial-eyebrow paints
+     reads as a stray dash before the label; the dot in a capsule says the
+     same thing without the punctuation. This block sits after
+     .editorial-eyebrow::before so content: none wins at equal specificity,
+     and after .account-plate__eyebrow so the pill keeps one size. */
+  .editorial-eyebrow--pill::before {
+    content: none;
+  }
+
+  .after-book-plate__eyebrow,
+  .editorial-eyebrow--pill {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -7148,7 +7204,8 @@
     color: var(--text-muted);
   }
 
-  .after-book-plate__eyebrow i {
+  .after-book-plate__eyebrow i,
+  .editorial-eyebrow--pill i {
     width: 6px;
     height: 6px;
     border-radius: 50%;

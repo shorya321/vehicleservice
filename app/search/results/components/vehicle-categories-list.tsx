@@ -24,7 +24,7 @@ export function VehicleCategoriesList({ categories, searchParams }: VehicleCateg
     return (
       <div className="mx-auto max-w-xl py-20 text-center">
         <Car className="mx-auto h-16 w-16 text-[var(--text-muted)]" strokeWidth={1.5} aria-hidden="true" />
-        <div className="editorial-eyebrow mt-6">No vehicles</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill mt-6"><i aria-hidden="true" />No vehicles</div>
         <h3 className="editorial-section-title mt-5">
           No vehicles available
         </h3>
@@ -38,7 +38,7 @@ export function VehicleCategoriesList({ categories, searchParams }: VehicleCateg
   return (
     <div className="space-y-8">
       <div>
-        <div className="editorial-eyebrow">Vehicle categories</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Vehicle categories</div>
         <h2 className="editorial-section-title mt-3">Available Vehicle Categories</h2>
         <p className="mt-3 text-[0.875rem] text-[var(--text-secondary)]">
           No direct routes found. Browse vehicles by category

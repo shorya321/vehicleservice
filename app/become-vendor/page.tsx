@@ -76,9 +76,9 @@ export default async function BecomeVendorPage() {
 
               {/* Left Column. Persuasion (sticky on desktop) */}
               <div className="lg:sticky lg:top-28 lg:self-start mb-10 lg:mb-0 motion-safe:animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-                {/* The site's eyebrow, with its 28px gold rule. This page used a bare
+                {/* The site's eyebrow, in its gold-dot capsule. This page used a bare
                     `t-label-accent` in five places and was the only one without it. */}
-                <p className="editorial-eyebrow">Partner programme</p>
+                <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Partner programme</p>
 
                 {/* The CheckoutHeading recipe, as on the account page and confirmation.
                     This was `editorial-section-title--promoted`: a class documented for

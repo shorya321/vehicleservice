@@ -107,7 +107,7 @@ export function ContactForm() {
       </p>
 
       <div className="checkout-section-header">
-        <p className="checkout-section-title">Who you are</p>
+        <p className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Who you are</p>
       </div>
 
       <div className="space-y-5">
@@ -198,7 +198,7 @@ export function ContactForm() {
 
       <div className="mt-10 pt-10 border-t border-[rgba(var(--gold-rgb),0.1)]">
         <div className="checkout-section-header">
-          <p className="checkout-section-title">What you need</p>
+          <p className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />What you need</p>
         </div>
 
         <div>

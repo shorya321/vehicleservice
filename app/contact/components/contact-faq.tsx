@@ -32,7 +32,7 @@ export function ContactFaq() {
   return (
     <div className="faq-board">
       <div>
-        <div className="editorial-eyebrow faq-board__eyebrow">Asked</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill faq-board__eyebrow"><i aria-hidden="true" />Asked</div>
         <h2 id="contact-faq-heading" className="editorial-section-title mt-5">
           Questions travellers actually ask.
         </h2>

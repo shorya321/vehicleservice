@@ -22,7 +22,7 @@ export function PopularRoutesList({ routes, searchParams }: PopularRoutesListPro
     return (
       <div className="mx-auto max-w-xl py-20 text-center">
         <MapPin className="mx-auto h-16 w-16 text-[var(--text-muted)]" strokeWidth={1.5} aria-hidden="true" />
-        <div className="editorial-eyebrow mt-6">No routes</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill mt-6"><i aria-hidden="true" />No routes</div>
         <h3 className="editorial-section-title mt-5">
           No routes available between these locations
         </h3>
@@ -46,7 +46,7 @@ export function PopularRoutesList({ routes, searchParams }: PopularRoutesListPro
   return (
     <div className="space-y-8">
       <div>
-        <div className="editorial-eyebrow">Popular routes</div>
+        <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Popular routes</div>
         <h2 className="editorial-section-title mt-3">Select a Route</h2>
         <p className="mt-3 text-[0.875rem] text-[var(--text-secondary)]">
           Choose a route to see available vehicles

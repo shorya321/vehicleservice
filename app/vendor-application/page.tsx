@@ -42,7 +42,7 @@ export default async function VendorApplicationPage() {
           </Link>
 
           <header className="mt-6">
-            <p className="editorial-eyebrow">Partner programme</p>
+            <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Partner programme</p>
             <h1 className="mt-[0.5rem] text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
               Your application
             </h1>

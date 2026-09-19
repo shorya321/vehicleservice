@@ -24,7 +24,7 @@ export function SearchErrorPanel({
     <section className="editorial-section editorial-section--raised editorial-section--spacious grow">
       <div className="luxury-container">
         <div className="max-w-2xl">
-          <div className="editorial-eyebrow">Search failed</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Search failed</div>
           <h2 className="editorial-section-title mt-5">Couldn&rsquo;t load results.</h2>
           <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
             A network or system issue interrupted the search. Try again, or start a new one from the

@@ -34,7 +34,7 @@ export default async function RoutesPage({ searchParams }: PageProps) {
     >
       <div className="luxury-container">
         <header className="max-w-2xl">
-          <div className="editorial-eyebrow">Routes</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Routes</div>
           <h1 id="routes-page-heading" className="editorial-section-title mt-5">
             All transfer routes.
           </h1>

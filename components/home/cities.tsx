@@ -63,7 +63,10 @@ export function Cities() {
           transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, amount: 0.4 }}
         >
-          <div className="editorial-eyebrow">Where we run</div>
+          <div className="editorial-eyebrow editorial-eyebrow--pill">
+            <i aria-hidden="true" />
+            Where we run
+          </div>
           <h2 id="cities-heading" className="editorial-section-title mt-5">
             Every corner of Dubai, one clock.
           </h2>

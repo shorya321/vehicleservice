@@ -52,7 +52,7 @@ export function EmptyState({ originName, destinationName, searchParams }: EmptyS
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="editorial-eyebrow">No results</div>
+      <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />No results</div>
       <h2 className="editorial-section-title mt-5">
         {isGroup
           ? `No vehicles available for ${partySize} guests`

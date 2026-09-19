@@ -55,7 +55,7 @@ export default async function SearchResultsPage({ searchParams }: SearchResultsP
           <section className="editorial-section editorial-section--raised editorial-section--spacious grow">
             <div className="luxury-container">
               <div className="max-w-2xl">
-                <div className="editorial-eyebrow">Search failed</div>
+                <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Search failed</div>
                 <h2 className="editorial-section-title mt-5">
                   Couldn&rsquo;t load results.
                 </h2>

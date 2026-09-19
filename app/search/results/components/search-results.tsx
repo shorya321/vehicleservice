@@ -187,7 +187,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
             </Link>
 
             <div className="mt-8 max-w-4xl">
-              <p className="editorial-eyebrow">Your route</p>
+              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Your route</p>
 
               {/* The one h1 on the page, on the same type ramp as every home h2
                   rather than a bespoke clamp of its own. */}
@@ -264,7 +264,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
               transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true, amount: 0.4 }}
             >
-              <p className="editorial-eyebrow">The fleet</p>
+              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
               <h2 className="editorial-section-title mt-5">Every vehicle that runs this transfer.</h2>
               <p className="editorial-body mt-6">
                 Every price is the full fare: vehicle, chauffeur, fuel, tolls and parking. Choose on
@@ -297,7 +297,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
               transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true, amount: 0.4 }}
             >
-              <p className="editorial-eyebrow">What happens next</p>
+              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />What happens next</p>
               <h2 className="editorial-section-title mt-5">Three steps from here to pickup.</h2>
             </motion.header>
 

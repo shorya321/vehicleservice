@@ -23,7 +23,7 @@ export default function AccountError({
 
   return (
     <div className="flex min-h-[360px] flex-col items-start justify-center py-16">
-      <p className="account-eyebrow">Account</p>
+      <p className="account-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Account</p>
       <h2 className="mt-[0.4rem] text-[clamp(1.5rem,3vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)]">
         This page did not load
       </h2>
