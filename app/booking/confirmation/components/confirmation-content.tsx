@@ -14,6 +14,7 @@ import { formatChildAges } from '@/lib/utils/child-ages'
 import { RouteConnector } from '@/app/search/results/components/route-connector'
 import { EASE_LUXURY } from '@/components/booking/itinerary-primitives'
 import { InvoiceDownloadButton } from './invoice-download-button'
+import { DayTime } from './day-time'
 
 const tz = () => getBookingTimezone()
 
@@ -438,15 +439,15 @@ export function ConfirmationContent({
                 {pickupDate ? (
                   <ol className="confirm-sat__day">
                     <li>
-                      <span className="confirm-sat__time">{shiftedTime(pickupDate, -30)}</span>
+                      <DayTime value={shiftedTime(pickupDate, -30)} />
                       <span className="confirm-sat__what">Your chauffeur calls with their name and plate.</span>
                     </li>
                     <li>
-                      <span className="confirm-sat__time">{shiftedTime(pickupDate, -5)}</span>
+                      <DayTime value={shiftedTime(pickupDate, -5)} />
                       <span className="confirm-sat__what">Be ready at your pickup location, five minutes early.</span>
                     </li>
                     <li>
-                      <span className="confirm-sat__time">{shiftedTime(pickupDate, 45)}</span>
+                      <DayTime value={shiftedTime(pickupDate, 45)} />
                       <span className="confirm-sat__what">
                         The car waits until this time at no charge, or 45 minutes past landing on airport pickups.
                       </span>
@@ -455,11 +456,11 @@ export function ConfirmationContent({
                 ) : (
                   <ol className="confirm-sat__day">
                     <li>
-                      <span className="confirm-sat__time">01</span>
+                      <DayTime value="01" />
                       <span className="confirm-sat__what">Be ready at your pickup location 5 minutes before the scheduled time.</span>
                     </li>
                     <li>
-                      <span className="confirm-sat__time">02</span>
+                      <DayTime value="02" />
                       <span className="confirm-sat__what">
                         Your chauffeur will wait up to 45 minutes past the scheduled pickup, or past your actual landing
                         time on airport pickups.

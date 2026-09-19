@@ -5309,8 +5309,8 @@
   }
 }
 
-/* Standing figures. The hollow numeral the confirmation spends on its pickup time and the home
-   page spends on its promise indices: the account's own numbers earn the same treatment.
+/* Standing figures. The hollow numeral the confirmation spends on its pickup time: the
+   account's own numbers earn the same treatment.
    `0` never appears here — the tab only renders figures that carry information. */
 .account-figure {
   font-family: var(--font-body);
@@ -6047,12 +6047,6 @@
     --gold-text-hover: #8B7355 !important;
     --graphite: #cccccc !important;
   }
-
-  /* A 1px hollow figure prints as very nearly nothing. Fill it back in. */
-  .promise-card__index {
-    color: var(--gold-text) !important;
-    -webkit-text-stroke: 0 !important;
-  }
 }
 
 /* ============================================
@@ -6623,29 +6617,37 @@
     border: 1px solid var(--graphite);
   }
 
-  /* The hollow figure. Solid is declared first and deliberately: a
-     -webkit-text-stroke the browser does not understand leaves
-     `color: transparent` behind on its own, i.e. an invisible numeral. */
-  .promise-card__index {
-    display: block;
-    margin-bottom: 1rem;
-    font-family: var(--font-body);
-    font-size: 2.75rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: var(--gold-text);
-  }
+  /* Ringed badge, the one step index on the frontend: home "Specifics, not
+     adjectives.", contact "Three steps, then it is handled." and search
+     results "Three steps from here to pickup.". The eyebrow pill's gold dot
+     grown into a ring that holds the figure, so each section speaks one
+     language from header to card.
 
-  /* Strokes with --gold-text, not --gold. A glyph is type, whatever it is
-     drawn with, and theme-invariant --gold measures ~2:1 on the light tile
-     ground. --gold-text is the same #c6aa88 in dark and a deep #6b5530 in
-     light, which carries the outline at ~6.9:1 on both. */
-  @supports (-webkit-text-stroke: 1px currentColor) {
-    .promise-card__index {
-      color: transparent;
-      -webkit-text-stroke: 1px var(--gold-text);
-    }
+     Replaced a 2.75rem hollow outline figure. The confirmation's "On the
+     day" times use this same ring as a clock face (.confirm-sat__clock).
+     .account-figure still draws hollow: prices and counts, which a ring
+     cannot hold.
+
+     The ring is --gold at 55% rather than --gold-text: it is a border, not
+     type, and matches the dot. The figure is type, so it takes --gold-text.
+     align-self because the card is a flex column, which would otherwise
+     stretch the badge to full width. */
+  .promise-card__index {
+    display: grid;
+    place-items: center;
+    align-self: flex-start;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(var(--gold-rgb), 0.55);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.1);
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--gold-text);
   }
 
   /* margin-top: auto is what levels the rule across cards whose bodies run to
@@ -9622,10 +9624,18 @@
   color: var(--text-secondary);
 }
 
-/* The day, in the promise cards' hollow numerals. */
+/* The day: each moment is a clock face with its hands set to the time, then the
+   time (components/day-time.tsx). The face is the gold ring the step indices
+   use site-wide (.promise-card__index), at 32px here so it stays secondary to
+   the sentence beside it; the two read as one device;
+   the hands are what a time earns over a step number.
+
+   max-content, not a fixed track: every row is its own grid, and tabular
+   figures make "09:30" and "10:45" the same width, so the columns still line
+   up while the ring-only fallback rows do not carry a wide empty gutter. */
 .confirm-sat__day li {
   display: grid;
-  grid-template-columns: 5.5rem minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
   gap: 1rem;
   padding-block: 0.875rem;
@@ -9635,19 +9645,54 @@
 .confirm-sat__day li:first-child { padding-top: 0; border-top: 0; }
 
 .confirm-sat__time {
-  font-size: 1.875rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* overflow: visible so the 4px halo outside the r=19.5 face is not clipped. */
+.confirm-sat__clock {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  overflow: visible;
+}
+
+.confirm-sat__clock-halo { fill: none; stroke: rgba(var(--gold-rgb), 0.1); stroke-width: 4; }
+/* The 40-unit drawing is shown at 32px, so hairlines would scale to 0.8px;
+   non-scaling-stroke keeps the face and ticks at a true 1px. */
+.confirm-sat__clock-face { fill: none; stroke: rgba(var(--gold-rgb), 0.55); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.confirm-sat__clock-tick { stroke: rgba(var(--gold-rgb), 0.5); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+/* Hands are drawn marks that carry the reading, so --gold-text (contrast-safe
+   on the light card) rather than the decorative --gold of the ring. */
+.confirm-sat__clock-hand { stroke: var(--gold-text); stroke-linecap: round; }
+.confirm-sat__clock-pin { fill: var(--gold); }
+
+.confirm-sat__time-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.04em;
-  color: var(--gold-text);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-@supports (-webkit-text-stroke: 1px currentColor) {
-  .confirm-sat__time {
-    color: transparent;
-    -webkit-text-stroke: 1px var(--gold-text);
-  }
+/* Fallback rows (no pickup time yet) are steps, not times: the ring alone. */
+.confirm-sat__ring {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(var(--gold-rgb), 0.55);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.1);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--gold-text);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .confirm-sat__what { font-size: 0.875rem; line-height: 1.55; color: var(--text-secondary); }
