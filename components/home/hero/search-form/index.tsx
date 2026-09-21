@@ -13,15 +13,16 @@ import { HourlyPackageField } from './hourly-package-field'
 import { LocationField } from './location-field'
 import { TripTabs } from './trip-tabs'
 import { useLocationInput } from './use-location-input'
+import { MultiCityForm } from './multi-city-form'
 
 interface SearchFormProps {
   todayDate: string
   /** Which trip types the admin has switched on. One way is always offered. */
-  tripSettings?: Pick<TripSettings, 'round_trip_enabled' | 'multi_city_enabled' | 'hourly_enabled'>
+  tripSettings?: Pick<TripSettings, 'round_trip_enabled' | 'multi_city_enabled' | 'hourly_enabled' | 'multi_city_max_legs'>
 }
 
-/** Trip types this bar can search today. Multi-city joins the list with its own leg editor. */
-const SUPPORTED: TripType[] = ['one_way', 'round_trip', 'hourly']
+/** Tab order: the three single-bar searches, then multi-city with its own journey editor. */
+const SUPPORTED: TripType[] = ['one_way', 'round_trip', 'multi_city', 'hourly']
 
 const BAR_CLASS: Record<TripType, string> = {
   one_way: 'search-bar',
@@ -94,6 +95,21 @@ export function SearchForm({ todayDate, tripSettings }: SearchFormProps) {
     // guestParams is derived from guests on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from.location, to.location, guests, router, selectedDate, returnDate, hourlyPackage, tripType])
+
+  if (tripType === 'multi_city') {
+    return (
+      <>
+        <TripTabs tabs={tabs} value={tripType} onChange={setTripType} />
+        <MultiCityForm
+          todayDate={todayDate}
+          maxLegs={tripSettings?.multi_city_max_legs ?? 4}
+          mounted={mounted}
+          guests={guests}
+          onGuestsChange={setGuests}
+        />
+      </>
+    )
+  }
 
   return (
     <>

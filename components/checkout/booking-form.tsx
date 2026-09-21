@@ -12,10 +12,9 @@ import { toast } from 'sonner'
 import { buildPaymentUrl } from '@/lib/utils/url-builder'
 import { phoneField } from '@/lib/validation/phone'
 import { getSeatedCount, type GuestBreakdown } from '@/components/home/hero/guest-breakdown'
-import { createHourlyBooking } from '@/app/checkout/trip-actions'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
-import { validateHourlyStart } from '@/lib/trips/validation'
 import type { LegSchedule } from './trip-ledger-props'
+import { useTripBooking } from './use-trip-booking'
 
 import { TransferDetailsSection } from './form-sections/transfer-details-section'
 import { PassengerInfoSection } from './form-sections/passenger-info-section'
@@ -217,57 +216,24 @@ export function BookingForm({
     }
   }, [selectedAddons, onAddonsChange, addonsByCategory])
 
-  const submitHourly = useCallback(async (data: BookingFormData): Promise<void> => {
-    if (trip.kind !== 'hourly') return
-    const timingError = validateHourlyStart(data.pickupDate, data.pickupTime, {
-      minNoticeHours: trip.minNoticeHours,
-    })
-    if (timingError) {
-      form.setError('pickupTime', { type: 'validate', message: timingError })
-      setStepValidationAttempted(true)
-      onGoBack()
-      toast.error(timingError)
-      return
-    }
-
-    const result = await createHourlyBooking({
-      vehicleTypeId: vehicleType.id,
-      fromLocationId: route.origin.id,
-      hourlyPackage: trip.hourlyPackage,
-      pickupDate: data.pickupDate,
-      pickupTime: data.pickupTime,
-      passengerCount: passengers,
-      adults: guests.adults,
-      children: guests.children,
-      infants: guests.infants,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone,
-      specialRequests: data.specialRequests,
-      agreeToTerms: true,
-      paymentMethod: 'card',
-      selectedAddons: data.selectedAddons?.map((a) => ({
-        addon_id: a.addon_id,
-        quantity: a.quantity,
-        unit_price: a.unit_price,
-        total_price: a.total_price,
-        ...(a.child_ages ? { child_ages: a.child_ages.filter((v): v is number => v !== null) } : {}),
-      })),
-    })
-
-    if (result.success) {
-      router.push(buildPaymentUrl(result.reference))
-    } else {
-      toast.error(result.error)
-    }
-  }, [trip, form, onGoBack, vehicleType.id, route.origin.id, passengers, guests, router])
+  const tripBooking = useTripBooking({
+    trip,
+    vehicleTypeId: vehicleType.id,
+    originId: route.origin.id,
+    guests,
+    passengers,
+    pickupDate: watch('pickupDate'),
+    pickupTime: watch('pickupTime'),
+    onScheduleChange,
+  })
+  const { submit: submitTrip, checkBeforeContinue } = tripBooking
 
   const onSubmit = useCallback(async (data: BookingFormData) => {
-    if (trip.kind === 'hourly') {
+    // Hourly, round trip and multi-city book through their own actions.
+    if (trip.kind !== 'one_way') {
       setLoading(true)
       try {
-        await submitHourly(data)
+        await submitTrip(data)
       } catch {
         toast.error('Failed to create booking. Please try again.')
       } finally {
@@ -322,7 +288,7 @@ export function BookingForm({
     // `guests` must be listed even though `passengers` is derived from it: the derivation is lossy.
     // Swapping an adult for a child leaves the seated total unchanged, so without `guests` here the
     // closure keeps a stale breakdown and posts the wrong adults/children/infants split.
-  }, [trip.kind, submitHourly, vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, guests, basePrice, router])
+  }, [trip.kind, submitTrip, vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, guests, basePrice, router])
 
   const handleContinue = useCallback(async () => {
     const fields = STEP_FIELDS[currentStep] || []
@@ -331,8 +297,10 @@ export function BookingForm({
       const isValid = await trigger(fields)
       if (!isValid) return
     }
+    // Journey times and hourly notice are checked here, before extras, not at the very end.
+    if (currentStep === 0 && trip.kind !== 'one_way' && !checkBeforeContinue()) return
     onGoNext()
-  }, [currentStep, trigger, onGoNext])
+  }, [currentStep, trigger, onGoNext, trip.kind, checkBeforeContinue])
 
   // Without an onInvalid handler a rejected submit does nothing at all. StepErrorSummary only
   // renders once `stepValidationAttempted` is set, which until now only "Continue" ever did. That
@@ -394,7 +362,9 @@ export function BookingForm({
         changeHref={changeHref}
         onDateTimeChange={onDateTimeChange}
         trip={trip}
-        onScheduleChange={onScheduleChange}
+        schedule={tripBooking.schedule}
+        onLegChange={tripBooking.updateLeg}
+        scheduleError={tripBooking.scheduleError}
       />
       <PassengerInfoSection form={form} />
     </div>,
@@ -408,7 +378,7 @@ export function BookingForm({
       />
       <PaymentMethodSection form={form} />
     </div>,
-  ], [form, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady, trip, onScheduleChange])
+  ], [form, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady, trip, tripBooking.schedule, tripBooking.updateLeg, tripBooking.scheduleError])
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-0" aria-label="Booking form">

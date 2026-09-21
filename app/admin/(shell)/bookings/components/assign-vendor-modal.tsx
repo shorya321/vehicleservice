@@ -34,6 +34,8 @@ interface AssignVendorModalProps {
   hasDriverAssigned?: boolean
   currentDriverName?: string
   currentVehicleName?: string
+  /** Other journeys of the same trip that have no vendor yet. Offered as a one-step assignment. */
+  otherLegIds?: string[]
   onClose: () => void
 }
 
@@ -54,8 +56,10 @@ export function AssignVendorModal({
   hasDriverAssigned,
   currentDriverName,
   currentVehicleName,
+  otherLegIds = [],
   onClose,
 }: AssignVendorModalProps) {
+  const [assignWholeTrip, setAssignWholeTrip] = useState(otherLegIds.length > 0)
   const router = useRouter()
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [selectedVendorId, setSelectedVendorId] = useState<string>(currentVendorId || '')
@@ -92,6 +96,14 @@ export function AssignVendorModal({
     setIsSaving(true)
     try {
       await assignBookingToVendor(bookingId, bookingType, selectedVendorId, notes, reassignmentReason || undefined)
+      // Each journey is its own booking and assignment; this only saves repeating the step.
+      if (assignWholeTrip && otherLegIds.length > 0) {
+        const results = await Promise.allSettled(
+          otherLegIds.map((legId) => assignBookingToVendor(legId, 'customer', selectedVendorId, notes))
+        )
+        const failed = results.filter((r) => r.status === 'rejected').length
+        if (failed > 0) toast.error(`${failed} other journey${failed === 1 ? '' : 's'} could not be assigned`)
+      }
       toast.success(isReassignment ? 'Booking reassigned to vendor successfully' : 'Booking assigned to vendor successfully')
       router.refresh()
       onClose()
@@ -250,6 +262,20 @@ export function AssignVendorModal({
             </div>
           )}
         </div>
+
+        {otherLegIds.length > 0 && (
+          <div className="flex items-start gap-2 pb-2">
+            <Checkbox
+              id="assign-whole-trip"
+              checked={assignWholeTrip}
+              onCheckedChange={(checked) => setAssignWholeTrip(checked === true)}
+            />
+            <Label htmlFor="assign-whole-trip" className="text-sm font-normal leading-snug">
+              Also assign the other {otherLegIds.length} journey{otherLegIds.length === 1 ? '' : 's'} of this trip
+              to the same vendor
+            </Label>
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSaving}>

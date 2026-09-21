@@ -13,9 +13,10 @@ import { parse, format } from 'date-fns'
 import { VehicleTypeDetails } from '@/app/checkout/actions'
 import { GuestSelector } from '@/components/home/hero/guest-selector'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
-import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
+import { isGroupedCheckout, type CheckoutTrip } from '@/lib/trips/checkout-trip'
 import { HOURLY_PACKAGE_LABELS } from '@/lib/trips/constants'
 import type { LegSchedule } from '../trip-ledger-props'
+import { TripLegsFields, legTitle } from './trip-legs-fields'
 
 /** One field-label treatment, hoisted so it cannot drift between the two form sections. */
 const FIELD_LABEL = 'checkout-field-label mb-2.5 block'
@@ -37,7 +38,11 @@ interface TransferDetailsSectionProps {
   changeHref: string
   onDateTimeChange?: (date: string, time: string) => void
   trip?: CheckoutTrip
-  onScheduleChange?: (schedule: LegSchedule[]) => void
+  /** Grouped trips: every journey's date and time. */
+  schedule?: LegSchedule[]
+  onLegChange?: (index: number, patch: Partial<LegSchedule>) => void
+  /** Why the journeys cannot be booked as scheduled, from the last check. */
+  scheduleError?: string | null
 }
 
 export function TransferDetailsSection({
@@ -48,9 +53,14 @@ export function TransferDetailsSection({
   changeHref,
   onDateTimeChange,
   trip,
+  schedule = [],
+  onLegChange,
+  scheduleError,
 }: TransferDetailsSectionProps) {
   const { register, formState: { errors }, watch, setValue } = form
   const hourly = trip?.kind === 'hourly' ? trip : null
+  const grouped = trip && isGroupedCheckout(trip) ? trip : null
+  const firstLeg = grouped?.legs[0]
 
   const pickupDateStr = watch('pickupDate')
   const pickupDateValue = pickupDateStr ? parse(pickupDateStr, 'yyyy-MM-dd', new Date()) : undefined
@@ -121,11 +131,17 @@ export function TransferDetailsSection({
           </p>
         )}
 
+        {grouped && firstLeg && (
+          <p className="checkout-field-label">
+            {legTitle(grouped, 0)}: {firstLeg.fromName} to {firstLeg.toName}
+          </p>
+        )}
+
         {/* Date and Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="pickupDate" className={FIELD_LABEL}>
-              {hourly ? 'Start date' : 'Pickup date'}
+              {hourly ? 'Start date' : grouped?.kind === 'round_trip' ? 'Outbound date' : 'Pickup date'}
             </Label>
             <FormDatePicker
               value={pickupDateValue}
@@ -157,6 +173,14 @@ export function TransferDetailsSection({
             )}
           </div>
         </div>
+
+        {grouped && onLegChange && (
+          <TripLegsFields trip={grouped} schedule={schedule} onLegChange={onLegChange} />
+        )}
+
+        {scheduleError && (
+          <p role="alert" className="text-sm text-[var(--destructive)]">{scheduleError}</p>
+        )}
 
         {/* Guests and flight number share the two-column grid. Guests previously sat at
             40% width with its capacity note floating beside it, which broke the rhythm

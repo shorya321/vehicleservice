@@ -143,6 +143,8 @@ export interface BookingInvoiceData {
   dropoffAddress: string;
   /** Hourly hire, e.g. "Half day, 5 hours, 100 km included, as directed". Replaces "To". */
   hireDetails?: string;
+  /** Round trip / multi-city: every journey. Replaces From, To and Pickup. */
+  journeys?: Array<{ label: string; route: string; when: string }>;
   pickupDatetime?: string;
   vehicleTypeName?: string;
   passengerCount: number;
@@ -223,13 +225,21 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
         <View style={styles.section}>
           <Text style={pdfStyles.sectionTitle}>Trip Details</Text>
           <View style={styles.infoBox}>
-            <InfoRow label="From" value={data.pickupAddress} />
-            {data.hireDetails ? (
-              <InfoRow label="Hire" value={data.hireDetails} />
+            {data.journeys && data.journeys.length > 0 ? (
+              data.journeys.map((journey) => (
+                <InfoRow key={journey.label} label={journey.label} value={`${journey.route}, ${journey.when}`} />
+              ))
             ) : (
-              <InfoRow label="To" value={data.dropoffAddress} />
+              <>
+                <InfoRow label="From" value={data.pickupAddress} />
+                {data.hireDetails ? (
+                  <InfoRow label="Hire" value={data.hireDetails} />
+                ) : (
+                  <InfoRow label="To" value={data.dropoffAddress} />
+                )}
+                {data.pickupDatetime && <InfoRow label="Pickup" value={data.pickupDatetime} />}
+              </>
             )}
-            {data.pickupDatetime && <InfoRow label="Pickup" value={data.pickupDatetime} />}
             {data.vehicleTypeName && <InfoRow label="Vehicle" value={data.vehicleTypeName} />}
             {/* Luggage gets its own row: formatGuestSummary already uses "·" before infants, so
                 appending "· N luggage" would give one separator two meanings. */}

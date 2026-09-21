@@ -788,6 +788,12 @@ export function BookingDetail({ booking }: BookingDetailProps) {
             bookingType={booking.bookingType || 'customer'}
             currentVendorId={activeAssignment?.vendor_id}
             vehicleTypeId={booking.vehicle_type_id}
+            otherLegIds={
+              (booking.trip_group?.legs ?? [])
+                .filter((leg: { id: string; assignment_status: string | null; booking_status: string }) =>
+                  leg.id !== booking.id && !leg.assignment_status && leg.booking_status !== 'cancelled')
+                .map((leg: { id: string }) => leg.id)
+            }
             hasDriverAssigned={driverAssigned}
             currentDriverName={
               driverAssigned && activeAssignment?.driver

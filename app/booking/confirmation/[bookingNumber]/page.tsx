@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { RouteBandMap } from '@/app/search/results/components/route-band-map'
 import { ConfirmationContent } from '../components/confirmation-content'
-import { getConfirmationBooking, getRouteTiming } from '../lib/get-confirmation-booking'
+import { getConfirmationBooking, getConfirmationTrip, getRouteTiming } from '../lib/get-confirmation-booking'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,13 +23,15 @@ export default async function ConfirmationRoutePage({ params }: ConfirmationRout
     notFound()
   }
 
-  const booking = await getConfirmationBooking(bookingNumber)
+  // A round trip or multi-city trip confirms as one, whichever of its references was used.
+  const tripView = await getConfirmationTrip(bookingNumber)
+  const booking = tripView?.booking ?? (await getConfirmationBooking(bookingNumber))
 
   if (!booking) {
     notFound()
   }
 
-  const route = await getRouteTiming(booking.from_location_id, booking.to_location_id)
+  const route = tripView ? null : await getRouteTiming(booking.from_location_id, booking.to_location_id)
 
   const primaryPassenger = booking.booking_passengers?.find((p: any) => p.is_primary)
   const amenities = booking.booking_amenities || []
@@ -46,6 +48,7 @@ export default async function ConfirmationRoutePage({ params }: ConfirmationRout
         childSeats={childSeats}
         addons={addons}
         route={route}
+        trip={tripView?.trip ?? null}
         // Server-rendered and handed in as a slot: the map's geometry is built at module load and
         // must not ship in this client component's bundle. Same arrangement as the search page.
         routeMap={<RouteBandMap />}

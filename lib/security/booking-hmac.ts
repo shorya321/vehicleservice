@@ -180,6 +180,67 @@ export function verifyBusinessQuoteSignature(payload: VerifyBusinessQuotePayload
   return { valid: true }
 }
 
+// ─── Booking Group Signing (round trip, multi-city) ──────────────────────────
+
+/**
+ * A round trip or multi-city trip is paid as one: the group row carries the charge, so the
+ * group total is what gets signed. The message starts with a fixed tag so a group signature
+ * can never verify as a single-booking one, or the reverse, even for equal field values.
+ */
+interface GroupSignPayload {
+  groupId: string
+  totalPrice: number
+  customerId: string
+  vehicleTypeId: string
+  legCount: number
+}
+
+function groupMessage(payload: GroupSignPayload, timestamp: number, nonce: string): string {
+  return [
+    'group',
+    payload.groupId,
+    payload.totalPrice.toFixed(2),
+    payload.customerId,
+    payload.vehicleTypeId,
+    String(payload.legCount),
+    timestamp.toString(),
+    nonce,
+  ].join('|')
+}
+
+export function signGroupPayload(payload: GroupSignPayload): SignResult {
+  const timestamp = Date.now()
+  const nonce = generateNonce()
+  const signature = crypto
+    .createHmac('sha256', getSecret())
+    .update(groupMessage(payload, timestamp, nonce))
+    .digest('hex')
+  return { signature, timestamp, nonce }
+}
+
+export function verifyGroupSignature(
+  payload: GroupSignPayload & { signature: string; timestamp: number; nonce: string },
+  options?: { skipTtl?: boolean }
+): { valid: boolean; reason?: string } {
+  if (!options?.skipTtl && Date.now() - payload.timestamp > SIGNATURE_TTL_MS) {
+    return { valid: false, reason: 'Signature expired' }
+  }
+
+  const expected = crypto
+    .createHmac('sha256', getSecret())
+    .update(groupMessage(payload, payload.timestamp, payload.nonce))
+    .digest('hex')
+
+  const sigBuffer = Buffer.from(payload.signature, 'hex')
+  const expectedBuffer = Buffer.from(expected, 'hex')
+  if (sigBuffer.length !== expectedBuffer.length) {
+    return { valid: false, reason: 'Invalid signature length' }
+  }
+  return crypto.timingSafeEqual(sigBuffer, expectedBuffer)
+    ? { valid: true }
+    : { valid: false, reason: 'Signature mismatch' }
+}
+
 /**
  * Verify that Stripe payment amount (in minor units/cents) matches the booking total price.
  * Stripe amounts are in cents, booking total_price is in major units (e.g., AED).

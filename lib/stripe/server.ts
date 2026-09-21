@@ -102,6 +102,33 @@ export async function createPaymentIntent(
   return paymentIntent
 }
 
+/**
+ * PaymentIntent for a round trip or multi-city trip: one charge for every journey. Tagged
+ * with `groupId` (never `bookingId`), which is how the webhook routes it to the group finalizer.
+ */
+export async function createGroupPaymentIntent(
+  amount: number,
+  groupId: string,
+  customerId?: string,
+  customerEmail?: string
+) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please add STRIPE_SECRET_KEY to your environment variables.')
+  }
+
+  const params: Stripe.PaymentIntentCreateParams = {
+    amount: Math.round(amount * 100),
+    currency: 'aed',
+    payment_method_types: ['card'],
+    metadata: { groupId },
+  }
+  if (customerId) params.customer = customerId
+  if (customerEmail) params.receipt_email = customerEmail
+
+  // One intent per group: a double submit reuses it instead of creating a second charge.
+  return await stripe.paymentIntents.create(params, { idempotencyKey: `group-intent-${groupId}-${params.amount}` })
+}
+
 // Retrieve a PaymentIntent
 export async function retrievePaymentIntent(paymentIntentId: string) {
   return await stripe.paymentIntents.retrieve(paymentIntentId)

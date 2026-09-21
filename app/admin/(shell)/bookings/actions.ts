@@ -1195,6 +1195,12 @@ export async function deleteBooking(
       logChildError('business_booking_addons', addonsError)
     }
 
+    // A journey of a round trip or multi-city trip. Read before the row goes.
+    const { data: groupRef } = bookingType === 'customer'
+      ? await adminClient.from('bookings').select('booking_group_id').eq('id', bookingId).maybeSingle()
+      : { data: null }
+    const groupId = groupRef?.booking_group_id ?? null
+
     // Delete the booking itself. Select the deleted rows back so a delete that
     // matched nothing is reported as a failure instead of a silent success.
     const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
@@ -1216,6 +1222,20 @@ export async function deleteBooking(
 
     if (!deletedRows || deletedRows.length === 0) {
       return { error: 'Booking not found or already deleted' }
+    }
+
+    // An unpaid trip is only payable whole (the finalizer checks every journey is there), so
+    // removing one journey removes the trip. A paid trip keeps its other journeys, and its
+    // group row goes with the last one.
+    if (groupId) {
+      const [{ data: group }, { count: remaining }] = await Promise.all([
+        adminClient.from('booking_groups').select('payment_status').eq('id', groupId).maybeSingle(),
+        adminClient.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_group_id', groupId),
+      ])
+      if (group && (group.payment_status !== 'completed' || (remaining ?? 0) === 0)) {
+        const { error: groupError } = await adminClient.from('booking_groups').delete().eq('id', groupId)
+        if (groupError) console.error('Failed to remove the trip after deleting its journey:', groupError)
+      }
     }
 
     // Deleting a booking from admin used to tell nobody, while the identical action taken

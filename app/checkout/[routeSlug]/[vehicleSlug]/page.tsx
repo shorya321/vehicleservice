@@ -11,6 +11,12 @@ import { parseRouteSlug } from '@/lib/utils/slug'
 import { toStoredPhone } from '@/lib/validation/phone'
 import { resolveRouteSlugs, resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
 import { getSeatedCount, resolveGuestsForVehicle } from '@/components/home/hero/guest-breakdown'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getSiteSettings } from '@/lib/site-settings/server'
+import { parseTripSearchParams } from '@/lib/trips/search-params'
+import { quoteLegFare } from '@/lib/trips/pricing-server'
+import { getRouteDurationMinutes } from '@/lib/trips/locations-server'
+import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
 
 interface CheckoutRoutePageProps {
   params: Promise<{ routeSlug: string; vehicleSlug: string }>
@@ -22,6 +28,10 @@ interface CheckoutRoutePageProps {
     adults?: string
     children?: string
     infants?: string
+    /** Round trip: `trip=round_trip&return=yyyy-MM-dd[&returnTime=HH:mm]`. */
+    trip?: string
+    return?: string
+    returnTime?: string
   }>
 }
 
@@ -192,6 +202,65 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
     children: String(guests.children),
     infants: String(guests.infants),
   })
+  // Round trip: the reverse route as a second journey, priced strictly (no placeholder fare).
+  const requestedTrip = parseTripSearchParams(sp)
+  let checkoutTrip: CheckoutTrip | undefined
+  if (requestedTrip.trip === 'round_trip' && requestedTrip.returnDate) {
+    const settings = await getSiteSettings()
+    if (settings.trip_types.round_trip_enabled) {
+      const adminClient = createAdminClient()
+      const { data: multiplierRow } = await adminClient
+        .from('vehicle_types')
+        .select('price_multiplier')
+        .eq('id', vehicleTypeRef.id)
+        .single()
+      const multiplier = Number(multiplierRow?.price_multiplier) || 1
+      const [outboundFare, returnFare, outboundMinutes, returnMinutes] = await Promise.all([
+        quoteLegFare(adminClient, fromId, toId, multiplier),
+        quoteLegFare(adminClient, toId, fromId, multiplier),
+        getRouteDurationMinutes(adminClient, fromId, toId),
+        getRouteDurationMinutes(adminClient, toId, fromId),
+      ])
+
+      changeParams.set('trip', 'round_trip')
+      changeParams.set('return', requestedTrip.returnDate)
+      // A leg with no price: back to the results, where the card says why. Never a
+      // silent downgrade to a one-way booking the customer did not ask for.
+      if (outboundFare === null || returnFare === null) {
+        redirect(`/search/${routeSlug}?${changeParams.toString()}`)
+      }
+
+      checkoutTrip = {
+        kind: 'round_trip',
+        discountPercent: settings.trip_types.round_trip_discount_percent,
+        bufferMinutes: settings.trip_types.leg_buffer_minutes,
+        maxLegs: 2,
+        legs: [
+          {
+            fromId,
+            fromName: originLocation.name,
+            toId,
+            toName: destinationLocation.name,
+            date: pickupDate,
+            time: pickupTime,
+            baseFare: outboundFare,
+            durationMinutes: outboundMinutes,
+          },
+          {
+            fromId: toId,
+            fromName: destinationLocation.name,
+            toId: fromId,
+            toName: originLocation.name,
+            date: requestedTrip.returnDate < pickupDate ? pickupDate : requestedTrip.returnDate,
+            time: requestedTrip.returnTime,
+            baseFare: returnFare,
+            durationMinutes: returnMinutes,
+          },
+        ],
+      }
+    }
+  }
+
   const changeHref = `/search/${routeSlug}?${changeParams.toString()}`
 
   return (
@@ -213,6 +282,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
             changeHref={changeHref}
+            trip={checkoutTrip}
           />
       </div>
     </PublicLayout>

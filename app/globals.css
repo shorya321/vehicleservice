@@ -1987,6 +1987,112 @@
     }
   }
 
+  /* Multi-city: one bar per journey (From, To, Date), then a footer bar with
+     guests, "Add journey" and Search. */
+  .search-multi {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-bar--leg {
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    .search-bar--leg .search-bar-field--compact {
+      grid-column: 1 / -1;
+      border-right: 0;
+    }
+  }
+
+  @media (min-width: 1120px) {
+    .search-bar--leg {
+      grid-template-columns: 1.35fr 1.35fr 1fr;
+    }
+
+    .search-bar--leg .search-bar-field--compact {
+      grid-column: auto;
+    }
+  }
+
+  .search-leg-remove {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--hero-bar-edge);
+    border-radius: 999px;
+    background: var(--hero-bar-top);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-luxury),
+                border-color var(--duration-fast) var(--ease-luxury);
+  }
+
+  .search-leg-remove:hover {
+    color: var(--text-primary);
+    border-color: rgba(var(--gold-rgb), 0.45);
+  }
+
+  .search-leg-remove:focus-visible,
+  .search-leg-add:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .search-leg-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 8px;
+    padding: 0 1.25rem;
+    min-height: 52px;
+    border: 1px dashed rgba(var(--gold-rgb), 0.45);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-luxury);
+  }
+
+  .search-leg-add:hover:not(:disabled) {
+    background: rgba(var(--gold-rgb), 0.08);
+  }
+
+  .search-leg-add:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  @media (min-width: 768px) {
+    .search-bar--multi-footer {
+      grid-template-columns: 1fr auto;
+    }
+
+    .search-bar--multi-footer .search-bar-field--guests {
+      border-bottom: 0;
+    }
+  }
+
+  @media (min-width: 1120px) {
+    .search-bar--multi-footer {
+      grid-template-columns: 1fr auto auto;
+    }
+  }
+
   /* The label is scaffolding, the value is the content. They used to be set
      within one step of each other. */
   .search-bar-label {

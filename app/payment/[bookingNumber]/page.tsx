@@ -29,6 +29,9 @@ import { CurrencyProvider } from '@/lib/currency/context'
 import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 import { buildConfirmationUrl } from '@/lib/utils/url-builder'
 import { hourlyEndTime, hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
+import { GROUP_NUMBER_PREFIX } from '@/lib/trips/constants'
+import { getGroupForPayment, getOrCreateGroupPaymentIntent } from '../lib/group-payment'
+import { GroupPaymentScreen } from './group-payment-screen'
 
 export const metadata: Metadata = {
   // The root layout's title template appends ' | Infinia Transfers'.
@@ -181,11 +184,54 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   const currentCurrency = currencyCookie?.value || defaultCurrency
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
 
+  // A round trip or multi-city trip is paid as one, under its group number.
+  if (bookingNumber.startsWith(GROUP_NUMBER_PREFIX)) {
+    const group = await getGroupForPayment(bookingNumber, user.id)
+    if (!group) notFound()
+    if (group.paymentStatus === 'completed') redirect(buildConfirmationUrl(group.groupNumber))
+
+    let groupSecret: string | null = null
+    let groupError: string | null = null
+    try {
+      groupSecret = (await getOrCreateGroupPaymentIntent(group, user.id, user.email || '')).clientSecret
+    } catch (error) {
+      console.error('Group payment intent creation failed:', error)
+      groupError = error instanceof Error ? error.message : 'Failed to initialize payment'
+    }
+
+    return (
+      <GroupPaymentScreen
+        group={group}
+        clientSecret={groupSecret}
+        stripeError={groupError}
+        user={user}
+        profile={profile}
+        currency={{
+          initialCurrency: currentCurrency,
+          exchangeRates: rates,
+          featuredCurrencies,
+          allCurrencies,
+        }}
+        siteSettings={siteSettings}
+      />
+    )
+  }
+
   // Get booking details by booking number
   const booking = await getBookingByNumber(bookingNumber, user.id)
 
   if (!booking) {
     notFound()
+  }
+
+  // One journey of a trip is never paid on its own: send the customer to the trip.
+  if (booking.booking_group_id) {
+    const { data: parentGroup } = await createAdminClient()
+      .from('booking_groups')
+      .select('group_number')
+      .eq('id', booking.booking_group_id)
+      .single()
+    if (parentGroup) redirect(`/payment/${parentGroup.group_number}`)
   }
 
   // Check if already paid

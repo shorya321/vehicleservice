@@ -143,6 +143,32 @@ export interface BookingConfirmationEmailData {
   trip?: EmailTripDetails;
 }
 
+/** A customer booking (or one journey of a trip) cancelled by the customer. */
+export interface BookingCancelledEmailData {
+  customerName: string;
+  customerEmail: string;
+  bookingReference: string;
+  tripNumber?: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDate: string;
+  pickupTime: string;
+  /** AED owed back to the card; null when nothing was paid. */
+  refundDue: number | null;
+  /** "Round trip, return journey", "Hourly hire: Half day, 5 hours". */
+  tripLabel?: string;
+  /** Set when this journey belongs to a trip that goes on without it. */
+  groupNumber?: string;
+  /** The round-trip saving no longer applies to the rest of the trip. */
+  discountForfeited?: boolean;
+}
+
+export interface AdminBookingCancelledEmailData extends Omit<BookingCancelledEmailData, 'customerEmail'> {
+  adminEmail: string;
+  customerEmail: string;
+  bookingDetailsUrl: string;
+}
+
 export interface BookingStatusUpdateEmailData {
   bookingId: string;
   customerName: string;

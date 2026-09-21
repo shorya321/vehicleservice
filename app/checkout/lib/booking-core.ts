@@ -5,6 +5,7 @@ import type { createAdminClient } from '@/lib/supabase/admin'
 import { phoneSchema } from '@/lib/validation/phone'
 import { roundMoney } from '@/lib/trips/pricing'
 import { HOURLY_PACKAGES } from '@/lib/trips/types'
+import { GROUP_NUMBER_PREFIX, MAX_LEGS_HARD_LIMIT } from '@/lib/trips/constants'
 
 /**
  * Shared checks for the trip-type booking actions (hourly, round trip,
@@ -51,6 +52,22 @@ export const hourlyBookingSchema = tripContactSchema.extend({
   pickupTime: z.string().regex(TIME_PATTERN),
 })
 export type HourlyBookingInput = z.infer<typeof hourlyBookingSchema>
+
+export const groupBookingSchema = tripContactSchema.extend({
+  tripType: z.enum(['round_trip', 'multi_city']),
+  legs: z
+    .array(
+      z.object({
+        fromLocationId: z.string().uuid(),
+        toLocationId: z.string().uuid(),
+        date: z.string().regex(DATE_PATTERN),
+        time: z.string().regex(TIME_PATTERN),
+      })
+    )
+    .min(2)
+    .max(MAX_LEGS_HARD_LIMIT),
+})
+export type GroupBookingInput = z.infer<typeof groupBookingSchema>
 
 export class BookingInputError extends Error {
   constructor(message: string) {
@@ -181,4 +198,9 @@ export function primaryPassengerRow(
 
 export function newBookingNumber(prefix = 'BK'): string {
   return `${prefix}${Date.now()}${Math.random().toString(36).slice(2, 7)}`.toUpperCase()
+}
+
+/** `GR` + a sortable stamp + random suffix; the payment and invoice routes key on the prefix. */
+export function newGroupNumber(): string {
+  return `${GROUP_NUMBER_PREFIX}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase()
 }

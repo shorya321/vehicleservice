@@ -21,7 +21,7 @@ import { verifyBookingSignature, verifyPaymentAmount } from '@/lib/security/book
 import { convertAmount } from '@/lib/currency/format'
 import { getBookingTimezone } from '@/lib/utils/timezone'
 import type { ExchangeRatesMap } from '@/lib/currency/types'
-import { hourlyEmailTrip } from '@/lib/trips/email-trip'
+import { groupEmailTrip, hourlyEmailTrip } from '@/lib/trips/email-trip'
 import type { Database } from '@/lib/supabase/types'
 
 type AdminClient = ReturnType<typeof createAdminClient>
@@ -66,6 +66,11 @@ export async function finalizeBookingPayment(
 
   if (fetchError || !booking) {
     return { ok: false, status: 404, error: 'Booking not found' }
+  }
+
+  // A journey of a round trip or multi-city trip is paid through its group, never alone.
+  if (booking.booking_group_id) {
+    return { ok: false, status: 409, error: 'This journey is paid as part of its trip' }
   }
 
   // Idempotency guard: already finalized → no-op (no re-update, no duplicate emails)
@@ -154,11 +159,25 @@ export async function finalizeBookingPayment(
  * notification email. Errors are swallowed/logged. Email failure must never
  * fail a paid booking.
  */
-async function sendBookingEmails(
+/**
+ * A paid round trip or multi-city trip, described once. `updatedBooking` is then
+ * its first journey, and the totals, extras and reference come from here.
+ */
+export interface GroupEmailSummary {
+  groupNumber: string
+  tripType: 'round_trip' | 'multi_city'
+  legs: BookingRow[]
+  subtotal: number
+  discount: number
+  total: number
+}
+
+export async function sendBookingEmails(
   adminClient: AdminClient,
   updatedBooking: BookingRow,
   userCurrency: string,
-  userEmail?: string
+  userEmail?: string,
+  group?: GroupEmailSummary
 ): Promise<void> {
   try {
     const bookingId = updatedBooking.id
@@ -213,7 +232,9 @@ async function sendBookingEmails(
       hour: '2-digit', minute: '2-digit',
     })
 
-    const aedAmount = updatedBooking.total_price
+    // A group is charged once for every journey; its first journey carries the details.
+    const legCount = group ? group.legs.length : 1
+    const aedAmount = group ? group.total : updatedBooking.total_price
     let emailTotalAmount = aedAmount
     let emailCurrency = 'AED'
     let emailOriginalAmount: number | undefined
@@ -257,17 +278,23 @@ async function sendBookingEmails(
         ? addonData.name
         : amenityLabels[a.amenity_type] || a.amenity_type
       return {
-        label,
+        label: legCount > 1 ? `${label} (${legCount} journeys)` : label,
         quantity: a.quantity || 1,
-        price: a.price,
+        price: a.price * legCount,
         // Undefined rather than null for non-child add-ons: the email template treats it as absent.
         // Survives the currency conversion below, which spreads each entry.
         childAges: a.child_ages ?? undefined,
       }
     })
 
-    const aedBasePrice = updatedBooking.base_price
-    const aedAmenitiesPrice = updatedBooking.amenities_price ?? 0
+    // For a group the fare line is every journey after the round-trip saving, so the lines
+    // still add up to the total charged.
+    const aedAmenitiesPrice = group
+      ? group.legs.reduce((sum, leg) => sum + Number(leg.amenities_price ?? 0), 0)
+      : updatedBooking.amenities_price ?? 0
+    const aedBasePrice = group
+      ? Math.round((group.total - aedAmenitiesPrice) * 100) / 100
+      : updatedBooking.base_price
     let emailBasePrice = aedBasePrice
     let emailAmenitiesPrice = aedAmenitiesPrice
     let convertedExtras = emailExtras
@@ -283,8 +310,9 @@ async function sendBookingEmails(
 
     const convertForEmail = (aed: number): number =>
       emailCurrency !== 'AED' && exchangeRates ? convertAmount(aed, 'AED', emailCurrency, exchangeRates) : aed
-    const customerTrip = hourlyEmailTrip(updatedBooking, convertForEmail)
-    const adminTrip = hourlyEmailTrip(updatedBooking)
+    const customerTrip = group ? groupEmailTrip(group, convertForEmail) : hourlyEmailTrip(updatedBooking, convertForEmail)
+    const adminTrip = group ? groupEmailTrip(group) : hourlyEmailTrip(updatedBooking)
+    const reference = group?.groupNumber ?? updatedBooking.booking_number
 
     if (customerEmail) {
       sendBookingConfirmationEmail({
@@ -301,8 +329,8 @@ async function sendBookingEmails(
         pickupTime,
         totalAmount: emailTotalAmount,
         currency: emailCurrency,
-        bookingReference: updatedBooking.booking_number,
-        tripNumber: updatedBooking.trip_number,
+        bookingReference: reference,
+        tripNumber: group ? group.groupNumber : updatedBooking.trip_number,
         originalAmount: emailOriginalAmount,
         originalCurrency: emailOriginalCurrency,
         passengerCount: updatedBooking.passenger_count,
@@ -313,7 +341,7 @@ async function sendBookingEmails(
         amenitiesPrice: emailAmenitiesPrice,
         extras: convertedExtras,
         customerNotes: updatedBooking.customer_notes ?? undefined,
-        invoiceUrl: `${getAppUrl()}/api/booking/${updatedBooking.booking_number}/invoice?currency=${emailCurrency}`,
+        invoiceUrl: `${getAppUrl()}/api/booking/${reference}/invoice?currency=${emailCurrency}`,
         trip: customerTrip,
       }).catch((err) => console.error('Failed to send customer confirmation email:', err))
     }
@@ -322,8 +350,8 @@ async function sendBookingEmails(
     sendNewBookingNotificationEmail({
       adminEmail: getAdminEmail(),
       bookingId: updatedBooking.id,
-      bookingReference: updatedBooking.booking_number,
-      tripNumber: updatedBooking.trip_number,
+      bookingReference: reference,
+      tripNumber: group ? group.groupNumber : updatedBooking.trip_number,
       customerName,
       customerEmail,
       customerPhone: customerPhone || 'Not provided',
@@ -333,7 +361,7 @@ async function sendBookingEmails(
       dropoffLocation: dropoffLocation?.name || updatedBooking.dropoff_address,
       pickupDate,
       pickupTime,
-      totalAmount: updatedBooking.total_price,
+      totalAmount: aedAmount,
       currency: 'AED',
       bookingDetailsUrl: `${appUrl}/admin/bookings`,
       trip: adminTrip,

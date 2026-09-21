@@ -19,6 +19,7 @@ import { BRAND_NAME, BRAND_ADDRESS } from '@/lib/email/config';
 import { getBookingTimezone } from '@/lib/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
 import { hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
+import { groupInvoiceResponse, resolveInvoiceGroupId } from './group-invoice'
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +55,24 @@ export async function GET(
   try {
     const { bookingNumber } = await params;
     const supabase = createAdminClient();
+
+    // A round trip or multi-city trip was one payment, so it has one invoice, whichever of
+    // its references (the group's or a journey's) the link carries.
+    const groupId = await resolveInvoiceGroupId(supabase, bookingNumber);
+    if (groupId) {
+      const requestedCurrency = request.nextUrl.searchParams.get('currency')?.toUpperCase();
+      const [groupCurrencies, groupRates] = await Promise.all([getEnabledCurrencies(), getExchangeRates()]);
+      const groupCurrency =
+        requestedCurrency && groupCurrencies.some((c) => c.code === requestedCurrency) ? requestedCurrency : 'AED';
+      const response = await groupInvoiceResponse(supabase, groupId, {
+        toDisplay: (amountAed: number) => formatPrice(amountAed ?? 0, groupCurrency, groupRates),
+        showAedNote: groupCurrency !== 'AED',
+        formatDate,
+        formatDateTime,
+        amenityLabels: AMENITY_LABELS,
+      });
+      return response ?? NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
 
     const { data: booking, error } = await supabase
       .from('bookings')

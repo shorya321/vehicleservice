@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { RouteBandMap } from '@/app/search/results/components/route-band-map'
 import { ConfirmationContent } from './components/confirmation-content'
-import { getConfirmationBooking, getRouteTiming } from './lib/get-confirmation-booking'
+import { getConfirmationBooking, getConfirmationTrip, getRouteTiming } from './lib/get-confirmation-booking'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,13 +25,15 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
     notFound()
   }
 
-  const booking = await getConfirmationBooking(params.booking)
+  // A round trip or multi-city trip confirms as one, whichever of its references was used.
+  const tripView = await getConfirmationTrip(params.booking)
+  const booking = tripView?.booking ?? (await getConfirmationBooking(params.booking))
 
   if (!booking) {
     notFound()
   }
 
-  const route = await getRouteTiming(booking.from_location_id, booking.to_location_id)
+  const route = tripView ? null : await getRouteTiming(booking.from_location_id, booking.to_location_id)
 
   // Get primary passenger
   const primaryPassenger = booking.booking_passengers?.find((p: any) => p.is_primary)
@@ -51,6 +53,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
         childSeats={childSeats}
         addons={addons}
         route={route}
+        trip={tripView?.trip ?? null}
         routeMap={<RouteBandMap />}
       />
     </PublicLayout>
