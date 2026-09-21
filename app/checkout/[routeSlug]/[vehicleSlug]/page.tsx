@@ -17,6 +17,7 @@ import { parseTripSearchParams } from '@/lib/trips/search-params'
 import { quoteLegFare } from '@/lib/trips/pricing-server'
 import { getRouteDurationMinutes } from '@/lib/trips/locations-server'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
+import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 interface CheckoutRoutePageProps {
   params: Promise<{ routeSlug: string; vehicleSlug: string }>
@@ -58,6 +59,7 @@ export async function generateMetadata({ params }: CheckoutRoutePageProps): Prom
 export default async function CheckoutRoutePage({ params, searchParams }: CheckoutRoutePageProps) {
   const { routeSlug, vehicleSlug } = await params
   const sp = await searchParams
+  redirectIfPastDates(`/checkout/${routeSlug}/${vehicleSlug}`, sp)
 
   // Parse and resolve route slug
   const parsed = parseRouteSlug(routeSlug)

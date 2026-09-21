@@ -6,6 +6,7 @@ import { isIsoDate, parseTripSearchParams } from '@/lib/trips/search-params'
 import { RouteBandMap } from '../../results/components/route-band-map'
 import { HourlyResults } from './components/hourly-results'
 import { getHourlyResults } from './get-hourly-results'
+import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
 export default async function HourlySearchPage({ params, searchParams }: HourlySearchPageProps) {
   const { originSlug } = await params
   const sp = await searchParams
+  redirectIfPastDates(`/search/hourly/${originSlug}`, sp)
   const settings = await getSiteSettings()
   if (!settings.trip_types.hourly_enabled) notFound()
 

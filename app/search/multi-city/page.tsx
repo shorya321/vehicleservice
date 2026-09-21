@@ -6,6 +6,7 @@ import { parseTripSearchParams } from '@/lib/trips/search-params'
 import { RouteBandMap } from '../results/components/route-band-map'
 import { MultiCityResults } from './components/multi-city-results'
 import { getMultiCityResults } from './get-multi-city-results'
+import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,6 +26,7 @@ function single(value: string | string[] | undefined): string | undefined {
 
 export default async function MultiCitySearchPage({ searchParams }: MultiCityPageProps) {
   const sp = await searchParams
+  redirectIfPastDates('/search/multi-city', sp)
   const settings = await getSiteSettings()
   if (!settings.trip_types.multi_city_enabled) notFound()
 

@@ -12,6 +12,7 @@ import { resolveRouteSlugs } from '@/lib/utils/slug-resolver'
 import { getSiteSettings } from '@/lib/site-settings/server'
 import { parseTripSearchParams } from '@/lib/trips/search-params'
 import { toRoundTripResults } from '../lib/round-trip-results'
+import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 interface SearchRoutePageProps {
   params: Promise<{ routeSlug: string }>
@@ -56,6 +57,7 @@ export async function generateMetadata({ params, searchParams }: SearchRoutePage
 export default async function SearchRoutePage({ params, searchParams }: SearchRoutePageProps) {
   const { routeSlug } = await params
   const sp = await searchParams
+  redirectIfPastDates(`/search/${routeSlug}`, sp)
   const { date, passengers, adults, children, infants } = sp
 
   // Parse the route slug

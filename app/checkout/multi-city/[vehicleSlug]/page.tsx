@@ -14,6 +14,7 @@ import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
 import type { RouteDetails } from '../../actions'
 import { getActiveAddons, getVehicleType } from '../../actions'
 import { currentCheckoutPath, loadCheckoutCustomer } from '../../lib/checkout-customer'
+import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +35,7 @@ function single(value: string | string[] | undefined): string | undefined {
 export default async function MultiCityCheckoutPage({ params, searchParams }: MultiCityCheckoutPageProps) {
   const { vehicleSlug } = await params
   const sp = await searchParams
+  redirectIfPastDates(`/checkout/multi-city/${vehicleSlug}`, sp)
 
   const settings = await getSiteSettings()
   if (!settings.trip_types.multi_city_enabled) notFound()
