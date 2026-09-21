@@ -99,7 +99,10 @@ function assignmentToCalendarEvent(
 
   return {
     id: assignment.id, // Use assignment ID as unique event ID
-    title: `Trip #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}`,
+    // An hourly hire says so, since its long bar otherwise reads like a stuck transfer.
+    title: `Trip #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}${
+      assignment.booking?.duration_hours ? ` (${Number(assignment.booking.duration_hours)} h hourly)` : ''
+    }`,
     start,
     end,
     resourceId: assignment.id, // Use assignment ID

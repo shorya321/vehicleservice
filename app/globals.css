@@ -2001,6 +2001,17 @@
     min-width: 0;
   }
 
+  /* Each journey bar is its own positioned box, so a later bar would paint over an
+     earlier bar's location dropdown. The bar being edited rises above the rest. */
+  .search-bar--leg:focus-within {
+    z-index: 5;
+  }
+
+  .search-bar--multi-footer {
+    position: relative;
+    z-index: 1;
+  }
+
   @media (min-width: 768px) {
     .search-bar--leg .search-bar-field--compact {
       grid-column: 1 / -1;

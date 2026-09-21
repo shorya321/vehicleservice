@@ -20,7 +20,7 @@ import {
   type RevenueTrendPoint,
   type RevenueTrendResult,
 } from '@/lib/dashboard/revenue-range'
-import { destinationLabel } from '@/lib/trips/display'
+import { routeLabel } from '@/lib/trips/display'
 
 export interface DashboardMetrics {
   // Primary KPIs
@@ -198,7 +198,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     bookingNumber: b.booking_number,
     tripNumber: b.trip_number,
     customerName: b.customer?.full_name || 'Guest',
-    route: `${b.from_location?.name || 'Unknown'} → ${destinationLabel(b, b.to_location?.name) || 'Unknown'}`,
+    route: routeLabel(b, b.from_location?.name, b.to_location?.name),
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
@@ -335,7 +335,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 
   recentBookingsActivity?.forEach(booking => {
     const customerName = booking.customer?.full_name || 'Guest'
-    const route = `${booking.from_location?.name || 'Unknown'} → ${destinationLabel(booking, booking.to_location?.name) || 'Unknown'}`
+    const route = routeLabel(booking, booking.from_location?.name, booking.to_location?.name)
     activities.push({
       id: `booking-${booking.id}`,
       type: 'booking_created',

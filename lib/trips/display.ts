@@ -73,6 +73,20 @@ export function destinationLabel(row: TripColumns & { dropoff_address?: string |
 }
 
 /**
+ * "A → B" for a transfer, "A · Hourly · 10 h" for an hourly hire: an arrow into
+ * "Hourly" reads as if Hourly were a place.
+ */
+export function routeLabel(
+  row: TripColumns & { dropoff_address?: string | null },
+  fromName: string | null | undefined,
+  toName: string | null | undefined
+): string {
+  const from = fromName || 'Unknown'
+  if (isHourlyBooking(row)) return `${from} · ${destinationLabel(row)}`
+  return `${from} → ${destinationLabel(row, toName) || 'Unknown'}`
+}
+
+/**
  * One line for vendor and driver emails and screens, so the person doing the
  * job knows it is not a plain transfer: the hours to hold for an hourly hire,
  * or which journey of a trip this is. Null for one way.

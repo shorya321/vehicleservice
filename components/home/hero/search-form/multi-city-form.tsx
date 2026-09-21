@@ -45,14 +45,25 @@ export function MultiCityForm({ todayDate, maxLegs, mounted, guests, onGuestsCha
   const router = useRouter()
   const [legs, setLegs] = useState<LegState[]>(() => [emptyLeg(todayDate), emptyLeg(todayDate)])
 
-  const update = useCallback((key: number, patch: Partial<LegState>) => {
+  /**
+   * `patch` may be a function of the journey's current state. The typing handlers need that:
+   * reading `leg` from the render closure would miss a From that was just filled in from the
+   * previous journey, and wipe it on the input's next change event.
+   */
+  const update = useCallback((key: number, patchOrFn: Partial<LegState> | ((leg: LegState) => Partial<LegState>)) => {
     setLegs((prev) => {
       const index = prev.findIndex((leg) => leg.key === key)
+      const patch = typeof patchOrFn === 'function' ? patchOrFn(prev[index]) : patchOrFn
       return prev.map((leg, i) => {
         if (leg.key === key) return { ...leg, ...patch }
+        let next = leg
         // Later journeys can never be dated before an earlier one.
-        if (patch.date && i > index && leg.date < patch.date) return { ...leg, date: patch.date }
-        return leg
+        if (patch.date && i > index && leg.date < patch.date) next = { ...next, date: patch.date }
+        // The next journey starts where this one ends, unless the customer already chose.
+        if (patch.to && i === index + 1 && !leg.from && !leg.fromInput) {
+          next = { ...next, from: patch.to, fromInput: patch.to.name }
+        }
+        return next
       })
     })
   }, [])
@@ -97,7 +108,9 @@ export function MultiCityForm({ todayDate, maxLegs, mounted, guests, onGuestsCha
             ariaLabel={`Journey ${index + 1} pick-up location`}
             input={leg.fromInput}
             location={leg.from}
-            onInput={(value) => update(leg.key, { fromInput: value, from: leg.from?.name === value ? leg.from : null })}
+            onInput={(value) =>
+              update(leg.key, (current) => ({ fromInput: value, from: current.from?.name === value ? current.from : null }))
+            }
             onSelect={(location) => update(leg.key, { from: location, fromInput: location.name })}
           />
           <LocationField
@@ -107,7 +120,9 @@ export function MultiCityForm({ todayDate, maxLegs, mounted, guests, onGuestsCha
             ariaLabel={`Journey ${index + 1} drop-off location`}
             input={leg.toInput}
             location={leg.to}
-            onInput={(value) => update(leg.key, { toInput: value, to: leg.to?.name === value ? leg.to : null })}
+            onInput={(value) =>
+              update(leg.key, (current) => ({ toInput: value, to: current.to?.name === value ? current.to : null }))
+            }
             onSelect={(location) => update(leg.key, { to: location, toInput: location.name })}
           />
           <DateField

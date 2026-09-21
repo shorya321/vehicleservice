@@ -113,6 +113,7 @@ export function ChangeDurationModal({
             autoFocus
           />
           <p className="text-xs text-muted-foreground">
+            {bookedHours ? `Hourly hire of ${bookedHours} hours, so the minimum hold is ${minimumHours} hours. ` : ''}
             New release time: {releaseLabel(durationHours)}. Until then the vehicle and driver
             cannot be taken by another booking.
           </p>

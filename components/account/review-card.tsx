@@ -95,7 +95,7 @@ export function ReviewCard({ review, onEdit, onDelete }: ReviewCardProps) {
                 <MapPin className="w-3.5 h-3.5" />
                 <span className="truncate max-w-[200px]">
                   {review.route_from && review.route_to
-                    ? `${review.route_from} → ${review.route_to}`
+                    ? `${review.route_from} ${review.route_to.startsWith('Hourly') ? '·' : '→'} ${review.route_to}`
                     : review.route_from || review.route_to}
                 </span>
               </div>
