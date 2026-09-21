@@ -13,6 +13,7 @@ import { buildPaymentUrl } from '@/lib/utils/url-builder'
 import { phoneField } from '@/lib/validation/phone'
 import { getSeatedCount, type GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
+import { validatePickupStart } from '@/lib/trips/validation'
 import type { LegSchedule } from './trip-ledger-props'
 import { useTripBooking } from './use-trip-booking'
 
@@ -175,7 +176,7 @@ export function BookingForm({
     }
   })
 
-  const { handleSubmit, watch, setValue, trigger, formState: { errors } } = form
+  const { handleSubmit, watch, setValue, getValues, trigger, formState: { errors } } = form
   const agreeToTerms = watch('agreeToTerms')
   const watchedAddons = watch('selectedAddons')
   const selectedAddons = useMemo(() => watchedAddons || [], [watchedAddons])
@@ -299,8 +300,16 @@ export function BookingForm({
     }
     // Journey times and hourly notice are checked here, before extras, not at the very end.
     if (currentStep === 0 && trip.kind !== 'one_way' && !checkBeforeContinue()) return
+    // A one-way pickup can be today (a stale link is moved up to today) at an hour already gone.
+    if (currentStep === 0 && trip.kind === 'one_way') {
+      const pickupError = validatePickupStart(getValues('pickupDate'), getValues('pickupTime'))
+      if (pickupError) {
+        toast.error(pickupError)
+        return
+      }
+    }
     onGoNext()
-  }, [currentStep, trigger, onGoNext, trip.kind, checkBeforeContinue])
+  }, [currentStep, trigger, onGoNext, trip.kind, checkBeforeContinue, getValues])
 
   // Without an onInvalid handler a rejected submit does nothing at all. StepErrorSummary only
   // renders once `stepValidationAttempted` is set, which until now only "Continue" ever did. That

@@ -79,6 +79,21 @@ export function validateLegTiming(
   return null
 }
 
+/**
+ * A one-way pickup must still be ahead of now. The date can be today (a stale
+ * link is moved up to today), so the time alone can already have gone.
+ */
+export function validatePickupStart(
+  date: string,
+  time: string,
+  options: { now?: Date } = {}
+): string | null {
+  const start = legStart({ date, time })
+  if (!start) return 'Choose a valid pickup date and time.'
+  const now = options.now ?? new Date()
+  return start.getTime() <= now.getTime() ? 'The pickup time has already passed. Choose a later time.' : null
+}
+
 /** Hourly hire must start at least `minNoticeHours` from now. */
 export function validateHourlyStart(
   date: string,

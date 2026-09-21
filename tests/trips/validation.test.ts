@@ -1,4 +1,4 @@
-import { validateHourlyStart, validateLegTiming } from '@/lib/trips/validation'
+import { validateHourlyStart, validateLegTiming, validatePickupStart } from '@/lib/trips/validation'
 import { setBookingTimezone } from '@/lib/utils/timezone'
 
 // 2026-10-01 08:00 in Dubai (UTC+4).
@@ -91,5 +91,20 @@ describe('validateHourlyStart', () => {
     expect(validateHourlyStart('2026-10-01', '07:00', { minNoticeHours: 0, now: NOW }))
       .toBe('The start time has already passed.')
     expect(validateHourlyStart('2026-10-01', '09:00', { minNoticeHours: 0, now: NOW })).toBeNull()
+  })
+})
+
+describe('validatePickupStart', () => {
+  it('accepts a pickup later today in the operating timezone', () => {
+    expect(validatePickupStart('2026-10-01', '08:01', { now: NOW })).toBeNull()
+  })
+
+  it('refuses a pickup that has already passed today, or at this minute', () => {
+    expect(validatePickupStart('2026-10-01', '07:00', { now: NOW })).toBe('The pickup time has already passed. Choose a later time.')
+    expect(validatePickupStart('2026-10-01', '08:00', { now: NOW })).toBe('The pickup time has already passed. Choose a later time.')
+  })
+
+  it('refuses a malformed date or time', () => {
+    expect(validatePickupStart('2026-10-01', '', { now: NOW })).toBe('Choose a valid pickup date and time.')
   })
 })
