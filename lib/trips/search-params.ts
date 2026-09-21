@@ -65,6 +65,14 @@ export function parseLegs(raw: string | undefined): TripLegParam[] | null {
   return legs
 }
 
+/** Each journey dated no earlier than the one before it (ISO dates compare as strings). */
+function inDateOrder(legs: TripLegParam[]): TripLegParam[] {
+  return legs.reduce<TripLegParam[]>((ordered, leg) => {
+    const previous = ordered[ordered.length - 1]
+    return [...ordered, previous && leg.date < previous.date ? { ...leg, date: previous.date } : leg]
+  }, [])
+}
+
 /**
  * Reads trip state from page `searchParams`. Anything missing or malformed
  * falls back to one way, which is always a valid search.
@@ -74,8 +82,12 @@ export function parseTripSearchParams(params: RawSearchParams): TripSearchParams
   if (!isTripType(trip) || trip === 'one_way') return { trip: 'one_way' }
 
   if (trip === 'round_trip') {
-    const returnDate = first(params.return)
-    if (!isIsoDate(returnDate)) return { trip: 'one_way' }
+    const rawReturn = first(params.return)
+    if (!isIsoDate(rawReturn)) return { trip: 'one_way' }
+    // A hand-edited URL can date the return before the departure; move it up to
+    // the departure day, as the hero's date picker would have.
+    const departure = first(params.date)
+    const returnDate = isIsoDate(departure) && rawReturn < departure ? departure : rawReturn
     const returnTime = first(params.returnTime)
     return isHhMm(returnTime)
       ? { trip, returnDate, returnTime }
@@ -88,7 +100,7 @@ export function parseTripSearchParams(params: RawSearchParams): TripSearchParams
   }
 
   const legs = parseLegs(first(params.legs))
-  return legs ? { trip, legs } : { trip: 'one_way' }
+  return legs ? { trip, legs: inDateOrder(legs) } : { trip: 'one_way' }
 }
 
 /** Writes trip state into query params. One way writes nothing. */

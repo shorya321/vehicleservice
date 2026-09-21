@@ -2,7 +2,7 @@
 
 import { useState, memo, useEffect, useRef } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
-import { ArrowRight, Lock, ChevronUp, ChevronDown, Tag, Check } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Lock, ChevronUp, ChevronDown, Tag, Check } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { BookingLedger } from './booking-ledger'
@@ -150,8 +150,12 @@ export const MobileStickyBar = memo(function MobileStickyBar({
         >
           <div className="flex items-center gap-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)] truncate mr-3">
             <span className="truncate">{route.origin.name}</span>
-            <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
-            <span className="truncate">{route.destination.name}</span>
+            {trip?.kind === 'round_trip' ? (
+              <ArrowLeftRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
+            ) : (
+              <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
+            )}
+            <span className="truncate">{overrides?.destinationName ?? route.destination.name}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-lg font-medium tabular-nums text-[var(--text-primary)]">

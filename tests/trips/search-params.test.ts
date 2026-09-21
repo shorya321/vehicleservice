@@ -78,4 +78,21 @@ describe('trip search params', () => {
     expect(parseLegs('a~b@2026-10-01@25:00,b~c@2026-10-02')).toBeNull()
     expect(parseLegs(Array.from({ length: 7 }, () => 'a~b@2026-10-01').join(','))).toBeNull()
   })
+  it('never reads a return dated before the departure', () => {
+    expect(
+      parseTripSearchParams({ trip: 'round_trip', date: '2026-09-30', return: '2026-09-28' })
+    ).toEqual({ trip: 'round_trip', returnDate: '2026-09-30' })
+    expect(
+      parseTripSearchParams({ trip: 'round_trip', date: '2026-09-28', return: '2026-09-30' })
+    ).toEqual({ trip: 'round_trip', returnDate: '2026-09-30' })
+  })
+
+  it('never reads a journey dated before the one it follows', () => {
+    const parsed = parseTripSearchParams({
+      trip: 'multi_city',
+      legs: 'a~b@2026-10-05@09:00,b~c@2026-10-01,c~d@2026-10-07',
+    })
+    expect(parsed.legs?.map((leg) => leg.date)).toEqual(['2026-10-05', '2026-10-05', '2026-10-07'])
+    expect(parsed.legs?.[0].time).toBe('09:00')
+  })
 })
