@@ -1,4 +1,5 @@
 import { DEFAULT_BOOKING_TIMEZONE, isValidTimezone } from '@/lib/utils/timezone'
+import { DEFAULT_TRIP_SETTINGS, parseTripSettings, type TripSettings } from '@/lib/trips/settings'
 
 /**
  * Default self-cancellation window for business bookings, in minutes.
@@ -47,6 +48,8 @@ export interface SiteSettingsConfig {
    * `getCancellationEligibility` in `lib/business/booking-utils.ts`.
    */
   business_cancellation_window_minutes: number
+  /** Round trip, multi-city and hourly switches and rules. See `lib/trips/settings.ts`. */
+  trip_types: TripSettings
 }
 
 export const DEFAULT_SOCIAL_LINKS: SocialLinks = {
@@ -74,6 +77,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   block_search_indexing: true,
   timezone: DEFAULT_BOOKING_TIMEZONE,
   business_cancellation_window_minutes: DEFAULT_CANCELLATION_WINDOW_MINUTES,
+  trip_types: DEFAULT_TRIP_SETTINGS,
 }
 
 export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
@@ -135,5 +139,6 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
       obj.business_cancellation_window_minutes >= 0
         ? Math.floor(obj.business_cancellation_window_minutes)
         : DEFAULT_CANCELLATION_WINDOW_MINUTES,
+    trip_types: parseTripSettings(obj.trip_types),
   }
 }

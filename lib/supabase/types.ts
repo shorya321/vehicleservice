@@ -570,6 +570,96 @@ export type Database = {
           },
         ]
       }
+      booking_groups: {
+        Row: {
+          booking_status: string
+          created_at: string
+          currency: string
+          customer_id: string | null
+          discount_amount: number
+          discount_percent: number
+          group_number: string
+          id: string
+          leg_count: number
+          paid_at: string | null
+          payment_method_details: Json | null
+          payment_status: string
+          price_signature: string | null
+          price_signature_nonce: string | null
+          price_signature_timestamp: number | null
+          stripe_charge_id: string | null
+          stripe_payment_intent_id: string | null
+          subtotal: number
+          total_price: number
+          trip_type: string
+          updated_at: string
+          vehicle_type_id: string
+        }
+        Insert: {
+          booking_status?: string
+          created_at?: string
+          currency?: string
+          customer_id?: string | null
+          discount_amount?: number
+          discount_percent?: number
+          group_number: string
+          id?: string
+          leg_count: number
+          paid_at?: string | null
+          payment_method_details?: Json | null
+          payment_status?: string
+          price_signature?: string | null
+          price_signature_nonce?: string | null
+          price_signature_timestamp?: number | null
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subtotal: number
+          total_price: number
+          trip_type: string
+          updated_at?: string
+          vehicle_type_id: string
+        }
+        Update: {
+          booking_status?: string
+          created_at?: string
+          currency?: string
+          customer_id?: string | null
+          discount_amount?: number
+          discount_percent?: number
+          group_number?: string
+          id?: string
+          leg_count?: number
+          paid_at?: string | null
+          payment_method_details?: Json | null
+          payment_status?: string
+          price_signature?: string | null
+          price_signature_nonce?: string | null
+          price_signature_timestamp?: number | null
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subtotal?: number
+          total_price?: number
+          trip_type?: string
+          updated_at?: string
+          vehicle_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_groups_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_groups_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_passengers: {
         Row: {
           booking_id: string | null
@@ -649,6 +739,15 @@ export type Database = {
           trip_number: string
           updated_at: string | null
           vehicle_type_id: string
+          booking_group_id: string | null
+          discount_amount: number
+          duration_hours: number | null
+          extra_hour_price: number | null
+          hourly_package: string | null
+          included_km: number | null
+          leg_index: number | null
+          refund_due: number | null
+          trip_type: string
         }
         Insert: {
           adults?: number
@@ -687,6 +786,15 @@ export type Database = {
           trip_number: string
           updated_at?: string | null
           vehicle_type_id: string
+          booking_group_id?: string | null
+          discount_amount?: number
+          duration_hours?: number | null
+          extra_hour_price?: number | null
+          hourly_package?: string | null
+          included_km?: number | null
+          leg_index?: number | null
+          refund_due?: number | null
+          trip_type?: string
         }
         Update: {
           amenities_price?: number | null
@@ -725,8 +833,24 @@ export type Database = {
           trip_number?: string
           updated_at?: string | null
           vehicle_type_id?: string
+          booking_group_id?: string | null
+          discount_amount?: number
+          duration_hours?: number | null
+          extra_hour_price?: number | null
+          hourly_package?: string | null
+          included_km?: number | null
+          leg_index?: number | null
+          refund_due?: number | null
+          trip_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_booking_group_id_fkey"
+            columns: ["booking_group_id"]
+            isOneToOne: false
+            referencedRelation: "booking_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_customer_id_fkey"
             columns: ["customer_id"]
@@ -2713,6 +2837,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      vehicle_type_hourly_packages: {
+        Row: {
+          created_at: string
+          currency: string
+          extra_hour_price: number
+          hours: number
+          id: string
+          included_km: number
+          is_active: boolean
+          package: string
+          price: number
+          updated_at: string
+          vehicle_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          extra_hour_price?: number
+          hours: number
+          id?: string
+          included_km?: number
+          is_active?: boolean
+          package: string
+          price: number
+          updated_at?: string
+          vehicle_type_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          extra_hour_price?: number
+          hours?: number
+          id?: string
+          included_km?: number
+          is_active?: boolean
+          package?: string
+          price?: number
+          updated_at?: string
+          vehicle_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_type_hourly_packages_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vehicle_types: {
         Row: {

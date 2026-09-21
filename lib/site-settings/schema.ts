@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { isValidTimezone } from '@/lib/utils/timezone'
+import { tripSettingsSchema } from '@/lib/trips/settings'
 
 export const siteSettingsSchema = z.object({
   brand_name: z.string().min(1, 'Brand name is required').max(100),
@@ -35,6 +36,7 @@ export const siteSettingsSchema = z.object({
     .int('Enter a whole number of minutes')
     .min(0, 'Cannot be negative')
     .max(1440, 'Cannot exceed 1440 minutes (24 hours)'),
+  trip_types: tripSettingsSchema,
 })
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>
