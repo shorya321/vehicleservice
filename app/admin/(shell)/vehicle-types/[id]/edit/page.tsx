@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { VehicleTypeForm } from "../../components/vehicle-type-form"
 import { getVehicleType } from "../../actions"
+import { getHourlyPackages } from "../../actions/hourly-packages"
+import { HourlyPackagesCard } from "../../components/hourly-packages-card"
 import { createClient } from '@/lib/supabase/server'
 import {
   Card,
@@ -36,10 +38,13 @@ export default async function EditVehicleTypePage({ params }: PageProps) {
   const supabase = await createClient()
   
   // Get categories for the form
-  const { data: categories } = await supabase
-    .from('vehicle_categories')
-    .select('id, name')
-    .order('sort_order, name')
+  const [{ data: categories }, hourlyPackages] = await Promise.all([
+    supabase
+      .from('vehicle_categories')
+      .select('id, name')
+      .order('sort_order, name'),
+    getHourlyPackages(id),
+  ])
 
   return (
       <div className="space-y-6">
@@ -71,6 +76,12 @@ export default async function EditVehicleTypePage({ params }: PageProps) {
             />
           </CardContent>
         </Card>
+
+        <HourlyPackagesCard
+          vehicleTypeId={vehicleType.id}
+          vehicleTypeName={vehicleType.name}
+          packages={hourlyPackages}
+        />
       </div>
   )
 }

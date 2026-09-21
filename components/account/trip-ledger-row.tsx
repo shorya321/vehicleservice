@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from "@/lib/currency/context"
 import { getBookingTimezone } from "@/lib/utils/timezone"
 import type { BookingListItem } from "./types"
+import { destinationLabel, legLabel } from "@/lib/trips/display"
 
 const tz = () => getBookingTimezone()
 
@@ -62,8 +63,9 @@ export const TripLedgerRow = memo(function TripLedgerRow({ booking, onReview }: 
           >
             {booking.pickup_address} <span aria-hidden="true">&rarr;</span>{" "}
             <span className="sr-only">to</span>
-            {booking.dropoff_address}
+            {destinationLabel(booking)}
           </Link>
+          {legLabel(booking) && <span className="account-chip">{legLabel(booking)}</span>}
           {/* A travelled trip in good standing carries no chip: the row is quiet unless
               something about it still wants the customer. */}
           {isCancelled && <span className="account-chip account-chip-alert">Cancelled</span>}

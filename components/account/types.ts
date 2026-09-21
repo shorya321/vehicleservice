@@ -36,6 +36,13 @@ export interface BookingListItem {
   from_location_id?: string | null
   to_location_id?: string | null
   passenger_count?: number | null
+  /** Trip columns (select("*") returns them). Absent reads as one way. */
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
+  leg_index?: number | null
+  booking_group_id?: string | null
   vehicle_type?: { name: string; image_url?: string } | null
   booking_assignments?: Array<{
     status: string
@@ -75,4 +82,11 @@ export interface EligibleBooking {
   dropoff_address: string
   pickup_datetime: string
   vehicle_types?: { name: string } | null
+  /** Trip columns (select("*") returns them). Absent reads as one way. */
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
+  leg_index?: number | null
+  booking_group_id?: string | null
 }

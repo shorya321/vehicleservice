@@ -8,7 +8,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import { formatResultPrice } from './format-result-price'
 import { useCurrency } from '@/lib/currency/context'
-import { buildCheckoutUrl } from '@/lib/utils/url-builder'
+import { buildSelectionUrl, type ResultsSearchParams } from './results-search-params'
 
 /**
  * Photography grading.
@@ -34,17 +34,7 @@ const SPEC_LABEL = 'text-[0.6875rem] font-medium uppercase tracking-[0.16em] tex
 
 interface VehicleTypeGridCardProps {
   vehicleType: VehicleTypeResult
-  searchParams: {
-    from?: string
-    to?: string
-    date?: string
-    passengers?: string
-    adults?: string
-    children?: string
-    infants?: string
-    originSlug?: string
-    destSlug?: string
-  }
+  searchParams: ResultsSearchParams
   index?: number
 }
 
@@ -58,34 +48,27 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
   const subtitle = vehicleType.description?.trim() || ''
 
   // The guest breakdown is optional: links from route cards and zone pages only know a total.
-  const toCount = (v: string | undefined) => {
-    if (v === undefined) return undefined
-    const n = parseInt(v)
-    return Number.isNaN(n) ? undefined : n
-  }
-
-  const selectionUrl = searchParams.originSlug && searchParams.destSlug
-    ? buildCheckoutUrl(searchParams.originSlug, searchParams.destSlug, vehicleType.slug, {
-        date: searchParams.date || '',
-        time: '10:00',
-        passengers: searchParams.passengers || '1',
-        adults: toCount(searchParams.adults),
-        children: toCount(searchParams.children),
-        infants: toCount(searchParams.infants),
-      })
-    : `/checkout?${new URLSearchParams({
+  const selectionUrl = buildSelectionUrl(searchParams, vehicleType.slug)
+    ?? `/checkout?${new URLSearchParams({
         vehicleType: vehicleType.id,
-        // Drop undefined entries. URLSearchParams stringifies them to the literal "undefined".
+        // Drop undefined and non-string entries. URLSearchParams stringifies them to "undefined".
         ...Object.fromEntries(
-          Object.entries(searchParams).filter(([, v]) => v !== undefined)
+          Object.entries(searchParams).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string'
+          )
         ),
       }).toString()}`
 
   const unavailable = vehicleType.availableVehicles === 0
+  const tripPricing = vehicleType.tripPricing
 
   return (
     <motion.article
-      aria-label={unavailable ? `${vehicleType.name}, sold out` : vehicleType.name}
+      aria-label={
+        unavailable
+          ? `${vehicleType.name}, ${vehicleType.unavailableReason ?? 'sold out'}`
+          : vehicleType.name
+      }
       // Ground, border, radius, shadow, hover and easing all live in
       // `.vehicle-card` (globals.css), which is `.fleet-card`'s physics. They
       // were arbitrary values here, and three of them emitted no rule at all:
@@ -167,9 +150,22 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
           </div>
         </dl>
 
+        {tripPricing && (tripPricing.details.length > 0 || tripPricing.extraHourPrice !== undefined) && (
+          <ul className="mt-3 list-none space-y-1 p-0 text-[0.78125rem] leading-[1.5] text-[var(--text-secondary)]">
+            {tripPricing.details.map((detail) => (
+              <li key={detail}>{detail}</li>
+            ))}
+            {tripPricing.extraHourPrice !== undefined && tripPricing.extraHourPrice > 0 && (
+              <li>
+                Extra hour <span className="numeric">{formatResultPrice(tripPricing.extraHourPrice, currentCurrency, exchangeRates)}</span>
+              </li>
+            )}
+          </ul>
+        )}
+
         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
           <div>
-            <div className={SPEC_LABEL}>From</div>
+            <div className={SPEC_LABEL}>{tripPricing?.label ?? 'From'}</div>
             {/* Deliberately stacked, not wrapped. The caption fits beside a
                 short price ("100 AED") but not a long one ("20.09 GBP"), so
                 letting flex decide would put it inline for one currency and
@@ -179,14 +175,14 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
                 {formatResultPrice(vehicleType.price, currentCurrency, exchangeRates)}
               </span>
               <span className="mt-2 block text-[0.65625rem] uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                per vehicle
+                {tripPricing?.caption ?? 'per vehicle'}
               </span>
             </p>
           </div>
 
           {unavailable ? (
-            <span className="flex-none rounded-[4px] border border-[var(--stub-line)] px-4 py-2.5 text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              Sold out
+            <span className="max-w-[11rem] flex-none rounded-[4px] border border-[var(--stub-line)] px-4 py-2.5 text-center text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              {vehicleType.unavailableReason ?? 'Sold out'}
             </span>
           ) : (
             // The ::after overlay makes the whole card the target. People tap

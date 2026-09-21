@@ -8,6 +8,7 @@ import { createReview, updateReview } from "@/app/account/review-actions"
 import { reviewSchema, type ReviewFormData } from "@/app/account/schemas"
 import { toast } from "sonner"
 import { getBookingTimezone } from "@/lib/utils/timezone"
+import { destinationLabel } from "@/lib/trips/display"
 
 interface ReviewFormModalProps {
   review?: {
@@ -24,6 +25,8 @@ interface ReviewFormModalProps {
     dropoff_address: string
     pickup_datetime: string
     vehicle_types?: { name: string } | null
+    trip_type?: string | null
+    duration_hours?: number | null
   }>
   onClose: () => void
   onSuccess: () => void
@@ -163,7 +166,7 @@ export function ReviewFormModal({ review, eligibleBookings, onClose, onSuccess }
                     </div>
                     <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                       <MapPin className="w-3 h-3" />
-                      <span className="truncate">{booking.pickup_address} → {booking.dropoff_address}</span>
+                      <span className="truncate">{booking.pickup_address} → {destinationLabel(booking)}</span>
                     </div>
                     {booking.vehicle_types && (
                       <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] mt-1">

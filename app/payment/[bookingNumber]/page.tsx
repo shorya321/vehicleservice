@@ -28,6 +28,7 @@ import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
 import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 import { buildConfirmationUrl } from '@/lib/utils/url-builder'
+import { hourlyEndTime, hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
 
 export const metadata: Metadata = {
   // The root layout's title template appends ' | Infinia Transfers'.
@@ -339,7 +340,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   {/* The cap the same card opens on at checkout, so the customer arrives at a
                       card they have already been reading for two steps. */}
                   <div className="checkout-stub-cap">
-                    <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
+                    <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />{isHourlyBooking(booking) ? 'Your hourly hire' : 'Your transfer'}</h2>
                   </div>
                   {/* The same card the customer has had beside them since step three, drawing
                       the same data the same way. This aside used to use bullet dots and icon
@@ -356,7 +357,13 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     luggage={booking.vehicle_type?.luggage_capacity ?? null}
                     seats={booking.vehicle_type?.passenger_capacity ?? null}
                     pickupNote={`Pickup ${format(toBookingTz(booking.pickup_datetime), 'HH:mm')}`}
+                    arrivalNote={
+                      hourlyEndTime(booking.pickup_datetime, booking)
+                        ? `Until about ${hourlyEndTime(booking.pickup_datetime, booking)}`
+                        : null
+                    }
                     basePrice={booking.base_price}
+                    baseLabel={hourlyPackageLabel(booking) ?? undefined}
                     // One rolled-up line rather than a row per amenity: `booking_amenities`
                     // stores `amenity_type: 'addon'` and the addon name lives behind `addon_id`,
                     // so itemising here would need a join this query does not make. Same line

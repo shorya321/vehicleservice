@@ -68,6 +68,12 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete('bookingType')
     }
 
+    if (filters.tripType && filters.tripType !== 'all') {
+      params.set('tripType', filters.tripType)
+    } else {
+      params.delete('tripType')
+    }
+
     if (filters.page) {
       params.set('page', filters.page.toString())
     } else {

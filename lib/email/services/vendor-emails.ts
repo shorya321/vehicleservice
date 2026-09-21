@@ -129,6 +129,7 @@ export async function sendBookingAssignmentEmail(
       pickupDate: data.pickupDate,
       pickupTime: data.pickupTime,
       bookingUrl: data.bookingUrl,
+      tripLabel: data.tripLabel,
     },
   });
 }

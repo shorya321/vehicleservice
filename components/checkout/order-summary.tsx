@@ -7,6 +7,8 @@ import { BookingLedger } from './booking-ledger'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
+import type { CheckoutPriceBreakdown, CheckoutTrip } from '@/lib/trips/checkout-trip'
+import { tripLedgerOverrides, type LegSchedule } from './trip-ledger-props'
 
 /**
  * Pickup wall-clock plus the route's estimate, as a wall-clock string.
@@ -44,6 +46,10 @@ interface OrderSummaryProps {
   selectedAddons?: OrderSummaryAddon[]
   /** Only wired on the extras step, where AdditionalServicesSection is mounted to receive it. */
   onRemoveAddon?: (addonId: string) => void
+  /** Trip-type checkout. Absent for one way, whose card is unchanged. */
+  trip?: CheckoutTrip
+  pricing?: CheckoutPriceBreakdown
+  schedule?: LegSchedule[]
 }
 
 export const OrderSummary = memo(function OrderSummary({
@@ -61,6 +67,9 @@ export const OrderSummary = memo(function OrderSummary({
   onAgreeToTermsChange,
   selectedAddons = [],
   onRemoveAddon,
+  trip,
+  pricing,
+  schedule = [],
 }: OrderSummaryProps) {
   const reduceMotion = useReducedMotion()
 
@@ -69,10 +78,13 @@ export const OrderSummary = memo(function OrderSummary({
   const [promoDiscount, setPromoDiscount] = useState(0)
   const [showPromo, setShowPromo] = useState(false)
 
-  const basePrice = vehicleType.price || 50
+  const basePrice = pricing?.baseFare ?? (vehicleType.price || 50)
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const subtotal = basePrice + addonsCost
+  const subtotal = pricing?.total ?? basePrice + addonsCost
   const total = subtotal - promoDiscount
+  const overrides = trip && pricing
+    ? tripLedgerOverrides(trip, pricing, selectedAddons, pickupTime, schedule)
+    : null
 
   const formattedDate = pickupDate
     ? new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -108,8 +120,10 @@ export const OrderSummary = memo(function OrderSummary({
           section label; inside it, it names the object rather than the column, and the route's
           two hard numbers get the slot opposite. */}
       <div className="checkout-stub-cap">
-        <h2 id="order-summary-heading" className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
-        {(route.distance_km || route.estimated_duration_minutes) ? (
+        <h2 id="order-summary-heading" className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />{overrides?.heading ?? 'Your transfer'}</h2>
+        {overrides?.capNote ? (
+          <span className="checkout-stub-ref">{overrides.capNote}</span>
+        ) : (route.distance_km || route.estimated_duration_minutes) ? (
           <span className="checkout-stub-ref">
             {route.distance_km ? `${Math.round(route.distance_km)} km` : ''}
             {route.distance_km && route.estimated_duration_minutes ? ' · ' : ''}
@@ -124,7 +138,7 @@ export const OrderSummary = memo(function OrderSummary({
         category={vehicleType.category}
         vehicleName={vehicleType.name}
         originName={route.origin.name}
-        destinationName={route.destination.name}
+        destinationName={overrides?.destinationName ?? route.destination.name}
         dateLabel={formattedDate}
         timeLabel={pickupTime}
         passengers={passengers}
@@ -132,10 +146,14 @@ export const OrderSummary = memo(function OrderSummary({
         luggage={vehicleType.luggage_capacity}
         seats={vehicleType.passenger_capacity}
         pickupNote={pickupTime ? `Pickup ${pickupTime}` : null}
-        arrivalNote={arrival ? `Arrive about ${arrival}` : null}
+        arrivalNote={overrides && overrides.arrivalNote !== undefined ? overrides.arrivalNote : arrival ? `Arrive about ${arrival}` : null}
         alwaysShowBase
         basePrice={basePrice}
-        addons={selectedAddons}
+        baseLabel={overrides?.baseLabel}
+        legs={overrides?.legs}
+        tripDiscount={overrides?.tripDiscount}
+        addonNote={overrides?.addonNote}
+        addons={overrides?.addons ?? selectedAddons}
         promoDiscount={promoDiscount}
         total={total}
         onRemoveAddon={onRemoveAddon}

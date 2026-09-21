@@ -113,6 +113,7 @@ export default async function ServiceCodesPage({ searchParams }: PageProps) {
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="transfer">Transfer</SelectItem>
+              <SelectItem value="hourly">Hourly</SelectItem>
               <SelectItem value="yacht">Yacht</SelectItem>
               <SelectItem value="jet">Jet</SelectItem>
               <SelectItem value="desert">Desert</SelectItem>

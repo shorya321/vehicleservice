@@ -12,6 +12,7 @@ import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
 import { formatChildAges } from '@/lib/utils/child-ages'
 import { InvoiceDownloadButton } from '@/app/booking/confirmation/components/invoice-download-button'
 import { BookingCancelAction } from '@/components/account/booking-cancel-action'
+import { destinationLabel, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 import {
   CARD,
   CARD_LABEL,
@@ -81,6 +82,12 @@ export interface DetailBooking {
   vehicle_type: { name: string | null; passenger_capacity: number | null; luggage_capacity: number | null } | null
   booking_assignments: DetailAssignment[] | null
   booking_amenities: DetailAmenity[] | null
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
+  leg_index?: number | null
+  booking_group_id?: string | null
 }
 
 /* ------------------------------------------------------------------ time */
@@ -377,8 +384,8 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <h1 className="min-w-0 text-[clamp(1.6rem,3.4vw,2.4rem)] font-medium leading-[1.1] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
             {booking.pickup_address}{' '}
-            <span className="font-normal text-[var(--text-muted)]">to</span>{' '}
-            {booking.dropoff_address}
+            <span className="font-normal text-[var(--text-muted)]">{isHourlyBooking(booking) ? '·' : 'to'}</span>{' '}
+            {destinationLabel(booking)}
           </h1>
           <span className="account-chip self-start">{statusLabel}</span>
         </div>
@@ -406,8 +413,12 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
                     the confirmation rail's own treatment, with the fill now saying something. */}
                 <RouteStop label="Pickup" address={booking.pickup_address} reduceMotion={reduceMotion} />
                 <RouteStop
-                  label="Destination"
-                  address={booking.dropoff_address}
+                  label={isHourlyBooking(booking) ? 'Hire' : 'Destination'}
+                  address={
+                    isHourlyBooking(booking)
+                      ? `${hourlySummary(booking) ?? 'Hourly'}, as directed`
+                      : booking.dropoff_address
+                  }
                   state={isTravelled ? 'done' : 'pending'}
                   terminal={history.length === 0}
                   reduceMotion={reduceMotion}

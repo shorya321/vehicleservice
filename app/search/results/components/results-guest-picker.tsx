@@ -14,7 +14,7 @@
 
 import { useCallback, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { buildSearchUrl } from '@/lib/utils/url-builder'
+import { rebuildSearchUrl, type ResultsSearchParams } from './results-search-params'
 import { GuestSelector } from '@/components/home/hero/guest-selector'
 import {
   getSeatedCount,
@@ -23,15 +23,7 @@ import {
 } from '@/components/home/hero/guest-breakdown'
 
 interface ResultsGuestPickerProps {
-  searchParams: {
-    date?: string
-    passengers?: string
-    adults?: string
-    children?: string
-    infants?: string
-    originSlug?: string
-    destSlug?: string
-  }
+  searchParams: ResultsSearchParams
   className?: string
 }
 
@@ -63,15 +55,16 @@ export function ResultsGuestPicker({ searchParams, className }: ResultsGuestPick
       }
 
       startTransition(() => {
-        if (searchParams.originSlug && searchParams.destSlug) {
-          router.push(buildSearchUrl(searchParams.originSlug, searchParams.destSlug, params))
+        const url = rebuildSearchUrl(searchParams, { date: params.date, guests: params })
+        if (url) {
+          router.push(url)
           return
         }
         // /search/results has no slugs. buildSearchUrl would produce /search/undefined-to-undefined.
         // Preserve whatever params that route arrived with and override the guest ones.
         const qs = new URLSearchParams(
           Object.entries(searchParams).filter(
-            (entry): entry is [string, string] => entry[1] !== undefined
+            (entry): entry is [string, string] => typeof entry[1] === 'string'
           )
         )
         qs.set('passengers', String(total))

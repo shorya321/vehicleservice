@@ -45,6 +45,8 @@ import { formatChildAges } from '@/lib/utils/child-ages'
 import { updateBookingStatus, updatePaymentStatus } from '../../actions'
 import { AssignVendorModal } from '../../components/assign-vendor-modal'
 import { toast } from 'sonner'
+import { hourlyEndTime, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
+import { TripGroupCard } from './trip-group-card'
 
 interface BookingDetailProps {
   booking: any // We'll define proper types later
@@ -145,6 +147,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Main Content - Left Side */}
       <div className="lg:col-span-2 space-y-6">
+        {booking.trip_group && (
+          <TripGroupCard group={booking.trip_group} currentBookingId={booking.id} />
+        )}
+
         {/* Booking Information */}
         <Card>
           <CardHeader>
@@ -209,13 +215,28 @@ export function BookingDetail({ booking }: BookingDetailProps) {
 
               <div className="flex items-start gap-3">
                 <MapPin className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-                <div className="space-y-1 flex-1">
-                  <p className="text-sm text-muted-foreground">Dropoff Location</p>
-                  <p className="font-medium">{booking.dropoff_address}</p>
-                  {booking.to_zone?.name && (
-                    <p className="text-sm text-muted-foreground">Zone: {booking.to_zone.name}</p>
-                  )}
-                </div>
+                {isHourlyBooking(booking) ? (
+                  <div className="space-y-1 flex-1">
+                    <p className="text-sm text-muted-foreground">Hourly hire</p>
+                    <p className="font-medium">{hourlySummary(booking)}, as directed</p>
+                    {booking.extra_hour_price ? (
+                      <p className="text-sm text-muted-foreground">
+                        Extra hour {formatCurrency(Number(booking.extra_hour_price))}
+                        {hourlyEndTime(booking.pickup_datetime, booking)
+                          ? ` · booked until about ${hourlyEndTime(booking.pickup_datetime, booking)}`
+                          : ''}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="space-y-1 flex-1">
+                    <p className="text-sm text-muted-foreground">Dropoff Location</p>
+                    <p className="font-medium">{booking.dropoff_address}</p>
+                    {booking.to_zone?.name && (
+                      <p className="text-sm text-muted-foreground">Zone: {booking.to_zone.name}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

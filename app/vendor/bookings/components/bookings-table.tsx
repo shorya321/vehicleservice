@@ -63,6 +63,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     bookingNumber: string
     pickupDatetime: string
     currentHours: number | null
+    bookedHours: number | null
   } | null>(null)
   const [isCompleting, setIsCompleting] = useState(false)
 
@@ -218,6 +219,11 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
                         <span className="truncate">{assignment.booking?.dropoff_address || 'N/A'}</span>
                       </div>
+                      {assignment.booking?.trip_label && (
+                        <Badge variant="outline" className="text-xs whitespace-normal">
+                          {assignment.booking.trip_label}
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -351,7 +357,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                                 assignmentId: assignment.id,
                                 bookingNumber: assignment.booking.trip_number || assignment.booking.booking_number,
                                 pickupDatetime: assignment.booking.pickup_datetime,
-                                currentHours: assignment.estimated_duration_hours
+                                currentHours: assignment.estimated_duration_hours,
+                                bookedHours: assignment.booking.booked_hours ?? null,
                               })}
                             >
                               <Clock className="mr-2 h-4 w-4" />
@@ -403,6 +410,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           bookingNumber={durationModalData.bookingNumber}
           pickupDatetime={durationModalData.pickupDatetime}
           currentHours={durationModalData.currentHours}
+          bookedHours={durationModalData.bookedHours}
           onClose={() => setDurationModalData(null)}
         />
       )}

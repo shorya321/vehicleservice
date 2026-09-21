@@ -8,6 +8,7 @@ import { useCurrency } from "@/lib/currency/context"
 import { getBookingTimezone, bookingDayKey } from "@/lib/utils/timezone"
 import type { NextTransfer } from "@/app/account/overview-actions"
 import { CalendarLeaf } from "./calendar-leaf"
+import { hourlyPackageLabel, isHourlyBooking } from "@/lib/trips/display"
 
 /**
  * The next transfer, given the whole top of the page.
@@ -191,8 +192,10 @@ export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
             <p className="account-route-value">{transfer.pickup_address}</p>
           </div>
           <div className="account-route-stop">
-            <span className="account-label">Drop-off</span>
-            <p className="account-route-value">{transfer.dropoff_address}</p>
+            <span className="account-label">{isHourlyBooking(transfer) ? "Hire" : "Drop-off"}</span>
+            <p className="account-route-value">
+              {isHourlyBooking(transfer) ? hourlyPackageLabel(transfer) : transfer.dropoff_address}
+            </p>
           </div>
         </div>
 

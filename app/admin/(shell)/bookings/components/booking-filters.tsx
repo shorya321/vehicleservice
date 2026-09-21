@@ -97,6 +97,14 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     })
   }
 
+  const handleTripTypeChange = (tripType: string) => {
+    onFiltersChange({
+      ...filters,
+      tripType: tripType as BookingFilters['tripType'],
+      page: 1
+    })
+  }
+
   const handleClearFilters = () => {
     setSearchValue('')
     setDateRange(undefined)
@@ -108,7 +116,8 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
       status: 'all',
       timeframe: 'upcoming',
       paymentStatus: 'all',
-      bookingType: 'all'
+      bookingType: 'all',
+      tripType: 'all'
     })
   }
 
@@ -151,6 +160,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
     // 'upcoming' is the default view, so it isn't an "active" filter
     filters.timeframe && filters.timeframe !== 'upcoming' ? filters.timeframe : null,
     filters.bookingType && filters.bookingType !== 'all' ? filters.bookingType : null,
+    filters.tripType && filters.tripType !== 'all' ? filters.tripType : null,
     filters.paymentStatus && filters.paymentStatus !== 'all' ? filters.paymentStatus : null,
     filters.dateFrom,
     filters.dateTo,
@@ -204,6 +214,19 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
             <SelectItem value="all">All types</SelectItem>
             <SelectItem value="customer">Customer</SelectItem>
             <SelectItem value="business">Business</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filters.tripType || 'all'} onValueChange={handleTripTypeChange}>
+          <SelectTrigger className="w-[160px]" aria-label="Trip type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All trips</SelectItem>
+            <SelectItem value="one_way">One way</SelectItem>
+            <SelectItem value="round_trip">Round trip</SelectItem>
+            <SelectItem value="multi_city">Multi-city</SelectItem>
+            <SelectItem value="hourly">Hourly</SelectItem>
           </SelectContent>
         </Select>
 

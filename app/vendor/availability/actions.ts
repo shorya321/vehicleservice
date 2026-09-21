@@ -31,6 +31,7 @@ const ASSIGNMENT_CALENDAR_SELECT = `
     pickup_address,
     dropoff_address,
     pickup_datetime,
+    duration_hours,
     customer:profiles(full_name, phone)
   ),
   business_booking:business_bookings(
@@ -308,7 +309,7 @@ export async function getVendorCalendarEvents(
     const pickup = pastBooking.booking?.pickup_datetime ?? pastBooking.business_booking?.pickup_datetime
     if (!pickup) continue
     const start = new Date(pickup)
-    const end = tripEndFrom(start, pastBooking.estimated_duration_hours)
+    const end = tripEndFrom(start, pastBooking.estimated_duration_hours ?? pastBooking.booking?.duration_hours)
 
     events.push(
       assignmentToCalendarEvent(
@@ -359,10 +360,10 @@ export async function getVendorCalendarEvents(
       assignmentToCalendarEvent(
         pending,
         start,
-        // No duration has been chosen yet. tripEndFrom falls back to the default
-        // hold length; the client labels the block as awaiting a response so the
-        // guessed width never reads as a committed window.
-        tripEndFrom(start, null),
+        // No duration has been chosen yet. An hourly hire already knows its length;
+        // anything else falls back to the default hold. The client labels the block
+        // as awaiting a response so the guessed width never reads as a committed window.
+        tripEndFrom(start, pending.booking?.duration_hours ? Math.ceil(pending.booking.duration_hours) : null),
         'pending',
         CALENDAR_COLORS.pendingBorder,
         false

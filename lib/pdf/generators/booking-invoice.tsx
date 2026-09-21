@@ -141,6 +141,8 @@ export interface BookingInvoiceData {
   // Trip
   pickupAddress: string;
   dropoffAddress: string;
+  /** Hourly hire, e.g. "Half day, 5 hours, 100 km included, as directed". Replaces "To". */
+  hireDetails?: string;
   pickupDatetime?: string;
   vehicleTypeName?: string;
   passengerCount: number;
@@ -222,7 +224,11 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
           <Text style={pdfStyles.sectionTitle}>Trip Details</Text>
           <View style={styles.infoBox}>
             <InfoRow label="From" value={data.pickupAddress} />
-            <InfoRow label="To" value={data.dropoffAddress} />
+            {data.hireDetails ? (
+              <InfoRow label="Hire" value={data.hireDetails} />
+            ) : (
+              <InfoRow label="To" value={data.dropoffAddress} />
+            )}
             {data.pickupDatetime && <InfoRow label="Pickup" value={data.pickupDatetime} />}
             {data.vehicleTypeName && <InfoRow label="Vehicle" value={data.vehicleTypeName} />}
             {/* Luggage gets its own row: formatGuestSummary already uses "·" before infants, so

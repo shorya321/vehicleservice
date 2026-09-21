@@ -7,6 +7,8 @@ import { MobileStickyBar } from './mobile-sticky-bar'
 import { CheckoutStepHeader } from './checkout-step-header'
 import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory } from '@/app/checkout/actions'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
+import { checkoutPrice, isGroupedCheckout, type CheckoutTrip } from '@/lib/trips/checkout-trip'
+import type { LegSchedule } from './trip-ledger-props'
 
 export interface OrderSummaryAddon {
   id: string
@@ -40,7 +42,11 @@ interface CheckoutWrapperProps {
   /** Where "Change vehicle" goes back to. Built server-side so a direct arrival, which has
       no history to pop, still lands on the right search results. */
   changeHref: string
+  /** Round trip, multi-city or hourly. Omitted for the one-way checkout, which is unchanged. */
+  trip?: CheckoutTrip
 }
+
+const ONE_WAY: CheckoutTrip = { kind: 'one_way' }
 
 const TOTAL_STEPS = 2
 
@@ -59,6 +65,7 @@ export function CheckoutWrapper({
   profile,
   addonsByCategory,
   changeHref,
+  trip = ONE_WAY,
 }: CheckoutWrapperProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
@@ -67,6 +74,9 @@ export function CheckoutWrapper({
   const [pickupDate, setPickupDate] = useState(initialDate)
   const [pickupTime, setPickupTime] = useState(initialTime)
   const [selectedAddons, setSelectedAddons] = useState<OrderSummaryAddon[]>([])
+  const [schedule, setSchedule] = useState<LegSchedule[]>(() =>
+    isGroupedCheckout(trip) ? trip.legs.map((leg) => ({ date: leg.date, time: leg.time ?? '' })) : []
+  )
 
   const [formMethods, setFormMethods] = useState<FormMethods>({
     submit: () => {},
@@ -80,9 +90,10 @@ export function CheckoutWrapper({
 
   const isLastStep = currentStep === TOTAL_STEPS - 1
 
-  const basePrice = vehicleType.price || 50
   const addonsCost = selectedAddons.reduce((sum, addon) => sum + addon.total_price, 0)
-  const totalPrice = basePrice + addonsCost
+  const pricing = checkoutPrice(trip, vehicleType.price || 50, addonsCost)
+  const basePrice = pricing.baseFare
+  const totalPrice = pricing.total
 
   const goNext = useCallback(() => {
     if (currentStep < TOTAL_STEPS - 1) {
@@ -148,6 +159,10 @@ export function CheckoutWrapper({
     setSelectedAddons(addons)
   }, [])
 
+  const handleScheduleChange = useCallback((next: LegSchedule[]) => {
+    setSchedule(next)
+  }, [])
+
   const handleFormReady = useCallback((methods: FormMethods) => {
     setFormMethods(methods)
   }, [])
@@ -199,6 +214,8 @@ export function CheckoutWrapper({
                 onDateTimeChange={handleDateTimeChange}
                 onAddonsChange={handleAddonsChange}
                 onFormReady={handleFormReady}
+                trip={trip}
+                onScheduleChange={handleScheduleChange}
               />
             </div>
 
@@ -224,6 +241,9 @@ export function CheckoutWrapper({
                   // Only on the extras step: AdditionalServicesSection owns the selection and is
                   // unmounted on step 0, so there would be nothing to remove from there anyway.
                   onRemoveAddon={currentStep === 1 ? formMethods.removeAddon : undefined}
+                  trip={trip}
+                  pricing={pricing}
+                  schedule={schedule}
                 />
               </div>
             </div>
@@ -256,6 +276,9 @@ export function CheckoutWrapper({
     isLastStep={isLastStep}
     agreeToTerms={formMethods.agreeToTerms}
     onAgreeToTermsChange={formMethods.setAgreeToTerms}
+    trip={trip}
+    pricing={pricing}
+    schedule={schedule}
       />
     </>
   )

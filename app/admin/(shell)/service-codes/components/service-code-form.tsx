@@ -30,6 +30,7 @@ import type { ServiceCode } from '../actions'
 
 const SERVICE_TYPES = [
   { value: 'transfer', label: 'Transfer' },
+  { value: 'hourly', label: 'Hourly' },
   { value: 'yacht', label: 'Yacht' },
   { value: 'jet', label: 'Jet' },
   { value: 'desert', label: 'Desert' },

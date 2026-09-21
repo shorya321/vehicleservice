@@ -21,6 +21,7 @@ import { verifyBookingSignature, verifyPaymentAmount } from '@/lib/security/book
 import { convertAmount } from '@/lib/currency/format'
 import { getBookingTimezone } from '@/lib/utils/timezone'
 import type { ExchangeRatesMap } from '@/lib/currency/types'
+import { hourlyEmailTrip } from '@/lib/trips/email-trip'
 import type { Database } from '@/lib/supabase/types'
 
 type AdminClient = ReturnType<typeof createAdminClient>
@@ -280,6 +281,11 @@ async function sendBookingEmails(
       }))
     }
 
+    const convertForEmail = (aed: number): number =>
+      emailCurrency !== 'AED' && exchangeRates ? convertAmount(aed, 'AED', emailCurrency, exchangeRates) : aed
+    const customerTrip = hourlyEmailTrip(updatedBooking, convertForEmail)
+    const adminTrip = hourlyEmailTrip(updatedBooking)
+
     if (customerEmail) {
       sendBookingConfirmationEmail({
         bookingId: updatedBooking.id,
@@ -308,6 +314,7 @@ async function sendBookingEmails(
         extras: convertedExtras,
         customerNotes: updatedBooking.customer_notes ?? undefined,
         invoiceUrl: `${getAppUrl()}/api/booking/${updatedBooking.booking_number}/invoice?currency=${emailCurrency}`,
+        trip: customerTrip,
       }).catch((err) => console.error('Failed to send customer confirmation email:', err))
     }
 
@@ -329,6 +336,7 @@ async function sendBookingEmails(
       totalAmount: updatedBooking.total_price,
       currency: 'AED',
       bookingDetailsUrl: `${appUrl}/admin/bookings`,
+      trip: adminTrip,
     }).catch((err) => console.error('Failed to send admin booking notification email:', err))
   } catch (emailError) {
     console.error('Error preparing booking emails:', emailError)

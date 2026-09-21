@@ -1902,6 +1902,91 @@
     }
   }
 
+  /* ── Trip-type tabs (One way · Round trip · Hourly) ──
+     A row above the bar, never inside it: the bar's borders and corner radii
+     are keyed to child position. Pill capsules in the site's gold vocabulary. */
+  .search-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .search-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .search-tab {
+    flex: none;
+    padding: 7px 16px;
+    border: 1px solid var(--hero-bar-edge);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-luxury),
+                background-color var(--duration-fast) var(--ease-luxury),
+                border-color var(--duration-fast) var(--ease-luxury);
+  }
+
+  .search-tab:hover {
+    color: var(--text-primary);
+    border-color: rgba(var(--gold-rgb), 0.3);
+  }
+
+  .search-tab[aria-selected='true'] {
+    color: var(--text-primary);
+    background: rgba(var(--gold-rgb), 0.12);
+    border-color: rgba(var(--gold-rgb), 0.45);
+  }
+
+  .search-tab:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* Round trip adds a Return cell: six children instead of five. Tablet keeps
+     two columns, so From/To, Depart/Return, then Guests across the row. */
+  @media (min-width: 768px) {
+    .search-bar--round .search-bar-field:nth-child(3),
+    .search-bar--round .search-bar-field:nth-child(4) {
+      border-bottom: 1px solid var(--hero-bar-line);
+    }
+
+    .search-bar--round .search-bar-field--guests {
+      grid-column: 1 / -1;
+      border-right: 0;
+      border-bottom: 0;
+    }
+  }
+
+  @media (min-width: 1120px) {
+    .search-bar--round {
+      grid-template-columns: 1.15fr 1.15fr 0.7fr 0.7fr 0.95fr auto;
+    }
+
+    /* Six cells share the width five had; trim the side padding to match. */
+    .search-bar--round .search-bar-field {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .search-bar--round .search-bar-field:nth-child(n) {
+      border-bottom: 0;
+    }
+
+    .search-bar--round .search-bar-field--guests {
+      grid-column: auto;
+    }
+  }
+
   /* The label is scaffolding, the value is the content. They used to be set
      within one step of each other. */
   .search-bar-label {

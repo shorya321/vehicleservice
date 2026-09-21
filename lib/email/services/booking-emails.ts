@@ -44,6 +44,7 @@ export async function sendBookingConfirmationEmail(
       basePrice: data.basePrice,
       amenitiesPrice: data.amenitiesPrice,
       extras: data.extras,
+      trip: data.trip,
       customerNotes: data.customerNotes,
       invoiceUrl: data.invoiceUrl,
     },

@@ -18,6 +18,7 @@ import { formatChildAges } from '@/lib/utils/child-ages';
 import { BRAND_NAME, BRAND_ADDRESS } from '@/lib/email/config';
 import { getBookingTimezone } from '@/lib/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
+import { hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +75,10 @@ export async function GET(
         payment_method_details,
         paid_at,
         created_at,
+        trip_type,
+        hourly_package,
+        duration_hours,
+        included_km,
         booking_passengers (first_name, last_name, email, phone, is_primary),
         booking_amenities (amenity_type, quantity, price, child_ages, addon:addons (name)),
         vehicle_type:vehicle_types (name)
@@ -124,7 +129,7 @@ export async function GET(
 
     const lineItems: BookingInvoiceLineItem[] = [
       {
-        label: `Base fare · ${booking.passenger_count} passenger${booking.passenger_count > 1 ? 's' : ''}`,
+        label: `${hourlyPackageLabel(booking) ?? 'Base fare'} · ${booking.passenger_count} passenger${booking.passenger_count > 1 ? 's' : ''}`,
         quantity: 1,
         unitAmount: toDisplay(booking.base_price),
         amount: toDisplay(booking.base_price),
@@ -167,6 +172,9 @@ export async function GET(
 
       pickupAddress: booking.pickup_address,
       dropoffAddress: booking.dropoff_address,
+      hireDetails: isHourlyBooking(booking)
+        ? `${[hourlyPackageLabel(booking), booking.included_km ? `${booking.included_km} km included` : null].filter(Boolean).join(', ')}, as directed`
+        : undefined,
       pickupDatetime: booking.pickup_datetime ? formatDateTime(booking.pickup_datetime) : undefined,
       vehicleTypeName: vehicleType?.name,
       passengerCount: booking.passenger_count,

@@ -20,6 +20,7 @@ import {
   type RevenueTrendPoint,
   type RevenueTrendResult,
 } from '@/lib/dashboard/revenue-range'
+import { destinationLabel } from '@/lib/trips/display'
 
 export interface DashboardMetrics {
   // Primary KPIs
@@ -120,11 +121,18 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .select('id')
     .eq('status', 'pending')
 
-  const { data: pendingPayments } = await adminClient
+  const { data: pendingPaymentRows } = await adminClient
     .from('bookings')
-    .select('id')
+    .select('id, booking_group_id')
     .in('payment_status', ['pending', 'failed'])
     .gte('created_at', yesterday.toISOString())
+
+  // A round trip or multi-city trip is one payment, so it counts once, not once per journey.
+  const pendingPayments = pendingPaymentRows
+    ? Array.from(
+        new Map(pendingPaymentRows.map((row) => [row.booking_group_id ?? row.id, row])).values()
+      )
+    : null
 
   const { data: rejectedAssignments } = await adminClient
     .from('booking_assignments')
@@ -159,6 +167,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
         total_price,
         pickup_datetime,
         created_at,
+        trip_type,
+        duration_hours,
         customer:profiles!customer_id(full_name),
         from_location:locations!from_location_id(name),
         to_location:locations!to_location_id(name)
@@ -188,7 +198,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     bookingNumber: b.booking_number,
     tripNumber: b.trip_number,
     customerName: b.customer?.full_name || 'Guest',
-    route: `${b.from_location?.name || 'Unknown'} → ${b.to_location?.name || 'Unknown'}`,
+    route: `${b.from_location?.name || 'Unknown'} → ${destinationLabel(b, b.to_location?.name) || 'Unknown'}`,
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
@@ -248,6 +258,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       to_location:locations!to_location_id(name)
     `)
     .gte('created_at', today.toISOString())
+    // Hourly hire has no destination, so it is not a route.
+    .neq('trip_type', 'hourly')
 
   const routeCounts = new Map<string, number>()
   todayRoutes?.forEach(r => {
@@ -311,6 +323,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       booking_number,
       trip_number,
       created_at,
+      trip_type,
+      duration_hours,
       customer:profiles!customer_id(full_name),
       from_location:locations!from_location_id(name),
       to_location:locations!to_location_id(name)
@@ -321,7 +335,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 
   recentBookingsActivity?.forEach(booking => {
     const customerName = booking.customer?.full_name || 'Guest'
-    const route = `${booking.from_location?.name || 'Unknown'} → ${booking.to_location?.name || 'Unknown'}`
+    const route = `${booking.from_location?.name || 'Unknown'} → ${destinationLabel(booking, booking.to_location?.name) || 'Unknown'}`
     activities.push({
       id: `booking-${booking.id}`,
       type: 'booking_created',

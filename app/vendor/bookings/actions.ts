@@ -13,7 +13,7 @@ import type {
   VendorBookingPassenger,
   VendorBookingReschedule,
 } from '@/lib/vendor/bookings/types'
-import { parseDurationHours, tripEndFrom } from '@/lib/vendor/bookings/duration'
+import { assertHoldCoversBooking, defaultHoldHours, minimumHoldHours, parseDurationHours, tripEndFrom } from '@/lib/vendor/bookings/duration'
 import {
   findResourceConflicts,
   getBusyResourceWindows,
@@ -34,6 +34,7 @@ import {
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients'
 import { toBookingTz, getBookingTimezone } from '@/lib/utils/timezone'
+import { tripAssignmentLabel } from '@/lib/trips/display'
 
 /**
  * Loads everything a business-booking notification needs, or null when the booking is
@@ -130,6 +131,10 @@ export interface VendorBooking {
     customer_name?: string
     customer_email?: string | null
     customer_phone?: string | null
+    /** Hourly hire or trip leg, for the list badge. Null for a plain transfer. */
+    trip_label?: string | null
+    /** Paid hours of an hourly hire; the hold may not be shorter. */
+    booked_hours?: number | null
     vehicle_type: {
       id: string
       name: string
@@ -306,6 +311,17 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
           customer_name: booking.customerName,
           customer_email: booking.customerEmail,
           customer_phone: booking.customerPhone,
+          trip_label: tripAssignmentLabel(
+            {
+              trip_type: booking.tripType,
+              hourly_package: booking.hourlyPackage,
+              duration_hours: booking.durationHours,
+              included_km: booking.includedKm,
+              leg_index: booking.legIndex,
+            },
+            booking.legCount
+          ),
+          booked_hours: booking.tripType === 'hourly' ? booking.durationHours : null,
           vehicle_type: booking.vehicleTypes ? {
             id: booking.vehicleTypeId,
             name: booking.vehicleTypes.name,
@@ -392,7 +408,7 @@ export async function acceptAndAssignResources(
   durationHours?: number
 ) {
   // Never trust the browser's number: the database CHECK is the last line, not the first.
-  const holdHours = parseDurationHours(durationHours)
+  let holdHours = parseDurationHours(durationHours)
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -419,6 +435,12 @@ export async function acceptAndAssignResources(
   if (!booking) {
     throw new Error('Booking not found')
   }
+
+  // An hourly hire holds for at least its paid hours, whatever the modal sent.
+  if (durationHours === undefined || durationHours === null) {
+    holdHours = defaultHoldHours(booking.durationHours)
+  }
+  assertHoldCoversBooking(holdHours, booking.durationHours)
 
   // Get assignment details
   const { data: assignment } = await adminClient
@@ -639,6 +661,17 @@ export async function acceptAndAssignResources(
         pickupDate: format(pickupDt, 'MMMM d, yyyy'),
         pickupTime: format(pickupDt, 'h:mm a'),
         vendorName: vendorInfo?.business_name || 'Your Company',
+        tripLabel:
+          tripAssignmentLabel(
+            {
+              trip_type: booking.tripType,
+              hourly_package: booking.hourlyPackage,
+              duration_hours: booking.durationHours,
+              included_km: booking.includedKm,
+              leg_index: booking.legIndex,
+            },
+            booking.legCount
+          ) ?? undefined,
       })
     }
   } catch (driverEmailError) {
@@ -863,7 +896,7 @@ export async function checkResourceAvailabilityForBooking(
   assignmentId: string,
   durationHours?: number
 ) {
-  const holdHours = parseDurationHours(durationHours)
+  let holdHours = parseDurationHours(durationHours)
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -890,6 +923,12 @@ export async function checkResourceAvailabilityForBooking(
   if (!booking) {
     throw new Error('Booking not found')
   }
+
+  // Check the window the booking will actually hold: never shorter than a paid hourly hire.
+  if (durationHours === undefined || durationHours === null) {
+    holdHours = defaultHoldHours(booking.durationHours)
+  }
+  holdHours = Math.max(holdHours, minimumHoldHours(booking.durationHours))
 
   const pickupTime = new Date(booking.pickupDatetime)
   const estimatedEndTime = tripEndFrom(pickupTime, holdHours)
@@ -975,6 +1014,9 @@ export async function checkResourceAvailabilityForBooking(
 
   return {
     durationHours: holdHours,
+    /** Hours the customer paid for on an hourly hire; the hold may not be shorter. */
+    bookedHours: booking.durationHours,
+    minimumHoldHours: minimumHoldHours(booking.durationHours),
     bookingTime: pickupTime.toISOString(),
     estimatedEndTime: estimatedEndTime.toISOString(),
     // Availability is judged against the booking's own window, never against the clock.
@@ -1058,6 +1100,8 @@ export async function updateAssignmentDuration(
   if (!booking) {
     throw new Error('Booking not found')
   }
+
+  assertHoldCoversBooking(holdHours, booking.durationHours)
 
   const pickupTime = new Date(booking.pickupDatetime)
   const releaseAt = tripEndFrom(pickupTime, holdHours)
@@ -1532,6 +1576,17 @@ export async function getVendorBookingDetail(
     dropoffAddress: booking.dropoffAddress || '',
     fromLocationName: booking.fromLocations?.name ?? null,
     toLocationName: booking.toLocations?.name ?? null,
+    tripLabel: tripAssignmentLabel(
+      {
+        trip_type: booking.tripType,
+        hourly_package: booking.hourlyPackage,
+        duration_hours: booking.durationHours,
+        included_km: booking.includedKm,
+        leg_index: booking.legIndex,
+      },
+      booking.legCount
+    ),
+    bookedHours: booking.tripType === 'hourly' ? booking.durationHours : null,
 
     adults: extraRow?.adults ?? 0,
     children: extraRow?.children ?? 0,

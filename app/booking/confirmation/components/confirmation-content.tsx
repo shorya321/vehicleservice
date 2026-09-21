@@ -15,6 +15,7 @@ import { RouteConnector } from '@/app/search/results/components/route-connector'
 import { EASE_LUXURY } from '@/components/booking/itinerary-primitives'
 import { InvoiceDownloadButton } from './invoice-download-button'
 import { DayTime } from './day-time'
+import { hourlyEndTime, hourlyPackageLabel, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 
 const tz = () => getBookingTimezone()
 
@@ -105,6 +106,11 @@ interface Booking {
   vehicle_type: VehicleType | null
   booking_passengers: BookingPassenger[]
   booking_amenities: BookingAmenity[]
+  /** Trip columns; absent on a narrowed select, which reads as one way. */
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
 }
 
 interface ConfirmationContentProps {
@@ -263,6 +269,8 @@ export function ConfirmationContent({
   const statusConfig = getStatusConfig(booking.booking_status)
   const reference = booking.trip_number || booking.booking_number
   const duration = route?.estimated_duration_minutes ?? null
+  const hourly = isHourlyBooking(booking)
+  const hireUntil = booking.pickup_datetime ? hourlyEndTime(booking.pickup_datetime, booking) : null
 
   // Only a live booking with a known pickup gets the day-and-time statement. A cancelled or
   // completed trip, or one still waiting for a time, is told what happened in a sentence instead.
@@ -383,7 +391,7 @@ export function ConfirmationContent({
         <div className="confirm-sat__right">
           <Rise reduceMotion={reduceMotion} delay={0.1} className="checkout-summary-card confirm-sat__card--lift" aria-labelledby="transfer-heading">
             <div className="checkout-stub-cap">
-              <h2 id="transfer-heading" className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
+              <h2 id="transfer-heading" className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{hourly ? 'Your hourly hire' : 'Your transfer'}</h2>
               {pickupDate && <span className="checkout-stub-ref">{formatShortDate(pickupDate)}</span>}
             </div>
 
@@ -400,7 +408,9 @@ export function ConfirmationContent({
                 <span className="checkout-stub-route__place">
                   <span className="checkout-stub-route__name">{booking.dropoff_address}</span>
                   <span className="checkout-stub-route__note">
-                    {pickupDate && duration ? `Arrive about ${shiftedTime(pickupDate, duration)}` : 'Destination'}
+                    {hourly
+                      ? hireUntil ? `Until about ${hireUntil}` : hourlySummary(booking)
+                      : pickupDate && duration ? `Arrive about ${shiftedTime(pickupDate, duration)}` : 'Destination'}
                   </span>
                 </span>
               </div>
@@ -481,7 +491,7 @@ export function ConfirmationContent({
 
               <dl className="confirm-sat__band confirm-sat__ledger">
                 <div>
-                  <dt>{`Base fare · ${booking.passenger_count} passenger${booking.passenger_count === 1 ? '' : 's'}`}</dt>
+                  <dt>{`${hourlyPackageLabel(booking) ?? 'Base fare'} · ${booking.passenger_count} passenger${booking.passenger_count === 1 ? '' : 's'}`}</dt>
                   <dd>{formatUserAmount(booking.base_price)}</dd>
                 </div>
                 {childSeats.map((seat, idx) => (

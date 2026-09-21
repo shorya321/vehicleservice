@@ -6,21 +6,12 @@ import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
 import { Pagination } from './pagination'
 import { SortSelect } from './sort-select'
+import type { ResultsSearchParams } from './results-search-params'
 
 interface VehicleTypeCategoryTabsProps {
   vehicleTypesByCategory: VehicleTypesByCategory[]
   allVehicleTypes: VehicleTypeResult[]
-  searchParams: {
-    from?: string
-    to?: string
-    date?: string
-    passengers?: string
-    adults?: string
-    children?: string
-    infants?: string
-    originSlug?: string
-    destSlug?: string
-  }
+  searchParams: ResultsSearchParams
 }
 
 type SortOption = 'price-asc' | 'price-desc' | 'capacity' | 'name'

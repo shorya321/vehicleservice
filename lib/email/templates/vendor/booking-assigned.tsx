@@ -18,6 +18,7 @@ interface BookingAssignedEmailProps {
   pickupDate: string;
   pickupTime: string;
   bookingUrl: string;
+  tripLabel?: string;
 }
 
 export const BookingAssignedEmail = ({
@@ -32,6 +33,7 @@ export const BookingAssignedEmail = ({
   pickupDate,
   pickupTime,
   bookingUrl,
+  tripLabel,
 }: BookingAssignedEmailProps) => {
   return (
     <EmailLayout
@@ -67,6 +69,11 @@ export const BookingAssignedEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Dropoff Location:</strong> {dropoffLocation}
         </Text>
+        {tripLabel && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Service:</strong> {tripLabel}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Pickup Date:</strong> {pickupDate}
         </Text>

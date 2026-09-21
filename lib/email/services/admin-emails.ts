@@ -87,6 +87,7 @@ export async function sendNewBookingNotificationEmail(
       totalAmount: data.totalAmount,
       currency: data.currency,
       bookingDetailsUrl: data.bookingDetailsUrl,
+      trip: data.trip,
     },
   });
 }

@@ -53,7 +53,8 @@ export interface UnifiedBooking {
   pickupAddress: string | null;
   dropoffAddress: string | null;
   fromLocationId: string;
-  toLocationId: string;
+  /** Null for an hourly hire, which has no destination. */
+  toLocationId: string | null;
   vehicleTypeId: string;
   passengerCount: number;
   luggageCount: number;
@@ -63,6 +64,15 @@ export interface UnifiedBooking {
   customerNotes: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Trip shape. Business bookings are always one way. */
+  tripType: 'one_way' | 'round_trip' | 'multi_city' | 'hourly';
+  hourlyPackage: string | null;
+  durationHours: number | null;
+  includedKm: number | null;
+  bookingGroupId: string | null;
+  groupNumber: string | null;
+  legIndex: number | null;
+  legCount: number | null;
   // Related data (populated via joins)
   fromLocations?: {
     name: string;
@@ -112,6 +122,37 @@ function mapVehicleTypeEmbed(row: any): UnifiedBooking['vehicleTypes'] {
   };
 }
 
+type TripFields = Pick<
+  UnifiedBooking,
+  'tripType' | 'hourlyPackage' | 'durationHours' | 'includedKm' | 'bookingGroupId' | 'groupNumber' | 'legIndex' | 'legCount'
+>;
+
+const ONE_WAY_TRIP_FIELDS: TripFields = {
+  tripType: 'one_way',
+  hourlyPackage: null,
+  durationHours: null,
+  includedKm: null,
+  bookingGroupId: null,
+  groupNumber: null,
+  legIndex: null,
+  legCount: null,
+};
+
+/** Trip columns of a customer `bookings` row, with its group embed when selected. */
+function customerTripFields(row: any): TripFields {
+  const tripType = ['round_trip', 'multi_city', 'hourly'].includes(row?.trip_type) ? row.trip_type : 'one_way';
+  return {
+    tripType,
+    hourlyPackage: row?.hourly_package ?? null,
+    durationHours: row?.duration_hours != null ? Number(row.duration_hours) : null,
+    includedKm: row?.included_km ?? null,
+    bookingGroupId: row?.booking_group_id ?? null,
+    groupNumber: row?.booking_group?.group_number ?? null,
+    legIndex: row?.leg_index ?? null,
+    legCount: row?.booking_group?.leg_count ?? null,
+  };
+}
+
 /**
  * Get booking details regardless of type (customer or business)
  *
@@ -141,6 +182,7 @@ export async function getUnifiedBookingDetails(
       .select(`
         *,
         profiles!bookings_customer_id_fkey(full_name, email, phone),
+        booking_group:booking_group_id(group_number, leg_count),
         from_locations:from_location_id(name, city),
         to_locations:to_location_id(name, city),
         vehicle_types:vehicle_type_id(
@@ -181,6 +223,7 @@ export async function getUnifiedBookingDetails(
       customerNotes: data.customer_notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
+      ...customerTripFields(data),
       fromLocations: mapLocationEmbed(data.from_locations),
       toLocations: mapLocationEmbed(data.to_locations),
       vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),
@@ -239,6 +282,7 @@ export async function getUnifiedBookingDetails(
       customerNotes: data.customer_notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
+      ...ONE_WAY_TRIP_FIELDS,
       fromLocations: mapLocationEmbed(data.from_locations),
       toLocations: mapLocationEmbed(data.to_locations),
       vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),
@@ -555,6 +599,8 @@ export interface UnifiedBookingsFilters {
   toDate?: string;
   /** Matches the customer's email (partial, case-insensitive). */
   customerEmail?: string;
+  /** Customer bookings only; any value other than one way excludes business bookings. */
+  tripType?: 'one_way' | 'round_trip' | 'multi_city' | 'hourly';
   search?: string;
   limit?: number;
   offset?: number;
@@ -583,7 +629,10 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   const supabase = createAdminClient();
 
   const shouldFetchCustomer = !filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'customer';
-  const shouldFetchBusiness = !filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'business';
+  // Business bookings are always one way, so a trip-type filter other than one way excludes them.
+  const shouldFetchBusiness =
+    (!filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'business') &&
+    (!filters?.tripType || filters.tripType === 'one_way');
 
   // Build customer bookings query
   // Note: Use simple query and manually join customer data to avoid RLS issues
@@ -591,10 +640,15 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     .from('bookings')
     .select(`
       *,
+      booking_group:booking_group_id(group_number, leg_count),
       from_locations:from_location_id(name, city),
       to_locations:to_location_id(name, city),
       vehicle_types:vehicle_type_id(name, description)
     `, { count: 'exact' });
+
+  if (filters?.tripType) {
+    customerQuery = customerQuery.eq('trip_type', filters.tripType);
+  }
 
   // Build business bookings query
   // Note: business_bookings doesn't have luggage_count column
@@ -669,7 +723,20 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
 
   if (filters?.search) {
     const searchPattern = `%${filters.search}%`;
-    customerQuery = customerQuery.or(`booking_number.ilike.${searchPattern},trip_number.ilike.${searchPattern}`);
+    // A group reference (GR...) finds every journey of that trip.
+    const { data: matchingGroups } = await supabase
+      .from('booking_groups')
+      .select('id')
+      .ilike('group_number', searchPattern)
+      .limit(50);
+    const groupIds = (matchingGroups || []).map((g) => g.id);
+    customerQuery = customerQuery.or(
+      [
+        `booking_number.ilike.${searchPattern}`,
+        `trip_number.ilike.${searchPattern}`,
+        ...(groupIds.length > 0 ? [`booking_group_id.in.(${groupIds.join(',')})`] : []),
+      ].join(',')
+    );
     businessQuery = businessQuery.or(`customer_name.ilike.${searchPattern},booking_number.ilike.${searchPattern},trip_number.ilike.${searchPattern}`);
   }
 
@@ -817,8 +884,16 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   }
 
   // Merge and sort by creation date (most recently created first)
+  // The journeys of one trip share a created_at, so they are kept together in travel order.
   const allBookings = [...customerBookings, ...businessBookings]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    .sort((a, b) => {
+      const byCreated = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (byCreated !== 0) return byCreated;
+      if (a.booking_group_id && a.booking_group_id === b.booking_group_id) {
+        return (a.leg_index ?? 0) - (b.leg_index ?? 0);
+      }
+      return 0;
+    });
 
   // Apply pagination if specified
   const paginatedBookings = filters?.limit
