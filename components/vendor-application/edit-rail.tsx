@@ -1,12 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { RouteConnector } from "@/app/search/results/components/route-connector"
 import { formatBookingDate } from "@/lib/utils/timezone"
 import {
   APPLICATION_STATUS_LABEL,
   decisionDueAt,
+  REVIEW_WINDOW_HOURS,
   type ApplicationStatus,
 } from "@/lib/vendor-application/status"
+import { STUB_PLATE } from "./stub-plate"
+
+/** Weekday first, the way the checkout stub and the status page's review stub date a trip. */
+const ROUTE_DATE = "EEE d MMM"
 
 /**
  * The edit page's left rail.
@@ -16,9 +22,10 @@ import {
  * page's own `2fr 3fr` grid, and this is what goes in the 2fr: the context the applicant
  * loses the moment they click Edit.
  *
- * Flat, not a card. `/become-vendor` is the other page in this flow where the rail sits
- * beside a form, and its rail is flat too; the bordered CARD treatment belongs to the
- * status page, which is read rather than filled in.
+ * It opens on the status page's review stub, so clicking Edit details keeps the applicant
+ * on the same object: the cap with the status chip, then submitted to decision on the
+ * route connector. The index and the change register below it stay flat, as the rail
+ * beside the form on `/become-vendor` is.
  */
 
 /** Mirrors the ids SectionShell puts on the three fieldsets in the edit form. */
@@ -32,6 +39,8 @@ interface EditRailProps {
   status: ApplicationStatus
   createdAt: string
   updatedAt: string
+  /** When the decision being answered was made. Only read on the resubmit path. */
+  reviewedAt?: string | null
   /** Field labels the applicant has changed since the page loaded, in form order. */
   changes: string[]
   /** The decision being answered, on the resubmit path. Null on an ordinary edit. */
@@ -43,12 +52,14 @@ export function EditRail({
   status,
   createdAt,
   updatedAt,
+  reviewedAt = null,
   changes,
   rejectionReason,
   className,
 }: EditRailProps) {
   const [currentId, setCurrentId] = useState<string>(SECTIONS[0].id)
   const edited = updatedAt > createdAt
+  const decided = status !== "pending"
 
   useEffect(() => {
     const nodes = SECTIONS.map((section) => document.getElementById(section.id)).filter(
@@ -77,30 +88,55 @@ export function EditRail({
 
   return (
     <aside className={className}>
-      <span className={`account-chip ${status === "rejected" ? "account-chip-alert" : ""}`}>
-        {APPLICATION_STATUS_LABEL[status]}
-      </span>
-
-      {/* The dates the status page carries and this page dropped. Nothing is computed that
-          the row does not already store. */}
-      <dl className="account-dl account-dl-inline mt-6">
-        <div>
-          <dt>Submitted</dt>
-          <dd>{formatBookingDate(createdAt)}</dd>
+      {/* The status page's review stub. The dates are the ones the row already stores;
+          nothing is computed that the status page does not show too. */}
+      <section className={STUB_PLATE} aria-labelledby="edit-review-heading">
+        <div className="checkout-stub-cap">
+          <h2 id="edit-review-heading" className="checkout-stub-ref">
+            Review
+          </h2>
+          <span className={`account-chip self-center ${status === "rejected" ? "account-chip-alert" : ""}`}>
+            {APPLICATION_STATUS_LABEL[status]}
+          </span>
         </div>
-        {edited && (
-          <div>
-            <dt>Last saved</dt>
-            <dd>{formatBookingDate(updatedAt)}</dd>
-          </div>
-        )}
-        {status === "pending" && (
-          <div>
-            <dt>Decision by</dt>
-            <dd>{formatBookingDate(decisionDueAt(createdAt).toISOString())}</dd>
-          </div>
-        )}
-      </dl>
+
+        <div className="px-6 pb-6 pt-4">
+          <p className="checkout-stub-route">
+            <span className="checkout-stub-route__place">
+              <span className="checkout-stub-route__name">Submitted</span>
+              <span className="checkout-stub-route__note">{formatBookingDate(createdAt, ROUTE_DATE)}</span>
+            </span>
+            <RouteConnector />
+            <span className="checkout-stub-route__place">
+              <span className="checkout-stub-route__name">
+                {decided ? APPLICATION_STATUS_LABEL[status] : "Decision"}
+              </span>
+              <span className="checkout-stub-route__note">
+                {decided
+                  ? formatBookingDate(reviewedAt ?? updatedAt, ROUTE_DATE)
+                  : `By ${formatBookingDate(decisionDueAt(createdAt).toISOString(), ROUTE_DATE)}`}
+              </span>
+            </span>
+          </p>
+          <p className="checkout-stub-facts">
+            {decided ? (
+              <span>Resubmitting keeps the same reference</span>
+            ) : (
+              <>
+                <span>
+                  <strong>{REVIEW_WINDOW_HOURS} hours</strong> review window
+                </span>
+                <span>Saving does not restart it</span>
+              </>
+            )}
+            {edited && (
+              <span>
+                Last saved <strong>{formatBookingDate(updatedAt)}</strong>
+              </span>
+            )}
+          </p>
+        </div>
+      </section>
 
       {/* The applicant is being asked to fix something. They should be able to read what,
           while they type, rather than holding it from the page they came off. */}

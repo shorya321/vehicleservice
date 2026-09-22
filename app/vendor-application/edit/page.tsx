@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import { HeroMap } from "@/components/home/hero/hero-map"
 import { normalizeApplicationStatus } from "@/lib/vendor-application/status"
 import { VendorApplicationEditForm } from "./vendor-application-edit-form"
 
@@ -49,8 +50,15 @@ export default async function EditVendorApplicationPage() {
     .single()
 
   return (
-    <div className="bg-[var(--black-void)]">
-      <div className="luxury-container pt-[clamp(3rem,7vw,5rem)] pb-[clamp(4rem,9vw,6.5rem)]">
+    <div className="relative bg-[var(--black-void)]">
+      {/* The home hero's street map behind the title, as on /become-vendor and the status
+          page: the three vendor pages open the same way. `.vendor-mapband` in globals.css. */}
+      <div className="vendor-mapband" aria-hidden="true">
+        <HeroMap />
+        <div className="vendor-mapband__fade" />
+      </div>
+
+      <div className="relative luxury-container pt-[clamp(3rem,7vw,5rem)] pb-[clamp(4rem,9vw,6.5rem)]">
         {/* The status page's own container and grid, so the eyebrow and the headline land
             on the same pixels on both pages. This was `max-w-3xl` inside a 1400px
             container: aligned with neither the header nor the footer. */}
