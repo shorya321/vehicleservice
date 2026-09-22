@@ -8,7 +8,7 @@ import Link from "next/link"
 import { VendorApplicationForm } from "@/components/vendor-application/vendor-application-form"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { ApplicationProgressProvider } from "@/components/vendor-application/application-progress"
-import { HeroMap } from "@/components/home/hero/hero-map"
+import { RouteBandMap } from "@/app/search/results/components/route-band-map"
 import { ApplicationIndex } from "./components/application-index"
 import { AfterSubmit } from "./components/after-submit"
 import { PartnerBenefits, PartnerRequirements } from "./components/partner-rail"
@@ -52,11 +52,12 @@ export default async function BecomeVendorPage() {
   return (
     <PublicLayout>
       <div className="relative bg-[var(--black-void)] min-h-screen">
-        {/* The home hero's street map, faded out behind the title so the page opens the
-            way home does. Starts under the fixed header (main's pt-20) and fades to the
-            page ground before the form gets going. `.vendor-mapband` in globals.css. */}
+        {/* The search page's crop of the street map, faded out behind the title, the same
+            band /vendor-application opens on. Starts under the fixed header (main's pt-20)
+            and fades to the page ground before the form gets going. `.vendor-mapband` in
+            globals.css, which also retires the map's own fade. */}
         <div className="vendor-mapband" aria-hidden="true">
-          <HeroMap />
+          <RouteBandMap />
           <div className="vendor-mapband__fade" />
         </div>
 

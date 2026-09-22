@@ -67,6 +67,11 @@ export interface RouteStopProps {
    * lets the rail carry a trip's history below its route.
    */
   state?: 'done' | 'pending'
+  /**
+   * Fill for a hollow dot, which reads as a hole punched in the surface under it. Defaults to the
+   * flat card tone; a rail drawn on the stub plate passes that plate's tone instead.
+   */
+  hollowClassName?: string
   reduceMotion: boolean
 }
 
@@ -75,7 +80,15 @@ export interface RouteStopProps {
  * hairline, no icons. It replaced two sibling label/value cells, which stated both ends of a
  * journey and never the direction between them.
  */
-export function RouteStop({ label, address, meta, terminal, state, reduceMotion }: RouteStopProps) {
+export function RouteStop({
+  label,
+  address,
+  meta,
+  terminal,
+  state,
+  hollowClassName = 'bg-[var(--black-rich)]',
+  reduceMotion,
+}: RouteStopProps) {
   const filled = state ? state === 'done' : !!terminal
 
   return (
@@ -85,7 +98,7 @@ export function RouteStop({ label, address, meta, terminal, state, reduceMotion 
       <span
         aria-hidden="true"
         className={`absolute left-0 top-[1.5px] h-[9px] w-[9px] rounded-full border border-[var(--gold-text)] ${
-          filled ? 'bg-[var(--gold-text)]' : 'bg-[var(--black-rich)]'
+          filled ? 'bg-[var(--gold-text)]' : hollowClassName
         }`}
       />
       {!terminal && (

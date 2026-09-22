@@ -1538,6 +1538,12 @@
     .vendor-mapband { height: 32rem; opacity: 0.55; }
   }
 
+  /* /become-vendor and /vendor-application carry the search band's map (RouteBandMap) rather
+     than the hero's. That component brings its own fade, which resolves to --black-rich for the
+     raised section under the search band; here the page ground continues, so only the band fade
+     above runs. */
+  .vendor-mapband .route-band__fade { display: none; }
+
   /* The rail's 0% / 48h / 7d at the home stats pill's figure size. They were 12px
      labels: numbers someone decides on get display type (DESIGN.md). */
   .vendor-figures .editorial-list-index {

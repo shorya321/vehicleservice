@@ -2,15 +2,8 @@
 
 import Link from 'next/link'
 import { useReducedMotion } from 'motion/react'
-import {
-  BAND,
-  BAND_DIVIDER,
-  CARD,
-  CARD_LABEL,
-  CardMotion,
-  GHOST_BUTTON,
-  RouteStop,
-} from '@/components/booking/itinerary-primitives'
+import { CardMotion, GHOST_BUTTON, RouteStop } from '@/components/booking/itinerary-primitives'
+import { RouteConnector } from '@/app/search/results/components/route-connector'
 import { formatBookingDate } from '@/lib/utils/timezone'
 import {
   APPLICATION_STATUS_LABEL,
@@ -18,6 +11,7 @@ import {
   REVIEW_WINDOW_HOURS,
   type ApplicationStatus,
 } from '@/lib/vendor-application/status'
+import { STUB_BODY, STUB_PLATE, StubPerf } from './stub-plate'
 
 interface ReviewRailProps {
   status: ApplicationStatus
@@ -35,12 +29,19 @@ const GUIDANCE: Record<ApplicationStatus, string> = {
   rejected: 'Answer the decision above and resubmit. You keep the same application and the same reference.',
 }
 
+/** Weekday first, the way the checkout stub dates a trip. */
+const ROUTE_DATE = 'EEE d MMM'
+
+/** The rail's hollow Decision dot is punched through the stub plate, not the flat card tone. */
+const HOLLOW_ON_PLATE = 'bg-[var(--stub-mid)]'
+
 /**
  * The review rail.
  *
- * Drawn with RouteStop, the same hairline rail that carries pickup to dropoff on a booking: dots
- * and a connector, no icons. It replaced a tinted banner, a duplicate status badge and a sentence
- * of prose that carried the 48 hour promise. Here the promise is a dated stop.
+ * Drawn on the checkout stub that become-vendor's form and after-submit card use: the cap, then
+ * the review as a route (submitted to decision) on the search and checkout connector, then the
+ * tear, the three dated stops, a second tear and the actions. The stops are RouteStop, the same
+ * hairline rail that carries pickup to dropoff on a booking: dots and a connector, no icons.
  */
 export function ReviewRail({
   status,
@@ -60,18 +61,48 @@ export function ReviewRail({
       reduceMotion={reduceMotion}
       delay={0.05}
       aria-labelledby="review-heading"
-      className={`${CARD} ${className ?? ''}`}
+      className={`${STUB_PLATE} ${className ?? ''}`}
     >
-      <div className={`${BAND} flex items-center justify-between gap-4 border-b border-[rgba(var(--gold-rgb),0.1)]`}>
-        <h2 id="review-heading" className={CARD_LABEL}>
+      <div className="checkout-stub-cap">
+        <h2 id="review-heading" className="checkout-stub-ref">
           Review
         </h2>
-        <span className={`account-chip ${status === 'rejected' ? 'account-chip-alert' : ''}`}>
+        <span className={`account-chip self-center ${status === 'rejected' ? 'account-chip-alert' : ''}`}>
           {APPLICATION_STATUS_LABEL[status]}
         </span>
       </div>
 
-      <div className={BAND}>
+      <div className="px-6 pb-6 pt-4">
+        <p className="checkout-stub-route">
+          <span className="checkout-stub-route__place">
+            <span className="checkout-stub-route__name">Submitted</span>
+            <span className="checkout-stub-route__note">{formatBookingDate(createdAt, ROUTE_DATE)}</span>
+          </span>
+          <RouteConnector />
+          <span className="checkout-stub-route__place">
+            <span className="checkout-stub-route__name">
+              {decided ? APPLICATION_STATUS_LABEL[status] : 'Decision'}
+            </span>
+            <span className="checkout-stub-route__note">
+              {decided
+                ? formatBookingDate(decidedAt, ROUTE_DATE)
+                : `By ${formatBookingDate(decisionDueAt(createdAt).toISOString(), ROUTE_DATE)}`}
+            </span>
+          </span>
+        </p>
+        {!decided && (
+          <p className="checkout-stub-facts">
+            <span>
+              <strong>{REVIEW_WINDOW_HOURS} hours</strong> review window
+            </span>
+            <span>Editable until then</span>
+          </p>
+        )}
+      </div>
+
+      <StubPerf />
+
+      <div className={STUB_BODY}>
         <ol className="space-y-5">
           <RouteStop
             label="Submitted"
@@ -99,13 +130,16 @@ export function ReviewRail({
                 : `Expected by ${formatBookingDate(decisionDueAt(createdAt).toISOString())}`
             }
             state={decided ? 'done' : 'pending'}
+            hollowClassName={HOLLOW_ON_PLATE}
             terminal
             reduceMotion={reduceMotion}
           />
         </ol>
       </div>
 
-      <div className={`${BAND_DIVIDER} ${BAND}`}>
+      <StubPerf />
+
+      <div className={STUB_BODY}>
         <p className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">{GUIDANCE[status]}</p>
 
         <div className="mt-5 flex flex-col gap-3">

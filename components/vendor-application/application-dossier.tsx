@@ -2,8 +2,6 @@
 
 import { useReducedMotion } from 'motion/react'
 import {
-  BAND,
-  CARD,
   CARD_LABEL,
   CardMotion,
   Field,
@@ -18,6 +16,7 @@ import {
   maskTail,
   type ApplicationStatus,
 } from '@/lib/vendor-application/status'
+import { STUB_BODY, STUB_PLATE, StubPerf } from './stub-plate'
 
 /**
  * Business and Licensing read as reference data, not as an itinerary, so their values sit a step
@@ -110,6 +109,23 @@ export function ApplicationDossier({
     banking.bank_name || banking.account_holder_name || maskedAccount || maskedIban || banking.swift_code
   )
 
+  // How many of each card's rows the applicant filled, counted the way the card renders them:
+  // address and city are one Location row, and each licence or policy is a number and an expiry.
+  const businessFilled = filledLabel([
+    application.business_name,
+    application.registration_number,
+    application.business_email,
+    application.business_phone,
+    location,
+    application.business_description,
+  ])
+  const licensingFilled = filledLabel([
+    documents.trade_license_number,
+    documents.trade_license_expiry,
+    documents.insurance_policy_number,
+    documents.insurance_expiry,
+  ])
+
   return (
     <div className={`space-y-6 ${className ?? ''}`}>
       {status === 'rejected' && application.rejection_reason && (
@@ -128,7 +144,11 @@ export function ApplicationDossier({
       <DossierCard
         id="business"
         heading="Business"
-        caption={edited ? `Edited ${formatBookingDate(application.updated_at)}` : undefined}
+        caption={
+          edited
+            ? `Edited ${formatBookingDate(application.updated_at)}, ${businessFilled}`
+            : businessFilled
+        }
         delay={0.15}
         reduceMotion={reduceMotion}
       >
@@ -161,7 +181,13 @@ export function ApplicationDossier({
       </DossierCard>
 
       {hasLicensing && (
-        <DossierCard id="licensing" heading="Licensing" delay={0.2} reduceMotion={reduceMotion}>
+        <DossierCard
+          id="licensing"
+          heading="Licensing"
+          caption={licensingFilled}
+          delay={0.2}
+          reduceMotion={reduceMotion}
+        >
           <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
             {documents.trade_license_number && (
               <Field
@@ -182,6 +208,25 @@ export function ApplicationDossier({
             )}
             <ExpiryField label="Policy expires" value={documents.insurance_expiry} />
           </dl>
+        </DossierCard>
+      )}
+
+      {/* Bank details are skippable at application, and the page used to drop the whole
+          section when they were skipped, so the one gap the applicant still has to fill
+          was the one thing it never mentioned. */}
+      {!hasSettlement && (
+        <DossierCard
+          id="settlement"
+          heading="Settlement"
+          chip="Not added"
+          delay={0.25}
+          reduceMotion={reduceMotion}
+        >
+          <p className="max-w-[52ch] text-sm leading-relaxed text-[var(--text-secondary)]">
+            {status === 'approved'
+              ? 'Bank details were skipped at application. Add them from your vendor dashboard before your first payout.'
+              : 'Bank details were skipped at application. Add them from your vendor dashboard once you are approved, before your first payout.'}
+          </p>
         </DossierCard>
       )}
 
@@ -251,11 +296,21 @@ export function ApplicationDossier({
   )
 }
 
-/** Card shell: a header band carrying the only heading, then one body band. No icons. */
+/** "5 of 6 fields": filled rows over the rows the card can show. */
+function filledLabel(values: ReadonlyArray<string | null | undefined>): string {
+  const filled = values.filter((value) => Boolean(value?.trim())).length
+  return `${filled} of ${values.length} fields`
+}
+
+/**
+ * Card shell, on the checkout stub: the cap carries the only heading and an optional caption or
+ * chip, the tear, then one body band. No icons.
+ */
 function DossierCard({
   id,
   heading,
   caption,
+  chip,
   delay,
   reduceMotion,
   children,
@@ -263,6 +318,7 @@ function DossierCard({
   id: string
   heading: string
   caption?: string
+  chip?: string
   delay: number
   reduceMotion: boolean
   children: React.ReactNode
@@ -272,17 +328,20 @@ function DossierCard({
       reduceMotion={reduceMotion}
       delay={delay}
       aria-labelledby={`${id}-heading`}
-      className={CARD}
+      className={STUB_PLATE}
     >
-      <div
-        className={`${BAND} flex items-baseline justify-between gap-4 border-b border-[rgba(var(--gold-rgb),0.1)]`}
-      >
-        <h2 id={`${id}-heading`} className={CARD_LABEL}>
+      <div className="checkout-stub-cap">
+        <h2 id={`${id}-heading`} className="checkout-stub-ref">
           {heading}
         </h2>
-        {caption && <span className="text-[0.75rem] text-[var(--text-muted)]">{caption}</span>}
+        {chip ? (
+          <span className="account-chip self-center">{chip}</span>
+        ) : (
+          caption && <span className="checkout-stub-ref">{caption}</span>
+        )}
       </div>
-      <div className={BAND}>{children}</div>
+      <StubPerf />
+      <div className={STUB_BODY}>{children}</div>
     </CardMotion>
   )
 }
