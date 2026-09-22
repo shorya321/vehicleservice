@@ -46,7 +46,7 @@ function formatGap(minutes: number): string {
  */
 export function validateLegTiming(
   legs: TimedLeg[],
-  options: { bufferMinutes: number; maxLegs: number; now?: Date }
+  options: { bufferMinutes: number; maxLegs: number; now?: Date; roundTrip?: boolean }
 ): string | null {
   if (legs.length < 2) return 'Add at least two journeys.'
   const maxLegs = Math.min(options.maxLegs, MAX_LEGS_HARD_LIMIT)
@@ -57,7 +57,8 @@ export function validateLegTiming(
 
   for (let index = 0; index < legs.length; index += 1) {
     const leg = legs[index]
-    const label = `Journey ${index + 1}`
+    // A round trip's checkout says Outbound and Return, so its errors do too.
+    const label = options.roundTrip ? (index === 0 ? 'Outbound' : 'Return') : `Journey ${index + 1}`
     if (!leg.fromId || !leg.toId) return `${label}: choose both a pickup and a destination.`
     if (leg.fromId === leg.toId) return `${label}: pickup and destination must differ.`
 
@@ -67,7 +68,9 @@ export function validateLegTiming(
 
     if (previousEnd && start.getTime() < previousEnd.getTime()) {
       const gap = formatGap(Math.round((previousEnd.getTime() - start.getTime()) / 60_000))
-      return `${label} starts too soon after journey ${index}. Move it at least ${gap} later.`
+      return options.roundTrip
+        ? `Your return starts too soon after the outbound journey. Move it at least ${gap} later.`
+        : `${label} starts too soon after journey ${index}. Move it at least ${gap} later.`
     }
 
     const duration = leg.durationMinutes && leg.durationMinutes > 0

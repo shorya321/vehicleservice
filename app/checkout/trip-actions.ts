@@ -241,7 +241,7 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
         time: leg.time,
         durationMinutes: durations[index],
       })),
-      { bufferMinutes: tripSettings.leg_buffer_minutes, maxLegs }
+      { bufferMinutes: tripSettings.leg_buffer_minutes, maxLegs, roundTrip: isRoundTrip }
     )
     if (timingError) return { success: false, error: timingError }
 

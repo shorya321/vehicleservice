@@ -32,6 +32,8 @@ import { hourlyEndTime, hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/
 import { GROUP_NUMBER_PREFIX } from '@/lib/trips/constants'
 import { getGroupForPayment, getOrCreateGroupPaymentIntent } from '../lib/group-payment'
 import { GroupPaymentScreen } from './group-payment-screen'
+import { PickupPassedScreen } from '../components/pickup-passed-screen'
+import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
 
 export const metadata: Metadata = {
   // The root layout's title template appends ' | Infinia Transfers'.
@@ -189,6 +191,16 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     const group = await getGroupForPayment(bookingNumber, user.id)
     if (!group) notFound()
     if (group.paymentStatus === 'completed') redirect(buildConfirmationUrl(group.groupNumber))
+    if (firstPickupHasPassed(group.pickupTimes)) {
+      return (
+        <PickupPassedScreen
+          reference={group.groupNumber}
+          user={user}
+          profile={profile}
+          currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+        />
+      )
+    }
 
     let groupSecret: string | null = null
     let groupError: string | null = null
@@ -237,6 +249,18 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   // Check if already paid
   if (booking.payment_status === 'completed') {
     redirect(buildConfirmationUrl(booking.booking_number))
+  }
+
+  // An unpaid booking never expires, so its pickup can be gone by the time it is opened here.
+  if (firstPickupHasPassed([booking.pickup_datetime])) {
+    return (
+      <PickupPassedScreen
+        reference={booking.trip_number || booking.booking_number}
+        user={user}
+        profile={profile}
+        currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+      />
+    )
   }
 
   const primaryPassenger = booking.booking_passengers?.find(

@@ -77,6 +77,25 @@ describe('validateLegTiming', () => {
   })
 })
 
+describe('validateLegTiming for a round trip', () => {
+  const roundTrip = { ...options, roundTrip: true }
+
+  it('names the outbound and the return, as the checkout does', () => {
+    const tooSoon = [
+      { fromId: 'a', toId: 'b', date: '2026-10-02', time: '10:00', durationMinutes: 45 },
+      { fromId: 'b', toId: 'a', date: '2026-10-02', time: '11:15' },
+    ]
+    expect(validateLegTiming(tooSoon, roundTrip)).toBe(
+      'Your return starts too soon after the outbound journey. Move it at least 30 minutes later.'
+    )
+    const past = [
+      { fromId: 'a', toId: 'b', date: '2026-10-01', time: '07:00' },
+      { fromId: 'b', toId: 'a', date: '2026-10-03', time: '10:00' },
+    ]
+    expect(validateLegTiming(past, roundTrip)).toBe('Outbound: the pickup time has already passed.')
+  })
+})
+
 describe('validateHourlyStart', () => {
   it('accepts a start after the notice period', () => {
     expect(validateHourlyStart('2026-10-01', '20:00', { minNoticeHours: 12, now: NOW })).toBeNull()

@@ -25,6 +25,8 @@ import {
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
 import { verifyBookingSignature } from '@/lib/security/booking-hmac'
+import { PickupPassedScreen } from './components/pickup-passed-screen'
+import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
 
 export const metadata: Metadata = {
   title: 'Secure Payment | Infinia Transfers',
@@ -223,6 +225,18 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   // Check if already paid
   if (booking.payment_status === 'completed') {
     redirect(`/booking/confirmation/${booking.booking_number}`)
+  }
+
+  // An unpaid booking never expires, so its pickup can be gone by the time it is opened here.
+  if (firstPickupHasPassed([booking.pickup_datetime])) {
+    return (
+      <PickupPassedScreen
+        reference={booking.trip_number || booking.booking_number}
+        user={user}
+        profile={profile}
+        currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+      />
+    )
   }
 
   // Get primary passenger

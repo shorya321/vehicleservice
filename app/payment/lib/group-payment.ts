@@ -23,6 +23,8 @@ export interface GroupForPayment {
   primaryName: string | null
   primaryPhone: string | null
   ledgerLegs: LedgerLeg[]
+  /** Every journey's pickup instant, so the page can refuse a trip whose first pickup has gone. */
+  pickupTimes: string[]
 }
 
 /** A customer's own round trip or multi-city trip, with its journeys, for the payment page. */
@@ -63,6 +65,7 @@ export async function getGroupForPayment(groupNumber: string, userId: string): P
     passengerCount: legs[0].passenger_count,
     primaryName: primary ? `${primary.first_name} ${primary.last_name}` : null,
     primaryPhone: primary?.phone ?? null,
+    pickupTimes: legs.map((leg) => leg.pickup_datetime),
     ledgerLegs: legs.map((leg) => ({
       key: leg.id,
       label: legLabel(leg, legs.length) ?? 'Journey',

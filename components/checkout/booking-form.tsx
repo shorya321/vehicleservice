@@ -243,6 +243,14 @@ export function BookingForm({
       return
     }
 
+    // The time can pass while the customer is on the payment step. The server refuses it too,
+    // but a thrown Server Action message never reaches the browser in production.
+    const pickupError = validatePickupStart(data.pickupDate, data.pickupTime)
+    if (pickupError) {
+      toast.error(pickupError)
+      return
+    }
+
     setLoading(true)
     try {
       const result = await createBooking({
