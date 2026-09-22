@@ -1577,13 +1577,10 @@
     animation-delay: 500ms;
   }
 
-  /* Mirrors .editorial-eyebrow, which every other section on the page uses. That
-     device leads with a single rule; a centred stack needs it on both sides. */
-  .hero-eyebrow::after {
-    content: '';
-    width: 28px;
-    height: 1px;
-    background-color: var(--gold);
+  /* The hero eyebrow is plain text, without the gold rule .editorial-eyebrow
+     paints. Doubled class: that rule sits later in the file at equal specificity. */
+  .hero-eyebrow.editorial-eyebrow::before {
+    content: none;
   }
 
   .hero-eyebrow {
@@ -1592,14 +1589,6 @@
 
   .hero-eyebrow > span {
     min-width: 0;
-  }
-
-  /* Below the smallest breakpoint the two rules cost more than they earn. */
-  @media (max-width: 400px) {
-    .hero-eyebrow::before,
-    .hero-eyebrow::after {
-      display: none;
-    }
   }
 
   .hero-headline {
@@ -8217,7 +8206,7 @@
 
   /* .editorial-eyebrow leads with a single rule, which reads correctly when the
      section is left-aligned. A centred stack needs the rule on both sides or the
-     text sits off the section's axis. Same device as .hero-eyebrow. */
+     text sits off the section's axis. */
   .editorial-eyebrow--centered {
     justify-content: center;
   }
