@@ -20,7 +20,7 @@ import { updateAssignmentDuration } from '../actions'
 import {
   DEFAULT_TRIP_DURATION_HOURS,
   MAX_TRIP_DURATION_HOURS,
-  MIN_TRIP_DURATION_HOURS,
+  minimumHoldHours,
   tripEndFrom,
 } from '@/lib/vendor/bookings/duration'
 import { toBookingTz } from '@/lib/utils/timezone'
@@ -31,6 +31,8 @@ interface ChangeDurationModalProps {
   /** Pickup instant, ISO. The hold always starts here; only its end moves. */
   pickupDatetime: string
   currentHours: number | null
+  /** Paid hours of an hourly hire. The hold may not be shorter; null for a transfer. */
+  bookedHours?: number | null
   onClose: () => void
 }
 
@@ -45,8 +47,10 @@ export function ChangeDurationModal({
   bookingNumber,
   pickupDatetime,
   currentHours,
+  bookedHours = null,
   onClose,
 }: ChangeDurationModalProps) {
+  const minimumHours = minimumHoldHours(bookedHours)
   const router = useRouter()
   const initialHours = currentHours ?? DEFAULT_TRIP_DURATION_HOURS
   const [durationHours, setDurationHours] = useState<number>(initialHours)
@@ -62,7 +66,7 @@ export function ChangeDurationModal({
 
     const parsed = Number.parseInt(raw, 10)
     if (Number.isNaN(parsed)) return
-    if (parsed < MIN_TRIP_DURATION_HOURS || parsed > MAX_TRIP_DURATION_HOURS) return
+    if (parsed < minimumHours || parsed > MAX_TRIP_DURATION_HOURS) return
 
     setDurationHours(parsed)
   }
@@ -99,7 +103,7 @@ export function ChangeDurationModal({
             id="change-duration"
             type="number"
             inputMode="numeric"
-            min={MIN_TRIP_DURATION_HOURS}
+            min={minimumHours}
             max={MAX_TRIP_DURATION_HOURS}
             step={1}
             value={durationInput}
@@ -109,6 +113,7 @@ export function ChangeDurationModal({
             autoFocus
           />
           <p className="text-xs text-muted-foreground">
+            {bookedHours ? `Hourly hire of ${bookedHours} hours, so the minimum hold is ${minimumHours} hours. ` : ''}
             New release time: {releaseLabel(durationHours)}. Until then the vehicle and driver
             cannot be taken by another booking.
           </p>

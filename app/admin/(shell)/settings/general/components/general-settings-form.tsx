@@ -36,6 +36,7 @@ import { toast } from 'sonner'
 import { updateSiteSettings, uploadSiteLogo, removeSiteLogo } from '../actions'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import { siteSettingsSchema, type SiteSettingsFormValues } from '@/lib/site-settings/schema'
+import { TripTypesSettingsCard } from './trip-types-settings-card'
 
 interface GeneralSettingsFormProps {
   currentSettings: SiteSettingsConfig
@@ -104,6 +105,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       timezone: currentSettings.timezone,
       business_cancellation_window_minutes:
         currentSettings.business_cancellation_window_minutes,
+      trip_types: currentSettings.trip_types,
     },
   })
 
@@ -310,6 +312,8 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
             />
           </CardContent>
         </Card>
+
+        <TripTypesSettingsCard control={form.control} />
 
         {/* Branding Section */}
         <Card>

@@ -6,6 +6,8 @@ import DetailsSection from '../../components/details-section';
 import { emailStyles } from '../../styles/constants';
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
 import { formatChildAges } from '@/lib/utils/child-ages';
+import TripDetails from '../../components/trip-details';
+import type { EmailTripDetails } from '../../types';
 
 interface BookingConfirmationEmailProps {
   customerName: string;
@@ -33,6 +35,7 @@ interface BookingConfirmationEmailProps {
   extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
   customerNotes?: string;
   invoiceUrl?: string;
+  trip?: EmailTripDetails;
 }
 
 export const BookingConfirmationEmail = ({
@@ -60,7 +63,11 @@ export const BookingConfirmationEmail = ({
   extras,
   customerNotes,
   invoiceUrl,
+  trip,
 }: BookingConfirmationEmailProps) => {
+  const isGrouped = !!trip?.legs && trip.legs.length > 0;
+  const isHourly = trip?.tripType === 'hourly';
+  const baseFareLabel = isGrouped ? 'Journey fares' : isHourly ? 'Hire package' : 'Base Fare';
   const hasBookingSummary = passengerCount != null && basePrice != null;
   // Bookings that predate the guest breakdown fall back to the plain total.
   const passengerLabel =
@@ -100,21 +107,41 @@ export const BookingConfirmationEmail = ({
           </Text>
         )}
         <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date & Time:</strong> {pickupDate} at {pickupTime}
-        </Text>
-        {passengerLabel != null && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Passengers:</strong> {passengerLabel}
-          </Text>
+        {isGrouped && trip ? (
+          <>
+            <TripDetails trip={trip} currency={currency} />
+            {passengerLabel != null && (
+              <>
+                <Hr style={emailStyles.hr} />
+                <Text style={emailStyles.detailRow}>
+                  <strong>Passengers:</strong> {passengerLabel}
+                </Text>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup Location:</strong> {pickupLocation}
+            </Text>
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup Date & Time:</strong> {pickupDate} at {pickupTime}
+            </Text>
+            {passengerLabel != null && (
+              <Text style={emailStyles.detailRow}>
+                <strong>Passengers:</strong> {passengerLabel}
+              </Text>
+            )}
+            <Hr style={emailStyles.hr} />
+            {isHourly && trip ? (
+              <TripDetails trip={trip} currency={currency} />
+            ) : (
+              <Text style={emailStyles.detailRow}>
+                <strong>Dropoff Location:</strong> {dropoffLocation}
+              </Text>
+            )}
+          </>
         )}
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff Location:</strong> {dropoffLocation}
-        </Text>
         {hasBookingSummary && (
           <>
             <Hr style={emailStyles.hr} />
@@ -125,7 +152,7 @@ export const BookingConfirmationEmail = ({
               <tbody>
                 <tr>
                   <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333' }}>
-                    Base Fare ({passengerCount} Passenger{passengerCount !== 1 ? 's' : ''})
+                    {baseFareLabel} ({passengerCount} Passenger{passengerCount !== 1 ? 's' : ''})
                   </td>
                   <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333', textAlign: 'right' as const }}>
                     {currency} {basePrice.toFixed(2)}

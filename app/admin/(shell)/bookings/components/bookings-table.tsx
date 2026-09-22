@@ -58,6 +58,7 @@ import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus, deleteBo
 import { BulkActionsBar } from './bulk-actions-bar'
 import { AssignVendorModal } from './assign-vendor-modal'
 import { EmptyState } from '@/components/ui/empty-state'
+import { hourlySummary, isHourlyBooking, legLabel, tripTypeLabel, tripTypeOf } from '@/lib/trips/display'
 
 interface BookingsTableProps {
   bookings: BookingWithCustomer[]
@@ -335,7 +336,19 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                       {booking.trip_number && <div className="text-xs text-muted-foreground">{booking.booking_number}</div>}
                     </TableCell>
                     <TableCell>
-                      {getBookingTypeBadge(booking.bookingType)}
+                      <div className="flex flex-col items-start gap-1">
+                        {getBookingTypeBadge(booking.bookingType)}
+                        {tripTypeOf(booking) !== 'one_way' && (
+                          <Badge variant="outline" className="text-xs whitespace-nowrap">
+                            {tripTypeLabel(booking)}
+                          </Badge>
+                        )}
+                        {booking.booking_group && legLabel(booking, booking.booking_group.leg_count) && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {booking.booking_group.group_number} · {legLabel(booking, booking.booking_group.leg_count)}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm">
@@ -358,7 +371,9 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         </div>
                         <div className="flex items-start gap-1">
                           <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span className="truncate">{booking.dropoff_address}</span>
+                          <span className="truncate">
+                            {isHourlyBooking(booking) ? hourlySummary(booking) : booking.dropoff_address}
+                          </span>
                         </div>
                       </div>
                     </TableCell>

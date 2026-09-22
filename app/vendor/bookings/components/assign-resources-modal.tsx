@@ -104,6 +104,10 @@ export function AssignResourcesModal({
   // Server-computed, never derived from the browser clock, so the warning cannot flicker
   // or disagree with the availability answer it is explaining.
   const [pickupHasPassed, setPickupHasPassed] = useState(false)
+  // Hourly hire: the paid hours, which the hold may not undercut. Null for a transfer.
+  const [bookedHours, setBookedHours] = useState<number | null>(null)
+  const [minimumHours, setMinimumHours] = useState(MIN_TRIP_DURATION_HOURS)
+  const durationTouchedRef = useRef(false)
 
   const loadResources = useCallback(async (hours: number) => {
     setIsLoading(true)
@@ -113,6 +117,14 @@ export function AssignResourcesModal({
       setVehicles(availabilityData.vehicles)
       setPickupIso(availabilityData.bookingTime)
       setPickupHasPassed(availabilityData.pickupHasPassed)
+      setBookedHours(availabilityData.bookedHours ?? null)
+      setMinimumHours(availabilityData.minimumHoldHours)
+      // The server widens the window to cover a paid hourly hire; adopt that length until the
+      // vendor types their own.
+      if (!durationTouchedRef.current && availabilityData.durationHours !== hours) {
+        setDurationHours(availabilityData.durationHours)
+        setDurationInput(String(availabilityData.durationHours))
+      }
 
       // A longer window can turn a chosen driver or vehicle busy. Dropping the selection
       // here stops the vendor submitting one the server would reject anyway.
@@ -151,10 +163,11 @@ export function AssignResourcesModal({
 
   const handleDurationChange = (raw: string) => {
     setDurationInput(raw)
+    durationTouchedRef.current = true
 
     const parsed = Number.parseInt(raw, 10)
     if (Number.isNaN(parsed)) return
-    if (parsed < MIN_TRIP_DURATION_HOURS || parsed > MAX_TRIP_DURATION_HOURS) return
+    if (parsed < minimumHours || parsed > MAX_TRIP_DURATION_HOURS) return
 
     setDurationHours(parsed)
   }
@@ -247,7 +260,7 @@ export function AssignResourcesModal({
               id="duration"
               type="number"
               inputMode="numeric"
-              min={MIN_TRIP_DURATION_HOURS}
+              min={minimumHours}
               max={MAX_TRIP_DURATION_HOURS}
               step={1}
               value={durationInput}
@@ -256,9 +269,10 @@ export function AssignResourcesModal({
               disabled={isSaving}
             />
             <p className="text-xs text-muted-foreground">
+              {bookedHours ? `Hourly hire of ${bookedHours} hours, so the minimum hold is ${minimumHours} hours. ` : ''}
               {releaseAtLabel
                 ? `Vehicle and driver stay booked until ${releaseAtLabel}, then free up for other bookings.`
-                : `Vehicle and driver stay booked for this long from pickup (${MIN_TRIP_DURATION_HOURS}-${MAX_TRIP_DURATION_HOURS} hours).`}
+                : `Vehicle and driver stay booked for this long from pickup (${minimumHours}-${MAX_TRIP_DURATION_HOURS} hours).`}
             </p>
           </div>
 

@@ -24,6 +24,8 @@ import { getAppUrl } from '@/lib/email/config'
 import { isActiveBookingStatus } from '@/lib/business/booking-utils'
 import { format } from 'date-fns'
 import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
+import { legLabel, tripAssignmentLabel, tripTypeLabel } from '@/lib/trips/display'
+import type { AdminTripGroup } from '@/lib/trips/admin-types'
 
 export interface BookingFilters {
   search?: string
@@ -32,6 +34,8 @@ export interface BookingFilters {
   timeframe?: 'all' | 'upcoming' | 'past'
   paymentStatus?: 'all' | 'pending' | 'processing' | 'completed' | 'failed' | 'refunded'
   bookingType?: 'all' | 'customer' | 'business'
+  /** Round trip, multi-city and hourly live on customer bookings only. */
+  tripType?: 'all' | 'one_way' | 'round_trip' | 'multi_city' | 'hourly'
   /** Inclusive Dubai calendar day (`yyyy-MM-dd`) the pickup must fall on or after. */
   dateFrom?: string
   /** Inclusive Dubai calendar day (`yyyy-MM-dd`) the pickup must fall on or before. */
@@ -69,6 +73,16 @@ export interface BookingWithCustomer {
   to_location_id?: string
   from_zone_id?: string
   to_zone_id?: string
+  /** Trip columns (customer bookings). Absent on business rows, which are one way. */
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
+  leg_index?: number | null
+  booking_group_id?: string | null
+  discount_amount?: number | null
+  refund_due?: number | null
+  booking_group?: { group_number: string; leg_count: number } | null
   // Nested related data
   customer?: {
     id: string
@@ -149,6 +163,7 @@ export async function getBookings(filters: BookingFilters = {}) {
     status = 'all',
     timeframe = 'all',
     bookingType = 'all',
+    tripType = 'all',
     paymentStatus = 'all',
     dateFrom,
     dateTo,
@@ -164,6 +179,7 @@ export async function getBookings(filters: BookingFilters = {}) {
     paymentStatus: paymentStatus !== 'all' ? paymentStatus : undefined,
     timeframe: timeframe !== 'all' ? timeframe : undefined,
     bookingType: bookingType !== 'all' ? bookingType as 'customer' | 'business' : undefined,
+    tripType: tripType !== 'all' ? tripType : undefined,
     fromDate: dateFrom,
     toDate: dateTo,
     customerEmail: customerId,
@@ -296,12 +312,56 @@ export async function getBookingDetails(bookingId: string) {
       return new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
     })
 
+    // Round trip / multi-city: the group this journey belongs to, and its other journeys.
+    let tripGroup: AdminTripGroup | null = null
+    if (customerBooking.booking_group_id) {
+      const [{ data: group }, { data: legs }] = await Promise.all([
+        adminClient
+          .from('booking_groups')
+          .select('id, group_number, trip_type, leg_count, subtotal, discount_percent, discount_amount, total_price, payment_status, booking_status, paid_at, stripe_payment_intent_id')
+          .eq('id', customerBooking.booking_group_id)
+          .single(),
+        adminClient
+          .from('bookings')
+          .select('id, booking_number, trip_number, leg_index, pickup_address, dropoff_address, pickup_datetime, booking_status, payment_status, total_price, discount_amount, refund_due, booking_assignments(status, vendor:vendor_applications(business_name))')
+          .eq('booking_group_id', customerBooking.booking_group_id)
+          .order('leg_index', { ascending: true }),
+      ])
+      if (group) {
+        tripGroup = {
+          ...group,
+          legs: (legs || []).map((leg) => {
+            const active = (leg.booking_assignments || []).find((a) =>
+              ['pending', 'accepted', 'completed'].includes(a.status)
+            )
+            return {
+              id: leg.id,
+              booking_number: leg.booking_number,
+              trip_number: leg.trip_number,
+              leg_index: leg.leg_index ?? 0,
+              pickup_address: leg.pickup_address,
+              dropoff_address: leg.dropoff_address,
+              pickup_datetime: leg.pickup_datetime,
+              booking_status: leg.booking_status,
+              payment_status: leg.payment_status,
+              total_price: Number(leg.total_price),
+              discount_amount: Number(leg.discount_amount ?? 0),
+              refund_due: leg.refund_due != null ? Number(leg.refund_due) : null,
+              assignment_status: active?.status ?? null,
+              vendor_name: (active?.vendor as { business_name: string } | null)?.business_name ?? null,
+            }
+          }),
+        }
+      }
+    }
+
     return {
       ...customerBooking,
       bookingType: 'customer' as const,
       booking_assignments: assignments,
       booking_passengers: passengers || [],
-      booking_amenities: amenities || []
+      booking_amenities: amenities || [],
+      trip_group: tripGroup,
     }
   }
 
@@ -824,6 +884,10 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
   const headers = [
     'Booking Number',
     'Booking Type',
+    'Trip Type',
+    'Trip Group',
+    'Journey',
+    'Hourly Duration (h)',
     'Customer Name',
     'Customer Email',
     'Customer Phone',
@@ -836,6 +900,8 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
     'Base Price',
     'Amenities Price',
     'Total Price',
+    'Trip Discount',
+    'Refund Due',
     'Booking Status',
     'Payment Status',
     'Vendor',
@@ -848,6 +914,10 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
     return [
       booking.booking_number,
       booking.bookingType || 'customer',
+      tripTypeLabel(booking),
+      booking.booking_group?.group_number || '',
+      legLabel(booking, booking.booking_group?.leg_count) || '',
+      booking.duration_hours ?? '',
       booking.customer_name || '',
       booking.customer_email || '',
       booking.customer_phone || '',
@@ -860,6 +930,8 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
       booking.base_price,
       booking.amenities_price || 0,
       booking.total_price,
+      booking.discount_amount || 0,
+      booking.refund_due ?? '',
       booking.booking_status,
       booking.payment_status || '',
       assignment?.vendor?.business_name || '',
@@ -1123,6 +1195,12 @@ export async function deleteBooking(
       logChildError('business_booking_addons', addonsError)
     }
 
+    // A journey of a round trip or multi-city trip. Read before the row goes.
+    const { data: groupRef } = bookingType === 'customer'
+      ? await adminClient.from('bookings').select('booking_group_id').eq('id', bookingId).maybeSingle()
+      : { data: null }
+    const groupId = groupRef?.booking_group_id ?? null
+
     // Delete the booking itself. Select the deleted rows back so a delete that
     // matched nothing is reported as a failure instead of a silent success.
     const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
@@ -1144,6 +1222,20 @@ export async function deleteBooking(
 
     if (!deletedRows || deletedRows.length === 0) {
       return { error: 'Booking not found or already deleted' }
+    }
+
+    // An unpaid trip is only payable whole (the finalizer checks every journey is there), so
+    // removing one journey removes the trip. A paid trip keeps its other journeys, and its
+    // group row goes with the last one.
+    if (groupId) {
+      const [{ data: group }, { count: remaining }] = await Promise.all([
+        adminClient.from('booking_groups').select('payment_status').eq('id', groupId).maybeSingle(),
+        adminClient.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_group_id', groupId),
+      ])
+      if (group && (group.payment_status !== 'completed' || (remaining ?? 0) === 0)) {
+        const { error: groupError } = await adminClient.from('booking_groups').delete().eq('id', groupId)
+        if (groupError) console.error('Failed to remove the trip after deleting its journey:', groupError)
+      }
     }
 
     // Deleting a booking from admin used to tell nobody, while the identical action taken
@@ -1451,6 +1543,7 @@ export async function assignBookingToVendor(
           pickupDate: bookingDetails.pickupDate,
           pickupTime: bookingDetails.pickupTime,
           bookingUrl: `${getAppUrl()}/vendor/bookings`,
+          tripLabel: bookingDetails.tripLabel ?? undefined,
         })
       }
     }
@@ -1505,6 +1598,7 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   let pickupDatetimeStr = ''
   let vehicleTypeId = ''
   let customerName = 'Customer'
+  let tripLabel: string | null = null
 
   if (bookingType === 'business') {
     const { data: booking } = await adminClient
@@ -1523,10 +1617,11 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   } else {
     const { data: booking } = await adminClient
       .from('bookings')
-      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id')
+      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id, trip_type, hourly_package, duration_hours, included_km, leg_index, booking_group:booking_group_id(leg_count)')
       .eq('id', bookingId)
       .single()
     if (!booking) return null
+    tripLabel = tripAssignmentLabel(booking, booking.booking_group?.leg_count ?? null)
     bookingNumber = booking.booking_number
     tripNumber = booking.trip_number || ''
     pickupAddress = booking.pickup_address || 'TBD'
@@ -1562,6 +1657,7 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
     dropoffAddress,
     pickupDate: format(pickupDatetime, 'MMMM d, yyyy'),
     pickupTime: format(pickupDatetime, 'h:mm a'),
+    tripLabel,
   }
 }
 

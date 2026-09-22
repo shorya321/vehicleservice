@@ -28,6 +28,12 @@ import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
 import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 import { buildConfirmationUrl } from '@/lib/utils/url-builder'
+import { hourlyEndTime, hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
+import { GROUP_NUMBER_PREFIX } from '@/lib/trips/constants'
+import { getGroupForPayment, getOrCreateGroupPaymentIntent } from '../lib/group-payment'
+import { GroupPaymentScreen } from './group-payment-screen'
+import { PickupPassedScreen } from '../components/pickup-passed-screen'
+import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
 
 export const metadata: Metadata = {
   // The root layout's title template appends ' | Infinia Transfers'.
@@ -180,6 +186,49 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   const currentCurrency = currencyCookie?.value || defaultCurrency
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
 
+  // A round trip or multi-city trip is paid as one, under its group number.
+  if (bookingNumber.startsWith(GROUP_NUMBER_PREFIX)) {
+    const group = await getGroupForPayment(bookingNumber, user.id)
+    if (!group) notFound()
+    if (group.paymentStatus === 'completed') redirect(buildConfirmationUrl(group.groupNumber))
+    if (firstPickupHasPassed(group.pickupTimes)) {
+      return (
+        <PickupPassedScreen
+          reference={group.groupNumber}
+          user={user}
+          profile={profile}
+          currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+        />
+      )
+    }
+
+    let groupSecret: string | null = null
+    let groupError: string | null = null
+    try {
+      groupSecret = (await getOrCreateGroupPaymentIntent(group, user.id, user.email || '')).clientSecret
+    } catch (error) {
+      console.error('Group payment intent creation failed:', error)
+      groupError = error instanceof Error ? error.message : 'Failed to initialize payment'
+    }
+
+    return (
+      <GroupPaymentScreen
+        group={group}
+        clientSecret={groupSecret}
+        stripeError={groupError}
+        user={user}
+        profile={profile}
+        currency={{
+          initialCurrency: currentCurrency,
+          exchangeRates: rates,
+          featuredCurrencies,
+          allCurrencies,
+        }}
+        siteSettings={siteSettings}
+      />
+    )
+  }
+
   // Get booking details by booking number
   const booking = await getBookingByNumber(bookingNumber, user.id)
 
@@ -187,9 +236,31 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     notFound()
   }
 
+  // One journey of a trip is never paid on its own: send the customer to the trip.
+  if (booking.booking_group_id) {
+    const { data: parentGroup } = await createAdminClient()
+      .from('booking_groups')
+      .select('group_number')
+      .eq('id', booking.booking_group_id)
+      .single()
+    if (parentGroup) redirect(`/payment/${parentGroup.group_number}`)
+  }
+
   // Check if already paid
   if (booking.payment_status === 'completed') {
     redirect(buildConfirmationUrl(booking.booking_number))
+  }
+
+  // An unpaid booking never expires, so its pickup can be gone by the time it is opened here.
+  if (firstPickupHasPassed([booking.pickup_datetime])) {
+    return (
+      <PickupPassedScreen
+        reference={booking.trip_number || booking.booking_number}
+        user={user}
+        profile={profile}
+        currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+      />
+    )
   }
 
   const primaryPassenger = booking.booking_passengers?.find(
@@ -339,7 +410,7 @@ STRIPE_SECRET_KEY=sk_test_...`}
                   {/* The cap the same card opens on at checkout, so the customer arrives at a
                       card they have already been reading for two steps. */}
                   <div className="checkout-stub-cap">
-                    <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
+                    <h2 className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />{isHourlyBooking(booking) ? 'Your hourly hire' : 'Your transfer'}</h2>
                   </div>
                   {/* The same card the customer has had beside them since step three, drawing
                       the same data the same way. This aside used to use bullet dots and icon
@@ -356,7 +427,13 @@ STRIPE_SECRET_KEY=sk_test_...`}
                     luggage={booking.vehicle_type?.luggage_capacity ?? null}
                     seats={booking.vehicle_type?.passenger_capacity ?? null}
                     pickupNote={`Pickup ${format(toBookingTz(booking.pickup_datetime), 'HH:mm')}`}
+                    arrivalNote={
+                      hourlyEndTime(booking.pickup_datetime, booking)
+                        ? `Until about ${hourlyEndTime(booking.pickup_datetime, booking)}`
+                        : null
+                    }
                     basePrice={booking.base_price}
+                    baseLabel={hourlyPackageLabel(booking) ?? undefined}
                     // One rolled-up line rather than a row per amenity: `booking_amenities`
                     // stores `amenity_type: 'addon'` and the addon name lives behind `addon_id`,
                     // so itemising here would need a join this query does not make. Same line

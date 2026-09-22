@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache"
 import { closeActiveAssignments } from "@/lib/bookings/unified-service"
 import { sanitiseSearchTerm } from "@/lib/supabase/search-term"
 import type { BookingFiltersData } from "./schemas"
+import { loadAccountTripGroup } from "./lib/trip-group"
+import { refundForCancellation, sendCancellationEmails, syncGroupAfterCancellation } from "./lib/cancellation"
 
 export interface BookingFilters {
   search?: string
@@ -85,7 +87,11 @@ export async function getBookings(userId: string, filters: BookingFilters = {}) 
     query = query.lte("pickup_datetime", endOfDay.toISOString())
   }
 
-  query = query.order("created_at", { ascending: false }).range(offset, offset + limit - 1)
+  // The journeys of one trip share a created_at; keep them in travel order.
+  query = query
+    .order("created_at", { ascending: false })
+    .order("leg_index", { ascending: true, nullsFirst: true })
+    .range(offset, offset + limit - 1)
 
   const { data: bookings, count } = await query
 
@@ -262,7 +268,11 @@ export async function getBookingByReference(reference: string) {
     return { data: null, error: "Unauthorized" }
   }
 
-  return { data: booking, error: null }
+  const trip_group = booking.booking_group_id
+    ? await loadAccountTripGroup(adminClient, booking.booking_group_id)
+    : null
+
+  return { data: { ...booking, trip_group }, error: null }
 }
 
 export async function cancelBooking(bookingId: string): Promise<{ error?: string }> {
@@ -275,7 +285,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("customer_id, pickup_datetime, booking_status")
+    .select("id, customer_id, booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, booking_status, payment_status, total_price, discount_amount, booking_group_id, trip_type, hourly_package, duration_hours, included_km, leg_index")
     .eq("id", bookingId)
     .single()
 
@@ -308,6 +318,10 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
   // cancellable, and pickup is more than 24h away.
   const adminClient = createAdminClient()
 
+  // What the customer is owed, worked out before this booking counts as cancelled. Recorded for
+  // the admin, who issues refunds by hand; one journey of a round trip forfeits the saving.
+  const refund = await refundForCancellation(adminClient, booking)
+
   const { data: cancelled, error } = await adminClient
     .from("bookings")
     .update({
@@ -315,6 +329,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
       cancelled_at: cancelledAt,
       cancellation_reason: "Cancelled by customer",
       updated_at: cancelledAt,
+      refund_due: refund.refundDue,
     })
     .eq("id", bookingId)
     .eq("customer_id", user.id) // belt-and-braces: the ownership check, restated in SQL
@@ -342,6 +357,12 @@ export async function cancelBooking(bookingId: string): Promise<{ error?: string
     // The booking is already cancelled; surfacing a failure here would be misleading.
     console.error("Failed to close assignment after customer cancellation:", closeError)
   }
+
+  if (booking.booking_group_id) {
+    await syncGroupAfterCancellation(adminClient, booking.booking_group_id)
+  }
+
+  await sendCancellationEmails(adminClient, booking, refund, user.email)
 
   revalidatePath("/account")
   revalidatePath("/account/bookings/[reference]", "page")

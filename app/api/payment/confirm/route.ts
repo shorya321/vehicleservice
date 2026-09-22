@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { finalizeBookingPayment } from '@/lib/payment/finalize-booking'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
+import { finalizeGroupPayment } from '@/lib/payment/finalize-group'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,9 +18,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get request body
-    const { paymentIntentId, bookingId } = await request.json()
+    const { paymentIntentId, bookingId, groupId } = await request.json()
 
-    if (!paymentIntentId || !bookingId) {
+    if (!paymentIntentId || (!bookingId && !groupId)) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
@@ -29,14 +30,23 @@ export async function POST(request: NextRequest) {
     // Determine user's selected currency from cookie (email display only)
     const userCurrency = request.cookies.get(CURRENCY_COOKIE_NAME)?.value || 'AED'
 
-    // Delegate to the shared, idempotent finalizer (also used by the webhook backstop)
-    const result = await finalizeBookingPayment({
-      paymentIntentId,
-      bookingId,
-      expectedCustomerId: user.id,
-      userCurrency,
-      userEmail: user.email,
-    })
+    // Delegate to the shared, idempotent finalizers (also used by the webhook backstop).
+    // A round trip or multi-city trip is paid as its group.
+    const result = groupId
+      ? await finalizeGroupPayment({
+          paymentIntentId,
+          groupId,
+          expectedCustomerId: user.id,
+          userCurrency,
+          userEmail: user.email,
+        })
+      : await finalizeBookingPayment({
+          paymentIntentId,
+          bookingId,
+          expectedCustomerId: user.id,
+          userCurrency,
+          userEmail: user.email,
+        })
 
     if (!result.ok) {
       return NextResponse.json(

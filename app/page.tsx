@@ -82,7 +82,7 @@ export default async function HomePage() {
         siteSettings={siteSettings}
       />
     <main id="main-content" tabIndex={-1} className="outline-none">
-      <Hero todayDate={todayStr} />
+      <Hero todayDate={todayStr} tripSettings={siteSettings.trip_types} />
       <AfterYouBook />
       <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
         <DeparturePoints todayDate={todayStr} />

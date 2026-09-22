@@ -18,6 +18,8 @@ import { formatChildAges } from '@/lib/utils/child-ages';
 import { BRAND_NAME, BRAND_ADDRESS } from '@/lib/email/config';
 import { getBookingTimezone } from '@/lib/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
+import { hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
+import { groupInvoiceResponse, resolveInvoiceGroupId } from './group-invoice'
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +56,24 @@ export async function GET(
     const { bookingNumber } = await params;
     const supabase = createAdminClient();
 
+    // A round trip or multi-city trip was one payment, so it has one invoice, whichever of
+    // its references (the group's or a journey's) the link carries.
+    const groupId = await resolveInvoiceGroupId(supabase, bookingNumber);
+    if (groupId) {
+      const requestedCurrency = request.nextUrl.searchParams.get('currency')?.toUpperCase();
+      const [groupCurrencies, groupRates] = await Promise.all([getEnabledCurrencies(), getExchangeRates()]);
+      const groupCurrency =
+        requestedCurrency && groupCurrencies.some((c) => c.code === requestedCurrency) ? requestedCurrency : 'AED';
+      const response = await groupInvoiceResponse(supabase, groupId, {
+        toDisplay: (amountAed: number) => formatPrice(amountAed ?? 0, groupCurrency, groupRates),
+        showAedNote: groupCurrency !== 'AED',
+        formatDate,
+        formatDateTime,
+        amenityLabels: AMENITY_LABELS,
+      });
+      return response ?? NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
     const { data: booking, error } = await supabase
       .from('bookings')
       .select(
@@ -74,6 +94,10 @@ export async function GET(
         payment_method_details,
         paid_at,
         created_at,
+        trip_type,
+        hourly_package,
+        duration_hours,
+        included_km,
         booking_passengers (first_name, last_name, email, phone, is_primary),
         booking_amenities (amenity_type, quantity, price, child_ages, addon:addons (name)),
         vehicle_type:vehicle_types (name)
@@ -124,7 +148,7 @@ export async function GET(
 
     const lineItems: BookingInvoiceLineItem[] = [
       {
-        label: `Base fare · ${booking.passenger_count} passenger${booking.passenger_count > 1 ? 's' : ''}`,
+        label: `${hourlyPackageLabel(booking) ?? 'Base fare'} · ${booking.passenger_count} passenger${booking.passenger_count > 1 ? 's' : ''}`,
         quantity: 1,
         unitAmount: toDisplay(booking.base_price),
         amount: toDisplay(booking.base_price),
@@ -167,6 +191,9 @@ export async function GET(
 
       pickupAddress: booking.pickup_address,
       dropoffAddress: booking.dropoff_address,
+      hireDetails: isHourlyBooking(booking)
+        ? `${[hourlyPackageLabel(booking), booking.included_km ? `${booking.included_km} km included` : null].filter(Boolean).join(', ')}, as directed`
+        : undefined,
       pickupDatetime: booking.pickup_datetime ? formatDateTime(booking.pickup_datetime) : undefined,
       vehicleTypeName: vehicleType?.name,
       passengerCount: booking.passenger_count,

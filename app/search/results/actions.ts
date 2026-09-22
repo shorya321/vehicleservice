@@ -76,6 +76,19 @@ export interface VehicleTypeResult {
   vendorCount: number
   features: string[]
   image?: string
+  /**
+   * Set by the round trip, multi-city and hourly searches, whose price is not
+   * a single transfer fare. Absent for one way, which keeps its own labels.
+   */
+  tripPricing?: {
+    label: string
+    caption: string
+    details: string[]
+    /** Hourly: charged per hour beyond the package, formatted in the viewer's currency. */
+    extraHourPrice?: number
+  }
+  /** Why an unavailable vehicle cannot be booked on this trip (shown in place of "Sold out"). */
+  unavailableReason?: string
 }
 
 export interface VehicleTypesByCategory {

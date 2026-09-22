@@ -4,6 +4,8 @@ import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import Button from '../base/button';
 import { emailStyles } from '../../styles/constants';
+import TripDetails from '../../components/trip-details';
+import type { EmailTripDetails } from '../../types';
 
 interface NewBookingNotificationEmailProps {
   bookingReference: string;
@@ -20,6 +22,7 @@ interface NewBookingNotificationEmailProps {
   totalAmount: number;
   currency: string;
   bookingDetailsUrl: string;
+  trip?: EmailTripDetails;
 }
 
 export const NewBookingNotificationEmail = ({
@@ -37,7 +40,10 @@ export const NewBookingNotificationEmail = ({
   totalAmount,
   currency,
   bookingDetailsUrl,
+  trip,
 }: NewBookingNotificationEmailProps) => {
+  const isGrouped = !!trip?.legs && trip.legs.length > 0;
+  const isHourly = trip?.tripType === 'hourly';
   return (
     <EmailLayout
       preview={`New Booking Received - ${tripNumber || bookingReference}`}
@@ -73,19 +79,29 @@ export const NewBookingNotificationEmail = ({
           </Text>
         )}
         <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff Location:</strong> {dropoffLocation}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date:</strong> {pickupDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Time:</strong> {pickupTime}
-        </Text>
+        {isGrouped && trip ? (
+          <TripDetails trip={trip} currency={currency} />
+        ) : (
+          <>
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup Location:</strong> {pickupLocation}
+            </Text>
+            {isHourly && trip ? (
+              <TripDetails trip={trip} currency={currency} />
+            ) : (
+              <Text style={emailStyles.detailRow}>
+                <strong>Dropoff Location:</strong> {dropoffLocation}
+              </Text>
+            )}
+            <Hr style={emailStyles.hr} />
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup Date:</strong> {pickupDate}
+            </Text>
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup Time:</strong> {pickupTime}
+            </Text>
+          </>
+        )}
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.totalRow}>
           <strong>Total Amount:</strong> {currency} {totalAmount.toFixed(2)}
@@ -95,7 +111,9 @@ export const NewBookingNotificationEmail = ({
       <Button href={bookingDetailsUrl}>View Booking Details</Button>
 
       <Text style={emailStyles.text}>
-        This is an automated notification. Please review and assign a vendor to this booking.
+        {isGrouped
+          ? 'This is an automated notification. Each journey is its own booking: please assign a vendor to every one.'
+          : 'This is an automated notification. Please review and assign a vendor to this booking.'}
       </Text>
 
       <Text style={emailStyles.text}>

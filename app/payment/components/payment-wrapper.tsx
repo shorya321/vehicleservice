@@ -126,6 +126,8 @@ function getStripeAppearance(isDark: boolean) {
 interface PaymentWrapperProps {
   clientSecret: string
   bookingId: string
+  /** Round trip / multi-city: the group being paid. Confirmed as a group, not a booking. */
+  groupId?: string
   amount: number
   /** Routing key only. Drives the Stripe return_url. Never rendered. */
   bookingNumber: string
@@ -136,6 +138,7 @@ interface PaymentWrapperProps {
 export function PaymentWrapper({
   clientSecret,
   bookingId,
+  groupId,
   amount,
   bookingNumber,
   tripNumber,
@@ -150,6 +153,7 @@ export function PaymentWrapper({
     <Elements stripe={stripePromise} options={options}>
       <CheckoutForm
         bookingId={bookingId}
+        groupId={groupId}
         amount={amount}
         bookingNumber={bookingNumber}
         tripNumber={tripNumber}

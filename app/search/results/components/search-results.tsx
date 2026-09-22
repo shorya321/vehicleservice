@@ -15,6 +15,8 @@ import { ArrowLeft, Clock, MapPin } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { formatResultPrice } from './format-result-price'
 import { useCurrency } from '@/lib/currency/context'
+import type { ResultsSearchParams } from './results-search-params'
+import { BookingStepsBand } from './booking-steps-band'
 
 /**
  * What happens after Select, in order.
@@ -44,7 +46,7 @@ const BOOKING_STEPS = [
     body: '45 minutes of free waiting at pickup, tracked airport arrivals included.',
     foot: 'Name board at the door',
   },
-] as const
+]
 
 interface SearchResultsProps {
   results: SearchResult | null
@@ -55,17 +57,7 @@ interface SearchResultsProps {
    * nested loops at module load, which has no business running in the browser.
    */
   routeMap?: React.ReactNode
-  searchParams: {
-    from?: string
-    to?: string
-    date?: string
-    passengers?: string
-    adults?: string
-    children?: string
-    infants?: string
-    originSlug?: string
-    destSlug?: string
-  }
+  searchParams: ResultsSearchParams
 }
 
 /**
@@ -128,9 +120,15 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
       return <EmptyState originName={results.originName} destinationName={results.destinationName} searchParams={searchParams} />
     }
 
-    // Calculate min price from vehicle types
-    const minPrice = results.vehicleTypes.length > 0
-      ? Math.min(...results.vehicleTypes.map(vt => vt.price))
+    const isRoundTrip = searchParams.trip?.trip === 'round_trip'
+
+    // Calculate min price from vehicle types. On a round trip only bookable vehicles count:
+    // one with no return price keeps its one-way figure and must not set the "from" price.
+    const pricedTypes = isRoundTrip
+      ? results.vehicleTypes.filter(vt => vt.availableVehicles > 0)
+      : results.vehicleTypes
+    const minPrice = pricedTypes.length > 0
+      ? Math.min(...pricedTypes.map(vt => vt.price))
       : 0
 
     const isSameZone = results.type === 'zone' && results.zone
@@ -187,7 +185,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
             </Link>
 
             <div className="mt-8 max-w-4xl">
-              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Your route</p>
+              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{isRoundTrip ? 'Your round trip' : 'Your route'}</p>
 
               {/* The one h1 on the page, on the same type ramp as every home h2
                   rather than a bespoke clamp of its own. */}
@@ -213,11 +211,20 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
                 above. */}
             <dl className="trip-ledger mt-10">
               <div className="trip-ledger__item">
-                <dt className="trip-ledger__label">Date</dt>
+                <dt className="trip-ledger__label">{isRoundTrip ? 'Depart' : 'Date'}</dt>
                 <dd className="trip-ledger__value">
                   <ResultsDatePicker searchParams={searchParams} />
                 </dd>
               </div>
+
+              {isRoundTrip && (
+                <div className="trip-ledger__item">
+                  <dt className="trip-ledger__label">Return</dt>
+                  <dd className="trip-ledger__value">
+                    <ResultsDatePicker searchParams={searchParams} field="return" />
+                  </dd>
+                </div>
+              )}
 
               <div className="trip-ledger__item">
                 <dt className="trip-ledger__label">Guests</dt>
@@ -244,10 +251,10 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
 
               <div className="trip-ledger__item trip-ledger__item--price">
                 <dt className="trip-ledger__label">
-                  {results.type === 'zone' && results.zone ? 'Base price' : 'From'}
+                  {isRoundTrip ? 'Round trip from' : results.type === 'zone' && results.zone ? 'Base price' : 'From'}
                 </dt>
                 <dd className="trip-ledger__value numeric">
-                  {formatResultPrice(results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
+                  {formatResultPrice(!isRoundTrip && results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
                 </dd>
               </div>
             </dl>
@@ -278,7 +285,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
                 vehicles would slice an empty window out of the new, shorter list and render a blank grid. */}
             <div className="mt-12">
               <VehicleTypeCategoryTabs
-                key={searchParams.passengers}
+                key={`${searchParams.passengers}-${searchParams.trip?.trip ?? 'one_way'}`}
                 vehicleTypesByCategory={vehicleTypesByCategory}
                 allVehicleTypes={vehicleTypes}
                 searchParams={searchParams}
@@ -288,42 +295,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
         </section>
 
         {/* ---- Band 3: what the fare covers ----------------------------- */}
-        <section className="editorial-section editorial-section--ground editorial-section--compact border-t border-[var(--graphite)]">
-          <div className="luxury-container">
-            <motion.header
-              className="max-w-2xl"
-              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-              viewport={{ once: true, amount: 0.4 }}
-            >
-              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />What happens next</p>
-              <h2 className="editorial-section-title mt-5">Three steps from here to pickup.</h2>
-            </motion.header>
-
-            <ul className="mt-12 grid list-none grid-cols-1 gap-5 p-0 min-[900px]:grid-cols-3">
-              {BOOKING_STEPS.map((step, index) => (
-                <motion.li
-                  key={step.index}
-                  className="promise-card"
-                  initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 0.45,
-                    delay: prefersReducedMotion ? 0 : index * 0.06,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                  viewport={{ once: true, amount: 0.2 }}
-                >
-                  <span className="promise-card__index numeric" aria-hidden="true">{step.index}</span>
-                  <h3 className="editorial-list-title">{step.title}</h3>
-                  <p className="editorial-list-body">{step.body}</p>
-                  <span className="promise-card__foot editorial-list-meta">{step.foot}</span>
-                </motion.li>
-              ))}
-            </ul>
-          </div>
-        </section>
+        <BookingStepsBand steps={BOOKING_STEPS} />
       </>
     )
   }

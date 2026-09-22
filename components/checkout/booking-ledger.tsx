@@ -19,6 +19,18 @@ export interface LedgerAddon {
   total_price: number
 }
 
+/** One journey of a round trip or multi-city trip, pre-formatted by the caller. */
+export interface LedgerLeg {
+  key: string
+  label: string
+  originName: string
+  destinationName: string
+  dateLabel?: string
+  timeLabel?: string
+  /** This leg's fare before the trip discount. */
+  fare: number
+}
+
 interface BookingLedgerProps {
   category?: string | null
   vehicleName: string
@@ -49,6 +61,14 @@ interface BookingLedgerProps {
       none, and "0 min" is worse than silence. */
   durationMinutes?: number | null
   basePrice: number
+  /** Replaces "Base fare", e.g. "Half day, 5 hours". */
+  baseLabel?: string
+  /** Round trip and multi-city: each journey, drawn in place of the single route. */
+  legs?: LedgerLeg[]
+  /** Round trip discount, shown as its own line. */
+  tripDiscount?: { label: string; amount: number } | null
+  /** Suffix for add-on rows when they are bought once per journey. */
+  addonNote?: string
   addons?: LedgerAddon[]
   promoDiscount?: number
   total: number
@@ -165,6 +185,10 @@ export function BookingLedger({
   distanceKm,
   durationMinutes,
   basePrice,
+  baseLabel = 'Base fare',
+  legs,
+  tripDiscount = null,
+  addonNote,
   addons = [],
   promoDiscount = 0,
   total,
@@ -181,7 +205,8 @@ export function BookingLedger({
 
   // A single row repeating the number directly below it reads as a broken breakdown, not a
   // simple one, so the block only appears once there is something to break down.
-  const hasBreakdown = alwaysShowBase || addons.length > 0 || promoDiscount > 0
+  const hasBreakdown =
+    alwaysShowBase || addons.length > 0 || promoDiscount > 0 || (tripDiscount?.amount ?? 0) > 0 || !!legs?.length
 
   return (
     <>
@@ -213,20 +238,45 @@ export function BookingLedger({
       {/* Below the tear: the journey. The connector is the search page's, drawn once more so
           the trip is the same object it was on the results. */}
       <div className={`${band} pt-2`}>
-        <div className="checkout-stub-route">
-          <span className="checkout-stub-route__place">
-            <span className="checkout-stub-route__name">{originName}</span>
-            {pickupNote ? <span className="checkout-stub-route__note">{pickupNote}</span> : null}
-          </span>
-          <RouteConnector />
-          <span className="checkout-stub-route__place">
-            <span className="checkout-stub-route__name">{destinationName}</span>
-            {arrivalNote ? <span className="checkout-stub-route__note">{arrivalNote}</span> : null}
-          </span>
-        </div>
+        {legs && legs.length > 0 ? (
+          <ol className="list-none space-y-4 p-0">
+            {legs.map((leg) => (
+              <li key={leg.key}>
+                <div className={CARD_LABEL}>{leg.label}</div>
+                <div className="checkout-stub-route mt-1.5">
+                  <span className="checkout-stub-route__place">
+                    <span className="checkout-stub-route__name">{leg.originName}</span>
+                    {leg.timeLabel ? <span className="checkout-stub-route__note">Pickup {leg.timeLabel}</span> : null}
+                  </span>
+                  <RouteConnector />
+                  <span className="checkout-stub-route__place">
+                    <span className="checkout-stub-route__name">{leg.destinationName}</span>
+                  </span>
+                </div>
+                {leg.dateLabel ? (
+                  <div className="checkout-stub-facts">
+                    <span><strong>{leg.dateLabel}{leg.timeLabel ? ` · ${leg.timeLabel}` : ''}</strong></span>
+                  </div>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div className="checkout-stub-route">
+            <span className="checkout-stub-route__place">
+              <span className="checkout-stub-route__name">{originName}</span>
+              {pickupNote ? <span className="checkout-stub-route__note">{pickupNote}</span> : null}
+            </span>
+            <RouteConnector />
+            <span className="checkout-stub-route__place">
+              <span className="checkout-stub-route__name">{destinationName}</span>
+              {arrivalNote ? <span className="checkout-stub-route__note">{arrivalNote}</span> : null}
+            </span>
+          </div>
+        )}
 
         <div className="checkout-stub-facts">
-          {(dateLabel || timeLabel) && (
+          {!legs?.length && (dateLabel || timeLabel) && (
             <span>
               <strong>
                 {dateLabel}
@@ -253,7 +303,15 @@ export function BookingLedger({
 
       {hasBreakdown && (
         <div className={`${BAND_DIVIDER} ${band} text-[0.875rem]`}>
-          <LedgerRow label="Base fare" value={formatUserPrice(basePrice)} />
+          {legs && legs.length > 0 ? (
+            legs.map((leg, index) => (
+              <div key={leg.key} className={index > 0 ? 'pt-2.5' : undefined}>
+                <LedgerRow label={`${leg.label} fare`} value={formatUserPrice(leg.fare)} />
+              </div>
+            ))
+          ) : (
+            <LedgerRow label={baseLabel} value={formatUserPrice(basePrice)} />
+          )}
 
           {/* `initial={false}` so rows already present when the card mounts render at rest;
               rows added later run initial -> animate and get both the slide and the gold
@@ -272,7 +330,7 @@ export function BookingLedger({
               >
                 <div className="pt-2.5">
                   <LedgerRow
-                    label={`${addon.name}${addon.quantity > 1 ? ` × ${addon.quantity}` : ''}`}
+                    label={`${addon.name}${addon.quantity > 1 ? ` × ${addon.quantity}` : ''}${addonNote ? ` ${addonNote}` : ''}`}
                     value={formatUserPrice(addon.total_price)}
                     animateValue
                     onRemove={onRemoveAddon ? () => onRemoveAddon(addon.id) : undefined}
@@ -282,6 +340,16 @@ export function BookingLedger({
               </motion.div>
             ))}
           </AnimatePresence>
+
+          {tripDiscount && tripDiscount.amount > 0 && (
+            <div className="pt-2.5">
+              <LedgerRow
+                label={tripDiscount.label}
+                value={`−${formatUserPrice(tripDiscount.amount)}`}
+                tone="positive"
+              />
+            </div>
+          )}
 
           {promoDiscount > 0 && (
             <div className="pt-2.5">

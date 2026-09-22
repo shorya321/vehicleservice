@@ -25,35 +25,32 @@ import { Calendar as CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
-import { buildSearchUrl } from '@/lib/utils/url-builder'
+import { rebuildSearchUrl, type ResultsSearchParams } from './results-search-params'
 
 interface ResultsDatePickerProps {
-  searchParams: {
-    date?: string
-    passengers?: string
-    adults?: string
-    children?: string
-    infants?: string
-    originSlug?: string
-    destSlug?: string
-  }
+  searchParams: ResultsSearchParams
   className?: string
+  /**
+   * Which date this edits. `return` is the round-trip return date; it may not
+   * fall before the outbound date.
+   */
+  field?: 'date' | 'return'
 }
 
-const toCount = (v: string | undefined): number | undefined => {
-  if (v === undefined) return undefined
-  const n = parseInt(v)
-  return Number.isNaN(n) ? undefined : n
-}
-
-export function ResultsDatePicker({ searchParams, className }: ResultsDatePickerProps) {
+export function ResultsDatePicker({ searchParams, className, field = 'date' }: ResultsDatePickerProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const currentDate = searchParams.date ?? ''
+  const isReturn = field === 'return'
+  const outboundDate = searchParams.date ?? ''
+  const currentDate = isReturn
+    ? (searchParams.trip?.trip === 'round_trip' ? searchParams.trip.returnDate ?? '' : '')
+    : outboundDate
   const selected = currentDate ? parse(currentDate, 'yyyy-MM-dd', new Date()) : undefined
-  const minDate = bookingTodayAsCalendarDate()
+  const today = bookingTodayAsCalendarDate()
+  const outbound = outboundDate ? parse(outboundDate, 'yyyy-MM-dd', new Date()) : undefined
+  const minDate = isReturn && outbound && outbound > today ? outbound : today
 
   const commit = useCallback(
     (next: Date) => {
@@ -62,17 +59,13 @@ export function ResultsDatePicker({ searchParams, className }: ResultsDatePicker
       if (nextDate === currentDate) return // nothing changed. Don't spend a round trip
 
       startTransition(() => {
-        if (searchParams.originSlug && searchParams.destSlug) {
-          router.push(
-            buildSearchUrl(searchParams.originSlug, searchParams.destSlug, {
-              date: nextDate,
-              // The results pages redirect('/') without a total, so it always rides along.
-              passengers: searchParams.passengers ?? '1',
-              adults: toCount(searchParams.adults),
-              children: toCount(searchParams.children),
-              infants: toCount(searchParams.infants),
-            })
-          )
+        // The results pages redirect('/') without a total, so it always rides along.
+        const url = rebuildSearchUrl(
+          searchParams,
+          isReturn ? { returnDate: nextDate } : { date: nextDate }
+        )
+        if (url) {
+          router.push(url)
           return
         }
         // /search/results has no slugs. buildSearchUrl would produce
@@ -80,14 +73,14 @@ export function ResultsDatePicker({ searchParams, className }: ResultsDatePicker
         // arrived with and override the date only.
         const qs = new URLSearchParams(
           Object.entries(searchParams).filter(
-            (entry): entry is [string, string] => entry[1] !== undefined
+            (entry): entry is [string, string] => typeof entry[1] === 'string'
           )
         )
         qs.set('date', nextDate)
         router.push(`/search/results?${qs.toString()}`)
       })
     },
-    [router, searchParams, currentDate]
+    [router, searchParams, currentDate, isReturn]
   )
 
   return (
@@ -100,7 +93,9 @@ export function ResultsDatePicker({ searchParams, className }: ResultsDatePicker
           <button
             type="button"
             aria-label={
-              selected ? `Travel date: ${format(selected, 'EEE d MMM yyyy')}. Change date` : 'Select travel date'
+              selected
+                ? `${isReturn ? 'Return date' : 'Travel date'}: ${format(selected, 'EEE d MMM yyyy')}. Change date`
+                : `Select ${isReturn ? 'return' : 'travel'} date`
             }
             className={
               className ??

@@ -172,6 +172,11 @@ export function BookingDetail({ booking }: BookingDetailProps) {
               <CardDescription>Where the driver collects and drops off</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {booking.tripLabel && (
+                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm font-medium">
+                  {booking.tripLabel}
+                </div>
+              )}
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
                 <div className="min-w-0 flex-1 space-y-1">
@@ -517,6 +522,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           bookingNumber={reference}
           pickupDatetime={booking.pickupDatetime}
           currentHours={booking.estimatedDurationHours}
+          bookedHours={booking.bookedHours}
           onClose={() => setShowDuration(false)}
         />
       )}

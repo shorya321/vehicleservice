@@ -38,6 +38,7 @@ export async function sendDriverBookingAssignmentEmail(
       pickupDate: data.pickupDate,
       pickupTime: data.pickupTime,
       vendorName: data.vendorName,
+      tripLabel: data.tripLabel,
     },
   });
 }

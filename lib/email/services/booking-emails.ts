@@ -4,11 +4,14 @@ import {
   type EmailResult,
   type BookingConfirmationEmailData,
   type BookingStatusUpdateEmailData,
+  type BookingCancelledEmailData,
   type CustomerDriverAssignedEmailData,
 } from '../types';
 import BookingConfirmationEmail from '../templates/booking/confirmation';
 import BookingStatusUpdateEmail from '../templates/booking/status-update';
 import BookingDriverAssignedEmail from '../templates/booking/driver-assigned';
+import BookingCancelledEmail from '../templates/booking/cancelled';
+import type { ComponentProps } from 'react';
 
 /**
  * Send booking confirmation email to customer
@@ -44,6 +47,7 @@ export async function sendBookingConfirmationEmail(
       basePrice: data.basePrice,
       amenitiesPrice: data.amenitiesPrice,
       extras: data.extras,
+      trip: data.trip,
       customerNotes: data.customerNotes,
       invoiceUrl: data.invoiceUrl,
     },
@@ -95,5 +99,30 @@ export async function sendBookingDriverAssignedEmail(
       pickupTime: data.pickupTime,
       accountUrl: `${getAppUrl()}/account`,
     },
+  });
+}
+
+/**
+ * Send the cancellation notice to the customer: a booking, or one journey of a trip.
+ */
+export async function sendBookingCancelledEmail(data: BookingCancelledEmailData): Promise<EmailResult> {
+  return sendEmail({
+    businessAccountId: null,
+    to: data.customerEmail,
+    subject: `Booking Cancelled - ${data.tripNumber || data.bookingReference}`,
+    template: BookingCancelledEmail,
+    templateProps: {
+      customerName: data.customerName,
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      refundDue: data.refundDue,
+      tripLabel: data.tripLabel,
+      groupNumber: data.groupNumber,
+      discountForfeited: data.discountForfeited,
+    } satisfies ComponentProps<typeof BookingCancelledEmail>,
   });
 }

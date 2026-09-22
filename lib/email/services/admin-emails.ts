@@ -11,11 +11,14 @@ import {
   type EmailResult,
   type NewUserRegistrationNotificationEmailData,
   type NewBookingNotificationEmailData,
+  type AdminBookingCancelledEmailData,
   type NewVendorApplicationNotificationEmailData,
 } from '../types';
 import NewUserNotificationEmail from '../templates/admin/new-user-notification';
 import NewBookingNotificationEmail from '../templates/admin/new-booking-notification';
 import NewVendorApplicationNotificationEmail from '../templates/admin/new-vendor-application-notification';
+import AdminBookingCancelledEmail from '../templates/admin/booking-cancelled-notification';
+import type { ComponentProps } from 'react';
 
 /**
  * Send admin notification for new user registration
@@ -87,6 +90,33 @@ export async function sendNewBookingNotificationEmail(
       totalAmount: data.totalAmount,
       currency: data.currency,
       bookingDetailsUrl: data.bookingDetailsUrl,
+      trip: data.trip,
     },
+  });
+}
+/**
+ * Tell the platform a customer cancelled, with the refund to issue by hand.
+ */
+export async function sendAdminBookingCancelledEmail(data: AdminBookingCancelledEmailData): Promise<EmailResult> {
+  return sendEmail({
+    businessAccountId: null,
+    to: data.adminEmail,
+    subject: `Booking Cancelled - #${data.tripNumber || data.bookingReference}`,
+    template: AdminBookingCancelledEmail,
+    templateProps: {
+      bookingReference: data.bookingReference,
+      tripNumber: data.tripNumber,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      pickupLocation: data.pickupLocation,
+      dropoffLocation: data.dropoffLocation,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      refundDue: data.refundDue,
+      tripLabel: data.tripLabel,
+      groupNumber: data.groupNumber,
+      discountForfeited: data.discountForfeited,
+      bookingDetailsUrl: data.bookingDetailsUrl,
+    } satisfies ComponentProps<typeof AdminBookingCancelledEmail>,
   });
 }

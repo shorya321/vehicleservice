@@ -2,13 +2,15 @@
 
 import { useState, memo, useEffect, useRef } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'motion/react'
-import { ArrowRight, Lock, ChevronUp, ChevronDown, Tag, Check } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Lock, ChevronUp, ChevronDown, Tag, Check } from 'lucide-react'
 import { RouteDetails, VehicleTypeDetails } from '@/app/checkout/actions'
 import { OrderSummaryAddon } from './checkout-wrapper'
 import { BookingLedger } from './booking-ledger'
 import { formatPrice } from '@/lib/currency/format'
 import { useCurrency } from '@/lib/currency/context'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
+import type { CheckoutPriceBreakdown, CheckoutTrip } from '@/lib/trips/checkout-trip'
+import { tripLedgerOverrides, type LegSchedule } from './trip-ledger-props'
 
 /**
  * Pickup wall-clock plus the route's estimate, as a wall-clock string. Same arithmetic as
@@ -44,6 +46,10 @@ interface MobileStickyBarProps {
   isLastStep: boolean
   agreeToTerms: boolean
   onAgreeToTermsChange: (checked: boolean) => void
+  /** Trip-type checkout. Absent for one way, whose drawer is unchanged. */
+  trip?: CheckoutTrip
+  pricing?: CheckoutPriceBreakdown
+  schedule?: LegSchedule[]
 }
 
 export const MobileStickyBar = memo(function MobileStickyBar({
@@ -63,6 +69,9 @@ export const MobileStickyBar = memo(function MobileStickyBar({
   isLastStep,
   agreeToTerms,
   onAgreeToTermsChange,
+  trip,
+  pricing,
+  schedule = [],
 }: MobileStickyBarProps) {
   const reduceMotion = useReducedMotion()
   const { currentCurrency, exchangeRates } = useCurrency()
@@ -101,6 +110,9 @@ export const MobileStickyBar = memo(function MobileStickyBar({
 
   const arrival = arrivalClock(pickupTime, route.estimated_duration_minutes)
   const total = totalPrice - promoDiscount
+  const overrides = trip && pricing
+    ? tripLedgerOverrides(trip, pricing, selectedAddons, pickupTime, schedule)
+    : null
 
   /* The same development-only stub the desktop card carries. Neither one touches the server
      price: createBooking re-derives the fare from zone pricing on submit. */
@@ -138,8 +150,12 @@ export const MobileStickyBar = memo(function MobileStickyBar({
         >
           <div className="flex items-center gap-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)] truncate mr-3">
             <span className="truncate">{route.origin.name}</span>
-            <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
-            <span className="truncate">{route.destination.name}</span>
+            {trip?.kind === 'round_trip' ? (
+              <ArrowLeftRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
+            ) : (
+              <ArrowRight className="h-3 w-3 shrink-0 text-[var(--gold-text)]" aria-hidden="true" />
+            )}
+            <span className="truncate">{overrides?.destinationName ?? route.destination.name}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-lg font-medium tabular-nums text-[var(--text-primary)]">
@@ -173,7 +189,7 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                     component is what stops the two surfaces disagreeing again. */}
                 <div className="mt-3 overflow-hidden rounded-[8px] border border-[var(--stub-line)] bg-[var(--stub-bot)] bg-gradient-to-b from-[var(--stub-top)] to-[var(--stub-bot)]">
                   <div className="checkout-stub-cap !px-4 !pt-3">
-                    <h2 id="mobile-summary-heading" className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
+                    <h2 id="mobile-summary-heading" className="checkout-section-title editorial-eyebrow--pill"><i aria-hidden="true" />{overrides?.heading ?? 'Your transfer'}</h2>
                     {(route.distance_km || route.estimated_duration_minutes) ? (
                       <span className="checkout-stub-ref">
                         {route.distance_km ? `${Math.round(route.distance_km)} km` : ''}
@@ -188,7 +204,7 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                     category={vehicleType.category}
                     vehicleName={vehicleType.name}
                     originName={route.origin.name}
-                    destinationName={route.destination.name}
+                    destinationName={overrides?.destinationName ?? route.destination.name}
                     dateLabel={formattedDate}
                     timeLabel={pickupTime}
                     passengers={passengers}
@@ -196,10 +212,14 @@ export const MobileStickyBar = memo(function MobileStickyBar({
                     luggage={vehicleType.luggage_capacity}
                     seats={vehicleType.passenger_capacity}
                     pickupNote={pickupTime ? `Pickup ${pickupTime}` : null}
-                    arrivalNote={arrival ? `Arrive about ${arrival}` : null}
+                    arrivalNote={overrides && overrides.arrivalNote !== undefined ? overrides.arrivalNote : arrival ? `Arrive about ${arrival}` : null}
                     alwaysShowBase
                     basePrice={basePrice}
-                    addons={selectedAddons}
+                    baseLabel={overrides?.baseLabel}
+                    legs={overrides?.legs}
+                    tripDiscount={overrides?.tripDiscount}
+                    addonNote={overrides?.addonNote}
+                    addons={overrides?.addons ?? selectedAddons}
                     promoDiscount={promoDiscount}
                     total={total}
                     onRemoveAddon={onRemoveAddon}

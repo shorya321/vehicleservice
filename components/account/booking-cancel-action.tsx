@@ -14,7 +14,15 @@ import { cancelBooking } from "@/app/account/booking-actions"
  * still deliberate and still two-stage, it just no longer shouts at a customer who came to look at
  * an upcoming trip.
  */
-export function BookingCancelAction({ bookingId }: { bookingId: string }) {
+interface BookingCancelActionProps {
+  bookingId: string
+  /** One journey of a round trip or multi-city trip: only this journey is cancelled. */
+  partOfTrip?: boolean
+  /** The trip carries a round-trip saving, which cancelling any journey forfeits. */
+  tripHasDiscount?: boolean
+}
+
+export function BookingCancelAction({ bookingId, partOfTrip = false, tripHasDiscount = false }: BookingCancelActionProps) {
   const router = useRouter()
   const [confirming, setConfirming] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
@@ -29,7 +37,7 @@ export function BookingCancelAction({ bookingId }: { bookingId: string }) {
       return
     }
 
-    toast.success("Booking cancelled")
+    toast.success(partOfTrip ? "Journey cancelled" : "Booking cancelled")
     setConfirming(false)
     // The server action revalidates this route; refresh pulls the cancelled record back in place
     // so the customer sees the outcome here rather than being bounced to the list.
@@ -43,7 +51,7 @@ export function BookingCancelAction({ bookingId }: { bookingId: string }) {
         onClick={() => setConfirming(true)}
         className="editorial-action min-h-[44px] !text-[var(--text-muted)]"
       >
-        Cancel this booking
+        {partOfTrip ? "Cancel this journey" : "Cancel this booking"}
       </button>
     )
   }
@@ -51,7 +59,11 @@ export function BookingCancelAction({ bookingId }: { bookingId: string }) {
   return (
     <div role="group" aria-label="Confirm cancellation" className="flex flex-col gap-3">
       <p className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
-        Cancelling returns the full amount to the card you paid with. This cannot be undone.
+        {partOfTrip
+          ? tripHasDiscount
+            ? "Only this journey is cancelled; the rest of your trip stands. The round-trip saving no longer applies, so the refund to your card is this journey's fare less that saving. This cannot be undone."
+            : "Only this journey is cancelled; the rest of your trip stands. Its fare is returned to the card you paid with. This cannot be undone."
+          : "Cancelling returns the full amount to the card you paid with. This cannot be undone."}
       </p>
       <div className="flex flex-wrap gap-3">
         <button

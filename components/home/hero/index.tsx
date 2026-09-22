@@ -1,7 +1,14 @@
 import { HeroMap } from './hero-map'
 import { SearchForm } from './search-form'
+import type { TripSettings } from '@/lib/trips/settings'
 
-export function Hero({ todayDate }: { todayDate: string }) {
+interface HeroProps {
+  todayDate: string
+  /** Trip types the admin has switched on (Settings > General). */
+  tripSettings?: TripSettings
+}
+
+export function Hero({ todayDate, tripSettings }: HeroProps) {
   return (
     <section
       id="hero"
@@ -35,7 +42,7 @@ export function Hero({ todayDate }: { todayDate: string }) {
           </p>
 
           <div className="hero-booking-reveal mt-12 w-full">
-            <SearchForm todayDate={todayDate} />
+            <SearchForm todayDate={todayDate} tripSettings={tripSettings} />
           </div>
 
           <p className="hero-reveal hero-reveal--trust hero-trust mt-5">

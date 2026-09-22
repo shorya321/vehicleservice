@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache'
 import { signBookingPayload } from '@/lib/security/booking-hmac'
 import { phoneSchema } from '@/lib/validation/phone'
 import { bookingWallClockToUtc } from '@/lib/utils/timezone'
+import { validatePickupStart } from '@/lib/trips/validation'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -362,6 +363,8 @@ export async function createBooking(formData: BookingFormData) {
   
   // Combine date and time for pickup datetime (interpreted as Dubai wall-clock)
   const pickupDateTime = bookingWallClockToUtc(validatedData.pickupDate, validatedData.pickupTime)
+  const pickupError = validatePickupStart(validatedData.pickupDate, validatedData.pickupTime)
+  if (pickupError) throw new Error(pickupError)
   
   // --- Server-side price verification ---
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { ResultsGuestPicker } from './results-guest-picker'
+import type { ResultsSearchParams } from './results-search-params'
 
 interface EmptyStateProps {
   /**
@@ -14,20 +15,13 @@ interface EmptyStateProps {
    */
   originName?: string
   destinationName?: string
-  searchParams: {
-    from?: string
-    to?: string
-    date?: string
-    passengers?: string
-    adults?: string
-    children?: string
-    infants?: string
-    originSlug?: string
-    destSlug?: string
-  }
+  searchParams: ResultsSearchParams
+  /** Trip-type pages (hourly, round trip, multi-city) say what actually went wrong. */
+  title?: string
+  body?: string
 }
 
-export function EmptyState({ originName, destinationName, searchParams }: EmptyStateProps) {
+export function EmptyState({ originName, destinationName, searchParams, title, body }: EmptyStateProps) {
   const reduceMotion = useReducedMotion()
 
   // Results are filtered by vehicle capacity, so an empty result for a group is just as likely to be
@@ -54,14 +48,14 @@ export function EmptyState({ originName, destinationName, searchParams }: EmptyS
     >
       <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />No results</div>
       <h2 className="editorial-section-title mt-5">
-        {isGroup
+        {title ?? (isGroup
           ? `No vehicles available for ${partySize} guests`
-          : 'No vehicles available for this route'}
+          : 'No vehicles available for this route')}
       </h2>
       <p className="mt-5 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)]">
-        {isGroup
+        {body ?? (isGroup
           ? `We may not have a vehicle that seats ${partySize} on this route, or the corridor may not be in the network for your selected date. Try a different date, book two vehicles for a larger group, or talk to support.`
-          : 'This corridor may not be in the network for your selected date, or all vehicles are reserved. Try a different date or adjust your search.'}
+          : 'This corridor may not be in the network for your selected date, or all vehicles are reserved. Try a different date or adjust your search.')}
       </p>
 
       {/* An over-set party size is the most likely reason a group lands here, so let them fix it in

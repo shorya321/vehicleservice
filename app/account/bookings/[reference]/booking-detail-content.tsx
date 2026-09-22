@@ -12,6 +12,7 @@ import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
 import { formatChildAges } from '@/lib/utils/child-ages'
 import { InvoiceDownloadButton } from '@/app/booking/confirmation/components/invoice-download-button'
 import { BookingCancelAction } from '@/components/account/booking-cancel-action'
+import { destinationLabel, hourlyPackageLabel, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 import {
   CARD,
   CARD_LABEL,
@@ -28,6 +29,7 @@ import {
   GuaranteeList,
   CardMotion,
 } from '@/components/booking/itinerary-primitives'
+import type { AccountTripGroup } from '@/app/account/lib/trip-group'
 
 /* ------------------------------------------------------------------ shape */
 
@@ -81,6 +83,17 @@ export interface DetailBooking {
   vehicle_type: { name: string | null; passenger_capacity: number | null; luggage_capacity: number | null } | null
   booking_assignments: DetailAssignment[] | null
   booking_amenities: DetailAmenity[] | null
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
+  leg_index?: number | null
+  booking_group_id?: string | null
+  refund_due?: number | null
+  /** This journey's share of the round-trip saving. */
+  discount_amount?: number | null
+  /** Round trip or multi-city: the trip this journey belongs to. */
+  trip_group?: AccountTripGroup | null
 }
 
 /* ------------------------------------------------------------------ time */
@@ -300,12 +313,21 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
       <div className={BAND}>
         <dl className="space-y-2.5">
           <SummaryRow
-            label={`Base fare · ${booking.passenger_count} passenger${booking.passenger_count === 1 ? '' : 's'}`}
+            label={`${hourlyPackageLabel(booking) ?? 'Base fare'} · ${booking.passenger_count} passenger${booking.passenger_count === 1 ? '' : 's'}`}
             value={formatUserAmount(booking.base_price)}
           />
           {amenities.map((a) => (
             <SummaryRow key={a.id} label={amenityLabel(a)} value={formatUserAmount(a.price)} />
           ))}
+          {Number(booking.discount_amount ?? 0) > 0 && (
+            <SummaryRow
+              label="Round trip saving, this journey's share"
+              value={`−${formatUserAmount(Number(booking.discount_amount))}`}
+            />
+          )}
+          {booking.refund_due != null && (
+            <SummaryRow label="Refund due on cancellation" value={formatUserAmount(Number(booking.refund_due))} />
+          )}
         </dl>
       </div>
 
@@ -377,8 +399,8 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <h1 className="min-w-0 text-[clamp(1.6rem,3.4vw,2.4rem)] font-medium leading-[1.1] tracking-[-0.028em] text-[var(--text-primary)] [text-wrap:balance]">
             {booking.pickup_address}{' '}
-            <span className="font-normal text-[var(--text-muted)]">to</span>{' '}
-            {booking.dropoff_address}
+            <span className="font-normal text-[var(--text-muted)]">{isHourlyBooking(booking) ? '·' : 'to'}</span>{' '}
+            {destinationLabel(booking)}
           </h1>
           <span className="account-chip self-start">{statusLabel}</span>
         </div>
@@ -406,8 +428,12 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
                     the confirmation rail's own treatment, with the fill now saying something. */}
                 <RouteStop label="Pickup" address={booking.pickup_address} reduceMotion={reduceMotion} />
                 <RouteStop
-                  label="Destination"
-                  address={booking.dropoff_address}
+                  label={isHourlyBooking(booking) ? 'Hire' : 'Destination'}
+                  address={
+                    isHourlyBooking(booking)
+                      ? `${hourlySummary(booking) ?? 'Hourly'}, as directed`
+                      : booking.dropoff_address
+                  }
                   state={isTravelled ? 'done' : 'pending'}
                   terminal={history.length === 0}
                   reduceMotion={reduceMotion}
@@ -447,6 +473,53 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
               </div>
             )}
           </CardMotion>
+
+          {booking.trip_group && (
+            <CardMotion reduceMotion={reduceMotion} delay={0.12} aria-labelledby="trip-heading" className={CARD}>
+              <div className={`${BAND} border-b border-[rgba(var(--gold-rgb),0.1)]`}>
+                <h2 id="trip-heading" className={CARD_LABEL}>
+                  {booking.trip_group.trip_type === 'round_trip' ? 'Your round trip' : 'Your trip'} · {booking.trip_group.group_number}
+                </h2>
+              </div>
+              <div className={BAND}>
+                <ol className="space-y-4">
+                  {booking.trip_group.legs.map((leg) => {
+                    const current = leg.id === booking.id
+                    return (
+                      <li key={leg.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <div className="min-w-0">
+                          <p className={CARD_LABEL}>
+                            {leg.label}
+                            {leg.booking_status === 'cancelled' ? ' · Cancelled' : ''}
+                          </p>
+                          <p className={SEGMENT_VALUE}>
+                            {leg.pickup_address} <span className="text-[var(--text-muted)]">to</span> {leg.dropoff_address}
+                          </p>
+                          <p className={SEGMENT_CAPTION}>
+                            {formatDate(new Date(leg.pickup_datetime))} · {formatTime(new Date(leg.pickup_datetime))}
+                          </p>
+                        </div>
+                        {current ? (
+                          <span className="account-chip">This journey</span>
+                        ) : (
+                          <Link href={`/account/bookings/${encodeURIComponent(leg.reference)}`} className="editorial-action">
+                            View
+                          </Link>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ol>
+                <p className={`${SEGMENT_CAPTION} mt-5`}>
+                  Paid together as one booking. Each journey can be cancelled on its own up to 24 hours before
+                  its pickup.
+                  {booking.trip_group.discount_amount > 0
+                    ? ' Cancelling one journey of a round trip removes the round-trip saving from the other.'
+                    : ''}
+                </p>
+              </div>
+            </CardMotion>
+          )}
 
           {/* "Service Provider" promised a provider and delivered a car, and vanished entirely
               when nobody was assigned yet. Naming the person is the oldest trust signal there is. */}
@@ -500,7 +573,11 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
 
           {canCancel && (
             <div className="border-t border-[var(--border-subtle)] pt-6 print:hidden">
-              <BookingCancelAction bookingId={booking.id} />
+              <BookingCancelAction
+                bookingId={booking.id}
+                partOfTrip={!!booking.trip_group}
+                tripHasDiscount={(booking.trip_group?.discount_amount ?? 0) > 0}
+              />
             </div>
           )}
         </div>

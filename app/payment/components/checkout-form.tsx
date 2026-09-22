@@ -53,6 +53,8 @@ function PaymentSkeleton() {
 
 interface CheckoutFormProps {
   bookingId: string
+  /** Round trip / multi-city: confirmed as the group, never as one booking. */
+  groupId?: string
   amount: number
   /** Routing key only. Drives the Stripe return_url. Never rendered. */
   bookingNumber: string
@@ -60,7 +62,7 @@ interface CheckoutFormProps {
   tripNumber: string
 }
 
-export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormProps) {
+export function CheckoutForm({ bookingId, groupId, amount, bookingNumber }: CheckoutFormProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const stripe = useStripe()
   const elements = useElements()
@@ -110,10 +112,11 @@ export function CheckoutForm({ bookingId, amount, bookingNumber }: CheckoutFormP
       const response = await fetch('/api/payment/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paymentIntentId: paymentIntent.id,
-          bookingId,
-        }),
+        body: JSON.stringify(
+          groupId
+            ? { paymentIntentId: paymentIntent.id, groupId }
+            : { paymentIntentId: paymentIntent.id, bookingId }
+        ),
       })
 
       const result = await response.json()

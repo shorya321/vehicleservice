@@ -76,6 +76,37 @@ export interface PasswordResetEmailData {
   resetUrl: string;
 }
 
+/**
+ * Round trip, multi-city or hourly detail for booking emails. Absent for a
+ * one-way transfer, whose emails render exactly as before.
+ */
+export interface EmailTripLeg {
+  label: string;
+  tripNumber?: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDate: string;
+  pickupTime: string;
+}
+
+export interface EmailTripDetails {
+  tripType: 'one_way' | 'round_trip' | 'multi_city' | 'hourly';
+  /** "Round trip", "Hourly hire". */
+  label: string;
+  /** Hourly: "Half day, 5 hours, 100 km included". */
+  hourlySummary?: string;
+  /** Hourly: wall-clock end, "15:00". */
+  hourlyEndTime?: string;
+  /** Hourly: rate per extra hour, in the email's currency. */
+  extraHourPrice?: number;
+  /** Grouped trips: every journey, in order. */
+  legs?: EmailTripLeg[];
+  /** Grouped trips: the reference the customer paid under. */
+  groupNumber?: string;
+  /** Grouped trips: round-trip saving, in the email's currency. */
+  discountAmount?: number;
+}
+
 // Booking emails
 export interface BookingConfirmationEmailData {
   bookingId: string;
@@ -109,6 +140,33 @@ export interface BookingConfirmationEmailData {
   extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
   customerNotes?: string;
   invoiceUrl?: string;
+  trip?: EmailTripDetails;
+}
+
+/** A customer booking (or one journey of a trip) cancelled by the customer. */
+export interface BookingCancelledEmailData {
+  customerName: string;
+  customerEmail: string;
+  bookingReference: string;
+  tripNumber?: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupDate: string;
+  pickupTime: string;
+  /** AED owed back to the card; null when nothing was paid. */
+  refundDue: number | null;
+  /** "Round trip, return journey", "Hourly hire: Half day, 5 hours". */
+  tripLabel?: string;
+  /** Set when this journey belongs to a trip that goes on without it. */
+  groupNumber?: string;
+  /** The round-trip saving no longer applies to the rest of the trip. */
+  discountForfeited?: boolean;
+}
+
+export interface AdminBookingCancelledEmailData extends Omit<BookingCancelledEmailData, 'customerEmail'> {
+  adminEmail: string;
+  customerEmail: string;
+  bookingDetailsUrl: string;
 }
 
 export interface BookingStatusUpdateEmailData {
@@ -137,6 +195,8 @@ export interface BookingAssignmentEmailData {
   dropoffLocation: string;
   pickupDate: string;
   pickupTime: string;
+  /** Hourly hire or trip leg, e.g. "Hourly hire: Half day, 5 hours, as directed". */
+  tripLabel?: string;
 }
 
 export interface BookingUnassignmentEmailData {
@@ -196,6 +256,7 @@ export interface NewBookingNotificationEmailData {
   totalAmount: number;
   currency: string;
   bookingDetailsUrl: string;
+  trip?: EmailTripDetails;
 }
 
 export interface NewVendorApplicationNotificationEmailData {
@@ -248,6 +309,8 @@ export interface DriverBookingAssignmentEmailData {
   pickupDate: string;
   pickupTime: string;
   vendorName: string;
+  /** Hourly hire or trip leg, e.g. "Round trip, return journey". */
+  tripLabel?: string;
 }
 
 export interface DriverBookingUnassignmentEmailData {

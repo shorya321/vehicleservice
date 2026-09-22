@@ -9,6 +9,10 @@ import { getSearchResults } from '../results/actions'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { parseRouteSlug } from '@/lib/utils/slug'
 import { resolveRouteSlugs } from '@/lib/utils/slug-resolver'
+import { getSiteSettings } from '@/lib/site-settings/server'
+import { parseTripSearchParams } from '@/lib/trips/search-params'
+import { toRoundTripResults } from '../lib/round-trip-results'
+import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 interface SearchRoutePageProps {
   params: Promise<{ routeSlug: string }>
@@ -19,11 +23,15 @@ interface SearchRoutePageProps {
     adults?: string
     children?: string
     infants?: string
+    /** Round trip: `trip=round_trip&return=yyyy-MM-dd`. Absent for one way. */
+    trip?: string
+    return?: string
   }>
 }
 
-export async function generateMetadata({ params }: SearchRoutePageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: SearchRoutePageProps): Promise<Metadata> {
   const { routeSlug } = await params
+  const sp = await searchParams
   const parsed = parseRouteSlug(routeSlug)
 
   if (!parsed) {
@@ -41,12 +49,15 @@ export async function generateMetadata({ params }: SearchRoutePageProps): Promis
   return {
     title: `Transfer from ${originName} to ${destName} | Infinia Transfers`,
     description: `Book luxury transfer from ${originName} to ${destName}. Compare vehicles and prices for your journey.`,
+    // Every trip variant is the same route: index the one-way page only.
+    ...(sp.trip ? { robots: { index: false, follow: true } } : {}),
   }
 }
 
 export default async function SearchRoutePage({ params, searchParams }: SearchRoutePageProps) {
   const { routeSlug } = await params
   const sp = await searchParams
+  redirectIfPastDates(`/search/${routeSlug}`, sp)
   const { date, passengers, adults, children, infants } = sp
 
   // Parse the route slug
@@ -72,6 +83,26 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
     date: new Date(date),
     passengers: parseInt(passengers),
   })
+
+  // Round trip is offered between two locations (checkout books locations, not zones)
+  // while the admin has it switched on. Anything else quietly searches one way.
+  const requestedTrip = parseTripSearchParams(sp)
+  const settings = await getSiteSettings()
+  const trip =
+    requestedTrip.trip === 'round_trip' && resolved.type === 'location' && settings.trip_types.round_trip_enabled
+      ? requestedTrip
+      : undefined
+
+  if (trip && results?.vehicleTypes) {
+    const roundTrip = await toRoundTripResults(
+      results.vehicleTypes,
+      resolved.origin.id,
+      resolved.destination.id,
+      settings.trip_types.round_trip_discount_percent
+    )
+    results.vehicleTypes = roundTrip.vehicleTypes
+    results.vehicleTypesByCategory = roundTrip.vehicleTypesByCategory
+  }
 
   if (!results) {
     return (
@@ -115,6 +146,7 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
     infants,
     originSlug: parsed.origin,
     destSlug: parsed.destination,
+    trip,
   }
 
   return (

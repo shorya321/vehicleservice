@@ -56,6 +56,7 @@ export async function getVendorPendingAssignments(
       pickup_address,
       dropoff_address,
       pickup_datetime,
+      duration_hours,
       customer:profiles(full_name, phone)
     ),
     vehicle:vehicles(id, make, model, registration_number),

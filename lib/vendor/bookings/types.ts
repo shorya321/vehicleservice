@@ -118,6 +118,13 @@ export interface VendorBookingDetail {
   dropoffAddress: string
   fromLocationName: string | null
   toLocationName: string | null
+  /**
+   * Hourly hire or leg of a trip, e.g. "Hourly hire: Half day, 5 hours, as directed" or
+   * "Round trip, return journey". Null for a plain transfer.
+   */
+  tripLabel: string | null
+  /** Paid hours of an hourly hire; the hold may not be shorter. Null otherwise. */
+  bookedHours: number | null
 
   adults: number
   children: number

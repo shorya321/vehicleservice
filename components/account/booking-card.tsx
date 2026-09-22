@@ -7,6 +7,7 @@ import { formatPrice } from "@/lib/currency/format"
 import { useCurrency } from '@/lib/currency/context'
 import { getBookingTimezone, bookingToday } from '@/lib/utils/timezone'
 import type { BookingListItem } from "./types"
+import { destinationLabel, legLabel, tripTypeLabel } from "@/lib/trips/display"
 
 interface BookingCardProps {
   booking: BookingListItem
@@ -129,13 +130,14 @@ export const BookingCard = memo(function BookingCard({ booking }: BookingCardPro
                 <p className="account-route-value">{booking.pickup_address}</p>
               </div>
               <div className="account-route-stop">
-                <p className="account-route-value">{booking.dropoff_address}</p>
+                <p className="account-route-value">{destinationLabel(booking)}</p>
               </div>
             </div>
 
             <p className="text-[0.75rem] leading-snug text-[var(--text-muted)] tabular-nums">
               {formattedWhen}
               {booking.vehicle_type?.name ? ` · ${booking.vehicle_type.name}` : ""}
+              {legLabel(booking) ? ` · ${tripTypeLabel(booking)}, ${legLabel(booking)}` : ""}
             </p>
           </div>
 

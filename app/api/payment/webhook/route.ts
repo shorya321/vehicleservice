@@ -18,6 +18,7 @@ import { headers } from 'next/headers'
 import type Stripe from 'stripe'
 import { stripe, webhookSecret } from '@/lib/stripe/server'
 import { finalizeBookingPayment } from '@/lib/payment/finalize-booking'
+import { finalizeGroupPayment } from '@/lib/payment/finalize-group'
 
 /**
  * Signing secret for THIS endpoint. Stripe issues a separate secret per webhook
@@ -58,6 +59,23 @@ export async function POST(request: NextRequest) {
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
       const bookingId = paymentIntent.metadata?.bookingId
+      const groupId = paymentIntent.metadata?.groupId
+
+      // A round trip or multi-city trip: one intent for the whole group.
+      if (groupId) {
+        const result = await finalizeGroupPayment({
+          paymentIntentId: paymentIntent.id,
+          groupId,
+          userCurrency: 'AED',
+        })
+        if (!result.ok) {
+          console.error('Payment webhook: group finalize failed', {
+            groupId,
+            status: result.status,
+            error: result.error,
+          })
+        }
+      }
 
       // Only booking PaymentIntents carry a bookingId; ignore others (e.g. wallet)
       if (bookingId) {

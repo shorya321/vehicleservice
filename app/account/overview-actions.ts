@@ -29,6 +29,10 @@ export interface NextTransfer {
   currency: string
   passenger_count: number | null
   vehicle_type: { name: string } | null
+  trip_type: string | null
+  hourly_package: string | null
+  duration_hours: number | null
+  leg_index: number | null
   /** Present once a vendor has assigned a car and a chauffeur. Null until then. */
   driver_name: string | null
   vendor_name: string | null
@@ -105,6 +109,10 @@ export async function getAccountOverview(userId: string): Promise<AccountOvervie
         total_price,
         currency,
         passenger_count,
+        trip_type,
+        hourly_package,
+        duration_hours,
+        leg_index,
         vehicle_type:vehicle_types(name),
         booking_assignments (
           status,
@@ -206,6 +214,10 @@ function toNextTransfer(row: Record<string, unknown>): NextTransfer {
     currency: (row.currency as string) || "AED",
     passenger_count: (row.passenger_count as number | null) ?? null,
     vehicle_type: one(row.vehicle_type as { name: string } | { name: string }[] | null),
+    trip_type: (row.trip_type as string | null) ?? null,
+    hourly_package: (row.hourly_package as string | null) ?? null,
+    duration_hours: row.duration_hours != null ? Number(row.duration_hours) : null,
+    leg_index: (row.leg_index as number | null) ?? null,
     driver_name: driverName,
     vendor_name: one(active?.vendor ?? null)?.business_name ?? null,
   }

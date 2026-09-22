@@ -17,6 +17,7 @@ interface DriverBookingAssignedEmailProps {
   pickupDate: string;
   pickupTime: string;
   vendorName: string;
+  tripLabel?: string;
 }
 
 export const DriverBookingAssignedEmail = ({
@@ -31,6 +32,7 @@ export const DriverBookingAssignedEmail = ({
   pickupDate,
   pickupTime,
   vendorName,
+  tripLabel,
 }: DriverBookingAssignedEmailProps) => {
   return (
     <EmailLayout
@@ -67,6 +69,11 @@ export const DriverBookingAssignedEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Dropoff Location:</strong> {dropoffLocation}
         </Text>
+        {tripLabel && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Service:</strong> {tripLabel}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Pickup Date:</strong> {pickupDate}
         </Text>

@@ -38,6 +38,8 @@ import BusinessWelcomePendingEmail from '@/lib/business/email/templates/welcome-
 import NewBusinessRegistrationAdminNotificationEmail from '@/lib/business/email/templates/new-registration-admin-notification';
 import BusinessAccountApprovedEmail from '@/lib/business/email/templates/account-approved';
 import BusinessAccountRejectedEmail from '@/lib/business/email/templates/account-rejected';
+import BookingCancelledEmail from '@/lib/email/templates/booking/cancelled';
+import AdminBookingCancelledEmail from '@/lib/email/templates/admin/booking-cancelled-notification';
 
 /**
  * Annotated rather than inferred: the `Record` is what turns "registered an id but
@@ -48,6 +50,10 @@ export const templateComponents: Record<EmailTemplateType, ComponentType<any>> =
   verification: VerificationEmail,
   passwordReset: PasswordResetEmail,
   bookingConfirmation: BookingConfirmationEmail,
+  bookingConfirmationRoundTrip: BookingConfirmationEmail,
+  bookingConfirmationHourly: BookingConfirmationEmail,
+  bookingCancelled: BookingCancelledEmail,
+  adminBookingCancelled: AdminBookingCancelledEmail,
   bookingStatus: BookingStatusUpdateEmail,
   vendorReceived: VendorApplicationReceivedEmail,
   vendorApproved: VendorApplicationApprovedEmail,

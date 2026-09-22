@@ -15,6 +15,8 @@ import { RouteConnector } from '@/app/search/results/components/route-connector'
 import { EASE_LUXURY } from '@/components/booking/itinerary-primitives'
 import { InvoiceDownloadButton } from './invoice-download-button'
 import { DayTime } from './day-time'
+import { hourlyEndTime, hourlyPackageLabel, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
+import type { ConfirmationTrip } from '../lib/get-confirmation-booking'
 
 const tz = () => getBookingTimezone()
 
@@ -105,6 +107,11 @@ interface Booking {
   vehicle_type: VehicleType | null
   booking_passengers: BookingPassenger[]
   booking_amenities: BookingAmenity[]
+  /** Trip columns; absent on a narrowed select, which reads as one way. */
+  trip_type?: string | null
+  hourly_package?: string | null
+  duration_hours?: number | null
+  included_km?: number | null
 }
 
 interface ConfirmationContentProps {
@@ -116,6 +123,8 @@ interface ConfirmationContentProps {
   route?: { distance_km: number | null; estimated_duration_minutes: number | null } | null
   /** The search page's street map, server-rendered and passed in as a slot. */
   routeMap?: ReactNode
+  /** Round trip or multi-city: every journey of the trip, paid as one. */
+  trip?: ConfirmationTrip | null
 }
 
 /**
@@ -233,6 +242,7 @@ export function ConfirmationContent({
   addons,
   route,
   routeMap,
+  trip = null,
 }: ConfirmationContentProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = !!useReducedMotion()
@@ -263,6 +273,9 @@ export function ConfirmationContent({
   const statusConfig = getStatusConfig(booking.booking_status)
   const reference = booking.trip_number || booking.booking_number
   const duration = route?.estimated_duration_minutes ?? null
+  const hourly = isHourlyBooking(booking)
+  const tripHeading = trip ? (trip.tripType === 'round_trip' ? 'Your round trip' : 'Your trip') : null
+  const hireUntil = booking.pickup_datetime ? hourlyEndTime(booking.pickup_datetime, booking) : null
 
   // Only a live booking with a known pickup gets the day-and-time statement. A cancelled or
   // completed trip, or one still waiting for a time, is told what happened in a sentence instead.
@@ -383,10 +396,35 @@ export function ConfirmationContent({
         <div className="confirm-sat__right">
           <Rise reduceMotion={reduceMotion} delay={0.1} className="checkout-summary-card confirm-sat__card--lift" aria-labelledby="transfer-heading">
             <div className="checkout-stub-cap">
-              <h2 id="transfer-heading" className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Your transfer</h2>
+              <h2 id="transfer-heading" className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{tripHeading ?? (hourly ? 'Your hourly hire' : 'Your transfer')}</h2>
               {pickupDate && <span className="checkout-stub-ref">{formatShortDate(pickupDate)}</span>}
             </div>
 
+            {trip ? (
+              <ol className="confirm-sat__band list-none space-y-4" style={{ paddingBottom: '1rem' }}>
+                {trip.legs.map((leg) => (
+                  <li key={leg.id}>
+                    <p className="confirm-sat__label">
+                      {leg.label}
+                      {leg.booking_status === 'cancelled' ? ' · Cancelled' : ''}
+                    </p>
+                    <div className="checkout-stub-route mt-1.5">
+                      <span className="checkout-stub-route__place">
+                        <span className="checkout-stub-route__name">{leg.pickup_address}</span>
+                        <span className="checkout-stub-route__note">
+                          {`${formatShortDate(new Date(leg.pickup_datetime))} · ${formatTime(new Date(leg.pickup_datetime))}`}
+                        </span>
+                      </span>
+                      <RouteConnector />
+                      <span className="sr-only"> to </span>
+                      <span className="checkout-stub-route__place">
+                        <span className="checkout-stub-route__name">{leg.dropoff_address}</span>
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            ) : (
             <div className="confirm-sat__band" style={{ paddingBottom: '1rem' }}>
               <div className="checkout-stub-route">
                 <span className="checkout-stub-route__place">
@@ -400,11 +438,14 @@ export function ConfirmationContent({
                 <span className="checkout-stub-route__place">
                   <span className="checkout-stub-route__name">{booking.dropoff_address}</span>
                   <span className="checkout-stub-route__note">
-                    {pickupDate && duration ? `Arrive about ${shiftedTime(pickupDate, duration)}` : 'Destination'}
+                    {hourly
+                      ? hireUntil ? `Until about ${hireUntil}` : hourlySummary(booking)
+                      : pickupDate && duration ? `Arrive about ${shiftedTime(pickupDate, duration)}` : 'Destination'}
                   </span>
                 </span>
               </div>
             </div>
+            )}
 
             <div className="checkout-stub-perf" aria-hidden="true">
               <span />
@@ -481,7 +522,7 @@ export function ConfirmationContent({
 
               <dl className="confirm-sat__band confirm-sat__ledger">
                 <div>
-                  <dt>{`Base fare · ${booking.passenger_count} passenger${booking.passenger_count === 1 ? '' : 's'}`}</dt>
+                  <dt>{`${trip ? `${trip.legs.length} journeys` : hourlyPackageLabel(booking) ?? 'Base fare'} · ${booking.passenger_count} passenger${booking.passenger_count === 1 ? '' : 's'}`}</dt>
                   <dd>{formatUserAmount(booking.base_price)}</dd>
                 </div>
                 {childSeats.map((seat, idx) => (
@@ -492,10 +533,16 @@ export function ConfirmationContent({
                 ))}
                 {addons.map((addon, idx) => (
                   <div key={`addon-${idx}`}>
-                    <dt>{`${addon.addon?.name || 'Add-on'}${(addon.quantity ?? 1) > 1 ? ` × ${addon.quantity}` : ''}${formatChildAges(addon.child_ages)}`}</dt>
+                    <dt>{`${addon.addon?.name || 'Add-on'}${(addon.quantity ?? 1) > 1 ? ` × ${addon.quantity}` : ''}${formatChildAges(addon.child_ages)}${trip ? ` (${trip.legs.length} journeys)` : ''}`}</dt>
                     <dd>{formatUserAmount(addon.price)}</dd>
                   </div>
                 ))}
+                {trip && trip.discount > 0 && (
+                  <div>
+                    <dt>{`Round trip saving (${trip.discountPercent}%), included above`}</dt>
+                    <dd>{`−${formatUserAmount(trip.discount)}`}</dd>
+                  </div>
+                )}
               </dl>
 
               <div className="confirm-sat__band confirm-sat__total">

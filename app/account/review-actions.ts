@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { ReviewFormData, ReviewFiltersData } from "./schemas"
+import { destinationLabel } from "@/lib/trips/display"
 
 export interface ReviewFilters {
   search?: string
@@ -136,11 +137,14 @@ export async function getEligibleBookings() {
     .from("bookings")
     .select(`
       id, booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime,
-      booking_status, vehicle_type_id, vehicle_types(name, image_url)
+      booking_status, vehicle_type_id, vehicle_types(name, image_url),
+      trip_type, hourly_package, duration_hours, leg_index, booking_group_id
     `)
     .eq("customer_id", user.id)
     .neq("booking_status", "cancelled")
     .lt("pickup_datetime", new Date().toISOString())
+    // One review per trip: a round trip or multi-city trip is reviewed on its first journey.
+    .or("booking_group_id.is.null,leg_index.eq.0")
     .order("pickup_datetime", { ascending: false })
 
   const { data: existingReviews } = await supabase
@@ -164,7 +168,7 @@ export async function createReview(data: ReviewFormData) {
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, customer_id, booking_status, pickup_address, dropoff_address, vehicle_type_id")
+    .select("id, customer_id, booking_status, pickup_address, dropoff_address, vehicle_type_id, trip_type, duration_hours")
     .eq("id", data.booking_id)
     .single()
 
@@ -200,7 +204,7 @@ export async function createReview(data: ReviewFormData) {
       rating: data.rating,
       review_text: data.content,
       route_from: booking.pickup_address,
-      route_to: booking.dropoff_address,
+      route_to: destinationLabel(booking),
       vehicle_class: vehicleType?.name || null,
       status: "pending",
     })

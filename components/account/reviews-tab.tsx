@@ -13,6 +13,7 @@ import { InlineStats } from "./inline-stats"
 import { ListSkeleton } from "./list-skeleton"
 import { EmptyState } from "./empty-state"
 import type { ReviewListItem, EligibleBooking } from "./types"
+import { destinationLabel } from "@/lib/trips/display"
 
 interface ReviewsTabProps {
   userId: string
@@ -151,7 +152,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
                 <p className="editorial-list-title">
                   {booking.pickup_address} <span aria-hidden="true">&rarr;</span>{" "}
                   <span className="sr-only">to</span>
-                  {booking.dropoff_address}
+                  {destinationLabel(booking)}
                 </p>
                 <p className="editorial-list-body tabular-nums">
                   {formatBookingDate(booking.pickup_datetime, "d MMMM")}

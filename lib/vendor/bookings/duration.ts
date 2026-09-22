@@ -60,3 +60,29 @@ export function tripEndFrom(pickup: Date, hours?: number | null): Date {
   const durationHours = hours ?? DEFAULT_TRIP_DURATION_HOURS
   return new Date(pickup.getTime() + durationHours * 60 * 60 * 1000)
 }
+
+/**
+ * Hourly hire books the chauffeur for a package of hours, so the hold can never be shorter
+ * than what the customer paid for. Holds are whole hours; a 4.5 hour package holds 5.
+ * Null for a transfer, which keeps the ordinary 1 hour minimum.
+ */
+export function minimumHoldHours(bookedHours?: number | null): number {
+  if (!bookedHours || bookedHours <= 0) return MIN_TRIP_DURATION_HOURS
+  return Math.min(MAX_TRIP_DURATION_HOURS, Math.max(MIN_TRIP_DURATION_HOURS, Math.ceil(bookedHours)))
+}
+
+/** What the accept modal starts on: the package length for hourly hire, else the usual default. */
+export function defaultHoldHours(bookedHours?: number | null): number {
+  return bookedHours ? Math.max(DEFAULT_TRIP_DURATION_HOURS, minimumHoldHours(bookedHours)) : DEFAULT_TRIP_DURATION_HOURS
+}
+
+/**
+ * Throws when a hold would release the vehicle and driver before a paid hourly hire ends.
+ * Server-side counterpart of the modals' `min`, which the browser can bypass.
+ */
+export function assertHoldCoversBooking(holdHours: number, bookedHours?: number | null): void {
+  const minimum = minimumHoldHours(bookedHours)
+  if (bookedHours && holdHours < minimum) {
+    throw new Error(`This is a ${bookedHours}-hour hire. Hold the vehicle and driver for at least ${minimum} hours.`)
+  }
+}
