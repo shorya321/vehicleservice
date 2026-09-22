@@ -4,7 +4,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { ApplicationDossier, type VendorApplicationRow } from "@/components/vendor-application/application-dossier"
 import { ReviewRail } from "@/components/vendor-application/review-rail"
-import { RouteBandMap } from "@/app/search/results/components/route-band-map"
+import { HeroMap } from "@/components/home/hero/hero-map"
 import { formatBookingDate } from "@/lib/utils/timezone"
 import { normalizeApplicationStatus, REVIEW_WINDOW_HOURS } from "@/lib/vendor-application/status"
 
@@ -36,11 +36,10 @@ export default async function VendorApplicationPage() {
 
   return (
     <div className="relative bg-[var(--black-void)]">
-      {/* The search page's crop of the street map behind the title, rather than the home
-          hero's wider one: same city and tokens, closer in, no runways. Laid out and faded
-          by `.vendor-mapband`, which also retires the band's own fade (globals.css). */}
+      {/* The home hero's street map behind the title, as on become-vendor: the two pages are
+          one flow and open the same way. `.vendor-mapband` in globals.css. */}
       <div className="vendor-mapband" aria-hidden="true">
-        <RouteBandMap />
+        <HeroMap />
         <div className="vendor-mapband__fade" />
       </div>
 
