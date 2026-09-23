@@ -53,6 +53,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
     customerId: params.customerId,
     page: params.page ? parseInt(params.page) : 1,
     limit: 10,
+    groupTrips: true,
   }
 
   const { bookings, total, page, totalPages } = await getBookings(filters)
