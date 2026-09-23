@@ -7,6 +7,7 @@ import { closeActiveAssignments } from "@/lib/bookings/unified-service"
 import { sanitiseSearchTerm } from "@/lib/supabase/search-term"
 import type { BookingFiltersData } from "./schemas"
 import { loadAccountTripGroup } from "./lib/trip-group"
+import { groupTripRows } from "@/lib/trips/group-list-rows"
 import { refundForCancellation, sendCancellationEmails, syncGroupAfterCancellation } from "./lib/cancellation"
 
 export interface BookingFilters {
@@ -49,12 +50,13 @@ export async function getBookings(userId: string, filters: BookingFilters = {}) 
     .select(`
       *,
       vehicle_type:vehicle_types(name, image_url),
+      booking_group:booking_group_id(group_number, leg_count),
       booking_assignments (
         status,
         vendor:vendor_applications (business_name),
         driver:vendor_drivers (first_name, last_name, phone)
       )
-    `, { count: "exact" })
+    `)
     .eq("customer_id", userId)
 
   // or() takes a filter expression, not a bound value, so the raw term could close one condition
@@ -91,15 +93,18 @@ export async function getBookings(userId: string, filters: BookingFilters = {}) 
   query = query
     .order("created_at", { ascending: false })
     .order("leg_index", { ascending: true, nullsFirst: true })
-    .range(offset, offset + limit - 1)
 
-  const { data: bookings, count } = await query
+  // A round trip or multi-city order is one row carrying its journeys in trip_legs. Grouping has
+  // to happen before the page is cut, or one trip's journeys could straddle two pages, so the
+  // whole matching set is read and paged here. One customer's bookings are a short list.
+  const { data: bookings } = await query
+  const trips = groupTripRows(bookings || [])
 
   return {
-    bookings: bookings || [],
-    total: count || 0,
+    bookings: trips.slice(offset, offset + limit),
+    total: trips.length,
     page,
-    totalPages: Math.ceil((count || 0) / limit),
+    totalPages: Math.ceil(trips.length / limit),
   }
 }
 

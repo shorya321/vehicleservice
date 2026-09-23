@@ -8,6 +8,9 @@ import { useCurrency } from "@/lib/currency/context"
 import { getBookings, getBookingStats, type BookingFilters } from "@/app/account/booking-actions"
 import { BookingCard } from "./booking-card"
 import { TripLedgerRow } from "./trip-ledger-row"
+import { TripGroupCard } from "./trip-group-card"
+import { TripGroupLedgerRow } from "./trip-group-ledger-row"
+import { isStillAhead } from "./trip-list"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ContentSection } from "./content-section"
 import { InlineStats } from "./inline-stats"
@@ -116,9 +119,7 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
     const upcoming: BookingListItem[] = []
     const travelled: BookingListItem[] = []
     for (const booking of bookings) {
-      const isAhead =
-        booking.booking_status !== "cancelled" && new Date(booking.pickup_datetime).getTime() >= now
-      ;(isAhead ? upcoming : travelled).push(booking)
+      ;(isStillAhead(booking, now) ? upcoming : travelled).push(booking)
     }
     return { upcoming, travelled }
   }, [bookings])
@@ -224,9 +225,13 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
               <section aria-labelledby="trips-upcoming">
                 <h3 id="trips-upcoming" className="editorial-list-meta">Upcoming</h3>
                 <div className="mt-4 space-y-3">
-                  {upcoming.map((booking) => (
-                    <BookingCard key={booking.id} booking={booking} />
-                  ))}
+                  {upcoming.map((booking) =>
+                    booking.trip_legs && booking.booking_group ? (
+                      <TripGroupCard key={booking.id} trip={booking} journeys={booking.trip_legs} />
+                    ) : (
+                      <BookingCard key={booking.id} booking={booking} />
+                    )
+                  )}
                 </div>
               </section>
             )}
@@ -235,9 +240,13 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
               <section aria-labelledby="trips-travelled" className={upcoming.length > 0 ? "mt-10" : undefined}>
                 <h3 id="trips-travelled" className="editorial-list-meta">Travelled</h3>
                 <ul className="editorial-list mt-4">
-                  {travelled.map((booking) => (
-                    <TripLedgerRow key={booking.id} booking={booking} />
-                  ))}
+                  {travelled.map((booking) =>
+                    booking.trip_legs && booking.booking_group ? (
+                      <TripGroupLedgerRow key={booking.id} trip={booking} journeys={booking.trip_legs} />
+                    ) : (
+                      <TripLedgerRow key={booking.id} booking={booking} />
+                    )
+                  )}
                 </ul>
               </section>
             )}

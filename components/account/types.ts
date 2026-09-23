@@ -43,6 +43,9 @@ export interface BookingListItem {
   included_km?: number | null
   leg_index?: number | null
   booking_group_id?: string | null
+  booking_group?: { group_number: string; leg_count: number } | null
+  /** Set on a round trip or multi-city row only: its journeys that matched the filters, in travel order. */
+  trip_legs?: BookingListItem[]
   vehicle_type?: { name: string; image_url?: string } | null
   booking_assignments?: Array<{
     status: string

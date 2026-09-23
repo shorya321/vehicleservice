@@ -20,7 +20,7 @@ interface BookingCardProps {
  * only speaks when it wants something, which is what makes the colour mean
  * anything when it does appear.
  */
-const STATUS_LABEL: Record<string, string> = {
+export const STATUS_LABEL: Record<string, string> = {
   confirmed: "Confirmed",
   completed: "Travelled",
   cancelled: "Cancelled",
@@ -33,14 +33,14 @@ const STATUS_LABEL: Record<string, string> = {
  * surprised not to see. "processing" is transient and the booking status
  * already covers it, so surfacing it just puts a second chip back on the row.
  */
-const PAYMENT_LABEL: Record<string, string> = {
+export const PAYMENT_LABEL: Record<string, string> = {
   pending: "Payment pending",
   failed: "Payment failed",
   refunded: "Refunded",
 }
 
 /** Sentence case for anything the maps above do not name, never raw DB casing. */
-function titleCase(value: string): string {
+export function titleCase(value: string): string {
   if (!value) return ""
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
 }
