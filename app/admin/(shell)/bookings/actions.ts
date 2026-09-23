@@ -42,6 +42,8 @@ export interface BookingFilters {
   dateTo?: string
   /** Customer email, matched partially and case-insensitively. */
   customerId?: string
+  /** One row per round trip / multi-city order. Only the list page sets it; CSV export keeps journeys. */
+  groupTrips?: boolean
   page?: number
   limit?: number
 }
@@ -83,6 +85,8 @@ export interface BookingWithCustomer {
   discount_amount?: number | null
   refund_due?: number | null
   booking_group?: { group_number: string; leg_count: number } | null
+  /** Set on the list's grouped row only: the trip's journeys that matched the filters, in travel order. */
+  trip_legs?: BookingWithCustomer[]
   // Nested related data
   customer?: {
     id: string
@@ -168,6 +172,7 @@ export async function getBookings(filters: BookingFilters = {}) {
     dateFrom,
     dateTo,
     customerId,
+    groupTrips = false,
     page = 1,
     limit = 10
   } = filters
@@ -183,6 +188,7 @@ export async function getBookings(filters: BookingFilters = {}) {
     fromDate: dateFrom,
     toDate: dateTo,
     customerEmail: customerId,
+    groupTrips,
     limit,
     offset: (page - 1) * limit,
   })

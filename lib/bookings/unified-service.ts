@@ -17,6 +17,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { Database } from '@/lib/supabase/types';
 import { bookingWallClockToUtc, toBookingTz } from '@/lib/utils/timezone';
 import { addDays, format } from 'date-fns';
+import { groupTripRows } from '@/lib/trips/group-list-rows';
 
 export type BookingType = 'customer' | 'business';
 
@@ -602,6 +603,8 @@ export interface UnifiedBookingsFilters {
   /** Customer bookings only; any value other than one way excludes business bookings. */
   tripType?: 'one_way' | 'round_trip' | 'multi_city' | 'hourly';
   search?: string;
+  /** One row per round trip / multi-city order (journeys in `trip_legs`); pagination and count follow. */
+  groupTrips?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -895,13 +898,17 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
       return 0;
     });
 
+  const listRows = filters?.groupTrips ? groupTripRows(allBookings) : allBookings;
+
   // Apply pagination if specified
   const paginatedBookings = filters?.limit
-    ? allBookings.slice(filters.offset || 0, (filters.offset || 0) + filters.limit)
-    : allBookings;
+    ? listRows.slice(filters.offset || 0, (filters.offset || 0) + filters.limit)
+    : listRows;
 
   return {
     bookings: paginatedBookings,
-    totalCount: (customerResult.count || 0) + (businessResult.count || 0),
+    totalCount: filters?.groupTrips
+      ? listRows.length
+      : (customerResult.count || 0) + (businessResult.count || 0),
   };
 }
