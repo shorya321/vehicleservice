@@ -1,23 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { User, LogOut, Star, Building2, Car, LayoutDashboard } from 'lucide-react'
+import { User } from 'lucide-react'
 import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { HEADER_PROFILE_COLUMNS, type HeaderProfile } from '@/components/layout/header-profile'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AccountMenu } from '@/components/layout/account-menu'
 import { CurrencySelector } from '@/components/currency/currency-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useCurrency } from '@/lib/currency/context'
@@ -234,91 +225,12 @@ export function PublicHeader({
             {mounted && allCurrencies.length > 1 && <CurrencySelector />}
 
             {mounted && user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Account menu" className="hidden lg:inline-flex h-10 w-10 rounded-full border border-[var(--graphite)] hover:border-[var(--gold)] transition-colors">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={profile?.avatar_url || undefined}
-                        alt={profile?.full_name || profile?.first_name || user?.email}
-                      />
-                      <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)]">
-                        {getInitials(profile)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[var(--black-warm)] border border-[var(--graphite)]">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-[var(--text-primary)]">
-                        {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
-                      </p>
-                      <p className="text-xs leading-none text-[var(--text-muted)]">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[rgba(var(--gold-rgb),0.1)]" />
-                  {(!profile?.role || profile.role === 'customer') ? (
-                    <>
-                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                        <Link href="/account?tab=personal">
-                          <User className="mr-2 h-4 w-4" />
-                          My Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                        <Link href="/account?tab=bookings">
-                          <Car className="mr-2 h-4 w-4" />
-                          My Bookings
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                        <Link href="/account?tab=reviews">
-                          <Star className="mr-2 h-4 w-4" />
-                          My Reviews
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                        <Link href="/become-vendor">
-                          <Building2 className="mr-2 h-4 w-4" />
-                          Partner With Us
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  ) : profile.role === 'admin' ? (
-                    <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                      <Link href="/admin/dashboard">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Go to Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  ) : profile.role === 'vendor' ? (
-                    <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                      <Link href="/vendor/dashboard">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Go to Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  ) : profile.role === 'business' ? (
-                    <DropdownMenuItem asChild className="text-[var(--text-primary)] focus:text-[var(--text-primary)] hover:bg-[rgba(var(--gold-rgb),0.1)] cursor-pointer">
-                      <Link href="/business/dashboard">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Go to Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  ) : null}
-                  <DropdownMenuSeparator className="bg-[rgba(var(--gold-rgb),0.1)]" />
-                  <DropdownMenuItem
-                    className="text-red-700 dark:text-red-400 focus:text-red-700 dark:focus:text-red-400 hover:bg-red-700/10 dark:hover:bg-red-500/10 cursor-pointer"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <AccountMenu
+                user={user}
+                profile={profile}
+                initials={getInitials(profile)}
+                onSignOut={handleSignOut}
+              />
             ) : mounted ? (
               <Link
                 href="/login"
