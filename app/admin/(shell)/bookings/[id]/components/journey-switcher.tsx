@@ -31,19 +31,19 @@ export function JourneySwitcher({ group, currentBookingId }: JourneySwitcherProp
   return (
     <nav
       aria-label="Journeys of this trip"
-      className="sticky top-0 z-20 -mx-1 bg-background/95 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className="sticky top-2 z-20 w-fit max-w-full"
     >
-      <ol className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-md bg-muted p-1 text-muted-foreground">
+      <ol className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-lg border bg-card p-1 text-muted-foreground shadow-sm">
         {tabs.map((tab) => (
           <li key={tab.id} className="shrink-0">
             <Link
               href={tab.href}
               aria-current={tab.current ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex items-center gap-2 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 tab.current
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'hover:text-foreground',
+                  ? 'border-primary bg-primary/10 text-foreground'
+                  : 'border-transparent hover:bg-accent hover:text-foreground',
               )}
             >
               <span className={cn('h-2 w-2 shrink-0 rounded-full', STATE_DOT[tab.state])} aria-hidden />
