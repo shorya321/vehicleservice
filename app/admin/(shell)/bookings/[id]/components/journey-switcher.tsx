@@ -43,7 +43,7 @@ export function JourneySwitcher({ group, currentBookingId }: JourneySwitcherProp
                 'flex items-center gap-2 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 tab.current
                   ? 'border-primary bg-primary/10 text-foreground'
-                  : 'border-transparent hover:bg-accent hover:text-foreground',
+                  : 'border-transparent hover:border-border hover:bg-primary/5 hover:text-foreground',
               )}
             >
               <span className={cn('h-2 w-2 shrink-0 rounded-full', STATE_DOT[tab.state])} aria-hidden />
