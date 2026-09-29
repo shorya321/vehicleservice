@@ -53,6 +53,14 @@ interface BookingDetailProps {
   booking: any // We'll define proper types later
 }
 
+// The current status stays disabled (re-selecting it is a no-op) but must read
+// as selected, not faded. Outline buttons are already gold-bordered in the admin
+// theme, so only a solid fill reads as selected.
+const actionButtonClass = (isCurrent: boolean): string =>
+  isCurrent
+    ? 'border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground disabled:opacity-100'
+    : ''
+
 export function BookingDetail({ booking }: BookingDetailProps) {
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
@@ -682,11 +690,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           <CardContent className="space-y-3">
             <div className="space-y-2">
               <p className="text-sm font-medium">Update Booking Status</p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setStatusToUpdate('confirmed')}
+                  className={actionButtonClass(booking.booking_status === 'confirmed')}
+                  aria-pressed={booking.booking_status === 'confirmed'}
                   disabled={booking.booking_status === 'confirmed' || isUpdating}
                 >
                   Confirm
@@ -695,6 +705,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   size="sm"
                   variant="outline"
                   onClick={() => setStatusToUpdate('completed')}
+                  className={actionButtonClass(booking.booking_status === 'completed')}
+                  aria-pressed={booking.booking_status === 'completed'}
                   disabled={booking.booking_status === 'completed' || isUpdating}
                 >
                   Complete
@@ -703,6 +715,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   size="sm"
                   variant="outline"
                   onClick={() => setStatusToUpdate('cancelled')}
+                  className={actionButtonClass(booking.booking_status === 'cancelled')}
+                  aria-pressed={booking.booking_status === 'cancelled'}
                   disabled={booking.booking_status === 'cancelled' || isUpdating}
                 >
                   Cancel
@@ -714,11 +728,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
 
             <div className="space-y-2">
               <p className="text-sm font-medium">Update Payment Status</p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setPaymentStatusToUpdate('completed')}
+                  className={actionButtonClass(booking.payment_status === 'completed')}
+                  aria-pressed={booking.payment_status === 'completed'}
                   disabled={booking.payment_status === 'completed' || isUpdating}
                 >
                   Paid
@@ -727,6 +743,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   size="sm"
                   variant="outline"
                   onClick={() => setPaymentStatusToUpdate('failed')}
+                  className={actionButtonClass(booking.payment_status === 'failed')}
+                  aria-pressed={booking.payment_status === 'failed'}
                   disabled={booking.payment_status === 'failed' || isUpdating}
                 >
                   Failed
@@ -735,6 +753,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   size="sm"
                   variant="outline"
                   onClick={() => setPaymentStatusToUpdate('refunded')}
+                  className={actionButtonClass(booking.payment_status === 'refunded')}
+                  aria-pressed={booking.payment_status === 'refunded'}
                   disabled={booking.payment_status === 'refunded' || isUpdating}
                 >
                   Refund
