@@ -36,6 +36,12 @@ interface AssignVendorModalProps {
   currentVehicleName?: string
   /** Other journeys of the same trip that have no vendor yet. Offered as a one-step assignment. */
   otherLegIds?: string[]
+  /** Names of `otherLegIds`, same order ("Outbound"), so the checkbox says which journeys it touches. */
+  otherLegLabels?: string[]
+  /** Whether the "also assign the other journeys" box starts ticked. */
+  defaultIncludeOtherLegs?: boolean
+  /** The journey this modal assigns, e.g. "Return", shown in the title. */
+  journeyLabel?: string | null
   onClose: () => void
 }
 
@@ -57,9 +63,13 @@ export function AssignVendorModal({
   currentDriverName,
   currentVehicleName,
   otherLegIds = [],
+  otherLegLabels,
+  defaultIncludeOtherLegs = true,
+  journeyLabel,
   onClose,
 }: AssignVendorModalProps) {
-  const [assignWholeTrip, setAssignWholeTrip] = useState(otherLegIds.length > 0)
+  const [assignWholeTrip, setAssignWholeTrip] = useState(defaultIncludeOtherLegs && otherLegIds.length > 0)
+  const namedOtherLegs = otherLegLabels?.length === otherLegIds.length ? otherLegLabels : null
   const router = useRouter()
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [selectedVendorId, setSelectedVendorId] = useState<string>(currentVendorId || '')
@@ -121,6 +131,7 @@ export function AssignVendorModal({
         <DialogHeader>
           <DialogTitle>
             {currentVendorId ? 'Reassign Vendor' : 'Assign Vendor'}
+            {journeyLabel ? ` · ${journeyLabel}` : ''}
           </DialogTitle>
           <DialogDescription>
             {isReassignment
@@ -271,8 +282,9 @@ export function AssignVendorModal({
               onCheckedChange={(checked) => setAssignWholeTrip(checked === true)}
             />
             <Label htmlFor="assign-whole-trip" className="text-sm font-normal leading-snug">
-              Also assign the other {otherLegIds.length} journey{otherLegIds.length === 1 ? '' : 's'} of this trip
-              to the same vendor
+              {namedOtherLegs
+                ? `Also assign ${namedOtherLegs.join(', ')} (no vendor yet) to the same vendor`
+                : `Also assign the other ${otherLegIds.length} journey${otherLegIds.length === 1 ? '' : 's'} of this trip to the same vendor`}
             </Label>
           </div>
         )}

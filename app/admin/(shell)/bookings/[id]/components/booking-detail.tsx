@@ -46,6 +46,7 @@ import { updateBookingStatus, updatePaymentStatus } from '../../actions'
 import { AssignVendorModal } from '../../components/assign-vendor-modal'
 import { toast } from 'sonner'
 import { hourlyEndTime, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
+import { journeyTabs, viewingJourney } from '@/lib/trips/journey-tabs'
 import { TripGroupCard } from './trip-group-card'
 
 interface BookingDetailProps {
@@ -58,6 +59,12 @@ export function BookingDetail({ booking }: BookingDetailProps) {
   const [statusToUpdate, setStatusToUpdate] = useState<'confirmed' | 'completed' | 'cancelled' | null>(null)
   const [showAssignVendorModal, setShowAssignVendorModal] = useState(false)
   const [paymentStatusToUpdate, setPaymentStatusToUpdate] = useState<'completed' | 'failed' | 'refunded' | null>(null)
+
+  // On a round trip or multi-city journey, name the journey a per-journey card acts on.
+  const journey = booking.trip_group ? viewingJourney(booking.trip_group, booking.id) : null
+  const scopeBadge = journey ? (
+    <Badge variant="outline" className="ml-2 align-middle font-normal">{journey} only</Badge>
+  ) : null
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
@@ -290,7 +297,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
         {/* Vendor Assignment */}
         <Card>
           <CardHeader>
-            <CardTitle>Vendor Assignment</CardTitle>
+            <CardTitle>Vendor Assignment{scopeBadge}</CardTitle>
             <CardDescription>Assigned vendor and resources</CardDescription>
           </CardHeader>
           <CardContent>
@@ -601,7 +608,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
         {/* Payment Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Payment Information</CardTitle>
+            <CardTitle>Payment Information{scopeBadge}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -670,7 +677,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
         {/* Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Actions</CardTitle>
+            <CardTitle>Actions{scopeBadge}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
@@ -782,18 +789,20 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           (a: any) => ['pending', 'accepted'].includes(a.status)
         )
         const driverAssigned = activeAssignment?.status === 'accepted' && !!activeAssignment?.driver_id
+        // Same set as before: the trip's other journeys with no vendor that are not cancelled.
+        const otherLegs = booking.trip_group
+          ? journeyTabs(booking.trip_group, booking.id).filter((tab) => !tab.current && tab.state === 'unassigned')
+          : []
         return (
           <AssignVendorModal
             bookingId={booking.id}
             bookingType={booking.bookingType || 'customer'}
             currentVendorId={activeAssignment?.vendor_id}
             vehicleTypeId={booking.vehicle_type_id}
-            otherLegIds={
-              (booking.trip_group?.legs ?? [])
-                .filter((leg: { id: string; assignment_status: string | null; booking_status: string }) =>
-                  leg.id !== booking.id && !leg.assignment_status && leg.booking_status !== 'cancelled')
-                .map((leg: { id: string }) => leg.id)
-            }
+            otherLegIds={otherLegs.map((tab) => tab.id)}
+            otherLegLabels={otherLegs.map((tab) => tab.label)}
+            defaultIncludeOtherLegs={!activeAssignment}
+            journeyLabel={journey}
             hasDriverAssigned={driverAssigned}
             currentDriverName={
               driverAssigned && activeAssignment?.driver

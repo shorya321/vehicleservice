@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { format } from 'date-fns'
-import { Building2, Calendar, ChevronDown, ChevronRight, Eye, MapPin, MoreHorizontal, User, UserPlus } from 'lucide-react'
+import { Building2, Calendar, ChevronDown, ChevronRight, Eye, MapPin, MoreHorizontal, User } from 'lucide-react'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -43,8 +43,6 @@ interface TripGroupRowProps {
   onToggle: () => void
   onSelect: (checked: boolean) => void
   onOpen: () => void
-  /** Assign the journeys that still need a vendor. Absent when every journey has one (reassign per journey). */
-  onAssign?: () => void
   statusBadge: (status: string) => ReactNode
   paymentBadge: (status: string) => ReactNode
 }
@@ -85,7 +83,6 @@ export function TripGroupRow({
   onToggle,
   onSelect,
   onOpen,
-  onAssign,
   statusBadge,
   paymentBadge,
 }: TripGroupRowProps) {
@@ -185,19 +182,13 @@ export function TripGroupRow({
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            {onAssign && (
-              <DropdownMenuItem onClick={onAssign}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Assign Vendor
-              </DropdownMenuItem>
-            )}
             <DropdownMenuItem onClick={onToggle}>
               <Chevron className="mr-2 h-4 w-4" />
               {expanded ? 'Hide journeys' : 'Show journeys'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-              Reassign, status, payment and delete are per journey
+              Assign, reassign, status, payment and delete are per journey
             </DropdownMenuLabel>
           </DropdownMenuContent>
         </DropdownMenu>
