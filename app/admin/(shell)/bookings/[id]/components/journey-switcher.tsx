@@ -31,26 +31,24 @@ export function JourneySwitcher({ group, currentBookingId }: JourneySwitcherProp
   return (
     <nav
       aria-label="Journeys of this trip"
-      className="sticky top-0 z-20 -mx-1 bg-background/95 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className="sticky top-0 z-20 -mx-1 bg-background/95 px-1 pt-2 backdrop-blur supports-[backdrop-filter]:bg-background/80"
     >
-      <ol className="flex flex-wrap gap-2">
+      <ol className="flex overflow-x-auto shadow-[inset_0_-1px_0_hsl(var(--border))]">
         {tabs.map((tab) => (
-          <li key={tab.id}>
+          <li key={tab.id} className="shrink-0">
             <Link
               href={tab.href}
               aria-current={tab.current ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition-colors',
                 tab.current
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'hover:bg-muted',
+                  ? 'border-primary font-semibold text-foreground'
+                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
               )}
             >
               <span className={cn('h-2 w-2 shrink-0 rounded-full', STATE_DOT[tab.state])} aria-hidden />
-              <span className="font-medium">{tab.label}</span>
-              <span className={cn('font-mono text-xs', tab.current ? 'opacity-80' : 'text-muted-foreground')}>
-                {tab.reference}
-              </span>
+              <span>{tab.label}</span>
+              <span className="font-mono text-xs font-normal text-muted-foreground">{tab.reference}</span>
               <span className="sr-only">{STATE_TEXT[tab.state]}</span>
             </Link>
           </li>
