@@ -36,7 +36,8 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
             <div>
               <CardTitle>{tripTypeLabel({ trip_type: group.trip_type })} {group.group_number}</CardTitle>
               <CardDescription>
-                {group.leg_count} journeys paid together. Assign a vendor to each journey.
+                {group.leg_count} journeys paid together. Each journey has its own vendor; the
+                actions on this page apply to the journey you are viewing.
               </CardDescription>
             </div>
           </div>
@@ -56,11 +57,14 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{label}</span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {leg.trip_number || leg.booking_number}
+                    </span>
                     {isCurrent ? (
-                      <Badge variant="secondary">This booking</Badge>
+                      <Badge>Viewing</Badge>
                     ) : (
                       <Link href={`/admin/bookings/${leg.id}`} className="text-sm text-primary hover:underline">
-                        {leg.trip_number || leg.booking_number}
+                        Open
                       </Link>
                     )}
                   </div>

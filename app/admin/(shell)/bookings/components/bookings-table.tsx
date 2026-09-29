@@ -230,8 +230,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           selected={selectedCount === 0 ? false : selectedCount === legs.length ? true : 'indeterminate'}
           onToggle={() => toggleTrip(groupId)}
           onSelect={(checked) => handleSelectMany(legs.map((leg) => leg.id), checked)}
-          onOpen={() => router.push(`/admin/bookings/${legs[0].id}`)}
-          onAssign={needsVendor ? () => setAssignModalBookingId(needsVendor.id) : undefined}
+          onOpen={() => router.push(`/admin/bookings/${(needsVendor ?? legs[0]).id}`)}
           statusBadge={getStatusBadge}
           paymentBadge={getPaymentStatusBadge}
         />
