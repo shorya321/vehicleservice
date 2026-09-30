@@ -66,6 +66,12 @@ import { toast } from 'sonner';
 import { EditDateTimeModal } from './edit-datetime-modal';
 import { canModifyBookingDateTime } from '@/lib/business/booking-utils';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
+import {
+  flattenBookingEntries,
+  groupQuotationBookings,
+  type QuotationBookingLink,
+} from '@/lib/business/bookings/group-quotation-bookings';
+import { QuotationBookingGroup } from './quotation-booking-group';
 
 interface Booking {
   id: string;
@@ -93,6 +99,11 @@ interface BookingsPageContentProps {
    * cancelled. Shown as a disabled action rather than a click that fails.
    */
   quotationBookingIds?: string[];
+  /**
+   * Which quotation each converted booking came from. Bookings sharing a
+   * quotation are shown together as one group.
+   */
+  quotationLinks?: QuotationBookingLink[];
 }
 
 // Map booking status to UI status
@@ -120,6 +131,7 @@ export function BookingsPageContent({
   totalCount,
   pendingCount,
   quotationBookingIds = [],
+  quotationLinks = [],
 }: BookingsPageContentProps) {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
@@ -165,11 +177,19 @@ export function BookingsPageContent({
     setCurrentPage(1);
   }, [searchQuery, statusFilter]);
 
+  // Bookings converted from one quotation are one list entry, so a page holds
+  // ten entries and a quotation's trips never split across two pages.
+  const listEntries = useMemo(
+    () => groupQuotationBookings(filteredBookings, quotationLinks),
+    [filteredBookings, quotationLinks]
+  );
+
   // Pagination calculations
-  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const totalPages = Math.ceil(listEntries.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, filteredBookings.length);
-  const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + itemsPerPage, listEntries.length);
+  const paginatedEntries = listEntries.slice(startIndex, endIndex);
+  const paginatedBookings = flattenBookingEntries(paginatedEntries);
 
   // Generate page numbers for pagination
   const getPageNumbers = () => {
@@ -321,6 +341,34 @@ export function BookingsPageContent({
       setBookingToDelete(null);
     }
   };
+
+  const renderTableRow = (booking: Booking, index: number) => (
+    <TableRow
+      key={booking.id}
+      booking={booking}
+      index={index}
+      prefersReducedMotion={prefersReducedMotion}
+      isSelected={selectedBookings.has(booking.id)}
+      fromQuotation={quotationBookings.has(booking.id)}
+      onToggleSelect={() => toggleSelectBooking(booking.id)}
+      onDelete={() => handleDeleteSingle(booking.id)}
+      onRefresh={() => router.refresh()}
+    />
+  );
+
+  const renderMobileCard = (booking: Booking, index: number) => (
+    <MobileBookingCard
+      key={booking.id}
+      booking={booking}
+      index={index}
+      prefersReducedMotion={prefersReducedMotion}
+      isSelected={selectedBookings.has(booking.id)}
+      fromQuotation={quotationBookings.has(booking.id)}
+      onToggleSelect={() => toggleSelectBooking(booking.id)}
+      onDelete={() => handleDeleteSingle(booking.id)}
+      onRefresh={() => router.refresh()}
+    />
+  );
 
   // Refined animations - faster, subtler
   const containerVariants = {
@@ -636,45 +684,49 @@ export function BookingsPageContent({
 
                   {/* Table Rows */}
                   <div className="divide-y divide-border">
-                    {paginatedBookings.map((booking, index) => (
-                      <TableRow
-                        key={booking.id}
-                        booking={booking}
-                        index={index}
-                        prefersReducedMotion={prefersReducedMotion}
-                        isSelected={selectedBookings.has(booking.id)}
-                        fromQuotation={quotationBookings.has(booking.id)}
-                        onToggleSelect={() => toggleSelectBooking(booking.id)}
-                        onDelete={() => handleDeleteSingle(booking.id)}
-                        onRefresh={() => router.refresh()}
-                      />
-                    ))}
+                    {paginatedEntries.map((entry, index) =>
+                      entry.kind === 'single' ? (
+                        renderTableRow(entry.booking, index)
+                      ) : (
+                        <QuotationBookingGroup
+                          key={entry.quotationId}
+                          variant="table"
+                          quotationNumber={entry.quotationNumber}
+                          bookings={entry.bookings}
+                          totalTrips={entry.totalTrips}
+                          renderStatus={(status) => <StatusBadge status={mapBookingStatus(status)} />}
+                          renderBooking={renderTableRow}
+                        />
+                      )
+                    )}
                   </div>
                 </div>
 
                 {/* Mobile Cards */}
                 <div className="md:hidden p-4 space-y-3">
-                  {paginatedBookings.map((booking, index) => (
-                    <MobileBookingCard
-                      key={booking.id}
-                      booking={booking}
-                      index={index}
-                      prefersReducedMotion={prefersReducedMotion}
-                      isSelected={selectedBookings.has(booking.id)}
-                      fromQuotation={quotationBookings.has(booking.id)}
-                      onToggleSelect={() => toggleSelectBooking(booking.id)}
-                      onDelete={() => handleDeleteSingle(booking.id)}
-                      onRefresh={() => router.refresh()}
-                    />
-                  ))}
+                  {paginatedEntries.map((entry, index) =>
+                    entry.kind === 'single' ? (
+                      renderMobileCard(entry.booking, index)
+                    ) : (
+                      <QuotationBookingGroup
+                        key={entry.quotationId}
+                        variant="card"
+                        quotationNumber={entry.quotationNumber}
+                        bookings={entry.bookings}
+                        totalTrips={entry.totalTrips}
+                        renderStatus={(status) => <StatusBadge status={mapBookingStatus(status)} />}
+                        renderBooking={renderMobileCard}
+                      />
+                    )
+                  )}
                 </div>
 
                 {/* Pagination */}
-                {filteredBookings.length > 0 && (
+                {listEntries.length > 0 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4 border-t border-border">
                     <p className="text-sm text-muted-foreground">
                       Showing <span className="font-medium text-foreground">{startIndex + 1}-{endIndex}</span> of{' '}
-                      <span className="font-medium text-foreground">{filteredBookings.length}</span> bookings
+                      <span className="font-medium text-foreground">{listEntries.length}</span> bookings
                     </p>
                     <div className="flex items-center gap-1">
                       {/* Previous Button */}
