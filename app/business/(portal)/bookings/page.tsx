@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Plus, CalendarCheck } from 'lucide-react';
 import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
+import type { QuotationBookingLink } from '@/lib/business/bookings/group-quotation-bookings';
 import { BookingsPageContent } from './components/bookings-page-content';
 
 export const metadata: Metadata = {
@@ -95,32 +96,44 @@ export default async function BusinessBookingsPage() {
 
   const { count: pendingCount } = await pendingQuery;
 
-  // Which of these bookings were converted from a quotation. Those are held by an
-  // ON DELETE RESTRICT foreign key and can never be deleted, so the list disables
-  // the action rather than letting the click fail at the API.
+  // Which of these bookings were converted from a quotation, and from which one.
+  // Those bookings are held by an ON DELETE RESTRICT foreign key and can never be
+  // deleted, so the list disables the action rather than letting the click fail at
+  // the API. The quotation id and trip order also let the list show every booking
+  // of one quotation together as a single group.
   //
   // Read with the admin client on purpose. The only RLS policy on
   // business_quotation_items is creator-scoped (owner, or the quotation's own
   // creator), so a staff member would see nothing here and would be shown a Delete
-  // button that cannot work. The filter is the ids already loaded for this tenant
-  // and the projection is a booking id, so nothing about the quotation leaks.
+  // button that cannot work. The filter is the ids already loaded for this tenant,
+  // and the projection adds only the quotation number, which the booking already
+  // carries as its reference_number, so nothing new about the quotation leaks.
   const loadedIds = (bookings || []).map((b) => b.id);
-  let quotationBookingIds: string[] = [];
+  let quotationLinks: QuotationBookingLink[] = [];
 
   if (loadedIds.length > 0) {
-    const { data: quotationLinks, error: quotationLinkError } = await createAdminClient()
+    const { data: linkRows, error: quotationLinkError } = await createAdminClient()
       .from('business_quotation_items')
-      .select('converted_booking_id')
+      .select('converted_booking_id, quotation_id, sort_order, quotation:business_quotations!bqi_quotation_fk (quotation_number)')
       .in('converted_booking_id', loadedIds);
 
     if (quotationLinkError) {
       // Not fatal: the API refuses the delete anyway, and after the ordering fix
-      // that refusal no longer emails anyone.
+      // that refusal no longer emails anyone. The list just shows ungrouped rows.
       console.error('Failed to read quotation links for bookings list:', quotationLinkError);
     } else {
-      quotationBookingIds = (quotationLinks || [])
-        .map((q) => q.converted_booking_id)
-        .filter((id): id is string => Boolean(id));
+      quotationLinks = (linkRows || []).flatMap((q) =>
+        q.converted_booking_id
+          ? [
+              {
+                bookingId: q.converted_booking_id,
+                quotationId: q.quotation_id,
+                quotationNumber: q.quotation?.quotation_number ?? null,
+                sortOrder: q.sort_order,
+              },
+            ]
+          : []
+      );
     }
   }
 
@@ -129,7 +142,8 @@ export default async function BusinessBookingsPage() {
       bookings={bookings || []}
       totalCount={totalCount || 0}
       pendingCount={pendingCount || 0}
-      quotationBookingIds={quotationBookingIds}
+      quotationBookingIds={quotationLinks.map((l) => l.bookingId)}
+      quotationLinks={quotationLinks}
     />
   );
 }
