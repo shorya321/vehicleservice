@@ -190,7 +190,7 @@ export function WalletPageContent({
 
   function handlePaymentSuccess() {
     setIsPaymentModalOpen(false);
-    toast.success('Wallet recharged successfully!');
+    // The recharge modal confirms the credit and owns the toast.
   }
 
   function handleAddCreditsClick() {
