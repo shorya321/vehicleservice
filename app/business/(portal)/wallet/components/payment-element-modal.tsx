@@ -26,6 +26,7 @@ import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/currency-converter'
 import type { CurrencyCode } from '@/lib/utils/currency-converter'
 import { cn } from '@/lib/utils'
+import { confirmWalletCredit } from '../lib/confirm-wallet-credit'
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
@@ -74,7 +75,7 @@ function CheckoutForm({ amount, currency, clientSecret, onSuccess, onClose }: Ch
       }
 
       // Confirm the payment
-      const { error: confirmError } = await stripe.confirmPayment({
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
         elements,
         clientSecret,
         confirmParams: {
@@ -89,11 +90,16 @@ function CheckoutForm({ amount, currency, clientSecret, onSuccess, onClose }: Ch
         return
       }
 
-      // Payment succeeded
-      toast.success('Payment successful! Your wallet has been recharged.')
+      // Payment succeeded. The credit itself lands from the webhook, so confirm it
+      // reached the wallet before saying so.
       onSuccess?.()
       onClose()
       router.refresh()
+      if (paymentIntent?.id) {
+        void confirmWalletCredit(paymentIntent.id, () => router.refresh())
+      } else {
+        toast.success('Payment received. Your wallet will update shortly.')
+      }
     } catch (error) {
       console.error('Payment error:', error)
       setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred')

@@ -26,6 +26,7 @@ import type { CurrencyCode } from '@/lib/utils/currency-converter'
 import { PaymentMethodsSelector } from './payment-methods-selector'
 import { PaymentElementModal } from './payment-element-modal'
 import { cn } from '@/lib/utils'
+import { confirmWalletCredit } from '../lib/confirm-wallet-credit'
 
 interface WalletRechargeModalProps {
   open: boolean
@@ -93,9 +94,15 @@ export function WalletRechargeModal({
         return
       }
 
-      // Success
+      // Charged. The credit itself lands from the webhook, so confirm it reached the
+      // wallet before saying so.
       setFlowState('success')
-      toast.success('Payment successful! Your wallet has been recharged.')
+      const paymentIntentId: string | undefined = result.data?.payment_intent_id
+      if (paymentIntentId) {
+        void confirmWalletCredit(paymentIntentId, () => router.refresh())
+      } else {
+        toast.success('Payment received. Your wallet will update shortly.')
+      }
 
       // Wait a moment to show success state, then close
       setTimeout(() => {
@@ -117,9 +124,9 @@ export function WalletRechargeModal({
     setShowPaymentElement(true)
   }
 
+  // PaymentElementModal already confirms the credit and owns the toast.
   const handleNewCardSuccess = () => {
     setFlowState('success')
-    toast.success('Payment successful! Your wallet has been recharged.')
 
     setTimeout(() => {
       onSuccess?.()
@@ -168,7 +175,7 @@ export function WalletRechargeModal({
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">Payment Successful!</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Your wallet has been recharged
+                    Your wallet balance is updating
                   </p>
                 </div>
               </div>

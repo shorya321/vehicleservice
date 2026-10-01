@@ -120,6 +120,13 @@ export const walletRechargeSchema = z.object({
 export type WalletRechargeInput = z.infer<typeof walletRechargeSchema>;
 
 /**
+ * Wallet PaymentIntent verification (the webhook's backup path)
+ */
+export const walletIntentVerifySchema = z.object({
+  payment_intent_id: z.string().regex(/^pi_[A-Za-z0-9]+$/, 'Invalid payment intent id'),
+});
+
+/**
  * Admin Credit Adjustment Schema
  */
 export const adminCreditAdjustmentSchema = z.object({

@@ -1647,3 +1647,85 @@ button.auth-input svg {
     animation: none;
   }
 }
+
+/* ============================================
+   TOASTS (Sonner)
+   The shared <Toaster> in app/layout.tsx paints every toast in the platform's
+   fixed luxury palette, whatever the portal's mode or tenant brand, and a
+   loading toast gets no type class at all, so it fell back to Sonner's grey
+   defaults. Inside the portal, repaint them from the tenant theme tokens,
+   which swap with dark/light mode.
+
+   Scoped to [data-business-branding]: Next keeps this stylesheet loaded after
+   a client navigation out of the portal, but the provider removes the
+   attribute on unmount, so other sections keep the luxury toast. Two
+   attributes plus a class outrank the global `.luxury-toast` !important rules.
+   ============================================ */
+
+[data-business-branding] [data-sonner-toast].luxury-toast {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='success'].luxury-toast {
+  border-color: color-mix(in srgb, var(--business-success) 45%, transparent) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='error'].luxury-toast {
+  border-color: hsl(var(--destructive) / 0.5) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='warning'].luxury-toast {
+  border-color: color-mix(in srgb, var(--business-warning) 50%, transparent) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='info'].luxury-toast,
+[data-business-branding] [data-sonner-toast][data-type='loading'].luxury-toast {
+  border-color: hsl(var(--primary) / 0.5) !important;
+}
+
+[data-business-branding] [data-sonner-toast] .luxury-toast-title {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+[data-business-branding] [data-sonner-toast] .luxury-toast-description {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='success'] [data-icon] {
+  color: var(--business-success) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='error'] [data-icon] {
+  color: hsl(var(--destructive)) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='warning'] [data-icon] {
+  color: var(--business-warning) !important;
+}
+
+[data-business-branding] [data-sonner-toast][data-type='info'] [data-icon],
+[data-business-branding] [data-sonner-toast][data-type='loading'] [data-icon] {
+  color: hsl(var(--primary)) !important;
+}
+
+[data-business-branding] [data-sonner-toast] .sonner-loading-bar {
+  background: hsl(var(--primary)) !important;
+}
+
+[data-business-branding] [data-sonner-toast] .luxury-toast-action {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: transparent !important;
+}
+
+[data-business-branding] [data-sonner-toast] .luxury-toast-close {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+[data-business-branding] [data-sonner-toast] .luxury-toast-close:hover {
+  color: hsl(var(--card-foreground)) !important;
+}
