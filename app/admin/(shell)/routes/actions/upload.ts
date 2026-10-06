@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto"
 
 import { createAdminClient } from "@/lib/supabase/admin"
+import { requireAdminAction } from "@/lib/auth/admin-action"
 
 /** Every admin-managed content image lives in this bucket under a folder prefix. */
 const BUCKET = 'vehicles'
@@ -19,6 +20,13 @@ export async function uploadRouteImage(
   routeSlug: string,
   imageBase64: string
 ): Promise<{ imageUrl: string | null; error: string | null }> {
+  // A "use server" export is a public endpoint, and this one writes with the
+  // service-role client, so it checks the caller itself.
+  const auth = await requireAdminAction()
+  if ('error' in auth) {
+    return { imageUrl: null, error: auth.error }
+  }
+
   const adminSupabase = createAdminClient()
 
   try {

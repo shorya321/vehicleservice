@@ -29,9 +29,8 @@ interface SearchRoutePageProps {
   }>
 }
 
-export async function generateMetadata({ params, searchParams }: SearchRoutePageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: SearchRoutePageProps): Promise<Metadata> {
   const { routeSlug } = await params
-  const sp = await searchParams
   const parsed = parseRouteSlug(routeSlug)
 
   if (!parsed) {
@@ -49,8 +48,10 @@ export async function generateMetadata({ params, searchParams }: SearchRoutePage
   return {
     title: `Transfer from ${originName} to ${destName}`,
     description: `Book luxury transfer from ${originName} to ${destName}. Compare vehicles and prices for your journey.`,
-    // Every trip variant is the same route: index the one-way page only.
-    ...(sp.trip ? { robots: { index: false, follow: true } } : {}),
+    // Results for one date and party size: every date, passenger count and
+    // trip type is its own URL showing the same route, so none of them is
+    // indexed. `follow` keeps crawlers walking on to the pages linked here.
+    robots: { index: false, follow: true },
   }
 }
 
