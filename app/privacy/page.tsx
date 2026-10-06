@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/seo/page-metadata'
+import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { PrivacyHero } from './components/privacy-hero'
 import { PrivacyContent } from './components/privacy-content'
 import { TableOfContents, type TocSection } from '@/components/legal/table-of-contents'
@@ -20,15 +22,8 @@ const sections: TocSection[] = [
   { id: 'contact-us', title: 'Contact us' },
 ]
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy | Infinia Transfers',
-  description:
-    'How Infinia Transfers collects, uses, and protects your personal data when you book private airport and city transfers.',
-  openGraph: {
-    title: 'Privacy Policy | Infinia Transfers',
-    description:
-      'How Infinia Transfers collects, uses, and protects your personal data.',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/privacy', PAGE_FALLBACKS['/privacy'])
 }
 
 export default function PrivacyPage() {

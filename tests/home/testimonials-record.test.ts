@@ -35,8 +35,12 @@ const QUOTE: HomeReview = {
   created_at: '2026-03-10T08:00:00.000Z',
 }
 
-const render = (props: TestimonialsRecordProps): string =>
-  renderToStaticMarkup(jsx(TestimonialsRecord, props))
+import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
+
+const render = (props: Omit<TestimonialsRecordProps, 'content'>): string =>
+  renderToStaticMarkup(
+    jsx(TestimonialsRecord, { ...props, content: DEFAULT_HOME_CONTENT.testimonials })
+  )
 
 const SAMPLE_COPY = ['Rania', '1,284', 'completed transfers', '4.9']
 

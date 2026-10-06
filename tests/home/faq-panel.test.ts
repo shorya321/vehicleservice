@@ -6,10 +6,14 @@
 import { jsx } from 'react/jsx-runtime'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FaqPanel } from '@/components/home/faq-panel'
-import { FAQ_ITEMS } from '@/components/home/faq-data'
+import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
+
+const FAQ_ITEMS = DEFAULT_HOME_CONTENT.faq.items
 
 const render = (openIndex: number | null): string =>
-  renderToStaticMarkup(jsx(FaqPanel, { openIndex, onToggle: () => {} }))
+  renderToStaticMarkup(
+    jsx(FaqPanel, { openIndex, onToggle: () => {}, content: DEFAULT_HOME_CONTENT.faq })
+  )
 
 /** Icon path data carries arbitrary characters, so drop it first. */
 const withoutSvg = (html: string): string => html.replace(/<svg[\s\S]*?<\/svg>/g, '')

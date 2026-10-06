@@ -26,7 +26,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Customer Reviews - Infinia Transfers',
+  title: 'Customer Reviews',
   description: 'Read what our customers say about their transfer experiences',
 }
 

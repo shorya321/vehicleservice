@@ -2209,6 +2209,56 @@ export type Database = {
           },
         ]
       }
+      pages: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          kind: string
+          published_at: string | null
+          slug: string
+          status: string
+          template: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          template: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          template?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pages_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       password_reset_tokens: {
         Row: {
           business_account_id: string | null
@@ -2640,6 +2690,88 @@ export type Database = {
             columns: ["origin_location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_meta: {
+        Row: {
+          canonical_path: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          nofollow: boolean
+          noindex: boolean
+          og_image_url: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          canonical_path?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          nofollow?: boolean
+          noindex?: boolean
+          og_image_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          canonical_path?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          nofollow?: boolean
+          noindex?: boolean
+          og_image_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_meta_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_settings: {
+        Row: {
+          config: Json
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

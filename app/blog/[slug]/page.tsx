@@ -30,7 +30,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = post.meta_description || post.excerpt || ''
 
   return {
-    title: `${title} | Infinia Transfers Blog`,
+    // An admin meta title is the full title, used as typed; the post title
+    // alone gets the site suffix from the root template.
+    title: post.meta_title ? { absolute: post.meta_title } : post.title,
     description,
     keywords: post.meta_keywords || undefined,
     openGraph: {

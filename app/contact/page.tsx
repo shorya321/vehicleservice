@@ -1,19 +1,14 @@
 import { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/seo/page-metadata'
+import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { ContactHero } from './components/contact-hero'
 import { ContactForm } from './components/contact-form'
 import { ContactInfo } from './components/contact-info'
 import { ContactPromises } from './components/contact-promises'
 import { ContactFaq } from './components/contact-faq'
 
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description:
-    'Get in touch with Infinia Transfers for luxury vehicle transfer services in Dubai. Our concierge team is available around the clock.',
-  openGraph: {
-    title: 'Contact Us | Infinia Transfers',
-    description:
-      'Have a question or need assistance? Reach out to our concierge team for premium transfer services.',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/contact', PAGE_FALLBACKS['/contact'])
 }
 
 export default function ContactPage() {

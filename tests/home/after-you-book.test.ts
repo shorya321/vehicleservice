@@ -8,7 +8,10 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { AfterYouBookPlate } from '@/components/home/after-you-book/after-you-book-plate'
 import { HUB, ZONES, arcPath, project } from '@/components/home/after-you-book/zone-geometry'
 
-const render = (): string => renderToStaticMarkup(jsx(AfterYouBookPlate, {}))
+import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
+
+const render = (): string =>
+  renderToStaticMarkup(jsx(AfterYouBookPlate, { content: DEFAULT_HOME_CONTENT.after_you_book }))
 
 const withoutSvg = (html: string): string => html.replace(/<svg[\s\S]*?<\/svg>/g, '')
 

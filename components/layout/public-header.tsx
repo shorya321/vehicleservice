@@ -240,9 +240,10 @@ export function PublicHeader({
                 Sign In
               </Link>
             ) : null}
-            {/* Book CTA. Desktop only */}
+            {/* Book CTA. Desktop only. Lands on the hero search form;
+                #services is the Onboard extras section, not a booking surface. */}
             <Link
-              href="/#services"
+              href="/#hero"
               className="btn-book-header hidden lg:inline-flex"
             >
               Book <span aria-hidden="true" className="btn-book-header-arrow">&rarr;</span>

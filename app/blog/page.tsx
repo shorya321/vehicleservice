@@ -11,7 +11,7 @@ import { BlogMotionSection } from "./components/blog-motion-wrapper"
 import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Blog | Infinia Transfers - Luxury Transportation Insights",
+  title: "Blog: Luxury Transportation Insights",
   description: "Discover travel tips, luxury transportation insights, and destination guides from Infinia Transfers.",
   openGraph: {
     title: "Blog | Infinia Transfers",

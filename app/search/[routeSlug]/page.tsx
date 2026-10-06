@@ -47,7 +47,7 @@ export async function generateMetadata({ params, searchParams }: SearchRoutePage
   const destName = resolved.destination.name
 
   return {
-    title: `Transfer from ${originName} to ${destName} | Infinia Transfers`,
+    title: `Transfer from ${originName} to ${destName}`,
     description: `Book luxury transfer from ${originName} to ${destName}. Compare vehicles and prices for your journey.`,
     // Every trip variant is the same route: index the one-way page only.
     ...(sp.trip ? { robots: { index: false, follow: true } } : {}),

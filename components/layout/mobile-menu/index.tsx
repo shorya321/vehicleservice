@@ -191,7 +191,7 @@ export function MobileMenu({
             anywhere in the interface: not in the bar, not in the menu. */}
         <div className="relative shrink-0 border-t border-[rgba(var(--gold-rgb),0.1)] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <Link
-            href="/#services"
+            href="/#hero"
             onClick={close}
             className="btn-cta-header flex h-12 w-full"
           >

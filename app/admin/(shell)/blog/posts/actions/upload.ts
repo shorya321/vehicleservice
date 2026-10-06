@@ -3,11 +3,22 @@
 import { randomUUID } from "node:crypto"
 
 import { createAdminClient } from "@/lib/supabase/admin"
+import { requireAdminAction } from "@/lib/auth/admin-action"
 
+/**
+ * Exported from a "use server" file, so it is a public endpoint in its own
+ * right, not only a helper of the blog actions: it must check the caller
+ * itself, since it writes with the service-role client.
+ */
 export async function uploadBlogImage(
   slug: string,
   imageBase64: string
 ) {
+  const auth = await requireAdminAction()
+  if ('error' in auth) {
+    return { error: auth.error, imageUrl: null }
+  }
+
   const adminSupabase = createAdminClient()
 
   try {
@@ -17,6 +28,9 @@ export async function uploadBlogImage(
     }
 
     const mimeType = matches[1]
+    if (!mimeType.startsWith('image/')) {
+      return { error: 'Invalid image format', imageUrl: null }
+    }
     const base64Data = matches[2]
     const fileExt = mimeType.split('/')[1] || 'jpg'
 

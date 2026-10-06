@@ -1,35 +1,13 @@
 "use client"
 import { motion, useReducedMotion } from "motion/react"
 
-interface Benefit {
-  index: string
-  title: string
-  body: string
-  meta: string
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
+
+interface TransportationBenefitsProps {
+  content: HomeContent['benefits']
 }
 
-const benefits: Benefit[] = [
-  {
-    index: "01",
-    title: "Booked in under two minutes.",
-    body: "Search a route, pick a vehicle, sign up free at checkout. Every return booking after that is faster, with no ads or upsells before confirmation.",
-    meta: "Search → Select → Confirm",
-  },
-  {
-    index: "02",
-    title: "Met at the door, not at a sign.",
-    body: "Your chauffeur arrives at the agreed gate, terminal, or address. For airport pickups, flight tracking adjusts the meet time without you having to write.",
-    meta: "Chauffeur at the gate",
-  },
-  {
-    index: "03",
-    title: "One price, in the currency you booked.",
-    body: "Fixed pricing at the moment of booking. No surge, no tip prompt, no waiting-time surcharge for traffic on the airport road.",
-    meta: "Multi-currency pricing",
-  },
-]
-
-export function TransportationBenefits() {
+export function TransportationBenefits({ content }: TransportationBenefitsProps) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -56,22 +34,20 @@ export function TransportationBenefits() {
         >
           <div className="editorial-eyebrow editorial-eyebrow--pill">
             <i aria-hidden="true" />
-            The promise
+            {content.eyebrow}
           </div>
           <h2 id="benefits-heading" className="editorial-section-title mt-5">
-            Specifics, not adjectives.
+            {content.title}
           </h2>
-          <p className="editorial-body mt-6">
-            Three things we hold ourselves to on every transfer. Each one is measurable.
-          </p>
+          {content.body && <p className="editorial-body mt-6">{content.body}</p>}
         </motion.header>
 
         {/* Straight 1 to 3 at 900px, with no 2-col step: three items in two
             columns leaves one of them stranded on its own row. */}
         <ol className="mt-12 grid grid-cols-1 gap-5 min-[900px]:grid-cols-3">
-          {benefits.map((p, index) => (
+          {content.items.map((p, index) => (
             <motion.li
-              key={p.index}
+              key={index}
               className="promise-card"
               initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -82,10 +58,10 @@ export function TransportationBenefits() {
               }}
               viewport={{ once: true, amount: 0.2 }}
             >
-              <span className="promise-card__index numeric">{p.index}</span>
+              <span className="promise-card__index numeric">{String(index + 1).padStart(2, '0')}</span>
               <h3 className="editorial-list-title">{p.title}</h3>
               <p className="editorial-list-body">{p.body}</p>
-              <span className="promise-card__foot editorial-list-meta">{p.meta}</span>
+              {p.meta && <span className="promise-card__foot editorial-list-meta">{p.meta}</span>}
             </motion.li>
           ))}
         </ol>

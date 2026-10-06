@@ -7,7 +7,10 @@ import { jsx } from 'react/jsx-runtime'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { JoinCommunityPlate } from '@/components/home/join-community-plate'
 
-const render = (): string => renderToStaticMarkup(jsx(JoinCommunityPlate, {}))
+import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
+
+const render = (): string =>
+  renderToStaticMarkup(jsx(JoinCommunityPlate, { content: DEFAULT_HOME_CONTENT.account }))
 
 /** Icon path data carries arbitrary characters, so drop it first. */
 const withoutSvg = (html: string): string => html.replace(/<svg[\s\S]*?<\/svg>/g, '')

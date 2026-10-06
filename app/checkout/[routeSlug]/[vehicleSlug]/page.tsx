@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: CheckoutRoutePageProps): Prom
   }
 
   return {
-    title: `Book ${vehicle.name} - ${resolved.origin.name} to ${resolved.destination.name} | Infinia Transfers`,
+    title: `Book ${vehicle.name} - ${resolved.origin.name} to ${resolved.destination.name}`,
     description: `Complete your ${vehicle.name} transfer booking from ${resolved.origin.name} to ${resolved.destination.name}`,
   }
 }

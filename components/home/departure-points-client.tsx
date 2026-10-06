@@ -7,12 +7,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { type Corridor } from '@/lib/routes/corridors'
 import { SCRIM_TOKENS } from '@/lib/home/photo-scrim'
 import { buildSearchUrl } from '@/lib/utils/url-builder'
+import type { SectionHeader } from '@/lib/cms/fields'
 
 interface DeparturePointsClientProps {
   corridors: Corridor[]
   /** Distinct corridors that exist, before the rail's own slice. */
   totalCorridors: number
   todayDate: string
+  content: SectionHeader
 }
 
 const NAME = 'text-[1.0625rem] font-medium leading-[1.25] tracking-[-0.012em] text-[var(--text-primary)]'
@@ -42,6 +44,7 @@ export function DeparturePointsClient({
   corridors,
   totalCorridors,
   todayDate,
+  content,
 }: DeparturePointsClientProps) {
   const reduceMotion = useReducedMotion()
 
@@ -133,15 +136,12 @@ export function DeparturePointsClient({
           <header className="max-w-2xl">
             <div className="editorial-eyebrow editorial-eyebrow--pill">
               <i aria-hidden="true" />
-              Routes
+              {content.eyebrow}
             </div>
             <h2 id="routes-heading" className="editorial-section-title mt-5">
-              The routes travellers book most.
+              {content.title}
             </h2>
-            <p className="editorial-body mt-6">
-              Short hops and long runs, each with the distance and the drive time we schedule
-              against. Open one to see vehicles, capacity, and the final number for your date.
-            </p>
+            {content.body && <p className="editorial-body mt-6">{content.body}</p>}
           </header>
 
           {/* Both disabled means the rail is not scrollable at this width, which

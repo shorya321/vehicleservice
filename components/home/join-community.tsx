@@ -1,7 +1,8 @@
 import { JoinCommunityAnimator } from "./join-community-animator"
 import { JoinCommunityPlate } from "./join-community-plate"
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
 
-export function JoinCommunity() {
+export function JoinCommunity({ content }: { content: HomeContent["account"] }) {
   return (
     <section
       aria-labelledby="membership-heading"
@@ -9,7 +10,7 @@ export function JoinCommunity() {
     >
       <div className="luxury-container">
         <JoinCommunityAnimator>
-          <JoinCommunityPlate />
+          <JoinCommunityPlate content={content} />
         </JoinCommunityAnimator>
       </div>
     </section>

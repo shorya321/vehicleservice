@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${tag.name} | Infinia Transfers Blog`,
+    title: `${tag.name} | Blog`,
     description: `Browse articles tagged with "${tag.name}" on Infinia Transfers Blog`,
   }
 }

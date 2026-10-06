@@ -8,6 +8,7 @@ import {
 import { applyDevPreview } from "@/lib/reviews/home-record-preview"
 import { TestimonialsAnimator } from "./testimonials-animator"
 import { TestimonialsRecord } from "./testimonials-record"
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
 
 // Fallback when admin has approved reviews but featured none, so the home
 // section fills from the same reviews /reviews already lists.
@@ -24,7 +25,7 @@ async function loadFallbackReviews(): Promise<HomeReview[]> {
   return data ?? []
 }
 
-export async function Testimonials() {
+export async function Testimonials({ content }: { content: HomeContent["testimonials"] }) {
   // Both actions log and return a safe empty value on failure, so an outage
   // renders the empty record rather than breaking the home page.
   const [featuredResult, statsResult] = await Promise.all([getFeaturedReviews(), getReviewStats()])
@@ -51,6 +52,7 @@ export async function Testimonials() {
             attribution={quote ? formatQuoteAttribution(quote) : null}
             stats={stats}
             rows={buildRatingRows(stats)}
+            content={content}
           />
         </div>
       </TestimonialsAnimator>

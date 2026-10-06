@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/seo/page-metadata'
+import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { TermsHero } from './components/terms-hero'
 import { TermsContent } from './components/terms-content'
 import { TableOfContents, type TocSection } from '@/components/legal/table-of-contents'
@@ -22,15 +24,8 @@ const sections: TocSection[] = [
   { id: 'contact-information', title: 'Contact information' },
 ]
 
-export const metadata: Metadata = {
-  title: 'Terms & Conditions | Infinia Transfers',
-  description:
-    'Terms of service for booking private airport and city transfers through Infinia Transfers.',
-  openGraph: {
-    title: 'Terms & Conditions | Infinia Transfers',
-    description:
-      'Terms of service for booking transfers through Infinia Transfers.',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/terms', PAGE_FALLBACKS['/terms'])
 }
 
 export default function TermsPage() {
