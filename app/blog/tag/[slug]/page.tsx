@@ -4,11 +4,12 @@ import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 import { ChevronRight, ArrowRight } from "lucide-react"
-import { getPublishedPosts, getTagBySlug, getPopularTags } from "@/lib/blog/queries"
-import { BlogCard } from "../../components/blog-card"
-import { BlogFeaturedSpread } from "../../components/blog-featured-spread"
-import { TagCloud } from "../../components/tag-cloud"
-import { BlogMotionCard, BlogMotionSection } from "../../components/blog-motion-wrapper"
+import { getPublishedPosts, getTagBySlug, getPopularTags, getBlogCategories } from "@/lib/blog/queries"
+import { BoardHero } from "../../components/board-hero"
+import { BoardLatest } from "../../components/board-latest"
+import { BoardTags } from "../../components/board-tags"
+import { BoardRail } from "../../components/board-rail"
+import { BoardClose } from "../../components/board-close"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -36,10 +37,11 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
   const currentPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
   const isFirstPage = currentPage === 1
 
-  const [tag, { posts, total, totalPages }, popularTags] = await Promise.all([
+  const [tag, { posts, total, totalPages }, popularTags, categories] = await Promise.all([
     getTagBySlug(slug),
     getPublishedPosts({ page: currentPage, limit: 9, tagSlug: slug }),
     getPopularTags(),
+    getBlogCategories(),
   ])
 
   if (!tag) {
@@ -53,75 +55,46 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
 
   return (
     <div className="bg-[var(--black-void)]">
-      {/* Tag Hero */}
-      <div className="blog-tag-hero blog-hero-animate">
-        <div className="luxury-container relative z-10">
-          {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="blog-hero__eyebrow mb-6">
-            <ol className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+      {/* Hero: breadcrumb, #tag and figures; the newest tagged post on the right (page 1) */}
+      <BoardHero
+        total={total}
+        topicCount={categories.length}
+        featured={featuredPost}
+        featuredLabel="Latest"
+        title={<><span>#</span>{tag.name}</>}
+        subtitle={`Every Infinia article tagged ${tag.name}, newest first.`}
+        eyebrow={
+          <nav aria-label="Breadcrumb" className="blog-hero__eyebrow blog-board-eyebrow">
+            <i aria-hidden="true" />
+            <ol className="flex items-center gap-2">
               <li>
-                <Link href="/blog" className="hover:text-[var(--gold-text)] transition-colors duration-300">Blog</Link>
+                <Link href="/blog" className="transition-colors duration-300 hover:text-[var(--gold-text)]">Blog</Link>
               </li>
               <li className="flex items-center gap-2">
-                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                <span aria-current="page" className="text-[var(--text-secondary)]">{tag.name}</span>
+                <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                <span aria-current="page" className="text-[var(--text-primary)]">#{tag.name}</span>
               </li>
             </ol>
           </nav>
+        }
+      />
 
-          {/* Tag name with # prefix */}
-          <h1 className="blog-hero__title t-display mb-4">
-            <span className="text-[var(--gold)]">#</span>{tag.name}
-          </h1>
-
-          {/* Post count */}
-          <span className="blog-hero__subtitle inline-flex items-center px-3 py-1 t-meta text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-full mb-6">
-            {total} {total === 1 ? 'article' : 'articles'}
-          </span>
-
-          {/* Decorative hairline */}
-          <div className="blog-hero__rule flex justify-center" aria-hidden="true">
-            <div className="w-24 h-px bg-[var(--gold)]" />
-          </div>
-        </div>
-      </div>
-
-      {/* Featured Spread. Page 1 only */}
-      {featuredPost && (
-        <section className="bg-[var(--black-void)] pt-[clamp(2rem,5vw,3.5rem)]">
-          <div className="luxury-container">
-            <BlogMotionSection>
-              <BlogFeaturedSpread post={featuredPost} />
-            </BlogMotionSection>
-          </div>
-        </section>
-      )}
-
-      {/* Article Grid */}
-      {(gridPosts.length > 0 || !featuredPost) && (
-        <section className="bg-[var(--black-void)] py-[clamp(2rem,5vw,3.5rem)]">
-          <div className="luxury-container">
-            <div className="mb-12">
-              {gridPosts.length > 0 ? (
-                <>
-                  {/* Section label */}
-                  <div className="flex items-center gap-3 mb-8">
-                    <span className="w-6 h-px bg-[var(--gold)]" aria-hidden="true" />
-                    <h2 className="t-label-accent">
-                      {featuredPost ? 'More Articles' : 'Articles'}
-                    </h2>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {gridPosts.map((post, index) => (
-                      <BlogMotionCard key={post.id} index={index}>
-                        <BlogCard post={post} />
-                      </BlogMotionCard>
-                    ))}
-                  </div>
-                </>
-              ) : !featuredPost ? (
-                <BlogMotionSection>
+      {/* Articles: heading + category control, then the bento grid */}
+      <BoardLatest
+        eyebrow="Tagged"
+        heading={featuredPost ? `More tagged #${tag.name}.` : `Tagged #${tag.name}.`}
+        note={featuredPost && gridPosts.length === 0 && totalPages <= 1 ? (
+          <p className="blog-board-lede mt-4">
+            That is every article tagged {tag.name} so far.{' '}
+            <Link href="/blog" className="inline-flex items-center gap-1 text-[var(--gold-text)] underline-offset-4 hover:underline">
+              Browse all articles
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </p>
+        ) : null}
+        categories={categories}
+        posts={gridPosts}
+        empty={featuredPost ? null : (
                   <div className="text-center py-20">
                     <div className="w-16 h-16 mx-auto mb-6 rounded-lg bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
                       <span className="text-[var(--gold)]/40 text-2xl font-sans font-medium">#</span>
@@ -137,13 +110,11 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
                       Browse All Articles
                     </Link>
                   </div>
-                </BlogMotionSection>
-              ) : null}
-            </div>
-
+        )}
+      >
             {/* Pagination */}
             {totalPages > 1 && (
-              <nav aria-label="Pagination" className="flex items-center justify-center gap-2">
+              <nav aria-label="Pagination" className="mt-12 flex items-center justify-center gap-2">
                 {currentPage > 1 ? (
                   <Link
                     href={`/blog/tag/${slug}?page=${currentPage - 1}`}
@@ -189,29 +160,22 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
                 )}
               </nav>
             )}
-          </div>
-        </section>
-      )}
+      </BoardLatest>
 
-      {/* Browse more CTA for low-content pages */}
-      {posts.length > 0 && posts.length <= 3 && totalPages <= 1 && (
-        <div className="bg-[var(--black-void)] text-center pb-[clamp(1.5rem,3vw,2.5rem)]">
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] transition-colors duration-300"
-          >
-            Browse all articles
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      )}
+      {/* Related tags */}
+      <div className="blog-board-scope">
+        <BoardTags tags={popularTags} excludeSlug={slug} />
+      </div>
 
-      {/* Related Tags */}
-      {popularTags.length > 0 && (
-        <BlogMotionSection>
-          <TagCloud tags={popularTags} currentSlug={slug} />
-        </BlogMotionSection>
-      )}
+      {/* Categories */}
+      <div className="blog-board-scope">
+        <BoardRail categories={categories} />
+      </div>
+
+      {/* Closing: from reading to booking */}
+      <div className="blog-board-scope">
+        <BoardClose />
+      </div>
     </div>
   )
 }

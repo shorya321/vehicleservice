@@ -3,10 +3,11 @@ import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 import { getPublishedPosts, getBlogCategories, getPopularTags, getFeaturedPosts } from "@/lib/blog/queries"
-import { BlogCard } from "./components/blog-card"
-import { BlogFeaturedSpread } from "./components/blog-featured-spread"
-import { CategoryTabs } from "./components/category-tabs"
-import { BlogMotionCard, BlogMotionSection } from "./components/blog-motion-wrapper"
+import { BoardHero } from "./components/board-hero"
+import { BoardLatest } from "./components/board-latest"
+import { BoardRail } from "./components/board-rail"
+import { BoardClose } from "./components/board-close"
+import { BlogMotionSection } from "./components/blog-motion-wrapper"
 import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
   const gridPosts = featuredPost
     ? posts.filter(p => p.id !== featuredPost.id)
     : posts
+  const searchTerm = resolvedSearchParams.search
 
   return (
     <div className="bg-[var(--black-void)]">
@@ -50,63 +52,29 @@ export default async function BlogPage({ searchParams }: PageProps) {
         Skip to articles
       </a>
 
-      {/* Hero */}
-      <div className="blog-category-hero blog-hero-animate">
-        <div className="luxury-container relative z-10">
-          <div className="blog-hero__eyebrow flex items-center gap-3 mb-6" aria-hidden="true">
-            <span className="w-6 h-px bg-[var(--gold)]" />
-            <span className="t-label-accent">Journal</span>
-            <span className="w-6 h-px bg-[var(--gold)]" />
-          </div>
-          <h1 className="blog-hero__title t-display mb-4">Our Blog</h1>
-          <p className="blog-hero__subtitle t-body max-w-[600px] mb-6">
-            Travel insights, destination guides, and what goes into getting you there well.
+      {/* Hero: headline, search and figures; the featured post sits on the right */}
+      <BoardHero
+        total={total}
+        topicCount={categories.length}
+        featured={featuredPost}
+        initialSearch={resolvedSearchParams.search}
+      />
+
+      {/* Latest: heading + category control, then the bento grid */}
+      <BoardLatest
+        eyebrow={searchTerm ? 'Search' : 'Latest'}
+        heading={searchTerm ? `Results for "${searchTerm}"` : 'Fresh from the desk.'}
+        note={searchTerm && (
+          <p className="blog-board-lede numeric mt-4">
+            {total} {total === 1 ? 'article' : 'articles'} found.{' '}
+            <Link href="/blog" className="text-[var(--gold-text)] underline-offset-4 hover:underline">
+              Clear search
+            </Link>
           </p>
-          <span className="blog-hero__search inline-flex items-center px-3 py-1 t-meta text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-full">
-            {total} {total === 1 ? 'article' : 'articles'}
-          </span>
-        </div>
-      </div>
-
-      {/* Category Tabs */}
-      <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)] py-6">
-        <div className="luxury-container">
-          <CategoryTabs categories={categories} />
-        </div>
-      </section>
-
-      {/* Featured Spread. Page 1 only */}
-      {featuredPost && (
-        <section className="bg-[var(--black-void)] pt-[clamp(2rem,5vw,3.5rem)]">
-          <div className="luxury-container">
-            <BlogMotionSection>
-              <BlogFeaturedSpread post={featuredPost} />
-            </BlogMotionSection>
-          </div>
-        </section>
-      )}
-
-      {/* Article Grid */}
-      {(gridPosts.length > 0 || !featuredPost) && (
-      <section id="blog-content" className="bg-[var(--black-void)] py-[clamp(2rem,5vw,3.5rem)]">
-        <div className="luxury-container">
-          {featuredPost && gridPosts.length > 0 && (
-            <div className="flex items-center gap-3 mb-8">
-              <span className="w-6 h-px bg-[var(--gold)]" aria-hidden="true" />
-              <h2 className="t-label-accent">Latest Articles</h2>
-            </div>
-          )}
-
-          <div className="mb-12">
-            {gridPosts.length > 0 ? (
-              <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-6${gridPosts.length >= 3 ? ' lg:[&>:first-child]:col-span-2' : ''}`}>
-                {gridPosts.map((post, index) => (
-                  <BlogMotionCard key={post.id} index={index}>
-                    <BlogCard post={post} />
-                  </BlogMotionCard>
-                ))}
-              </div>
-            ) : (
+        )}
+        categories={categories}
+        posts={gridPosts}
+        empty={featuredPost ? null : (
               <div className="text-center py-20">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-lg bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
                   <Search className="w-6 h-6 text-[var(--gold)]/40" />
@@ -120,12 +88,11 @@ export default async function BlogPage({ searchParams }: PageProps) {
                     : 'Check back soon for new articles and insights.'}
                 </p>
               </div>
-            )}
-          </div>
-
+        )}
+      >
           {/* Pagination */}
           {totalPages > 1 && (
-            <nav aria-label="Pagination" className="flex items-center justify-center gap-2">
+            <nav aria-label="Pagination" className="mt-12 flex items-center justify-center gap-2">
               {currentPage > 1 ? (
                 <Link
                   href={`/blog?page=${currentPage - 1}${resolvedSearchParams.search ? `&search=${encodeURIComponent(resolvedSearchParams.search)}` : ''}`}
@@ -173,9 +140,12 @@ export default async function BlogPage({ searchParams }: PageProps) {
               )}
             </nav>
           )}
-        </div>
-      </section>
-      )}
+      </BoardLatest>
+
+      {/* Where to next: one card per category */}
+      <div className="blog-board-scope">
+        <BoardRail categories={categories} />
+      </div>
 
       {/* Popular Tags */}
       {popularTags.length > 0 && (
@@ -201,6 +171,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
         </section>
       )}
 
+      {/* Closing: from reading to booking */}
+      <div className="blog-board-scope">
+        <BoardClose />
+      </div>
     </div>
   )
 }
