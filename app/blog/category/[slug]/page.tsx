@@ -5,10 +5,10 @@ import Link from "next/link"
 export const dynamic = 'force-dynamic'
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getPublishedPosts, getCategoryBySlug, getBlogCategories, getFeaturedPosts } from "@/lib/blog/queries"
-import { BlogCard } from "../../components/blog-card"
-import { BlogFeaturedSpread } from "../../components/blog-featured-spread"
-import { CategoryTabs } from "../../components/category-tabs"
-import { BlogMotionCard, BlogMotionSection } from "../../components/blog-motion-wrapper"
+import { BoardHero } from "../../components/board-hero"
+import { BoardLatest } from "../../components/board-latest"
+import { BoardRail } from "../../components/board-rail"
+import { BoardClose } from "../../components/board-close"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -47,72 +47,51 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
     notFound()
   }
 
+  // The hero shows this category's featured post; without one, page 1 promotes its newest post.
   const featuredPost = featuredPosts.find(fp => fp.category?.slug === slug) ?? null
-  const gridPosts = featuredPost
-    ? posts.filter(p => p.id !== featuredPost.id)
+  const heroPost = featuredPost ?? (isFirstPage ? posts[0] ?? null : null)
+  const gridPosts = heroPost
+    ? posts.filter(p => p.id !== heroPost.id)
     : posts
 
   return (
     <div className="bg-[var(--black-void)]">
-      {/* Category Hero */}
-      <div className="blog-category-hero blog-hero-animate">
-        <div className="luxury-container relative z-10">
-          <nav aria-label="Breadcrumb" className="blog-hero__eyebrow mb-6">
-            <ol className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+      {/* Hero: breadcrumb, category name and figures; the featured (or newest) post on the right */}
+      <BoardHero
+        total={total}
+        topicCount={categories.length}
+        featured={heroPost}
+        featuredLabel={featuredPost ? 'Featured' : 'Latest'}
+        title={<>{category.name}<span>.</span></>}
+        subtitle={category.description || `Every Infinia guide filed under ${category.name}.`}
+        eyebrow={
+          <nav aria-label="Breadcrumb" className="blog-hero__eyebrow blog-board-eyebrow">
+            <i aria-hidden="true" />
+            <ol className="flex items-center gap-2">
               <li>
-                <Link href="/blog" className="hover:text-[var(--gold-text)] transition-colors duration-300">Blog</Link>
+                <Link href="/blog" className="transition-colors duration-300 hover:text-[var(--gold-text)]">Blog</Link>
               </li>
               <li className="flex items-center gap-2">
-                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="text-[var(--text-secondary)]">{category.name}</span>
+                <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                <span aria-current="page" className="text-[var(--text-primary)]">{category.name}</span>
               </li>
             </ol>
           </nav>
+        }
+      />
 
-          <h1 className="blog-hero__title t-display mb-4">{category.name}</h1>
-
-          {category.description && (
-            <p className="blog-hero__subtitle t-body max-w-[600px] mb-4">{category.description}</p>
-          )}
-
-          <span className="blog-hero__search inline-flex items-center px-3 py-1 t-meta text-[var(--text-muted)] border border-[var(--gold)]/20 rounded-full">
-            {total} {total === 1 ? 'article' : 'articles'}
-          </span>
-        </div>
-      </div>
-
-      {/* Category Tabs */}
-      <section className="bg-[var(--black-rich)] border-t border-[var(--graphite)] py-6">
-        <div className="luxury-container">
-          <CategoryTabs categories={categories} />
-        </div>
-      </section>
-
-      {/* Featured Spread. Page 1 only, matching category */}
-      {featuredPost && (
-        <section className="bg-[var(--black-void)] pt-[clamp(2rem,5vw,3.5rem)]">
-          <div className="luxury-container">
-            <BlogMotionSection>
-              <BlogFeaturedSpread post={featuredPost} />
-            </BlogMotionSection>
-          </div>
-        </section>
-      )}
-
-      {/* Article Grid */}
-      {(gridPosts.length > 0 || !featuredPost) && (
-      <section className="bg-[var(--black-void)] py-[clamp(2rem,5vw,3.5rem)]">
-        <div className="luxury-container">
-          <div className="mb-12">
-            {gridPosts.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {gridPosts.map((post, index) => (
-                  <BlogMotionCard key={post.id} index={index}>
-                    <BlogCard post={post} />
-                  </BlogMotionCard>
-                ))}
-              </div>
-            ) : (
+      {/* Articles: heading + category control, then the bento grid */}
+      <BoardLatest
+        eyebrow={`In ${category.name}`}
+        heading={`All ${category.name} guides.`}
+        note={heroPost && gridPosts.length === 0 && totalPages <= 1 ? (
+          <p className="blog-board-lede mt-4">
+            That is every article in {category.name} so far. More are on the way.
+          </p>
+        ) : null}
+        categories={categories}
+        posts={gridPosts}
+        empty={heroPost ? null : (
               <div className="text-center py-20">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-lg bg-[var(--charcoal)] border border-[var(--gold)]/20 flex items-center justify-center">
                   <span className="text-[var(--gold)]/40 text-2xl font-sans font-medium">?</span>
@@ -128,12 +107,11 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
                   Browse All Articles
                 </Link>
               </div>
-            )}
-          </div>
-
+        )}
+      >
           {/* Pagination */}
           {totalPages > 1 && (
-            <nav aria-label="Pagination" className="flex items-center justify-center gap-2">
+            <nav aria-label="Pagination" className="mt-12 flex items-center justify-center gap-2">
               {currentPage > 1 ? (
                 <Link
                   href={`/blog/category/${slug}?page=${currentPage - 1}`}
@@ -181,9 +159,17 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
               )}
             </nav>
           )}
-        </div>
-      </section>
-      )}
+      </BoardLatest>
+
+      {/* Other categories */}
+      <div className="blog-board-scope">
+        <BoardRail categories={categories} excludeSlug={slug} />
+      </div>
+
+      {/* Closing: from reading to booking */}
+      <div className="blog-board-scope">
+        <BoardClose />
+      </div>
     </div>
   )
 }
