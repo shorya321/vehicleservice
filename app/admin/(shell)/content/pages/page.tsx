@@ -1,19 +1,19 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ExternalLink, FileText, Pencil } from 'lucide-react'
+import { CheckCircle2, FileText, PenLine, Search } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth/actions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toCmsPage } from '@/lib/cms/server'
 import { TEMPLATE_LABELS } from '@/lib/cms/types'
-import { formatBookingDateTime } from '@/lib/utils/timezone'
+import { formatBookingDate } from '@/lib/utils/timezone'
 import { AnimatedPage } from '@/components/layout/animated-page'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageStatCard } from './components/page-stat-card'
+import { PagesTable, type PageRowView } from './components/pages-table'
 
 export const metadata: Metadata = {
-  title: 'Pages | Admin Portal',
+  title: 'Pages | Admin',
+  description: 'Manage page content and SEO',
 }
 
 export default async function ContentPagesPage() {
@@ -29,82 +29,81 @@ export default async function ContentPagesPage() {
     console.error('[cms] Failed to list pages:', error.message)
   }
 
-  const pages = (rows ?? []).map(toCmsPage)
   const seoById = new Map((seoRows ?? []).map((row) => [row.entity_id, row]))
+  const pages: PageRowView[] = (rows ?? []).map(toCmsPage).map((page) => {
+    const seo = seoById.get(page.id)
+    return {
+      id: page.id,
+      title: page.title,
+      slug: page.slug,
+      templateLabel: TEMPLATE_LABELS[page.template],
+      status: page.status,
+      seoDone: Boolean(seo?.meta_title && seo?.meta_description),
+      updatedLabel: formatBookingDate(page.updatedAt),
+    }
+  })
+
+  const published = pages.filter((p) => p.status === 'published').length
+  const seoSet = pages.filter((p) => p.seoDone).length
 
   return (
     <AnimatedPage>
-      <div className="space-y-6">
+      <Breadcrumb items={[{ label: 'Pages', href: '/admin/content/pages' }]} />
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Pages</h1>
-          <p className="text-muted-foreground">
-            Edit the words, images and SEO of the site&apos;s pages. Layout and design stay fixed.
-          </p>
+          <p className="text-muted-foreground">Edit the words, images and SEO of the site&apos;s pages</p>
         </div>
-
-        <Card>
-          <CardContent className="p-0">
-            {error ? (
-              <p className="p-6 text-sm text-destructive">Could not load pages. Refresh to try again.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Page</TableHead>
-                    <TableHead>URL</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>SEO</TableHead>
-                    <TableHead>Last edited</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pages.map((page) => {
-                    const seo = seoById.get(page.id)
-                    const seoDone = Boolean(seo?.meta_title && seo?.meta_description)
-                    return (
-                      <TableRow key={page.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2 font-medium text-foreground">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            {page.title}
-                          </div>
-                          <p className="text-xs text-muted-foreground">{TEMPLATE_LABELS[page.template]}</p>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">{page.slug}</TableCell>
-                        <TableCell>
-                          <Badge variant={page.status === 'published' ? 'default' : 'secondary'}>{page.status}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={seoDone ? 'default' : 'outline'}>{seoDone ? 'Set' : 'Defaults'}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {formatBookingDateTime(page.updatedAt)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button asChild variant="ghost" size="sm">
-                              <a href={page.slug} target="_blank" rel="noopener noreferrer" aria-label={`View ${page.title}`}>
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            </Button>
-                            <Button asChild size="sm">
-                              <Link href={`/admin/content/pages/${page.id}`}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </Link>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <PageStatCard
+          label="Total Pages"
+          value={pages.length}
+          hint="All site pages"
+          icon={FileText}
+          tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-400' }}
+          delay={0.1}
+        />
+        <PageStatCard
+          label="Published"
+          value={published}
+          hint="Live pages"
+          icon={PenLine}
+          tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-400' }}
+          delay={0.2}
+        />
+        <PageStatCard
+          label="SEO Set"
+          value={seoSet}
+          hint="Own title and description"
+          icon={CheckCircle2}
+          tone={{ disc: 'bg-sky-500/20', icon: 'text-sky-500', value: 'text-violet-400' }}
+          delay={0.3}
+        />
+        <PageStatCard
+          label="Using Defaults"
+          value={pages.length - seoSet}
+          hint="Fall back to site SEO"
+          icon={Search}
+          tone={{ disc: 'bg-amber-500/20', icon: 'text-amber-500', value: 'text-amber-400' }}
+          delay={0.4}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Pages</CardTitle>
+          <CardDescription>Manage page content and search settings</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error ? (
+            <p className="text-sm text-destructive">Could not load pages. Refresh to try again.</p>
+          ) : (
+            <PagesTable pages={pages} />
+          )}
+        </CardContent>
+      </Card>
     </AnimatedPage>
   )
 }
