@@ -9,13 +9,3 @@ export function formatDate(dateStr: string | null): string {
     year: 'numeric',
   })
 }
-
-export function formatDateShort(dateStr: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    timeZone: getBookingTimezone(),
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
