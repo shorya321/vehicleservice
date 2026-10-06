@@ -4,7 +4,10 @@ import { revalidatePath, updateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Json } from '@/lib/supabase/types'
 import { requireAdminAction } from '@/lib/auth/admin-action'
+import type { ZodTypeAny } from 'zod'
 import { homeContentSchema } from '@/lib/cms/templates/home/schema'
+import { contactContentSchema } from '@/lib/cms/templates/contact/schema'
+import { legalContentSchema } from '@/lib/cms/templates/legal/schema'
 import { PAGES_TAG, pageTag } from '@/lib/cms/types'
 import { CMS_IMAGE_BUCKET, CMS_IMAGE_FOLDER, removedCmsImages } from '@/lib/cms/images'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
@@ -15,18 +18,23 @@ interface ActionResult {
   error?: string
 }
 
-/** Saves the home page's content. The page goes live on save. */
-export async function updateHomeContent(pageId: string, content: unknown): Promise<ActionResult> {
+/** The schema each template's content is saved against. */
+const CONTENT_SCHEMAS: Readonly<Record<string, ZodTypeAny>> = {
+  home: homeContentSchema,
+  contact: contactContentSchema,
+  terms: legalContentSchema,
+  privacy: legalContentSchema,
+}
+
+/**
+ * Saves a page's content, validated against the schema of the template the
+ * stored row says it uses (never one the browser names). Live on save.
+ */
+export async function updatePageContent(pageId: string, content: unknown): Promise<ActionResult> {
   try {
     const auth = await requireAdminAction()
     if ('error' in auth) {
       return { success: false, error: auth.error }
-    }
-
-    const parsed = homeContentSchema.safeParse(content)
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0]
-      return { success: false, error: `${issue.path.join(' > ')}: ${issue.message}` }
     }
 
     const admin = createAdminClient()
@@ -39,17 +47,25 @@ export async function updateHomeContent(pageId: string, content: unknown): Promi
     if (readError || !existing) {
       return { success: false, error: 'Page not found' }
     }
-    if (existing.template !== 'home') {
-      return { success: false, error: 'This page does not use the home template' }
+
+    const schema = CONTENT_SCHEMAS[existing.template]
+    if (!schema) {
+      return { success: false, error: 'This page has no content editor yet' }
+    }
+
+    const parsed = schema.safeParse(content)
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0]
+      return { success: false, error: `${issue.path.join(' > ')}: ${issue.message}` }
     }
 
     const { error } = await admin
       .from('pages')
-      .update({ content: parsed.data as unknown as Json, updated_by: auth.userId })
+      .update({ content: parsed.data as Json, updated_by: auth.userId })
       .eq('id', pageId)
 
     if (error) {
-      console.error('[cms] Failed to save home content:', error.message)
+      console.error('[cms] Failed to save page content:', error.message)
       return { success: false, error: 'Could not save the page. Try again.' }
     }
 
@@ -65,7 +81,7 @@ export async function updateHomeContent(pageId: string, content: unknown): Promi
 
     return { success: true }
   } catch (error: unknown) {
-    console.error('[cms] Unexpected error saving home content:', error)
+    console.error('[cms] Unexpected error saving page content:', error)
     return { success: false, error: 'Could not save the page. Try again.' }
   }
 }

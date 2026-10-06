@@ -37,7 +37,7 @@ export const FOOTER_LINK_CATEGORIES: readonly FooterLinkCategory[] = [
  *
  * Every claim here is contractual, not marketing, and follows the rule set by
  * `components/checkout/trust-block.tsx`. Sources, all in
- * `app/terms/components/terms-content.tsx`:
+ * `the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts)`:
  *  - What the fixed fare covers  -> Booking & Payment / Pricing
  *  - Free cancellation to 24h    -> Cancellation & Refund Policy
  *  - Flight tracking and waiting -> Service Delivery / Waiting Time

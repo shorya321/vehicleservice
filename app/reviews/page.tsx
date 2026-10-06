@@ -15,6 +15,8 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { getApprovedReviews, getReviewStats } from './actions'
+import { buildEntityMetadata } from '@/lib/seo/page-metadata'
+import { listCanonical } from '@/lib/seo/list-canonical'
 
 interface PageProps {
   searchParams: Promise<{
@@ -25,9 +27,13 @@ interface PageProps {
   }>
 }
 
-export const metadata: Metadata = {
-  title: 'Customer Reviews',
-  description: 'Read what our customers say about their transfer experiences',
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { page } = await searchParams
+  return buildEntityMetadata({
+    path: listCanonical('/reviews', page),
+    title: 'Customer Reviews',
+    description: 'Read what our customers say about their transfer experiences',
+  })
 }
 
 export default async function PublicReviewsPage({ searchParams }: PageProps) {

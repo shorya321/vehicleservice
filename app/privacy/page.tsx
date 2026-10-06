@@ -1,48 +1,16 @@
 import { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/seo/page-metadata'
 import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
-import { PrivacyHero } from './components/privacy-hero'
-import { PrivacyContent } from './components/privacy-content'
-import { TableOfContents, type TocSection } from '@/components/legal/table-of-contents'
-
-const LAST_UPDATED = '1 July 2026'
-
-const sections: TocSection[] = [
-  { id: 'introduction', title: 'Introduction' },
-  { id: 'information-we-collect', title: 'Information we collect' },
-  { id: 'how-we-use-your-information', title: 'How we use your information' },
-  { id: 'information-sharing', title: 'Information sharing' },
-  { id: 'data-retention', title: 'Data retention' },
-  { id: 'your-rights', title: 'Your rights' },
-  { id: 'cookies-and-tracking', title: 'Cookies and tracking' },
-  { id: 'international-data-transfers', title: 'International data transfers' },
-  { id: 'childrens-privacy', title: "Children's privacy" },
-  { id: 'security-measures', title: 'Security measures' },
-  { id: 'changes-to-this-policy', title: 'Changes to this policy' },
-  { id: 'contact-us', title: 'Contact us' },
-]
+import { getLegalContent } from '@/lib/cms/server'
+import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
+import { LegalDocument } from '@/components/legal/legal-document'
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/privacy', PAGE_FALLBACKS['/privacy'])
 }
 
-export default function PrivacyPage() {
-  return (
-    <>
-      <PrivacyHero lastUpdated={LAST_UPDATED} />
-
-      <section className="py-10 md:py-16 bg-[var(--black-rich)] border-t border-[var(--graphite)]">
-        <div className="luxury-container">
-          <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8 lg:gap-12">
-            <aside className="lg:sticky lg:top-28 lg:self-start">
-              <TableOfContents sections={sections} />
-            </aside>
-            <div className="prose-luxury max-w-3xl">
-              <PrivacyContent />
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
-  )
+/** Copy is managed under Admin > Pages; the shipped text is the fallback. */
+export default async function PrivacyPage() {
+  const content = await getLegalContent('/privacy', DEFAULT_PRIVACY_CONTENT)
+  return <LegalDocument content={content} />
 }

@@ -1,16 +1,14 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm, type FieldErrors } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Save } from 'lucide-react'
+import { useState } from 'react'
+import type { FieldErrors } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Form } from '@/components/ui/form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EDITOR_TAB_TRIGGER, SaveBar } from '@/components/admin/cms/save-bar'
+import { usePageContentForm } from '@/components/admin/cms/use-page-content-form'
 import { homeContentSchema, type HomeContent, type HomeSectionKey } from '@/lib/cms/templates/home/schema'
-import { updateHomeContent } from '../../../actions'
 import { HeroSection } from './hero-section'
 import { FaqSection } from './faq-section'
 import {
@@ -43,34 +41,9 @@ interface HomeContentFormProps {
 }
 
 export function HomeContentForm({ pageId, initialContent }: HomeContentFormProps) {
-  const router = useRouter()
-  const [, startTransition] = useTransition()
-  const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState<HomeSectionKey>('hero')
-
-  const form = useForm<HomeContent>({
-    resolver: zodResolver(homeContentSchema),
-    defaultValues: initialContent,
-  })
+  const { form, saving, save } = usePageContentForm(pageId, zodResolver(homeContentSchema), initialContent)
   const { control } = form
-
-  async function onSubmit(values: HomeContent): Promise<void> {
-    setSaving(true)
-    try {
-      const result = await updateHomeContent(pageId, values)
-      if (!result.success) {
-        toast.error(result.error ?? 'Could not save the page')
-        return
-      }
-      toast.success('Home page saved and live')
-      form.reset(values)
-      startTransition(() => router.refresh())
-    } catch {
-      toast.error('Could not save the page. Check your connection and try again.')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   function onInvalid(errors: FieldErrors<HomeContent>): void {
     const first = TABS.find((t) => errors[t.key])
@@ -84,14 +57,14 @@ export function HomeContentForm({ pageId, initialContent }: HomeContentFormProps
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(save, onInvalid)} className="space-y-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as HomeSectionKey)}>
           <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 border bg-card p-1">
             {TABS.map((t) => (
               <TabsTrigger
                 key={t.key}
                 value={t.key}
-                className="border border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10"
+                className={EDITOR_TAB_TRIGGER}
               >
                 {t.label}
                 {errors[t.key] && <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-destructive" aria-label="has errors" />}
@@ -117,13 +90,7 @@ export function HomeContentForm({ pageId, initialContent }: HomeContentFormProps
           </div>
         </Tabs>
 
-        <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t bg-background/95 py-4 backdrop-blur">
-          {form.formState.isDirty && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
-          <Button type="submit" disabled={saving}>
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save and publish
-          </Button>
-        </div>
+        <SaveBar saving={saving} dirty={form.formState.isDirty} />
       </form>
     </Form>
   )

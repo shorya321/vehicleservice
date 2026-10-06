@@ -66,3 +66,49 @@ export function faqPageJsonLd(items: readonly FaqEntry[]): JsonLdObject | null {
 export function serializeJsonLd(data: JsonLdObject | JsonLdObject[]): string {
   return JSON.stringify(data).replace(/</g, '\\u003c')
 }
+
+export interface BreadcrumbItem {
+  name: string
+  path: string
+}
+
+/** Home > Section > Page trail for rich results. */
+export function breadcrumbJsonLd(items: readonly BreadcrumbItem[]): JsonLdObject {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
+    })),
+  }
+}
+
+interface ArticleInput {
+  title: string
+  description: string
+  path: string
+  image: string | null
+  publishedAt: string | null
+  authorName: string | null
+  publisherName: string
+}
+
+/** A blog post, credited to its author and published by the site. */
+export function articleJsonLd(input: ArticleInput): JsonLdObject {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: input.title,
+    ...(input.description ? { description: input.description } : {}),
+    mainEntityOfPage: absoluteUrl(input.path),
+    ...(input.image ? { image: [absoluteUrl(input.image)] } : {}),
+    ...(input.publishedAt ? { datePublished: input.publishedAt } : {}),
+    author: input.authorName
+      ? { '@type': 'Person', name: input.authorName }
+      : { '@type': 'Organization', name: input.publisherName },
+    publisher: { '@id': `${getSiteUrl()}/#organization`, '@type': 'Organization', name: input.publisherName },
+  }
+}

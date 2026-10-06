@@ -9,24 +9,27 @@ import { BoardHero } from "../../components/board-hero"
 import { BoardLatest } from "../../components/board-latest"
 import { BoardRail } from "../../components/board-rail"
 import { BoardClose } from "../../components/board-close"
+import { buildEntityMetadata } from '@/lib/seo/page-metadata'
+import { listCanonical } from '@/lib/seo/list-canonical'
 
 interface PageProps {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ page?: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const [{ slug }, { page }] = await Promise.all([params, searchParams])
   const category = await getCategoryBySlug(slug)
 
   if (!category) {
     return { title: "Category Not Found" }
   }
 
-  return {
+  return buildEntityMetadata({
+    path: listCanonical(`/blog/category/${category.slug}`, page),
     title: `${category.name} | Blog`,
     description: category.description || `Browse ${category.name} articles on Infinia Transfers Blog`,
-  }
+  })
 }
 
 export default async function BlogCategoryPage({ params, searchParams }: PageProps) {

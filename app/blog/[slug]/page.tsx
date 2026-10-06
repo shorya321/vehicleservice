@@ -11,6 +11,11 @@ import { FloatingShare } from "../components/floating-share"
 import { ShareButtons } from "../components/share-buttons"
 import { ReadingProgressBar } from "../components/reading-progress-bar"
 import { ArrowUpRight } from "lucide-react"
+import { buildEntityMetadata } from "@/lib/seo/page-metadata"
+import { absoluteUrl } from "@/lib/seo/site-url"
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld"
+import { JsonLd } from "@/components/seo/json-ld"
+import { getSiteSettings } from "@/lib/site-settings/server"
 
 export const dynamic = 'force-dynamic'
 
@@ -26,27 +31,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Post Not Found" }
   }
 
-  const title = post.meta_title || post.title
-  const description = post.meta_description || post.excerpt || ''
+  // The post's own meta fields are its SEO; the shared builder adds the
+  // canonical, robots, share image and a title with the brand once.
+  const metadata = await buildEntityMetadata({
+    path: `/blog/${post.slug}`,
+    title: post.title,
+    description: post.excerpt || undefined,
+    image: post.featured_image_url,
+    type: 'article',
+    seo: { meta_title: post.meta_title ?? '', meta_description: post.meta_description ?? '' },
+  })
 
   return {
-    // An admin meta title is the full title, used as typed; the post title
-    // alone gets the site suffix from the root template.
-    title: post.meta_title ? { absolute: post.meta_title } : post.title,
-    description,
+    ...metadata,
     keywords: post.meta_keywords || undefined,
     openGraph: {
-      title,
-      description,
-      type: "article",
+      ...metadata.openGraph,
+      type: 'article',
       publishedTime: post.published_at || undefined,
-      images: post.featured_image_url ? [{ url: post.featured_image_url }] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: post.featured_image_url ? [post.featured_image_url] : [],
     },
   }
 }
@@ -62,12 +64,34 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   void incrementViewCount(post.id).catch(() => {})
 
-  const relatedPosts = await getRelatedPosts(post.id, post.category?.id || null)
+  const [relatedPosts, site] = await Promise.all([
+    getRelatedPosts(post.id, post.category?.id || null),
+    getSiteSettings(),
+  ])
+  const postPath = `/blog/${post.slug}`
+  const jsonLd = [
+    articleJsonLd({
+      title: post.title,
+      description: post.meta_description || post.excerpt || '',
+      path: postPath,
+      image: post.featured_image_url,
+      publishedAt: post.published_at,
+      authorName: post.author?.full_name ?? null,
+      publisherName: site.brand_name,
+    }),
+    breadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      ...(post.category ? [{ name: post.category.name, path: `/blog/category/${post.category.slug}` }] : []),
+      { name: post.title, path: postPath },
+    ]),
+  ]
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://infiniatransfers.com'}/blog/${post.slug}`
+  const shareUrl = absoluteUrl(postPath)
 
   return (
     <article className="article-page blog-board-scope">
+      <JsonLd data={jsonLd} />
       <ReadingProgressBar />
 
       {/* Header: breadcrumb, title and byline; featured image framed on the right */}
