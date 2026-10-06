@@ -29,7 +29,7 @@ import { PickupPassedScreen } from './components/pickup-passed-screen'
 import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
 
 export const metadata: Metadata = {
-  title: 'Secure Payment | Infinia Transfers',
+  title: 'Secure Payment',
   description: 'Complete your luxury transfer booking with our secure payment system',
 }
 

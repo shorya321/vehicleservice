@@ -1,7 +1,7 @@
 import * as React from "react"
-import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { FAQ_ITEMS } from "./faq-data"
+import { CmsLink } from "@/components/cms/cms-link"
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
 
 // `import * as React` is for jest: ts-jest compiles JSX with the classic
 // runtime, which needs React in scope. Next itself uses the automatic runtime.
@@ -9,6 +9,7 @@ import { FAQ_ITEMS } from "./faq-data"
 interface FaqPanelProps {
   openIndex: number | null
   onToggle: (index: number) => void
+  content: HomeContent["faq"]
 }
 
 /**
@@ -18,35 +19,32 @@ interface FaqPanelProps {
  * the tab order and the accessibility tree. See `.faq-board` in
  * app/globals.css.
  */
-export function FaqPanel({ openIndex, onToggle }: FaqPanelProps): React.JSX.Element {
+export function FaqPanel({ openIndex, onToggle, content }: FaqPanelProps): React.JSX.Element {
   return (
     <div className="faq-board">
       <div>
         <div className="editorial-eyebrow editorial-eyebrow--pill faq-board__eyebrow">
           <i aria-hidden="true" />
-          Asked
+          {content.eyebrow}
         </div>
         <h2 id="faq-heading" className="editorial-section-title mt-5">
-          Questions travellers actually ask.
+          {content.title}
         </h2>
-        <p className="faq-board__body mt-[1.125rem]">
-          If none of these covers it, our team replies within an hour during local
-          business hours.
-        </p>
-        <Link href="/contact" className="btn btn-secondary faq-board__support">
-          Write to support
+        {content.body && <p className="faq-board__body mt-[1.125rem]">{content.body}</p>}
+        <CmsLink href={content.cta.href} className="btn btn-secondary faq-board__support">
+          {content.cta.label}
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
-        </Link>
+        </CmsLink>
       </div>
 
       <div className="faq-board__list">
-        {FAQ_ITEMS.map((item, index) => {
+        {content.items.map((item, index) => {
           const isOpen = openIndex === index
           const triggerId = `faq-trigger-${index}`
           const contentId = `faq-content-${index}`
 
           return (
-            <div key={item.question} className="faq-card" data-open={isOpen}>
+            <div key={index} className="faq-card" data-open={isOpen}>
               {/* Reset the base-layer h3, whose clamp() size, -0.02em
                   tracking and 1.15 leading otherwise inherit into the row. */}
               <h3 className="m-0 text-base font-normal leading-normal tracking-normal">

@@ -2,40 +2,11 @@
 import Image from 'next/image'
 import { motion, useReducedMotion } from "motion/react"
 import { SCRIM, SCRIM_TOKENS } from '@/lib/home/photo-scrim'
+import type { HomeContent } from '@/lib/cms/templates/home/schema'
 
-interface City {
-  name: string
-  meta: string
-  image: string
-  alt: string
+interface CitiesProps {
+  content: HomeContent['cities']
 }
-
-const CITIES: City[] = [
-  {
-    name: 'Downtown',
-    meta: '214 routes',
-    image: '/images/cities/downtown.webp',
-    alt: 'Burj Khalifa above the Sheikh Zayed Road interchange at dusk',
-  },
-  {
-    name: 'Palm Jumeirah',
-    meta: '96 routes',
-    image: '/images/cities/palm-jumeirah.webp',
-    alt: 'The fronds of Palm Jumeirah and Atlantis seen from the air at dawn',
-  },
-  {
-    name: 'Dubai Marina',
-    meta: '147 routes',
-    image: '/images/cities/dubai-marina.webp',
-    alt: 'Cayan Tower and the Dubai Marina berths seen across the water',
-  },
-  {
-    name: 'Dubai Creek',
-    meta: '63 routes',
-    image: '/images/cities/dubai-creek.webp',
-    alt: 'Abras crossing the creek in front of the old Deira waterfront',
-  },
-]
 
 /**
  * Reveal props are shaped so that `whileInView` is ALWAYS supplied, and reduced
@@ -47,7 +18,7 @@ const CITIES: City[] = [
  * it flips to true, `whileInView` becomes undefined, and nothing ever animates
  * the element back. Reduced-motion users get a permanently invisible section.
  */
-export function Cities() {
+export function Cities({ content }: CitiesProps) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -65,24 +36,21 @@ export function Cities() {
         >
           <div className="editorial-eyebrow editorial-eyebrow--pill">
             <i aria-hidden="true" />
-            Where we run
+            {content.eyebrow}
           </div>
           <h2 id="cities-heading" className="editorial-section-title mt-5">
-            Every corner of Dubai, one clock.
+            {content.title}
           </h2>
-          <p className="editorial-body mt-6 mb-[clamp(2.5rem,5vw,4rem)]">
-            Every pickup, confirmation and cut-off on this site runs on Dubai time, whatever
-            your phone is set to. No mental arithmetic at 5am.
-          </p>
+          <p className="editorial-body mt-6 mb-[clamp(2.5rem,5vw,4rem)]">{content.body}</p>
         </motion.header>
       </div>
 
       {/* Full bleed, so it sits outside .luxury-container. The 1px gap over a
           --graphite ground is what draws the hairlines between cards. */}
       <ul className="grid grid-cols-2 gap-px bg-[var(--graphite)] min-[900px]:grid-cols-4">
-        {CITIES.map((city, index) => (
+        {content.items.map((city, index) => (
           <motion.li
-            key={city.name}
+            key={index}
             className="relative isolate flex min-h-[clamp(17rem,30vw,25rem)] items-end overflow-hidden bg-[var(--black-rich)]"
             initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -100,12 +68,14 @@ export function Cities() {
                 requested resource isn't a valid image" for everyone, signed in or
                 not. Serving the file directly sidesteps it, and costs little:
                 these are already WebP at exactly the rendered 640x860, 63-138 KB
-                each, and the section sits below the fold so they load lazily. */}
+                each, and the section sits below the fold so they load lazily.
+                Admin uploads live on Supabase Storage, which the maintenance
+                page cannot shadow, so those still go through the optimizer. */}
             <Image
               src={city.image}
               alt={city.alt}
               fill
-              unoptimized
+              unoptimized={city.image.startsWith('/')}
               sizes="(min-width: 900px) 25vw, 50vw"
               className="z-0 object-cover [filter:var(--media-filter)]"
             />
@@ -118,9 +88,11 @@ export function Cities() {
                   light-mode wash the muted tone measures 4.2:1, under the 4.5:1
                   WCAG AA floor for text this size; secondary clears it and is a
                   half-step darker, which is not visible at 13px. */}
-              <p className="numeric mt-[0.3rem] text-[0.8125rem] text-[var(--text-secondary)]">
-                {city.meta}
-              </p>
+              {city.meta && (
+                <p className="numeric mt-[0.3rem] text-[0.8125rem] text-[var(--text-secondary)]">
+                  {city.meta}
+                </p>
+              )}
             </div>
           </motion.li>
         ))}

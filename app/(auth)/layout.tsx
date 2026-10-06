@@ -1,4 +1,7 @@
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { NOINDEX_METADATA } from '@/lib/seo/noindex'
+
+export const metadata = NOINDEX_METADATA
 
 export default function AuthLayout({
   children,

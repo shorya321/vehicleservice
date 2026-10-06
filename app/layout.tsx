@@ -6,6 +6,9 @@ import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
 import { getSiteSettings } from '@/lib/site-settings/server'
+import { getSeoSettings } from '@/lib/seo/server'
+import { titleSuffix } from '@/lib/seo/build-metadata'
+import { getSiteUrl } from '@/lib/seo/site-url'
 import { loadBookingTimezone } from '@/lib/site-settings/timezone'
 import { BookingTimezoneSync } from '@/components/booking-timezone-sync'
 
@@ -35,21 +38,30 @@ const playfairDisplay = Playfair_Display({
 
 export async function generateMetadata(): Promise<Metadata> {
   // Site-wide noindex while pre-launch demo content is blocked from crawlers.
-  const { block_search_indexing } = await getSiteSettings()
+  const [{ block_search_indexing, brand_name }, seo] = await Promise.all([getSiteSettings(), getSeoSettings()])
+  const verification = {
+    ...(seo.google_verification ? { google: seo.google_verification } : {}),
+    ...(seo.bing_verification ? { other: { 'msvalidate.01': seo.bing_verification } } : {}),
+  }
 
+  // Defaults only. Public pages set their own title, description, canonical and
+  // share image through lib/seo; the template covers any page that still
+  // exports a bare title string.
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.infiniatransfers.com'),
+    metadataBase: new URL(getSiteUrl()),
     title: {
-      default: 'Infinia Transfers | Airport & City Transfers, Fixed-Price',
-      template: '%s | Infinia Transfers',
+      default: seo.default_title,
+      template: `%s${titleSuffix(seo, brand_name)}`,
     },
-    description: 'Book private airport and city transfers in 47 cities. Fixed pricing, confirmed in under 90 seconds.',
+    description: seo.default_description,
     openGraph: {
       type: 'website',
-      siteName: 'Infinia Transfers',
-      title: 'Infinia Transfers | Airport & City Transfers, Fixed-Price',
-      description: 'Book private airport and city transfers in 47 cities. Fixed pricing, confirmed in under 90 seconds.',
+      siteName: brand_name,
+      title: seo.default_title,
+      description: seo.default_description,
+      ...(seo.default_og_image_url ? { images: [{ url: seo.default_og_image_url }] } : {}),
     },
+    ...(Object.keys(verification).length > 0 ? { verification } : {}),
     ...(block_search_indexing ? { robots: { index: false, follow: false } } : {}),
   }
 }

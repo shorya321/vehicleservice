@@ -3,9 +3,11 @@ import { useState, useRef } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import Image from "next/image"
 import { VehicleClassCategory } from "@/app/actions"
+import type { SectionHeader as SectionHeaderContent } from "@/lib/cms/fields"
 
 interface VehicleClassesClientProps {
   categories: VehicleClassCategory[]
+  content: SectionHeaderContent
 }
 
 /**
@@ -27,24 +29,22 @@ function Spec({ label, value }: { label: string; value: string | number }) {
   )
 }
 
-function SectionHeader() {
+function SectionHeader({ content }: { content: SectionHeaderContent }) {
   return (
     <>
       <div className="editorial-eyebrow editorial-eyebrow--pill">
         <i aria-hidden="true" />
-        The fleet
+        {content.eyebrow}
       </div>
       <h2 id="fleet-heading" className="editorial-section-title mt-5">
-        A small fleet, kept in order.
+        {content.title}
       </h2>
-      <p className="editorial-body mt-6">
-        Mercedes, BMW, and Cadillac on rotating annual leases. Choose by passenger count, luggage capacity, and the kind of arrival you want to make.
-      </p>
+      {content.body && <p className="editorial-body mt-6">{content.body}</p>}
     </>
   )
 }
 
-export function VehicleClassesClient({ categories }: VehicleClassesClientProps) {
+export function VehicleClassesClient({ categories, content }: VehicleClassesClientProps) {
   const reduceMotion = useReducedMotion()
   const [activeTab, setActiveTab] = useState<string>(categories[0]?.categoryId || "")
   const tabsRef = useRef<Map<string, HTMLButtonElement>>(new Map())
@@ -93,7 +93,7 @@ export function VehicleClassesClient({ categories }: VehicleClassesClientProps) 
       >
         <div className="luxury-container">
           <header className="max-w-2xl">
-            <SectionHeader />
+            <SectionHeader content={content} />
           </header>
           <p className="mt-12 text-[var(--text-muted)]">No vehicle classes available at the moment.</p>
         </div>
@@ -131,7 +131,7 @@ export function VehicleClassesClient({ categories }: VehicleClassesClientProps) 
           transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, amount: 0.4 }}
         >
-          <SectionHeader />
+          <SectionHeader content={content} />
 
           <div
             role="tablist"

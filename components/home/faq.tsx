@@ -2,8 +2,9 @@
 import { useState } from "react"
 import { motion, useReducedMotion } from "motion/react"
 import { FaqPanel } from "./faq-panel"
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
 
-export function FAQ() {
+export function FAQ({ content }: { content: HomeContent["faq"] }) {
   const reduceMotion = useReducedMotion()
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
@@ -28,7 +29,7 @@ export function FAQ() {
           transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, amount: 0.15 }}
         >
-          <FaqPanel openIndex={openIndex} onToggle={toggle} />
+          <FaqPanel openIndex={openIndex} onToggle={toggle} content={content} />
         </motion.div>
       </div>
     </section>

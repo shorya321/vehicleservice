@@ -5,7 +5,7 @@ import { getPublicRoutes } from './actions'
 import { RoutesListClient } from '@/components/routes/routes-list-client'
 
 export const metadata: Metadata = {
-  title: 'Transfer Routes | Infinia Transfers',
+  title: 'Transfer Routes',
   description: 'Browse all luxury transfer routes in Dubai. Popular routes highlighted. Book your private chauffeur transfer today.',
   openGraph: {
     title: 'Transfer Routes | Infinia Transfers',

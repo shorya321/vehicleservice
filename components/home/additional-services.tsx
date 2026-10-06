@@ -2,65 +2,26 @@
 import Image from 'next/image'
 import { motion, useReducedMotion } from "motion/react"
 
-interface Extra {
-  title: string
-  body: string
-  meta: string
-  /** Present on the two photographic cells, absent on the two typographic ones. */
-  image?: {
-    src: string
-    alt: string
-    /**
-     * Where to anchor the cover crop. Both photos put their subject off-centre,
-     * and the two cells crop on opposite axes, so neither can take the default.
-     */
-    position: string
-  }
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
+
+interface AdditionalServicesProps {
+  content: HomeContent['onboard']
 }
 
 /**
- * Order matters. The bento places cells by position, not by name: the two
- * photographic cells have to come first so the wide tile and the tall tile land
- * in the right slots. See PLACEMENT below.
+ * Where to anchor each photo cell's cover crop. The wide tile crops vertically
+ * and the tall tile crops slightly, and the shipped photos put their subjects
+ * off-centre: 42% keeps both faces in the child-seat shot, 62% lifts the
+ * drinks clear of the caption scrim. Kept by cell, not by photo, so a replaced
+ * image lands with a sensible crop for the slot it is in.
  */
-const extras: Extra[] = [
-  {
-    title: "Child seats",
-    body: "Age-appropriate seating provided on request: infant (up to 10kg), toddler (9-18kg), or booster (15-36kg). Installed before pickup.",
-    meta: "Added at checkout",
-    image: {
-      src: '/images/onboard/child-seat.webp',
-      alt: 'A father fastening a toddler into a child seat in the back of a car',
-      // Wide tile, so the crop is vertical. Centre would cut both faces off at
-      // the chin; 42% keeps the adult and the child in frame.
-      position: 'object-[center_42%]',
-    },
-  },
-  {
-    title: "Wi-Fi and refreshments",
-    body: "Complimentary on every transfer. Onboard router with international roaming, bottled water, and a selection of soft drinks.",
-    meta: "Included",
-    image: {
-      src: '/images/onboard/in-car-refreshments.webp',
-      alt: 'Two iced drinks resting in a car console, city towers through the window behind',
-      // Tall tile against a portrait source, so the crop is slight and vertical.
-      // The glasses sit low in the frame and the caption scrim is heaviest at
-      // the bottom, so pull the crop down to lift them clear of it.
-      position: 'object-[center_62%]',
-    },
-  },
-  {
-    title: "Extended waiting",
-    body: "Hold the vehicle for an additional hour beyond the included grace period. Useful for delayed bag drop, customs, or unscheduled stops.",
-    meta: "+1 hour included free",
-  },
-  {
-    title: "Escorted from arrivals",
-    body: "Chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. Default on every airport transfer.",
-    meta: "Included",
-  },
-]
+const PHOTO_POSITION = ['object-[center_42%]', 'object-[center_62%]', 'object-center', 'object-center']
 
+/**
+ * Order matters. The bento places cells by position, not by name, and the
+ * shipped layout has photographs in the first two cells (wide, then tall).
+ * See PLACEMENT below.
+ */
 /**
  * 2x2 bento: one wide tile, one tall tile down the right spanning both rows,
  * two small tiles beneath the wide one. Four items, four cells, no empty slot.
@@ -98,7 +59,7 @@ const PHOTO_SCRIM =
  * flips true, `whileInView` becomes undefined, and nothing animates the section
  * back. Reduced-motion users got a permanently invisible section.
  */
-export function AdditionalServices() {
+export function AdditionalServices({ content }: AdditionalServicesProps) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -116,20 +77,18 @@ export function AdditionalServices() {
         >
           <div className="editorial-eyebrow editorial-eyebrow--pill">
             <i aria-hidden="true" />
-            Onboard
+            {content.eyebrow}
           </div>
           <h2 id="extras-heading" className="editorial-section-title mt-5">
-            Quietly included.
+            {content.title}
           </h2>
-          <p className="editorial-body mt-6">
-            The things travellers actually ask for, added at checkout or fitted before pickup. No upsell sequence.
-          </p>
+          {content.body && <p className="editorial-body mt-6">{content.body}</p>}
         </motion.header>
 
         <ul className="mt-12 grid grid-cols-1 gap-5 min-[800px]:grid-cols-[1fr_1fr_0.92fr]">
-          {extras.map((extra, index) => (
+          {content.items.map((extra, index) => (
             <motion.li
-              key={extra.title}
+              key={index}
               className={`extras-tile group relative isolate flex min-h-[15rem] flex-col overflow-hidden rounded-[8px] p-7 ${PLACEMENT[index]} ${
                 extra.image
                   ? 'justify-end'
@@ -155,10 +114,10 @@ export function AdditionalServices() {
                       these are already WebP at 40 KB and 67 KB, and the section sits
                       below the fold so they load lazily. */}
                   <Image
-                    src={extra.image.src}
-                    alt={extra.image.alt}
+                    src={extra.image}
+                    alt={extra.alt}
                     fill
-                    unoptimized
+                    unoptimized={extra.image.startsWith('/')}
                     sizes="(min-width: 800px) 60vw, 100vw"
                     // The easing is an inline style, not an `ease-[...]` class,
                     // because Tailwind emits no rule for arbitrary easing values
@@ -167,7 +126,7 @@ export function AdditionalServices() {
                     // computes to transition-transform's own ease-in-out default.
                     // Verified in the browser, not assumed.
                     style={{ transitionTimingFunction: 'var(--ease-luxury)' }}
-                    className={`z-0 object-cover ${extra.image.position} transition-transform duration-700 group-hover:scale-[1.035] ${PHOTO_FILTER}`}
+                    className={`z-0 object-cover ${PHOTO_POSITION[index]} transition-transform duration-700 group-hover:scale-[1.035] ${PHOTO_FILTER}`}
                   />
                   <div className={`pointer-events-none absolute inset-0 z-[1] ${PHOTO_SCRIM}`} />
                 </>
@@ -184,13 +143,15 @@ export function AdditionalServices() {
                 >
                   {extra.body}
                 </p>
-                <span
-                  className={`editorial-list-meta mt-5 inline-block ${
-                    extra.image ? 'text-[#d4c4a8]' : ''
-                  }`}
-                >
-                  {extra.meta}
-                </span>
+                {extra.meta && (
+                  <span
+                    className={`editorial-list-meta mt-5 inline-block ${
+                      extra.image ? 'text-[#d4c4a8]' : ''
+                    }`}
+                  >
+                    {extra.meta}
+                  </span>
+                )}
               </div>
             </motion.li>
           ))}

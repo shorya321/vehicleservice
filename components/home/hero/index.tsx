@@ -1,14 +1,23 @@
 import { HeroMap } from './hero-map'
 import { SearchForm } from './search-form'
 import type { TripSettings } from '@/lib/trips/settings'
+import type { HeroContent } from '@/lib/cms/templates/home/schema'
 
 interface HeroProps {
   todayDate: string
   /** Trip types the admin has switched on (Settings > General). */
   tripSettings?: TripSettings
+  content: HeroContent
+  /**
+   * False while there are no approved reviews. A rating stat then reads as a
+   * claim the testimonials further down contradict, so it is left out.
+   */
+  hasReviews: boolean
 }
 
-export function Hero({ todayDate, tripSettings }: HeroProps) {
+export function Hero({ todayDate, tripSettings, content, hasReviews }: HeroProps) {
+  const stats = content.stats.filter((stat) => hasReviews || !stat.is_rating)
+
   return (
     <section
       id="hero"
@@ -25,8 +34,13 @@ export function Hero({ todayDate, tripSettings }: HeroProps) {
             {/* One flex child. Loose text nodes become separate flex items and
                 wrap into columns once the rules take their share of the row. */}
             <span>
-              Airport &amp; city transfers,{' '}
-              <span className="text-[var(--gold-text)]">fixed-price</span>
+              {content.eyebrow}
+              {content.eyebrow_accent && (
+                <>
+                  {' '}
+                  <span className="text-[var(--gold-text)]">{content.eyebrow_accent}</span>
+                </>
+              )}
             </span>
           </p>
 
@@ -34,11 +48,11 @@ export function Hero({ todayDate, tripSettings }: HeroProps) {
             id="hero-headline"
             className="hero-reveal hero-reveal--headline hero-headline mt-[1.625rem] text-[clamp(2.5rem,6.2vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.032em] text-[var(--text-primary)]"
           >
-            Booked before you land.
+            {content.title}
           </h1>
 
           <p className="hero-reveal hero-reveal--summary hero-summary mx-auto mt-[1.625rem] max-w-[46ch] text-[1.0625rem] leading-[1.62] text-[var(--text-secondary)]">
-            Pick a route, choose a vehicle, confirm your transfer. Fixed pricing in your currency across 40+ cities.
+            {content.summary}
           </p>
 
           <div className="hero-booking-reveal mt-12 w-full">
@@ -46,29 +60,29 @@ export function Hero({ todayDate, tripSettings }: HeroProps) {
           </div>
 
           <p className="hero-reveal hero-reveal--trust hero-trust mt-5">
-            <span>Fixed price at booking</span>
-            <span>Flight tracked</span>
-            <span>Free cancellation</span>
+            {content.trust.map((item, index) => (
+              <span key={index}>{item}</span>
+            ))}
           </p>
 
-          <dl className="hero-reveal hero-reveal--stats hero-stats mt-12">
-            <div>
-              <dt>Cities</dt>
-              <dd>40+</dd>
-            </div>
-            <div>
-              <dt>Vehicles</dt>
-              <dd>120+</dd>
-            </div>
-            <div>
-              <dt>Rating</dt>
-              <dd>
-                4.9
-                <span className="hero-stats-star" aria-hidden="true">&#9733;</span>
-                <span className="sr-only"> star</span>
-              </dd>
-            </div>
-          </dl>
+          {stats.length > 0 && (
+            <dl className="hero-reveal hero-reveal--stats hero-stats mt-12">
+              {stats.map((stat, index) => (
+                <div key={index}>
+                  <dt>{stat.label}</dt>
+                  <dd>
+                    {stat.value}
+                    {stat.is_rating && (
+                      <>
+                        <span className="hero-stats-star" aria-hidden="true">&#9733;</span>
+                        <span className="sr-only"> star</span>
+                      </>
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
       </div>
     </section>

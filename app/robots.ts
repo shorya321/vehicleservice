@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { getSiteSettings } from '@/lib/site-settings/server'
+import { getSiteUrl } from '@/lib/seo/site-url'
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.infiniatransfers.com'
+  const baseUrl = getSiteUrl()
   const { block_search_indexing } = await getSiteSettings()
 
   // Pre-launch: block every crawler from the whole site, advertise no sitemap.
@@ -20,7 +21,21 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin/', '/vendor/', '/business/', '/api/', '/account/'],
+      // Portals, plus mid-booking pages that also carry noindex. Prefixes
+      // without a trailing slash also match their sub-paths (/checkout/...).
+      disallow: [
+        '/admin/',
+        '/vendor/',
+        '/business/',
+        '/api/',
+        '/account/',
+        '/checkout',
+        '/payment',
+        '/booking/',
+        '/search/results',
+        '/auth/',
+        '/vendor-application',
+      ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   }

@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Search,
   Compass,
   Building2,
   Tag,
@@ -131,6 +132,18 @@ const navGroups: NavGroup[] = [
   {
     label: 'Content',
     items: [
+      {
+        name: "Pages",
+        href: "/admin/content/pages",
+        icon: FileText,
+        badge: null,
+      },
+      {
+        name: "SEO",
+        href: "/admin/seo",
+        icon: Search,
+        badge: null,
+      },
       {
         name: "Blog",
         href: "/admin/blog/posts",

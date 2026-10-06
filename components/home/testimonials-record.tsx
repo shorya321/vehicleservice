@@ -1,5 +1,4 @@
 import * as React from "react"
-import Link from "next/link"
 import { ArrowRight, Star } from "lucide-react"
 import {
   formatAverage,
@@ -9,6 +8,8 @@ import {
   type RatingRow,
   type ReviewStatsSummary,
 } from "@/lib/reviews/home-record"
+import { CmsLink } from "@/components/cms/cms-link"
+import type { HomeContent } from "@/lib/cms/templates/home/schema"
 
 // `import * as React` is for jest: ts-jest compiles JSX with the classic
 // runtime, which needs React in scope. Next itself uses the automatic runtime.
@@ -20,6 +21,7 @@ export interface TestimonialsRecordProps {
   attribution: string | null
   stats: ReviewStatsSummary
   rows: readonly RatingRow[]
+  content: HomeContent["testimonials"]
 }
 
 function RecordStars({ filled }: { filled: number }) {
@@ -72,7 +74,11 @@ function ScoreCard({ stats, rows }: Pick<TestimonialsRecordProps, "stats" | "row
   )
 }
 
-function QuoteColumn({ quote, attribution }: Pick<TestimonialsRecordProps, "quote" | "attribution">) {
+function QuoteColumn({
+  quote,
+  attribution,
+  cta,
+}: Pick<TestimonialsRecordProps, "quote" | "attribution"> & { cta: HomeContent["testimonials"]["cta"] }) {
   return (
     <div>
       {quote ? (
@@ -87,10 +93,10 @@ function QuoteColumn({ quote, attribution }: Pick<TestimonialsRecordProps, "quot
         </div>
       )}
       <div className="mt-8">
-        <Link href="/reviews" className="btn btn-secondary">
-          Read every review
+        <CmsLink href={cta.href} className="btn btn-secondary">
+          {cta.label}
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
-        </Link>
+        </CmsLink>
       </div>
     </div>
   )
@@ -101,21 +107,22 @@ function QuoteColumn({ quote, attribution }: Pick<TestimonialsRecordProps, "quot
  * ./testimonials.tsx. Every figure is from the `reviews` table; the empty
  * record is shown as empty rather than filled with sample copy.
  */
-export function TestimonialsRecord({ quote, attribution, stats, rows }: TestimonialsRecordProps) {
+export function TestimonialsRecord({ quote, attribution, stats, rows, content }: TestimonialsRecordProps) {
   return (
     <>
       <header className="max-w-2xl">
         <div className="editorial-eyebrow editorial-eyebrow--pill">
           <i aria-hidden="true" />
-          Spoken for
+          {content.eyebrow}
         </div>
         <h2 id="testimonials-heading" className="editorial-section-title mt-5">
-          Travellers on record.
+          {content.title}
         </h2>
+        {content.body && <p className="editorial-body mt-6">{content.body}</p>}
       </header>
       <div className="record-grid">
         <ScoreCard stats={stats} rows={rows} />
-        <QuoteColumn quote={quote} attribution={attribution} />
+        <QuoteColumn quote={quote} attribution={attribution} cta={content.cta} />
       </div>
     </>
   )

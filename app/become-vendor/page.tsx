@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { Metadata } from "next"
+import { buildPageMetadata } from '@/lib/seo/page-metadata'
+import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ArrowLeft } from "lucide-react"
@@ -13,9 +15,8 @@ import { ApplicationIndex } from "./components/application-index"
 import { AfterSubmit } from "./components/after-submit"
 import { PartnerBenefits, PartnerRequirements } from "./components/partner-rail"
 
-export const metadata: Metadata = {
-  title: "Become a Vendor | Start Your Transfer Business",
-  description: "Apply to list your vehicles and start your rental business with us",
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata('/become-vendor', PAGE_FALLBACKS['/become-vendor'])
 }
 
 export default async function BecomeVendorPage() {

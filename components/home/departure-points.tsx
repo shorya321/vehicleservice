@@ -1,6 +1,7 @@
 import { getCachedPopularRoutes } from '@/lib/home/catalog'
 import { collapseCorridors } from '@/lib/routes/corridors'
 import { DeparturePointsClient } from './departure-points-client'
+import type { SectionHeader } from '@/lib/cms/fields'
 
 /**
  * The old five-corridor cap was geometry, not editorial judgement: the grid ran
@@ -16,7 +17,12 @@ import { DeparturePointsClient } from './departure-points-client'
  */
 const MAX_CORRIDORS = 10
 
-export async function DeparturePoints({ todayDate }: { todayDate: string }) {
+interface DeparturePointsProps {
+  todayDate: string
+  content: SectionHeader
+}
+
+export async function DeparturePoints({ todayDate, content }: DeparturePointsProps) {
   const routes = await getCachedPopularRoutes()
   const collapsed = collapseCorridors(routes)
   const corridors = collapsed.slice(0, MAX_CORRIDORS)
@@ -33,6 +39,7 @@ export async function DeparturePoints({ todayDate }: { todayDate: string }) {
       corridors={corridors}
       totalCorridors={collapsed.length}
       todayDate={todayDate}
+      content={content}
     />
   )
 }
