@@ -41,6 +41,7 @@ const targets = [
   },
 ]
 
+/** Phone and tablet share bar, pinned to the bottom of the screen. */
 export function FloatingShare({ url, title }: FloatingShareProps) {
   const [copied, setCopied] = useState(false)
 
@@ -57,38 +58,8 @@ export function FloatingShare({ url, title }: FloatingShareProps) {
   const buttonClassName =
     'w-11 h-11 flex items-center justify-center rounded-[4px] border border-[var(--graphite)] text-[var(--text-muted)] hover:text-[var(--gold-text)] hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/5 focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2 transition-all duration-200'
 
+  // Bottom bar below 1024px; wider screens share from the article sidebar.
   return (
-    <>
-      {/* Desktop sidebar */}
-      <div className="blog-floating-share">
-        <div className="flex flex-col gap-2">
-          {targets.map((target) => (
-            <a
-              key={target.name}
-              href={target.href(url, title)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClassName}
-              aria-label={`Share on ${target.name}`}
-            >
-              {target.icon}
-            </a>
-          ))}
-          <button
-            onClick={copyLink}
-            className={`${buttonClassName}${copied ? ' copy-link--copied' : ''}`}
-            aria-label={copied ? 'Link copied' : 'Copy link'}
-          >
-            {copied ? (
-              <Check className="w-4 h-4" />
-            ) : (
-              <Link2 className="w-4 h-4" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile bottom bar */}
       <div className="blog-floating-share__mobile">
         <div className="flex gap-2">
           {targets.map((target) => (
@@ -116,6 +87,5 @@ export function FloatingShare({ url, title }: FloatingShareProps) {
           </button>
         </div>
       </div>
-    </>
   )
 }
