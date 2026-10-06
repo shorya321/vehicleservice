@@ -4,6 +4,10 @@ import type { Tables } from '@/lib/supabase/types'
 import { PAGES_TAG, pageTag, type CmsPage, type PageKind, type PageStatus, type PageTemplate } from './types'
 import { parseHomeContent } from './templates/home/parse'
 import type { HomeContent } from './templates/home/schema'
+import { parseLegalContent } from './templates/legal/parse'
+import type { LegalContent } from './templates/legal/schema'
+import { parseContactContent } from './templates/contact/parse'
+import type { ContactContent } from './templates/contact/schema'
 
 const REVALIDATE_SECONDS = 3600
 
@@ -62,4 +66,16 @@ export async function getPublishedPage(slug: string): Promise<CmsPage | null> {
 export async function getHomeContent(): Promise<{ page: CmsPage | null; content: HomeContent }> {
   const page = await getPublishedPage('/')
   return { page, content: parseHomeContent(page?.content) }
+}
+
+/** A Terms or Privacy page's content, or its shipped default. */
+export async function getLegalContent(slug: string, fallback: LegalContent): Promise<LegalContent> {
+  const page = await getPublishedPage(slug)
+  return parseLegalContent(page?.content, fallback)
+}
+
+/** Contact page copy, or the shipped default. */
+export async function getContactContent(): Promise<ContactContent> {
+  const page = await getPublishedPage('/contact')
+  return parseContactContent(page?.content)
 }

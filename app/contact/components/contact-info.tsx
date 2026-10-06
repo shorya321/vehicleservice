@@ -1,4 +1,6 @@
 import { MapPin, Mail, Phone, Clock, ArrowRight, LucideIcon } from 'lucide-react'
+import type { ContactContent } from '@/lib/cms/templates/contact/schema'
+import type { ContactDetails } from '@/lib/cms/templates/contact/details'
 
 interface ContactLine {
   text: string
@@ -15,38 +17,14 @@ interface ContactEntry {
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]'
 
-const contactEntries: ContactEntry[] = [
-  {
-    icon: MapPin,
-    label: 'Office',
-    lines: [
-      { text: 'Business Bay, Dubai' },
-      { text: 'United Arab Emirates' },
-    ],
-  },
-  {
-    icon: Mail,
-    label: 'Email',
-    lines: [
-      { text: 'info@infiniatransfers.com', href: 'mailto:info@infiniatransfers.com' },
-    ],
-  },
-  {
-    icon: Phone,
-    label: 'Phone',
-    lines: [
-      { text: '+971 50 123 4567', href: 'tel:+971501234567' },
-    ],
-  },
-  {
-    icon: Clock,
-    label: 'Hours',
-    lines: [
-      { text: 'Available 24/7' },
-    ],
-    muted: true,
-  },
-]
+function buildEntries(details: ContactDetails, hours: string): ContactEntry[] {
+  return [
+    { icon: MapPin, label: 'Office', lines: details.officeLines.map((text) => ({ text })) },
+    { icon: Mail, label: 'Email', lines: [{ text: details.email, href: `mailto:${details.email}` }] },
+    { icon: Phone, label: 'Phone', lines: [{ text: details.phone, href: details.phoneHref }] },
+    { icon: Clock, label: 'Hours', lines: [{ text: hours }], muted: true },
+  ]
+}
 
 function ContactEntryRow({ entry }: { entry: ContactEntry }) {
   const Icon = entry.icon
@@ -91,26 +69,33 @@ function SideCard({ label, children }: { label: string; children: React.ReactNod
   )
 }
 
-export function ContactInfo() {
+interface ContactInfoProps {
+  content: ContactContent['details']
+  details: ContactDetails
+}
+
+export function ContactInfo({ content, details }: ContactInfoProps) {
+  const entries = buildEntries(details, content.hours).filter((entry) => entry.lines.length > 0)
+
   return (
     <div>
       {/* Mobile quick-action: email */}
       <div className="flex flex-col gap-3 mb-6 lg:hidden">
         <a
-          href="mailto:info@infiniatransfers.com"
+          href={`mailto:${details.email}`}
           className={`flex items-center justify-center gap-2.5 h-[52px] rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] text-[var(--text-primary)] hover:border-[rgba(var(--gold-rgb),0.3)] hover:text-[var(--gold-text-hover)] transition-colors duration-200 ${FOCUS_RING}`}
         >
           <Mail className="w-4 h-4" />
-          <span className="text-[0.875rem] font-medium">info@infiniatransfers.com</span>
+          <span className="text-[0.875rem] font-medium">{details.email}</span>
         </a>
       </div>
 
       {/* Contact detail list. Responsive via internal class toggles */}
       <h2 className="hidden lg:block text-[1.25rem] font-semibold text-[var(--text-primary)] mb-6 [text-wrap:balance]">
-        Contact details
+        {content.heading}
       </h2>
       <div className="divide-y divide-[var(--graphite)]">
-        {contactEntries.map((entry) => (
+        {entries.map((entry) => (
           <div key={entry.label} className="py-4 lg:py-5 first:pt-0 last:pb-0">
             <ContactEntryRow entry={entry} />
           </div>
@@ -118,24 +103,22 @@ export function ContactInfo() {
       </div>
 
       <div className="mt-8 flex flex-col gap-3.5">
-        <SideCard label="Travelling today">
+        <SideCard label={content.travelling.label}>
           <p className="text-[0.875rem] leading-[1.65] tracking-[0.01em] text-[var(--text-secondary)] mb-[1.125rem] [text-wrap:pretty]">
-            If your pickup is inside the next 12 hours, call the desk instead of writing. We
-            track your flight and hold the car for 45 minutes after you land.
+            {content.travelling.body}
           </p>
           <a
-            href="tel:+971501234567"
+            href={details.phoneHref}
             className={`btn btn-secondary gap-3 px-[1.375rem] py-3 rounded-[8px] tracking-[0.01em] normal-case ${FOCUS_RING}`}
           >
-            Call the desk
+            {content.travelling.cta_label}
             <ArrowRight className="w-4 h-4" />
           </a>
         </SideCard>
 
-        <SideCard label="Corporate accounts">
+        <SideCard label={content.corporate.label}>
           <p className="text-[0.875rem] leading-[1.65] tracking-[0.01em] text-[var(--text-secondary)] [text-wrap:pretty]">
-            Monthly invoicing, priority booking and a named account manager. Pick Corporate
-            Services in the form and we set it up in one call.
+            {content.corporate.body}
           </p>
         </SideCard>
       </div>

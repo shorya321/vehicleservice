@@ -17,6 +17,13 @@ import { Button } from '@/components/ui/button'
 import { SeoPanel } from '@/components/admin/seo/seo-panel'
 import { PageEditorTabs } from './components/page-editor-tabs'
 import { HomeContentForm } from './components/home/home-content-form'
+import { ContactContentForm } from './components/contact/contact-content-form'
+import { LegalContentForm } from './components/legal/legal-content-form'
+import { parseContactContent } from '@/lib/cms/templates/contact/parse'
+import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
+import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
+import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
+import type { CmsPage } from '@/lib/cms/types'
 
 export const metadata: Metadata = {
   title: 'Edit Page | Admin Portal',
@@ -55,14 +62,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
     : seoSettings.default_title
   const fallbackDescription = fallback?.description ?? seoSettings.default_description
 
-  const content =
-    page.template === 'home' ? (
-      <HomeContentForm pageId={page.id} initialContent={parseHomeContent(page.content)} />
-    ) : (
-      <p className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-        The content editor for this page is coming next. Its SEO can already be set in the SEO tab.
-      </p>
-    )
+  const content = renderContentEditor(page)
 
   return (
     <AnimatedPage>
@@ -97,4 +97,24 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
       </div>
     </AnimatedPage>
   )
+}
+
+/** The content form for a page's template, or a note where none exists yet. */
+function renderContentEditor(page: CmsPage) {
+  switch (page.template) {
+    case 'home':
+      return <HomeContentForm pageId={page.id} initialContent={parseHomeContent(page.content)} />
+    case 'contact':
+      return <ContactContentForm pageId={page.id} initialContent={parseContactContent(page.content)} />
+    case 'terms':
+      return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_TERMS_CONTENT)} />
+    case 'privacy':
+      return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_PRIVACY_CONTENT)} />
+    default:
+      return (
+        <p className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+          This page is behind a sign-in, so its copy stays in code. Its SEO can be set in the SEO tab.
+        </p>
+      )
+  }
 }

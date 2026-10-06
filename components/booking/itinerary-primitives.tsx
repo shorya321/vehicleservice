@@ -162,7 +162,7 @@ export function SummaryRow({ label, value }: { label: string; value: string }) {
 
 /**
  * The three guarantees, copied verbatim from components/checkout/trust-block.tsx, which sources
- * every claim to app/terms/components/terms-content.tsx. Do not add a claim here that is not in
+ * every claim to the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts). Do not add a claim here that is not in
  * the Terms, and do not reword these without changing the Terms first.
  */
 export const GUARANTEES = [

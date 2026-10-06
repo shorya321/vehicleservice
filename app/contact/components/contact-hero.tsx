@@ -1,40 +1,45 @@
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)]'
 
-export function ContactHero() {
+import type { ContactContent } from '@/lib/cms/templates/contact/schema'
+import type { ContactDetails } from '@/lib/cms/templates/contact/details'
+
+interface ContactHeroProps {
+  content: ContactContent['hero']
+  details: ContactDetails
+}
+
+export function ContactHero({ content, details }: ContactHeroProps) {
   return (
     <section className="editorial-section editorial-section--ground editorial-section--compact">
       <div className="luxury-container">
-        <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Get in touch</p>
+        <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />{content.eyebrow}</p>
 
         <h1 className="editorial-section-title mt-5 max-w-[28ch]">
-          Talk to the people who run the transfer.
+          {content.title}
         </h1>
 
-        <p className="editorial-body mt-6">
-          Questions about a booking, corporate accounts, or feedback on a journey you have
-          already taken. Every message reaches the concierge desk in Business Bay.
-        </p>
+        {content.body && <p className="editorial-body mt-6">{content.body}</p>}
 
         <dl className="trip-ledger mt-10">
           <div className="trip-ledger__item">
-            <dt className="trip-ledger__label">Reply</dt>
-            <dd className="trip-ledger__value">Within 24 hours</dd>
+            <dt className="trip-ledger__label">{content.reply.label}</dt>
+            <dd className="trip-ledger__value">{content.reply.value}</dd>
           </div>
 
           <div className="trip-ledger__item">
-            <dt className="trip-ledger__label">Desk</dt>
-            <dd className="trip-ledger__value numeric">Open 24 / 7</dd>
+            <dt className="trip-ledger__label">{content.desk.label}</dt>
+            <dd className="trip-ledger__value numeric">{content.desk.value}</dd>
           </div>
 
           <div className="trip-ledger__item">
             <dt className="trip-ledger__label">Email</dt>
             <dd className="trip-ledger__value">
               <a
-                href="mailto:info@infiniatransfers.com"
+                href={`mailto:${details.email}`}
                 className={`text-[var(--text-primary)] hover:text-[var(--gold-text-hover)] rounded-[2px] link-underline-grow ${FOCUS_RING}`}
               >
-                info@infiniatransfers.com
+                {details.email}
               </a>
             </dd>
           </div>
@@ -43,10 +48,10 @@ export function ContactHero() {
             <dt className="trip-ledger__label">Phone</dt>
             <dd className="trip-ledger__value numeric">
               <a
-                href="tel:+971501234567"
+                href={details.phoneHref}
                 className={`text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] rounded-[2px] link-underline-grow ${FOCUS_RING}`}
               >
-                +971 50 123 4567
+                {details.phone}
               </a>
             </dd>
           </div>

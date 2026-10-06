@@ -3,14 +3,16 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPublicRoutes } from './actions'
 import { RoutesListClient } from '@/components/routes/routes-list-client'
+import { buildEntityMetadata } from '@/lib/seo/page-metadata'
+import { listCanonical } from '@/lib/seo/list-canonical'
 
-export const metadata: Metadata = {
-  title: 'Transfer Routes',
-  description: 'Browse all luxury transfer routes in Dubai. Popular routes highlighted. Book your private chauffeur transfer today.',
-  openGraph: {
-    title: 'Transfer Routes | Infinia Transfers',
-    description: 'Browse all luxury transfer routes in Dubai. Book your private chauffeur transfer today.',
-  },
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { page } = await searchParams
+  return buildEntityMetadata({
+    path: listCanonical('/routes', page),
+    title: 'Transfer Routes',
+    description: 'Browse all luxury transfer routes in Dubai. Popular routes highlighted. Book your private chauffeur transfer today.',
+  })
 }
 
 const PAGE_LIMIT = 12
