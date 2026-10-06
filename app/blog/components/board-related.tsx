@@ -25,8 +25,7 @@ export function BoardRelated({ posts }: BoardRelatedProps) {
         </BlogMotionSection>
         <div className="blog-board-bento">
           {shown.map(post => (
-            // Always a third of the row, so one or two related posts stay card-sized.
-            <BoardCard key={post.id} post={post} span={4} />
+            <BoardCard key={post.id} post={post} />
           ))}
         </div>
       </div>
