@@ -2702,10 +2702,13 @@ export type Database = {
           entity_type: string
           id: string
           meta_description: string | null
+          meta_keywords: string | null
           meta_title: string | null
           nofollow: boolean
           noindex: boolean
+          og_description: string | null
           og_image_url: string | null
+          og_title: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -2716,10 +2719,13 @@ export type Database = {
           entity_type: string
           id?: string
           meta_description?: string | null
+          meta_keywords?: string | null
           meta_title?: string | null
           nofollow?: boolean
           noindex?: boolean
+          og_description?: string | null
           og_image_url?: string | null
+          og_title?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -2730,10 +2736,13 @@ export type Database = {
           entity_type?: string
           id?: string
           meta_description?: string | null
+          meta_keywords?: string | null
           meta_title?: string | null
           nofollow?: boolean
           noindex?: boolean
+          og_description?: string | null
           og_image_url?: string | null
+          og_title?: string | null
           updated_at?: string
           updated_by?: string | null
         }

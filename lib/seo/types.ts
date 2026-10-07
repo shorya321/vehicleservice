@@ -7,6 +7,10 @@ export type SeoEntityType = (typeof SEO_ENTITY_TYPES)[number]
 export const META_TITLE_LIMIT = 60
 export const META_DESCRIPTION_LIMIT = 160
 
+/** Every `seo_meta` column the app reads, kept in one place so no select drifts. */
+export const SEO_META_COLUMNS =
+  'meta_title, meta_description, meta_keywords, og_title, og_description, og_image_url, canonical_path, noindex, nofollow'
+
 export const SEO_SETTINGS_TAG = 'seo-settings'
 export const SEO_META_TAG = 'seo-meta'
 
@@ -53,6 +57,11 @@ export function parseSeoSettings(raw: unknown): SeoSettings {
 export const seoMetaSchema = z.object({
   meta_title: z.string().trim().max(120),
   meta_description: z.string().trim().max(320),
+  /** Comma-separated. Google ignores it; Bing and some site search still read it. */
+  meta_keywords: z.string().trim().max(500),
+  /** Social share card title and description. Empty uses the search ones. */
+  og_title: z.string().trim().max(120),
+  og_description: z.string().trim().max(320),
   og_image_url: optionalUrl,
   canonical_path: z
     .string()
@@ -68,6 +77,9 @@ export type SeoMetaValues = z.infer<typeof seoMetaSchema>
 export const EMPTY_SEO_META: SeoMetaValues = {
   meta_title: '',
   meta_description: '',
+  meta_keywords: '',
+  og_title: '',
+  og_description: '',
   og_image_url: '',
   canonical_path: '',
   noindex: false,

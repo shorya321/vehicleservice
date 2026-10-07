@@ -44,7 +44,7 @@ export default async function NewBlogPostPage() {
         <CardHeader>
           <CardTitle>Post Details</CardTitle>
           <CardDescription>
-            Write and configure your blog post
+            Write and configure your blog post. SEO settings open in their own tab once the post is created.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -46,6 +46,15 @@ function resolveRobots(input: MetadataInput): Metadata['robots'] {
   return undefined
 }
 
+/** Comma-separated keywords as a clean list, or undefined when there are none. */
+function parseKeywords(raw: string): string[] | undefined {
+  const keywords = raw
+    .split(',')
+    .map((keyword) => keyword.trim())
+    .filter(Boolean)
+  return keywords.length > 0 ? keywords : undefined
+}
+
 /**
  * Builds a page's metadata from its SEO overrides and the site defaults. Pure,
  * so it is unit-tested; pages call it through `buildPageMetadata`.
@@ -60,6 +69,10 @@ export function composeMetadata(input: MetadataInput): Metadata {
   const image = input.seo.og_image_url || input.image || input.settings.default_og_image_url
   const images = image ? [{ url: image }] : undefined
   const robots = resolveRobots(input)
+  const keywords = parseKeywords(input.seo.meta_keywords)
+  // Share cards can carry their own wording; otherwise they repeat the search snippet.
+  const socialTitle = input.seo.og_title || title
+  const socialDescription = input.seo.og_description || description
 
   return {
     title: { absolute: title },
@@ -69,16 +82,17 @@ export function composeMetadata(input: MetadataInput): Metadata {
       type: input.type ?? 'website',
       url: canonical,
       siteName: input.brandName,
-      title,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       ...(images ? { images } : {}),
     },
     twitter: {
       card: images ? 'summary_large_image' : 'summary',
-      title,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       ...(images ? { images: images.map((i) => i.url) } : {}),
     },
+    ...(keywords ? { keywords } : {}),
     ...(robots ? { robots } : {}),
   }
 }

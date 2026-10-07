@@ -171,9 +171,6 @@ export interface BlogPostFormData {
   category_id?: string
   status: 'draft' | 'published' | 'archived'
   is_featured: boolean
-  meta_title?: string
-  meta_description?: string
-  meta_keywords?: string
   reading_time_minutes?: number
   tag_ids?: string[]
   imageBase64?: string | null
@@ -217,9 +214,6 @@ export async function createBlogPost(data: BlogPostFormData) {
       author_id: user?.id || null,
       status: data.status,
       is_featured: data.is_featured,
-      meta_title: data.meta_title || null,
-      meta_description: data.meta_description || null,
-      meta_keywords: data.meta_keywords || null,
       reading_time_minutes: readingTime,
       published_at: data.status === 'published' ? new Date().toISOString() : null,
     })
@@ -285,9 +279,6 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
       category_id: data.category_id || null,
       status: data.status,
       is_featured: data.is_featured,
-      meta_title: data.meta_title || null,
-      meta_description: data.meta_description || null,
-      meta_keywords: data.meta_keywords || null,
       reading_time_minutes: readingTime,
       published_at: publishedAt,
       updated_at: new Date().toISOString(),
