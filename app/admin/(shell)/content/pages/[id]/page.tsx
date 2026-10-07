@@ -14,8 +14,10 @@ import { getSiteSettings } from '@/lib/site-settings/server'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { SeoPanel } from '@/components/admin/seo/seo-panel'
 import { PageEditorTabs } from './components/page-editor-tabs'
+import { PublishPageButton } from './components/publish-page-button'
 import { HomeContentForm } from './components/home/home-content-form'
 import { ContactContentForm } from './components/contact/contact-content-form'
 import { LegalContentForm } from './components/legal/legal-content-form'
@@ -23,6 +25,7 @@ import { parseContactContent } from '@/lib/cms/templates/contact/parse'
 import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
 import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
 import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
+import { DEFAULT_VENDOR_AGREEMENT_CONTENT } from '@/lib/cms/templates/legal/vendor-agreement-defaults'
 import type { CmsPage } from '@/lib/cms/types'
 
 export const metadata: Metadata = {
@@ -63,6 +66,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
   const fallbackDescription = fallback?.description ?? seoSettings.default_description
 
   const content = renderContentEditor(page)
+  const isDraft = page.status === 'draft'
 
   return (
     <AnimatedPage>
@@ -70,15 +74,23 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{page.title}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">{page.title}</h1>
+              {isDraft && <Badge variant="outline">Draft</Badge>}
+            </div>
             <p className="font-mono text-sm text-muted-foreground">{page.slug}</p>
           </div>
-          <Button asChild variant="outline">
-            <a href={page.slug} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              View live page
-            </a>
-          </Button>
+          {/* A draft 404s publicly, so it gets Publish instead of a dead link. */}
+          {isDraft ? (
+            <PublishPageButton pageId={page.id} slug={page.slug} />
+          ) : (
+            <Button asChild variant="outline">
+              <a href={page.slug} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View live page
+              </a>
+            </Button>
+          )}
         </div>
 
         <PageEditorTabs
@@ -110,6 +122,13 @@ function renderContentEditor(page: CmsPage) {
       return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_TERMS_CONTENT)} />
     case 'privacy':
       return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_PRIVACY_CONTENT)} />
+    case 'vendor-agreement':
+      return (
+        <LegalContentForm
+          pageId={page.id}
+          initialContent={parseLegalContent(page.content, DEFAULT_VENDOR_AGREEMENT_CONTENT)}
+        />
+      )
     default:
       return (
         <p className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">

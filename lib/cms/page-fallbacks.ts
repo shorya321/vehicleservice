@@ -22,6 +22,11 @@ export const PAGE_FALLBACKS: Readonly<Record<string, { title: string; descriptio
     description:
       'How Infinia Transfers collects, uses, and protects your personal data when you book private airport and city transfers.',
   },
+  '/vendor-agreement': {
+    title: 'Vendor Agreement',
+    description:
+      'The terms between Infinia Transfers and the transport companies that fulfil transfers booked through our platform.',
+  },
   '/become-vendor': {
     title: 'Become a Vendor',
     description: 'Apply to list your vehicles and start your rental business with us.',

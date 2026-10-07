@@ -13,6 +13,7 @@ import { contactContentSchema } from '@/lib/cms/templates/contact/schema'
 import { contactDetailsFrom } from '@/lib/cms/templates/contact/details'
 import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
 import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
+import { DEFAULT_VENDOR_AGREEMENT_CONTENT } from '@/lib/cms/templates/legal/vendor-agreement-defaults'
 import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
 import { legalContentSchema, toAnchor } from '@/lib/cms/templates/legal/schema'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
@@ -55,6 +56,7 @@ describe('legal content', () => {
   it.each([
     ['terms', DEFAULT_TERMS_CONTENT, 14],
     ['privacy', DEFAULT_PRIVACY_CONTENT, 12],
+    ['vendor-agreement', DEFAULT_VENDOR_AGREEMENT_CONTENT, 12],
   ])('%s ships valid defaults with every section', (_name, content, count) => {
     expect(legalContentSchema.safeParse(content).success).toBe(true)
     expect(content.sections).toHaveLength(count)
