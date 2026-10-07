@@ -16,6 +16,16 @@ export interface CmsPage {
   updatedAt: string
 }
 
+/**
+ * Whether a page offers Publish/Unpublish. Only where a draft really hides the
+ * page: the vendor agreement 404s while a draft, as custom pages will. Home,
+ * Terms, Privacy and Contact render their shipped copy whatever the status, so
+ * a toggle there would only drop them from the sitemap.
+ */
+export function canChangePageStatus(page: { kind: PageKind; template: PageTemplate }): boolean {
+  return page.kind === 'custom' || page.template === 'vendor-agreement'
+}
+
 /** Cache tags. Every public read of page content is tagged with both. */
 export const PAGES_TAG = 'pages'
 export function pageTag(slug: string): string {

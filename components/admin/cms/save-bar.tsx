@@ -6,16 +6,18 @@ import { Button } from '@/components/ui/button'
 interface SaveBarProps {
   saving: boolean
   dirty: boolean
+  /** A draft page stays hidden on save, so the button must not promise to publish it. */
+  draft?: boolean
 }
 
 /** Sticky footer with the publish button, shared by the page editors. */
-export function SaveBar({ saving, dirty }: SaveBarProps) {
+export function SaveBar({ saving, dirty, draft = false }: SaveBarProps) {
   return (
     <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t bg-background/95 py-4 backdrop-blur">
       {dirty && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
       <Button type="submit" disabled={saving}>
         {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-        Save and publish
+        {draft ? 'Save' : 'Save and publish'}
       </Button>
     </div>
   )
