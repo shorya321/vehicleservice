@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Edit, ExternalLink, FileText, MoreHorizontal, Search, X } from 'lucide-react'
+import { Edit, ExternalLink, EyeOff, FileText, Lock, MoreHorizontal, Search, Send, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,13 +17,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import type { PageStatus } from '@/lib/cms/types'
+import { PageStatusDialog, type PageStatusTarget } from './page-status-button'
 
 export interface PageRowView {
   id: string
   title: string
   slug: string
   templateLabel: string
-  status: string
+  status: PageStatus
+  /** Offers Publish/Unpublish: see `canChangePageStatus`. */
+  canChangeStatus: boolean
   seoDone: boolean
   updatedLabel: string
 }
@@ -38,6 +42,7 @@ export function PagesTable({ pages }: { pages: PageRowView[] }) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [seo, setSeo] = useState<SeoFilter>('all')
+  const [statusTarget, setStatusTarget] = useState<PageStatusTarget | null>(null)
 
   const query = search.trim().toLowerCase()
   const visible = pages.filter(
@@ -148,13 +153,40 @@ export function PagesTable({ pages }: { pages: PageRowView[] }) {
                             Edit Page
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <a href={page.slug} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            View Live Page
-                          </a>
-                        </DropdownMenuItem>
+                        {page.canChangeStatus ? (
+                          <DropdownMenuItem
+                            onClick={() => setStatusTarget({ id: page.id, slug: page.slug, status: page.status })}
+                          >
+                            {page.status === 'draft' ? (
+                              <Send className="mr-2 h-4 w-4" />
+                            ) : (
+                              <EyeOff className="mr-2 h-4 w-4" />
+                            )}
+                            {page.status === 'draft' ? 'Publish' : 'Unpublish'}
+                          </DropdownMenuItem>
+                        ) : (
+                          // Core pages render their shipped copy whatever the status, so
+                          // unpublishing would hide nothing: shown, but locked.
+                          <DropdownMenuItem disabled className="flex-col items-start gap-0.5">
+                            <span className="flex items-center">
+                              <Lock className="mr-2 h-4 w-4" />
+                              Always live
+                            </span>
+                            <span className="pl-6 text-xs text-muted-foreground">Core site page</span>
+                          </DropdownMenuItem>
+                        )}
+                        {/* A draft 404s publicly, so it gets no View link. */}
+                        {page.status !== 'draft' && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                              <a href={page.slug} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                View Live Page
+                              </a>
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -164,6 +196,7 @@ export function PagesTable({ pages }: { pages: PageRowView[] }) {
           </TableBody>
         </Table>
       </div>
+      <PageStatusDialog page={statusTarget} onClose={() => setStatusTarget(null)} />
     </div>
   )
 }

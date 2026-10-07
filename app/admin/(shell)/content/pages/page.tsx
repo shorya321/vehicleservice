@@ -3,7 +3,7 @@ import { CheckCircle2, FileText, PenLine, Search } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth/actions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toCmsPage } from '@/lib/cms/server'
-import { TEMPLATE_LABELS } from '@/lib/cms/types'
+import { TEMPLATE_LABELS, canChangePageStatus } from '@/lib/cms/types'
 import { formatBookingDate } from '@/lib/utils/timezone'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
@@ -38,6 +38,7 @@ export default async function ContentPagesPage() {
       slug: page.slug,
       templateLabel: TEMPLATE_LABELS[page.template],
       status: page.status,
+      canChangeStatus: canChangePageStatus(page),
       seoDone: Boolean(seo?.meta_title && seo?.meta_description),
       updatedLabel: formatBookingDate(page.updatedAt),
     }

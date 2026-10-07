@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Lock } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth/actions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toCmsPage } from '@/lib/cms/server'
@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SeoPanel } from '@/components/admin/seo/seo-panel'
 import { PageEditorTabs } from './components/page-editor-tabs'
-import { PublishPageButton } from './components/publish-page-button'
+import { PageStatusButton } from '../components/page-status-button'
 import { HomeContentForm } from './components/home/home-content-form'
 import { ContactContentForm } from './components/contact/contact-content-form'
 import { LegalContentForm } from './components/legal/legal-content-form'
@@ -26,7 +26,7 @@ import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
 import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
 import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
 import { DEFAULT_VENDOR_AGREEMENT_CONTENT } from '@/lib/cms/templates/legal/vendor-agreement-defaults'
-import type { CmsPage } from '@/lib/cms/types'
+import { canChangePageStatus, type CmsPage } from '@/lib/cms/types'
 
 export const metadata: Metadata = {
   title: 'Edit Page | Admin Portal',
@@ -67,6 +67,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
 
   const content = renderContentEditor(page)
   const isDraft = page.status === 'draft'
+  const canToggle = canChangePageStatus(page)
 
   return (
     <AnimatedPage>
@@ -80,17 +81,26 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
             </div>
             <p className="font-mono text-sm text-muted-foreground">{page.slug}</p>
           </div>
-          {/* A draft 404s publicly, so it gets Publish instead of a dead link. */}
-          {isDraft ? (
-            <PublishPageButton pageId={page.id} slug={page.slug} />
-          ) : (
-            <Button asChild variant="outline">
-              <a href={page.slug} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View live page
-              </a>
-            </Button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* A draft 404s publicly, so it gets no View link. */}
+            {!isDraft && (
+              <Button asChild variant="outline">
+                <a href={page.slug} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View live page
+                </a>
+              </Button>
+            )}
+            {canToggle ? (
+              <PageStatusButton page={{ id: page.id, slug: page.slug, status: page.status }} />
+            ) : (
+              // Core pages render their shipped copy whatever the status: locked.
+              <Button variant="outline" disabled title="Core site page: it is always live">
+                <Lock className="mr-2 h-4 w-4" />
+                Always live
+              </Button>
+            )}
+          </div>
         </div>
 
         <PageEditorTabs
@@ -127,6 +137,7 @@ function renderContentEditor(page: CmsPage) {
         <LegalContentForm
           pageId={page.id}
           initialContent={parseLegalContent(page.content, DEFAULT_VENDOR_AGREEMENT_CONTENT)}
+          draft={page.status === 'draft'}
         />
       )
     default:

@@ -8,7 +8,7 @@ import type { ZodTypeAny } from 'zod'
 import { homeContentSchema } from '@/lib/cms/templates/home/schema'
 import { contactContentSchema } from '@/lib/cms/templates/contact/schema'
 import { legalContentSchema } from '@/lib/cms/templates/legal/schema'
-import { PAGES_TAG, pageTag } from '@/lib/cms/types'
+import { PAGES_TAG, canChangePageStatus, pageTag, type PageKind, type PageStatus, type PageTemplate } from '@/lib/cms/types'
 import { CMS_IMAGE_BUCKET, CMS_IMAGE_FOLDER, removedCmsImages } from '@/lib/cms/images'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
 import { VEHICLE_IMAGE_EXTENSIONS } from '@/lib/vehicles/bucket'
@@ -88,43 +88,66 @@ export async function updatePageContent(pageId: string, content: unknown): Promi
 }
 
 /**
- * Takes a draft page live. One way: only a draft row matches, so a second click
- * or a stale tab cannot touch a page that is already published.
+ * Publishes or unpublishes a page. Only pages where a draft really hides the
+ * page qualify (see `canChangePageStatus`), checked against the stored row
+ * rather than anything the browser sends. Matching on the current status makes
+ * a double click or a stale tab a no-op instead of a second write.
  */
-export async function publishPage(pageId: string): Promise<ActionResult> {
+export async function setPageStatus(pageId: string, status: PageStatus): Promise<ActionResult> {
   try {
+    if (status !== 'published' && status !== 'draft') {
+      return { success: false, error: 'Unknown status' }
+    }
+
     const auth = await requireAdminAction()
     if ('error' in auth) {
       return { success: false, error: auth.error }
     }
 
-    const { data, error } = await createAdminClient()
+    const admin = createAdminClient()
+    const { data: existing, error: readError } = await admin
       .from('pages')
-      .update({ status: 'published', published_at: new Date().toISOString(), updated_by: auth.userId })
+      .select('slug, kind, template, status')
       .eq('id', pageId)
-      .eq('status', 'draft')
-      .select('slug')
-      .maybeSingle()
+      .single()
+
+    if (readError || !existing) {
+      return { success: false, error: 'Page not found' }
+    }
+    if (!canChangePageStatus({ kind: existing.kind as PageKind, template: existing.template as PageTemplate })) {
+      return { success: false, error: 'This page is always live' }
+    }
+    if (existing.status === status) {
+      return { success: false, error: status === 'published' ? 'This page is already published' : 'This page is already a draft' }
+    }
+
+    const { error } = await admin
+      .from('pages')
+      .update({
+        status,
+        ...(status === 'published' ? { published_at: new Date().toISOString() } : {}),
+        updated_by: auth.userId,
+      })
+      .eq('id', pageId)
+      .eq('status', existing.status)
 
     if (error) {
-      console.error('[cms] Failed to publish page:', error.message)
-      return { success: false, error: 'Could not publish the page. Try again.' }
-    }
-    if (!data) {
-      return { success: false, error: 'This page is already published' }
+      console.error('[cms] Failed to change page status:', error.message)
+      return { success: false, error: 'Could not update the page. Try again.' }
     }
 
-    updateTag(pageTag(data.slug))
+    updateTag(pageTag(existing.slug))
     updateTag(PAGES_TAG)
-    revalidatePath(data.slug)
+    revalidatePath(existing.slug)
+    // Its consent line links the agreement only while it is published.
     revalidatePath('/become-vendor')
     revalidatePath('/admin/content/pages')
     revalidatePath(`/admin/content/pages/${pageId}`)
 
     return { success: true }
   } catch (error: unknown) {
-    console.error('[cms] Unexpected error publishing page:', error)
-    return { success: false, error: 'Could not publish the page. Try again.' }
+    console.error('[cms] Unexpected error changing page status:', error)
+    return { success: false, error: 'Could not update the page. Try again.' }
   }
 }
 

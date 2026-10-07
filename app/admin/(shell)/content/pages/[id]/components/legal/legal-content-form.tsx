@@ -16,10 +16,12 @@ import { LegalSectionItem } from './legal-section-item'
 interface LegalContentFormProps {
   pageId: string
   initialContent: LegalContent
+  /** The page is a draft, so saving does not publish it. */
+  draft?: boolean
 }
 
 /** Terms and Privacy: the hero lines, then the policy as an ordered list of sections. */
-export function LegalContentForm({ pageId, initialContent }: LegalContentFormProps) {
+export function LegalContentForm({ pageId, initialContent, draft = false }: LegalContentFormProps) {
   const { form, saving, save } = usePageContentForm(pageId, zodResolver(legalContentSchema), initialContent)
   const { control } = form
   const { fields, append, remove, move } = useFieldArray({ control, name: 'sections' })
@@ -81,7 +83,7 @@ export function LegalContentForm({ pageId, initialContent }: LegalContentFormPro
           </Button>
         </div>
 
-        <SaveBar saving={saving} dirty={form.formState.isDirty} />
+        <SaveBar saving={saving} dirty={form.formState.isDirty} draft={draft} />
       </form>
     </Form>
   )
