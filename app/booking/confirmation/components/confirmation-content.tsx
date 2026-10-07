@@ -490,7 +490,7 @@ export function ConfirmationContent({
                     <li>
                       <DayTime value={shiftedTime(pickupDate, 45)} />
                       <span className="confirm-sat__what">
-                        The car waits until this time at no charge, or 45 minutes past landing on airport pickups.
+                        The car waits until this time at no charge, or 60 minutes past landing on airport pickups.
                       </span>
                     </li>
                   </ol>
@@ -503,7 +503,7 @@ export function ConfirmationContent({
                     <li>
                       <DayTime value="02" />
                       <span className="confirm-sat__what">
-                        Your chauffeur will wait up to 45 minutes past the scheduled pickup, or past your actual landing
+                        Your chauffeur will wait up to 60 minutes past the scheduled pickup, or past your actual landing
                         time on airport pickups.
                       </span>
                     </li>

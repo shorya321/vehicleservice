@@ -14,7 +14,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
     hours: 'Available 24/7',
     travelling: {
       label: 'Travelling today',
-      body: 'If your pickup is inside the next 12 hours, call the desk instead of writing. We track your flight and hold the car for 45 minutes after you land.',
+      body: 'If your pickup is inside the next 12 hours, call the desk instead of writing. We track your flight and hold the car for 60 minutes after you land.',
       cta_label: 'Call the desk',
     },
     corporate: {

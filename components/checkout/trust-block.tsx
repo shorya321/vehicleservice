@@ -5,7 +5,7 @@
  *
  * Every claim here is contractual, not marketing. Sources:
  *  - Free cancellation up to 24h  -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Cancellation)
- *  - 45 minutes free waiting      -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Waiting Time)
+ *  - 60 minutes free waiting      -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Waiting Time)
  *  - What the fixed fare includes -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Pricing)
  *  - Name board in arrivals       -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Service Delivery)
  *
@@ -18,7 +18,7 @@ const GUARANTEES = [
   },
   {
     label: 'Waiting time',
-    body: '45 minutes free, from your actual landing time on tracked airport arrivals.',
+    body: '60 minutes free, from your actual landing time on tracked airport arrivals.',
   },
   {
     label: 'Your chauffeur',

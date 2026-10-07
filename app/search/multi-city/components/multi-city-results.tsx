@@ -29,7 +29,7 @@ const MULTI_CITY_STEPS: BookingStep[] = [
   {
     index: '03',
     title: 'Meet your chauffeur',
-    body: '45 minutes of free waiting at every pickup, tracked airport arrivals included.',
+    body: '60 minutes of free waiting at every pickup, tracked airport arrivals included.',
     foot: 'Name board at the door',
   },
 ]

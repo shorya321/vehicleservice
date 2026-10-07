@@ -133,7 +133,7 @@ export function VehicleTypeGridCard({ vehicleType, searchParams, index = 0 }: Ve
             Free cancellation
           </li>
           <li className="inline-flex items-center gap-1.5 before:h-1 before:w-1 before:flex-none before:rounded-full before:bg-[var(--gold)] before:opacity-[0.65] before:content-['']">
-            45 min free waiting
+            60 min free waiting
           </li>
         </ul>
 

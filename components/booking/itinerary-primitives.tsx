@@ -172,7 +172,7 @@ export const GUARANTEES = [
   },
   {
     label: 'Waiting time',
-    body: '45 minutes free, from your actual landing time on tracked airport arrivals.',
+    body: '60 minutes free, from your actual landing time on tracked airport arrivals.',
   },
   {
     label: 'Your chauffeur',
