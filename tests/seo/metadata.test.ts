@@ -72,6 +72,29 @@ describe('composeMetadata', () => {
   it('lets the site-wide block win over everything', () => {
     expect(composeMetadata({ ...base, blockIndexing: true }).robots).toEqual({ index: false, follow: false })
   })
+
+  it('emits keywords as a trimmed list, and none when empty', () => {
+    expect(composeMetadata(base).keywords).toBeUndefined()
+    const seo = { ...EMPTY_SEO_META, meta_keywords: ' dubai transfer, airport taxi ,, chauffeur ' }
+    expect(composeMetadata({ ...base, seo }).keywords).toEqual(['dubai transfer', 'airport taxi', 'chauffeur'])
+  })
+
+  it('gives social cards their own title and description when set', () => {
+    const seo = { ...EMPTY_SEO_META, og_title: 'Share title', og_description: 'Share description' }
+    const metadata = composeMetadata({ ...base, seo })
+    expect(metadata.title).toEqual({ absolute: 'Contact Us | Infinia Transfers' })
+    expect(metadata.description).toBe('Fallback description')
+    expect(metadata.openGraph).toMatchObject({ title: 'Share title', description: 'Share description' })
+    expect(metadata.twitter).toMatchObject({ title: 'Share title', description: 'Share description' })
+  })
+
+  it('falls back to the search title and description for social cards', () => {
+    const metadata = composeMetadata(base)
+    expect(metadata.openGraph).toMatchObject({
+      title: 'Contact Us | Infinia Transfers',
+      description: 'Fallback description',
+    })
+  })
 })
 
 describe('JSON-LD', () => {

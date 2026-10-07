@@ -40,9 +40,6 @@ const formSchema = z.object({
   category_id: z.string().optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   is_featured: z.boolean().default(false),
-  meta_title: z.string().optional(),
-  meta_description: z.string().optional(),
-  meta_keywords: z.string().optional(),
 })
 
 interface BlogPostFormProps {
@@ -70,9 +67,6 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
       category_id: post?.category_id || "",
       status: (post?.status as 'draft' | 'published' | 'archived') || 'draft',
       is_featured: post?.is_featured || false,
-      meta_title: post?.meta_title || "",
-      meta_description: post?.meta_description || "",
-      meta_keywords: post?.meta_keywords || "",
     },
   })
 
@@ -330,57 +324,6 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
             </FormItem>
           )}
         />
-
-        {/* SEO Section */}
-        <div className="rounded-lg border p-4 space-y-4">
-          <h3 className="font-medium">SEO Settings</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="meta_title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meta Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="SEO title (defaults to post title)" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="meta_keywords"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meta Keywords</FormLabel>
-                  <FormControl>
-                    <Input placeholder="keyword1, keyword2, keyword3" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField
-            control={form.control}
-            name="meta_description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Meta Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="SEO description (defaults to excerpt)"
-                    className="resize-none"
-                    rows={2}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
 
         <div className="flex justify-end gap-4">
           <Button

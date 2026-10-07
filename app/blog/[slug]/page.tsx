@@ -31,20 +31,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Post Not Found" }
   }
 
-  // The post's own meta fields are its SEO; the shared builder adds the
-  // canonical, robots, share image and a title with the brand once.
+  // The SEO tab's seo_meta row wins where set; the post's legacy meta fields
+  // sit under it. The shared builder adds the canonical, robots, share image
+  // and a title with the brand once.
   const metadata = await buildEntityMetadata({
     path: `/blog/${post.slug}`,
+    entity: { type: 'blog_post', id: post.id },
     title: post.title,
     description: post.excerpt || undefined,
     image: post.featured_image_url,
     type: 'article',
-    seo: { meta_title: post.meta_title ?? '', meta_description: post.meta_description ?? '' },
+    seo: {
+      meta_title: post.meta_title ?? '',
+      meta_description: post.meta_description ?? '',
+      meta_keywords: post.meta_keywords ?? '',
+    },
   })
 
   return {
     ...metadata,
-    keywords: post.meta_keywords || undefined,
     openGraph: {
       ...metadata.openGraph,
       type: 'article',

@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import {
   DEFAULT_SEO_SETTINGS,
   EMPTY_SEO_META,
+  SEO_META_COLUMNS,
   SEO_META_TAG,
   SEO_SETTINGS_TAG,
   parseSeoSettings,
@@ -45,6 +46,9 @@ export async function getSeoSettings(): Promise<SeoSettings> {
 export function rowToSeoMeta(row: {
   meta_title: string | null
   meta_description: string | null
+  meta_keywords: string | null
+  og_title: string | null
+  og_description: string | null
   og_image_url: string | null
   canonical_path: string | null
   noindex: boolean
@@ -53,6 +57,9 @@ export function rowToSeoMeta(row: {
   return {
     meta_title: row.meta_title ?? '',
     meta_description: row.meta_description ?? '',
+    meta_keywords: row.meta_keywords ?? '',
+    og_title: row.og_title ?? '',
+    og_description: row.og_description ?? '',
     og_image_url: row.og_image_url ?? '',
     canonical_path: row.canonical_path ?? '',
     noindex: row.noindex,
@@ -64,7 +71,7 @@ async function fetchSeoMeta(entityType: SeoEntityType, entityId: string): Promis
   try {
     const { data, error } = await createAdminClient()
       .from('seo_meta')
-      .select('meta_title, meta_description, og_image_url, canonical_path, noindex, nofollow')
+      .select(SEO_META_COLUMNS)
       .eq('entity_type', entityType)
       .eq('entity_id', entityId)
       .maybeSingle()
@@ -84,7 +91,8 @@ async function fetchSeoMeta(entityType: SeoEntityType, entityId: string): Promis
 export async function getSeoMeta(entityType: SeoEntityType, entityId: string): Promise<SeoMetaValues> {
   const cached = unstable_cache(
     () => fetchSeoMeta(entityType, entityId),
-    ['seo-meta', entityType, entityId, 'v1'],
+    // v2: rows gained keywords and social fields; a v1 entry would lack them.
+    ['seo-meta', entityType, entityId, 'v2'],
     { revalidate: REVALIDATE_SECONDS, tags: [SEO_META_TAG, `${SEO_META_TAG}:${entityType}:${entityId}`] }
   )
   return (await cached()) ?? EMPTY_SEO_META

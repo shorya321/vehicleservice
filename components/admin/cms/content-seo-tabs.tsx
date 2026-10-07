@@ -3,7 +3,7 @@
 import { FileText, Search } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-interface PageEditorTabsProps {
+interface ContentSeoTabsProps {
   content: React.ReactNode
   seo: React.ReactNode
 }
@@ -11,7 +11,7 @@ interface PageEditorTabsProps {
 const TRIGGER = 'gap-2 border border-transparent data-[state=active]:border-primary data-[state=active]:bg-primary/10'
 
 /** Content and SEO are separate forms with separate saves, side by side. */
-export function PageEditorTabs({ content, seo }: PageEditorTabsProps) {
+export function ContentSeoTabs({ content, seo }: ContentSeoTabsProps) {
   return (
     <Tabs defaultValue="content">
       <TabsList className="h-auto gap-1 border bg-card p-1">

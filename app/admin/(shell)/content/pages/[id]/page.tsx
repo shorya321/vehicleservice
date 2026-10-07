@@ -7,7 +7,7 @@ import { toCmsPage } from '@/lib/cms/server'
 import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { parseHomeContent } from '@/lib/cms/templates/home/parse'
 import { getSeoSettings, rowToSeoMeta } from '@/lib/seo/server'
-import { EMPTY_SEO_META } from '@/lib/seo/types'
+import { EMPTY_SEO_META, SEO_META_COLUMNS } from '@/lib/seo/types'
 import { titleSuffix } from '@/lib/seo/build-metadata'
 import { absoluteUrl } from '@/lib/seo/site-url'
 import { getSiteSettings } from '@/lib/site-settings/server'
@@ -16,7 +16,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SeoPanel } from '@/components/admin/seo/seo-panel'
-import { PageEditorTabs } from './components/page-editor-tabs'
+import { ContentSeoTabs } from '@/components/admin/cms/content-seo-tabs'
 import { PageStatusButton } from '../components/page-status-button'
 import { HomeContentForm } from './components/home/home-content-form'
 import { ContactContentForm } from './components/contact/contact-content-form'
@@ -46,7 +46,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
     admin.from('pages').select('*').eq('id', id).maybeSingle(),
     admin
       .from('seo_meta')
-      .select('meta_title, meta_description, og_image_url, canonical_path, noindex, nofollow')
+      .select(SEO_META_COLUMNS)
       .eq('entity_type', 'page')
       .eq('entity_id', id)
       .maybeSingle(),
@@ -103,7 +103,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
           </div>
         </div>
 
-        <PageEditorTabs
+        <ContentSeoTabs
           content={content}
           seo={
             <SeoPanel

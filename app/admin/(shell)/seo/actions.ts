@@ -29,11 +29,31 @@ function firstIssue(error: { issues: { path: (string | number)[]; message: strin
 
 /** Public path an entity's SEO change should refresh, where one is known. */
 async function publicPathFor(entityType: SeoEntityType, entityId: string): Promise<string | null> {
-  if (entityType !== 'page') {
-    return null
+  if (entityType === 'page') {
+    const { data } = await createAdminClient().from('pages').select('slug').eq('id', entityId).maybeSingle()
+    return data?.slug ?? null
   }
-  const { data } = await createAdminClient().from('pages').select('slug').eq('id', entityId).maybeSingle()
-  return data?.slug ?? null
+  if (entityType === 'blog_post') {
+    const { data } = await createAdminClient().from('blog_posts').select('slug').eq('id', entityId).maybeSingle()
+    return data?.slug ? `/blog/${data.slug}` : null
+  }
+  return null
+}
+
+/**
+ * A blog post's meta fields used to live on its own row, and the public page
+ * still falls back to them. The SEO tab is seeded from them, so once it saves,
+ * the seo_meta row holds every value and the old columns are cleared. Without
+ * this, emptying a field in the tab would bring the old value back.
+ */
+async function clearLegacyBlogMeta(entityId: string): Promise<void> {
+  const { error } = await createAdminClient()
+    .from('blog_posts')
+    .update({ meta_title: null, meta_description: null, meta_keywords: null })
+    .eq('id', entityId)
+  if (error) {
+    console.error('[seo] Failed to clear legacy blog meta:', error.message)
+  }
 }
 
 /** Saves one entity's SEO overrides. Empty fields fall back to the defaults. */
@@ -73,6 +93,9 @@ export async function updateSeoMeta(
           entity_id: entityId,
           meta_title: v.meta_title || null,
           meta_description: v.meta_description || null,
+          meta_keywords: v.meta_keywords || null,
+          og_title: v.og_title || null,
+          og_description: v.og_description || null,
           og_image_url: v.og_image_url || null,
           canonical_path: v.canonical_path || null,
           noindex: v.noindex,
@@ -92,6 +115,9 @@ export async function updateSeoMeta(
         deleteAdminImageByUrl(url, CMS_IMAGE_BUCKET)
       )
     )
+    if (entityType === 'blog_post') {
+      await clearLegacyBlogMeta(entityId)
+    }
 
     updateTag(`${SEO_META_TAG}:${entityType}:${entityId}`)
     const path = await publicPathFor(entityType, entityId)
