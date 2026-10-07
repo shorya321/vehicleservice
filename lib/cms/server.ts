@@ -68,7 +68,7 @@ export async function getHomeContent(): Promise<{ page: CmsPage | null; content:
   return { page, content: parseHomeContent(page?.content) }
 }
 
-/** A Terms or Privacy page's content, or its shipped default. */
+/** A legal page's content (Terms, Privacy), or its shipped default. */
 export async function getLegalContent(slug: string, fallback: LegalContent): Promise<LegalContent> {
   const page = await getPublishedPage(slug)
   return parseLegalContent(page?.content, fallback)

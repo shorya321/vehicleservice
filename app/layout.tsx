@@ -87,7 +87,7 @@ export default async function RootLayout({
   const pathname = headersList.get('x-pathname') || ''
   const isPortalRoute =
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/vendor') ||
+    (pathname.startsWith('/vendor') && !pathname.startsWith('/vendor-agreement')) ||
     pathname.startsWith('/become-vendor') ||
     pathname.startsWith('/business')
   const customerFontClass = isPortalRoute ? '' : 'site-font'

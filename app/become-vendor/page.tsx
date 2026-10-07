@@ -5,6 +5,7 @@ import { buildPageMetadata } from '@/lib/seo/page-metadata'
 import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getPublishedPage } from "@/lib/cms/server"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { VendorApplicationForm } from "@/components/vendor-application/vendor-application-form"
@@ -49,6 +50,13 @@ export default async function BecomeVendorPage() {
   if (existingApplication) {
     redirect("/vendor-application")
   }
+
+  // The agreement ships as a draft. Until an admin publishes it, the consent line
+  // names the Privacy Policy instead of linking to a page that would 404.
+  const agreement = await getPublishedPage("/vendor-agreement")
+  const secondDocument = agreement
+    ? { href: "/vendor-agreement", label: "Vendor Agreement" }
+    : { href: "/privacy", label: "Privacy Policy" }
 
   return (
     <PublicLayout>
@@ -142,8 +150,8 @@ export default async function BecomeVendorPage() {
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="/vendor-agreement" className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
-                    Vendor Agreement
+                  <Link href={secondDocument.href} className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
+                    {secondDocument.label}
                   </Link>
                 </p>
 

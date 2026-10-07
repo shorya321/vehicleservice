@@ -24,6 +24,7 @@ const CONTENT_SCHEMAS: Readonly<Record<string, ZodTypeAny>> = {
   contact: contactContentSchema,
   terms: legalContentSchema,
   privacy: legalContentSchema,
+  'vendor-agreement': legalContentSchema,
 }
 
 /**
@@ -83,6 +84,47 @@ export async function updatePageContent(pageId: string, content: unknown): Promi
   } catch (error: unknown) {
     console.error('[cms] Unexpected error saving page content:', error)
     return { success: false, error: 'Could not save the page. Try again.' }
+  }
+}
+
+/**
+ * Takes a draft page live. One way: only a draft row matches, so a second click
+ * or a stale tab cannot touch a page that is already published.
+ */
+export async function publishPage(pageId: string): Promise<ActionResult> {
+  try {
+    const auth = await requireAdminAction()
+    if ('error' in auth) {
+      return { success: false, error: auth.error }
+    }
+
+    const { data, error } = await createAdminClient()
+      .from('pages')
+      .update({ status: 'published', published_at: new Date().toISOString(), updated_by: auth.userId })
+      .eq('id', pageId)
+      .eq('status', 'draft')
+      .select('slug')
+      .maybeSingle()
+
+    if (error) {
+      console.error('[cms] Failed to publish page:', error.message)
+      return { success: false, error: 'Could not publish the page. Try again.' }
+    }
+    if (!data) {
+      return { success: false, error: 'This page is already published' }
+    }
+
+    updateTag(pageTag(data.slug))
+    updateTag(PAGES_TAG)
+    revalidatePath(data.slug)
+    revalidatePath('/become-vendor')
+    revalidatePath('/admin/content/pages')
+    revalidatePath(`/admin/content/pages/${pageId}`)
+
+    return { success: true }
+  } catch (error: unknown) {
+    console.error('[cms] Unexpected error publishing page:', error)
+    return { success: false, error: 'Could not publish the page. Try again.' }
   }
 }
 

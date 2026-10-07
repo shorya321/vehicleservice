@@ -371,8 +371,10 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected vendor routes
+  // /vendor-agreement is a public legal page that only shares the prefix.
   if (request.nextUrl.pathname.startsWith('/vendor') &&
-      !request.nextUrl.pathname.startsWith('/vendor-application')) {
+      !request.nextUrl.pathname.startsWith('/vendor-application') &&
+      !request.nextUrl.pathname.startsWith('/vendor-agreement')) {
     if (!user) {
       return redirectWith(new URL('/login', request.url))
     }
