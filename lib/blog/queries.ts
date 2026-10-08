@@ -17,6 +17,10 @@ export interface PublicBlogPost {
   slug: string
   excerpt: string | null
   content: string | null
+  /** Single-post query only; read through `getPostSections`. */
+  sections?: unknown
+  /** Single-post query only; read through `getPostFaqs`. */
+  faqs?: unknown
   featured_image_url: string | null
   status: string | null
   is_featured: boolean | null
@@ -27,6 +31,8 @@ export interface PublicBlogPost {
   reading_time_minutes: number | null
   view_count: number | null
   created_at: string | null
+  /** Single-post query only. */
+  updated_at?: string | null
   category: { id: string; name: string; slug: string } | null
   author: { id: string; full_name: string | null; avatar_url: string | null } | null
   tags: { id: string; name: string; slug: string }[]
@@ -178,9 +184,9 @@ export const getPublishedPost = unstable_cache(
       const { data, error } = await supabase
         .from('blog_posts')
         .select(`
-          id, title, slug, excerpt, content, featured_image_url,
+          id, title, slug, excerpt, content, sections, faqs, featured_image_url,
           status, is_featured, meta_title, meta_description, meta_keywords,
-          published_at, reading_time_minutes, view_count, created_at,
+          published_at, reading_time_minutes, view_count, created_at, updated_at,
           category:category_id(id, name, slug),
           author:author_id(id, full_name, avatar_url)
         `)

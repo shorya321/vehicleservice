@@ -92,8 +92,14 @@ interface ArticleInput {
   path: string
   image: string | null
   publishedAt: string | null
+  /** Last edit. Google reads it to judge freshness. */
+  modifiedAt?: string | null
   authorName: string | null
   publisherName: string
+  /** Category name. */
+  section?: string | null
+  /** Tag names. */
+  keywords?: string[]
 }
 
 /** A blog post, credited to its author and published by the site. */
@@ -106,6 +112,9 @@ export function articleJsonLd(input: ArticleInput): JsonLdObject {
     mainEntityOfPage: absoluteUrl(input.path),
     ...(input.image ? { image: [absoluteUrl(input.image)] } : {}),
     ...(input.publishedAt ? { datePublished: input.publishedAt } : {}),
+    ...(input.modifiedAt ? { dateModified: input.modifiedAt } : {}),
+    ...(input.section ? { articleSection: input.section } : {}),
+    ...(input.keywords && input.keywords.length > 0 ? { keywords: input.keywords.join(', ') } : {}),
     author: input.authorName
       ? { '@type': 'Person', name: input.authorName }
       : { '@type': 'Organization', name: input.publisherName },

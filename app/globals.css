@@ -10109,7 +10109,8 @@
   }
 }
 
-/* Blog article body: text column plus a sticky sidebar (share, tags, author, booking) from 1024px. */
+/* Blog article body: from 1024px a left rail (contents list, share, tags, author, booking) beside the text.
+   Below that the rail stacks under the text and the contents list sits above it instead. */
 .article-board-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -10125,18 +10126,18 @@
   display: grid;
   align-content: start;
   gap: 16px;
+  order: 2;
 }
 
 @media (min-width: 1024px) {
   .article-board-body {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
     gap: clamp(3rem, 5vw, 4.5rem);
   }
 
+  /* The rail is taller than the screen, so only the contents card sticks; the cards below it scroll past. */
   .article-board-body__aside {
-    position: sticky;
-    top: calc(72px + 1.5rem);
-    align-self: start;
+    order: 0;
   }
 }
 
@@ -10148,7 +10149,7 @@
 
 /* Below 1024px the bottom bar already shares; keep the sidebar to tags, author and booking. */
 @media (max-width: 1023px) {
-  .article-board-body__aside > :first-child {
+  .article-board-share {
     display: none;
   }
 }
@@ -10231,4 +10232,220 @@
 .article-board-book .blog-board-btn {
   justify-self: start;
   margin-top: 4px;
+}
+
+/* ---------- Blog article: contents list, sections, FAQ ---------- */
+.article-toc__title {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.article-toc__list {
+  display: grid;
+  gap: 2px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.article-toc__link {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.article-toc__link:hover {
+  color: var(--text-primary);
+}
+
+.article-toc__link[aria-current='location'] {
+  color: var(--gold-text);
+}
+
+.article-toc__num {
+  flex: none;
+  padding-top: 1px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.article-toc__link[aria-current='location'] .article-toc__num {
+  color: var(--gold-text);
+}
+
+.article-toc__card {
+  padding: 22px;
+}
+
+.article-toc__track {
+  height: 3px;
+  margin-top: 16px;
+  border-radius: 3px;
+  background: var(--bb-hair);
+  overflow: hidden;
+}
+
+.article-toc__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+
+.article-toc--rail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .article-toc--rail {
+    display: block;
+    position: sticky;
+    top: calc(72px + 1.5rem);
+    z-index: 2;
+    /* Opaque ring: the cards below scroll underneath it. */
+    background: linear-gradient(var(--bb-shell), var(--bb-shell)), var(--black-void);
+  }
+
+  /* Covers the strip between the header and the card, so passing cards never peek out above it. */
+  .article-toc--rail::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    bottom: 100%;
+    height: 1.5rem;
+    background: var(--black-void);
+  }
+
+  .article-toc--inline {
+    display: none;
+  }
+}
+
+.article-toc--inline {
+  margin-bottom: 2rem;
+  border: 1px solid var(--bb-hair);
+  border-radius: 14px;
+  background: var(--bb-core);
+}
+
+.article-toc__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.article-toc__summary::-webkit-details-marker {
+  display: none;
+}
+
+.article-toc__chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.article-toc--inline[open] .article-toc__chevron {
+  transform: rotate(180deg);
+}
+
+.article-toc--inline .article-toc__list {
+  margin: 0;
+  padding: 0 18px 12px;
+}
+
+/* html already pads 5.5rem for the fixed header; this lines the heading up with the contents card. */
+.article-section,
+.article-faq {
+  scroll-margin-top: 0.5rem;
+}
+
+.article-board-body .article-section + .article-section {
+  margin-top: 3rem;
+}
+
+.article-board-body .article-section > h2 {
+  margin-top: 0;
+}
+
+.article-faq {
+  margin-top: clamp(3rem, 6vw, 4rem);
+}
+
+.article-faq__title {
+  margin: 0 0 1.25rem;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.article-faq__list {
+  border-top: 1px solid var(--bb-hair);
+}
+
+.article-faq__item {
+  border-bottom: 1px solid var(--bb-hair);
+}
+
+.article-faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.article-faq__q::-webkit-details-marker {
+  display: none;
+}
+
+.article-faq__q h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.article-faq__icon {
+  flex: none;
+  color: var(--gold);
+  transition: transform 0.2s ease;
+}
+
+.article-faq__item[open] .article-faq__icon {
+  transform: rotate(45deg);
+}
+
+.article-faq__a {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-toc__fill,
+  .article-toc__chevron,
+  .article-faq__icon {
+    transition: none;
+  }
 }

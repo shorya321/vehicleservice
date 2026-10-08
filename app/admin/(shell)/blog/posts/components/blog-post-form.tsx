@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { TiptapEditor } from "@/components/ui/tiptap-editor"
 import { Switch } from "@/components/ui/switch"
 import {
   Select,
@@ -31,16 +30,23 @@ import { Loader2 } from "lucide-react"
 import { createBlogPost, updateBlogPost, BlogPostFormData, BlogPostWithRelations } from "../actions"
 import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-upload"
 import { Badge } from "@/components/ui/badge"
+import { blogSectionsSchema, getPostSections } from "@/lib/blog/sections"
+import { BlogSectionsEditor } from "./blog-sections-editor"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase with hyphens only"),
   excerpt: z.string().optional(),
-  content: z.string().optional(),
+  sections: blogSectionsSchema,
   category_id: z.string().optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   is_featured: z.boolean().default(false),
 })
+
+/** A post with no body at all still opens with one empty section to fill in. */
+function withFallbackSection(sections: { title: string; body: string }[]) {
+  return sections.length > 0 ? sections : [{ title: "", body: "" }]
+}
 
 interface BlogPostFormProps {
   post?: BlogPostWithRelations
@@ -63,7 +69,7 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
       title: post?.title || "",
       slug: post?.slug || "",
       excerpt: post?.excerpt || "",
-      content: post?.content || "",
+      sections: post ? withFallbackSection(getPostSections(post)) : [{ title: "", body: "" }],
       category_id: post?.category_id || "",
       status: (post?.status as 'draft' | 'published' | 'archived') || 'draft',
       is_featured: post?.is_featured || false,
@@ -253,22 +259,7 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <TiptapEditor
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <BlogSectionsEditor control={form.control} />
 
         {/* Tags */}
         <div className="space-y-2">

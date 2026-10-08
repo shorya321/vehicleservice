@@ -283,6 +283,7 @@ export type Database = {
           content: string | null
           created_at: string | null
           excerpt: string | null
+          faqs: Json
           featured_image_url: string | null
           id: string
           is_featured: boolean | null
@@ -291,6 +292,7 @@ export type Database = {
           meta_title: string | null
           published_at: string | null
           reading_time_minutes: number | null
+          sections: Json
           slug: string
           status: Database["public"]["Enums"]["blog_post_status"] | null
           title: string
@@ -303,6 +305,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           excerpt?: string | null
+          faqs?: Json
           featured_image_url?: string | null
           id?: string
           is_featured?: boolean | null
@@ -311,6 +314,7 @@ export type Database = {
           meta_title?: string | null
           published_at?: string | null
           reading_time_minutes?: number | null
+          sections?: Json
           slug: string
           status?: Database["public"]["Enums"]["blog_post_status"] | null
           title: string
@@ -323,6 +327,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           excerpt?: string | null
+          faqs?: Json
           featured_image_url?: string | null
           id?: string
           is_featured?: boolean | null
@@ -331,6 +336,7 @@ export type Database = {
           meta_title?: string | null
           published_at?: string | null
           reading_time_minutes?: number | null
+          sections?: Json
           slug?: string
           status?: Database["public"]["Enums"]["blog_post_status"] | null
           title?: string

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { BlogPostForm } from "../../components/blog-post-form"
+import { BlogFaqForm } from "../../components/blog-faq-form"
+import { getPostFaqs } from "@/lib/blog/sections"
 import { getBlogPost } from "../../actions"
 import { getAllBlogCategories } from "../../../categories/actions"
 import { getAllBlogTags } from "../../../tags/actions"
@@ -105,6 +107,9 @@ export default async function EditBlogPostPage({ params }: PageProps) {
             fallbackTitle={`${post.title}${titleSuffix(seoSettings, site.brand_name)}`}
             fallbackDescription={post.excerpt || seoSettings.default_description}
           />
+        }
+        faq={
+          <BlogFaqForm postId={post.id} initialFaqs={getPostFaqs(post)} draft={post.status !== "published"} />
         }
       />
     </div>

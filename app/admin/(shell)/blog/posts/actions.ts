@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/actions'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { uploadBlogImage } from './actions/upload'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
+import { blogFaqsSchema, blogSectionsSchema, cleanFaqs, sectionsToHtml, type BlogSection } from '@/lib/blog/sections'
 
 export interface BlogPostFilters {
   search?: string
@@ -21,6 +22,10 @@ export interface BlogPostWithRelations {
   slug: string
   excerpt: string | null
   content: string | null
+  /** jsonb `[{title, body}]`; read through `getPostSections`. */
+  sections: unknown
+  /** jsonb `[{question, answer}]`; read through `getPostFaqs`. */
+  faqs: unknown
   featured_image_url: string | null
   category_id: string | null
   author_id: string | null
@@ -167,7 +172,7 @@ export interface BlogPostFormData {
   title: string
   slug: string
   excerpt?: string
-  content?: string
+  sections: BlogSection[]
   category_id?: string
   status: 'draft' | 'published' | 'archived'
   is_featured: boolean
@@ -181,6 +186,23 @@ function calculateReadingTime(content: string): number {
   const text = content.replace(/<[^>]*>/g, '').trim()
   const wordCount = text.split(/\s+/).filter(Boolean).length
   return Math.max(1, Math.ceil(wordCount / 200))
+}
+
+/**
+ * Validates the sections and builds the columns they feed: the sections
+ * themselves, the HTML mirror in `content` (excerpts read it) and reading time.
+ */
+function buildBody(sections: unknown) {
+  const parsed = blogSectionsSchema.safeParse(sections)
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? 'Check the content sections')
+  }
+  const content = sectionsToHtml(parsed.data)
+  return {
+    sections: parsed.data,
+    content,
+    reading_time_minutes: calculateReadingTime(content),
+  }
 }
 
 export async function createBlogPost(data: BlogPostFormData) {
@@ -200,7 +222,7 @@ export async function createBlogPost(data: BlogPostFormData) {
     imageUrl = uploadResult.imageUrl
   }
 
-  const readingTime = data.content ? calculateReadingTime(data.content) : 1
+  const body = buildBody(data.sections)
 
   const { data: post, error } = await supabase
     .from('blog_posts')
@@ -208,13 +230,12 @@ export async function createBlogPost(data: BlogPostFormData) {
       title: data.title,
       slug: data.slug.toLowerCase(),
       excerpt: data.excerpt || null,
-      content: data.content || null,
+      ...body,
       featured_image_url: imageUrl,
       category_id: data.category_id || null,
       author_id: user?.id || null,
       status: data.status,
       is_featured: data.is_featured,
-      reading_time_minutes: readingTime,
       published_at: data.status === 'published' ? new Date().toISOString() : null,
     })
     .select('id')
@@ -252,7 +273,7 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
     imageUrl = uploadResult.imageUrl
   }
 
-  const readingTime = data.content ? calculateReadingTime(data.content) : 1
+  const body = buildBody(data.sections)
 
   // Get existing post to check if publishing for the first time, and to pick up
   // the previous image so its storage object can be cleaned up after the update.
@@ -274,12 +295,11 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
       title: data.title,
       slug: data.slug.toLowerCase(),
       excerpt: data.excerpt || null,
-      content: data.content || null,
+      ...body,
       featured_image_url: imageUrl,
       category_id: data.category_id || null,
       status: data.status,
       is_featured: data.is_featured,
-      reading_time_minutes: readingTime,
       published_at: publishedAt,
       updated_at: new Date().toISOString(),
     })
@@ -317,6 +337,37 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
   revalidatePath('/admin/blog/posts')
   revalidatePath(`/admin/blog/posts/${id}/edit`)
   revalidateTag('blog-posts')
+}
+
+/** Saved from the FAQ tab, separately from the post form. Fully blank rows are dropped. */
+export async function updateBlogPostFaqs(
+  id: string,
+  faqs: { question: string; answer: string }[]
+): Promise<{ error?: string }> {
+  await requireAdmin()
+
+  const parsed = blogFaqsSchema.safeParse(cleanFaqs(Array.isArray(faqs) ? faqs : []))
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Check the questions' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .update({ faqs: parsed.data, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('slug')
+    .single()
+
+  if (error) {
+    console.error('[Blog] Error saving FAQs:', error)
+    return { error: 'Could not save the FAQs. Please try again.' }
+  }
+
+  revalidatePath(`/admin/blog/posts/${id}/edit`)
+  revalidatePath(`/blog/${data.slug}`)
+  revalidateTag('blog-posts')
+  return {}
 }
 
 export async function deleteBlogPost(id: string) {

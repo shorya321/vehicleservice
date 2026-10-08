@@ -1,7 +1,6 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import DOMPurify from "isomorphic-dompurify"
 import { getPublishedPost, getRelatedPosts, incrementViewCount } from "@/lib/blog/queries"
 import { ArticleBoardHero } from "../components/article-board-hero"
 import { ArticleBoardAuthor } from "../components/article-board-author"
@@ -10,10 +9,14 @@ import { BoardClose } from "../components/board-close"
 import { FloatingShare } from "../components/floating-share"
 import { ShareButtons } from "../components/share-buttons"
 import { ReadingProgressBar } from "../components/reading-progress-bar"
+import { ArticleToc, type TocItem } from "../components/article-toc"
+import { ArticleSections } from "../components/article-sections"
+import { ArticleFaq } from "../components/article-faq"
+import { FAQ_ANCHOR, getPostFaqs, getPostSections, withAnchors } from "@/lib/blog/sections"
 import { ArrowUpRight } from "lucide-react"
 import { buildEntityMetadata } from "@/lib/seo/page-metadata"
 import { absoluteUrl } from "@/lib/seo/site-url"
-import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo/json-ld"
+import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd } from "@/lib/seo/json-ld"
 import { JsonLd } from "@/components/seo/json-ld"
 import { getSiteSettings } from "@/lib/site-settings/server"
 
@@ -54,6 +57,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ...metadata.openGraph,
       type: 'article',
       publishedTime: post.published_at || undefined,
+      modifiedTime: post.updated_at || undefined,
+      section: post.category?.name,
+      tags: post.tags.length > 0 ? post.tags.map((t) => t.name) : undefined,
     },
   }
 }
@@ -74,6 +80,13 @@ export default async function BlogPostPage({ params }: PageProps) {
     getSiteSettings(),
   ])
   const postPath = `/blog/${post.slug}`
+  const sections = withAnchors(getPostSections(post))
+  const faqs = getPostFaqs(post)
+  const tocItems: TocItem[] = [
+    ...sections.map((s) => ({ id: s.id, label: s.title })),
+    ...(faqs.length > 0 ? [{ id: FAQ_ANCHOR, label: 'FAQ' }] : []),
+  ]
+  const faqJsonLd = faqPageJsonLd(faqs)
   const jsonLd = [
     articleJsonLd({
       title: post.title,
@@ -81,6 +94,9 @@ export default async function BlogPostPage({ params }: PageProps) {
       path: postPath,
       image: post.featured_image_url,
       publishedAt: post.published_at,
+      modifiedAt: post.updated_at,
+      section: post.category?.name,
+      keywords: post.tags.map((t) => t.name),
       authorName: post.author?.full_name ?? null,
       publisherName: site.brand_name,
     }),
@@ -90,6 +106,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       ...(post.category ? [{ name: post.category.name, path: `/blog/category/${post.category.slug}` }] : []),
       { name: post.title, path: postPath },
     ]),
+    ...(faqJsonLd ? [faqJsonLd] : []),
   ]
 
   const shareUrl = absoluteUrl(postPath)
@@ -105,21 +122,13 @@ export default async function BlogPostPage({ params }: PageProps) {
       {/* Share bar pinned to the bottom of the screen below 1024px */}
       <FloatingShare url={shareUrl} title={post.title} />
 
-      {/* Body: article text, with a sticky sidebar (share, tags, author) from 1024px */}
+      {/* Body: contents list and sidebar cards on the left from 1024px, article text on the right */}
       <div className="article-page__body">
         <div className="luxury-container article-board-body">
-          <div className="article-board-body__main">
-            {post.content ? (
-              <div className="prose-luxury" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
-            ) : (
-              <div className="prose-luxury">
-                <p className="text-[var(--text-muted)]">This article is being prepared.</p>
-              </div>
-            )}
-          </div>
-
           <aside aria-label="About this article" className="article-board-body__aside">
-            <div className="blog-board-bezel">
+            {tocItems.length > 1 && <ArticleToc items={tocItems} variant="rail" />}
+
+            <div className="blog-board-bezel article-board-share">
               <div className="blog-board-core article-board-card">
                 <ShareButtons url={shareUrl} title={post.title} />
               </div>
@@ -163,6 +172,12 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             </div>
           </aside>
+
+          <div className="article-board-body__main">
+            {tocItems.length > 1 && <ArticleToc items={tocItems} variant="inline" />}
+            <ArticleSections sections={sections} />
+            <ArticleFaq faqs={faqs} />
+          </div>
         </div>
       </div>
 
