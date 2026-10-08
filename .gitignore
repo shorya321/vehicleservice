@@ -65,3 +65,5 @@ build-fix.log
 # Python cache
 __pycache__/
 *.pyc
+# AiderDesk (desktop app for the Aider AI assistant) workspace data
+.aider-desk/
