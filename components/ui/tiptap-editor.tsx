@@ -10,7 +10,7 @@ import TiptapImage from '@tiptap/extension-image'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { TableKit } from '@tiptap/extension-table'
 import { common, createLowlight } from 'lowlight'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import {
   Bold,
   Italic,
@@ -24,6 +24,8 @@ import {
   Code,
   Link as LinkIcon,
   Image as ImageIcon,
+  ImageUp,
+  LoaderCircle,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -33,6 +35,7 @@ import {
 } from 'lucide-react'
 import { ToolbarButton, ToolbarSeparator } from './tiptap-toolbar-button'
 import { TiptapTableControls } from './tiptap-table-controls'
+import { EDITOR_IMAGE_ACCEPT, imageFilesFrom, useTiptapImageUpload, type ImageUploader } from './tiptap-image-upload'
 
 const lowlight = createLowlight(common)
 
@@ -41,9 +44,14 @@ interface TiptapEditorProps {
   onChange: (value: string) => void
   /** Table button and table paste. Off by default: only pages whose public CSS styles tables turn it on. */
   tables?: boolean
+  /** Turns on image upload from the toolbar, paste and drop. Resolves to the public URL. */
+  onUploadImage?: ImageUploader
 }
 
-export function TiptapEditor({ value, onChange, tables = false }: TiptapEditorProps) {
+export function TiptapEditor({ value, onChange, tables = false, onUploadImage }: TiptapEditorProps) {
+  // editorProps are bound once at creation, so paste and drop reach the upload through a ref.
+  const insertFilesRef = useRef<(files: File[], pos?: number) => void>(() => {})
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -76,8 +84,32 @@ export function TiptapEditor({ value, onChange, tables = false }: TiptapEditorPr
       attributes: {
         class: 'prose prose-sm max-w-none focus:outline-none',
       },
+      handlePaste: (_view, event) => {
+        if (!onUploadImage) return false
+        const files = imageFilesFrom(event.clipboardData?.files)
+        if (files.length === 0) return false
+        event.preventDefault()
+        insertFilesRef.current(files)
+        return true
+      },
+      handleDrop: (view, event, _slice, moved) => {
+        if (!onUploadImage || moved) return false
+        const files = imageFilesFrom(event.dataTransfer?.files)
+        if (files.length === 0) return false
+        event.preventDefault()
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
+        insertFilesRef.current(files, pos)
+        return true
+      },
     },
   })
+
+  const imageUpload = useTiptapImageUpload(editor, onUploadImage)
+  const { insertFiles } = imageUpload
+
+  useEffect(() => {
+    insertFilesRef.current = (files, pos) => void insertFiles(files, pos)
+  }, [insertFiles])
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
@@ -215,7 +247,30 @@ export function TiptapEditor({ value, onChange, tables = false }: TiptapEditorPr
         >
           <LinkIcon size={iconSize} />
         </ToolbarButton>
-        <ToolbarButton onClick={addImage} title="Image">
+        {onUploadImage && (
+          <>
+            <ToolbarButton
+              onClick={imageUpload.openPicker}
+              disabled={imageUpload.uploading}
+              title={imageUpload.uploading ? 'Uploading image' : 'Upload image'}
+            >
+              {imageUpload.uploading ? (
+                <LoaderCircle size={iconSize} className="animate-spin" />
+              ) : (
+                <ImageUp size={iconSize} />
+              )}
+            </ToolbarButton>
+            <input
+              ref={imageUpload.inputRef}
+              type="file"
+              accept={EDITOR_IMAGE_ACCEPT}
+              multiple
+              hidden
+              onChange={imageUpload.onInputChange}
+            />
+          </>
+        )}
+        <ToolbarButton onClick={addImage} title="Image from URL">
           <ImageIcon size={iconSize} />
         </ToolbarButton>
 

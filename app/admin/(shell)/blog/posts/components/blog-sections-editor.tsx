@@ -7,6 +7,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { TextField } from '@/components/admin/cms/text-field'
 import { MAX_SECTIONS, type BlogSection } from '@/lib/blog/sections'
+import { uploadCmsImage } from '@/lib/cms/image-upload'
 
 interface SectionsFormValues {
   sections: BlogSection[]
@@ -76,7 +77,7 @@ export function BlogSectionsEditor({ control }: BlogSectionsEditorProps) {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <TiptapEditor value={body.value || ''} onChange={body.onChange} tables />
+                  <TiptapEditor value={body.value || ''} onChange={body.onChange} tables onUploadImage={uploadCmsImage} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
