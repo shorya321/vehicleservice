@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
 import { BookingWizard } from './components/booking-wizard';
+import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
 
 export const metadata: Metadata = {
   title: 'New Booking | Business Portal',
@@ -36,7 +37,7 @@ export default async function NewBookingPage() {
 
   // Staff create bookings against the business wallet, so both roles see the
   // balance here - this is the one place it is shown to staff.
-  const [{ data: account }, { data: locations }] = await Promise.all([
+  const [{ data: account }, { data: locations }, tripSettings] = await Promise.all([
     supabase
       .from('business_accounts')
       .select('wallet_balance')
@@ -47,6 +48,7 @@ export default async function NewBookingPage() {
       .select('id, name, city, location_types(icon_name, name)')
       .eq('is_active', true)
       .order('name'),
+    getBusinessTripSettings(supabase),
   ]);
 
   if (!account) {
@@ -67,6 +69,7 @@ export default async function NewBookingPage() {
         businessAccountId={member.businessAccountId}
         walletBalance={account.wallet_balance}
         locations={locations || []}
+        tripSettings={tripSettings}
       />
     </div>
   );

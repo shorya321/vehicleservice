@@ -186,6 +186,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
         pickup_datetime,
         created_at,
         customer_name,
+        trip_type,
+        duration_hours,
         from_location:locations!from_location_id(name),
         to_location:locations!to_location_id(name)
       `)
@@ -216,7 +218,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     bookingNumber: b.booking_number,
     tripNumber: b.trip_number,
     customerName: b.customer_name || 'Business Guest',
-    route: `${b.from_location?.name || 'Unknown'} → ${b.to_location?.name || 'Unknown'}`,
+    route: routeLabel(b, b.from_location?.name, b.to_location?.name),
     status: b.booking_status,
     amount: Number(b.total_price),
     time: new Date(b.pickup_datetime).toLocaleString('en-US', {
@@ -355,6 +357,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       trip_number,
       created_at,
       customer_name,
+      trip_type,
+      duration_hours,
       from_location:locations!from_location_id(name),
       to_location:locations!to_location_id(name)
     `)
@@ -363,7 +367,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .limit(10)
 
   recentBusinessActivity?.forEach(booking => {
-    const route = `${booking.from_location?.name || 'Unknown'} → ${booking.to_location?.name || 'Unknown'}`
+    const route = routeLabel(booking, booking.from_location?.name, booking.to_location?.name)
     activities.push({
       id: `business-booking-${booking.id}`,
       type: 'booking_created',

@@ -20,6 +20,8 @@ interface BusinessBookingDatetimeChangedEmailProps {
   bookingUrl: string;
   /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
   bookedBy?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 /**
@@ -49,6 +51,7 @@ export const BusinessBookingDatetimeChangedEmail = ({
   modificationReason,
   bookingUrl,
   bookedBy,
+  tripContext,
 }: BusinessBookingDatetimeChangedEmailProps) => {
   return (
     <EmailLayout
@@ -72,6 +75,11 @@ export const BusinessBookingDatetimeChangedEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
+        {tripContext && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Part of:</strong> {tripContext}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Customer:</strong> {customerName}
         </Text>

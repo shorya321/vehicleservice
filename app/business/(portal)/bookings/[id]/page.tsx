@@ -19,6 +19,9 @@ import {
 } from '@/lib/business/booking-utils';
 import { loadCancellationWindowMinutes } from '@/lib/business/utils/cancellation-settings';
 import { EditDateTimeButton } from '../components/edit-datetime-button';
+import { TripJourneysCard } from './components/trip-journeys-card';
+import { loadBusinessTripGroup } from './load-trip-group';
+import { BUSINESS_AS_DIRECTED } from '@/lib/business/trips/constants';
 
 export const metadata: Metadata = {
   title: 'Booking Details | Business Portal',
@@ -80,11 +83,10 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
       .select('name, city')
       .eq('id', booking.from_location_id)
       .single(),
-    supabase
-      .from('locations')
-      .select('name, city')
-      .eq('id', booking.to_location_id)
-      .single(),
+    // Hourly hire has no destination: skip the lookup rather than asking for id = null.
+    booking.to_location_id
+      ? supabase.from('locations').select('name, city').eq('id', booking.to_location_id).single()
+      : Promise.resolve({ data: { name: BUSINESS_AS_DIRECTED, city: '' } }),
     supabase
       .from('vehicle_types')
       .select('name, description, passenger_capacity, luggage_capacity, vehicle_categories:category_id(name)')
@@ -116,6 +118,11 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
       `)
       .eq('business_booking_id', id),
   ]);
+
+  // Round trip and multi-city: the trip and its other journeys.
+  const tripGroup = booking.booking_group_id
+    ? await loadBusinessTripGroup(adminClient, booking.booking_group_id, member.businessAccountId)
+    : null;
 
   // Construct the booking object with joined data (with fallbacks)
   const bookingWithRelations = {
@@ -199,6 +206,10 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
           </div>
         )}
       </div>
+
+      {tripGroup && (
+        <TripJourneysCard currentId={id} group={tripGroup.group} journeys={tripGroup.journeys} />
+      )}
 
       {/* Booking Details */}
       <BookingDetails booking={bookingWithRelations} />

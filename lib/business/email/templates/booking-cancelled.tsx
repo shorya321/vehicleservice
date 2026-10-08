@@ -24,6 +24,8 @@ export interface BookingCancelledFacts {
   originalCurrency?: string;
   /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
   bookedBy?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 /**
@@ -61,6 +63,7 @@ export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEma
     originalAmount,
     originalCurrency,
     bookedBy,
+    tripContext,
   } = props;
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   return (
@@ -84,6 +87,11 @@ export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEma
         <Text style={emailStyles.detailRow}>
           <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
+        {tripContext && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Part of:</strong> {tripContext}
+          </Text>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Customer:</strong> {customerName}
         </Text>

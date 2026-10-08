@@ -33,6 +33,17 @@ interface QuotationBookingGroupProps<T extends GroupBooking> {
   renderStatus: (bookingStatus: string) => ReactNode;
   /** Renders one trip as the list's normal row or card. */
   renderBooking: (booking: T, index: number) => ReactNode;
+  /**
+   * Overrides for a round trip or multi-city trip, which reuses this row. Absent for a
+   * quotation group, which renders exactly as before.
+   */
+  trip?: {
+    title: string;
+    icon: ReactNode;
+    countLabel: string;
+    /** A round trip's far end, so the header reads A to B rather than A to A. */
+    routeTo?: string;
+  };
 }
 
 const DATE_PATTERN = 'MMM d, yyyy';
@@ -75,10 +86,15 @@ export function QuotationBookingGroup<T extends GroupBooking>({
   totalTrips,
   renderStatus,
   renderBooking,
+  trip,
 }: QuotationBookingGroupProps<T>) {
   const [expanded, setExpanded] = useState(false);
-  const s = summarise(bookings, totalTrips);
-  const title = quotationNumber ? `Quotation ${quotationNumber}` : 'Quotation';
+  const summary = summarise(bookings, totalTrips);
+  const s = trip
+    ? { ...summary, tripsLabel: trip.countLabel, to: trip.routeTo ?? summary.to }
+    : summary;
+  const title = trip ? trip.title : quotationNumber ? `Quotation ${quotationNumber}` : 'Quotation';
+  const icon = trip ? trip.icon : <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />;
   const toggleLabel = `${expanded ? 'Hide' : 'Show'} ${bookings.length} bookings from ${title}`;
   const Chevron = expanded ? ChevronDown : ChevronRight;
   const toggle = () => setExpanded((v) => !v);
@@ -130,7 +146,7 @@ export function QuotationBookingGroup<T extends GroupBooking>({
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
               {toggleButton}
-              <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              {icon}
               <span className="break-words text-sm font-semibold text-foreground">{title}</span>
             </div>
             {s.sharedStatus ? renderStatus(s.sharedStatus) : <MixedBadge />}
@@ -169,7 +185,7 @@ export function QuotationBookingGroup<T extends GroupBooking>({
         </span>
         <span className="block min-w-0">
           <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-            <FileText className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+            {icon}
             <span className="truncate">{title}</span>
           </span>
           <span className="block truncate text-xs text-muted-foreground">

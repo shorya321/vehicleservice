@@ -101,7 +101,9 @@ function assignmentToCalendarEvent(
     id: assignment.id, // Use assignment ID as unique event ID
     // An hourly hire says so, since its long bar otherwise reads like a stuck transfer.
     title: `Trip #${bookingData?.trip_number || bookingData?.booking_number || 'N/A'}${
-      assignment.booking?.duration_hours ? ` (${Number(assignment.booking.duration_hours)} h hourly)` : ''
+      (assignment.booking?.duration_hours ?? assignment.business_booking?.duration_hours)
+        ? ` (${Number(assignment.booking?.duration_hours ?? assignment.business_booking?.duration_hours)} h hourly)`
+        : ''
     }`,
     start,
     end,
@@ -312,7 +314,12 @@ export async function getVendorCalendarEvents(
     const pickup = pastBooking.booking?.pickup_datetime ?? pastBooking.business_booking?.pickup_datetime
     if (!pickup) continue
     const start = new Date(pickup)
-    const end = tripEndFrom(start, pastBooking.estimated_duration_hours ?? pastBooking.booking?.duration_hours)
+    const end = tripEndFrom(
+      start,
+      pastBooking.estimated_duration_hours ??
+        pastBooking.booking?.duration_hours ??
+        pastBooking.business_booking?.duration_hours
+    )
 
     events.push(
       assignmentToCalendarEvent(
@@ -366,7 +373,12 @@ export async function getVendorCalendarEvents(
         // No duration has been chosen yet. An hourly hire already knows its length;
         // anything else falls back to the default hold. The client labels the block
         // as awaiting a response so the guessed width never reads as a committed window.
-        tripEndFrom(start, pending.booking?.duration_hours ? Math.ceil(pending.booking.duration_hours) : null),
+        tripEndFrom(
+          start,
+          (pending.booking?.duration_hours ?? pending.business_booking?.duration_hours)
+            ? Math.ceil(Number(pending.booking?.duration_hours ?? pending.business_booking?.duration_hours))
+            : null
+        ),
         'pending',
         CALENDAR_COLORS.pendingBorder,
         false

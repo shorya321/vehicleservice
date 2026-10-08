@@ -58,6 +58,8 @@ export interface PastBookingAssignment {
     pickup_datetime: string | null
     customer_name: string | null
     customer_phone: string | null
+    /** Hourly hire: the hours the driver is held. */
+    duration_hours?: number | null
     from_location: { name: string | null } | null
     to_location: { name: string | null } | null
   } | null
@@ -322,6 +324,7 @@ export class AvailabilityService {
         pickup_datetime,
         customer_name,
         customer_phone,
+        duration_hours,
         from_location:locations!from_location_id(name),
         to_location:locations!to_location_id(name)
       ),
@@ -370,7 +373,7 @@ export class AvailabilityService {
       if (seen.has(row.id)) continue
       const pickup = row.booking?.pickup_datetime ?? row.business_booking?.pickup_datetime
       if (!pickup) continue
-      const end = tripEndFrom(new Date(pickup), row.estimated_duration_hours ?? row.booking?.duration_hours)
+      const end = tripEndFrom(new Date(pickup), row.estimated_duration_hours ?? row.booking?.duration_hours ?? row.business_booking?.duration_hours)
       if (end >= today) continue
       seen.add(row.id)
       past.push(row)

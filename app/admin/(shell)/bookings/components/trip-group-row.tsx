@@ -126,10 +126,18 @@ export function TripGroupRow({
       </TableCell>
       <TableCell>
         <div className="flex flex-col items-start gap-1">
-          <Badge variant="outline" className="text-xs">
-            <User className="h-3 w-3 mr-1" />
-            Customer
-          </Badge>
+          {/* Same badge as a flat row: business trips group here too. */}
+          {row.bookingType === 'business' ? (
+            <Badge variant="secondary" className="text-xs">
+              <User className="h-3 w-3 mr-1" />
+              Business
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-xs">
+              <User className="h-3 w-3 mr-1" />
+              Customer
+            </Badge>
+          )}
           <Badge variant="outline" className="text-xs whitespace-nowrap">
             {tripTypeLabel(row)}
           </Badge>

@@ -109,7 +109,8 @@ export function AssignVendorModal({
       // Each journey is its own booking and assignment; this only saves repeating the step.
       if (assignWholeTrip && otherLegIds.length > 0) {
         const results = await Promise.allSettled(
-          otherLegIds.map((legId) => assignBookingToVendor(legId, 'customer', selectedVendorId, notes))
+          // Every journey of a trip is the same booking type as the one being assigned.
+          otherLegIds.map((legId) => assignBookingToVendor(legId, bookingType, selectedVendorId, notes))
         )
         const failed = results.filter((r) => r.status === 'rejected').length
         if (failed > 0) toast.error(`${failed} other journey${failed === 1 ? '' : 's'} could not be assigned`)

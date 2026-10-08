@@ -17,6 +17,7 @@ import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { isActiveBookingStatus } from '@/lib/business/booking-utils';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 import { findBookingsWithActiveAssignment } from '@/lib/business/bookings/active-assignments';
+import { expandToWholeBusinessTrips, pruneEmptyBusinessTrips } from '@/lib/business/trips/delete-server';
 
 const bulkDeleteSchema = z.object({
   booking_ids: z.array(z.string().uuid()).min(1).max(50),
@@ -35,7 +36,7 @@ export const POST = requireBusinessOwner(
       return apiError('Invalid request body. Provide an array of booking IDs.', 400);
     }
 
-    const { booking_ids } = body;
+    const requestedIds = body.booking_ids;
 
     // Use admin client
     const supabaseAdmin = createClient(
@@ -50,6 +51,14 @@ export const POST = requireBusinessOwner(
     );
 
     try {
+      // Journeys of a round trip or multi-city trip go together, so the request is widened to
+      // the whole trip. One-way and hourly ids come back unchanged.
+      const expanded = await expandToWholeBusinessTrips(supabaseAdmin, requestedIds, user.businessAccountId);
+      if (expanded.error) {
+        return apiError('Unable to verify these bookings right now. Please try again.', 503);
+      }
+      const booking_ids = expanded.ids;
+
       // Fetch all bookings to verify ownership, get refund info, and capture details for notifications
       const { data: bookings, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
@@ -223,6 +232,8 @@ export const POST = requireBusinessOwner(
 
         return apiError('Failed to delete bookings', 500);
       }
+
+      await pruneEmptyBusinessTrips(supabaseAdmin, expanded.groupIds);
 
       const deletedIds = new Set((deletedRows ?? []).map((r) => r.id));
 

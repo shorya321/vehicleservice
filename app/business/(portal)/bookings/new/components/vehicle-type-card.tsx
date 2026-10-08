@@ -127,7 +127,9 @@ export function VehicleTypeCard({
           >
             {formatCurrency(vehicleType.price, BUSINESS_BASE_CURRENCY)}
           </p>
-          <p className="text-xs text-muted-foreground/70">per vehicle</p>
+          <p className="text-xs text-muted-foreground/70">
+            {vehicleType.priceCaption ?? 'per vehicle'}
+          </p>
         </div>
       </div>
     </motion.button>

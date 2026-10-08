@@ -9,6 +9,8 @@ import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { getBusinessBrand } from '../brand';
+import TripJourneys from '../components/trip-journeys';
+import { businessTripEmailReference, type BusinessEmailTrip } from '../trip';
 
 export interface BookingConfirmationFacts {
   businessName: string;
@@ -36,6 +38,8 @@ export interface BookingConfirmationFacts {
   originalCurrency?: string;
   /** "Booked by Priya Sharma (staff)". Owner copies only; see ../components/booked-by. */
   bookedBy?: string;
+  /** Round trip, multi-city or hourly. Absent for one way, which renders as before. */
+  trip?: BusinessEmailTrip;
 }
 
 /**
@@ -85,7 +89,10 @@ export const BusinessBookingConfirmationEmail = (
     originalAmount,
     originalCurrency,
     bookedBy,
+    trip,
   } = props;
+  const reference = businessTripEmailReference(trip, tripNumber || bookingNumber);
+  const hasJourneys = Boolean(trip?.journeys?.length);
   const showChargeNote = originalCurrency && originalCurrency !== currency && originalAmount;
   // Older bookings predate the guest breakdown. Fall back to the seated count.
   const passengerLabel =
@@ -94,7 +101,7 @@ export const BusinessBookingConfirmationEmail = (
       : passengerCount;
   return (
     <EmailLayout
-      preview={`Booking Created - ${tripNumber || bookingNumber}`}
+      preview={`Booking Created - ${reference}`}
       heading="Booking Confirmation"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
@@ -102,7 +109,7 @@ export const BusinessBookingConfirmationEmail = (
       <BookedBy bookedBy={bookedBy} />
 
       <InfoBox type="success">
-        Your booking <strong>#{tripNumber || bookingNumber}</strong> has been created successfully!
+        Your {trip ? trip.label.toLowerCase() + ' ' : ''}booking <strong>#{reference}</strong> has been created successfully!
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -132,17 +139,23 @@ export const BusinessBookingConfirmationEmail = (
         <strong>Trip Details:</strong>
       </Text>
 
+      {trip && <TripJourneys trip={trip} currency={currency} />}
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Date & Time:</strong> {pickupDateTime}
-        </Text>
+        {!hasJourneys && (
+          <>
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup:</strong> {pickupLocation}
+            </Text>
+            <Text style={emailStyles.detailRow}>
+              <strong>Dropoff:</strong> {dropoffLocation}
+            </Text>
+            <Hr style={emailStyles.hr} />
+            <Text style={emailStyles.detailRow}>
+              <strong>Date & Time:</strong> {pickupDateTime}
+            </Text>
+          </>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Vehicle:</strong> {vehicleType}
         </Text>

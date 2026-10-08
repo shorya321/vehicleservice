@@ -7,6 +7,7 @@
  */
 
 import type { DriverAssignedTripDetails } from './brand';
+import type { BusinessEmailTrip } from './trip';
 
 export type { DriverAssignedTripDetails };
 
@@ -46,6 +47,8 @@ export interface BusinessCustomerBookingConfirmationEmailData extends BusinessSc
    * `childAges` carries one age per seat for child-seat add-ons.
    */
   extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
+  /** Round trip, multi-city or hourly. Absent for one way. */
+  trip?: BusinessEmailTrip;
 }
 
 export interface BusinessCustomerDatetimeChangedEmailData extends BusinessScopedEmailData {
@@ -58,6 +61,8 @@ export interface BusinessCustomerDatetimeChangedEmailData extends BusinessScoped
   previousDateTime: string;
   newDateTime: string;
   modificationReason?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 export interface BusinessCustomerBookingCancelledEmailData extends BusinessScopedEmailData {
@@ -70,6 +75,8 @@ export interface BusinessCustomerBookingCancelledEmailData extends BusinessScope
   dropoffLocation: string;
   pickupDateTime: string;
   cancellationReason?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 /** Driver-assigned email for the passenger of a business booking. */
@@ -162,4 +169,6 @@ export interface BusinessBookingDatetimeChangedEmailData extends BusinessScopedE
   modificationReason?: string;
   /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
   bookedBy?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }

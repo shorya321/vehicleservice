@@ -29,6 +29,8 @@ import {
   AlertTriangle,
   MoreHorizontal,
   Pencil,
+  Repeat,
+  Route as RouteIcon,
 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -67,11 +69,20 @@ import { EditDateTimeModal } from './edit-datetime-modal';
 import { canModifyBookingDateTime } from '@/lib/business/booking-utils';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import {
-  flattenBookingEntries,
   groupQuotationBookings,
   type QuotationBookingLink,
 } from '@/lib/business/bookings/group-quotation-bookings';
 import { QuotationBookingGroup } from './quotation-booking-group';
+import { flattenListEntries, groupTripEntries, withWholeTrips } from '@/lib/business/bookings/group-trip-entries';
+import {
+  businessDestinationLabel,
+  businessHourlySummary,
+  businessLegLabel,
+  businessTripTypeLabel,
+  businessTripTypeOf,
+} from '@/lib/business/trips/display';
+import { BUSINESS_TRIP_TYPE_LABELS } from '@/lib/business/trips/constants';
+import { BUSINESS_TRIP_TYPES } from '@/lib/business/trips/types';
 
 interface Booking {
   id: string;
@@ -87,6 +98,23 @@ interface Booking {
   to_locations: { name: string; city: string } | null;
   vehicle_types: { name: string } | null;
   created_at: string;
+  // Trip columns. One way rows carry trip_type 'one_way' and nulls elsewhere.
+  trip_type?: string | null;
+  booking_group_id?: string | null;
+  leg_index?: number | null;
+  hourly_package?: string | null;
+  duration_hours?: number | null;
+  included_km?: number | null;
+  booking_group?: { group_number: string | null; leg_count: number | null } | null;
+}
+
+/** "Round trip · Return", "Hourly · Half day · 5 h", or null for one way. */
+function tripTag(booking: Booking): string | null {
+  const type = businessTripTypeOf(booking);
+  if (type === 'one_way') return null;
+  if (type === 'hourly') return `Hourly · ${businessHourlySummary(booking) ?? ''}`;
+  const leg = businessLegLabel(booking, booking.booking_group?.leg_count);
+  return leg ? `${businessTripTypeLabel(booking)} · ${leg}` : businessTripTypeLabel(booking);
 }
 
 interface BookingsPageContentProps {
@@ -141,6 +169,7 @@ export function BookingsPageContent({
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [tripTypeFilter, setTripTypeFilter] = useState<string>('all');
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -158,29 +187,34 @@ export function BookingsPageContent({
 
   // Filter bookings
   const filteredBookings = useMemo(() => {
-    return bookings.filter((booking) => {
-      const matchesSearch =
-        booking.booking_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        booking.trip_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        booking.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        booking.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
-
+    const query = searchQuery.toLowerCase();
+    const searched = bookings.filter(
+      (booking) =>
+        booking.booking_number.toLowerCase().includes(query) ||
+        booking.trip_number?.toLowerCase().includes(query) ||
+        booking.booking_group?.group_number?.toLowerCase().includes(query) ||
+        booking.customer_name.toLowerCase().includes(query) ||
+        booking.customer_email.toLowerCase().includes(query)
+    );
+    // A search hit on one journey keeps the rest of its trip, so a trip never shows partly.
+    return withWholeTrips(bookings, searched).filter((booking) => {
       const matchesStatus =
         statusFilter === 'all' || booking.booking_status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+      const matchesTripType =
+        tripTypeFilter === 'all' || businessTripTypeOf(booking) === tripTypeFilter;
+      return matchesStatus && matchesTripType;
     });
-  }, [bookings, searchQuery, statusFilter]);
+  }, [bookings, searchQuery, statusFilter, tripTypeFilter]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, statusFilter, tripTypeFilter]);
 
   // Bookings converted from one quotation are one list entry, so a page holds
   // ten entries and a quotation's trips never split across two pages.
   const listEntries = useMemo(
-    () => groupQuotationBookings(filteredBookings, quotationLinks),
+    () => groupTripEntries(groupQuotationBookings(filteredBookings, quotationLinks)),
     [filteredBookings, quotationLinks]
   );
 
@@ -189,7 +223,7 @@ export function BookingsPageContent({
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, listEntries.length);
   const paginatedEntries = listEntries.slice(startIndex, endIndex);
-  const paginatedBookings = flattenBookingEntries(paginatedEntries);
+  const paginatedBookings = flattenListEntries(paginatedEntries);
 
   // Generate page numbers for pagination
   const getPageNumbers = () => {
@@ -232,13 +266,21 @@ export function BookingsPageContent({
     }
   };
 
+  /** Every journey of the trip a booking belongs to, or just the booking itself. */
+  const wholeTripIds = (bookingId: string): string[] => {
+    const groupId = bookings.find((b) => b.id === bookingId)?.booking_group_id;
+    return groupId ? bookings.filter((b) => b.booking_group_id === groupId).map((b) => b.id) : [bookingId];
+  };
+
   const toggleSelectBooking = (bookingId: string) => {
     if (quotationBookings.has(bookingId)) return;
+    // Journeys of a trip are deleted together, so they are selected together.
+    const ids = wholeTripIds(bookingId);
     const newSelected = new Set(selectedBookings);
     if (newSelected.has(bookingId)) {
-      newSelected.delete(bookingId);
+      ids.forEach((id) => newSelected.delete(id));
     } else {
-      newSelected.add(bookingId);
+      ids.forEach((id) => newSelected.add(id));
     }
     setSelectedBookings(newSelected);
   };
@@ -263,8 +305,10 @@ export function BookingsPageContent({
       !['cancelled', 'completed', 'refunded'].includes(b.booking_status);
 
     if (bookingToDelete) {
-      const target = bookings.find((b) => b.id === bookingToDelete);
-      return target && holdsMoney(target) ? Number(target.wallet_deduction_amount) : 0;
+      const tripIds = new Set(wholeTripIds(bookingToDelete));
+      return bookings
+        .filter((b) => tripIds.has(b.id) && holdsMoney(b))
+        .reduce((sum, b) => sum + Number(b.wallet_deduction_amount), 0);
     }
 
     return bookings
@@ -308,7 +352,20 @@ export function BookingsPageContent({
   const confirmDelete = async () => {
     setIsDeleting(true);
     try {
-      if (bookingToDelete) {
+      const tripIds = bookingToDelete ? wholeTripIds(bookingToDelete) : [];
+      if (bookingToDelete && tripIds.length > 1) {
+        // A journey of a trip goes with the whole trip; the bulk route handles several rows.
+        const response = await fetch('/api/business/bookings/bulk-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_ids: tripIds }),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to delete trip');
+        }
+        toast.success('Trip deleted successfully');
+      } else if (bookingToDelete) {
         // Single delete
         const response = await fetch(`/api/business/bookings/${bookingToDelete}`, {
           method: 'DELETE',
@@ -340,6 +397,32 @@ export function BookingsPageContent({
       setShowDeleteDialog(false);
       setBookingToDelete(null);
     }
+  };
+
+  const tripGroupHeader = (entry: {
+    groupNumber: string | null;
+    tripType: string;
+    bookings: Booking[];
+    legCount: number;
+  }) => {
+    const label = businessTripTypeLabel({ trip_type: entry.tripType });
+    return {
+      title: entry.groupNumber ? `${label} ${entry.groupNumber}` : label,
+      icon:
+        entry.tripType === 'round_trip' ? (
+          <Repeat className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+        ) : (
+          <RouteIcon className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+        ),
+      countLabel:
+        entry.bookings.length === entry.legCount
+          ? `${entry.legCount} journeys`
+          : `${entry.bookings.length} of ${entry.legCount} journeys shown`,
+      routeTo:
+        entry.tripType === 'round_trip'
+          ? `${entry.bookings[0]?.to_locations?.name ?? 'N/A'} and back`
+          : undefined,
+    };
   };
 
   const renderTableRow = (booking: Booking, index: number) => (
@@ -609,6 +692,29 @@ export function BookingsPageContent({
           </SelectContent>
         </Select>
 
+        {/* Trip Type Filter */}
+        <Select value={tripTypeFilter} onValueChange={setTripTypeFilter}>
+          <SelectTrigger
+            aria-label="Trip type"
+            className="h-10 w-[160px] rounded-lg bg-muted border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <RouteIcon className="h-3.5 w-3.5 text-primary" />
+              <SelectValue placeholder="All Trips" />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border">
+            <SelectItem value="all" className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
+              All Trips
+            </SelectItem>
+            {BUSINESS_TRIP_TYPES.map((type) => (
+              <SelectItem key={type} value={type} className="text-muted-foreground focus:bg-primary/10 focus:text-foreground">
+                {BUSINESS_TRIP_TYPE_LABELS[type]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {/* Bulk Delete Button - Shows when items selected */}
         {selectedBookings.size > 0 && (
           <Button
@@ -640,7 +746,7 @@ export function BookingsPageContent({
         <Card className="bg-card border border-border rounded-xl shadow-sm">
           <div>
             {filteredBookings.length === 0 ? (
-              <EmptyBookingsState hasFilter={searchQuery !== '' || statusFilter !== 'all'} />
+              <EmptyBookingsState hasFilter={searchQuery !== '' || statusFilter !== 'all' || tripTypeFilter !== 'all'} />
             ) : (
               <>
                 {/* Desktop Table */}
@@ -687,6 +793,17 @@ export function BookingsPageContent({
                     {paginatedEntries.map((entry, index) =>
                       entry.kind === 'single' ? (
                         renderTableRow(entry.booking, index)
+                      ) : entry.kind === 'trip' ? (
+                        <QuotationBookingGroup
+                          key={entry.groupId}
+                          variant="table"
+                          quotationNumber={null}
+                          bookings={entry.bookings}
+                          totalTrips={entry.legCount}
+                          renderStatus={(status) => <StatusBadge status={mapBookingStatus(status)} />}
+                          renderBooking={renderTableRow}
+                          trip={tripGroupHeader(entry)}
+                        />
                       ) : (
                         <QuotationBookingGroup
                           key={entry.quotationId}
@@ -705,9 +822,20 @@ export function BookingsPageContent({
                 {/* Mobile Cards */}
                 <div className="md:hidden p-4 space-y-3">
                   {paginatedEntries.map((entry, index) =>
-                    entry.kind === 'single' ? (
-                      renderMobileCard(entry.booking, index)
-                    ) : (
+                      entry.kind === 'single' ? (
+                        renderMobileCard(entry.booking, index)
+                      ) : entry.kind === 'trip' ? (
+                        <QuotationBookingGroup
+                          key={entry.groupId}
+                          variant="card"
+                          quotationNumber={null}
+                          bookings={entry.bookings}
+                          totalTrips={entry.legCount}
+                          renderStatus={(status) => <StatusBadge status={mapBookingStatus(status)} />}
+                          renderBooking={renderMobileCard}
+                          trip={tripGroupHeader(entry)}
+                        />
+                      ) : (
                       <QuotationBookingGroup
                         key={entry.quotationId}
                         variant="card"
@@ -805,8 +933,10 @@ export function BookingsPageContent({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {bookingToDelete
-                ? 'Are you sure you want to delete this booking? This action cannot be undone.'
-                : `Are you sure you want to delete ${selectedBookings.size} booking(s)? This action cannot be undone.`}
+                ? wholeTripIds(bookingToDelete).length > 1
+                  ? `This booking is one journey of a trip, so all ${wholeTripIds(bookingToDelete).length} journeys will be deleted. This action cannot be undone.`
+                  : 'Are you sure you want to delete this booking? This action cannot be undone.'
+                : `Are you sure you want to delete ${selectedBookings.size} booking(s)? Journeys of the same trip are deleted together. This action cannot be undone.`}
             </AlertDialogDescription>
             {/* Neither deleting nor cancelling returns the money by itself any more, so
                 this no longer points at cancelling as the way to get it back. Saying so
@@ -934,6 +1064,7 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, fromQuotat
           {booking.trip_number || booking.booking_number}
           {booking.trip_number && <span className="ml-1 opacity-60">({booking.booking_number})</span>}
         </p>
+        {tripTag(booking) && <p className="text-xs font-medium text-primary/80">{tripTag(booking)}</p>}
       </Link>
 
       {/* Route */}
@@ -943,7 +1074,7 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, fromQuotat
         </span>
         <ArrowRight className="h-3 w-3 text-primary/50 flex-shrink-0" />
         <span className="truncate max-w-[120px]">
-          {booking.to_locations?.name || 'N/A'}
+          {businessDestinationLabel(booking, booking.to_locations?.name) || 'N/A'}
         </span>
       </Link>
 
@@ -1144,6 +1275,7 @@ function MobileBookingCard({
               {booking.trip_number || booking.booking_number}
               {booking.trip_number && <span className="ml-1 opacity-60">({booking.booking_number})</span>}
             </p>
+            {tripTag(booking) && <p className="text-xs font-medium text-primary/80">{tripTag(booking)}</p>}
           </Link>
 
           {/* Route */}
@@ -1151,7 +1283,7 @@ function MobileBookingCard({
             <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
             <span className="truncate">{booking.from_locations?.name || 'N/A'}</span>
             <ArrowRight className="h-3 w-3 text-primary/50 flex-shrink-0" />
-            <span className="truncate">{booking.to_locations?.name || 'N/A'}</span>
+            <span className="truncate">{businessDestinationLabel(booking, booking.to_locations?.name) || 'N/A'}</span>
           </Link>
 
           {/* Footer: Price + Actions */}

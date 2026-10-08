@@ -34,8 +34,15 @@ import {
 } from '../actions';
 import { SelectedAddon } from './addon-selection';
 import { bookingLocalInputToUtc } from '@/lib/business/utils/timezone';
-import { calculateWizardTotal } from '@/lib/business/wizard-pricing';
+import { calculateAddonsTotal, calculateWizardTotal } from '@/lib/business/wizard-pricing';
 import { capChildSeats } from '@/lib/business/child-seat-capacity';
+import { businessTripWizardTotal } from '@/lib/business/trips/wizard-total';
+import type { BusinessTripSettings } from '@/lib/business/trips/settings';
+import type { BusinessTripType } from '@/lib/business/trips/types';
+import { TripTypeTabs } from './trips/trip-type-tabs';
+import { TripRouteStep } from './trips/trip-route-step';
+import { TripReviewSummary } from './trips/trip-review-summary';
+import { useBookingTrip } from './trips/use-booking-trip';
 
 interface Location {
   id: string;
@@ -48,6 +55,8 @@ interface BookingWizardProps {
   businessAccountId: string;
   walletBalance: number;
   locations: Location[];
+  /** Admin trip-type settings: which types are offered, limits, notice, discount. */
+  tripSettings: BusinessTripSettings;
 }
 
 export interface BookingFormData {
@@ -98,8 +107,16 @@ export function BookingWizard({
   businessAccountId,
   walletBalance,
   locations,
+  tripSettings,
 }: BookingWizardProps) {
   const router = useRouter();
+  const trip = useBookingTrip();
+  const tripOptions: BusinessTripType[] = [
+    'one_way',
+    ...(tripSettings.round_trip_enabled ? (['round_trip'] as const) : []),
+    ...(tripSettings.multi_city_enabled ? (['multi_city'] as const) : []),
+    ...(tripSettings.hourly_enabled ? (['hourly'] as const) : []),
+  ];
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -178,7 +195,47 @@ export function BookingWizard({
 
   // Derived every render, so changing vehicle after picking add-ons can never drop them from the
   // total. Mirrors the server's calculateBusinessBookingPrice (basePrice + addonsPrice).
-  const totalPrice = calculateWizardTotal(formData.base_price, formData.selected_addons);
+  // Trips charge add-ons once per journey; see lib/business/trips/wizard-total.ts.
+  const totalPrice =
+    trip.tripType === 'one_way'
+      ? calculateWizardTotal(formData.base_price, formData.selected_addons)
+      : businessTripWizardTotal(
+          formData.base_price,
+          calculateAddonsTotal(formData.selected_addons),
+          trip.journeyCount
+        );
+
+  function resetVehicles() {
+    clearPriceQuote();
+    setVehicleTypes([]);
+    setVehicleTypesByCategory([]);
+    setZoneInfo(undefined);
+    setVehicleFetchError(undefined);
+  }
+
+  function changeTripType(next: BusinessTripType) {
+    if (next === trip.tripType) return;
+    trip.changeType(next);
+    resetVehicles();
+  }
+
+  /** Loads priced vehicles. Returns the reason on failure, which the Route step shows in place. */
+  async function fetchTripVehicles(seatedPassengers: number): Promise<string | null> {
+    setIsLoadingVehicles(true);
+    resetVehicles();
+    try {
+      const result = await trip.loadVehicles(seatedPassengers || 1);
+      if (result.error) return result.error;
+      setVehicleTypes(result.vehicleTypes);
+      setVehicleTypesByCategory(result.vehicleTypesByCategory);
+      nextStep();
+      return null;
+    } catch {
+      return 'Failed to load vehicles. Please try again.';
+    } finally {
+      setIsLoadingVehicles(false);
+    }
+  }
 
   async function fetchAvailableVehicles(
     fromLocationId: string,
@@ -248,6 +305,12 @@ export function BookingWizard({
 
     setIsSubmitting(true);
 
+    const tripFields = trip.submitFields();
+    if (tripFields) {
+      await submitTrip(tripFields);
+      return;
+    }
+
     try {
       // Strip display-only fields and convert datetime to ISO 8601.
       // total_price is derived here rather than carried in formData, so it is set explicitly,
@@ -300,6 +363,50 @@ export function BookingWizard({
     }
   }
 
+  async function submitTrip(tripFields: NonNullable<ReturnType<typeof trip.submitFields>>) {
+    try {
+      const response = await fetch('/api/business/bookings/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...tripFields,
+          customer_name: formData.customer_name,
+          customer_email: formData.customer_email,
+          customer_phone: formData.customer_phone,
+          customer_notes: formData.customer_notes || undefined,
+          reference_number: formData.reference_number || undefined,
+          vehicle_type_id: formData.vehicle_type_id,
+          passenger_count: formData.passenger_count,
+          adults: formData.adults,
+          children: formData.children,
+          infants: formData.infants,
+          base_price: formData.base_price,
+          price_signature: formData.price_signature,
+          price_signature_timestamp: formData.price_signature_timestamp,
+          price_signature_nonce: formData.price_signature_nonce,
+          selected_addons: formData.selected_addons?.map((a) => ({
+            addon_id: a.addon_id,
+            quantity: a.quantity,
+            ...(a.child_ages ? { child_ages: a.child_ages.filter((v): v is number => v !== null) } : {}),
+          })),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to create booking');
+
+      const reference = result.data.group_number || result.data.trip_number || result.data.booking_number;
+      toast.success('Success!', { description: `Booking ${reference} created successfully.` });
+      router.push('/business/bookings');
+      router.refresh();
+    } catch (error) {
+      toast.error('Error', {
+        description: error instanceof Error ? error.message : 'Failed to create booking',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Step Indicator */}
@@ -319,12 +426,39 @@ export function BookingWizard({
         </CardHeader>
         <CardContent className="pt-6">
           {currentStep === 0 && (
-            <RouteStep
-              formData={formData}
-              onUpdate={updateFormData}
-              onNext={nextStep}
-              onFetchVehicles={fetchAvailableVehicles}
-            />
+            <div className="space-y-6">
+              <TripTypeTabs value={trip.tripType} options={tripOptions} onChange={changeTripType} />
+              {trip.tripType === 'one_way' ? (
+                <RouteStep
+                  formData={formData}
+                  onUpdate={updateFormData}
+                  onNext={nextStep}
+                  onFetchVehicles={fetchAvailableVehicles}
+                />
+              ) : (
+                <TripRouteStep
+                  tripType={trip.tripType}
+                  legs={trip.legs}
+                  hourlyPackage={trip.hourlyPackage}
+                  guests={{
+                    adults: formData.adults ?? 1,
+                    children: formData.children ?? 0,
+                    infants: formData.infants ?? 0,
+                  }}
+                  settings={tripSettings}
+                  onLegsChange={(next) => {
+                    trip.setLegs(next);
+                    resetVehicles();
+                  }}
+                  onPackageChange={(next) => {
+                    trip.setHourlyPackage(next);
+                    resetVehicles();
+                  }}
+                  onGuestsChange={(guests) => updateFormData(guests)}
+                  onContinue={fetchTripVehicles}
+                />
+              )}
+            </div>
           )}
 
           {currentStep === 1 && (
@@ -364,6 +498,16 @@ export function BookingWizard({
               onBack={previousStep}
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
+              journeyCount={trip.journeyCount}
+              tripSummary={
+                trip.tripType === 'one_way' ? undefined : (
+                  <TripReviewSummary
+                    tripType={trip.tripType}
+                    legs={trip.legs}
+                    quote={formData.vehicle_type_id ? trip.quotes[formData.vehicle_type_id] : undefined}
+                  />
+                )
+              }
             />
           )}
         </CardContent>

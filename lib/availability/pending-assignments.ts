@@ -75,6 +75,7 @@ export async function getVendorPendingAssignments(
       pickup_datetime,
       customer_name,
       customer_phone,
+      duration_hours,
       from_location:locations!from_location_id(name),
       to_location:locations!to_location_id(name)
     ),

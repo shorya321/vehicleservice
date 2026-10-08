@@ -35,5 +35,10 @@ export interface AdminTripGroup {
   booking_status: string
   paid_at: string | null
   stripe_payment_intent_id: string | null
+  /**
+   * 'wallet' for a business trip (business_booking_groups), charged once from the business
+   * wallet. Absent for a customer trip, paid by card through Stripe.
+   */
+  payment_source?: 'wallet'
   legs: AdminTripLeg[]
 }

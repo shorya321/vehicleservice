@@ -79,21 +79,28 @@ export default async function BusinessDashboardPage() {
     ? { business_account_id: businessAccountId, created_by_user_id: businessUser.id }
     : { business_account_id: businessAccountId };
 
+  // A round trip or multi-city trip is one booking to the business, so every tile counts only
+  // its first journey. One-way and hourly rows have no group and always count.
+  const firstJourneyOnly = 'booking_group_id.is.null,leg_index.eq.0';
+
   // Get booking statistics
   const { count: totalBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .match(bookingScope);
+    .match(bookingScope)
+    .or(firstJourneyOnly);
 
   const { count: pendingBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .match({ ...bookingScope, booking_status: 'pending' });
+    .match({ ...bookingScope, booking_status: 'pending' })
+    .or(firstJourneyOnly);
 
   const { count: completedBookings } = await supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .match({ ...bookingScope, booking_status: 'completed' });
+    .match({ ...bookingScope, booking_status: 'completed' })
+    .or(firstJourneyOnly);
 
   // Get this month's bookings.
   // setDate(1) + setHours(0,0,0,0) yields midnight in whatever zone the process
@@ -105,15 +112,25 @@ export default async function BusinessDashboardPage() {
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
     .match(bookingScope)
+    .or(firstJourneyOnly)
     .gte('created_at', startOfMonth.toISOString());
 
   // Get recent bookings
-  const { data: recentBookings } = await supabase
+  // A trip shows once, under its trip reference and the total charged for all its journeys.
+  const { data: recentRows } = await supabase
     .from('business_bookings')
-    .select('id, booking_number, trip_number, customer_name, pickup_datetime, booking_status, total_price')
+    .select('id, booking_number, trip_number, customer_name, pickup_datetime, booking_status, total_price, booking_group:booking_group_id(group_number, total_price)')
     .match(bookingScope)
+    .or(firstJourneyOnly)
     .order('created_at', { ascending: false })
     .limit(5);
+
+  const recentBookings = (recentRows ?? []).map(({ booking_group, ...row }) => {
+    const group = Array.isArray(booking_group) ? booking_group[0] : booking_group;
+    return group
+      ? { ...row, trip_number: group.group_number, total_price: Number(group.total_price) }
+      : row;
+  });
 
   // Get popular routes
   const { data: popularRoutesData } = await supabase

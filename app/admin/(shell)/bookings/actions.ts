@@ -472,9 +472,61 @@ export async function getBookingDetails(bookingId: string) {
     throw new Error(`Failed to fetch booking details: Booking not found`)
   }
 
+  // Business round trip / multi-city: same shape as the customer trip group above, read from
+  // business_booking_groups. Paid once from the business wallet, so there is no Stripe intent.
+  let businessTripGroup: AdminTripGroup | null = null
+  if (businessBooking.booking_group_id) {
+    const [{ data: group }, { data: legs }] = await Promise.all([
+      adminClient
+        .from('business_booking_groups')
+        .select('id, group_number, trip_type, leg_count, subtotal, discount_percent, discount_amount, total_price, payment_status, booking_status, paid_at')
+        .eq('id', businessBooking.booking_group_id)
+        .single(),
+      adminClient
+        .from('business_bookings')
+        .select('id, booking_number, trip_number, leg_index, pickup_address, dropoff_address, pickup_datetime, booking_status, payment_status, total_price, discount_amount, refund_due, booking_assignments!booking_assignments_business_booking_id_fkey(status, vendor:vendor_applications(business_name))')
+        .eq('booking_group_id', businessBooking.booking_group_id)
+        .order('leg_index', { ascending: true }),
+    ])
+    if (group) {
+      businessTripGroup = {
+        ...group,
+        leg_count: Number(group.leg_count),
+        subtotal: Number(group.subtotal),
+        discount_percent: Number(group.discount_percent),
+        discount_amount: Number(group.discount_amount),
+        total_price: Number(group.total_price),
+        stripe_payment_intent_id: null,
+        payment_source: 'wallet',
+        legs: (legs || []).map((leg) => {
+          const active = (leg.booking_assignments || []).find((a) =>
+            ['pending', 'accepted', 'completed'].includes(a.status)
+          )
+          return {
+            id: leg.id,
+            booking_number: leg.booking_number,
+            trip_number: leg.trip_number,
+            leg_index: leg.leg_index ?? 0,
+            pickup_address: leg.pickup_address,
+            dropoff_address: leg.dropoff_address,
+            pickup_datetime: leg.pickup_datetime,
+            booking_status: leg.booking_status,
+            payment_status: leg.payment_status,
+            total_price: Number(leg.total_price),
+            discount_amount: Number(leg.discount_amount ?? 0),
+            refund_due: leg.refund_due != null ? Number(leg.refund_due) : null,
+            assignment_status: active?.status ?? null,
+            vendor_name: (active?.vendor as { business_name: string } | null)?.business_name ?? null,
+          }
+        }),
+      }
+    }
+  }
+
   return {
     ...businessBooking,
     bookingType: 'business' as const,
+    trip_group: businessTripGroup,
     booking_assignments: businessAssignments,
     booking_passengers: [], // Business bookings don't have passengers table
     // Business addons are reshaped into the customer-side booking_amenities shape so one admin UI
@@ -1202,9 +1254,11 @@ export async function deleteBooking(
     }
 
     // A journey of a round trip or multi-city trip. Read before the row goes.
+    // Business trips live in business_booking_groups and are always paid (wallet), so only the
+    // last journey takes the trip row with it.
     const { data: groupRef } = bookingType === 'customer'
       ? await adminClient.from('bookings').select('booking_group_id').eq('id', bookingId).maybeSingle()
-      : { data: null }
+      : await adminClient.from('business_bookings').select('booking_group_id').eq('id', bookingId).maybeSingle()
     const groupId = groupRef?.booking_group_id ?? null
 
     // Delete the booking itself. Select the deleted rows back so a delete that
@@ -1233,7 +1287,16 @@ export async function deleteBooking(
     // An unpaid trip is only payable whole (the finalizer checks every journey is there), so
     // removing one journey removes the trip. A paid trip keeps its other journeys, and its
     // group row goes with the last one.
-    if (groupId) {
+    if (groupId && bookingType === 'business') {
+      const { count: remaining } = await adminClient
+        .from('business_bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('booking_group_id', groupId)
+      if ((remaining ?? 0) === 0) {
+        const { error: groupError } = await adminClient.from('business_booking_groups').delete().eq('id', groupId)
+        if (groupError) console.error('Failed to remove the business trip after deleting its last journey:', groupError)
+      }
+    } else if (groupId) {
       const [{ data: group }, { count: remaining }] = await Promise.all([
         adminClient.from('booking_groups').select('payment_status').eq('id', groupId).maybeSingle(),
         adminClient.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_group_id', groupId),
@@ -1609,7 +1672,7 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   if (bookingType === 'business') {
     const { data: booking } = await adminClient
       .from('business_bookings')
-      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name')
+      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name, trip_type, hourly_package, duration_hours, included_km, leg_index, booking_group:booking_group_id(leg_count)')
       .eq('id', bookingId)
       .single()
     if (!booking) return null
@@ -1620,6 +1683,8 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
     pickupDatetimeStr = booking.pickup_datetime
     vehicleTypeId = booking.vehicle_type_id
     customerName = booking.customer_name || 'Customer'
+    // Business rows carry the same trip columns, so the vendor sees the same label either way.
+    tripLabel = tripAssignmentLabel(booking, booking.booking_group?.leg_count ?? null)
   } else {
     const { data: booking } = await adminClient
       .from('bookings')

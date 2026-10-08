@@ -4,6 +4,7 @@
  */
 
 import { getBookingTimezone } from '@/lib/utils/timezone'
+import { legLabel, tripTypeLabel, tripTypeOf } from '@/lib/trips/display';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -71,7 +72,7 @@ export default async function AdminBusinessDetailsPage({
   // Get recent bookings
   const { data: recentBookings } = await supabase
     .from('business_bookings')
-    .select('id, booking_number, customer_name, booking_status, total_price, created_at')
+    .select('id, booking_number, trip_number, customer_name, booking_status, total_price, created_at, trip_type, leg_index, hourly_package, duration_hours, included_km, booking_group:booking_group_id(leg_count)')
     .eq('business_account_id', id)
     .order('created_at', { ascending: false })
     .limit(10);
@@ -236,8 +237,14 @@ export default async function AdminBusinessDetailsPage({
               {recentBookings.map((booking) => (
                 <div key={booking.id} className="flex items-center justify-between border-b pb-2">
                   <div>
-                    <p className="font-medium">{(booking as any).trip_number || booking.booking_number}</p>
-                    <p className="text-sm text-muted-foreground">{booking.customer_name}</p>
+                    <p className="font-medium">{booking.trip_number || booking.booking_number}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {booking.customer_name}
+                      {tripTypeOf(booking) !== 'one_way' &&
+                        ` · ${tripTypeLabel(booking)}${
+                          legLabel(booking, booking.booking_group?.leg_count) ? `, ${legLabel(booking, booking.booking_group?.leg_count)}` : ''
+                        }`}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium">{formatCurrency(booking.total_price)}</p>

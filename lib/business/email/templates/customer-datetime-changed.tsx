@@ -15,6 +15,8 @@ interface CustomerDatetimeChangedEmailProps {
   previousDateTime: string;
   newDateTime: string;
   modificationReason?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 export const CustomerDatetimeChangedEmail = ({
@@ -26,6 +28,7 @@ export const CustomerDatetimeChangedEmail = ({
   previousDateTime,
   newDateTime,
   modificationReason,
+  tripContext,
 }: CustomerDatetimeChangedEmailProps) => {
   return (
     <EmailLayout
@@ -47,6 +50,11 @@ export const CustomerDatetimeChangedEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
+        {tripContext && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Part of:</strong> {tripContext}
+          </Text>
+        )}
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
           <strong>Previous Time:</strong> {previousDateTime}

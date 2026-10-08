@@ -27,6 +27,11 @@ export interface VehicleTypeResult {
   priceSignature: string;
   priceSignatureTimestamp: number;
   priceSignatureNonce: string;
+  /**
+   * Round trip, multi-city and hourly only: what `price` covers ("2 journeys", "5 h · 100 km
+   * included"). Absent for one way, whose card renders exactly as before.
+   */
+  priceCaption?: string;
 }
 
 export interface VehicleTypesByCategory {

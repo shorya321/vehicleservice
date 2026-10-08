@@ -1104,6 +1104,97 @@ export type Database = {
           },
         ]
       }
+      business_booking_groups: {
+        Row: {
+          booking_status: string
+          business_account_id: string
+          created_at: string
+          created_by_user_id: string | null
+          currency: string
+          discount_amount: number
+          discount_percent: number
+          group_number: string
+          id: string
+          leg_count: number
+          paid_at: string
+          payment_status: string
+          price_signature: string | null
+          price_signature_nonce: string | null
+          price_signature_timestamp: number | null
+          subtotal: number
+          total_price: number
+          trip_type: string
+          updated_at: string
+          vehicle_type_id: string
+        }
+        Insert: {
+          booking_status?: string
+          business_account_id: string
+          created_at?: string
+          created_by_user_id?: string | null
+          currency?: string
+          discount_amount?: number
+          discount_percent?: number
+          group_number?: string
+          id?: string
+          leg_count: number
+          paid_at?: string
+          payment_status?: string
+          price_signature?: string | null
+          price_signature_nonce?: string | null
+          price_signature_timestamp?: number | null
+          subtotal: number
+          total_price: number
+          trip_type: string
+          updated_at?: string
+          vehicle_type_id: string
+        }
+        Update: {
+          booking_status?: string
+          business_account_id?: string
+          created_at?: string
+          created_by_user_id?: string | null
+          currency?: string
+          discount_amount?: number
+          discount_percent?: number
+          group_number?: string
+          id?: string
+          leg_count?: number
+          paid_at?: string
+          payment_status?: string
+          price_signature?: string | null
+          price_signature_nonce?: string | null
+          price_signature_timestamp?: number | null
+          subtotal?: number
+          total_price?: number
+          trip_type?: string
+          updated_at?: string
+          vehicle_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_booking_groups_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_booking_groups_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "business_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_booking_groups_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_booking_addons: {
         Row: {
           addon_id: string
@@ -1154,6 +1245,15 @@ export type Database = {
       }
       business_bookings: {
         Row: {
+          booking_group_id: string | null
+          discount_amount: number
+          duration_hours: number | null
+          extra_hour_price: number | null
+          hourly_package: string | null
+          included_km: number | null
+          leg_index: number | null
+          refund_due: number | null
+          trip_type: string
           adults: number
           applied_multiplier: number | null
           base_price: number
@@ -1181,7 +1281,7 @@ export type Database = {
           price_signature_nonce: string | null
           price_signature_timestamp: number | null
           reference_number: string | null
-          to_location_id: string
+          to_location_id: string | null
           total_price: number
           trip_number: string
           updated_at: string
@@ -1189,6 +1289,15 @@ export type Database = {
           wallet_deduction_amount: number
         }
         Insert: {
+          booking_group_id?: string | null
+          discount_amount?: number
+          duration_hours?: number | null
+          extra_hour_price?: number | null
+          hourly_package?: string | null
+          included_km?: number | null
+          leg_index?: number | null
+          refund_due?: number | null
+          trip_type?: string
           adults?: number
           applied_multiplier?: number | null
           base_price: number
@@ -1216,7 +1325,7 @@ export type Database = {
           price_signature_nonce?: string | null
           price_signature_timestamp?: number | null
           reference_number?: string | null
-          to_location_id: string
+          to_location_id: string | null
           total_price: number
           trip_number: string
           updated_at?: string
@@ -1224,6 +1333,15 @@ export type Database = {
           wallet_deduction_amount: number
         }
         Update: {
+          booking_group_id?: string | null
+          discount_amount?: number
+          duration_hours?: number | null
+          extra_hour_price?: number | null
+          hourly_package?: string | null
+          included_km?: number | null
+          leg_index?: number | null
+          refund_due?: number | null
+          trip_type?: string
           adults?: number
           applied_multiplier?: number | null
           base_price?: number
@@ -1251,7 +1369,7 @@ export type Database = {
           price_signature_nonce?: string | null
           price_signature_timestamp?: number | null
           reference_number?: string | null
-          to_location_id?: string
+          to_location_id?: string | null
           total_price?: number
           trip_number?: string
           updated_at?: string
@@ -1259,6 +1377,13 @@ export type Database = {
           wallet_deduction_amount?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "business_bookings_booking_group_id_fkey"
+            columns: ["booking_group_id"]
+            isOneToOne: false
+            referencedRelation: "business_booking_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "business_bookings_business_account_id_fkey"
             columns: ["business_account_id"]
@@ -3881,6 +4006,36 @@ export type Database = {
           p_vehicle_type_id: string
         }
         Returns: string
+      }
+      create_business_trip_with_wallet_deduction: {
+        Args: {
+          p_adults: number
+          p_business_id: string
+          p_children: number
+          p_created_by_user_id: string
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_notes?: string
+          p_customer_phone: string
+          p_discount_amount: number
+          p_discount_percent: number
+          p_duration_hours?: number
+          p_extra_hour_price?: number
+          p_hourly_package?: string
+          p_included_km?: number
+          p_infants: number
+          p_legs: Json
+          p_passenger_count: number
+          p_price_signature?: string
+          p_price_signature_nonce?: string
+          p_price_signature_timestamp?: number
+          p_reference_number?: string
+          p_subtotal: number
+          p_total_price: number
+          p_trip_type: string
+          p_vehicle_type_id: string
+        }
+        Returns: Json
       }
       create_business_notification: {
         Args: {

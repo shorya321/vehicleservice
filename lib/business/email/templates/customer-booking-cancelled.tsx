@@ -15,6 +15,8 @@ interface CustomerBookingCancelledEmailProps {
   dropoffLocation: string;
   pickupDateTime: string;
   cancellationReason?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 export const CustomerBookingCancelledEmail = ({
@@ -26,6 +28,7 @@ export const CustomerBookingCancelledEmail = ({
   dropoffLocation,
   pickupDateTime,
   cancellationReason,
+  tripContext,
 }: CustomerBookingCancelledEmailProps) => {
   return (
     <EmailLayout
@@ -47,6 +50,11 @@ export const CustomerBookingCancelledEmail = ({
         <Text style={emailStyles.detailRow}>
           <strong>Trip #:</strong> {tripNumber || bookingNumber}
         </Text>
+        {tripContext && (
+          <Text style={emailStyles.detailRow}>
+            <strong>Part of:</strong> {tripContext}
+          </Text>
+        )}
         <Hr style={emailStyles.hr} />
         <Text style={emailStyles.detailRow}>
           <strong>Pickup:</strong> {pickupLocation}

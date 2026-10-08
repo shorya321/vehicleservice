@@ -32,6 +32,12 @@ import { format, differenceInDays } from 'date-fns';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { toBookingTz } from '@/lib/business/utils/timezone';
+import {
+  businessHourlySummary,
+  businessLegLabel,
+  businessTripTypeLabel,
+  isBusinessHourlyBooking,
+} from '@/lib/business/trips/display';
 
 interface BookingDetailsProps {
   booking: any;
@@ -203,6 +209,12 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                 <Route className="h-4 w-4 text-primary" />
                 Route Details
+                {booking.trip_type && booking.trip_type !== 'one_way' && (
+                  <span className="ml-1 normal-case tracking-normal text-primary">
+                    · {businessTripTypeLabel(booking)}
+                    {businessLegLabel(booking) ? ` · ${businessLegLabel(booking)}` : ''}
+                  </span>
+                )}
               </h2>
             </div>
             <div className="p-5">
@@ -230,11 +242,19 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
                   <div className="absolute -left-8 top-0 h-4 w-4 rounded-full bg-red-500 ring-4 ring-red-500/20" />
                   <div className="space-y-1">
                     <p className="text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400">
-                      Dropoff Location
+                      {isBusinessHourlyBooking(booking) ? 'Hourly Hire' : 'Dropoff Location'}
                     </p>
                     <p className="font-semibold text-foreground text-lg">{booking.to_locations.name}</p>
-                    {booking.dropoff_address && (
-                      <p className="text-sm text-muted-foreground">{booking.dropoff_address}</p>
+                    {isBusinessHourlyBooking(booking) ? (
+                      <p className="text-sm text-muted-foreground">
+                        {businessHourlySummary(booking)}
+                        {Number(booking.extra_hour_price) > 0 &&
+                          ` · extra hour ${formatCurrency(booking.extra_hour_price)}`}
+                      </p>
+                    ) : (
+                      booking.dropoff_address && (
+                        <p className="text-sm text-muted-foreground">{booking.dropoff_address}</p>
+                      )
                     )}
                   </div>
                 </div>
@@ -615,9 +635,19 @@ export function BookingDetails({ booking }: BookingDetailsProps) {
             </div>
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Base Price</span>
+                <span className="text-muted-foreground">
+                  {isBusinessHourlyBooking(booking) ? 'Package Price' : 'Base Price'}
+                </span>
                 <span className="font-medium text-foreground">{formatCurrency(booking.base_price)}</span>
               </div>
+              {Number(booking.discount_amount) > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Round-trip discount</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                    -{formatCurrency(booking.discount_amount)}
+                  </span>
+                </div>
+              )}
               {booking.booking_addons && booking.booking_addons.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Add-ons</p>

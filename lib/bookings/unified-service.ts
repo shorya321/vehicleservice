@@ -128,18 +128,10 @@ type TripFields = Pick<
   'tripType' | 'hourlyPackage' | 'durationHours' | 'includedKm' | 'bookingGroupId' | 'groupNumber' | 'legIndex' | 'legCount'
 >;
 
-const ONE_WAY_TRIP_FIELDS: TripFields = {
-  tripType: 'one_way',
-  hourlyPackage: null,
-  durationHours: null,
-  includedKm: null,
-  bookingGroupId: null,
-  groupNumber: null,
-  legIndex: null,
-  legCount: null,
-};
-
-/** Trip columns of a customer `bookings` row, with its group embed when selected. */
+/**
+ * Trip columns of a `bookings` or `business_bookings` row, with its group embed when selected.
+ * Both tables use the same column names; the business embed resolves to business_booking_groups.
+ */
 function customerTripFields(row: any): TripFields {
   const tripType = ['round_trip', 'multi_city', 'hourly'].includes(row?.trip_type) ? row.trip_type : 'one_way';
   return {
@@ -239,6 +231,7 @@ export async function getUnifiedBookingDetails(
       .from('business_bookings')
       .select(`
         *,
+        booking_group:booking_group_id(group_number, leg_count),
         from_locations:from_location_id(name, city),
         to_locations:to_location_id(name, city),
         vehicle_types:vehicle_type_id(
@@ -283,7 +276,7 @@ export async function getUnifiedBookingDetails(
       customerNotes: data.customer_notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      ...ONE_WAY_TRIP_FIELDS,
+      ...customerTripFields(data),
       fromLocations: mapLocationEmbed(data.from_locations),
       toLocations: mapLocationEmbed(data.to_locations),
       vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),
@@ -632,10 +625,10 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
   const supabase = createAdminClient();
 
   const shouldFetchCustomer = !filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'customer';
-  // Business bookings are always one way, so a trip-type filter other than one way excludes them.
+  // Business bookings carry the same trip columns (business_bookings.trip_type and friends), so
+  // the trip-type filter applies to both tables.
   const shouldFetchBusiness =
-    (!filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'business') &&
-    (!filters?.tripType || filters.tripType === 'one_way');
+    !filters?.bookingType || filters.bookingType === 'all' || filters.bookingType === 'business';
 
   // Build customer bookings query
   // Note: Use simple query and manually join customer data to avoid RLS issues
@@ -678,10 +671,24 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
       customer_notes,
       created_at,
       updated_at,
+      trip_type,
+      booking_group_id,
+      leg_index,
+      hourly_package,
+      duration_hours,
+      included_km,
+      extra_hour_price,
+      discount_amount,
+      refund_due,
+      booking_group:booking_group_id(group_number, leg_count),
       from_locations:from_location_id(name, city),
       to_locations:to_location_id(name, city),
       vehicle_types:vehicle_type_id(name, description)
     `, { count: 'exact' });
+
+  if (filters?.tripType) {
+    businessQuery = businessQuery.eq('trip_type', filters.tripType);
+  }
 
   // Apply filters to both queries
   if (filters?.status) {
@@ -740,7 +747,21 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
         ...(groupIds.length > 0 ? [`booking_group_id.in.(${groupIds.join(',')})`] : []),
       ].join(',')
     );
-    businessQuery = businessQuery.or(`customer_name.ilike.${searchPattern},booking_number.ilike.${searchPattern},trip_number.ilike.${searchPattern}`);
+    // A business trip reference (BG-...) finds every journey of that trip too.
+    const { data: matchingBusinessGroups } = await supabase
+      .from('business_booking_groups')
+      .select('id')
+      .ilike('group_number', searchPattern)
+      .limit(50);
+    const businessGroupIds = (matchingBusinessGroups || []).map((g) => g.id);
+    businessQuery = businessQuery.or(
+      [
+        `customer_name.ilike.${searchPattern}`,
+        `booking_number.ilike.${searchPattern}`,
+        `trip_number.ilike.${searchPattern}`,
+        ...(businessGroupIds.length > 0 ? [`booking_group_id.in.(${businessGroupIds.join(',')})`] : []),
+      ].join(',')
+    );
   }
 
   // Customer bookings keep the email on the profile, business bookings store it

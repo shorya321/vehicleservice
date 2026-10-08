@@ -7,6 +7,8 @@ import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { getBusinessBrand } from '../brand';
+import TripJourneys from '../components/trip-journeys';
+import { businessTripEmailReference, type BusinessEmailTrip } from '../trip';
 
 interface CustomerBookingConfirmationEmailProps {
   customerName: string;
@@ -25,6 +27,8 @@ interface CustomerBookingConfirmationEmailProps {
   infants?: number;
   referenceNumber?: string;
   extras?: Array<{ label: string; quantity: number; price: number; childAges?: number[] }>;
+  /** Round trip, multi-city or hourly. Absent for one way, which renders as before. */
+  trip?: BusinessEmailTrip;
 }
 
 export const CustomerBookingConfirmationEmail = ({
@@ -43,7 +47,10 @@ export const CustomerBookingConfirmationEmail = ({
   infants,
   referenceNumber,
   extras,
+  trip,
 }: CustomerBookingConfirmationEmailProps) => {
+  const reference = businessTripEmailReference(trip, tripNumber || bookingNumber);
+  const hasJourneys = Boolean(trip?.journeys?.length);
   // Older bookings predate the guest breakdown. Fall back to the seated count.
   const passengerLabel =
     adults != null
@@ -52,14 +59,14 @@ export const CustomerBookingConfirmationEmail = ({
 
   return (
     <EmailLayout
-      preview={`Your Transfer Booking - ${tripNumber || bookingNumber}`}
+      preview={`Your Transfer Booking - ${reference}`}
       heading="Your Transfer Has Been Booked"
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
       <InfoBox type="success">
         Your transfer has been booked by <strong>{businessName}</strong>.
-        Your trip number is <strong>#{tripNumber || bookingNumber}</strong>
+        Your {trip ? trip.label.toLowerCase() + ' ' : ''}trip number is <strong>#{reference}</strong>
       </InfoBox>
 
       <Text style={emailStyles.text}>
@@ -68,24 +75,28 @@ export const CustomerBookingConfirmationEmail = ({
 
       <DetailsSection>
         <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
+          <strong>Trip #:</strong> {reference}
         </Text>
         {referenceNumber && (
           <Text style={emailStyles.detailRow}>
             <strong>Reference #:</strong> {referenceNumber}
           </Text>
         )}
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Date & Time:</strong> {pickupDateTime}
-        </Text>
+        {!hasJourneys && (
+          <>
+            <Hr style={emailStyles.hr} />
+            <Text style={emailStyles.detailRow}>
+              <strong>Pickup:</strong> {pickupLocation}
+            </Text>
+            <Text style={emailStyles.detailRow}>
+              <strong>Dropoff:</strong> {dropoffLocation}
+            </Text>
+            <Hr style={emailStyles.hr} />
+            <Text style={emailStyles.detailRow}>
+              <strong>Date & Time:</strong> {pickupDateTime}
+            </Text>
+          </>
+        )}
         <Text style={emailStyles.detailRow}>
           <strong>Vehicle:</strong> {vehicleType}
         </Text>
@@ -111,6 +122,9 @@ export const CustomerBookingConfirmationEmail = ({
           </>
         )}
       </DetailsSection>
+
+      {/* No currency: the passenger never sees prices. */}
+      {trip && <TripJourneys trip={trip} />}
 
       <InfoBox type="info" title="What to Expect">
         A driver will be assigned to your transfer. Please be ready at the pickup

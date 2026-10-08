@@ -5,6 +5,7 @@
 
 import { NextRequest, after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { businessTripJourneyCount } from '@/lib/business/trips/delete-server';
 import {
   requireBusinessAuth,
   apiSuccess,
@@ -45,7 +46,7 @@ export const DELETE = requireBusinessAuth(
         .select(`
           id, business_account_id, booking_status, wallet_deduction_amount,
           booking_number, trip_number, customer_name, customer_email,
-          pickup_address, dropoff_address, pickup_datetime, created_by_user_id,
+          pickup_address, dropoff_address, pickup_datetime, created_by_user_id, booking_group_id,
           from_location:from_location_id(name),
           to_location:to_location_id(name)
         `)
@@ -63,6 +64,15 @@ export const DELETE = requireBusinessAuth(
       // Staff may only delete bookings they created themselves.
       if (user.role !== 'owner' && booking.created_by_user_id !== user.businessId) {
         return apiError('Forbidden: you can only delete bookings you created', 403);
+      }
+
+      // One journey of a trip is never deleted on its own. The bookings list sends the whole trip
+      // to the bulk route instead; this guards a direct call.
+      if ((await businessTripJourneyCount(supabaseAdmin, booking.booking_group_id)) > 1) {
+        return apiError(
+          'This booking is one journey of a trip. Delete the trip from the bookings list, which removes every journey together.',
+          409
+        );
       }
 
       // A booking a vendor is on cannot be deleted from the portal, for the same

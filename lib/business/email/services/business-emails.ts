@@ -1,5 +1,6 @@
 import { getAdminEmail, getAppUrl, sendBusinessEmail, sendPlatformEmail } from '../platform';
 import type { EmailResult } from '../platform';
+import { businessTripEmailReference, type BusinessEmailTrip } from '../trip';
 import type {
   BusinessCustomerBookingConfirmationEmailData,
   BusinessCustomerDatetimeChangedEmailData,
@@ -155,6 +156,7 @@ export async function sendBusinessBookingDatetimeChangedEmail(
       modificationReason: data.modificationReason,
       bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
       bookedBy: data.bookedBy,
+      tripContext: data.tripContext,
     },
   });
 }
@@ -184,6 +186,7 @@ export async function sendBusinessCreatorDatetimeChangedEmail(
       newDateTime: data.newDateTime,
       modificationReason: data.modificationReason,
       bookingUrl: `${getAppUrl()}/business/bookings/${data.bookingId}`,
+      tripContext: data.tripContext,
     },
   });
 }
@@ -326,6 +329,8 @@ export interface BusinessBookingConfirmationEmailData {
   originalCurrency?: string;
   /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
   bookedBy?: string;
+  /** Round trip, multi-city or hourly. Absent for one way. */
+  trip?: BusinessEmailTrip;
 }
 
 /**
@@ -368,6 +373,7 @@ function confirmationFacts(
     extras: data.extras,
     originalAmount: data.originalAmount,
     originalCurrency: data.originalCurrency,
+    trip: data.trip,
   };
 }
 
@@ -386,7 +392,7 @@ export async function sendBusinessBookingConfirmationEmail(
     forcePlatformTransport: true,
     kind: 'business.booking.confirmation',
     to: data.email,
-    subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
+    subject: `Booking Confirmed - #${businessTripEmailReference(data.trip, data.tripNumber || data.bookingNumber)}`,
     template: BusinessBookingConfirmationEmail,
     // Annotated rather than written inline. SendEmailParams types templateProps as
     // Record<string, any>, so an inline literal is unchecked and the template's
@@ -418,7 +424,7 @@ export async function sendBusinessCreatorBookingConfirmationEmail(
     forcePlatformTransport: true,
     kind: 'business.creator.booking.confirmation',
     to: data.email,
-    subject: `Booking Confirmed - #${data.tripNumber || data.bookingNumber}`,
+    subject: `Booking Confirmed - #${businessTripEmailReference(data.trip, data.tripNumber || data.bookingNumber)}`,
     template: BusinessBookingConfirmationEmail,
     templateProps: {
       ...confirmationFacts(data),
@@ -451,6 +457,8 @@ export interface BusinessBookingCancellationEmailData {
   originalCurrency?: string;
   /** "Booked by Priya Sharma (staff)", when a staff member created this booking. */
   bookedBy?: string;
+  /** "Round trip BG-..., return journey" when this booking is one journey of a trip. */
+  tripContext?: string;
 }
 
 /**
@@ -481,6 +489,7 @@ function cancellationFacts(
     currency: data.currency,
     originalAmount: data.originalAmount,
     originalCurrency: data.originalCurrency,
+    tripContext: data.tripContext,
   };
 }
 
@@ -545,7 +554,7 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
     businessAccountId: data.businessAccountId,
     kind: 'business.customer.booking_confirmation',
     to: data.customerEmail,
-    subject: `Your Transfer Booking - #${data.tripNumber || data.bookingNumber}`,
+    subject: `Your Transfer Booking - #${businessTripEmailReference(data.trip, data.tripNumber || data.bookingNumber)}`,
     template: CustomerBookingConfirmationEmail,
     templateProps: {
       customerName: data.customerName,
@@ -563,6 +572,7 @@ export async function sendBusinessCustomerBookingConfirmationEmail(
       infants: data.infants,
       referenceNumber: data.referenceNumber,
       extras: data.extras,
+      trip: data.trip,
     },
   });
 }
@@ -588,6 +598,7 @@ export async function sendBusinessCustomerDatetimeChangedEmail(
       previousDateTime: data.previousDateTime,
       newDateTime: data.newDateTime,
       modificationReason: data.modificationReason,
+      tripContext: data.tripContext,
     },
   });
 }
@@ -613,6 +624,7 @@ export async function sendBusinessCustomerBookingCancelledEmail(
       dropoffLocation: data.dropoffLocation,
       pickupDateTime: data.pickupDateTime,
       cancellationReason: data.cancellationReason,
+      tripContext: data.tripContext,
     },
   });
 }

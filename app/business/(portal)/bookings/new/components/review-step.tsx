@@ -7,6 +7,7 @@
  * Design: shadcn/ui theme-aware components
  */
 
+import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { AlertCircle, CheckCircle2, Loader2, Route, Car, Users, User, Receipt, Package } from 'lucide-react';
 import { Button } from '@/components/business/ui/button';
@@ -44,6 +45,13 @@ interface ReviewStepProps {
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  /**
+   * Round trip, multi-city and hourly: replaces the one-way Route panel. Absent for one way,
+   * which renders exactly as before.
+   */
+  tripSummary?: ReactNode;
+  /** Add-ons ride every journey of a trip, so they are charged this many times. Default 1. */
+  journeyCount?: number;
 }
 
 export function ReviewStep({
@@ -59,6 +67,8 @@ export function ReviewStep({
   onBack,
   onSubmit,
   isSubmitting,
+  tripSummary,
+  journeyCount = 1,
 }: ReviewStepProps) {
   const fromLocationLookup = locations.find((l) => l.id === formData.from_location_id);
   const toLocationLookup = locations.find((l) => l.id === formData.to_location_id);
@@ -112,6 +122,7 @@ export function ReviewStep({
   return (
     <div className="space-y-6">
       {/* Route Summary */}
+      {tripSummary ?? (
       <div className="p-5 rounded-xl border border-border bg-muted/30">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -153,6 +164,7 @@ export function ReviewStep({
           </div>
         </div>
       </div>
+      )}
 
       {/* Vehicle & Passengers */}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -265,13 +277,15 @@ export function ReviewStep({
         </div>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Base Price:</span>
+            <span className="text-muted-foreground">{!tripSummary ? 'Base Price:' : journeyCount > 1 ? 'Trip Fares:' : 'Package Price:'}</span>
             <span className="text-foreground font-medium">{formatCurrency(formData.base_price)}</span>
           </div>
           {addonsTotal > 0 && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Addons:</span>
-              <span className="text-foreground font-medium">{formatCurrency(addonsTotal)}</span>
+              <span className="text-muted-foreground">
+                {journeyCount > 1 ? `Addons (x${journeyCount} journeys):` : 'Addons:'}
+              </span>
+              <span className="text-foreground font-medium">{formatCurrency(addonsTotal * journeyCount)}</span>
             </div>
           )}
           {/* Named per line so the ages the driver needs are visible before confirming. */}

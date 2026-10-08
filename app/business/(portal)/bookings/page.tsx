@@ -15,6 +15,8 @@ import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/membe
 import type { QuotationBookingLink } from '@/lib/business/bookings/group-quotation-bookings';
 import { BookingsPageContent } from './components/bookings-page-content';
 
+const FIRST_JOURNEY_ONLY = 'booking_group_id.is.null,leg_index.eq.0';
+
 export const metadata: Metadata = {
   title: 'Bookings | Business Portal',
   description: 'View and manage your transfer bookings',
@@ -61,7 +63,14 @@ export default async function BusinessBookingsPage() {
       from_locations:from_location_id (name, city),
       to_locations:to_location_id (name, city),
       vehicle_types (name),
-      created_at
+      created_at,
+      trip_type,
+      booking_group_id,
+      leg_index,
+      hourly_package,
+      duration_hours,
+      included_km,
+      booking_group:booking_group_id (group_number, leg_count)
     `
     )
     .eq('business_account_id', member.businessAccountId);
@@ -73,10 +82,13 @@ export default async function BusinessBookingsPage() {
   const { data: bookings } = await bookingsQuery.order('created_at', { ascending: false });
 
   // Get stats for header
+  // A round trip or multi-city trip is one booking to the business, so only its first journey
+  // is counted (FIRST_JOURNEY_ONLY). One-way and hourly rows have no group and always count.
   let totalQuery = supabase
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
-    .eq('business_account_id', member.businessAccountId);
+    .eq('business_account_id', member.businessAccountId)
+    .or(FIRST_JOURNEY_ONLY);
 
   if (ownBookingsOnly) {
     totalQuery = totalQuery.eq('created_by_user_id', member.id);
@@ -88,7 +100,8 @@ export default async function BusinessBookingsPage() {
     .from('business_bookings')
     .select('*', { count: 'exact', head: true })
     .eq('business_account_id', member.businessAccountId)
-    .eq('booking_status', 'pending');
+    .eq('booking_status', 'pending')
+    .or(FIRST_JOURNEY_ONLY);
 
   if (ownBookingsOnly) {
     pendingQuery = pendingQuery.eq('created_by_user_id', member.id);

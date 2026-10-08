@@ -34,6 +34,7 @@ import {
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients';
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
+import { loadBusinessTripContext } from '@/lib/business/trips/context-server';
 
 /**
  * Mail goes out inside after(), which runs on the platform's clock, not the response's.
@@ -192,6 +193,9 @@ export const POST = requireBusinessAuth(
         .eq('id', user.businessAccountId)
         .single();
 
+      // One journey of a trip, or an hourly hire: say so in the emails. Undefined for one way.
+      const tripContext = await loadBusinessTripContext(supabaseAdmin, bookingId);
+
       // Send cancellation emails and notification
       if (cancelledBooking && businessAccount) {
         const pickupLocation = (cancelledBooking as any).from_location?.name
@@ -240,6 +244,7 @@ export const POST = requireBusinessAuth(
             dropoffLocation,
             pickupDateTime,
             cancellationReason: body.cancellation_reason,
+            tripContext,
             // Zero, always. The template has an arm for it that says refunds are
             // reviewed by the team, so the owner is not left waiting on money that
             // is not coming by itself.
@@ -264,6 +269,7 @@ export const POST = requireBusinessAuth(
               dropoffLocation,
               pickupDateTime,
               cancellationReason: body.cancellation_reason,
+              tripContext,
             }).catch((err: unknown) => {
               console.error('Failed to send customer cancellation email:', err);
             }));

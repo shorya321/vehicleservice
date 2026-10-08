@@ -22,6 +22,8 @@ import {
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients';
 import { formatBookingDateTime } from '@/lib/business/utils/timezone';
+import { checkBusinessTripReschedule } from '@/lib/business/trips/reschedule-server';
+import { loadBusinessTripContext } from '@/lib/business/trips/context-server';
 
 /**
  * Mail goes out inside after(), which runs on the platform's clock, not the response's.
@@ -86,7 +88,12 @@ export const PATCH = requireBusinessAuth(
           customer_email,
           pickup_address,
           dropoff_address,
-          created_by_user_id
+          created_by_user_id,
+          trip_type,
+          booking_group_id,
+          leg_index,
+          from_location_id,
+          to_location_id
         `
         )
         .eq('id', bookingId)
@@ -119,6 +126,12 @@ export const PATCH = requireBusinessAuth(
       // Check if new datetime is the same as current
       if (new Date(newPickupDatetime).getTime() === new Date(booking.pickup_datetime).getTime()) {
         return apiError('New pickup time is the same as current time', 400);
+      }
+
+      // Round trip, multi-city and hourly rules. One way returns null and is unaffected.
+      const tripError = await checkBusinessTripReschedule(supabaseAdmin, booking, newPickupDatetime);
+      if (tripError) {
+        return apiError(tripError, 400);
       }
 
       // Start transaction-like operations
@@ -226,6 +239,9 @@ export const PATCH = requireBusinessAuth(
         .eq('id', booking.business_account_id)
         .single();
 
+      // One journey of a trip, or an hourly hire: say so in the emails. Undefined for one way.
+      const tripContext = await loadBusinessTripContext(supabaseAdmin, booking.id);
+
       // The caller does not wait on mail: this runs inside after(), once the response has
       // been flushed. The sends are awaited in there because after() keeps the invocation
       // alive only while the promise its callback returns is pending, and a callback that
@@ -255,6 +271,7 @@ export const PATCH = requireBusinessAuth(
           previousDateTime: formatDt(previousDatetime),
           newDateTime: formatDt(newPickupDatetime),
           modificationReason: reason,
+          tripContext,
         }).catch((err: unknown) => {
           console.error('Failed to send business datetime change email:', err);
         }));
@@ -271,6 +288,7 @@ export const PATCH = requireBusinessAuth(
             previousDateTime: formatDt(previousDatetime),
             newDateTime: formatDt(newPickupDatetime),
             modificationReason: reason,
+            tripContext,
           }).catch((err: unknown) => {
             console.error('Failed to send customer datetime change email:', err);
           }));

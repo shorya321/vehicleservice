@@ -24,6 +24,7 @@ interface TripGroupCardProps {
  */
 export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
   const refundsDue = group.legs.reduce((sum, leg) => sum + (leg.refund_due ?? 0), 0)
+  const isWallet = group.payment_source === 'wallet'
 
   return (
     <Card>
@@ -36,7 +37,7 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
             <div>
               <CardTitle>{tripTypeLabel({ trip_type: group.trip_type })} {group.group_number}</CardTitle>
               <CardDescription>
-                {group.leg_count} journeys paid together. Each journey has its own vendor; the
+                {group.leg_count} journeys paid together{isWallet ? ' from the business wallet' : ''}. Each journey has its own vendor; the
                 actions on this page apply to the journey you are viewing.
               </CardDescription>
             </div>
@@ -84,7 +85,8 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
                 </p>
                 {leg.refund_due !== null && (
                   <p className="mt-1 text-sm font-medium text-amber-600">
-                    Refund due {formatCurrency(leg.refund_due)}. Issue it manually in Stripe.
+                    Refund due {formatCurrency(leg.refund_due)}.{' '}
+                    {isWallet ? 'Credit it to the business wallet by hand.' : 'Issue it manually in Stripe.'}
                   </p>
                 )}
               </li>
@@ -104,7 +106,7 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
             <dd>{formatCurrency(group.discount_amount)}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Charged</dt>
+            <dt className="text-muted-foreground">{isWallet ? 'Charged to wallet' : 'Charged'}</dt>
             <dd className="font-semibold">{formatCurrency(group.total_price)}</dd>
           </div>
           {refundsDue > 0 && (
