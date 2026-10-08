@@ -8,6 +8,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import Placeholder from '@tiptap/extension-placeholder'
 import TiptapImage from '@tiptap/extension-image'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { TableKit } from '@tiptap/extension-table'
 import { common, createLowlight } from 'lowlight'
 import { useEffect, useCallback } from 'react'
 import {
@@ -30,46 +31,19 @@ import {
   Undo,
   Redo,
 } from 'lucide-react'
+import { ToolbarButton, ToolbarSeparator } from './tiptap-toolbar-button'
+import { TiptapTableControls } from './tiptap-table-controls'
 
 const lowlight = createLowlight(common)
 
 interface TiptapEditorProps {
   value: string
   onChange: (value: string) => void
+  /** Table button and table paste. Off by default: only pages whose public CSS styles tables turn it on. */
+  tables?: boolean
 }
 
-function ToolbarButton({
-  onClick,
-  isActive = false,
-  title,
-  children,
-}: {
-  onClick: () => void
-  isActive?: boolean
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className={`p-1.5 rounded-md transition-colors ${
-        isActive
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
-
-function ToolbarSeparator() {
-  return <div className="w-px h-6 bg-border mx-1" />
-}
-
-export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
+export function TiptapEditor({ value, onChange, tables = false }: TiptapEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -91,6 +65,8 @@ export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
         HTMLAttributes: { class: 'rounded-lg' },
       }),
       CodeBlockLowlight.configure({ lowlight }),
+      // Resizing would write pixel widths into the saved HTML, which breaks on phones.
+      ...(tables ? [TableKit.configure({ table: { resizable: false } })] : []),
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -267,6 +243,8 @@ export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
         >
           <AlignRight size={iconSize} />
         </ToolbarButton>
+
+        {tables && <TiptapTableControls editor={editor} iconSize={iconSize} />}
 
         <ToolbarSeparator />
 

@@ -76,7 +76,7 @@ export function BlogSectionsEditor({ control }: BlogSectionsEditorProps) {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <TiptapEditor value={body.value || ''} onChange={body.onChange} />
+                  <TiptapEditor value={body.value || ''} onChange={body.onChange} tables />
                 </FormControl>
                 <FormMessage />
               </FormItem>

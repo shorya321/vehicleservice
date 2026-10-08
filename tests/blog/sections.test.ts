@@ -6,6 +6,7 @@ import {
   legacyContentToSections,
   sectionsToHtml,
   withAnchors,
+  wrapTables,
 } from '@/lib/blog/sections'
 
 describe('legacyContentToSections', () => {
@@ -80,5 +81,24 @@ describe('schemas', () => {
   it('drops blank FAQ rows and rejects half-filled ones', () => {
     expect(cleanFaqs([{ question: ' ', answer: '' }, { question: 'Q', answer: 'A' }])).toEqual([{ question: 'Q', answer: 'A' }])
     expect(blogFaqsSchema.safeParse([{ question: 'Q', answer: '' }]).success).toBe(false)
+  })
+})
+
+describe('wrapTables', () => {
+  it('leaves html without tables unchanged', () => {
+    expect(wrapTables('<p>No table</p>')).toBe('<p>No table</p>')
+  })
+
+  it('wraps every table in a scroll container', () => {
+    const html = '<table><tbody><tr><td>a</td></tr></tbody></table><p>x</p><table><tbody><tr><td>b</td></tr></tbody></table>'
+    expect(wrapTables(html)).toBe(
+      '<div class="article-table"><table><tbody><tr><td>a</td></tr></tbody></table></div><p>x</p>' +
+        '<div class="article-table"><table><tbody><tr><td>b</td></tr></tbody></table></div>'
+    )
+  })
+
+  it('strips the editor min-width styles from tables and cols', () => {
+    const html = '<table style="min-width: 75px"><colgroup><col style="min-width: 25px"></colgroup><tbody></tbody></table>'
+    expect(wrapTables(html)).toBe('<div class="article-table"><table><colgroup><col></colgroup><tbody></tbody></table></div>')
   })
 })

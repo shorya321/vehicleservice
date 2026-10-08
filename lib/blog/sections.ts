@@ -123,3 +123,17 @@ export function getPostFaqs(post: { faqs?: unknown }): BlogFaq[] {
   const parsed = blogFaqsSchema.safeParse(post.faqs)
   return parsed.success ? parsed.data : []
 }
+
+/**
+ * Wraps each table in a horizontal scroll box so a wide table never pushes
+ * the page sideways on a phone, and drops the editor's inline min-width
+ * styles from `<table>`/`<col>` so the stylesheet decides the widths.
+ * Run after sanitising: the class it adds must survive.
+ */
+export function wrapTables(html: string): string {
+  if (!/<table\b/i.test(html)) return html
+  return html
+    .replace(/<(table|col)\b([^>]*?)\s+style="[^"]*"/gi, '<$1$2')
+    .replace(/<table\b/gi, '<div class="article-table"><table')
+    .replace(/<\/table>/gi, '</table></div>')
+}

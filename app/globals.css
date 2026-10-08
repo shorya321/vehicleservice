@@ -3448,6 +3448,41 @@
   padding: 1rem;
 }
 
+/* Tables while editing (blog sections only turn tables on). */
+.tiptap-editor .ProseMirror table {
+  width: 100%;
+  margin: 1rem 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tiptap-editor .ProseMirror th,
+.tiptap-editor .ProseMirror td {
+  position: relative;
+  padding: 6px 10px;
+  border: 1px solid hsl(var(--border));
+  vertical-align: top;
+}
+
+.tiptap-editor .ProseMirror th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+  text-align: left;
+}
+
+.tiptap-editor .ProseMirror th > p,
+.tiptap-editor .ProseMirror td > p {
+  margin: 0;
+}
+
+.tiptap-editor .ProseMirror .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--primary) / 0.15);
+  pointer-events: none;
+}
+
 .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
@@ -10448,4 +10483,59 @@
   .article-faq__icon {
     transition: none;
   }
+}
+
+/* Tables inside article sections: scroll sideways on narrow screens instead of widening the page. */
+.article-board-body .article-table {
+  margin: 1.75rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--bb-hair);
+  border-radius: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-board-body .article-table table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.article-board-body .article-table th,
+.article-board-body .article-table td {
+  min-width: 9rem;
+  padding: 14px 18px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--bb-hair);
+}
+
+.article-board-body .article-table tr:last-child > td {
+  border-bottom: 0;
+}
+
+.article-board-body .article-table th {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bb-shell);
+}
+
+.article-board-body .article-table td {
+  color: var(--text-secondary);
+}
+
+.article-board-body .article-table td:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.article-board-body .article-table th > p,
+.article-board-body .article-table td > p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
 }
