@@ -84,7 +84,11 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClearSelection }:
     setLoading(true)
     try {
       if (confirmAction.type === 'delete') {
-        await bulkDeleteBlogCategories(selectedIds)
+        const result = await bulkDeleteBlogCategories(selectedIds)
+        if (result.error) {
+          toast.error(result.error)
+          return
+        }
         toast.success(`${selectedCount} categor${selectedCount > 1 ? 'ies' : 'y'} deleted`)
       } else if (confirmAction.type === 'deactivate') {
         await bulkToggleBlogCategoryStatus(selectedIds, false)

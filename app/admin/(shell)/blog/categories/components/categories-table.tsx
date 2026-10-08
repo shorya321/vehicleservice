@@ -68,7 +68,11 @@ export function BlogCategoriesTable({ categories }: CategoriesTableProps) {
   const handleDelete = async () => {
     if (!deletingId) return
     try {
-      await deleteBlogCategory(deletingId)
+      const result = await deleteBlogCategory(deletingId)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success("Category deleted successfully")
       router.refresh()
     } catch (error) {

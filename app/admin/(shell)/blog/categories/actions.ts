@@ -213,18 +213,32 @@ export async function updateBlogCategory(id: string, data: BlogCategoryFormData)
   revalidateTag('blog-categories')
 }
 
-export async function deleteBlogCategory(id: string) {
+interface DeleteBlogCategoryResult {
+  error?: string
+  count?: number
+}
+
+// Errors are returned, not thrown: production builds replace a thrown Server
+// Action message with a generic digest, so the admin would never see why.
+export async function deleteBlogCategory(id: string): Promise<DeleteBlogCategoryResult> {
   await requireAdmin()
   const supabase = await createClient()
 
   // Check if posts use this category
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from('blog_posts')
     .select('*', { count: 'exact', head: true })
     .eq('category_id', id)
 
+  if (countError) {
+    console.error('[Blog] Error checking category posts:', countError)
+    return { error: 'Failed to delete category.' }
+  }
+
   if (count && count > 0) {
-    throw new Error(`Cannot delete category. ${count} blog posts use this category.`)
+    return {
+      error: `Cannot delete category. ${count} blog post${count > 1 ? 's use' : ' uses'} this category. Move or delete ${count > 1 ? 'them' : 'it'} first.`,
+    }
   }
 
   const { error } = await supabase
@@ -234,11 +248,12 @@ export async function deleteBlogCategory(id: string) {
 
   if (error) {
     console.error('[Blog] Error deleting category:', error)
-    throw new Error(error.message)
+    return { error: 'Failed to delete category.' }
   }
 
   revalidatePath('/admin/blog/categories')
   revalidateTag('blog-categories')
+  return {}
 }
 
 export async function toggleBlogCategoryStatus(id: string, isActive: boolean) {
@@ -262,9 +277,30 @@ export async function toggleBlogCategoryStatus(id: string, isActive: boolean) {
   revalidateTag('blog-categories')
 }
 
-export async function bulkDeleteBlogCategories(ids: string[]) {
+export async function bulkDeleteBlogCategories(ids: string[]): Promise<DeleteBlogCategoryResult> {
   await requireAdmin()
   const supabase = await createClient()
+
+  // Same rule as single delete. The FK is ON DELETE SET NULL, so skipping this
+  // check would silently strip the category from those posts.
+  const { data: usedBy, error: usedError } = await supabase
+    .from('blog_posts')
+    .select('category:category_id(name)')
+    .in('category_id', ids)
+
+  if (usedError) {
+    console.error('[Blog] Error checking category posts:', usedError)
+    return { error: 'Failed to delete categories.' }
+  }
+
+  if (usedBy && usedBy.length > 0) {
+    const names = Array.from(
+      new Set(usedBy.map((row) => row.category?.name).filter((name): name is string => !!name))
+    )
+    return {
+      error: `Cannot delete. Blog posts still use: ${names.join(', ')}. Nothing was deleted.`,
+    }
+  }
 
   const { error } = await supabase
     .from('blog_categories')
@@ -272,7 +308,8 @@ export async function bulkDeleteBlogCategories(ids: string[]) {
     .in('id', ids)
 
   if (error) {
-    throw new Error(error.message)
+    console.error('[Blog] Error bulk deleting categories:', error)
+    return { error: 'Failed to delete categories.' }
   }
 
   revalidatePath('/admin/blog/categories')
