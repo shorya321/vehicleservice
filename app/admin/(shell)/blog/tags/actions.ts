@@ -110,18 +110,32 @@ export async function updateBlogTag(id: string, name: string) {
   revalidateTag('blog-tags')
 }
 
-export async function deleteBlogTag(id: string) {
+interface DeleteBlogTagResult {
+  error?: string
+}
+
+// Errors are returned, not thrown: production builds replace a thrown Server
+// Action message with a generic digest, so the admin would never see why.
+export async function deleteBlogTag(id: string): Promise<DeleteBlogTagResult> {
   await requireAdmin()
   const supabase = await createClient()
 
-  // Check post count
-  const { count } = await supabase
+  // Check post count. The FK cascades, so deleting an in-use tag would
+  // silently untag those posts.
+  const { count, error: countError } = await supabase
     .from('blog_post_tags')
     .select('*', { count: 'exact', head: true })
     .eq('tag_id', id)
 
+  if (countError) {
+    console.error('[Blog] Error checking tag posts:', countError)
+    return { error: 'Failed to delete tag.' }
+  }
+
   if (count && count > 0) {
-    throw new Error(`Cannot delete tag. ${count} blog posts use this tag.`)
+    return {
+      error: `Cannot delete tag. ${count} blog post${count > 1 ? 's use' : ' uses'} this tag. Remove it from ${count > 1 ? 'them' : 'that post'} first.`,
+    }
   }
 
   const { error } = await supabase
@@ -131,9 +145,10 @@ export async function deleteBlogTag(id: string) {
 
   if (error) {
     console.error('[Blog] Error deleting tag:', error)
-    throw new Error(error.message)
+    return { error: 'Failed to delete tag.' }
   }
 
   revalidatePath('/admin/blog/tags')
   revalidateTag('blog-tags')
+  return {}
 }

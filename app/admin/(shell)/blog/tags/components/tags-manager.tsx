@@ -73,7 +73,11 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
   const handleDelete = async () => {
     if (!deletingId) return
     try {
-      await deleteBlogTag(deletingId)
+      const result = await deleteBlogTag(deletingId)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success("Tag deleted successfully")
       router.refresh()
     } catch (error) {
