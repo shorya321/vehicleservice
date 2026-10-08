@@ -17,6 +17,8 @@ import { formatResultPrice } from './format-result-price'
 import { useCurrency } from '@/lib/currency/context'
 import type { ResultsSearchParams } from './results-search-params'
 import { BookingStepsBand } from './booking-steps-band'
+import { SearchRefreshProvider } from './search-refresh-context'
+import { ResultsRefreshRegion, ResultsRefreshStatus } from './results-refresh-status'
 
 /**
  * What happens after Select, in order.
@@ -121,6 +123,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
     }
 
     const isRoundTrip = searchParams.trip?.trip === 'round_trip'
+    const returnDateKey = searchParams.trip?.trip === 'round_trip' ? searchParams.trip.returnDate ?? '' : ''
 
     // Calculate min price from vehicle types. On a round trip only bookable vehicles count:
     // one with no return price keeps its one-way figure and must not set the "from" price.
@@ -147,7 +150,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
     const journey = results.type !== 'zone' && results.distance ? results.distance : null
 
     return (
-      <>
+      <SearchRefreshProvider>
         {/* ---- Band 1: the trip ----------------------------------------
             Ground, not raised. PublicLayout renders `main.pt-20` on
             `bg-background`, which resolves to --black-void in both themes, so a
@@ -209,55 +212,58 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
             {/* Date and Guests stay editable. Distance, where the route has
                 one, sits between them and the fare rather than on its own line
                 above. */}
-            <dl className="trip-ledger mt-10">
-              <div className="trip-ledger__item">
-                <dt className="trip-ledger__label">{isRoundTrip ? 'Depart' : 'Date'}</dt>
-                <dd className="trip-ledger__value">
-                  <ResultsDatePicker searchParams={searchParams} />
-                </dd>
-              </div>
-
-              {isRoundTrip && (
+            <div className="relative mt-10">
+              <dl className="trip-ledger">
                 <div className="trip-ledger__item">
-                  <dt className="trip-ledger__label">Return</dt>
+                  <dt className="trip-ledger__label">{isRoundTrip ? 'Depart' : 'Date'}</dt>
                   <dd className="trip-ledger__value">
-                    <ResultsDatePicker searchParams={searchParams} field="return" />
+                    <ResultsDatePicker searchParams={searchParams} />
                   </dd>
                 </div>
-              )}
 
-              <div className="trip-ledger__item">
-                <dt className="trip-ledger__label">Guests</dt>
-                {/* The one editable value that is not already a button-looking
-                    control. A dashed gold underline keeps the affordance and
-                    lets it sit at the same weight as its neighbours. */}
-                <dd className="trip-ledger__value">
-                  <ResultsGuestPicker
-                    searchParams={searchParams}
-                    className="inline-flex min-h-9 items-center gap-1.5 border-b border-dashed border-[rgba(var(--gold-rgb),0.45)] bg-transparent pb-0.5 text-[1.0625rem] text-[var(--text-primary)] transition-colors hover:border-[var(--gold-text)]"
-                  />
-                </dd>
-              </div>
+                {isRoundTrip && (
+                  <div className="trip-ledger__item">
+                    <dt className="trip-ledger__label">Return</dt>
+                    <dd className="trip-ledger__value">
+                      <ResultsDatePicker searchParams={searchParams} field="return" />
+                    </dd>
+                  </div>
+                )}
 
-              {journey && (
                 <div className="trip-ledger__item">
-                  <dt className="trip-ledger__label">Journey</dt>
+                  <dt className="trip-ledger__label">Guests</dt>
+                  {/* The one editable value that is not already a button-looking
+                      control. A dashed gold underline keeps the affordance and
+                      lets it sit at the same weight as its neighbours. */}
                   <dd className="trip-ledger__value">
-                    <Clock className="h-3.5 w-3.5 flex-none text-[var(--gold-text)]" aria-hidden="true" />
-                    <span className="numeric">{journey} km</span>
+                    <ResultsGuestPicker
+                      searchParams={searchParams}
+                      className="inline-flex min-h-9 items-center gap-1.5 border-b border-dashed border-[rgba(var(--gold-rgb),0.45)] bg-transparent pb-0.5 text-[1.0625rem] text-[var(--text-primary)] transition-colors hover:border-[var(--gold-text)]"
+                    />
                   </dd>
                 </div>
-              )}
 
-              <div className="trip-ledger__item trip-ledger__item--price">
-                <dt className="trip-ledger__label">
-                  {isRoundTrip ? 'Round trip from' : results.type === 'zone' && results.zone ? 'Base price' : 'From'}
-                </dt>
-                <dd className="trip-ledger__value numeric">
-                  {formatResultPrice(!isRoundTrip && results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
-                </dd>
-              </div>
-            </dl>
+                {journey && (
+                  <div className="trip-ledger__item">
+                    <dt className="trip-ledger__label">Journey</dt>
+                    <dd className="trip-ledger__value">
+                      <Clock className="h-3.5 w-3.5 flex-none text-[var(--gold-text)]" aria-hidden="true" />
+                      <span className="numeric">{journey} km</span>
+                    </dd>
+                  </div>
+                )}
+
+                <div className="trip-ledger__item trip-ledger__item--price">
+                  <dt className="trip-ledger__label">
+                    {isRoundTrip ? 'Round trip from' : results.type === 'zone' && results.zone ? 'Base price' : 'From'}
+                  </dt>
+                  <dd className="trip-ledger__value numeric">
+                    {formatResultPrice(!isRoundTrip && results.type === 'zone' && results.zone ? results.zone.basePrice : minPrice, currentCurrency, exchangeRates)}
+                  </dd>
+                </div>
+              </dl>
+              <ResultsRefreshStatus vehicleCount={vehicleTypes.length} />
+            </div>
           </div>
         </motion.section>
 
@@ -279,24 +285,27 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
               </p>
             </motion.header>
 
-            {/* `key` on party size remounts this with fresh tab/page state. It holds currentPage and
+            {/* `key` on the search remounts this with fresh tab/page state. It holds currentPage and
                 activeCategory internally and only resets them on tab/sort change, but a searchParams
                 navigation keeps it mounted while the vehicle list changes underneath, so page 3 of 18
-                vehicles would slice an empty window out of the new, shorter list and render a blank grid. */}
+                vehicles would slice an empty window out of the new, shorter list and render a blank grid.
+                Dates are in it too: availability is resolved per day, so a new date can shorten the list. */}
             <div className="mt-12">
-              <VehicleTypeCategoryTabs
-                key={`${searchParams.passengers}-${searchParams.trip?.trip ?? 'one_way'}`}
-                vehicleTypesByCategory={vehicleTypesByCategory}
-                allVehicleTypes={vehicleTypes}
-                searchParams={searchParams}
-              />
+              <ResultsRefreshRegion>
+                <VehicleTypeCategoryTabs
+                  key={`${searchParams.date ?? ''}-${returnDateKey}-${searchParams.passengers}-${searchParams.trip?.trip ?? 'one_way'}`}
+                  vehicleTypesByCategory={vehicleTypesByCategory}
+                  allVehicleTypes={vehicleTypes}
+                  searchParams={searchParams}
+                />
+              </ResultsRefreshRegion>
             </div>
           </div>
         </section>
 
         {/* ---- Band 3: what the fare covers ----------------------------- */}
         <BookingStepsBand steps={BOOKING_STEPS} />
-      </>
+      </SearchRefreshProvider>
     )
   }
 

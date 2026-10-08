@@ -18,14 +18,15 @@
  * "today" floor is zone-aware, via `bookingTodayAsCalendarDate`.
  */
 
-import { useCallback, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useOptimistic, useState } from 'react'
 import { format, parse } from 'date-fns'
-import { Calendar as CalendarIcon } from 'lucide-react'
+import { Calendar as CalendarIcon, Loader2 } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { rebuildSearchUrl, type ResultsSearchParams } from './results-search-params'
+import { describeSearch, useSearchRefresh } from './search-refresh-context'
+import { resolveGuestsForVehicle } from '@/components/home/hero/guest-breakdown'
 
 interface ResultsDatePickerProps {
   searchParams: ResultsSearchParams
@@ -38,19 +39,23 @@ interface ResultsDatePickerProps {
 }
 
 export function ResultsDatePicker({ searchParams, className, field = 'date' }: ResultsDatePickerProps) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const { isPending, navigate } = useSearchRefresh()
 
   const isReturn = field === 'return'
   const outboundDate = searchParams.date ?? ''
   const currentDate = isReturn
     ? (searchParams.trip?.trip === 'round_trip' ? searchParams.trip.returnDate ?? '' : '')
     : outboundDate
-  const selected = currentDate ? parse(currentDate, 'yyyy-MM-dd', new Date()) : undefined
+  // Shows the tapped date straight away instead of the old one until the server
+  // answers. Reverts to whatever the URL says once the navigation settles.
+  const [shownDate, setShownDate] = useOptimistic(currentDate)
+  const selected = shownDate ? parse(shownDate, 'yyyy-MM-dd', new Date()) : undefined
   const today = bookingTodayAsCalendarDate()
   const outbound = outboundDate ? parse(outboundDate, 'yyyy-MM-dd', new Date()) : undefined
   const minDate = isReturn && outbound && outbound > today ? outbound : today
+  // Every picker locks while any change loads, but only the one that started it spins.
+  const isLoadingThis = isPending && shownDate !== currentDate
 
   const commit = useCallback(
     (next: Date) => {
@@ -58,16 +63,12 @@ export function ResultsDatePicker({ searchParams, className, field = 'date' }: R
       setOpen(false)
       if (nextDate === currentDate) return // nothing changed. Don't spend a round trip
 
-      startTransition(() => {
-        // The results pages redirect('/') without a total, so it always rides along.
-        const url = rebuildSearchUrl(
-          searchParams,
-          isReturn ? { returnDate: nextDate } : { date: nextDate }
-        )
-        if (url) {
-          router.push(url)
-          return
-        }
+      // The results pages redirect('/') without a total, so it always rides along.
+      let url = rebuildSearchUrl(
+        searchParams,
+        isReturn ? { returnDate: nextDate } : { date: nextDate }
+      )
+      if (!url) {
         // /search/results has no slugs. buildSearchUrl would produce
         // /search/undefined-to-undefined. Preserve whatever params that route
         // arrived with and override the date only.
@@ -77,17 +78,23 @@ export function ResultsDatePicker({ searchParams, className, field = 'date' }: R
           )
         )
         qs.set('date', nextDate)
-        router.push(`/search/results?${qs.toString()}`)
-      })
+        url = `/search/results?${qs.toString()}`
+      }
+
+      const guests = resolveGuestsForVehicle(searchParams, Infinity)
+      const trip = searchParams.trip
+      const returnDate = trip?.trip === 'round_trip' ? trip.returnDate : undefined
+      // Mirrors rebuildSearchUrl, which drags the return along when the outbound passes it.
+      const label = isReturn
+        ? describeSearch(outboundDate, guests, nextDate)
+        : describeSearch(nextDate, guests, returnDate && returnDate < nextDate ? nextDate : returnDate)
+      navigate(url, label, () => setShownDate(nextDate))
     },
-    [router, searchParams, currentDate, isReturn]
+    [navigate, searchParams, currentDate, outboundDate, isReturn, setShownDate]
   )
 
   return (
-    <div
-      className={isPending ? 'pointer-events-none opacity-60 transition-opacity' : undefined}
-      aria-busy={isPending}
-    >
+    <div className={isPending ? 'pointer-events-none' : undefined} aria-busy={isPending}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
@@ -102,7 +109,11 @@ export function ResultsDatePicker({ searchParams, className, field = 'date' }: R
               'inline-flex min-h-9 items-center gap-1.5 border-b border-dashed border-[rgba(var(--gold-rgb),0.45)] bg-transparent pb-0.5 text-[1.0625rem] text-[var(--text-primary)] transition-colors hover:border-[var(--gold-text)]'
             }
           >
-            <CalendarIcon className="h-3.5 w-3.5 flex-none text-[var(--gold-text)]" aria-hidden="true" />
+            {isLoadingThis ? (
+              <Loader2 className="h-3.5 w-3.5 flex-none animate-spin text-[var(--gold-text)] motion-reduce:animate-none" aria-hidden="true" />
+            ) : (
+              <CalendarIcon className="h-3.5 w-3.5 flex-none text-[var(--gold-text)]" aria-hidden="true" />
+            )}
             <span className="numeric">
               {selected ? format(selected, 'EEE · d MMM yyyy') : 'Select date'}
             </span>
