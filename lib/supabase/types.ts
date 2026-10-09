@@ -1620,6 +1620,54 @@ export type Database = {
           },
         ]
       }
+      business_quotation_item_vehicle_options: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          net_base_price_aed: number
+          net_total_aed: number
+          sell_total_aed: number
+          sort_order: number
+          vehicle_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          net_base_price_aed: number
+          net_total_aed: number
+          sell_total_aed: number
+          sort_order?: number
+          vehicle_type_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          net_base_price_aed?: number
+          net_total_aed?: number
+          sell_total_aed?: number
+          sort_order?: number
+          vehicle_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_quotation_item_vehicle_options_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "business_quotation_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_quotation_item_vehicle_options_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_quotation_items: {
         Row: {
           adults: number
@@ -4550,6 +4598,10 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      swap_quotation_item_vehicle: {
+        Args: { p_item_id: string; p_vehicle_type_id: string }
+        Returns: undefined
+      }
       unfreeze_business_wallet: {
         Args: {
           p_admin_user_id: string

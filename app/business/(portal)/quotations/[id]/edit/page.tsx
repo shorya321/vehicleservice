@@ -52,7 +52,14 @@ export default async function EditQuotationPage({ params }: PageProps) {
   const locationIds = Array.from(
     new Set(quotation.items.flatMap((i) => [i.from_location_id, i.to_location_id]))
   );
-  const vehicleIds = Array.from(new Set(quotation.items.map((i) => i.vehicle_type_id)));
+  const vehicleIds = Array.from(
+    new Set(
+      quotation.items.flatMap((i) => [
+        i.vehicle_type_id,
+        ...(i.vehicle_options ?? []).map((o) => o.vehicle_type_id),
+      ])
+    )
+  );
 
   const [locationsResult, vehiclesResult] = await Promise.all([
     locationIds.length
@@ -94,6 +101,11 @@ export default async function EditQuotationPage({ params }: PageProps) {
     sell_total_aed: Number(item.sell_total_aed),
     price_mode: item.price_mode as QuotationTripDraft['price_mode'],
     markup_percent: item.markup_percent === null ? null : Number(item.markup_percent),
+    vehicle_options: (item.vehicle_options ?? []).map((option) => ({
+      vehicle_type_id: option.vehicle_type_id,
+      vehicle_type_name: vehicleNames.get(option.vehicle_type_id),
+      net_base_price_aed: option.net_base_price_aed,
+    })),
     converted_booking_id: item.converted_booking_id,
     converted_booking_number: item.converted_booking_number,
   }));

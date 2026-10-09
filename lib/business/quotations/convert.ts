@@ -22,7 +22,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 import { roundAed } from './pricing';
 import { missingConversionContact } from './status';
-import type { QuotationRepriceLine, QuotationPreflightResult } from './types';
+import type { VehicleSelections } from './schema';
+import type {
+  QuotationRepriceChoice,
+  QuotationRepriceLine,
+  QuotationPreflightResult,
+} from './types';
 
 /**
  * Minimum lead time for a NEW booking, matching the wizard
@@ -56,6 +61,8 @@ export interface ConvertibleItem {
    * else for it to come from once the quotation row is left behind.
    */
   addons: Array<{ addon_id: string; quantity: number; child_ages: number[] | null }>;
+  /** Alternatives offered on this trip. Absent or empty on a trip without any. */
+  vehicle_options?: Array<{ vehicle_type_id: string; net_total_aed: number; sell_total_aed: number }>;
 }
 
 export interface ConvertibleQuotation {
@@ -74,12 +81,89 @@ export interface ConvertibleQuotation {
  * business could buy at a price they never saw. The token is recomputed from a fresh calc at
  * confirm time and must still match.
  */
-export function repriceToken(quotationId: string, lines: QuotationRepriceLine[]): string {
+export function repriceToken(
+  quotationId: string,
+  lines: QuotationRepriceLine[],
+  selections: VehicleSelections = {}
+): string {
+  // A chosen alternative is bound into the token, so switching vehicle after review forces a
+  // fresh one. Only when there IS a choice: a trip on its quoted vehicle hashes exactly as it
+  // always has.
   const payload = lines
-    .map((line) => `${line.itemId}:${line.netAedFresh.toFixed(2)}`)
+    .map((line) => {
+      const chosen = selections[line.itemId];
+      return `${line.itemId}:${line.netAedFresh.toFixed(2)}${chosen ? `:${chosen}` : ''}`;
+    })
     .sort()
     .join('|');
   return crypto.createHash('sha256').update(`${quotationId}|${payload}`).digest('hex');
+}
+
+/**
+ * Keep only the selections that actually change something: a pending trip switched to a
+ * vehicle other than its quoted one. Selections for unknown or already-booked trips, or for
+ * the quoted vehicle itself, are dropped, so a request that picks nothing new converts exactly
+ * as one that sent no selections at all. Whether the vehicle is really offered is checked in
+ * preflight, which turns a bad pick into a blocking error.
+ */
+export function effectiveSelections(
+  items: ConvertibleItem[],
+  raw: VehicleSelections | undefined
+): VehicleSelections {
+  if (!raw) return {};
+  const result: VehicleSelections = {};
+  for (const item of items) {
+    const chosen = raw[item.id];
+    if (!chosen || item.converted_booking_id || chosen === item.vehicle_type_id) continue;
+    result[item.id] = chosen;
+  }
+  return result;
+}
+
+/** Re-price one trip as if it used `vehicleTypeId`. */
+function priceTripWith(supabase: SupabaseClient, item: ConvertibleItem, vehicleTypeId: string) {
+  return calculateBusinessBookingPrice(supabase, {
+    fromLocationId: item.from_location_id,
+    toLocationId: item.to_location_id,
+    vehicleTypeId,
+    passengerCount: item.passenger_count,
+    selectedAddons: item.addons.map((a) => ({
+      addon_id: a.addon_id,
+      quantity: a.quantity,
+      child_ages: a.child_ages ?? undefined,
+    })),
+    children: item.children,
+    infants: item.infants,
+  });
+}
+
+/**
+ * Every vehicle a trip offers, priced fresh for the convert dialog, the quoted one first.
+ * Only called for a trip that has alternatives.
+ */
+async function priceChoices(
+  supabase: SupabaseClient,
+  item: ConvertibleItem,
+  vehicleNames: Record<string, string>
+): Promise<QuotationRepriceChoice[]> {
+  const candidates = [
+    { vehicleTypeId: item.vehicle_type_id, sellAed: roundAed(item.sell_total_aed), quoted: true },
+    ...(item.vehicle_options ?? []).map((o) => ({
+      vehicleTypeId: o.vehicle_type_id,
+      sellAed: roundAed(o.sell_total_aed),
+      quoted: false,
+    })),
+  ];
+
+  return Promise.all(
+    candidates.map(async (candidate) => {
+      const priced = await priceTripWith(supabase, item, candidate.vehicleTypeId);
+      const name = vehicleNames[candidate.vehicleTypeId] ?? 'Vehicle';
+      return 'error' in priced
+        ? { ...candidate, name, netAedFresh: null, error: priced.error }
+        : { ...candidate, name, netAedFresh: roundAed(priced.totalPrice) };
+    })
+  );
 }
 
 /**
@@ -92,7 +176,11 @@ export function repriceToken(quotationId: string, lines: QuotationRepriceLine[])
 export async function preflightConversion(
   supabase: SupabaseClient,
   quotation: ConvertibleQuotation,
-  items: ConvertibleItem[]
+  items: ConvertibleItem[],
+  /** Already passed through effectiveSelections(). Empty means every trip on its quoted vehicle. */
+  selections: VehicleSelections = {},
+  /** Names for the vehicle choices shown in the dialog. Only read for trips with options. */
+  vehicleNames: Record<string, string> = {}
 ): Promise<QuotationPreflightResult> {
   const blockingErrors: string[] = [];
   const lines: QuotationRepriceLine[] = [];
@@ -129,21 +217,30 @@ export async function preflightConversion(
       error = `Pickup must be at least ${MIN_LEAD_HOURS} hours from now`;
     }
 
+    // The vehicle this trip will be booked with: the customer's pick when one was made,
+    // otherwise the quoted vehicle, exactly as before options existed.
+    const chosen = selections[item.id];
+    const chosenOption = chosen
+      ? (item.vehicle_options ?? []).find((o) => o.vehicle_type_id === chosen)
+      : undefined;
+    if (chosen && !chosenOption) {
+      error = error ?? 'The chosen vehicle is not offered on this trip';
+    }
+    const vehicleTypeId = chosenOption ? chosenOption.vehicle_type_id : item.vehicle_type_id;
+    const sellAed = roundAed(chosenOption ? chosenOption.sell_total_aed : item.sell_total_aed);
+    // Compared against the fresh cost to flag a moved price, so it must be the CHOSEN
+    // vehicle's stored cost, or picking another vehicle would read as a price change.
+    const netAedStored = roundAed(chosenOption ? chosenOption.net_total_aed : item.net_total_aed);
+
+    // Present only on a trip that offers alternatives; a plain trip's line is unchanged.
+    const choiceFields =
+      (item.vehicle_options?.length ?? 0) > 0
+        ? { vehicleTypeId, choices: await priceChoices(supabase, item, vehicleNames) }
+        : {};
+
     // Re-price regardless of the date problem, so the user sees every issue at once rather
     // than fixing them one failed attempt at a time.
-    const priced = await calculateBusinessBookingPrice(supabase, {
-      fromLocationId: item.from_location_id,
-      toLocationId: item.to_location_id,
-      vehicleTypeId: item.vehicle_type_id,
-      passengerCount: item.passenger_count,
-      selectedAddons: item.addons.map((a) => ({
-        addon_id: a.addon_id,
-        quantity: a.quantity,
-        child_ages: a.child_ages ?? undefined,
-      })),
-      children: item.children,
-      infants: item.infants,
-    });
+    const priced = await priceTripWith(supabase, item, vehicleTypeId);
 
     if ('error' in priced) {
       // Covers a deactivated zone price, an inactive or shrunken vehicle, and a deactivated
@@ -154,11 +251,12 @@ export async function preflightConversion(
         label,
         pickup: item.pickup_address,
         dropoff: item.dropoff_address,
-        netAedStored: roundAed(item.net_total_aed),
-        netAedFresh: roundAed(item.net_total_aed),
-        sellAed: roundAed(item.sell_total_aed),
+        netAedStored,
+        netAedFresh: netAedStored,
+        sellAed,
         belowCost: false,
         error,
+        ...choiceFields,
       });
       blockingErrors.push(`${label}: ${error}`);
       continue;
@@ -174,12 +272,13 @@ export async function preflightConversion(
       label,
       pickup: item.pickup_address,
       dropoff: item.dropoff_address,
-      netAedStored: roundAed(item.net_total_aed),
+      netAedStored,
       netAedFresh,
       // The number the business actually cares about: has cost overtaken what we quoted?
-      belowCost: netAedFresh > roundAed(item.sell_total_aed),
+      belowCost: netAedFresh > sellAed,
       error,
-    sellAed: roundAed(item.sell_total_aed),
+      sellAed,
+      ...choiceFields,
     });
   }
 
@@ -189,7 +288,7 @@ export async function preflightConversion(
   return {
     ok: blockingErrors.length === 0,
     lines,
-    repriceToken: repriceToken(quotation.id, lines),
+    repriceToken: repriceToken(quotation.id, lines, selections),
     totalNetAed,
     blockingErrors,
   };

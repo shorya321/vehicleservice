@@ -95,6 +95,19 @@ const styles = StyleSheet.create({
   grandLabel: { fontSize: 12, fontWeight: 'bold' },
   grandValue: { fontSize: 14, fontWeight: 'bold' },
 
+  optionsBox: {
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopStyle: 'solid',
+    borderTopColor: pdfColors.border,
+  },
+  optionsTitle: { fontSize: 8, color: pdfColors.textLight, textTransform: 'uppercase', marginBottom: 3 },
+  optionRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+  optionName: { fontSize: 9 },
+  optionAmount: { fontSize: 9, fontWeight: 'bold' },
+  summaryNote: { fontSize: 8, color: pdfColors.textLight, marginTop: 6 },
+
   bodyText: { fontSize: 8, color: pdfColors.textLight, lineHeight: 1.4 },
   continued: { fontSize: 8, color: pdfColors.textLight, marginBottom: 6 },
 });
@@ -123,6 +136,11 @@ export interface QuotationPdfLineItem {
   addons?: string;
   notes?: string;
   amount: string;
+  /**
+   * Every vehicle the customer may choose for this trip, the quoted one first, each with its
+   * own SELL price. Absent on a trip that offers no alternatives.
+   */
+  vehicleOptions?: Array<{ vehicle: string; amount: string; quoted: boolean }>;
 }
 
 export interface QuotationPdfData {
@@ -150,6 +168,8 @@ export interface QuotationPdfData {
   subtotalDisplay: string;
   discountDisplay?: string;
   totalDisplay: string;
+  /** Shown under the total only when some trip offers alternative vehicles. */
+  vehicleOptionsNote?: string;
 
   terms?: string;
   notes?: string;
@@ -238,6 +258,20 @@ export const QuotationPDF = (data: QuotationPdfData) => {
               <Text style={styles.tripDetail}>{item.guests}</Text>
               {item.addons && <Text style={styles.tripDetail}>Includes: {item.addons}</Text>}
               {item.notes && <Text style={styles.tripDetail}>{item.notes}</Text>}
+              {item.vehicleOptions && item.vehicleOptions.length > 0 && (
+                <View style={styles.optionsBox}>
+                  <Text style={styles.optionsTitle}>Vehicle options</Text>
+                  {item.vehicleOptions.map((option, optionIndex) => (
+                    <View style={styles.optionRow} key={optionIndex}>
+                      <Text style={styles.optionName}>
+                        {option.vehicle}
+                        {option.quoted ? ' (quoted)' : ''}
+                      </Text>
+                      <Text style={styles.optionAmount}>{option.amount}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           ))}
         </View>
@@ -259,6 +293,9 @@ export const QuotationPDF = (data: QuotationPdfData) => {
             <Text style={styles.grandLabel}>Total</Text>
             <Text style={[styles.grandValue, { color: accent }]}>{data.totalDisplay}</Text>
           </View>
+          {data.vehicleOptionsNote && (
+            <Text style={styles.summaryNote}>{data.vehicleOptionsNote}</Text>
+          )}
         </View>
 
         {(data.terms || data.notes) && (

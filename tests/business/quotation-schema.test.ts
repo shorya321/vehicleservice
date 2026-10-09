@@ -8,7 +8,7 @@
  * quotation was broken while creating one looked fine.
  */
 
-import { quotationTripSchema } from '@/lib/business/quotations/schema';
+import { quotationTripSchema, quotationConvertSchema } from '@/lib/business/quotations/schema';
 
 const trip = (over: Record<string, unknown> = {}) => ({
   sort_order: 0,
@@ -159,6 +159,64 @@ describe('addon invariants mirror the database CHECKs', () => {
     const r = quotationTripSchema.safeParse(
       trip({ addons: [addon({ quantity: 2, total_price: 10 })] })
     );
+    expect(r.success).toBe(false);
+  });
+});
+
+describe('vehicle options on a trip', () => {
+  const OPT_A = '44444444-4444-4444-8444-444444444444';
+  const OPT_B = '55555555-5555-4555-8555-555555555555';
+  const MAIN = '33333333-3333-4333-8333-333333333333';
+  const opt = (id: string, price = 150) => ({ vehicle_type_id: id, net_base_price_aed: price });
+
+  it('defaults to no options, so an existing trip parses exactly as before', () => {
+    const r = quotationTripSchema.safeParse(trip());
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.vehicle_options).toEqual([]);
+  });
+
+  it('accepts distinct options that differ from the main vehicle', () => {
+    const r = quotationTripSchema.safeParse(trip({ vehicle_options: [opt(OPT_A), opt(OPT_B)] }));
+    expect(r.success).toBe(true);
+  });
+
+  it('rejects an option equal to the main vehicle', () => {
+    const r = quotationTripSchema.safeParse(trip({ vehicle_options: [opt(MAIN)] }));
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects the same option twice', () => {
+    const r = quotationTripSchema.safeParse(trip({ vehicle_options: [opt(OPT_A), opt(OPT_A)] }));
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects more than five options', () => {
+    const ids = [1, 2, 3, 4, 5, 6].map((n) => `${n}${n}${n}${n}${n}${n}${n}${n}-aaaa-4aaa-8aaa-aaaaaaaaaaaa`);
+    const r = quotationTripSchema.safeParse(trip({ vehicle_options: ids.map((id) => opt(id)) }));
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a negative option price', () => {
+    const r = quotationTripSchema.safeParse(trip({ vehicle_options: [opt(OPT_A, -1)] }));
+    expect(r.success).toBe(false);
+  });
+});
+
+describe('quotationConvertSchema vehicle selections', () => {
+  const ITEM = '66666666-6666-4666-8666-666666666666';
+  const VEH = '77777777-7777-4777-8777-777777777777';
+
+  it('still accepts a request without selections', () => {
+    expect(quotationConvertSchema.safeParse({ repriceToken: 'abc' }).success).toBe(true);
+  });
+
+  it('accepts a uuid -> uuid map', () => {
+    const r = quotationConvertSchema.safeParse({ repriceToken: 'abc', vehicleSelections: { [ITEM]: VEH } });
+    expect(r.success).toBe(true);
+  });
+
+  it('rejects a non-uuid vehicle', () => {
+    const r = quotationConvertSchema.safeParse({ repriceToken: 'abc', vehicleSelections: { [ITEM]: 'x' } });
     expect(r.success).toBe(false);
   });
 });

@@ -20,6 +20,7 @@ import type {
   QuotationListRow,
   QuotationWithItems,
   QuotationItemWithAddons,
+  QuotationItemVehicleOption,
   QuotationStats,
 } from '@/lib/business/quotations/types';
 
@@ -182,11 +183,41 @@ export async function getQuotation(id: string): Promise<QuotationWithItems | nul
     }
   }
 
+  // Alternative vehicles per trip. Empty for every trip that offers none.
+  const optionsByItem = new Map<string, QuotationItemVehicleOption[]>();
+  if (itemIds.length > 0) {
+    const { data: optionRows, error: optionsError } = await supabase
+      .from('business_quotation_item_vehicle_options')
+      .select('item_id, vehicle_type_id, net_base_price_aed, net_total_aed, sell_total_aed, sort_order')
+      .in('item_id', itemIds)
+      .order('sort_order', { ascending: true });
+
+    // A failed read must not look like "no options": the editor would load the trips without
+    // them and the next save would delete the real rows. Treat it as a failed load instead.
+    if (optionsError) {
+      console.error('Error loading quotation vehicle options:', optionsError);
+      return null;
+    }
+
+    for (const row of optionRows ?? []) {
+      const list = optionsByItem.get(row.item_id) ?? [];
+      list.push({
+        vehicle_type_id: row.vehicle_type_id,
+        net_base_price_aed: Number(row.net_base_price_aed),
+        net_total_aed: Number(row.net_total_aed),
+        sell_total_aed: Number(row.sell_total_aed),
+        sort_order: row.sort_order,
+      });
+      optionsByItem.set(row.item_id, list);
+    }
+  }
+
   return {
     ...quotation,
     items: (items ?? []).map((item) => ({
       ...item,
       addons: addonsByItem.get(item.id) ?? [],
+      vehicle_options: optionsByItem.get(item.id) ?? [],
     })),
   };
 }

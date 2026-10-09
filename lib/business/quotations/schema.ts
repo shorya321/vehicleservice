@@ -11,6 +11,9 @@
 import { z } from 'zod';
 import { CONTACT_PHONE_RE, QUOTATION_STATUSES } from './status';
 
+/** Alternatives a trip may offer on top of its quoted vehicle. */
+export const MAX_VEHICLE_OPTIONS = 5;
+
 /** Optional free-text that should be treated as absent when blank. */
 const optionalText = (max: number) =>
   z
@@ -134,6 +137,19 @@ export const quotationTripSchema = z
 
     price_mode: z.enum(['inherited', 'markup', 'manual']).default('inherited'),
     markup_percent: z.number().min(-100).max(1000).nullable().default(null),
+
+    // Alternative vehicles the customer may pick instead of vehicle_type_id. Only the cost is
+    // sent; the server derives net total and sell price from the trip, as it does for the main
+    // vehicle. Absent on every trip saved before this feature, hence the empty default.
+    vehicle_options: z
+      .array(
+        z.object({
+          vehicle_type_id: z.string().uuid('Invalid vehicle type'),
+          net_base_price_aed: z.number().min(0),
+        })
+      )
+      .max(MAX_VEHICLE_OPTIONS, `At most ${MAX_VEHICLE_OPTIONS} vehicle options per trip`)
+      .default([]),
   })
   // Mirrors the bqi_pax_consistent CHECK and the identical .refine() on
   // bookingCreationSchema. Every guest occupies a seat, infants included. UAE law requires
@@ -146,6 +162,15 @@ export const quotationTripSchema = z
     message: 'Pickup and dropoff must be different locations',
     path: ['to_location_id'],
   })
+  .refine(
+    (d) =>
+      d.vehicle_options.every((o) => o.vehicle_type_id !== d.vehicle_type_id) &&
+      new Set(d.vehicle_options.map((o) => o.vehicle_type_id)).size === d.vehicle_options.length,
+    {
+      message: 'Each vehicle option must be a different vehicle from the quoted one',
+      path: ['vehicle_options'],
+    }
+  )
   // Mirrors bqi_price_mode: only a pinned line carries its own percentage.
   .refine(
     (d) =>
@@ -178,9 +203,21 @@ export const quotationStatusChangeSchema = z.object({
  * shown, without it, a bare boolean would let prices move between the diff and the confirm,
  * and the business would buy at a price they never saw.
  */
+/**
+ * Trip id -> chosen vehicle id, for trips that offer alternatives. A trip left out converts
+ * with its quoted vehicle, exactly as before options existed.
+ */
+export const vehicleSelectionsSchema = z.record(
+  z.string().uuid('Invalid trip ID'),
+  z.string().uuid('Invalid vehicle type')
+);
+
+export type VehicleSelections = z.infer<typeof vehicleSelectionsSchema>;
+
 export const quotationConvertSchema = z.object({
   repriceToken: z.string().min(1, 'Repricing token required'),
   acceptRepricing: z.boolean().default(false),
+  vehicleSelections: vehicleSelectionsSchema.optional(),
 });
 
 /** Returns the first readable message from a ZodError, matching the vendor module's helper. */

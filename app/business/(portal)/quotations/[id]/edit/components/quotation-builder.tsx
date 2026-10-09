@@ -197,6 +197,11 @@ export function QuotationBuilder({
                 ),
           price_mode: trip.price_mode,
           markup_percent: trip.price_mode === 'markup' ? trip.markup_percent : null,
+          // Mapped explicitly like every field above; the name is display-only and stays here.
+          vehicle_options: (trip.vehicle_options ?? []).map((option) => ({
+            vehicle_type_id: option.vehicle_type_id,
+            net_base_price_aed: option.net_base_price_aed,
+          })),
         }))
       );
 
@@ -274,6 +279,12 @@ export function QuotationBuilder({
                       <div className="text-sm text-muted-foreground">
                         {trip.vehicle_type_name ?? 'Vehicle'} · {trip.passenger_count} guest
                         {trip.passenger_count === 1 ? '' : 's'}
+                        {!locked && (trip.vehicle_options?.length ?? 0) > 0 && (
+                          <span className="text-primary">
+                            {' '}· +{trip.vehicle_options?.length} vehicle option
+                            {trip.vehicle_options?.length === 1 ? '' : 's'}
+                          </span>
+                        )}
                       </div>
                     </div>
 

@@ -41,7 +41,13 @@ export interface QuotationPdfSourceItem {
   sell_total_aed: number;
   /** Names and child ages only, never prices. See the addon mapping below. */
   addons: Array<{ name_snapshot: string; child_ages?: number[] | null }>;
+  /** Alternative vehicles with their SELL price only. Absent or empty when none are offered. */
+  vehicle_options?: Array<{ vehicle_type_id: string; sell_total_aed: number }>;
 }
+
+/** Printed under the total when any trip offers a choice of vehicle. */
+export const VEHICLE_OPTIONS_NOTE =
+  'Total based on the quoted vehicle for each trip. Choosing another vehicle option changes the price.';
 
 export interface QuotationPdfSource {
   quotation_number: string;
@@ -197,8 +203,30 @@ export function buildQuotationPdfData({
       addons: addonNames.length > 0 ? addonNames.join(', ') : undefined,
       notes: item.description ?? undefined,
       amount: formatAmount(lineDisplay, currency),
+      // Only a trip that offers alternatives gains the key, so every other line is unchanged.
+      ...(item.vehicle_options && item.vehicle_options.length > 0
+        ? {
+            vehicleOptions: [
+              {
+                vehicle: vehicleNames[item.vehicle_type_id] ?? 'Vehicle',
+                amount: formatAmount(lineDisplay, currency),
+                quoted: true,
+              },
+              ...item.vehicle_options.map((option) => ({
+                vehicle: vehicleNames[option.vehicle_type_id] ?? 'Vehicle',
+                amount: formatAmount(
+                  toDisplay(Number(option.sell_total_aed), rate, decimals),
+                  currency
+                ),
+                quoted: false,
+              })),
+            ],
+          }
+        : {}),
     };
   });
+
+  const offersVehicleChoice = ordered.some((item) => (item.vehicle_options?.length ?? 0) > 0);
 
   const discountDisplay = toDisplay(Number(quotation.discount_aed), rate, decimals);
   const totalDisplay = roundTo(subtotalDisplay - discountDisplay, decimals);
@@ -233,6 +261,7 @@ export function buildQuotationPdfData({
     discountDisplay:
       discountDisplay > 0 ? `-${formatAmount(discountDisplay, currency)}` : undefined,
     totalDisplay: formatAmount(totalDisplay, currency),
+    ...(offersVehicleChoice ? { vehicleOptionsNote: VEHICLE_OPTIONS_NOTE } : {}),
 
     terms: quotation.terms ?? undefined,
     notes: quotation.notes ?? undefined,

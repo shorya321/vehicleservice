@@ -99,6 +99,28 @@ export default async function QuotationDetailPage({ params }: PageProps) {
   );
 
   const inCurrency = (aed: number) => formatCurrency(aed * rate, currency);
+
+  // Vehicle names, needed only to list the alternatives a trip offers. Skipped entirely for a
+  // quotation without any, so its page loads exactly as before.
+  const tripsWithOptions = quotation.items.filter(
+    (item) => !item.converted_booking_id && (item.vehicle_options?.length ?? 0) > 0
+  );
+  const vehicleNames = new Map<string, string>();
+  if (tripsWithOptions.length > 0) {
+    const ids = Array.from(
+      new Set(
+        tripsWithOptions.flatMap((item) => [
+          item.vehicle_type_id,
+          ...(item.vehicle_options ?? []).map((o) => o.vehicle_type_id),
+        ])
+      )
+    );
+    const { data: vehicleRows } = await supabase
+      .from('vehicle_types')
+      .select('id, name')
+      .in('id', ids);
+    for (const row of vehicleRows ?? []) vehicleNames.set(row.id, row.name);
+  }
   const displayed = displayStatus(status, quotation.valid_until, bookingToday());
 
   // The same check preflightConversion runs, surfaced here so the blocker is discovered while
@@ -275,6 +297,33 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                           {item.addons
                             .map((a) => `${a.name_snapshot}${formatChildAges(a.child_ages)}`)
                             .join(', ')}
+                        </div>
+                      )}
+                      {!item.converted_booking_id && (item.vehicle_options?.length ?? 0) > 0 && (
+                        <div className="mt-2 space-y-0.5 text-sm">
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                            Vehicle options
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <span>
+                              {vehicleNames.get(item.vehicle_type_id) ?? 'Vehicle'}{' '}
+                              <span className="text-muted-foreground">(quoted)</span>
+                            </span>
+                            <span className="tabular-nums">
+                              {inCurrency(Number(item.sell_total_aed))}
+                            </span>
+                          </div>
+                          {(item.vehicle_options ?? []).map((option) => (
+                            <div
+                              key={option.vehicle_type_id}
+                              className="flex justify-between gap-3 text-muted-foreground"
+                            >
+                              <span>{vehicleNames.get(option.vehicle_type_id) ?? 'Vehicle'}</span>
+                              <span className="tabular-nums">
+                                {inCurrency(option.sell_total_aed)}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>

@@ -139,3 +139,27 @@ export function quotationTotals(
 export function isBelowCost(netAed: number, sellAed: number): boolean {
   return roundAed(sellAed) < roundAed(netAed);
 }
+
+/** What an offered alternative vehicle costs and sells for on a trip. */
+export interface QuotationOptionPrice {
+  net_total_aed: number;
+  sell_total_aed: number;
+}
+
+/**
+ * Price an alternative vehicle offered on a trip.
+ *
+ * The option carries the trip's addons, so its net is its own base plus the trip's addon net.
+ * It follows the trip's markup. A manual trip has no percentage of its own (its sell price was
+ * typed for the main vehicle only), so its options fall back to the quotation default.
+ */
+export function optionPricing(
+  optionNetBaseAed: number,
+  netAddonsAed: number,
+  trip: Pick<QuotationPricedLine, 'price_mode' | 'markup_percent'>,
+  defaultMarkupPct: number
+): QuotationOptionPrice {
+  const netTotal = roundAed(roundAed(optionNetBaseAed) + roundAed(netAddonsAed));
+  const pct = resolveMarkupPct(trip, defaultMarkupPct) ?? defaultMarkupPct;
+  return { net_total_aed: netTotal, sell_total_aed: applyMarkup(netTotal, pct) };
+}

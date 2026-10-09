@@ -37,9 +37,23 @@ export interface QuotationItemAddon {
   child_ages?: number[] | null;
 }
 
+export type QuotationItemVehicleOptionRow =
+  Tables['business_quotation_item_vehicle_options']['Row'];
+
+/** An alternative vehicle as stored against a quotation line. */
+export interface QuotationItemVehicleOption {
+  vehicle_type_id: string;
+  net_base_price_aed: number;
+  net_total_aed: number;
+  sell_total_aed: number;
+  sort_order: number;
+}
+
 /** One trip, with its addons resolved. */
 export interface QuotationItemWithAddons extends QuotationItemRow {
   addons: QuotationItemAddon[];
+  /** Alternatives offered on top of vehicle_type_id. Empty for a trip without any. */
+  vehicle_options?: QuotationItemVehicleOption[];
 }
 
 /** A quotation and everything needed to render or price it. */
@@ -140,6 +154,16 @@ export interface QuotationAddonOption {
   child_age_max: number | null;
 }
 
+/**
+ * An alternative vehicle as the builder holds it. Only the cost travels to the server, which
+ * derives the option's net total and sell price from the trip itself.
+ */
+export interface QuotationVehicleOptionDraft {
+  vehicle_type_id: string;
+  vehicle_type_name?: string;
+  net_base_price_aed: number;
+}
+
 /** A trip as the builder holds it in memory, before it is persisted. */
 export interface QuotationTripDraft {
   id?: string;
@@ -166,6 +190,8 @@ export interface QuotationTripDraft {
   sell_total_aed: number;
   price_mode: QuotationPriceMode;
   markup_percent: number | null;
+  /** Alternatives the customer may pick instead of vehicle_type_id. Absent means none. */
+  vehicle_options?: QuotationVehicleOptionDraft[];
   /** Present only once the trip has become a booking; makes the line immutable. */
   converted_booking_id?: string | null;
   converted_booking_number?: string | null;
@@ -215,6 +241,22 @@ export interface QuotationRepriceLine {
   sellAed: number;
   /** True when the refreshed cost has risen above what the customer was quoted. */
   belowCost: boolean;
+  error?: string;  /**
+   * Set only on a trip that offers alternatives: the vehicle this line was priced with, and
+   * every vehicle the business may choose between (the quoted one first).
+   */
+  vehicleTypeId?: string;
+  choices?: QuotationRepriceChoice[];
+}
+
+/** One vehicle a trip offers, priced fresh for the convert dialog. */
+export interface QuotationRepriceChoice {
+  vehicleTypeId: string;
+  name: string;
+  /** The vehicle quoted as the trip's main choice. */
+  quoted: boolean;
+  netAedFresh: number | null;
+  sellAed: number;
   error?: string;
 }
 

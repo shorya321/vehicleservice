@@ -336,3 +336,62 @@ describe('document metadata', () => {
     expect(data.accentColor).toMatch(/^#[0-9a-f]{6}$/i);
   });
 });
+
+describe('vehicle options', () => {
+  const withOptions = () =>
+    quotation({
+      items: [
+        item({
+          vehicle_options: [
+            {
+              vehicle_type_id: 'veh-2',
+              net_base_price_aed: 900,
+              net_total_aed: 1050,
+              sell_total_aed: 1260,
+              sort_order: 0,
+            },
+          ],
+        }),
+      ],
+    });
+
+  const buildWith = (q: QuotationWithItems) =>
+    buildQuotationPdfData({
+      quotation: q,
+      business,
+      logo: null,
+      locationNames: { 'loc-a': 'DXB Terminal 3', 'loc-b': 'Dubai Marina' },
+      vehicleNames: { 'veh-1': 'Luxury Sedan', 'veh-2': 'Luxury Van' },
+    });
+
+  it('leaves a quotation without options exactly as before', () => {
+    const data = build(quotation());
+    expect(data.lineItems[0]).not.toHaveProperty('vehicleOptions');
+    expect(data).not.toHaveProperty('vehicleOptionsNote');
+  });
+
+  it('lists the quoted vehicle first, then each option with its sell price', () => {
+    const data = buildWith(withOptions());
+    expect(data.lineItems[0].vehicleOptions).toEqual([
+      { vehicle: 'Luxury Sedan', amount: data.lineItems[0].amount, quoted: true },
+      { vehicle: 'Luxury Van', amount: expect.stringContaining('1,260'), quoted: false },
+    ]);
+  });
+
+  it('keeps the total on the quoted vehicles and explains it', () => {
+    const data = buildWith(withOptions());
+    expect(data.totalDisplay).toBe(build(quotation()).totalDisplay);
+    expect(data.vehicleOptionsNote).toBeDefined();
+  });
+
+  it('never prints an option cost', () => {
+    const text = renderedText(buildWith(withOptions()));
+    expect(text).not.toContain('1,050');
+    expect(text).not.toContain('900');
+  });
+
+  it('converts option prices at the locked rate', () => {
+    const data = buildWith({ ...withOptions(), currency: 'USD', exchange_rate: 0.5 });
+    expect(data.lineItems[0].vehicleOptions?.[1].amount).toContain('630');
+  });
+});

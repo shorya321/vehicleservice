@@ -6,7 +6,12 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { quotationTotals, roundAed, type QuotationPricedLine } from './pricing';
+import {
+  optionPricing,
+  quotationTotals,
+  roundAed,
+  type QuotationPricedLine,
+} from './pricing';
 import type { QuotationTripInput } from './schema';
 
 /** AED-based rates, keyed by target currency, as returned by getExchangeRates(). */
@@ -99,6 +104,20 @@ export async function saveQuotationTrips({
     return { error: 'A trip that has already been booked cannot be edited', lines: [] };
   }
 
+  // Trips that already have alternative vehicles stored. Only these ever need their option
+  // rows cleared, so saving a trip that has never offered any writes nothing extra.
+  const tripsWithStoredOptions = new Set<string>();
+  if (editableIds.size > 0) {
+    const { data: optionRows, error: optionsLoadError } = await supabase
+      .from('business_quotation_item_vehicle_options')
+      .select('item_id')
+      .in('item_id', Array.from(editableIds));
+    if (optionsLoadError) {
+      return { error: 'Failed to load existing vehicle options', lines: [] };
+    }
+    for (const row of optionRows ?? []) tripsWithStoredOptions.add(row.item_id);
+  }
+
   const keepIds = new Set(trips.map((t) => t.id).filter(Boolean) as string[]);
   const toDelete = Array.from(editableIds).filter((id) => !keepIds.has(id));
 
@@ -188,6 +207,16 @@ export async function saveQuotationTrips({
       );
       if (error) return { error: 'Failed to save trip extras', lines: [] };
     }
+
+    const optionsError = await replaceVehicleOptions(
+      supabase,
+      itemId as string,
+      trip,
+      defaultMarkupPct,
+      // A new trip, or one that never offered options, has no rows to clear.
+      Boolean(trip.id && tripsWithStoredOptions.has(trip.id))
+    );
+    if (optionsError) return { error: optionsError, lines: [] };
   }
 
   // Converted lines still count toward the document total even though they are immutable.
@@ -207,4 +236,45 @@ export async function saveQuotationTrips({
   ];
 
   return { lines };
+}
+
+/**
+ * Replace a trip's alternative vehicles wholesale, like its addons.
+ *
+ * Prices are derived here, never taken from the client: the option's net total carries the
+ * trip's addons and its sell price follows the trip's markup, so a change to the quotation's
+ * default markup reaches the options on the next save. Returns an error message or null.
+ */
+async function replaceVehicleOptions(
+  supabase: SupabaseClient,
+  itemId: string,
+  trip: QuotationTripInput,
+  defaultMarkupPct: number,
+  clearExisting: boolean
+): Promise<string | null> {
+  if (clearExisting) {
+    const { error } = await supabase
+      .from('business_quotation_item_vehicle_options')
+      .delete()
+      .eq('item_id', itemId);
+    if (error) return 'Failed to update vehicle options';
+  }
+
+  if (trip.vehicle_options.length === 0) return null;
+
+  const { error } = await supabase.from('business_quotation_item_vehicle_options').insert(
+    trip.vehicle_options.map((option, index) => ({
+      item_id: itemId,
+      vehicle_type_id: option.vehicle_type_id,
+      net_base_price_aed: roundAed(option.net_base_price_aed),
+      ...optionPricing(
+        option.net_base_price_aed,
+        trip.net_addons_price_aed,
+        trip,
+        defaultMarkupPct
+      ),
+      sort_order: index,
+    }))
+  );
+  return error ? 'Failed to save vehicle options' : null;
 }

@@ -14,6 +14,7 @@ import {
   marginPct,
   quotationTotals,
   isBelowCost,
+  optionPricing,
   type QuotationPricedLine,
 } from '@/lib/business/quotations/pricing';
 
@@ -205,5 +206,35 @@ describe('isBelowCost', () => {
 
   it('does not flag a profitable line', () => {
     expect(isBelowCost(1000, 1200)).toBe(false);
+  });
+});
+
+describe('optionPricing', () => {
+  it('adds the trip addons to the option base and applies the inherited markup', () => {
+    expect(optionPricing(200, 50, { price_mode: 'inherited', markup_percent: null }, 20)).toEqual({
+      net_total_aed: 250,
+      sell_total_aed: 300,
+    });
+  });
+
+  it('uses the pinned markup on a markup line', () => {
+    expect(optionPricing(100, 0, { price_mode: 'markup', markup_percent: 50 }, 20)).toEqual({
+      net_total_aed: 100,
+      sell_total_aed: 150,
+    });
+  });
+
+  it('falls back to the quotation default on a manual line', () => {
+    expect(optionPricing(100, 0, { price_mode: 'manual', markup_percent: null }, 10)).toEqual({
+      net_total_aed: 100,
+      sell_total_aed: 110,
+    });
+  });
+
+  it('rounds float noise from the zone multiplier', () => {
+    expect(optionPricing(287.49999999999994, 0, { price_mode: 'inherited', markup_percent: null }, 0)).toEqual({
+      net_total_aed: 287.5,
+      sell_total_aed: 287.5,
+    });
   });
 });

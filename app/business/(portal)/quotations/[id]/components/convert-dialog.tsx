@@ -9,7 +9,7 @@
  * exact figures shown. Otherwise prices could move between review and purchase.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, AlertTriangle, ArrowRight, Wallet } from 'lucide-react';
@@ -28,6 +28,8 @@ import {
 // Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import type { QuotationPreflightResult } from '@/lib/business/quotations/types';
+import type { VehicleSelections } from '@/lib/business/quotations/schema';
+import { VehicleChoice } from './vehicle-choice';
 
 interface ConvertDialogProps {
   quotationId: string;
@@ -39,14 +41,28 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
   const [loading, setLoading] = useState(false);
   const [converting, setConverting] = useState(false);
   const [preflight, setPreflight] = useState<QuotationPreflightResult | null>(null);
+  /** Trip id -> chosen vehicle, only for trips switched away from their quoted vehicle. */
+  const [selections, setSelections] = useState<VehicleSelections>({});
+  // Guards against an older preflight landing after a newer one when choices change quickly.
+  const requestSeq = useRef(0);
+
+  function preflightUrl(next: VehicleSelections): string {
+    const base = `/api/business/quotations/${quotationId}/convert`;
+    return Object.keys(next).length > 0
+      ? `${base}?selections=${encodeURIComponent(JSON.stringify(next))}`
+      : base;
+  }
 
   async function openAndPreflight() {
     setOpen(true);
     setLoading(true);
     setPreflight(null);
+    setSelections({});
+    const seq = ++requestSeq.current;
     try {
-      const response = await fetch(`/api/business/quotations/${quotationId}/convert`);
+      const response = await fetch(preflightUrl({}));
       const body = await response.json();
+      if (seq !== requestSeq.current) return;
       if (!response.ok) {
         toast.error(body?.error ?? 'Could not check this quotation');
         setOpen(false);
@@ -54,10 +70,45 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
       }
       setPreflight(body.data as QuotationPreflightResult);
     } catch {
+      if (seq !== requestSeq.current) return;
       toast.error('Could not check this quotation');
       setOpen(false);
     } finally {
-      setLoading(false);
+      if (seq === requestSeq.current) setLoading(false);
+    }
+  }
+
+  /**
+   * Re-run the preflight for a new vehicle choice. The prices, the below-cost flags and the
+   * confirmation token all depend on it, so Confirm stays disabled until this lands. On
+   * failure the previous choice and its figures are restored, which still agree with each
+   * other, so the token posted is always the one for what is on screen.
+   */
+  async function chooseVehicle(itemId: string, vehicleTypeId: string, quotedId: string) {
+    const previous = selections;
+    const next: VehicleSelections = { ...selections };
+    if (vehicleTypeId === quotedId) delete next[itemId];
+    else next[itemId] = vehicleTypeId;
+    setSelections(next);
+
+    setLoading(true);
+    const seq = ++requestSeq.current;
+    try {
+      const response = await fetch(preflightUrl(next));
+      const body = await response.json();
+      if (seq !== requestSeq.current) return;
+      if (!response.ok) {
+        toast.error(body?.error ?? 'Could not price that vehicle');
+        setSelections(previous);
+        return;
+      }
+      setPreflight(body.data as QuotationPreflightResult);
+    } catch {
+      if (seq !== requestSeq.current) return;
+      toast.error('Could not price that vehicle');
+      setSelections(previous);
+    } finally {
+      if (seq === requestSeq.current) setLoading(false);
     }
   }
 
@@ -71,6 +122,8 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
         body: JSON.stringify({
           repriceToken: preflight.repriceToken,
           acceptRepricing: true,
+          // Sent only when a trip was switched, so a plain conversion posts what it always did.
+          ...(Object.keys(selections).length > 0 ? { vehicleSelections: selections } : {}),
         }),
       });
       const body = await response.json();
@@ -128,7 +181,7 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {loading && (
+          {loading && !preflight && (
             <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Re-pricing every trip...
@@ -166,6 +219,21 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
                         <p className="mt-1 text-amber-600 dark:text-amber-400">
                           Cost now exceeds the {formatCurrency(line.sellAed, 'AED')} you quoted.
                         </p>
+                      )}
+                      {line.choices && line.choices.length > 1 && (
+                        <VehicleChoice
+                          itemId={line.itemId}
+                          choices={line.choices}
+                          value={line.vehicleTypeId ?? line.choices[0].vehicleTypeId}
+                          disabled={loading || converting}
+                          onChange={(vehicleTypeId) =>
+                            chooseVehicle(
+                              line.itemId,
+                              vehicleTypeId,
+                              line.choices?.find((c) => c.quoted)?.vehicleTypeId ?? ''
+                            )
+                          }
+                        />
                       )}
                     </div>
                   );
@@ -212,7 +280,9 @@ export function ConvertDialog({ quotationId }: ConvertDialogProps) {
               Cancel
             </Button>
             <Button onClick={confirm} disabled={!preflight || blocked || converting || loading}>
-              {converting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {(converting || (loading && preflight)) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {preflight ? `Charge ${formatCurrency(preflight.totalNetAed, 'AED')}` : 'Confirm'}
             </Button>
           </DialogFooter>

@@ -19,8 +19,17 @@ import {
   loadBookingCreatorById,
 } from '@/lib/business/email/recipients';
 import { requireBusinessAuth, apiError, apiSuccess } from '@/lib/business/api-utils';
-import { quotationConvertSchema } from '@/lib/business/quotations/schema';
-import { preflightConversion, repriceToken } from '@/lib/business/quotations/convert';
+import {
+  quotationConvertSchema,
+  vehicleSelectionsSchema,
+  type VehicleSelections,
+} from '@/lib/business/quotations/schema';
+import {
+  effectiveSelections,
+  preflightConversion,
+  repriceToken,
+} from '@/lib/business/quotations/convert';
+import { computeStoredTotals } from '@/lib/business/quotations/persist';
 import { convertQuotationItem } from '@/lib/business/quotations/convert-item';
 import { normalizeQuotationStatus, canConvert } from '@/lib/business/quotations/status';
 import { activityLogger } from '@/lib/business/activity/log';
@@ -92,27 +101,187 @@ async function loadForConversion(
     }
   }
 
+  // Alternative vehicles. Empty for a quotation without any, which then converts exactly as
+  // it always has.
+  const optionsByItem = new Map<
+    string,
+    Array<{ vehicle_type_id: string; net_total_aed: number; sell_total_aed: number }>
+  >();
+  const vehicleNames: Record<string, string> = {};
+
+  if (itemIds.length > 0) {
+    const { data: optionRows } = await admin
+      .from('business_quotation_item_vehicle_options')
+      .select('item_id, vehicle_type_id, net_total_aed, sell_total_aed, sort_order')
+      .in('item_id', itemIds)
+      .order('sort_order', { ascending: true });
+
+    for (const row of optionRows ?? []) {
+      const list = optionsByItem.get(row.item_id) ?? [];
+      list.push({
+        vehicle_type_id: row.vehicle_type_id,
+        net_total_aed: Number(row.net_total_aed),
+        sell_total_aed: Number(row.sell_total_aed),
+      });
+      optionsByItem.set(row.item_id, list);
+    }
+
+    // Names only matter for the choices shown in the dialog, so skip the lookup when no trip
+    // offers any.
+    if (optionsByItem.size > 0) {
+      const ids = Array.from(
+        new Set([
+          ...(items ?? []).map((i) => i.vehicle_type_id),
+          ...(optionRows ?? []).map((o) => o.vehicle_type_id),
+        ])
+      );
+      const { data: vehicleRows } = await admin
+        .from('vehicle_types')
+        .select('id, name')
+        .in('id', ids);
+      for (const row of vehicleRows ?? []) vehicleNames[row.id] = row.name;
+    }
+  }
+
   const convertible: ConvertibleItem[] = (items ?? []).map((item) => ({
     ...item,
     net_total_aed: Number(item.net_total_aed),
     sell_total_aed: Number(item.sell_total_aed),
     addons: addonsByItem.get(item.id) ?? [],
+    ...(optionsByItem.has(item.id) ? { vehicle_options: optionsByItem.get(item.id) } : {}),
   }));
 
-  return { admin, quotation, items: convertible };
+  return { admin, quotation, items: convertible, vehicleNames };
+}
+
+/** `?selections=` on the preflight GET: a JSON trip id -> vehicle id map. Absent means none. */
+function parseSelectionsParam(request: Request): VehicleSelections | null {
+  const raw = new URL(request.url).searchParams.get('selections');
+  if (!raw) return {};
+  try {
+    const parsed = vehicleSelectionsSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Swap the trip onto the chosen vehicle and return the vehicle now stored on it, read back
+ * from the row so the booking uses what the database holds rather than what was loaded
+ * before the lock. Null when the swap failed or did not take.
+ */
+async function applyChosenVehicle(
+  admin: ReturnType<typeof createAdminClient>,
+  item: ConvertibleItem,
+  vehicleTypeId: string
+): Promise<string | null> {
+  const { error } = await admin.rpc('swap_quotation_item_vehicle', {
+    p_item_id: item.id,
+    p_vehicle_type_id: vehicleTypeId,
+  });
+  if (error) {
+    console.error('Failed to apply the chosen vehicle before conversion:', error);
+    return null;
+  }
+
+  const { data: row } = await admin
+    .from('business_quotation_items')
+    .select('vehicle_type_id')
+    .eq('id', item.id)
+    .single();
+
+  return row?.vehicle_type_id === vehicleTypeId ? vehicleTypeId : null;
+}
+
+/** Undo applyChosenVehicle after a failed booking, unless a booking exists for the trip. */
+async function revertChosenVehicle(
+  admin: ReturnType<typeof createAdminClient>,
+  item: ConvertibleItem
+): Promise<void> {
+  const { data: existing } = await admin
+    .from('business_bookings')
+    .select('id')
+    .eq('price_signature_nonce', item.conversion_nonce)
+    .maybeSingle();
+  if (existing) return;
+
+  const { error } = await admin.rpc('swap_quotation_item_vehicle', {
+    p_item_id: item.id,
+    p_vehicle_type_id: item.vehicle_type_id,
+  });
+  if (error) console.error('Failed to restore the quoted vehicle after a failed booking:', error);
+}
+
+/**
+ * Rewrite the header totals after a chosen vehicle changed a trip's price. Same math the
+ * editor uses on save, so the stored totals always agree with the lines. computeStoredTotals
+ * clamps the discount, which keeps bq_discount_bounded satisfied when a cheaper vehicle won.
+ * Failure is logged, not raised: the bookings are the source of truth and are unaffected.
+ */
+async function refreshQuotationTotals(admin: ReturnType<typeof createAdminClient>, id: string) {
+  const [{ data: header }, { data: lines }] = await Promise.all([
+    admin
+      .from('business_quotations')
+      .select('discount_aed, default_markup_pct')
+      .eq('id', id)
+      .single(),
+    admin
+      .from('business_quotation_items')
+      .select('net_total_aed, sell_total_aed, price_mode, markup_percent')
+      .eq('quotation_id', id),
+  ]);
+
+  if (!header || !lines) {
+    console.error('Could not reload quotation totals after a vehicle choice', { id });
+    return;
+  }
+
+  const totals = computeStoredTotals(
+    lines.map((line) => ({
+      net_total_aed: Number(line.net_total_aed),
+      sell_total_aed: Number(line.sell_total_aed),
+      // Stored sell prices are authoritative here: the swap wrote the option's sell price,
+      // which already carries the line's markup.
+      price_mode: 'manual' as const,
+      markup_percent: null,
+    })),
+    Number(header.discount_aed),
+    Number(header.default_markup_pct)
+  );
+
+  if (totals.discount_aed < Number(header.discount_aed)) {
+    console.warn('Quotation discount reduced to fit a cheaper chosen vehicle', {
+      id,
+      from: Number(header.discount_aed),
+      to: totals.discount_aed,
+    });
+  }
+
+  const { error } = await admin.from('business_quotations').update(totals).eq('id', id);
+  if (error) console.error('Failed to update quotation totals after a vehicle choice:', error);
 }
 
 export const GET = requireBusinessAuth(async (
-  _request: Request,
+  request: Request,
   user,
   context: { params: Promise<{ id: string }> }
 ) => {
   const { id } = await context.params;
+  const rawSelections = parseSelectionsParam(request);
+  if (rawSelections === null) return apiError('Invalid vehicle selection', 400);
+
   const loaded = await loadForConversion(id, user.businessAccountId, user.businessId, user.role);
   if (!loaded) return apiError('Quotation not found', 404);
 
-  const { admin, quotation, items } = loaded;
-  const preflight = await preflightConversion(admin, quotation as ConvertibleQuotation, items);
+  const { admin, quotation, items, vehicleNames } = loaded;
+  const preflight = await preflightConversion(
+    admin,
+    quotation as ConvertibleQuotation,
+    items,
+    effectiveSelections(items, rawSelections),
+    vehicleNames
+  );
   return apiSuccess(preflight);
 });
 
@@ -136,7 +305,8 @@ export const POST = requireBusinessAuth(async (
     );
     if (!loaded) return apiError('Quotation not found', 404);
 
-    const { admin, quotation, items } = loaded;
+    const { admin, quotation, items, vehicleNames } = loaded;
+    const selections = effectiveSelections(items, parsed.data.vehicleSelections);
 
     const status = normalizeQuotationStatus(quotation.status);
     if (!canConvert(status)) {
@@ -192,7 +362,9 @@ export const POST = requireBusinessAuth(async (
     const preflight = await preflightConversion(
       admin,
       quotation as ConvertibleQuotation,
-      items
+      items,
+      selections,
+      vehicleNames
     );
 
     const releaseTo = status;
@@ -205,7 +377,7 @@ export const POST = requireBusinessAuth(async (
       return apiError(preflight.blockingErrors[0] ?? 'This quotation cannot be converted', 409);
     }
 
-    const currentToken = repriceToken(id, preflight.lines);
+    const currentToken = repriceToken(id, preflight.lines, selections);
     if (parsed.data.repriceToken !== currentToken) {
       await admin
         .from('business_quotations')
@@ -219,20 +391,54 @@ export const POST = requireBusinessAuth(async (
 
     const pending = items.filter((item) => !item.converted_booking_id);
     const results: QuotationConversionLineResult[] = [];
+    // Trips whose stored vehicle was switched in this run, so the header totals can follow.
+    let anySwapped = false;
 
     // Sequential on purpose: each RPC takes FOR UPDATE on the same business_accounts row, so
     // parallelism would only create lock contention on the wallet.
     for (const item of pending) {
+      const chosen = selections[item.id];
+      let toConvert = item;
+
+      // A trip switched to an alternative is swapped IMMEDIATELY before it is booked, never
+      // earlier, so a run that stops early leaves every later trip exactly as quoted. A trip
+      // without a choice takes the original path untouched.
+      if (chosen) {
+        const applied = await applyChosenVehicle(admin, item, chosen);
+        if (!applied) {
+          results.push({
+            itemId: item.id,
+            status: 'failed',
+            error: 'Could not apply the chosen vehicle to this trip',
+          });
+          break;
+        }
+        anySwapped = true;
+        toConvert = { ...item, vehicle_type_id: applied };
+      }
+
       const result = await convertQuotationItem({
         admin,
         quotation: quotation as ConvertibleQuotation,
-        item,
+        item: toConvert,
         createdByUserId: user.businessId,
       });
+
+      // Nothing was booked for this trip, so put its quoted vehicle back. Skipped when a
+      // booking exists under the trip's nonce (e.g. created but the child seat failed to
+      // attach), because the trip must then keep describing what was actually booked.
+      if (chosen && result.status === 'failed') {
+        await revertChosenVehicle(admin, item);
+      }
+
       results.push(result);
       // Stop at the first hard failure: the wallet may be exhausted, and every later trip
       // would fail the same way while charging for the ones before it.
       if (result.status === 'failed') break;
+    }
+
+    if (anySwapped) {
+      await refreshQuotationTotals(admin, id);
     }
 
     const converted = results.filter((r) => r.status !== 'failed').length;

@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { format, parse } from 'date-fns';
 import Image from 'next/image';
+import { toast } from 'sonner';
 import { Car, Loader2, MapPin, Package, Receipt, Users } from 'lucide-react';
 import {
   Sheet,
@@ -37,8 +38,15 @@ import { FieldGroup } from '../../../components/field-group';
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { bookingLocalInputToUtc, bookingUtcToLocalInput } from '@/lib/business/utils/timezone';
 import { getAvailableVehicleTypesForRoute } from '../../../../bookings/new/actions';
-import { roundAed, applyMarkup } from '@/lib/business/quotations/pricing';
+import { roundAed, applyMarkup, optionPricing } from '@/lib/business/quotations/pricing';
+import {
+  canAddVehicleOption,
+  reconcileVehicleOptions,
+  toggleVehicleOption,
+  withoutMainVehicle,
+} from '@/lib/business/quotations/vehicle-options';
 import { MarkupInput } from './markup-input';
+import { VehicleOptionToggle } from './vehicle-option-toggle';
 import { AddonPicker, addonsReadyToSave, toPersistableAddons, type DraftAddon } from './addon-picker';
 import {
   childSeatShortfall,
@@ -151,6 +159,13 @@ export function TripEditorSheet({
   // Guards against an out-of-order response overwriting a newer one.
   const requestSeq = useRef(0);
 
+  // Latest draft, for the vehicle loader below, which runs from a stale closure. Read there
+  // only to decide whether to tell the operator an option was dropped.
+  const draftRef = useRef(draft);
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
+
   useEffect(() => {
     if (!open) return;
     const next = trip ? { ...trip } : emptyTrip();
@@ -190,15 +205,41 @@ export function TripEditorSheet({
           businessAccountId
         );
         if (seq !== requestSeq.current) return;
-        setVehicles(
-          result.vehicleTypes.map((v) => ({
-            id: v.id,
-            name: v.name,
-            category: v.category,
-            capacity: v.capacity,
-            price: v.price,
-            image: v.image,
-          }))
+        const loaded = result.vehicleTypes.map((v) => ({
+          id: v.id,
+          name: v.name,
+          category: v.category,
+          capacity: v.capacity,
+          price: v.price,
+          image: v.image,
+        }));
+        setVehicles(loaded);
+
+        const before = draftRef.current;
+        if (before.vehicle_options?.length) {
+          const kept = reconcileVehicleOptions(before.vehicle_options, loaded, before.vehicle_type_id);
+          const dropped = before.vehicle_options.length - kept.length;
+          if (dropped > 0) {
+            toast.warning(
+              `${dropped} vehicle option${dropped === 1 ? ' is' : 's are'} not available for this route and guest count and ${dropped === 1 ? 'was' : 'were'} removed.`
+            );
+          }
+        }
+
+        // Refresh offered alternatives against the new route and guest count. Only after a
+        // successful load: the catch below empties the list, which must not wipe them.
+        // A trip without options is left untouched.
+        setDraft((current) =>
+          current.vehicle_options?.length
+            ? {
+                ...current,
+                vehicle_options: reconcileVehicleOptions(
+                  current.vehicle_options,
+                  loaded,
+                  current.vehicle_type_id
+                ),
+              }
+            : current
         );
       } catch {
         if (seq === requestSeq.current) setVehicles([]);
@@ -239,8 +280,25 @@ export function TripEditorSheet({
       vehicle_type_id: vehicle.id,
       vehicle_type_name: vehicle.name,
       ...pricingPatch(vehicle.price, draft.net_addons_price_aed),
+      // A vehicle promoted to main stops being an alternative. Untouched when there are none.
+      ...(draft.vehicle_options?.length
+        ? { vehicle_options: withoutMainVehicle(draft.vehicle_options, vehicle.id) }
+        : {}),
     });
   }
+
+  function toggleOption(vehicle: VehicleOption) {
+    patch({
+      vehicle_options: toggleVehicleOption(
+        draft.vehicle_options ?? [],
+        vehicle,
+        draft.vehicle_type_id
+      ),
+    });
+  }
+
+  const offeredIds = new Set((draft.vehicle_options ?? []).map((o) => o.vehicle_type_id));
+  const canAddOption = canAddVehicleOption(draft.vehicle_options ?? []);
 
   function setAddons(addons: DraftAddon[]) {
     const netAddons = addons.reduce((sum, a) => sum + a.total_price, 0);
@@ -514,43 +572,65 @@ export function TripEditorSheet({
                   {vehicles.map((vehicle) => {
                     const selected = draft.vehicle_type_id === vehicle.id;
                     return (
-                      <button
-                        key={vehicle.id}
-                        type="button"
-                        onClick={() => selectVehicle(vehicle)}
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors',
-                          selected
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border bg-card hover:bg-muted/50'
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* Thumbnail only when the type has one. The row keeps its
-                              height without it. */}
-                          {vehicle.image && (
-                            <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
-                              <Image
-                                src={vehicle.image}
-                                alt=""
-                                fill
-                                sizes="56px"
-                                className="object-cover"
-                              />
-                            </div>
+                      <div key={vehicle.id} className="space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => selectVehicle(vehicle)}
+                          className={cn(
+                            'flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors',
+                            selected
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border bg-card hover:bg-muted/50'
                           )}
-                          <div className="min-w-0">
-                            <div className="font-medium text-foreground">{vehicle.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {vehicle.category} · up to {vehicle.capacity} guests
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Thumbnail only when the type has one. The row keeps its
+                                height without it. */}
+                            {vehicle.image && (
+                              <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
+                                <Image
+                                  src={vehicle.image}
+                                  alt=""
+                                  fill
+                                  sizes="56px"
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="font-medium text-foreground">{vehicle.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {vehicle.category} · up to {vehicle.capacity} guests
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        {/* Cost, not the sell price. This is the internal builder. */}
-                        <div className="text-right text-sm tabular-nums text-muted-foreground">
-                          cost {formatCurrency(vehicle.price, 'AED')}
-                        </div>
-                      </button>
+                          {/* Cost, not the sell price. This is the internal builder. */}
+                          <div className="text-right text-sm tabular-nums text-muted-foreground">
+                            cost {formatCurrency(vehicle.price, 'AED')}
+                          </div>
+                        </button>
+                        {/* Alternatives the customer may pick instead. Offered once a main
+                            vehicle is chosen, on every other vehicle. */}
+                        {draft.vehicle_type_id && !selected && (
+                          <VehicleOptionToggle
+                            vehicleId={vehicle.id}
+                            vehicleName={vehicle.name}
+                            checked={offeredIds.has(vehicle.id)}
+                            canAdd={canAddOption}
+                            sellAed={
+                              optionPricing(
+                                vehicle.price,
+                                draft.net_addons_price_aed,
+                                draft,
+                                defaultMarkupPct
+                              ).sell_total_aed
+                            }
+                            currency={currency}
+                            exchangeRate={exchangeRate}
+                            onToggle={() => toggleOption(vehicle)}
+                          />
+                        )}
+                      </div>
                     );
                   })}
                 </div>

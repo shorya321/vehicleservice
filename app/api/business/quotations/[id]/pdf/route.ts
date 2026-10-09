@@ -69,7 +69,7 @@ export const GET = requireBusinessAuth(async (
       .select(
         `id, sort_order, from_location_id, to_location_id, pickup_address, dropoff_address,
          pickup_datetime, vehicle_type_id, passenger_count, adults, children, infants,
-         description, sell_total_aed`
+         description, sell_total_aed, converted_booking_id`
       )
       .eq('quotation_id', id)
       .order('sort_order', { ascending: true });
@@ -103,10 +103,38 @@ export const GET = requireBusinessAuth(async (
       addonsByItem.set(row.item_id, list);
     }
 
+    // Alternative vehicles, SELL price only. The net columns are never selected here, for the
+    // same reason the items query leaves them out.
+    const { data: optionRows, error: optionsError } = await supabase
+      .from('business_quotation_item_vehicle_options')
+      .select('item_id, vehicle_type_id, sell_total_aed, sort_order')
+      .in('item_id', itemIds)
+      .order('sort_order', { ascending: true });
+
+    if (optionsError) {
+      console.error('Error loading quotation vehicle options for PDF:', optionsError);
+      return apiError('Failed to load quotation items', 500);
+    }
+
+    const optionsByItem = new Map<
+      string,
+      Array<{ vehicle_type_id: string; sell_total_aed: number }>
+    >();
+    for (const row of optionRows ?? []) {
+      const list = optionsByItem.get(row.item_id) ?? [];
+      list.push({ vehicle_type_id: row.vehicle_type_id, sell_total_aed: Number(row.sell_total_aed) });
+      optionsByItem.set(row.item_id, list);
+    }
+
     const locationIds = Array.from(
       new Set(items.flatMap((i) => [i.from_location_id, i.to_location_id]))
     );
-    const vehicleIds = Array.from(new Set(items.map((i) => i.vehicle_type_id)));
+    const vehicleIds = Array.from(
+      new Set([
+        ...items.map((i) => i.vehicle_type_id),
+        ...(optionRows ?? []).map((o) => o.vehicle_type_id),
+      ])
+    );
 
     const [businessResult, locationsResult, vehiclesResult] = await Promise.all([
       supabase
@@ -149,6 +177,8 @@ export const GET = requireBusinessAuth(async (
       description: item.description,
       sell_total_aed: Number(item.sell_total_aed),
       addons: addonsByItem.get(item.id) ?? [],
+      // A booked trip's vehicle is settled, so its choice is no longer offered.
+      vehicle_options: item.converted_booking_id ? [] : optionsByItem.get(item.id) ?? [],
     }));
 
     const pdfData = buildQuotationPdfData({
