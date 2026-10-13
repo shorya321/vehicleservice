@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
+import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import {
   getOrCreateBusinessStripeCustomer,
@@ -12,7 +13,7 @@ import {
 } from '@/lib/stripe/business-customer';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: STRIPE_API_VERSION,
 });
 
 /**

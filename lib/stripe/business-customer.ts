@@ -1,9 +1,10 @@
 import Stripe from 'stripe'
+import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: STRIPE_API_VERSION,
   typescript: true,
 })
 

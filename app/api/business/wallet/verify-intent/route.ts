@@ -11,6 +11,7 @@
  */
 
 import Stripe from 'stripe';
+import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { createClient } from '@supabase/supabase-js';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
 import { walletIntentVerifySchema } from '@/lib/business/validators';
@@ -21,7 +22,7 @@ import { sendCreditEmail } from '../_lib/send-credit-email';
 // Pinned to the same API version as every other wallet route, so the PaymentIntent shape
 // matches what the webhook sees. The installed SDK types only name its own latest version.
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion,
+  apiVersion: STRIPE_API_VERSION,
 });
 
 const CREATED_BY = 'client_verification';

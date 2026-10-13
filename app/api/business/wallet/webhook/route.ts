@@ -6,13 +6,14 @@
 import { NextRequest } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
+import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { createClient } from '@supabase/supabase-js';
 import { apiSuccess, apiError } from '@/lib/business/api-utils';
 import { savePaymentMethod } from '../_lib/save-payment-method';
 import { sendCreditEmail } from '../_lib/send-credit-email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: STRIPE_API_VERSION,
 });
 
 // Symmetric with app/api/payment/webhook/route.ts, which reads
@@ -141,25 +142,11 @@ export async function POST(request: NextRequest) {
         newBalance: data,
       });
 
-      // Save payment method if available (for future recharges)
-      try {
-        // Checkout sessions may have payment_method directly
-        const paymentMethodId = session.payment_method as string;
-
-        if (paymentMethodId) {
-          await savePaymentMethod(
-            stripe,
-            supabaseAdmin,
-            businessAccountId,
-            paymentMethodId
-          );
-        } else {
-          console.log('No payment method found in checkout session');
-        }
-      } catch (pmError) {
-        console.error('Failed to save payment method (non-critical):', pmError);
-        // Don't fail the webhook if payment method saving fails
-      }
+      // Cards paid through Checkout are not saved. The session is created without
+      // setup_future_usage, so Stripe does not attach the card to the customer and it
+      // could not be charged again; saving it would list a card that always fails.
+      // (A Checkout Session has no payment_method field; the old read was always empty.)
+      // Cards are saved through the Payment Element flow below.
 
       // Send transaction completed email notification
       try {

@@ -76,7 +76,8 @@ export const GET = requireBusinessOwner(async (
       previousBalance,
       newBalance: transaction.balance_after,
       transactionDate: formatBookingDateTime(transaction.created_at, 'PPp'),
-      paymentMethod: transaction.payment_method || 'N/A',
+      // No payment_method column exists; a Stripe-funded transaction carries its PaymentIntent id.
+      paymentMethod: transaction.stripe_payment_intent_id ? 'Card' : 'N/A',
       referenceId: transaction.reference_id,
 
       // Metadata

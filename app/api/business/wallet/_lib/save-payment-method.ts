@@ -6,6 +6,12 @@
 
 import Stripe from 'stripe';
 
+/** The payment_methods columns read below. */
+interface StoredPaymentMethod {
+  id: string;
+  is_active: boolean | null;
+}
+
 /**
  * Helper function to save payment method after successful payment
  * Extracts payment method from Stripe and saves to database
@@ -41,7 +47,7 @@ export async function savePaymentMethod(
 
     if (existingPMs && existingPMs.length > 0) {
       // Find active PM or use most recently used
-      const activePM = existingPMs.find(pm => pm.is_active);
+      const activePM = existingPMs.find((pm: StoredPaymentMethod) => pm.is_active);
       const existingPM = activePM || existingPMs[0];
 
       // Reactivate/update the chosen PM
@@ -56,8 +62,8 @@ export async function savePaymentMethod(
       // If multiple duplicates exist, deactivate the others
       if (existingPMs.length > 1) {
         const otherIds = existingPMs
-          .filter(pm => pm.id !== existingPM.id)
-          .map(pm => pm.id);
+          .filter((pm: StoredPaymentMethod) => pm.id !== existingPM.id)
+          .map((pm: StoredPaymentMethod) => pm.id);
 
         if (otherIds.length > 0) {
           await supabaseAdmin

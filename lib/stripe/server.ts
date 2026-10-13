@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 
 // Check if Stripe keys are configured
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
@@ -11,7 +12,7 @@ if (!stripeSecretKey) {
 // Initialize Stripe with secret key (or dummy key for development)
 export const stripe = stripeSecretKey 
   ? new Stripe(stripeSecretKey, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: STRIPE_API_VERSION,
       typescript: true,
     })
   : null as any
