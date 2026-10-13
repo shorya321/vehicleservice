@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { uploadBlogImage } from '../posts/actions/upload'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
 
@@ -153,7 +153,7 @@ export async function createBlogCategory(data: BlogCategoryFormData) {
   }
 
   revalidatePath('/admin/blog/categories')
-  revalidateTag('blog-categories')
+  updateTag('blog-categories')
 }
 
 export async function updateBlogCategory(id: string, data: BlogCategoryFormData) {
@@ -210,7 +210,7 @@ export async function updateBlogCategory(id: string, data: BlogCategoryFormData)
 
   revalidatePath('/admin/blog/categories')
   revalidatePath(`/admin/blog/categories/${id}/edit`)
-  revalidateTag('blog-categories')
+  updateTag('blog-categories')
 }
 
 interface DeleteBlogCategoryResult {
@@ -252,7 +252,7 @@ export async function deleteBlogCategory(id: string): Promise<DeleteBlogCategory
   }
 
   revalidatePath('/admin/blog/categories')
-  revalidateTag('blog-categories')
+  updateTag('blog-categories')
   return {}
 }
 
@@ -274,7 +274,7 @@ export async function toggleBlogCategoryStatus(id: string, isActive: boolean) {
   }
 
   revalidatePath('/admin/blog/categories')
-  revalidateTag('blog-categories')
+  updateTag('blog-categories')
 }
 
 export async function bulkDeleteBlogCategories(ids: string[]): Promise<DeleteBlogCategoryResult> {
@@ -313,7 +313,7 @@ export async function bulkDeleteBlogCategories(ids: string[]): Promise<DeleteBlo
   }
 
   revalidatePath('/admin/blog/categories')
-  revalidateTag('blog-categories')
+  updateTag('blog-categories')
   return { count: ids.length }
 }
 
@@ -331,6 +331,6 @@ export async function bulkToggleBlogCategoryStatus(ids: string[], isActive: bool
   }
 
   revalidatePath('/admin/blog/categories')
-  revalidateTag('blog-categories')
+  updateTag('blog-categories')
   return { count: ids.length }
 }

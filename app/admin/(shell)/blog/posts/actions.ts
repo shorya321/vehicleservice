@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { uploadBlogImage } from './actions/upload'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
 import { blogFaqsSchema, blogSectionsSchema, cleanFaqs, sectionsToHtml, type BlogSection } from '@/lib/blog/sections'
@@ -256,7 +256,7 @@ export async function createBlogPost(data: BlogPostFormData) {
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
 }
 
 export async function updateBlogPost(id: string, data: BlogPostFormData) {
@@ -336,7 +336,7 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
 
   revalidatePath('/admin/blog/posts')
   revalidatePath(`/admin/blog/posts/${id}/edit`)
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
 }
 
 /** Saved from the FAQ tab, separately from the post form. Fully blank rows are dropped. */
@@ -366,7 +366,7 @@ export async function updateBlogPostFaqs(
 
   revalidatePath(`/admin/blog/posts/${id}/edit`)
   revalidatePath(`/blog/${data.slug}`)
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
   return {}
 }
 
@@ -385,7 +385,7 @@ export async function deleteBlogPost(id: string) {
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
 }
 
 export async function toggleBlogPostStatus(id: string, status: 'draft' | 'published' | 'archived') {
@@ -412,7 +412,7 @@ export async function toggleBlogPostStatus(id: string, status: 'draft' | 'publis
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
 }
 
 export async function toggleBlogPostFeatured(id: string, isFeatured: boolean) {
@@ -433,7 +433,7 @@ export async function toggleBlogPostFeatured(id: string, isFeatured: boolean) {
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
 }
 
 export async function bulkDeleteBlogPosts(ids: string[]) {
@@ -453,7 +453,7 @@ export async function bulkDeleteBlogPosts(ids: string[]) {
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
   return { count: ids.length }
 }
 
@@ -480,7 +480,7 @@ export async function bulkToggleBlogPostStatus(ids: string[], status: 'draft' | 
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
   return { count: ids.length }
 }
 
@@ -498,6 +498,6 @@ export async function bulkToggleBlogPostFeatured(ids: string[], isFeatured: bool
   }
 
   revalidatePath('/admin/blog/posts')
-  revalidateTag('blog-posts')
+  updateTag('blog-posts')
   return { count: ids.length }
 }

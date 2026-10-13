@@ -6,7 +6,7 @@
  * Server actions for managing currency settings.
  */
 
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -72,7 +72,7 @@ export async function toggleCurrencyEnabled(
     }
 
     // Revalidate cache
-    revalidateTag('currencies')
+    updateTag('currencies')
     revalidatePath('/admin/settings/currencies')
 
     return { success: true }
@@ -133,7 +133,7 @@ export async function toggleCurrencyFeatured(
       return { success: false, error: error.message }
     }
 
-    revalidateTag('currencies')
+    updateTag('currencies')
     revalidatePath('/admin/settings/currencies')
 
     return { success: true }
@@ -193,7 +193,7 @@ export async function setDefaultCurrency(
     }
 
     // Revalidate cache
-    revalidateTag('currencies')
+    updateTag('currencies')
     revalidatePath('/admin/settings/currencies')
 
     return { success: true }
@@ -262,7 +262,7 @@ export async function refreshExchangeRates(): Promise<{
     const result = await response.json()
 
     // Revalidate cache
-    revalidateTag('exchange-rates')
+    updateTag('exchange-rates')
     revalidatePath('/admin/settings/currencies')
 
     return {
@@ -317,7 +317,7 @@ export async function updateCurrencyOrder(
       return { success: false, error: error.message }
     }
 
-    revalidateTag('currencies')
+    updateTag('currencies')
     revalidatePath('/admin/settings/currencies')
 
     return { success: true }

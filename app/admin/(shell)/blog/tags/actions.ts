@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 
 export interface BlogTag {
   id: string
@@ -84,7 +84,7 @@ export async function createBlogTag(name: string) {
   }
 
   revalidatePath('/admin/blog/tags')
-  revalidateTag('blog-tags')
+  updateTag('blog-tags')
 }
 
 export async function updateBlogTag(id: string, name: string) {
@@ -107,7 +107,7 @@ export async function updateBlogTag(id: string, name: string) {
   }
 
   revalidatePath('/admin/blog/tags')
-  revalidateTag('blog-tags')
+  updateTag('blog-tags')
 }
 
 interface DeleteBlogTagResult {
@@ -149,6 +149,6 @@ export async function deleteBlogTag(id: string): Promise<DeleteBlogTagResult> {
   }
 
   revalidatePath('/admin/blog/tags')
-  revalidateTag('blog-tags')
+  updateTag('blog-tags')
   return {}
 }

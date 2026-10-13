@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidateTag, revalidatePath } from 'next/cache'
+import { updateTag, revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
@@ -79,7 +79,7 @@ export async function updateSiteSettings(
       }
     }
 
-    revalidateTag('site-settings')
+    updateTag('site-settings')
     revalidatePath('/admin/settings/general')
 
     return { success: true }
