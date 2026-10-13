@@ -3,7 +3,8 @@
  * Helper functions for generating and storing PDF documents
  */
 
-import { renderToBuffer } from '@react-pdf/renderer';
+import { serialize } from '@formepdf/react';
+import { renderSerializedDoc } from '@formepdf/core';
 import { createClient } from '@/lib/supabase/server';
 
 export interface PdfGenerationResult {
@@ -21,6 +22,23 @@ export interface PdfGenerationResult {
  * @param folder - Optional folder path within the bucket
  * @returns PDF generation result with URL
  */
+/**
+ * Render a Forme document element to a Node Buffer. Forme returns a Uint8Array; callers were
+ * written against a Buffer, so the type stays the same for them.
+ *
+ * Serialised here with the same @formepdf/react our components import, rather than through
+ * renderDocument(), which loads its own copy with a dynamic import. Forme recognises <Page>,
+ * <View> and the rest by identity, so a second copy (any loader that resolves the package
+ * twice) silently renders an empty document with zero pages.
+ */
+async function renderToPdfBuffer(pdfDocument: React.ReactElement): Promise<Buffer> {
+  // serialize() is typed FormeDocument, renderSerializedDoc() takes the same object as a plain
+  // record (it is shared with the non-React adapters), so the types differ by name only.
+  const doc = serialize(pdfDocument) as unknown as Parameters<typeof renderSerializedDoc>[0];
+  const bytes = await renderSerializedDoc(doc);
+  return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+
 export async function generateAndUploadPDF(
   pdfDocument: React.ReactElement,
   fileName: string,
@@ -29,7 +47,7 @@ export async function generateAndUploadPDF(
 ): Promise<PdfGenerationResult> {
   try {
     // Generate PDF buffer
-    const pdfBuffer = await renderToBuffer(pdfDocument);
+    const pdfBuffer = await renderToPdfBuffer(pdfDocument);
 
     // Create Supabase client
     const supabase = await createClient();
@@ -83,7 +101,7 @@ export async function generatePDFBuffer(
   pdfDocument: React.ReactElement
 ): Promise<Buffer> {
   try {
-    return await renderToBuffer(pdfDocument);
+    return await renderToPdfBuffer(pdfDocument);
   } catch (error) {
     console.error('Error generating PDF buffer:', error);
     throw error;

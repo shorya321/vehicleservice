@@ -6,111 +6,14 @@
  * receives pre-formatted strings so the document never re-derives an amount.
  */
 
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
-import { pdfStyles, pdfColors } from '../styles/constants';
 // The customer copy, never lib/business/, which the business module owns and is free to diverge.
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
-
-/**
- * Local overrides only. The shared pdfStyles are spaced for the multi-page wallet
- * statements and push this invoice onto a second page. Kept local so the business
- * wallet PDFs are unaffected.
- */
-const styles = StyleSheet.create({
-  page: {
-    paddingHorizontal: 40,
-    paddingTop: 32,
-    paddingBottom: 60,
-    fontSize: 10,
-    fontFamily: 'Helvetica',
-    color: pdfColors.text,
-    backgroundColor: pdfColors.white,
-  },
-  section: {
-    marginBottom: 12,
-  },
-  infoBox: {
-    backgroundColor: pdfColors.background,
-    padding: 10,
-    borderRadius: 4,
-  },
-  infoBoxRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  columns: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  column: {
-    width: '48%',
-  },
-  table: {
-    width: '100%',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderBottom: `1 solid ${pdfColors.border}`,
-  },
-  summaryBox: {
-    backgroundColor: pdfColors.background,
-    padding: 12,
-    borderRadius: 4,
-    marginTop: 4,
-  },
-  notes: {
-    fontSize: 8,
-    color: pdfColors.textLight,
-    lineHeight: 1.4,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottom: `2 solid ${pdfColors.border}`,
-  },
-  companyName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: pdfColors.goldDeep,
-    marginBottom: 4,
-  },
-  companyInfo: {
-    fontSize: 8,
-    color: pdfColors.textLight,
-    marginBottom: 1,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: pdfColors.goldDeep,
-    textAlign: 'right',
-  },
-  headerSubtitle: {
-    fontSize: 9,
-    color: pdfColors.textLight,
-    textAlign: 'right',
-    marginTop: 2,
-  },
-  /**
-   * The shared pdfStyles.totalValue is still on pdfColors.primary, which the business wallet
-   * PDFs depend on. Overridden here rather than at the token, so this customer-facing invoice
-   * reads in brand gold without repainting those documents.
-   *
-   * The value is --gold-deep, the brand's own hover gold. --gold reads at 2.2:1 on the white
-   * page and looked washed out; --gold-text is a different hue family. This is the step on the
-   * brand's spectrum that stays recognisably the site's gold and still holds on paper.
-   */
-  totalValue: {
-    color: pdfColors.goldDeep,
-  },
-});
+import { View } from '@/lib/pdf-primitives';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/pdf/table/table';
+import { PdfDocument } from '../document/pdf-document';
+import { DocumentHeader } from '../document/document-header';
+import { DetailPanel, MetaGrid, NotesBlock, SectionLabel, TotalsBox, type MetaItem } from '../document/blocks';
+import { platformPdfTheme } from '../document/theme';
 
 export interface BookingInvoiceLineItem {
   label: string;
@@ -163,13 +66,6 @@ export interface BookingInvoiceData {
   generatedDate: string;
 }
 
-const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.infoBoxRow}>
-    <Text style={pdfStyles.infoBoxLabel}>{label}</Text>
-    <Text style={pdfStyles.infoBoxValue}>{value}</Text>
-  </View>
-);
-
 export const BookingInvoicePDF = (data: BookingInvoiceData) => {
   // Mirrors the confirmation email: name the party when we know it, else the plain total.
   const passengerLabel =
@@ -181,152 +77,99 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
         })
       : String(data.passengerCount);
 
+  const tripItems: MetaItem[] =
+    data.journeys && data.journeys.length > 0
+      ? data.journeys.map((journey) => ({ label: journey.label, value: `${journey.route}, ${journey.when}` }))
+      : [
+          { label: 'From', value: data.pickupAddress },
+          data.hireDetails
+            ? { label: 'Hire', value: data.hireDetails }
+            : { label: 'To', value: data.dropoffAddress },
+          ...(data.pickupDatetime ? [{ label: 'Pickup', value: data.pickupDatetime }] : []),
+        ];
+
   return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Own compact header rather than the shared PdfHeader, which is sized for the
-            business wallet statements and pushes this invoice onto a second page */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.companyName}>{data.companyName}</Text>
-            {data.companyEmail && <Text style={styles.companyInfo}>{data.companyEmail}</Text>}
-            {data.companyPhone && <Text style={styles.companyInfo}>{data.companyPhone}</Text>}
-            {data.companyAddress && <Text style={styles.companyInfo}>{data.companyAddress}</Text>}
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>INVOICE</Text>
-            <Text style={styles.headerSubtitle}>#{data.invoiceNumber}</Text>
-          </View>
-        </View>
+    <PdfDocument
+      theme={platformPdfTheme}
+      title={`Invoice ${data.invoiceNumber}`}
+      footerText={`Generated on ${data.generatedDate} | ${data.companyName}`}
+    >
+      <DocumentHeader
+        issuerName={data.companyName}
+        contactLines={[data.companyEmail, data.companyPhone, data.companyAddress]}
+        title="INVOICE"
+        reference={data.invoiceNumber}
+      />
 
-        {/* Invoice + customer, side by side */}
-        <View style={[styles.section, styles.columns]}>
-          <View style={styles.column}>
-            <Text style={pdfStyles.sectionTitle}>Invoice Details</Text>
-            <View style={styles.infoBox}>
-              <InfoRow label="Invoice Number" value={data.invoiceNumber} />
-              <InfoRow label="Invoice Date" value={data.issuedDate} />
-              <InfoRow label="Payment Status" value="Paid" />
-              {data.paymentMethod && <InfoRow label="Payment Method" value={data.paymentMethod} />}
-            </View>
-          </View>
+      <MetaGrid
+        items={[
+          { label: 'Invoice Number', value: data.invoiceNumber },
+          { label: 'Invoice Date', value: data.issuedDate },
+          { label: 'Payment Status', value: 'Paid' },
+          ...(data.paymentMethod ? [{ label: 'Payment Method', value: data.paymentMethod }] : []),
+        ]}
+        party={{ label: 'Billed To', lines: [data.customerName, data.customerEmail, data.customerPhone] }}
+      />
 
-          <View style={styles.column}>
-            <Text style={pdfStyles.sectionTitle}>Billed To</Text>
-            <View style={styles.infoBox}>
-              <InfoRow label="Name" value={data.customerName} />
-              {data.customerEmail && <InfoRow label="Email" value={data.customerEmail} />}
-              {data.customerPhone && <InfoRow label="Phone" value={data.customerPhone} />}
-            </View>
-          </View>
-        </View>
+      <DetailPanel
+        title="Trip Details"
+        items={[
+          ...tripItems,
+          ...(data.vehicleTypeName ? [{ label: 'Vehicle', value: data.vehicleTypeName }] : []),
+          // Luggage gets its own row: formatGuestSummary already uses "·" before infants, so
+          // appending "· N luggage" would give one separator two meanings.
+          { label: 'Passengers', value: passengerLabel },
+          ...(data.luggageCount != null && data.luggageCount > 0
+            ? [{ label: 'Luggage', value: String(data.luggageCount) }]
+            : []),
+        ]}
+      />
 
-        {/* Trip */}
-        <View style={styles.section}>
-          <Text style={pdfStyles.sectionTitle}>Trip Details</Text>
-          <View style={styles.infoBox}>
-            {data.journeys && data.journeys.length > 0 ? (
-              data.journeys.map((journey) => (
-                <InfoRow key={journey.label} label={journey.label} value={`${journey.route}, ${journey.when}`} />
-              ))
-            ) : (
-              <>
-                <InfoRow label="From" value={data.pickupAddress} />
-                {data.hireDetails ? (
-                  <InfoRow label="Hire" value={data.hireDetails} />
-                ) : (
-                  <InfoRow label="To" value={data.dropoffAddress} />
-                )}
-                {data.pickupDatetime && <InfoRow label="Pickup" value={data.pickupDatetime} />}
-              </>
-            )}
-            {data.vehicleTypeName && <InfoRow label="Vehicle" value={data.vehicleTypeName} />}
-            {/* Luggage gets its own row: formatGuestSummary already uses "·" before infants, so
-                appending "· N luggage" would give one separator two meanings. */}
-            <InfoRow label="Passengers" value={passengerLabel} />
-            {data.luggageCount != null && data.luggageCount > 0 && (
-              <InfoRow label="Luggage" value={String(data.luggageCount)} />
-            )}
-          </View>
-        </View>
-
-        {/* Charges. Wrap={false} keeps the table from splitting across pages */}
-        <View style={styles.section} wrap={false}>
-          <Text style={pdfStyles.sectionTitle}>Charges</Text>
-          <View style={styles.table}>
-            <View style={pdfStyles.tableHeader}>
-              <View style={{ width: '43%' }}>
-                <Text style={pdfStyles.tableCellHeader}>Description</Text>
-              </View>
-              <View style={{ width: '11%' }}>
-                <Text style={[pdfStyles.tableCellHeader, pdfStyles.textCenter]}>Qty</Text>
-              </View>
-              <View style={{ width: '21%' }}>
-                <Text style={[pdfStyles.tableCellHeader, pdfStyles.textRight]}>Unit Price</Text>
-              </View>
-              <View style={{ width: '25%' }}>
-                <Text style={[pdfStyles.tableCellHeader, pdfStyles.textRight]}>Amount</Text>
-              </View>
-            </View>
-
+      {/* Not kept together: a multi-journey trip has many lines, and holding them as one block
+          pushed the whole table to page 2 and left page 1 half empty. */}
+      <View>
+        <SectionLabel>Charges</SectionLabel>
+        <Table variant="primary-header">
+          <TableHeader>
+            <TableRow header>
+              <TableCell width="43%">Description</TableCell>
+              <TableCell width="11%" align="center">Qty</TableCell>
+              <TableCell width="21%" align="right">Unit Price</TableCell>
+              <TableCell width="25%" align="right">Amount</TableCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {data.lineItems.map((item, index) => (
-              <View style={styles.tableRow} key={index}>
-                <View style={{ width: '43%' }}>
-                  <Text style={pdfStyles.tableCell}>{item.label}</Text>
-                </View>
-                <View style={{ width: '11%' }}>
-                  <Text style={[pdfStyles.tableCell, pdfStyles.textCenter]}>
-                    {item.quantity != null ? String(item.quantity) : '1'}
-                  </Text>
-                </View>
-                <View style={{ width: '21%' }}>
-                  <Text style={[pdfStyles.tableCell, pdfStyles.textRight]}>{item.unitAmount}</Text>
-                </View>
-                <View style={{ width: '25%' }}>
-                  <Text style={[pdfStyles.tableCell, pdfStyles.textRight]}>{item.amount}</Text>
-                </View>
-              </View>
+              <TableRow key={`${index}-${item.label}`}>
+                <TableCell width="43%">{item.label}</TableCell>
+                <TableCell width="11%" align="center">
+                  {item.quantity != null ? String(item.quantity) : '1'}
+                </TableCell>
+                <TableCell width="21%" align="right">{item.unitAmount}</TableCell>
+                <TableCell width="25%" align="right">{item.amount}</TableCell>
+              </TableRow>
             ))}
-          </View>
-        </View>
+          </TableBody>
+        </Table>
+      </View>
 
-        {/* Total */}
-        <View style={styles.summaryBox} wrap={false}>
-          <View style={pdfStyles.totalRow}>
-            <Text style={pdfStyles.totalLabel}>Total Paid</Text>
-            <Text style={[pdfStyles.totalValue, styles.totalValue]}>{data.totalDisplay}</Text>
-          </View>
-          {data.showAedNote && (
-            <Text style={{ fontSize: 8, color: pdfColors.textLight, marginTop: 6, textAlign: 'right' }}>
-              Charged in AED ({data.totalAed}). Converted amounts are indicative, rounded per line,
-              and use the exchange rate at the time this invoice was generated.
-            </Text>
-          )}
-        </View>
+      <TotalsBox
+        rows={[]}
+        total={{ label: 'Total Paid', value: data.totalDisplay }}
+        note={
+          data.showAedNote
+            ? `Charged in AED (${data.totalAed}). Converted amounts are indicative, rounded per line, and use the exchange rate at the time this invoice was generated.`
+            : undefined
+        }
+      />
 
-        {/* Notes */}
-        <View style={[styles.section, { marginTop: 16 }]} wrap={false}>
-          <Text style={[pdfStyles.sectionTitle, { fontSize: 10 }]}>Notes</Text>
-          <Text style={styles.notes}>
-            This invoice confirms payment has been received in full for the transfer detailed above.
-            {'\n'}
-            For any questions about this invoice, please contact our support team quoting invoice
-            number {data.invoiceNumber}.
-          </Text>
-        </View>
-
-        {/* Own footer rather than the shared PdfFooter, which is branded for the business wallet PDFs */}
-        <View style={pdfStyles.footer} fixed>
-          <Text>
-            Generated on {data.generatedDate} | {data.companyName} | Page{' '}
-          </Text>
-          <Text
-            render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`}
-            fixed
-          />
-        </View>
-      </Page>
-    </Document>
+      <NotesBlock title="Notes">
+        This invoice confirms payment has been received in full for the transfer detailed above.
+        {'\n'}
+        For any questions about this invoice, please contact our support team quoting invoice
+        number {data.invoiceNumber}.
+      </NotesBlock>
+    </PdfDocument>
   );
 };
 

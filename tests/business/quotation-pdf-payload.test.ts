@@ -332,7 +332,7 @@ describe('document metadata', () => {
       locationNames: {},
       vehicleNames: {},
     });
-    // @react-pdf throws on a malformed colour, so this must always be a real hex.
+    // A malformed colour breaks the PDF, so this must always be a real hex.
     expect(data.accentColor).toMatch(/^#[0-9a-f]{6}$/i);
   });
 });

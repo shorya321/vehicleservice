@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requireBusinessOwner, apiError } from '@/lib/business/api-utils';
 import { TransactionInvoicePDF } from '@/lib/pdf/generators/transaction-invoice';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
+import { businessPdfColor } from '@/lib/business/pdf-brand-color';
 import { formatBookingDateTime } from '@/lib/business/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
 
@@ -27,7 +28,7 @@ export const GET = requireBusinessOwner(async (
     // `business_address` - selecting the latter made this route always 404.
     const { data: businessAccount, error: businessError } = await supabase
       .from('business_accounts')
-      .select('id, business_name, business_email, business_phone, address')
+      .select('id, business_name, business_email, business_phone, address, theme_config')
       .eq('id', user.businessAccountId)
       .single();
 
@@ -80,6 +81,7 @@ export const GET = requireBusinessOwner(async (
 
       // Metadata
       generatedDate: formatBookingDateTime(new Date(), 'PPp'),
+      accentColor: businessPdfColor(businessAccount.theme_config),
     };
 
     // Generate PDF

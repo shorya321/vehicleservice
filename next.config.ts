@@ -6,7 +6,10 @@ const nextConfig: NextConfig = {
   // nodemailer resolves its transport modules with dynamic require(), which bundlers
   // cannot trace statically. Bundling it produces confusing "cannot find module"
   // errors at runtime rather than at build time.
-  serverExternalPackages: ['nodemailer'],
+  // Forme (PDF engine) reads its .wasm with readFileSync relative to its own folder, which
+  // breaks once bundled. Both packages stay external together: Forme recognises its own
+  // primitives by identity, so the renderer and the components must be the same instance.
+  serverExternalPackages: ['nodemailer', '@formepdf/core', '@formepdf/react'],
   // sharp's native libvips is loaded through the OS linker (@rpath / .so), not require(), so
   // standalone file tracing copies sharp's loader but not the library itself. Coolify runs the
   // standalone build; without this the quotation PDF cannot downsize vehicle photos.

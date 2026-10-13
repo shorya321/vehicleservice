@@ -3,11 +3,14 @@
  * Generates comprehensive monthly wallet statements
  */
 
-import { Document, Page, View, Text } from '@react-pdf/renderer';
-import { pdfStyles, pdfColors } from '../styles/constants';
-import { PdfHeader } from '../components/pdf-header';
-import { PdfFooter } from '../components/pdf-footer';
 import { formatCurrency } from '@/lib/utils/currency-converter';
+import { Text, View } from '@/lib/pdf-primitives';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/pdf/table/table';
+import { pdfColors } from '../colors';
+import { PdfDocument } from '../document/pdf-document';
+import { DocumentHeader } from '../document/document-header';
+import { DetailPanel, NotesBlock, SectionLabel, TotalsBox } from '../document/blocks';
+import { pdfTheme } from '../document/theme';
 
 interface Transaction {
   id: string;
@@ -45,172 +48,112 @@ interface MonthlyStatementData {
   // Metadata
   statementId: string;
   generatedDate: string;
+  /** The business's brand colour (theme_config). Falls back to the platform gold. */
+  accentColor?: string;
 }
+
+const COLUMNS = { date: '15%', id: '13%', description: '34%', amount: '19%', balance: '19%' };
 
 export const MonthlyStatementPDF = (data: MonthlyStatementData) => {
   const netChange = data.closingBalance - data.openingBalance;
   const isPositiveChange = netChange >= 0;
+  const money = (amount: number) => formatCurrency(amount, data.currency);
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
-        {/* Header */}
-        <PdfHeader
-          title="Monthly Wallet Statement"
-          subtitle={`${data.statementMonth} ${data.statementYear}`}
-          businessName={data.businessName}
-          businessEmail={data.businessEmail}
-          businessPhone={data.businessPhone}
-          businessAddress={data.businessAddress}
-        />
+    <PdfDocument
+      theme={pdfTheme(data.accentColor ?? pdfColors.gold)}
+      title={`Monthly Wallet Statement ${data.statementMonth} ${data.statementYear}`}
+      footerText={`Generated on ${data.generatedDate} | Vehicle Service`}
+    >
+      <DocumentHeader
+        issuerName={data.businessName}
+        contactLines={[data.businessEmail, data.businessPhone, data.businessAddress]}
+        title="WALLET STATEMENT"
+        reference={data.statementId.substring(0, 12).toUpperCase()}
+        metaLines={[`Monthly Wallet Statement`, `${data.statementMonth} ${data.statementYear}`]}
+      />
 
-        {/* Statement Period */}
-        <View style={pdfStyles.section}>
-          <Text style={pdfStyles.sectionTitle}>Statement Period</Text>
-          <View style={pdfStyles.infoBox}>
-            <View style={pdfStyles.infoBoxRow}>
-              <Text style={pdfStyles.infoBoxLabel}>Statement ID</Text>
-              <Text style={pdfStyles.infoBoxValue}>{data.statementId.substring(0, 12).toUpperCase()}</Text>
-            </View>
-            <View style={pdfStyles.infoBoxRow}>
-              <Text style={pdfStyles.infoBoxLabel}>Period</Text>
-              <Text style={pdfStyles.infoBoxValue}>
-                {data.startDate} to {data.endDate}
-              </Text>
-            </View>
-            <View style={pdfStyles.infoBoxRow}>
-              <Text style={pdfStyles.infoBoxLabel}>Total Transactions</Text>
-              <Text style={pdfStyles.infoBoxValue}>{data.transactionCount}</Text>
-            </View>
-          </View>
-        </View>
+      <SectionLabel>Financial Summary</SectionLabel>
+      <TotalsBox
+        aside={
+          <DetailPanel
+            title="Statement Period"
+            items={[
+              { label: 'Statement ID', value: data.statementId.substring(0, 12).toUpperCase() },
+              { label: 'Period', value: `${data.startDate} to ${data.endDate}` },
+              { label: 'Total Transactions', value: String(data.transactionCount) },
+            ]}
+          />
+        }
+        rows={[
+          { key: 'Opening Balance', value: money(data.openingBalance) },
+          { key: 'Total Credits (+)', value: `+${money(data.totalCredits)}`, valueStyle: { color: pdfColors.success } },
+          { key: 'Total Debits (-)', value: `-${money(data.totalDebits)}`, valueStyle: { color: pdfColors.error } },
+          {
+            key: 'Net Change',
+            value: `${isPositiveChange ? '+' : ''}${money(netChange)}`,
+            valueStyle: { color: isPositiveChange ? pdfColors.success : pdfColors.error },
+          },
+        ]}
+        total={{ label: 'Closing Balance', value: money(data.closingBalance) }}
+      />
 
-        {/* Financial Summary */}
-        <View style={pdfStyles.section}>
-          <Text style={pdfStyles.sectionTitle}>Financial Summary</Text>
-          <View style={pdfStyles.summaryBox}>
-            <View style={pdfStyles.summaryRow}>
-              <Text style={pdfStyles.summaryLabel}>Opening Balance</Text>
-              <Text style={pdfStyles.summaryValue}>
-                {formatCurrency(data.openingBalance, data.currency)}
-              </Text>
-            </View>
-
-            <View style={[pdfStyles.summaryRow, { marginTop: 10, paddingTop: 10, borderTop: `1 solid ${pdfColors.border}` }]}>
-              <Text style={pdfStyles.summaryLabel}>Total Credits (+)</Text>
-              <Text style={[pdfStyles.summaryValue, { color: pdfColors.success }]}>
-                +{formatCurrency(data.totalCredits, data.currency)}
-              </Text>
-            </View>
-
-            <View style={pdfStyles.summaryRow}>
-              <Text style={pdfStyles.summaryLabel}>Total Debits (-)</Text>
-              <Text style={[pdfStyles.summaryValue, { color: pdfColors.error }]}>
-                -{formatCurrency(data.totalDebits, data.currency)}
-              </Text>
-            </View>
-
-            <View style={[pdfStyles.summaryRow, { marginTop: 5 }]}>
-              <Text style={pdfStyles.summaryLabel}>Net Change</Text>
-              <Text style={[pdfStyles.summaryValue, { color: isPositiveChange ? pdfColors.success : pdfColors.error }]}>
-                {isPositiveChange ? '+' : ''}{formatCurrency(netChange, data.currency)}
-              </Text>
-            </View>
-
-            <View style={pdfStyles.totalRow}>
-              <Text style={pdfStyles.totalLabel}>Closing Balance</Text>
-              <Text style={pdfStyles.totalValue}>
-                {formatCurrency(data.closingBalance, data.currency)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Transaction History */}
-        <View style={pdfStyles.section}>
-          <Text style={pdfStyles.sectionTitle}>Transaction History</Text>
-
-          {data.transactions.length === 0 ? (
-            <View style={pdfStyles.infoBox}>
-              <Text style={{ fontSize: 9, color: pdfColors.textLight, textAlign: 'center' }}>
-                No transactions during this period
-              </Text>
-            </View>
-          ) : (
-            <View style={pdfStyles.table}>
-              {/* Table Header */}
-              <View style={pdfStyles.tableHeader}>
-                <View style={{ width: '15%' }}>
-                  <Text style={pdfStyles.tableCellHeader}>Date</Text>
-                </View>
-                <View style={{ width: '15%' }}>
-                  <Text style={pdfStyles.tableCellHeader}>ID</Text>
-                </View>
-                <View style={{ width: '35%' }}>
-                  <Text style={pdfStyles.tableCellHeader}>Description</Text>
-                </View>
-                <View style={{ width: '15%' }}>
-                  <Text style={[pdfStyles.tableCellHeader, pdfStyles.textRight]}>Amount</Text>
-                </View>
-                <View style={{ width: '20%' }}>
-                  <Text style={[pdfStyles.tableCellHeader, pdfStyles.textRight]}>Balance</Text>
-                </View>
-              </View>
-
-              {/* Table Rows */}
-              {data.transactions.map((transaction, index) => {
-                const isCredit = transaction.type === 'credit';
-                const amountColor = isCredit ? pdfColors.success : pdfColors.error;
-
-                return (
-                  <View key={transaction.id} style={pdfStyles.tableRow}>
-                    <View style={{ width: '15%' }}>
-                      <Text style={pdfStyles.tableCell}>{transaction.date}</Text>
-                    </View>
-                    <View style={{ width: '15%' }}>
-                      <Text style={pdfStyles.tableCell}>
-                        {transaction.id.substring(0, 8)}
-                      </Text>
-                    </View>
-                    <View style={{ width: '35%' }}>
-                      <Text style={pdfStyles.tableCell}>{transaction.description}</Text>
-                    </View>
-                    <View style={{ width: '15%' }}>
-                      <Text style={[pdfStyles.tableCell, pdfStyles.textRight, { color: amountColor }]}>
-                        {isCredit ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount), data.currency)}
-                      </Text>
-                    </View>
-                    <View style={{ width: '20%' }}>
-                      <Text style={[pdfStyles.tableCell, pdfStyles.textRight]}>
-                        {formatCurrency(transaction.balance, data.currency)}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
-
-        {/* Notes */}
-        <View style={[pdfStyles.section, { marginTop: 20 }]}>
-          <Text style={[pdfStyles.sectionTitle, { fontSize: 10 }]}>Important Information</Text>
-          <Text style={{ fontSize: 8, color: pdfColors.textLight, lineHeight: 1.5 }}>
-            • This statement provides a summary of your wallet activity for the specified period.
-            {'\n'}
-            • All amounts are displayed in {data.currency}.
-            {'\n'}
-            • Please review this statement carefully and report any discrepancies within 30 days.
-            {'\n'}
-            • For detailed transaction information or questions, please contact our support team.
-            {'\n'}
-            • Keep this statement for your records.
+      <SectionLabel>Transaction History</SectionLabel>
+      {data.transactions.length === 0 ? (
+        <View style={{ backgroundColor: pdfColors.background, borderRadius: 4, padding: 12, marginBottom: 18 }}>
+          <Text style={{ fontSize: 9, color: pdfColors.textLight, textAlign: 'center' }}>
+            No transactions during this period
           </Text>
         </View>
+      ) : (
+        <View style={{ marginBottom: 18 }}>
+          <Table variant="primary-header">
+            <TableHeader>
+              <TableRow header>
+                <TableCell width={COLUMNS.date}>Date</TableCell>
+                <TableCell width={COLUMNS.id}>ID</TableCell>
+                <TableCell width={COLUMNS.description}>Description</TableCell>
+                <TableCell width={COLUMNS.amount} align="right">Amount</TableCell>
+                <TableCell width={COLUMNS.balance} align="right">Balance</TableCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.transactions.map((transaction) => {
+                const isCredit = transaction.type === 'credit';
+                return (
+                  <TableRow key={transaction.id}>
+                    <TableCell width={COLUMNS.date}>{transaction.date}</TableCell>
+                    <TableCell width={COLUMNS.id}>{transaction.id.substring(0, 8)}</TableCell>
+                    <TableCell width={COLUMNS.description}>{transaction.description}</TableCell>
+                    <TableCell
+                      width={COLUMNS.amount}
+                      align="right"
+                      style={{ color: isCredit ? pdfColors.success : pdfColors.error }}
+                    >
+                      {`${isCredit ? '+' : '-'}${money(Math.abs(transaction.amount))}`}
+                    </TableCell>
+                    <TableCell width={COLUMNS.balance} align="right">
+                      {money(transaction.balance)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </View>
+      )}
 
-        {/* Footer */}
-        <PdfFooter generatedDate={data.generatedDate} />
-      </Page>
-    </Document>
+      <NotesBlock title="Important Information">
+        {'\u2022'} This statement provides a summary of your wallet activity for the specified period.
+        {'\n'}
+        {'\u2022'} All amounts are displayed in {data.currency}.
+        {'\n'}
+        {'\u2022'} Please review this statement carefully and report any discrepancies within 30 days.
+        {'\n'}
+        {'\u2022'} For detailed transaction information or questions, please contact our support team.
+        {'\n'}
+        {'\u2022'} Keep this statement for your records.
+      </NotesBlock>
+    </PdfDocument>
   );
 };

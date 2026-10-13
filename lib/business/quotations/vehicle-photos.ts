@@ -1,7 +1,7 @@
 /**
- * Resolves vehicle type photos into in-memory images @react-pdf/renderer can draw.
+ * Resolves vehicle type photos into in-memory images the PDF engine (Forme) can draw.
  *
- * Same contract as brand-logo.ts: fetched here to a Buffer so @react-pdf never fetches during
+ * Same contract as brand-logo.ts: fetched here to a Buffer so the engine never fetches during
  * render, PNG/JPEG only, and every failure skips that one vehicle. A missing photo only means
  * the trip prints without one; it must never fail the document.
  *
@@ -94,7 +94,7 @@ async function toPdfImage(buffer: Buffer): Promise<PdfImageSource | null> {
     };
   } catch (error) {
     console.error('Failed to downsize vehicle photo for PDF:', error);
-    // Only a format @react-pdf can draw, and only when it is small enough to embed raw.
+    // Only a format the engine can draw, and only when it is small enough to embed raw.
     if (format === 'other' || buffer.length > MAX_RAW_BYTES) return null;
     return { data: buffer, format };
   }

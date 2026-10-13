@@ -70,7 +70,7 @@ export interface QuotationPdfSource {
 /**
  * Route separator.
  *
- * NOT "→" (U+2192). @react-pdf's built-in Helvetica uses WinAnsi encoding, which has no
+ * NOT "→" (U+2192). The PDF engine's built-in Helvetica uses WinAnsi encoding, which has no
  * glyph for it. The arrow silently renders as a stray apostrophe on the customer's document.
  * "»" (U+00BB) is in WinAnsi, reads directionally, and needs no font registration.
  * "-" and "·" used elsewhere in this file are both WinAnsi and render correctly.
@@ -196,7 +196,7 @@ export function buildQuotationPdfData({
     // Addons are NAMED without prices: itemising a quotation invites line-by-line haggling.
     // Child ages are appended because the customer has to be able to check the seats match their
     // children. An age reveals nothing about cost. Plain "(age 6)" rather than any arrow or
-    // symbol: @react-pdf's Helvetica renders several of those as stray glyphs (see ROUTE_ARROW).
+    // symbol: the engine's built-in Helvetica renders several of those as stray glyphs (see ROUTE_ARROW).
     const addonNames = item.addons
       .map((a: { name_snapshot: string; child_ages?: number[] | null }) => {
         if (!a.name_snapshot) return '';

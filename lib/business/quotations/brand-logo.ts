@@ -1,21 +1,21 @@
 /**
- * Resolves a business logo into something @react-pdf/renderer can actually draw.
+ * Resolves a business logo into something the PDF engine (Forme) can actually draw.
  *
  * Two traps this exists to close:
  *
  * 1. lib/business/branding-utils.ts validateLogoFile() accepts image/svg+xml and image/webp,
- *    but @react-pdf/renderer's <Image> supports PNG and JPEG only. A business that uploaded
+ *    but the engine's <Image> supports PNG and JPEG only. A business that uploaded
  *    an SVG would get a crashed or silently blank PDF header. On a document they are about
  *    to send a customer, which is worse than a visible fallback.
  *
- * 2. Handing @react-pdf a remote URL makes it fetch during render, which is flaky and can
+ * 2. Handing the engine a remote URL makes it fetch during render, which is flaky and can
  *    hang the request. Fetching to a Buffer here keeps failure local, bounded and recoverable.
  *
  * Every failure path returns null. The caller renders a typographic wordmark instead, so the
  * PDF always produces something presentable.
  */
 
-/** @react-pdf accepts src={{ data, format }} for in-memory images. */
+/** In-memory image; lib/pdf/utils/image.ts turns it into the data URI the engine takes. */
 export interface PdfImageSource {
   data: Buffer;
   format: 'png' | 'jpg';
@@ -106,7 +106,7 @@ export async function resolveBrandLogo(
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 /**
- * theme_config is JSONB and therefore arbitrary. @react-pdf throws on a malformed colour, so
+ * theme_config is JSONB and therefore arbitrary. A malformed colour breaks the PDF, so
  * anything that is not a plain 6-digit hex is replaced with the caller's fallback.
  */
 export function safeHexColor(value: unknown, fallback: string): string {

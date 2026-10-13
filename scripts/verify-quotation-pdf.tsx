@@ -1,17 +1,21 @@
 /**
- * Renders the quotation PDF for real, outside jest (@react-pdf/renderer is ESM-only and the
+ * Renders the quotation PDF for real, outside jest (the Forme engine is ESM-only and the
  * repo's jest transform is CJS). Catches the failures typechecking cannot: unsupported style
  * properties, malformed colours, page-break behaviour.
+ *
+ *   npx tsx scripts/verify-quotation-pdf.tsx [out-dir]
  */
 
 import { writeFileSync } from 'fs';
-import { renderToBuffer } from '@react-pdf/renderer';
+import { tmpdir } from 'os';
+import { jsx } from 'react/jsx-runtime';
+import { generatePDFBuffer } from '../lib/pdf/utils/pdf-generator';
 import {
   QuotationPDF,
   type QuotationPdfData,
 } from '../lib/pdf/generators/quotation';
 
-const OUT = '/private/tmp/claude-501/-Volumes-shorya-apps-vehicleservice/97901133-14f2-4619-a1a0-c39cd9bbccdb/scratchpad';
+const OUT = process.argv[2] ?? tmpdir();
 
 const base = (over: Partial<QuotationPdfData> = {}): QuotationPdfData => ({
   quotationNumber: 'QUO07260001',
@@ -72,7 +76,7 @@ const pageCount = (b: Buffer) => (b.toString('latin1').match(/\/Type\s*\/Page[^s
 
 async function check(name: string, data: QuotationPdfData, write = false) {
   try {
-    const buf = await renderToBuffer(QuotationPDF(data) as never);
+    const buf = await generatePDFBuffer(jsx(QuotationPDF, data));
     const ok = isPdf(buf);
     if (write) writeFileSync(`${OUT}/${name}.pdf`, buf);
     console.log(

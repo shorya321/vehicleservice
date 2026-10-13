@@ -53,7 +53,7 @@ describe('resolveVehiclePhotos', () => {
     expect((await sharp(photos.a.data).metadata()).width).toBe(100);
   });
 
-  it('converts a webp, which @react-pdf cannot draw, to a drawable format', async () => {
+  it('converts a webp, which the PDF engine cannot draw, to a drawable format', async () => {
     const webp = await sharp(await pngOf(400, 300)).webp().toBuffer();
     fetchMock.mockResolvedValue(respond(webp, { 'content-type': 'image/webp' }));
     const photos = await resolveVehiclePhotos([{ id: 'a', image_url: 'https://x/a.webp' }]);
