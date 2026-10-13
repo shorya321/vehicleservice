@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 /**
  * Standard API response structure
@@ -202,9 +202,9 @@ export function apiError(error: string, status: number = 400): NextResponse<ApiR
  * });
  */
 export function withErrorHandling(
-  handler: (request: Request, context?: any) => Promise<NextResponse>
+  handler: (request: NextRequest, context?: any) => Promise<Response>
 ) {
-  return async (request: Request, context?: any): Promise<NextResponse> => {
+  return async (request: NextRequest, context?: any): Promise<Response> => {
     try {
       return await handler(request, context);
     } catch (error) {
@@ -231,9 +231,9 @@ export function withErrorHandling(
  * });
  */
 export function requireBusinessAuth(
-  handler: (request: Request, user: BusinessUserContext, context?: any) => Promise<NextResponse>
+  handler: (request: NextRequest, user: BusinessUserContext, context?: any) => Promise<Response>
 ) {
-  return withErrorHandling(async (request: Request, context?: any) => {
+  return withErrorHandling(async (request: NextRequest, context?: any) => {
     const user = await getAuthenticatedBusinessUser();
 
     if (!user) {
@@ -266,7 +266,7 @@ export function isBusinessOwner(user: BusinessUserContext): boolean {
  * @returns Wrapped handler with owner check
  */
 export function requireBusinessOwner(
-  handler: (request: Request, user: BusinessUserContext, context?: any) => Promise<NextResponse>
+  handler: (request: NextRequest, user: BusinessUserContext, context?: any) => Promise<Response>
 ) {
   return requireBusinessAuth(async (request, user, context) => {
     if (!isBusinessOwner(user)) {
