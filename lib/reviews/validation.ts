@@ -20,6 +20,8 @@ export const reviewFormSchema = z.object({
 })
 
 export type ReviewFormData = z.infer<typeof reviewFormSchema>
+/** What the form holds before validation fills the defaults. */
+export type ReviewFormInput = z.input<typeof reviewFormSchema>
 
 // Admin response schema
 export const adminResponseSchema = z.object({
@@ -43,7 +45,8 @@ export const reviewFiltersSchema = z.object({
   search: z.string().optional(),
 })
 
-export type ReviewFilters = z.infer<typeof reviewFiltersSchema>
+/** Filters as callers pass them; every function parses them with reviewFiltersSchema. */
+export type ReviewFilters = z.input<typeof reviewFiltersSchema>
 
 // Photo upload validation
 export const photoUploadSchema = z.object({

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, type Control } from "react-hook-form"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +30,7 @@ import { Loader2 } from "lucide-react"
 import { createBlogPost, updateBlogPost, BlogPostFormData, BlogPostWithRelations } from "../actions"
 import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-upload"
 import { Badge } from "@/components/ui/badge"
-import { blogSectionsSchema, getPostSections } from "@/lib/blog/sections"
+import { blogSectionsSchema, getPostSections, type BlogSection } from "@/lib/blog/sections"
 import { BlogSectionsEditor } from "./blog-sections-editor"
 
 const formSchema = z.object({
@@ -63,7 +63,7 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
     post?.tags?.map(t => t.id) || []
   )
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.input<typeof formSchema>, unknown, z.output<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || "",
@@ -259,7 +259,8 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
           )}
         />
 
-        <BlogSectionsEditor control={form.control} />
+        {/* The editor owns only `sections`, which this form has; its control is typed on that field. */}
+        <BlogSectionsEditor control={form.control as unknown as Control<{ sections: BlogSection[] }>} />
 
         {/* Tags */}
         <div className="space-y-2">
@@ -287,7 +288,7 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
         <ImageUpload
           label="Featured Image"
           description="Upload a featured image for the blog post. Recommended size: 1200x630px"
-          value={imagePreview}
+          value={imagePreview ?? undefined}
           onChange={handleImageChange}
           onRemove={handleImageRemove}
           multiple={false}

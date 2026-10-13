@@ -55,7 +55,7 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(vehicleType?.image_url || null)
 
-  const form = useForm<VehicleTypeFormData>({
+  const form = useForm<z.input<typeof formSchema>, unknown, z.output<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: vehicleType?.name || "",
@@ -373,7 +373,7 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
           <ImageUpload
             label="Vehicle Type Image"
             description="Upload an image that represents this vehicle type. Recommended size: 600x400px"
-            value={imagePreview}
+            value={imagePreview ?? undefined}
             onChange={handleImageChange}
             onRemove={handleImageRemove}
             multiple={false}

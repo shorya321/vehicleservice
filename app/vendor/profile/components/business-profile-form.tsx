@@ -55,7 +55,7 @@ export function BusinessProfileForm({ vendorId, initialData, isApproved = false 
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<VendorProfileFormData>({
+  const form = useForm<z.input<typeof businessSchema>, unknown, z.output<typeof businessSchema>>({
     resolver: zodResolver(businessSchema),
     defaultValues: {
       business_name: initialData?.business_name || "",

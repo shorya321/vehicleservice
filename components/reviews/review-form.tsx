@@ -9,7 +9,7 @@ import { StarRating } from './star-rating'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { reviewFormSchema, type ReviewFormData } from '@/lib/reviews/validation'
+import { reviewFormSchema, type ReviewFormData, type ReviewFormInput } from '@/lib/reviews/validation'
 import { uploadOptimizedReviewPhotos } from '@/lib/reviews/upload'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -50,7 +50,7 @@ export function ReviewForm({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<ReviewFormData>({
+  } = useForm<ReviewFormInput, unknown, ReviewFormData>({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: {
       bookingId,

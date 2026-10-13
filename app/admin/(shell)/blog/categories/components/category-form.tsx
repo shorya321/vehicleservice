@@ -41,7 +41,7 @@ export function BlogCategoryForm({ category }: CategoryFormProps) {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(category?.image_url || null)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.input<typeof formSchema>, unknown, z.output<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: category?.name || "",
@@ -178,7 +178,7 @@ export function BlogCategoryForm({ category }: CategoryFormProps) {
         <ImageUpload
           label="Category Image"
           description="Optional category image. Recommended: 600x400px"
-          value={imagePreview}
+          value={imagePreview ?? undefined}
           onChange={handleImageChange}
           onRemove={handleImageRemove}
           multiple={false}
