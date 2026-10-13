@@ -9,7 +9,7 @@
  */
 
 import Link from 'next/link';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { Plus, Wallet, CalendarCheck, Settings, UserCircle, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';
@@ -145,7 +145,7 @@ interface QuickActionsCardProps {
 export function QuickActionsCard({ className, isOwner = true }: QuickActionsCardProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,

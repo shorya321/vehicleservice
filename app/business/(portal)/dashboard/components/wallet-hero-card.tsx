@@ -9,7 +9,7 @@
  */
 
 import Link from 'next/link';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { Wallet, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/business/ui/card';
@@ -60,7 +60,7 @@ export function WalletHeroCard({
   // Chart data for wallet sparkline
   const revenueChartData = generateChartData(walletBalance / 100 || 50);
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,

@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/business/ui/card';
@@ -22,7 +22,7 @@ interface PremiumFeaturesCardProps {
 export function PremiumFeaturesCard({ className }: PremiumFeaturesCardProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,

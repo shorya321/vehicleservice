@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { Clock, Mail, ArrowRight, ArrowLeft } from 'lucide-react';
 import { LuxuryButton } from '@/components/business/ui/luxury-button';
 import {
@@ -58,7 +58,7 @@ function AnimatedCheckmark() {
 }
 
 // Container animation variants
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -69,7 +69,7 @@ const containerVariants = {
   },
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
   visible: {
     opacity: 1,
@@ -82,7 +82,7 @@ const cardVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
@@ -94,7 +94,7 @@ const itemVariants = {
   },
 };
 
-const checkmarkBadgeVariants = {
+const checkmarkBadgeVariants: Variants = {
   hidden: { opacity: 0, scale: 0.5 },
   visible: {
     opacity: 1,
@@ -108,7 +108,7 @@ const checkmarkBadgeVariants = {
   },
 };
 
-const alertVariants = {
+const alertVariants: Variants = {
   hidden: { opacity: 0, x: -20 },
   visible: {
     opacity: 1,

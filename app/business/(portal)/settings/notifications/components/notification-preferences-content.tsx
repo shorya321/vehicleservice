@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/business/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,7 +93,7 @@ export function NotificationPreferencesContent() {
   const prefersReducedMotion = useReducedMotion();
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -104,7 +104,7 @@ export function NotificationPreferencesContent() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 16 },
     visible: {
       opacity: 1,

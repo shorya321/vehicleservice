@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import {
   Plus,
   CalendarCheck,
@@ -454,7 +454,7 @@ export function BookingsPageContent({
   );
 
   // Refined animations - faster, subtler
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -465,7 +465,7 @@ export function BookingsPageContent({
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 8 },
     visible: {
       opacity: 1,
@@ -478,7 +478,7 @@ export function BookingsPageContent({
   };
 
   // Row animation - pure fade, no movement
-  const rowVariants = {
+  const rowVariants: Variants = {
     hidden: { opacity: 0 },
     visible: (i: number) => ({
       opacity: 1,

@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { BarChart3, CalendarCheck, Clock, TrendingUp } from 'lucide-react';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { AnalyticsStatCard } from './analytics-chart';
@@ -28,7 +28,7 @@ export function StatsGrid({
 }: StatsGridProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,
