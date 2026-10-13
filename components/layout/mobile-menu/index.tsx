@@ -147,7 +147,7 @@ export function MobileMenu({
             <MenuNavItem href="/#services" label="Services" icon={Compass} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#services')} />
             <MenuNavItem href="/#fleet" label="Fleet" icon={Car} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#fleet')} />
             <MenuNavItem href="/blog" label="Blog" icon={BookOpen} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/blog')} />
-            <MenuNavItem href="/#faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#faq')} />
+            <MenuNavItem href="/faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/faq')} />
             <MenuNavItem href="/about" label="About" icon={Info} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/about')} />
             <MenuNavItem href="/contact" label="Contact" icon={Mail} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/contact')} />
           </MenuSection>

@@ -165,7 +165,7 @@ export function PublicHeader({
     { name: "Services", href: "/#services" },
     { name: "Fleet", href: "/#fleet" },
     { name: "Blog", href: "/blog" },
-    { name: "FAQ", href: "/#faq" },
+    { name: "FAQ", href: "/faq" },
     { name: "Contact", href: "/contact" },
   ]
 

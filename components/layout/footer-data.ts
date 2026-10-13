@@ -17,7 +17,7 @@ export const FOOTER_LINK_CATEGORIES: readonly FooterLinkCategory[] = [
       { name: 'Routes', href: '/routes' },
       { name: 'Fleet', href: '/#fleet' },
       { name: 'Reviews', href: '/reviews' },
-      { name: 'FAQ', href: '/#faq' },
+      { name: 'FAQ', href: '/faq' },
       { name: 'Contact', href: '/contact' },
     ],
   },

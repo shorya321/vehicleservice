@@ -10,6 +10,8 @@ import { parseContactContent } from './templates/contact/parse'
 import type { ContactContent } from './templates/contact/schema'
 import { parseAboutContent } from './templates/about/parse'
 import type { AboutContent } from './templates/about/schema'
+import { parseFaqContent } from './templates/faq/parse'
+import type { FaqContent } from './templates/faq/schema'
 
 const REVALIDATE_SECONDS = 3600
 
@@ -85,4 +87,9 @@ export async function getContactContent(): Promise<ContactContent> {
 export async function getAboutContent(): Promise<AboutContent> {
   const page = await getPublishedPage('/about')
   return parseAboutContent(page?.content)
+}
+
+export async function getFaqContent(): Promise<FaqContent> {
+  const page = await getPublishedPage('/faq')
+  return parseFaqContent(page?.content)
 }

@@ -46,7 +46,7 @@ describe('FooterPanel', () => {
   })
 
   it('keeps hash links as plain anchors', () => {
-    expect(render()).toContain('href="/#faq"')
+    expect(render()).toContain('href="/#fleet"')
   })
 
   it('renders no social list when no platform is set', () => {

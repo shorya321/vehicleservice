@@ -18,6 +18,11 @@ export const PAGE_FALLBACKS: Readonly<Record<string, { title: string; descriptio
     description:
       'Infinia Transfers connects travellers with vetted local transport companies for fixed-price private airport and city transfers.',
   },
+  '/faq': {
+    title: 'Frequently Asked Questions',
+    description:
+      'Answers on pricing, airport pickups, flight delays, cancellations and business accounts for Infinia Transfers private transfers in Dubai.',
+  },
   '/terms': {
     title: 'Terms & Conditions',
     description: 'Terms of service for booking private airport and city transfers through Infinia Transfers.',
