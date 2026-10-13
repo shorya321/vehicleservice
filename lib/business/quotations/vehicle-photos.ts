@@ -9,8 +9,28 @@
  * each, and a 20-trip quotation with alternatives would otherwise produce a PDF of tens of MB.
  */
 
-import sharp from 'sharp';
+import type sharpFn from 'sharp';
 import type { PdfImageSource } from './brand-logo';
+
+type Sharp = typeof sharpFn;
+
+let sharpModule: Promise<Sharp | null> | null = null;
+
+/**
+ * sharp is a native module. Loaded lazily, never at the top level: if its native library is
+ * missing on a host (a standalone build that did not trace libvips), a static import throws
+ * at module load and takes the whole PDF route down with a 500. Here it only means photos are
+ * embedded at their original size instead.
+ */
+function loadSharp(): Promise<Sharp | null> {
+  sharpModule ??= import('sharp')
+    .then((mod) => ((mod as unknown as { default?: Sharp }).default ?? mod) as Sharp)
+    .catch((error: unknown) => {
+      console.error('sharp unavailable, vehicle photos will not be downsized:', error);
+      return null;
+    });
+  return sharpModule;
+}
 
 export interface VehiclePhotoRow {
   id: string;
@@ -58,6 +78,8 @@ async function toPdfImage(buffer: Buffer): Promise<PdfImageSource | null> {
   const format = detectFormat(buffer);
   if (!format) return null;
   try {
+    const sharp = await loadSharp();
+    if (!sharp) throw new Error('sharp unavailable');
     const image = sharp(buffer).resize({
       width: PDF_VEHICLE_PHOTO_WIDTH,
       withoutEnlargement: true,
