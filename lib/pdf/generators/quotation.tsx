@@ -69,6 +69,18 @@ const styles = StyleSheet.create({
   tripAmount: { fontSize: 12, fontWeight: 'bold' },
   tripRoute: { fontSize: 11, fontWeight: 'bold', marginBottom: 4 },
   tripDetail: { fontSize: 9, color: pdfColors.textLight, marginBottom: 2 },
+  tripVehicle: { fontSize: 9, fontWeight: 'bold', marginBottom: 2 },
+  tripBody: { flexDirection: 'row', gap: 10 },
+  tripText: { flex: 1 },
+  vehiclePhotoBox: {
+    width: 88,
+    height: 56,
+    borderRadius: 3,
+    backgroundColor: pdfColors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vehiclePhoto: { width: 84, height: 52, objectFit: 'contain' },
 
   summaryBox: {
     backgroundColor: pdfColors.background,
@@ -103,8 +115,15 @@ const styles = StyleSheet.create({
     borderTopColor: pdfColors.border,
   },
   optionsTitle: { fontSize: 8, color: pdfColors.textLight, textTransform: 'uppercase', marginBottom: 3 },
-  optionRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+  optionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   optionName: { fontSize: 9 },
+  optionLead: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  optionPhoto: { width: 30, height: 19, objectFit: 'contain' },
   optionAmount: { fontSize: 9, fontWeight: 'bold' },
   summaryNote: { fontSize: 8, color: pdfColors.textLight, marginTop: 6 },
 
@@ -131,6 +150,8 @@ export interface QuotationPdfLineItem {
   /** "Thu 12 Mar 2026 - 14:30", or a dash when the trip is undated. */
   when: string;
   vehicle: string;
+  /** Photo of the quoted vehicle. Absent when the type has none or it could not be loaded. */
+  vehicleImage?: QuotationPdfLogo;
   guests: string;
   /** Addons NAMED without prices. Itemising invites line-by-line haggling. */
   addons?: string;
@@ -140,7 +161,12 @@ export interface QuotationPdfLineItem {
    * Every vehicle the customer may choose for this trip, the quoted one first, each with its
    * own SELL price. Absent on a trip that offers no alternatives.
    */
-  vehicleOptions?: Array<{ vehicle: string; amount: string; quoted: boolean }>;
+  vehicleOptions?: Array<{
+    vehicle: string;
+    amount: string;
+    quoted: boolean;
+    image?: QuotationPdfLogo;
+  }>;
 }
 
 export interface QuotationPdfData {
@@ -252,21 +278,40 @@ export const QuotationPDF = (data: QuotationPdfData) => {
                 <Text style={[styles.tripAmount, { color: accent }]}>{item.amount}</Text>
               </View>
               <Text style={styles.tripRoute}>{item.route}</Text>
-              <Text style={styles.tripDetail}>
-                {item.when} · {item.vehicle}
-              </Text>
-              <Text style={styles.tripDetail}>{item.guests}</Text>
-              {item.addons && <Text style={styles.tripDetail}>Includes: {item.addons}</Text>}
-              {item.notes && <Text style={styles.tripDetail}>{item.notes}</Text>}
+              <View style={styles.tripBody}>
+                {/* Photo column only when there is a photo, so such a trip reads as before. */}
+                {item.vehicleImage && (
+                  <View style={styles.vehiclePhotoBox}>
+                    {/* @react-pdf Image is a PDF primitive with no alt prop. */}
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                    <Image style={styles.vehiclePhoto} src={item.vehicleImage} />
+                  </View>
+                )}
+                <View style={styles.tripText}>
+                  <Text style={styles.tripVehicle}>Vehicle: {item.vehicle}</Text>
+                  <Text style={styles.tripDetail}>{item.when}</Text>
+                  <Text style={styles.tripDetail}>{item.guests}</Text>
+                  {item.addons && (
+                    <Text style={styles.tripDetail}>Includes: {item.addons}</Text>
+                  )}
+                  {item.notes && <Text style={styles.tripDetail}>{item.notes}</Text>}
+                </View>
+              </View>
               {item.vehicleOptions && item.vehicleOptions.length > 0 && (
                 <View style={styles.optionsBox}>
                   <Text style={styles.optionsTitle}>Vehicle options</Text>
                   {item.vehicleOptions.map((option, optionIndex) => (
                     <View style={styles.optionRow} key={optionIndex}>
-                      <Text style={styles.optionName}>
-                        {option.vehicle}
-                        {option.quoted ? ' (quoted)' : ''}
-                      </Text>
+                      <View style={styles.optionLead}>
+                        {option.image && (
+                          // eslint-disable-next-line jsx-a11y/alt-text
+                          <Image style={styles.optionPhoto} src={option.image} />
+                        )}
+                        <Text style={styles.optionName}>
+                          {option.vehicle}
+                          {option.quoted ? ' (quoted)' : ''}
+                        </Text>
+                      </View>
                       <Text style={styles.optionAmount}>{option.amount}</Text>
                     </View>
                   ))}

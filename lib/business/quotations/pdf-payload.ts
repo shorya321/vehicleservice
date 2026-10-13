@@ -138,6 +138,8 @@ export interface BuildQuotationPdfArgs {
   /** Resolved route labels, keyed by location id, so the document reads as places not UUIDs. */
   locationNames: Record<string, string>;
   vehicleNames: Record<string, string>;
+  /** Downsized photos keyed by vehicle type id. Absent or missing ids print without one. */
+  vehicleImages?: Record<string, PdfImageSource>;
   preparedBy?: string;
 }
 
@@ -146,6 +148,16 @@ export interface BuildQuotationPdfArgs {
  * The rate is frozen on the row, so a PDF already in a customer's hands never changes value
  * even as live rates move.
  */
+/** The photo under `key` only when one exists, so a trip without a photo is unchanged. */
+function photoOf<K extends string>(
+  images: Record<string, PdfImageSource>,
+  vehicleTypeId: string,
+  key: K
+): Partial<Record<K, PdfImageSource>> {
+  const photo = images[vehicleTypeId];
+  return photo ? ({ [key]: photo } as Partial<Record<K, PdfImageSource>>) : {};
+}
+
 function toDisplay(aed: number, rate: number, decimals: number): number {
   return roundTo(aed * rate, decimals);
 }
@@ -156,6 +168,7 @@ export function buildQuotationPdfData({
   logo,
   locationNames,
   vehicleNames,
+  vehicleImages = {},
   preparedBy,
 }: BuildQuotationPdfArgs): QuotationPdfData {
   const currency = quotation.currency || 'AED';
@@ -199,6 +212,7 @@ export function buildQuotationPdfData({
       route: `${from} ${ROUTE_ARROW} ${to}`,
       when: formatDateTime(item.pickup_datetime),
       vehicle: vehicleNames[item.vehicle_type_id] ?? 'Vehicle',
+      ...photoOf(vehicleImages, item.vehicle_type_id, 'vehicleImage'),
       guests: guestSummary(item),
       addons: addonNames.length > 0 ? addonNames.join(', ') : undefined,
       notes: item.description ?? undefined,
@@ -211,6 +225,7 @@ export function buildQuotationPdfData({
                 vehicle: vehicleNames[item.vehicle_type_id] ?? 'Vehicle',
                 amount: formatAmount(lineDisplay, currency),
                 quoted: true,
+                ...photoOf(vehicleImages, item.vehicle_type_id, 'image'),
               },
               ...item.vehicle_options.map((option) => ({
                 vehicle: vehicleNames[option.vehicle_type_id] ?? 'Vehicle',
@@ -219,6 +234,7 @@ export function buildQuotationPdfData({
                   currency
                 ),
                 quoted: false,
+                ...photoOf(vehicleImages, option.vehicle_type_id, 'image'),
               })),
             ],
           }

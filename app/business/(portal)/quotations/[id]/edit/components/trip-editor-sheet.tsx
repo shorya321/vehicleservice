@@ -279,6 +279,7 @@ export function TripEditorSheet({
     patch({
       vehicle_type_id: vehicle.id,
       vehicle_type_name: vehicle.name,
+      vehicle_type_image: vehicle.image ?? null,
       ...pricingPatch(vehicle.price, draft.net_addons_price_aed),
       // A vehicle promoted to main stops being an alternative. Untouched when there are none.
       ...(draft.vehicle_options?.length

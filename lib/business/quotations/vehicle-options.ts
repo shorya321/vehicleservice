@@ -13,6 +13,13 @@ export interface PricedVehicle {
   id: string;
   name: string;
   price: number;
+  /** Photo URL, display only. Never sent to the server. */
+  image?: string;
+}
+
+/** The photo key only when there is one, so option drafts stay unchanged without it. */
+function imageOf(vehicle: PricedVehicle): Pick<QuotationVehicleOptionDraft, 'vehicle_type_image'> {
+  return vehicle.image ? { vehicle_type_image: vehicle.image } : {};
 }
 
 /** True when another option may still be added to the trip. */
@@ -36,7 +43,12 @@ export function toggleVehicleOption(
   if (!canAddVehicleOption(options)) return [...options];
   return [
     ...options,
-    { vehicle_type_id: vehicle.id, vehicle_type_name: vehicle.name, net_base_price_aed: vehicle.price },
+    {
+      vehicle_type_id: vehicle.id,
+      vehicle_type_name: vehicle.name,
+      net_base_price_aed: vehicle.price,
+      ...imageOf(vehicle),
+    },
   ];
 }
 
@@ -67,6 +79,7 @@ export function reconcileVehicleOptions(
         vehicle_type_id: vehicle.id,
         vehicle_type_name: vehicle.name,
         net_base_price_aed: vehicle.price,
+        ...imageOf(vehicle),
       },
     ];
   });

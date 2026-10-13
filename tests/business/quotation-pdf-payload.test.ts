@@ -395,3 +395,67 @@ describe('vehicle options', () => {
     expect(data.lineItems[0].vehicleOptions?.[1].amount).toContain('630');
   });
 });
+
+describe('vehicle photos', () => {
+  const photo = (tag: string) => ({ data: Buffer.from(tag), format: 'png' as const });
+
+  const withOptions = () =>
+    quotation({
+      items: [
+        item({
+          vehicle_options: [
+            {
+              vehicle_type_id: 'veh-2',
+              net_base_price_aed: 900,
+              net_total_aed: 1050,
+              sell_total_aed: 1260,
+              sort_order: 0,
+            },
+            {
+              vehicle_type_id: 'veh-3',
+              net_base_price_aed: 950,
+              net_total_aed: 1100,
+              sell_total_aed: 1320,
+              sort_order: 1,
+            },
+          ],
+        }),
+      ],
+    });
+
+  const buildWithPhotos = (q: QuotationWithItems, vehicleImages?: Record<string, ReturnType<typeof photo>>) =>
+    buildQuotationPdfData({
+      quotation: q,
+      business,
+      logo: null,
+      locationNames: { 'loc-a': 'DXB Terminal 3', 'loc-b': 'Dubai Marina' },
+      vehicleNames: { 'veh-1': 'Luxury Sedan', 'veh-2': 'Luxury Van', 'veh-3': 'Luxury SUV' },
+      vehicleImages,
+    });
+
+  it('omits every photo key when no photos are passed', () => {
+    const data = buildWithPhotos(withOptions());
+    expect(data.lineItems[0]).not.toHaveProperty('vehicleImage');
+    for (const option of data.lineItems[0].vehicleOptions ?? []) {
+      expect(option).not.toHaveProperty('image');
+    }
+  });
+
+  it('attaches each photo to its own vehicle', () => {
+    const main = photo('main');
+    const van = photo('van');
+    const data = buildWithPhotos(withOptions(), { 'veh-1': main, 'veh-2': van });
+    expect(data.lineItems[0].vehicleImage).toBe(main);
+    const [quoted, first, second] = data.lineItems[0].vehicleOptions ?? [];
+    expect(quoted.image).toBe(main);
+    expect(first.image).toBe(van);
+    // veh-3 has no photo: no key, not an undefined value.
+    expect(second).not.toHaveProperty('image');
+  });
+
+  it('keeps the vehicle name when the photo is missing', () => {
+    const data = buildWithPhotos(quotation(), { 'veh-9': photo('other') });
+    expect(data.lineItems[0].vehicle).toBe('Luxury Sedan');
+    expect(data.lineItems[0]).not.toHaveProperty('vehicleImage');
+  });
+});

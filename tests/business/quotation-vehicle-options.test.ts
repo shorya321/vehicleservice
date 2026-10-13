@@ -21,6 +21,13 @@ describe('toggleVehicleOption', () => {
     expect(toggleVehicleOption([], v('a', 250), 'main')).toEqual([o('a', 250)]);
   });
 
+  it('carries the photo for display, and adds no key when there is none', () => {
+    const [withPhoto] = toggleVehicleOption([], { ...v('a'), image: 'https://x/a.png' }, 'main');
+    expect(withPhoto.vehicle_type_image).toBe('https://x/a.png');
+    const [withoutPhoto] = toggleVehicleOption([], v('b'), 'main');
+    expect(withoutPhoto).not.toHaveProperty('vehicle_type_image');
+  });
+
   it('removes a vehicle that is already offered', () => {
     expect(toggleVehicleOption([o('a'), o('b')], v('a'), 'main')).toEqual([o('b')]);
   });

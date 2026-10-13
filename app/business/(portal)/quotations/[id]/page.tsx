@@ -43,6 +43,7 @@ import { quotationTotals } from '@/lib/business/quotations/pricing';
 import { formatChildAges } from '@/lib/business/format-child-ages';
 import { getQuotation } from '../actions';
 import { QuotationStatusBadge } from '../components/quotation-status-badge';
+import { VehicleThumb } from '../components/vehicle-thumb';
 import { QuotationActions } from './components/quotation-actions';
 import { ConvertDialog } from './components/convert-dialog';
 
@@ -100,26 +101,28 @@ export default async function QuotationDetailPage({ params }: PageProps) {
 
   const inCurrency = (aed: number) => formatCurrency(aed * rate, currency);
 
-  // Vehicle names, needed only to list the alternatives a trip offers. Skipped entirely for a
-  // quotation without any, so its page loads exactly as before.
-  const tripsWithOptions = quotation.items.filter(
-    (item) => !item.converted_booking_id && (item.vehicle_options?.length ?? 0) > 0
+  // Vehicle name and photo for every trip, plus any alternatives it offers. One query.
+  const vehicleIds = Array.from(
+    new Set(
+      quotation.items.flatMap((item) => [
+        item.vehicle_type_id,
+        ...(item.vehicle_options ?? []).map((o) => o.vehicle_type_id),
+      ])
+    )
   );
   const vehicleNames = new Map<string, string>();
-  if (tripsWithOptions.length > 0) {
-    const ids = Array.from(
-      new Set(
-        tripsWithOptions.flatMap((item) => [
-          item.vehicle_type_id,
-          ...(item.vehicle_options ?? []).map((o) => o.vehicle_type_id),
-        ])
-      )
-    );
-    const { data: vehicleRows } = await supabase
+  const vehicleImages = new Map<string, string | null>();
+  if (vehicleIds.length > 0) {
+    const { data: vehicleRows, error: vehicleError } = await supabase
       .from('vehicle_types')
-      .select('id, name')
-      .in('id', ids);
-    for (const row of vehicleRows ?? []) vehicleNames.set(row.id, row.name);
+      .select('id, name, image_url')
+      .in('id', vehicleIds);
+    // Display only: a failed lookup falls back to "Vehicle" and a placeholder, never a crash.
+    if (vehicleError) console.error('Error loading quotation vehicles:', vehicleError);
+    for (const row of vehicleRows ?? []) {
+      vehicleNames.set(row.id, row.name);
+      vehicleImages.set(row.id, row.image_url);
+    }
   }
   const displayed = displayStatus(status, quotation.valid_until, bookingToday());
 
@@ -272,8 +275,13 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                   key={item.id}
                   className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/40"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 break-words">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    {/* Side photo from sm up; on a phone it sits inline with the name. */}
+                    <VehicleThumb
+                      src={vehicleImages.get(item.vehicle_type_id)}
+                      className="mt-0.5 hidden sm:flex"
+                    />
+                    <div className="min-w-0 flex-1 break-words">
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">
                         Trip {index + 1}
                         {item.converted_booking_number
@@ -284,7 +292,17 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                           postal strings and read as noise when joined. */}
                       <div className="mt-1 font-medium">{item.pickup_address}</div>
                       <div className="text-muted-foreground">→ {item.dropoff_address}</div>
-                      <div className="mt-1 text-sm text-muted-foreground">
+                      <div className="mt-1 flex items-center gap-2 text-sm font-medium text-foreground">
+                        <VehicleThumb
+                          size="sm"
+                          src={vehicleImages.get(item.vehicle_type_id)}
+                          className="sm:hidden"
+                        />
+                        <span className="min-w-0">
+                          {vehicleNames.get(item.vehicle_type_id) ?? 'Vehicle'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
                         {item.pickup_datetime
                           ? fmtDate(item.pickup_datetime)
                           : 'Date to be confirmed'}{' '}
@@ -300,26 +318,43 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                         </div>
                       )}
                       {!item.converted_booking_id && (item.vehicle_options?.length ?? 0) > 0 && (
-                        <div className="mt-2 space-y-0.5 text-sm">
+                        <div className="mt-2 space-y-1 text-sm">
                           <div className="text-xs uppercase tracking-wide text-muted-foreground">
                             Vehicle options
                           </div>
-                          <div className="flex justify-between gap-3">
-                            <span>
-                              {vehicleNames.get(item.vehicle_type_id) ?? 'Vehicle'}{' '}
-                              <span className="text-muted-foreground">(quoted)</span>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <VehicleThumb
+                                size="sm"
+                                src={vehicleImages.get(item.vehicle_type_id)}
+                                className="hidden sm:flex"
+                              />
+                              {/* One text node so name and "(quoted)" wrap together. */}
+                              <span className="min-w-0">
+                                {vehicleNames.get(item.vehicle_type_id) ?? 'Vehicle'}{' '}
+                                <span className="text-muted-foreground">(quoted)</span>
+                              </span>
                             </span>
-                            <span className="tabular-nums">
+                            <span className="shrink-0 tabular-nums">
                               {inCurrency(Number(item.sell_total_aed))}
                             </span>
                           </div>
                           {(item.vehicle_options ?? []).map((option) => (
                             <div
                               key={option.vehicle_type_id}
-                              className="flex justify-between gap-3 text-muted-foreground"
+                              className="flex items-center justify-between gap-3 text-muted-foreground"
                             >
-                              <span>{vehicleNames.get(option.vehicle_type_id) ?? 'Vehicle'}</span>
-                              <span className="tabular-nums">
+                              <span className="flex min-w-0 items-center gap-2">
+                                <VehicleThumb
+                                  size="sm"
+                                  src={vehicleImages.get(option.vehicle_type_id)}
+                                  className="hidden sm:flex"
+                                />
+                                <span className="min-w-0">
+                                  {vehicleNames.get(option.vehicle_type_id) ?? 'Vehicle'}
+                                </span>
+                              </span>
+                              <span className="shrink-0 tabular-nums">
                                 {inCurrency(option.sell_total_aed)}
                               </span>
                             </div>

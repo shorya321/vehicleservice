@@ -66,8 +66,10 @@ export default async function EditQuotationPage({ params }: PageProps) {
       ? supabase.from('locations').select('id, name').in('id', locationIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     vehicleIds.length
-      ? supabase.from('vehicle_types').select('id, name').in('id', vehicleIds)
-      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+      ? supabase.from('vehicle_types').select('id, name, image_url').in('id', vehicleIds)
+      : Promise.resolve({
+          data: [] as { id: string; name: string; image_url: string | null }[],
+        }),
   ]);
 
   const locationNames = new Map(
@@ -75,6 +77,9 @@ export default async function EditQuotationPage({ params }: PageProps) {
   );
   const vehicleNames = new Map(
     (vehiclesResult.data ?? []).map((v) => [v.id, v.name] as const)
+  );
+  const vehicleImages = new Map(
+    (vehiclesResult.data ?? []).map((v) => [v.id, v.image_url] as const)
   );
 
   const initialTrips: QuotationTripDraft[] = quotation.items.map((item) => ({
@@ -89,6 +94,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
     pickup_datetime: item.pickup_datetime,
     vehicle_type_id: item.vehicle_type_id,
     vehicle_type_name: vehicleNames.get(item.vehicle_type_id),
+    vehicle_type_image: vehicleImages.get(item.vehicle_type_id) ?? null,
     passenger_count: item.passenger_count,
     adults: item.adults,
     children: item.children,
@@ -104,6 +110,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
     vehicle_options: (item.vehicle_options ?? []).map((option) => ({
       vehicle_type_id: option.vehicle_type_id,
       vehicle_type_name: vehicleNames.get(option.vehicle_type_id),
+      vehicle_type_image: vehicleImages.get(option.vehicle_type_id) ?? null,
       net_base_price_aed: option.net_base_price_aed,
     })),
     converted_booking_id: item.converted_booking_id,

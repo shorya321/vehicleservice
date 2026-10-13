@@ -34,6 +34,7 @@ import { quotationTotals, applyMarkup } from '@/lib/business/quotations/pricing'
 import { updateQuotation } from '../../../mutations';
 import { TripEditorSheet } from './trip-editor-sheet';
 import { CustomerDetailsCard } from './customer-details-card';
+import { VehicleThumb } from '../../../components/vehicle-thumb';
 import type { QuotationCustomerDraft } from './customer-details-card';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
 
@@ -253,9 +254,11 @@ export function QuotationBuilder({
                   key={trip.id ?? `new-${index}`}
                   className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/40"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    {/* Side photo from sm up; on a phone it would squeeze the route into a narrow column. */}
+                    <VehicleThumb src={trip.vehicle_type_image} className="mt-0.5 hidden sm:flex" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
                         <span>TRIP {index + 1}</span>
                         {locked && (
                           <span className="flex items-center gap-1">
@@ -276,16 +279,30 @@ export function QuotationBuilder({
                       <div className="break-words text-muted-foreground">
                         → {trip.to_location_name ?? trip.dropoff_address}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {trip.vehicle_type_name ?? 'Vehicle'} · {trip.passenger_count} guest
-                        {trip.passenger_count === 1 ? '' : 's'}
-                        {!locked && (trip.vehicle_options?.length ?? 0) > 0 && (
-                          <span className="text-primary">
-                            {' '}· +{trip.vehicle_options?.length} vehicle option
-                            {trip.vehicle_options?.length === 1 ? '' : 's'}
+                      <div className="mt-1 flex items-center gap-2 text-sm">
+                        <VehicleThumb
+                          size="sm"
+                          src={trip.vehicle_type_image}
+                          className="sm:hidden"
+                        />
+                        <span className="min-w-0 break-words">
+                          <span className="font-medium text-foreground">
+                            {trip.vehicle_type_name ?? 'Vehicle'}
                           </span>
-                        )}
+                          <span className="text-muted-foreground">
+                            {' '}· {trip.passenger_count} guest
+                            {trip.passenger_count === 1 ? '' : 's'}
+                          </span>
+                        </span>
                       </div>
+                      {!locked && (trip.vehicle_options?.length ?? 0) > 0 && (
+                        <div className="break-words text-sm text-primary">
+                          Also offered:{' '}
+                          {(trip.vehicle_options ?? [])
+                            .map((option) => option.vehicle_type_name ?? 'Vehicle')
+                            .join(', ')}
+                        </div>
+                      )}
                     </div>
 
                     <div className="shrink-0 whitespace-nowrap text-right">

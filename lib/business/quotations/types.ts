@@ -161,6 +161,8 @@ export interface QuotationAddonOption {
 export interface QuotationVehicleOptionDraft {
   vehicle_type_id: string;
   vehicle_type_name?: string;
+  /** Photo URL, display only. The save payload never includes it. */
+  vehicle_type_image?: string | null;
   net_base_price_aed: number;
 }
 
@@ -178,6 +180,8 @@ export interface QuotationTripDraft {
   pickup_datetime: string | null;
   vehicle_type_id: string;
   vehicle_type_name?: string;
+  /** Photo URL, display only. The save payload never includes it. */
+  vehicle_type_image?: string | null;
   passenger_count: number;
   adults: number;
   children: number;

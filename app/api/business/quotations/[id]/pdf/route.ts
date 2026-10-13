@@ -21,6 +21,7 @@ import {
   type QuotationPdfSourceItem,
 } from '@/lib/business/quotations/pdf-payload';
 import { resolveBrandLogo } from '@/lib/business/quotations/brand-logo';
+import { resolveVehiclePhotos } from '@/lib/business/quotations/vehicle-photos';
 
 export const dynamic = 'force-dynamic';
 
@@ -143,7 +144,7 @@ export const GET = requireBusinessAuth(async (
         .eq('id', user.businessAccountId)
         .single(),
       supabase.from('locations').select('id, name').in('id', locationIds),
-      supabase.from('vehicle_types').select('id, name').in('id', vehicleIds),
+      supabase.from('vehicle_types').select('id, name, image_url').in('id', vehicleIds),
     ]);
 
     if (businessResult.error || !businessResult.data) {
@@ -160,7 +161,11 @@ export const GET = requireBusinessAuth(async (
 
     // Returns null for SVG/webp, oversize, timeout or any failure. The document then renders
     // a typographic wordmark instead of crashing on an image @react-pdf cannot draw.
-    const logo = await resolveBrandLogo(business.logo_url);
+    // Vehicle photos follow the same rule: any one that fails is left out, never the PDF.
+    const [logo, vehicleImages] = await Promise.all([
+      resolveBrandLogo(business.logo_url),
+      resolveVehiclePhotos(vehiclesResult.data ?? []),
+    ]);
 
     const sourceItems: QuotationPdfSourceItem[] = items.map((item) => ({
       sort_order: item.sort_order,
@@ -202,6 +207,7 @@ export const GET = requireBusinessAuth(async (
       logo,
       locationNames,
       vehicleNames,
+      vehicleImages,
     });
 
     const pdfBuffer = await generatePDFBuffer(jsx(QuotationPDF, pdfData));
