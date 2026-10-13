@@ -32,7 +32,7 @@ export const WalletFrozenEmail = ({
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
-      <InfoBox variant="error">
+      <InfoBox type="error">
         <Text style={emailStyles.text}>
           <strong>Your wallet has been frozen!</strong>
           <br />

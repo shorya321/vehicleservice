@@ -31,7 +31,7 @@ export interface VehicleFilters {
   categoryId?: string | 'all'
   fuelType?: FuelType | 'all'
   transmission?: TransmissionType | 'all'
-  minSeats?: number
+  seats?: number
   city?: string
   page?: number
   limit?: number

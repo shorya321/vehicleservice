@@ -269,7 +269,8 @@ export async function getUnifiedBookingDetails(
       toLocationId: data.to_location_id,
       vehicleTypeId: data.vehicle_type_id,
       passengerCount: data.passenger_count,
-      luggageCount: data.luggage_count || 0,
+      // business_bookings has no luggage_count column; 0 is what this always was.
+      luggageCount: 0,
       basePrice: data.base_price,
       totalPrice: data.total_price,
       bookingStatus: data.booking_status,

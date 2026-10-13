@@ -112,6 +112,12 @@ export const boxStyles = {
       margin: '24px 0',
       textAlign: 'center' as const,
     },
+    title: {
+      color: '#065f46',
+      fontSize: '16px',
+      fontWeight: 'bold',
+      margin: '0 0 12px',
+    },
     text: {
       color: '#065f46',
       fontSize: '18px',
@@ -137,6 +143,29 @@ export const boxStyles = {
     },
     text: {
       color: '#78350f',
+      fontSize: '14px',
+      lineHeight: '20px',
+      margin: '0',
+    },
+  },
+
+  // Error box (red)
+  error: {
+    container: {
+      backgroundColor: '#fef2f2',
+      border: '1px solid #fca5a5',
+      borderRadius: '8px',
+      padding: '20px',
+      margin: '20px 0',
+    },
+    title: {
+      color: '#991b1b',
+      fontSize: '16px',
+      fontWeight: 'bold',
+      margin: '0 0 12px',
+    },
+    text: {
+      color: '#7f1d1d',
       fontSize: '14px',
       lineHeight: '20px',
       margin: '0',

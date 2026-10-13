@@ -10,6 +10,7 @@ import { CheckoutHeading } from '@/components/checkout/checkout-heading'
 import { BookingLedger } from '@/components/checkout/booking-ledger'
 import { SecureFooter } from '../components/secure-footer'
 import { PublicHeader } from '@/components/layout/public-header'
+import { HEADER_PROFILE_COLUMNS } from '@/components/layout/header-profile'
 import { Footer } from '@/components/layout/footer'
 import { getSiteSettings } from '@/lib/site-settings/server'
 import { createClient } from '@/lib/supabase/server'
@@ -170,7 +171,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
 
   // Fetch user profile for header
   let profile = null
-  const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  const { data: profileData } = await supabase.from('profiles').select(HEADER_PROFILE_COLUMNS).eq('id', user.id).single()
   profile = profileData
 
   // Fetch currency data

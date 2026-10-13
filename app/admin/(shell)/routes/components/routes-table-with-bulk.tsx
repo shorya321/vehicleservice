@@ -155,11 +155,8 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
             <TableRow>
               <TableHead className="w-12">
                 <Checkbox
-                  checked={isAllSelected}
+                  checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
                   onCheckedChange={handleSelectAll}
-                  ref={(ref) => {
-                    if (ref) ref.indeterminate = isIndeterminate
-                  }}
                 />
               </TableHead>
               <TableHead className="w-24">Image</TableHead>

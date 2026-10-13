@@ -29,7 +29,7 @@ export const LowBalanceAlertEmail = ({
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
-      <InfoBox variant="warning">
+      <InfoBox type="warning">
         <Text style={emailStyles.text}>
           <strong>Your wallet balance is running low.</strong>
           <br />

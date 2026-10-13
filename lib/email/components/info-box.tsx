@@ -3,14 +3,14 @@ import * as React from 'react';
 import { boxStyles } from '../styles/constants';
 
 interface InfoBoxProps {
-  type?: 'info' | 'success' | 'warning' | 'message';
+  type?: 'info' | 'success' | 'warning' | 'error' | 'message';
   title?: string;
   children: React.ReactNode;
 }
 
 /**
  * Reusable info box component for emails
- * Supports different visual styles: info (blue), success (green), warning (yellow), message (light blue)
+ * Supports different visual styles: info (blue), success (green), warning (yellow), error (red), message (light blue)
  */
 export const InfoBox = ({ type = 'info', title, children }: InfoBoxProps) => {
   const styles = boxStyles[type];

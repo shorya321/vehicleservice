@@ -253,33 +253,14 @@ export async function getSearchResults(params: {
     // No route selected, check available routes between origin and destination
     const routesResult = await getRoutesForDestination(params.originId, params.destinationId, originDetails.name, destinationDetails.name, params.passengers)
     
-    // If only one route exists, return redirect to the route page
+    // One route: show its vehicles here. (This used to redirect to
+    // /search/route/..., a page built on columns that never existed, so every
+    // such redirect ended in a 404. /search/[routeSlug] calls this same
+    // function, so redirecting there would loop.)
     if (routesResult && routesResult.type === 'routes' && routesResult.routes && routesResult.routes.length === 1) {
-      const singleRoute = routesResult.routes[0]
-      
-      // Get the route details to construct the redirect URL
-      const { data: routeData } = await supabase
-        .from('routes')
-        .select(`
-          route_slug,
-          origin:origin_location_id(country_slug)
-        `)
-        .eq('id', singleRoute.id)
-        .single()
-      
-      if (routeData && routeData.route_slug && routeData.origin?.country_slug) {
-        return {
-          type: 'redirect',
-          originName: originDetails.name,
-          destinationName: destinationDetails.name,
-          redirectTo: `/search/route/${routeData.origin.country_slug}/${routeData.route_slug}`
-        }
-      }
-      
-      // Fallback to showing vehicle types if we can't get route details
       return getSearchResults({
         ...params,
-        routeId: singleRoute.id
+        routeId: routesResult.routes[0].id
       })
     }
     
@@ -1020,72 +1001,14 @@ async function getLocationSearchResults(
     }
   }
 
-  // If no routes, get vehicle categories
-  const { data: categories } = await supabase
-    .from('vehicle_categories')
-    .select('*')
-    .order('sort_order')
-    .order('name')
-
-  // Get vehicle counts for each category in this location
-  const { data: vendorApplications } = await supabase
-    .from('vendor_applications')
-    .select('id')
-    .eq('status', 'approved')
-
-  const vendorIds = vendorApplications?.map(va => va.id) || []
-  
-  const { data: vehiclesByCategory } = await supabase
-    .from('vehicles')
-    .select('category_id, daily_rate')
-    .in('business_id', vendorIds)
-    .eq('is_available', true)
-    .gte('seats', passengers)
-
-  const categoryResults: CategoryResult[] = (categories || []).map(category => {
-    const categoryVehicles = vehiclesByCategory?.filter(v => v.category_id === category.id) || []
-    const uncategorizedVehicles = category.slug === 'standard' 
-      ? vehiclesByCategory?.filter(v => !v.category_id) || []
-      : []
-    
-    const allVehicles = [...categoryVehicles, ...uncategorizedVehicles]
-    const vehicleCount = allVehicles.length
-    const minPrice = allVehicles.length > 0 
-      ? Math.min(...allVehicles.map(v => v.daily_rate))
-      : 0
-
-    return {
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
-      imageUrl: category.image_url,
-      vehicleCount,
-      minPrice
-    }
-  }).filter(cat => cat.vehicleCount > 0)
-
-  // Add "Standard" category for uncategorized vehicles if needed
-  const uncategorizedCount = vehiclesByCategory?.filter(v => !v.category_id).length || 0
-  if (uncategorizedCount > 0 && !categoryResults.find(c => c.slug === 'standard')) {
-    const uncategorizedVehicles = vehiclesByCategory?.filter(v => !v.category_id) || []
-    const minPrice = Math.min(...uncategorizedVehicles.map(v => v.daily_rate))
-    
-    categoryResults.push({
-      id: 'uncategorized',
-      name: 'Standard Vehicles',
-      slug: 'standard',
-      description: 'Comfortable vehicles for your transfer',
-      imageUrl: null,
-      vehicleCount: uncategorizedCount,
-      minPrice
-    })
-  }
-
+  // No routes from this origin. The old fallback priced vehicle categories
+  // from vehicles.daily_rate, a column that never existed, so its query always
+  // failed and it always returned no categories. That outcome is kept as is:
+  // prices come from zone pricing, not from vehicles.
   return {
     type: 'categories',
     originName,
-    categories: categoryResults
+    categories: []
   }
 }
 

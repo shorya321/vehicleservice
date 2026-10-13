@@ -39,7 +39,7 @@ export const SpendingLimitReachedEmail = ({
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
-      <InfoBox variant="warning">
+      <InfoBox type="warning">
         <Text style={emailStyles.text}>
           <strong>Your {limitTypeText} spending limit has been reached!</strong>
           {rejectedTransactionAmount && (

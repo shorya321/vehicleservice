@@ -13,8 +13,7 @@ export interface RouteWithDetails {
     id: string
     name: string
     slug: string
-    type: string
-    city: string
+    city: string | null
     location_type_label?: string
   }
   min_price: number
@@ -54,11 +53,10 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
       route_slug,
       distance_km,
       estimated_duration_minutes,
-      destination:destination_location_id(
+      destination:locations!routes_destination_location_id_fkey(
         id,
         name,
         slug,
-        type,
         city,
         location_types(label)
       )
@@ -91,11 +89,14 @@ export async function getRoutesFromLocation(locationId: string): Promise<RouteWi
     // Count all available vehicles (aggregator model - all vehicles available for all routes)
     const availableVehicles = vehicleCounts?.length || 0
 
+    const { location_types, ...destination } = route.destination
     return {
       ...route,
+      distance_km: route.distance_km ?? 0,
+      estimated_duration_minutes: route.estimated_duration_minutes ?? 0,
       destination: {
-        ...route.destination,
-        location_type_label: (route.destination as any).location_types?.label,
+        ...destination,
+        location_type_label: location_types?.label,
       },
       min_price: minPrice,
       available_vehicles: availableVehicles

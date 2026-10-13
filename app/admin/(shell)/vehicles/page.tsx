@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Pagination } from '@/components/ui/pagination'
+import { CustomPagination } from '@/components/ui/custom-pagination'
 
 export const metadata: Metadata = {
   title: 'Vehicles - Admin',
@@ -158,7 +158,7 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
             <AdminVehicleTableWithBulk vehicles={vehicles} />
             {totalPages > 1 && (
               <div className="flex justify-center">
-                <Pagination
+                <CustomPagination
                   currentPage={page}
                   totalPages={totalPages}
                   baseUrl="/admin/vehicles"

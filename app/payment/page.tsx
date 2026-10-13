@@ -9,6 +9,7 @@ import { ProgressBar } from '@/components/checkout/progress-bar'
 import { SecureFooter } from './components/secure-footer'
 import { GuaranteeCard } from './components/guarantee-card'
 import { PublicHeader } from '@/components/layout/public-header'
+import { HEADER_PROFILE_COLUMNS } from '@/components/layout/header-profile'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { HelpCircle } from 'lucide-react'
@@ -186,7 +187,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   let profile = null
   const { data: profileData } = await supabase
     .from('profiles')
-    .select('*')
+    .select(HEADER_PROFILE_COLUMNS)
     .eq('id', user.id)
     .single()
   profile = profileData
@@ -330,9 +331,6 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
       <PublicHeader
         initialUser={user}
         initialProfile={profile}
-        featuredCurrencies={featuredCurrencies}
-        allCurrencies={allCurrencies}
-        currentCurrency={currentCurrency}
       />
 
       <main className="flex-1 pb-16 pt-20 md:pt-24">

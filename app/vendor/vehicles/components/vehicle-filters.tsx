@@ -15,8 +15,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { VehicleFilters, getVehicleCategories } from "../actions"
-import { Filter, X, ChevronDown, DollarSign, Users } from "lucide-react"
+import { getVehicleCategories } from "../actions"
+import type { VehicleFilters } from "@/lib/types/vehicle"
+import { Filter, X, ChevronDown, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
@@ -32,8 +33,6 @@ interface VehicleFiltersProps {
 export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFiltersProps) {
   const [localSearch, setLocalSearch] = useState(filters.search || "")
   const [advancedOpen, setAdvancedOpen] = useState(false)
-  const [minPrice, setMinPrice] = useState(filters.minPrice?.toString() || "")
-  const [maxPrice, setMaxPrice] = useState(filters.maxPrice?.toString() || "")
   const [seats, setSeats] = useState(filters.seats?.toString() || "")
   const [categories, setCategories] = useState<VehicleCategory[]>([])
 
@@ -73,8 +72,6 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
 
   const handleClearFilters = () => {
     setLocalSearch("")
-    setMinPrice("")
-    setMaxPrice("")
     setSeats("")
     onFiltersChange({ 
       page: 1, 
@@ -88,18 +85,6 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
 
   const handleApplyAdvancedFilters = () => {
     const newFilters: VehicleFilters = { ...filters, page: 1 }
-    
-    if (minPrice && !isNaN(parseFloat(minPrice))) {
-      newFilters.minPrice = parseFloat(minPrice)
-    } else {
-      delete newFilters.minPrice
-    }
-    
-    if (maxPrice && !isNaN(parseFloat(maxPrice))) {
-      newFilters.maxPrice = parseFloat(maxPrice)
-    } else {
-      delete newFilters.maxPrice
-    }
     
     if (seats && !isNaN(parseInt(seats))) {
       newFilters.seats = parseInt(seats)
@@ -117,8 +102,6 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
     filters.categoryId && filters.categoryId !== "all" ? filters.categoryId : null,
     filters.fuelType && filters.fuelType !== "all" ? filters.fuelType : null,
     filters.transmission && filters.transmission !== "all" ? filters.transmission : null,
-    filters.minPrice !== undefined,
-    filters.maxPrice !== undefined,
     filters.seats !== undefined,
   ].filter(Boolean).length
 
@@ -195,9 +178,9 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
             >
               <Filter className="mr-2 h-4 w-4" />
               Advanced
-              {(filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.seats !== undefined) && (
+              {filters.seats !== undefined && (
                 <Badge variant="secondary" className="ml-2 h-5 px-1">
-                  {[filters.minPrice !== undefined, filters.maxPrice !== undefined, filters.seats !== undefined].filter(Boolean).length}
+                  1
                 </Badge>
               )}
               <ChevronDown className="ml-2 h-4 w-4" />
@@ -215,30 +198,6 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
               <Separator />
               
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm">Price Range (AED/day)</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      className="h-8"
-                    />
-                    <span className="text-sm text-muted-foreground">to</span>
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -266,8 +225,6 @@ export function VehicleFiltersComponent({ filters, onFiltersChange }: VehicleFil
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setMinPrice("")
-                    setMaxPrice("")
                     setSeats("")
                   }}
                 >

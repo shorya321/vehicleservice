@@ -8,7 +8,8 @@ import Link from "next/link"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { VehicleTableWithBulk } from "./components/vehicle-table-with-bulk"
 import { ClientFilters } from "./components/client-filters"
-import { getVehicles, VehicleFilters } from "./actions"
+import { getVehicles } from "./actions"
+import type { VehicleFilters } from "@/lib/types/vehicle"
 import {
   Card,
   CardContent,
@@ -29,8 +30,6 @@ interface VendorVehiclesPageProps {
     status?: string
     fuelType?: string
     transmission?: string
-    minPrice?: string
-    maxPrice?: string
     seats?: string
     page?: string
   }>
@@ -61,8 +60,6 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
     transmission: (params.transmission as any) || 'all',
     page: params.page ? parseInt(params.page) : 1,
     limit: 10,
-    ...(params.minPrice && { minPrice: parseFloat(params.minPrice) }),
-    ...(params.maxPrice && { maxPrice: parseFloat(params.maxPrice) }),
     ...(params.seats && { seats: parseInt(params.seats) })
   }
 

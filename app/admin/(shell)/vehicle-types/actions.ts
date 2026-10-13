@@ -226,16 +226,6 @@ export async function deleteVehicleType(id: string) {
     throw new Error(`Cannot delete vehicle type. ${count} vehicles are using this type.`)
   }
 
-  // Check if any route pricing exists for this type
-  const { count: pricingCount } = await supabase
-    .from('route_vehicle_type_pricing')
-    .select('*', { count: 'exact', head: true })
-    .eq('vehicle_type_id', id)
-
-  if (pricingCount && pricingCount > 0) {
-    throw new Error(`Cannot delete vehicle type. ${pricingCount} route pricing entries exist for this type.`)
-  }
-
   const { error } = await supabase
     .from('vehicle_types')
     .delete()

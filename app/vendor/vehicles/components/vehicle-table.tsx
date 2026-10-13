@@ -24,7 +24,6 @@ import {
   Pencil,
   Trash2,
   Car,
-  DollarSign,
   Users,
   Fuel,
   Settings2
@@ -123,7 +122,6 @@ export function VehicleTable({
               <TableHead>Vehicle</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Registration</TableHead>
-              <TableHead>Daily Rate</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Seats</TableHead>
               <TableHead>Status</TableHead>
@@ -180,13 +178,6 @@ export function VehicleTable({
                 </TableCell>
                 <TableCell>
                   <code className="text-sm">{vehicle.registration_number}</code>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <DollarSign className="h-3 w-3 text-muted-foreground mr-1" />
-                    <span className="font-medium">{vehicle.daily_rate}</span>
-                    <span className="text-sm text-muted-foreground ml-1">AED</span>
-                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">

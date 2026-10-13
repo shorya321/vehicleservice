@@ -19,6 +19,18 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'motion/react'],
   },
+  // /search/route/{country}/{slug} was removed: it was built on columns that never
+  // existed and always returned 404. Old links land on the live route page, which
+  // sends a visitor without a date to the search form.
+  async redirects() {
+    return [
+      {
+        source: '/search/route/:country/:routeSlug',
+        destination: '/search/:routeSlug',
+        permanent: true,
+      },
+    ]
+  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

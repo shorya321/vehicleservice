@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Clock, Car, ArrowRight } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
-import { generateRouteSlug } from '@/lib/utils/slug'
+import { bookingToday } from '@/lib/utils/timezone'
 import { RouteWithDetails } from '../actions'
 import { Location } from '@/lib/types/location'
 
@@ -15,7 +15,14 @@ interface LocationRoutesListProps {
   countrySlug: string
 }
 
-export function LocationRoutesList({ routes, originLocation, countrySlug }: LocationRoutesListProps) {
+/** Live route results need a date and party size; the visitor can change both there. */
+function tomorrow(): string {
+  const [year, month, day] = bookingToday().split('-').map(Number)
+  const next = new Date(Date.UTC(year, month - 1, day + 1))
+  return next.toISOString().slice(0, 10)
+}
+
+export function LocationRoutesList({ routes, originLocation }: LocationRoutesListProps) {
   if (routes.length === 0) {
     return (
       <div className="text-center py-12">
@@ -35,7 +42,7 @@ export function LocationRoutesList({ routes, originLocation, countrySlug }: Loca
         return (
           <Link
             key={route.id}
-            href={`/search/route/${countrySlug}/${generateRouteSlug(originLocation.name, route.destination.name)}`}
+            href={`/search/${originLocation.slug}-to-${route.destination.slug}?date=${tomorrow()}&passengers=1`}
             className="block transition-transform hover:scale-[1.02]"
           >
             <Card className="h-full hover:shadow-lg transition-shadow">
@@ -52,9 +59,9 @@ export function LocationRoutesList({ routes, originLocation, countrySlug }: Loca
                         <span>{route.destination.city}</span>
                       </div>
                     </div>
-                    <Badge variant={route.destination.type === 'airport' ? 'default' : 'secondary'}>
-                      {(route as any).destination?.location_types?.label || route.destination.type}
-                    </Badge>
+                    {route.destination.location_type_label && (
+                      <Badge variant="secondary">{route.destination.location_type_label}</Badge>
+                    )}
                   </div>
 
                   {/* Route Details */}
@@ -71,12 +78,17 @@ export function LocationRoutesList({ routes, originLocation, countrySlug }: Loca
 
                   {/* Price and CTA */}
                   <div className="flex items-center justify-between pt-4 border-t">
-                    <div>
-                      <p className="text-sm text-muted-foreground">From</p>
-                      <p className="text-2xl font-bold text-primary">
-                        {formatCurrency(route.min_price)}
-                      </p>
-                    </div>
+                    {/* Fares come from zone pricing on the route page; no price is shown here until one exists. */}
+                    {route.min_price > 0 ? (
+                      <div>
+                        <p className="text-sm text-muted-foreground">From</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {formatCurrency(route.min_price)}
+                        </p>
+                      </div>
+                    ) : (
+                      <span />
+                    )}
                     <div className="flex items-center gap-2 text-primary">
                       <span className="text-sm font-medium">View Details</span>
                       <ArrowRight className="h-4 w-4" />

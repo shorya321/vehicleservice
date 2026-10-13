@@ -152,7 +152,7 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
                 currentPage={page}
                 totalPages={totalPages}
                 baseUrl="/admin/blog/posts"
-                searchParams={resolvedSearchParams}
+                queryParams={resolvedSearchParams}
               />
             </div>
           )}

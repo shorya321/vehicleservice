@@ -105,8 +105,11 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
     }
   }
 
-  // If profile doesn't exist or is incomplete, try to get data from user metadata
-  if (!profile || (!profile.first_name && !profile.last_name && !profile.phone)) {
+  // If profile doesn't exist or has no phone, fill the gaps from signup metadata.
+  // In memory only: profiles has no first_name/last_name columns, so the upsert
+  // that used to follow always failed and never wrote anything. The booking form
+  // reads first and last name from user_metadata itself.
+  if (!profile || !profile.phone) {
     const userData = user.user_metadata
     if (userData && (userData.first_name || userData.last_name || userData.phone)) {
       // Metadata may carry a malformed phone from an older signup - never trust it
@@ -116,22 +119,10 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
         ...profile,
         id: user.id,
         email: user.email || profile?.email,
-        first_name: userData.first_name || profile?.first_name || '',
-        last_name: userData.last_name || profile?.last_name || '',
         phone: metadataPhone || profile?.phone || '',
         full_name:
           profile?.full_name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
       } as typeof profile
-
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        first_name: userData.first_name || '',
-        last_name: userData.last_name || '',
-        phone: metadataPhone,
-        full_name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
-        role: profile?.role || 'customer',
-      })
     }
   }
 

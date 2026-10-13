@@ -77,14 +77,6 @@ export async function getVehicles(businessId: string, filters: VehicleFilters): 
     query = query.eq('transmission', filters.transmission)
   }
 
-  // Price range filter
-  if (filters.minPrice !== undefined) {
-    query = query.gte('daily_rate', filters.minPrice)
-  }
-  if (filters.maxPrice !== undefined) {
-    query = query.lte('daily_rate', filters.maxPrice)
-  }
-
   // Seats filter
   if (filters.seats) {
     query = query.eq('seats', filters.seats)

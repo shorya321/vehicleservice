@@ -96,16 +96,18 @@ export function convertCurrency(
  */
 export function formatCurrency(
   amount: number,
-  currency: CurrencyCode,
+  currency: CurrencyCode | string,
   locale: string = 'en-US'
 ): string {
-  const currencyInfo = SUPPORTED_CURRENCIES[currency];
+  // Wallet rows store the currency as plain text; an unlisted code used to
+  // throw here and take the whole email or PDF down with it.
+  const decimals = isSupportedCurrency(currency) ? SUPPORTED_CURRENCIES[currency].decimals : 2;
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency,
-    minimumFractionDigits: currencyInfo.decimals,
-    maximumFractionDigits: currencyInfo.decimals,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(amount);
 }
 

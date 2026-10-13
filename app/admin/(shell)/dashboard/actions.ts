@@ -411,14 +411,14 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       make,
       model,
       created_at,
-      vendor:profiles!vendor_id(full_name)
+      vendor:vendor_applications!business_id(business_name)
     `)
     .gte('created_at', twoDaysAgo.toISOString())
     .order('created_at', { ascending: false })
     .limit(5)
 
   recentVehicles?.forEach(vehicle => {
-    const vendorName = vehicle.vendor?.full_name || 'Unknown Vendor'
+    const vendorName = vehicle.vendor?.business_name || 'Unknown Vendor'
     activities.push({
       id: `vehicle-${vehicle.id}`,
       type: 'vehicle_added',

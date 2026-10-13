@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { VehicleFiltersComponent } from "./vehicle-filters"
-import { VehicleFilters } from "../actions"
+import type { VehicleFilters } from "@/lib/types/vehicle"
 
 interface ClientFiltersProps {
   initialFilters: VehicleFilters
@@ -52,18 +52,10 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete("page")
     }
 
-    // Advanced filters
-    if (filters.minPrice !== undefined && filters.minPrice > 0) {
-      params.set("minPrice", filters.minPrice.toString())
-    } else {
-      params.delete("minPrice")
-    }
-
-    if (filters.maxPrice !== undefined && filters.maxPrice > 0) {
-      params.set("maxPrice", filters.maxPrice.toString())
-    } else {
-      params.delete("maxPrice")
-    }
+    // Advanced filters. Price was removed: vehicles carry no rate (fares
+    // come from zone pricing), so a stale minPrice/maxPrice param is dropped.
+    params.delete("minPrice")
+    params.delete("maxPrice")
 
     if (filters.seats !== undefined && filters.seats > 0) {
       params.set("seats", filters.seats.toString())

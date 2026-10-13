@@ -105,7 +105,7 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
                 currentPage={page}
                 totalPages={totalPages}
                 baseUrl="/admin/blog/categories"
-                searchParams={resolvedSearchParams}
+                queryParams={resolvedSearchParams}
               />
             </div>
           )}

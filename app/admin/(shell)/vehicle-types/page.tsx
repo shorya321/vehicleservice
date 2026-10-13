@@ -160,7 +160,7 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
                   currentPage={page}
                   totalPages={totalPages}
                   baseUrl="/admin/vehicle-types"
-                  searchParams={resolvedSearchParams}
+                  queryParams={resolvedSearchParams}
                 />
               </div>
             )}
