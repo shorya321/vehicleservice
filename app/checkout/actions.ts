@@ -69,42 +69,6 @@ export interface VehicleTypeDetails {
   category: string
 }
 
-export async function getRouteById(routeId: string): Promise<RouteDetails | null> {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('routes')
-    .select(`
-      id,
-      route_name,
-      distance_km,
-      estimated_duration_minutes,
-      base_price,
-      origin:origin_location_id(
-        id,
-        name,
-        city,
-        country_code
-      ),
-      destination:destination_location_id(
-        id,
-        name,
-        city,
-        country_code
-      )
-    `)
-    .eq('id', routeId)
-    .eq('is_active', true)
-    .single()
-
-  if (error || !data) {
-    console.error('Error fetching route:', error)
-    return null
-  }
-
-  return data as RouteDetails
-}
-
 // Addon types for checkout
 export interface CheckoutAddon {
   id: string

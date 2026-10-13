@@ -136,9 +136,6 @@ export function PublicHeader({
   }
 
   const getInitials = (profile: Profile | null) => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase()
-    }
     if (profile?.full_name) {
       return profile.full_name
         .split(' ')

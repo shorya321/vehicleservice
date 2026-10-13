@@ -41,7 +41,7 @@ export async function getPopularZones(): Promise<PopularZone[]> {
     name: zone.name,
     slug: zone.slug,
     description: zone.description,
-    sortOrder: zone.sort_order,
+    sortOrder: zone.sort_order ?? 0,
     locationCount: zone.locations?.[0]?.count || 0
   }))
 }

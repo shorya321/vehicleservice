@@ -71,7 +71,7 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
         <Avatar className="h-9 w-9">
           <AvatarImage
             src={profile?.avatar_url || undefined}
-            alt={profile?.full_name || profile?.first_name || user.email}
+            alt={profile?.full_name || user.email}
           />
           <AvatarFallback className="bg-[var(--charcoal)] text-[var(--gold-text)] text-sm">
             {getInitials(profile)}
@@ -79,7 +79,7 @@ export function MenuUserCard({ user, profile, getInitials, onClose, reducedMotio
         </Avatar>
         <div className="flex flex-col min-w-0">
           <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-            {profile?.full_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User'}
+            {profile?.full_name || 'User'}
           </p>
           <p className="text-xs text-[var(--text-muted)] truncate">
             {user.email}

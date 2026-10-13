@@ -39,13 +39,3 @@ export { AuthFooterLinks, ForgotPasswordLink } from './auth-footer-links';
 
 // Feedback components
 export { AnimatedAlert, InlineAlert } from './animated-alert';
-
-// Legacy components (for backwards compatibility)
-export {
-  AuthPageWrapper,
-  AnimatedIconBadge,
-  AnimatedHeader,
-  AnimatedCard,
-  AnimatedFooter,
-  authAnimations,
-} from './auth-page-wrapper';
