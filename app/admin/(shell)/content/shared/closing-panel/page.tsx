@@ -7,7 +7,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { ClosingPanelForm } from './components/closing-panel-form'
 
 export const metadata: Metadata = {
-  title: 'Closing panel | Admin Portal',
+  title: 'Footer Banner | Admin Portal',
 }
 
 export default async function ClosingPanelPage() {
@@ -26,11 +26,11 @@ export default async function ClosingPanelPage() {
 
   return (
     <AnimatedPage>
-      <Breadcrumb items={[{ label: 'Pages', href: '/admin/content/pages' }, { label: 'Closing panel' }]} />
+      <Breadcrumb items={[{ label: 'Shared Sections', href: '/admin/content/shared' }, { label: 'Footer Banner' }]} />
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Closing panel</h1>
-          <p className="text-muted-foreground">Shared section above the footer on Blog, About and FAQ</p>
+          <h1 className="text-3xl font-bold tracking-tight">Footer Banner</h1>
+          <p className="text-muted-foreground">Shared section above the footer on every Blog page, About and FAQ</p>
         </div>
         <ClosingPanelForm initialContent={parseClosingPanel(data?.content)} />
       </div>

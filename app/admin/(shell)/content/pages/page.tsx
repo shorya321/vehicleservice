@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { CheckCircle2, FileText, PanelBottom, PenLine, Search } from 'lucide-react'
+import { CheckCircle2, FileText, PenLine, Search } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth/actions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toCmsPage } from '@/lib/cms/server'
@@ -9,7 +8,6 @@ import { formatBookingDate } from '@/lib/utils/timezone'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { PageStatCard } from './components/page-stat-card'
 import { PagesTable, type PageRowView } from './components/pages-table'
 
@@ -93,27 +91,6 @@ export default async function ContentPagesPage() {
           delay={0.4}
         />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Shared sections</CardTitle>
-          <CardDescription>Edited once, shown on several pages</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border bg-card p-4">
-            <div className="flex items-center gap-3">
-              <PanelBottom className="h-5 w-5 text-primary" aria-hidden="true" />
-              <div>
-                <p className="font-medium">Closing panel</p>
-                <p className="text-sm text-muted-foreground">Above the footer on Blog, About and FAQ</p>
-              </div>
-            </div>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/shared/closing-panel">Edit</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>

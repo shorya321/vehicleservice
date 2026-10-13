@@ -10,6 +10,8 @@ import {
   Calendar,
   Settings,
   FileText,
+  Files,
+  PanelBottom,
   BarChart3,
   Package,
   MapPin,
@@ -137,6 +139,18 @@ const navGroups: NavGroup[] = [
         href: "/admin/content/pages",
         icon: FileText,
         badge: null,
+        submenu: [
+          {
+            name: "All Pages",
+            href: "/admin/content/pages",
+            icon: Files,
+          },
+          {
+            name: "Shared Sections",
+            href: "/admin/content/shared",
+            icon: PanelBottom,
+          },
+        ]
       },
       {
         name: "SEO",

@@ -57,7 +57,7 @@ export async function updateClosingPanel(content: unknown): Promise<{ success: b
     for (const path of CLOSING_PANEL_PATHS) {
       revalidatePath(path, 'layout')
     }
-    revalidatePath('/admin/content/shared/closing-panel')
+    revalidatePath('/admin/content/shared', 'layout')
 
     return { success: true }
   } catch (error: unknown) {

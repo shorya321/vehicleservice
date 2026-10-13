@@ -10,3 +10,18 @@ export function blockTag(key: CmsBlockKey): string {
 
 /** Pages that render the closing panel, revalidated when it is saved. */
 export const CLOSING_PANEL_PATHS = ['/blog', '/about', '/faq'] as const
+
+/** Admin-facing name and placement of each shared section. */
+export const SHARED_SECTIONS: readonly {
+  key: CmsBlockKey
+  name: string
+  usedOn: string
+  href: string
+}[] = [
+  {
+    key: 'closing-panel',
+    name: 'Footer Banner',
+    usedOn: 'Above the footer on every Blog page, About and FAQ',
+    href: '/admin/content/shared/closing-panel',
+  },
+]
