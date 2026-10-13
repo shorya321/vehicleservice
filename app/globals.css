@@ -10539,3 +10539,113 @@
   font-size: inherit;
   line-height: inherit;
 }
+
+/* ===== About page (/about) =====
+   Laid out on the blog board. Only what the board lacks: hero actions in place
+   of the search, the rail card at a fixed size for the three steps, and the
+   number rows. Scoped with about-board-* so the blog is untouched. */
+.about-board-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.about-board-steps-sec {
+  /* The blog's rail only pads its bottom: on /blog it follows the latest-posts
+     band. Here it follows the hero directly, so it takes that band's top. */
+  padding-top: clamp(4.5rem, 10vw, 8rem);
+}
+
+.about-board-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-board-steps .blog-board-pc {
+  width: auto;
+  height: auto;
+  flex: none;
+}
+
+.about-board-steps .blog-board-pc__core {
+  height: auto;
+  aspect-ratio: 4 / 5;
+}
+
+.about-board-steps .blog-board-pc__lbl p {
+  margin-top: 8px;
+  max-width: 32ch;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(248, 246, 243, 0.82);
+}
+
+.about-board-steps__tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+}
+
+.about-board-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 8px;
+  border-top: 1px solid var(--stub-line);
+}
+
+.about-board-values article {
+  padding: 28px 28px 8px 0;
+}
+
+.about-board-values article + article {
+  padding-left: 28px;
+  border-left: 1px solid var(--stub-line);
+}
+
+.about-board-values__fig {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--text-primary);
+}
+
+.about-board-values__fig span {
+  color: var(--gold);
+}
+
+.about-board-values h3 {
+  margin-top: 18px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.about-board-values__body {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+  .about-board-steps,
+  .about-board-values {
+    grid-template-columns: 1fr;
+  }
+
+  .about-board-values article + article {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--stub-line);
+  }
+}

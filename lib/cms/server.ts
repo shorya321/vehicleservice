@@ -8,6 +8,8 @@ import { parseLegalContent } from './templates/legal/parse'
 import type { LegalContent } from './templates/legal/schema'
 import { parseContactContent } from './templates/contact/parse'
 import type { ContactContent } from './templates/contact/schema'
+import { parseAboutContent } from './templates/about/parse'
+import type { AboutContent } from './templates/about/schema'
 
 const REVALIDATE_SECONDS = 3600
 
@@ -78,4 +80,9 @@ export async function getLegalContent(slug: string, fallback: LegalContent): Pro
 export async function getContactContent(): Promise<ContactContent> {
   const page = await getPublishedPage('/contact')
   return parseContactContent(page?.content)
+}
+
+export async function getAboutContent(): Promise<AboutContent> {
+  const page = await getPublishedPage('/about')
+  return parseAboutContent(page?.content)
 }

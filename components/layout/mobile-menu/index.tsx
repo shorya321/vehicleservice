@@ -27,6 +27,7 @@ import {
   LayoutDashboard,
   LogOut,
   Phone,
+  Info,
 } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { HeaderProfile } from '@/components/layout/header-profile'
@@ -147,6 +148,7 @@ export function MobileMenu({
             <MenuNavItem href="/#fleet" label="Fleet" icon={Car} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#fleet')} />
             <MenuNavItem href="/blog" label="Blog" icon={BookOpen} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/blog')} />
             <MenuNavItem href="/#faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#faq')} />
+            <MenuNavItem href="/about" label="About" icon={Info} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/about')} />
             <MenuNavItem href="/contact" label="Contact" icon={Mail} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/contact')} />
           </MenuSection>
 

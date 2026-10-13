@@ -22,6 +22,8 @@ import { HomeContentForm } from './components/home/home-content-form'
 import { ContactContentForm } from './components/contact/contact-content-form'
 import { LegalContentForm } from './components/legal/legal-content-form'
 import { parseContactContent } from '@/lib/cms/templates/contact/parse'
+import { parseAboutContent } from '@/lib/cms/templates/about/parse'
+import { AboutContentForm } from './components/about/about-content-form'
 import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
 import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
 import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
@@ -128,6 +130,8 @@ function renderContentEditor(page: CmsPage) {
       return <HomeContentForm pageId={page.id} initialContent={parseHomeContent(page.content)} />
     case 'contact':
       return <ContactContentForm pageId={page.id} initialContent={parseContactContent(page.content)} />
+    case 'about':
+      return <AboutContentForm pageId={page.id} initialContent={parseAboutContent(page.content)} />
     case 'terms':
       return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_TERMS_CONTENT)} />
     case 'privacy':

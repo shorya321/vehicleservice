@@ -13,6 +13,11 @@ export const PAGE_FALLBACKS: Readonly<Record<string, { title: string; descriptio
     description:
       'Get in touch with Infinia Transfers for luxury vehicle transfer services in Dubai. Our concierge team is available around the clock.',
   },
+  '/about': {
+    title: 'About Us',
+    description:
+      'Infinia Transfers connects travellers with vetted local transport companies for fixed-price private airport and city transfers.',
+  },
   '/terms': {
     title: 'Terms & Conditions',
     description: 'Terms of service for booking private airport and city transfers through Infinia Transfers.',

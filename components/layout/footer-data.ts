@@ -24,6 +24,7 @@ export const FOOTER_LINK_CATEGORIES: readonly FooterLinkCategory[] = [
   {
     title: 'Company',
     links: [
+      { name: 'About us', href: '/about' },
       { name: 'Services', href: '/#services' },
       { name: 'Partner with us', href: '/become-vendor' },
       { name: 'Blog', href: '/blog' },
