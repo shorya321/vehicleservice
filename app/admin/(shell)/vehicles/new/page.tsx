@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminAddVehiclePage() {
-  const { vendors, error } = await getVendors()
+  const { vendors } = await getVendors()
 
-  if (error || !vendors) {
+  if (!vendors) {
     notFound()
   }
 

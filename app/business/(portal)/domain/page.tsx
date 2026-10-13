@@ -115,7 +115,7 @@ export default async function CustomDomainPage() {
       <DomainConfiguration
         businessAccountId={businessAccount.id}
         currentDomain={businessAccount.custom_domain}
-        isVerified={businessAccount.custom_domain_verified}
+        isVerified={businessAccount.custom_domain_verified ?? false}
       />
 
       {/* DNS Instructions */}

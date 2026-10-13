@@ -89,9 +89,9 @@ export default async function UserActivityPage({ params }: UserActivityPageProps
                           <Clock className="h-3 w-3" />
                           {format(toBookingTz(log.created_at), "PPp")}
                         </div>
-                        {log.ip_address && (
-                          <span>IP: {log.ip_address}</span>
-                        )}
+                        {log.ip_address ? (
+                          <span>IP: {String(log.ip_address)}</span>
+                        ) : null}
                       </div>
                     </div>
                   </div>

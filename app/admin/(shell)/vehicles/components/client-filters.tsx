@@ -8,7 +8,7 @@ interface ClientFiltersProps {
   vendors: Array<{
     id: string
     business_name: string
-    business_email: string
+    business_email: string | null
   }>
 }
 
@@ -23,8 +23,6 @@ export function ClientFilters({ vendors }: ClientFiltersProps) {
     status: (searchParams.get('status') as any) || 'all',
     fuelType: (searchParams.get('fuelType') as any) || 'all',
     transmission: (searchParams.get('transmission') as any) || 'all',
-    minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
-    maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
     seats: searchParams.get('seats') ? parseInt(searchParams.get('seats')!) : undefined,
     page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1,
   }
@@ -38,8 +36,6 @@ export function ClientFilters({ vendors }: ClientFiltersProps) {
     if (newFilters.status && newFilters.status !== 'all') params.set('status', newFilters.status)
     if (newFilters.fuelType && newFilters.fuelType !== 'all') params.set('fuelType', newFilters.fuelType)
     if (newFilters.transmission && newFilters.transmission !== 'all') params.set('transmission', newFilters.transmission)
-    if (newFilters.minPrice !== undefined) params.set('minPrice', newFilters.minPrice.toString())
-    if (newFilters.maxPrice !== undefined) params.set('maxPrice', newFilters.maxPrice.toString())
     if (newFilters.seats !== undefined) params.set('seats', newFilters.seats.toString())
     if (newFilters.page && newFilters.page > 1) params.set('page', newFilters.page.toString())
     

@@ -35,8 +35,8 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
     search: params.search,
     originLocationId: params.originLocationId,
     destinationLocationId: params.destinationLocationId,
-    isActive: params.isActive === 'true' ? true : params.isActive === 'false' ? false : 'all',
-    isPopular: params.isPopular === 'true' ? true : params.isPopular === 'false' ? false : 'all',
+    isActive: params.isActive === 'true' ? true : params.isActive === 'false' ? false : ('all' as const),
+    isPopular: params.isPopular === 'true' ? true : params.isPopular === 'false' ? false : ('all' as const),
     page: params.page ? parseInt(params.page) : 1,
   }
 

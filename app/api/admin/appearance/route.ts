@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { AdminThemeConfig } from '@/lib/admin'
+import type { Json } from '@/lib/supabase/types'
 
 const THEME_SETTINGS_NAME = 'admin-vendor-portal'
 
@@ -54,7 +55,7 @@ export async function PUT(request: NextRequest) {
     const { error: updateError } = await supabase
       .from('theme_settings')
       .update({
-        config: body,
+        config: body as unknown as Json,
         updated_at: new Date().toISOString(),
       })
       .eq('name', THEME_SETTINGS_NAME)

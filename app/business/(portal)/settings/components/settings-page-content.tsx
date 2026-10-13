@@ -241,8 +241,8 @@ export function SettingsPageContent({
           businessAccountId={businessAccountId}
           currentData={{
             business_name: businessAccount.business_name,
-            business_phone: businessAccount.business_phone,
-            contact_person_name: businessAccount.contact_person_name,
+            business_phone: businessAccount.business_phone ?? undefined,
+            contact_person_name: businessAccount.contact_person_name ?? undefined,
             address: businessAccount.address || '',
             city: businessAccount.city || '',
             country_code: businessAccount.country_code || '',

@@ -20,8 +20,8 @@ interface GroupBooking {
   booking_status: string;
   total_price: number;
   customer_name: string;
-  from_locations: { name: string; city: string } | null;
-  to_locations: { name: string; city: string } | null;
+  from_locations: { name: string; city: string | null } | null;
+  to_locations: { name: string; city: string | null } | null;
 }
 
 interface QuotationBookingGroupProps<T extends GroupBooking> {

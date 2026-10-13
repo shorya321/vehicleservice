@@ -98,7 +98,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
   }
 
   const handleSelectAll = (checked: boolean) => {
-    const newSelected = checked ? new Set(reviews.map(review => review.id)) : new Set()
+    const newSelected = checked ? new Set(reviews.map(review => review.id)) : new Set<string>()
     onSelectionChange?.(newSelected)
   }
 

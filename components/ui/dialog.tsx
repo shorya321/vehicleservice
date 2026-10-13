@@ -34,7 +34,7 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, onAnimationEnd, ...props }, ref) => {
   // Force cleanup body styles to fix DropdownMenu + Dialog race condition
-  const handleAnimationEnd = React.useCallback((e: React.AnimationEvent) => {
+  const handleAnimationEnd = React.useCallback((e: React.AnimationEvent<HTMLDivElement>) => {
     if (document.body.style.pointerEvents === 'none') {
       document.body.style.pointerEvents = '';
     }

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if notification is enabled in preferences
-    const preferences = businessAccount.notification_preferences || {};
+    const preferences = (businessAccount.notification_preferences || {}) as Record<string, any>;
     const notificationConfig = preferences[notification_type];
 
     if (notificationConfig && notificationConfig.enabled === false) {

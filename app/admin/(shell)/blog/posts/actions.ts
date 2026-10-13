@@ -80,7 +80,7 @@ export async function getBlogPosts(
   }
 
   if (filters.status && filters.status !== 'all') {
-    query = query.eq('status', filters.status)
+    query = query.eq('status', filters.status as 'draft' | 'published' | 'archived')
   }
 
   if (filters.isFeatured !== undefined && filters.isFeatured !== 'all') {

@@ -94,8 +94,8 @@ interface Booking {
   booking_status: string;
   total_price: number;
   wallet_deduction_amount: number;
-  from_locations: { name: string; city: string } | null;
-  to_locations: { name: string; city: string } | null;
+  from_locations: { name: string; city: string | null } | null;
+  to_locations: { name: string; city: string | null } | null;
   vehicle_types: { name: string } | null;
   created_at: string;
   // Trip columns. One way rows carry trip_type 'one_way' and nulls elsewhere.

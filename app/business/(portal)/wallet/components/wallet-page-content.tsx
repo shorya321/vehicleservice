@@ -8,7 +8,7 @@
  * SCOPE: Business module ONLY
  */
 
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { ArrowRight, CreditCard, Loader2, ExternalLink, Wallet, Activity } from 'lucide-react';
@@ -50,7 +50,7 @@ import {
 interface WalletTransaction {
   id: string;
   amount: number;
-  currency: string;
+  currency: string | null;
   transaction_type: string;
   description: string | null;
   reference_id: string | null;
@@ -289,7 +289,8 @@ export function WalletPageContent({
               )}
             </CardHeader>
             <CardContent className="p-0">
-              <TransactionHistory transactions={transactions} />
+              {/* Type-only: transaction_type is text in the database and one of these four in practice. */}
+              <TransactionHistory transactions={transactions as ComponentProps<typeof TransactionHistory>['transactions']} />
             </CardContent>
           </Card>
         </FadeIn>

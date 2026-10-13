@@ -91,7 +91,7 @@ export const GET = requireBusinessOwner(async (
     const fileName = `invoice-${transaction.id.substring(0, 8)}`;
     const headers = getPDFDownloadHeaders(fileName);
 
-    return new Response(pdfBuffer, {
+    return new Response(pdfBuffer as unknown as BodyInit, {
       headers,
     });
   } catch (error) {

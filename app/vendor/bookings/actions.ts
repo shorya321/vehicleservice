@@ -126,7 +126,7 @@ export interface VendorBooking {
       last_name: string
       email: string | null
       phone: string | null
-      is_primary: boolean
+      is_primary: boolean | null
     }>
     customer_name?: string
     customer_email?: string | null
@@ -272,7 +272,7 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
       console.log(`✅ Successfully fetched ${booking.bookingType} booking ${booking.id} for assignment ${assignment.id}`)
 
       // Get booking passengers if it's a customer booking
-      let bookingPassengers = []
+      let bookingPassengers: VendorBooking['booking']['booking_passengers'] = []
       if (booking.bookingType === 'customer') {
         const { data: passengers } = await adminClient
           .from('booking_passengers')
@@ -343,13 +343,14 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
 
   // Apply client-side filters (for fields in the booking table)
   if (filters?.search) {
-    const searchLower = filters.search.toLowerCase()
+    const search = filters.search
+    const searchLower = search.toLowerCase()
     filteredBookings = filteredBookings.filter(b =>
       b.booking.booking_number.toLowerCase().includes(searchLower) ||
       b.booking.trip_number?.toLowerCase().includes(searchLower) ||
       b.booking.customer_name?.toLowerCase().includes(searchLower) ||
       b.booking.customer_email?.toLowerCase().includes(searchLower) ||
-      b.booking.customer_phone?.includes(filters.search)
+      b.booking.customer_phone?.includes(search)
     )
   }
 
@@ -953,7 +954,8 @@ export async function checkResourceAvailabilityForBooking(
     .from('vehicles')
     .select('*')
     .eq('business_id', vendorApp.id)
-    .eq('category_id', bookingCategoryId)
+    // Unknown category matches nothing, as it always has.
+    .eq('category_id', bookingCategoryId as string)
 
   // Every busy window for the whole fleet in one batched read, from the module that also
   // backs direct bookings, so "busy" means the same thing on both sides, including direct

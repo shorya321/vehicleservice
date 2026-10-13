@@ -53,7 +53,7 @@ export interface UnifiedBooking {
   pickupDatetime: string;
   pickupAddress: string | null;
   dropoffAddress: string | null;
-  fromLocationId: string;
+  fromLocationId: string | null;
   /** Null for an hourly hire, which has no destination. */
   toLocationId: string | null;
   vehicleTypeId: string;
@@ -63,8 +63,8 @@ export interface UnifiedBooking {
   totalPrice: number;
   bookingStatus: string;
   customerNotes: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | null;
+  updatedAt: string | null;
   /** Trip shape. Business bookings are always one way. */
   tripType: 'one_way' | 'round_trip' | 'multi_city' | 'hourly';
   hourlyPackage: string | null;
@@ -901,10 +901,11 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
     }));
 
     businessBookings.forEach((b, index) => {
+      // Type-only: the row type does not list the attached assignments.
       businessBookings[index] = {
         ...b,
         booking_assignments: businessAssignmentMap.get(b.id) ? [businessAssignmentMap.get(b.id)] : [],
-      };
+      } as typeof b;
     });
   }
 

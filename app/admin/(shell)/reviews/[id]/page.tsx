@@ -102,7 +102,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                         <p className="text-sm text-muted-foreground">{review.customer.email}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <StarRating rating={review.rating} size="md" readonly />
+                        <StarRating rating={review.rating} size="md" />
                         <span className="text-lg font-semibold text-luxury-gold">{review.rating}.0</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">

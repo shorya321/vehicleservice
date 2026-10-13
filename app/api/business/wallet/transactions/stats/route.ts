@@ -29,12 +29,12 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
     // Call get_transaction_statistics function
     const { data: statistics, error } = await supabase.rpc('get_transaction_statistics', {
       p_business_account_id: user.businessAccountId,
-      p_start_date: startDate || null,
-      p_end_date: endDate || null,
-      p_transaction_types: transactionTypes ? transactionTypes.split(',') : null,
-      p_min_amount: minAmount ? parseFloat(minAmount) : null,
-      p_max_amount: maxAmount ? parseFloat(maxAmount) : null,
-      p_currency: currency || null,
+      p_start_date: startDate || undefined,
+      p_end_date: endDate || undefined,
+      p_transaction_types: transactionTypes ? transactionTypes.split(',') : undefined,
+      p_min_amount: minAmount ? parseFloat(minAmount) : undefined,
+      p_max_amount: maxAmount ? parseFloat(maxAmount) : undefined,
+      p_currency: currency || undefined,
     });
 
     if (error) {

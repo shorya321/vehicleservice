@@ -322,9 +322,12 @@ export async function getSearchResults(params: {
   if (vehiclesError) {
     console.error('Error fetching vehicles:', vehiclesError)
     return {
+      type: 'route',
+      originName: originDetails.name,
+      destinationName: destinationDetails.name,
       routeId: route.id,
       routeName: route.route_name,
-      distance: route.distance_km,
+      distance: route.distance_km ?? undefined,
       vehicles: []
     }
   }
@@ -357,8 +360,8 @@ export async function getSearchResults(params: {
     const calculatedPrice = zonePrice * vehicleTypeMultiplier
     
     // Calculate duration
-    const hours = Math.floor(route.estimated_duration_minutes / 60)
-    const mins = route.estimated_duration_minutes % 60
+    const hours = Math.floor((route.estimated_duration_minutes ?? 0) / 60)
+    const mins = (route.estimated_duration_minutes ?? 0) % 60
     const duration = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
 
     return {
@@ -435,7 +438,7 @@ export async function getSearchResults(params: {
       const catB = allCategories?.find(c => c.id === b.categoryId)
       
       if (catA?.sort_order !== undefined && catB?.sort_order !== undefined) {
-        return catA.sort_order - catB.sort_order
+        return (catA.sort_order ?? 0) - (catB.sort_order ?? 0)
       }
       return a.categoryName.localeCompare(b.categoryName)
     }))
@@ -444,8 +447,8 @@ export async function getSearchResults(params: {
   const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForRoute(
     route.id, 
     params.passengers,
-    originDetails.zone_id,
-    destinationDetails.zone_id
+    originDetails.zone_id ?? undefined,
+    destinationDetails.zone_id ?? undefined
   )
 
   return {
@@ -454,7 +457,7 @@ export async function getSearchResults(params: {
     destinationName: destinationDetails.name,
     routeId: route.id,
     routeName: route.route_name,
-    distance: route.distance_km,
+    distance: route.distance_km ?? undefined,
     vehicles: searchVehicles,
     vehiclesByCategory,
     vehicleTypes,
@@ -522,7 +525,7 @@ async function getVehicleTypesForZoneTransfer(
       categoryId: vt.category_id || '',
       categorySlug: vt.vehicle_categories?.slug || 'standard',
       capacity: vt.passenger_capacity,
-      luggageCapacity: vt.luggage_capacity,
+      luggageCapacity: vt.luggage_capacity ?? 0,
       description: vt.description || '',
       price: calculatedPrice,
       currency: 'AED',
@@ -635,7 +638,7 @@ async function getVehicleTypesForRoute(
       categoryId: vt.category_id || '',
       categorySlug: vt.vehicle_categories?.slug || 'standard',
       capacity: vt.passenger_capacity,
-      luggageCapacity: vt.luggage_capacity,
+      luggageCapacity: vt.luggage_capacity ?? 0,
       description: vt.description || '',
       price: calculatedPrice,
       currency: 'AED',
@@ -759,25 +762,14 @@ async function getRouteById(
   const { vehicleTypes, vehicleTypesByCategory } = await getVehicleTypesForRoute(
     routeId,
     passengers,
-    route.origin_location.zone_id,
-    route.destination_location.zone_id
+    route.origin_location.zone_id ?? undefined,
+    route.destination_location.zone_id ?? undefined
   )
 
   return {
     type: 'route',
     originName: route.origin_location.name,
     destinationName: route.destination_location.name,
-    route: {
-      id: route.id,
-      routeName: route.route_name,
-      destinationId: route.destination_location_id,
-      destinationName: route.destination_location.name,
-      destinationType: (route.destination_location as any).location_types?.label || 'Location',
-      distance: route.distance_km,
-      duration: route.estimated_duration_minutes,
-      minPrice: 0, // Zone pricing will be used
-      availableVehicles: vehicleTypes.length
-    },
     vehicles: [],
     vehicleTypes,
     vehicleTypesByCategory
@@ -952,7 +944,7 @@ async function getLocationSearchResults(
       route_name,
       distance_km,
       estimated_duration_minutes,
-      destination:destination_location_id(
+      destination:locations!routes_destination_location_id_fkey(
         id,
         name,
         location_types(label)
@@ -987,8 +979,8 @@ async function getLocationSearchResults(
         destinationId: route.destination.id,
         destinationName: route.destination.name,
         destinationType: (route.destination as any).location_types?.label || 'Transfer',
-        distance: route.distance_km,
-        duration: route.estimated_duration_minutes,
+        distance: route.distance_km ?? 0,
+        duration: route.estimated_duration_minutes ?? 0,
         minPrice,
         availableVehicles
       }
@@ -1089,8 +1081,8 @@ async function getRoutesForDestination(
       destinationId: destinationId,
       destinationName: destinationName,
       destinationType: 'city', // Would need to fetch actual type
-      distance: route.distance_km,
-      duration: route.estimated_duration_minutes,
+      distance: route.distance_km ?? 0,
+      duration: route.estimated_duration_minutes ?? 0,
       minPrice,
       availableVehicles
     }

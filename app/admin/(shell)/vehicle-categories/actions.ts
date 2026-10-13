@@ -107,7 +107,7 @@ export async function createCategory(formData: CategoryFormData) {
     if (uploadResult.error) {
       return { error: uploadResult.error }
     }
-    imageUrl = uploadResult.imageUrl
+    imageUrl = uploadResult.imageUrl ?? null
   }
   
   // Create category
@@ -172,7 +172,7 @@ export async function updateCategory(id: string, formData: CategoryFormData) {
     if (uploadResult.error) {
       return { error: uploadResult.error }
     }
-    imageUrl = uploadResult.imageUrl
+    imageUrl = uploadResult.imageUrl ?? null
   }
   
   const { data, error } = await supabase

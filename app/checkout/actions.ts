@@ -8,6 +8,7 @@ import { signBookingPayload } from '@/lib/security/booking-hmac'
 import { phoneSchema } from '@/lib/validation/phone'
 import { bookingWallClockToUtc } from '@/lib/utils/timezone'
 import { validatePickupStart } from '@/lib/trips/validation'
+import type { TablesInsert } from '@/lib/supabase/types'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -464,7 +465,8 @@ export async function createBooking(formData: BookingFormData) {
       booking_status: 'pending',
       payment_status: 'processing',
       customer_notes: validatedData.specialRequests || null
-    })
+      // trip_number is filled by the BEFORE INSERT trigger, so it is not sent.
+    } as TablesInsert<'bookings'>)
     .select()
     .single()
   

@@ -28,7 +28,7 @@ export default async function AdminEditVehiclePage({ params }: AdminEditVehicleP
     notFound()
   }
 
-  if (vendorsResult.error || !vendorsResult.vendors) {
+  if (!vendorsResult.vendors) {
     notFound()
   }
 

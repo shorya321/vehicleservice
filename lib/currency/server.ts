@@ -335,7 +335,7 @@ export async function getLastRateUpdate(): Promise<Date | null> {
       .limit(1)
       .single()
 
-    if (error || !data) {
+    if (error || !data?.fetched_at) {
       return null
     }
 

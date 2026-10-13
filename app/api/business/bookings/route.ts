@@ -350,8 +350,8 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         children,
         infants,
         vehicle_types:vehicle_type_id(name, category:vehicle_categories!category_id(name)),
-        from_location:from_location_id(name),
-        to_location:to_location_id(name)
+        from_location:locations!business_bookings_from_location_id_fkey(name),
+        to_location:locations!business_bookings_to_location_id_fkey(name)
       `)
       .eq('id', bookingId)
       .single();
@@ -370,12 +370,16 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
         category: { name: string } | null;
       } | null;
 
-      const pickupLocation = booking.from_location?.name
-        ? `${booking.from_location.name}${booking.pickup_address ? ` - ${booking.pickup_address}` : ''}`
+      // A to-one embed is an object at runtime; this client is untyped and infers an array.
+      const fromLocation = booking.from_location as unknown as { name: string } | null;
+      const toLocation = booking.to_location as unknown as { name: string } | null;
+
+      const pickupLocation = fromLocation?.name
+        ? `${fromLocation.name}${booking.pickup_address ? ` - ${booking.pickup_address}` : ''}`
         : booking.pickup_address || 'N/A';
 
-      const dropoffLocation = booking.to_location?.name
-        ? `${booking.to_location.name}${booking.dropoff_address ? ` - ${booking.dropoff_address}` : ''}`
+      const dropoffLocation = toLocation?.name
+        ? `${toLocation.name}${booking.dropoff_address ? ` - ${booking.dropoff_address}` : ''}`
         : booking.dropoff_address || 'N/A';
 
       const pickupDateTime = new Date(booking.pickup_datetime).toLocaleString('en-US', {

@@ -342,8 +342,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       id: `booking-${booking.id}`,
       type: 'booking_created',
       description: `New booking ${booking.trip_number || booking.booking_number} created`,
-      timestamp: booking.created_at,
-      timeAgo: formatTimeAgo(booking.created_at),
+      timestamp: booking.created_at ?? '',
+      timeAgo: booking.created_at ? formatTimeAgo(booking.created_at) : '',
       userInfo: `${customerName} • ${route}`
     })
   })

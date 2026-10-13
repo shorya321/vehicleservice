@@ -166,7 +166,7 @@ export const GET = requireBusinessOwner(async (
       })
     );
 
-    return new Response(pdfBuffer, {
+    return new Response(pdfBuffer as unknown as BodyInit, {
       headers,
     });
   } catch (error) {

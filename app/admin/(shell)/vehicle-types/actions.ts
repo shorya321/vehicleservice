@@ -123,7 +123,7 @@ export async function createVehicleType(data: VehicleTypeFormData) {
     if (uploadResult.error) {
       throw new Error(uploadResult.error)
     }
-    imageUrl = uploadResult.imageUrl
+    imageUrl = uploadResult.imageUrl ?? null
   }
 
   const { error } = await supabase
@@ -169,7 +169,7 @@ export async function updateVehicleType(id: string, data: VehicleTypeFormData) {
     if (uploadResult.error) {
       throw new Error(uploadResult.error)
     }
-    imageUrl = uploadResult.imageUrl
+    imageUrl = uploadResult.imageUrl ?? null
   }
 
   const { error } = await supabase

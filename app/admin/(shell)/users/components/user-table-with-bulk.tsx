@@ -259,7 +259,7 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
                             : 'Never'
                           }
                         </span>
-                        {user.sign_in_count > 0 && (
+                        {(user.sign_in_count ?? 0) > 0 && (
                           <span className="text-xs text-muted-foreground">
                             {user.sign_in_count} sign-ins
                           </span>

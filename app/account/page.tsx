@@ -3,11 +3,14 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { AccountClient } from "./account-client"
+import type { ComponentProps } from "react"
 import { getAccountData } from "./account-data"
 import { RouteBandMap } from "@/app/search/results/components/route-band-map"
 import { getAccountOverview } from "./overview-actions"
 import { getRecentNotifications } from "./notification-actions"
 import type { NotificationListItem } from "@/components/account/types"
+
+type AccountClientProps = ComponentProps<typeof AccountClient>
 
 export const metadata: Metadata = {
   title: "My Account | Manage Your Profile & Bookings",
@@ -75,9 +78,10 @@ export default async function AccountPage({
               address_country: profile.address_country,
               created_at: profile.created_at,
             }}
-            notificationPrefs={notificationPrefs}
-            deletionRequest={deletionRequest}
-            vendorApplication={vendorApplication}
+            // Type-only: these rows have nullable columns the client props declare as set.
+            notificationPrefs={notificationPrefs as AccountClientProps['notificationPrefs']}
+            deletionRequest={deletionRequest as AccountClientProps['deletionRequest']}
+            vendorApplication={vendorApplication as AccountClientProps['vendorApplication']}
             unreadNotifications={unreadNotifications}
             overview={overview}
             recentAlerts={(recentAlerts.data as NotificationListItem[] | null) ?? []}

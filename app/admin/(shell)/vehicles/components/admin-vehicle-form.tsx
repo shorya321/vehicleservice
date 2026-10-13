@@ -32,7 +32,7 @@ interface VehicleWithVendor extends Vehicle {
   vendor?: {
     id: string
     business_name: string
-    business_email: string
+    business_email: string | null
   }
 }
 
@@ -41,7 +41,7 @@ interface AdminVehicleFormProps {
   vendors: Array<{
     id: string
     business_name: string
-    business_email: string
+    business_email: string | null
     user?: {
       full_name: string | null
       email: string

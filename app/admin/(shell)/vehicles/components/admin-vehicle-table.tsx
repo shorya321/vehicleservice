@@ -54,7 +54,7 @@ type VehicleWithDetails = Vehicle & {
   vendor?: {
     id: string
     business_name: string
-    business_email: string
+    business_email: string | null
     user?: {
       full_name: string | null
       email: string

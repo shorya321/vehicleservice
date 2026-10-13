@@ -18,6 +18,9 @@ import {
 import { useInView as useFramerInView } from 'motion/react';
 import { viewportOptions } from './config';
 
+/** motion's margin type: a CSS margin string such as '-50px' or '0px 0px -10% 0px'. */
+type InViewMargin = NonNullable<Parameters<typeof useFramerInView>[1]>['margin'];
+
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 /**
@@ -89,7 +92,7 @@ export function useInView(options?: {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useFramerInView(ref, {
     once: options?.once ?? viewportOptions.once,
-    margin: options?.margin ?? viewportOptions.margin,
+    margin: (options?.margin ?? viewportOptions.margin) as InViewMargin,
     amount: options?.amount ?? viewportOptions.amount,
   });
 

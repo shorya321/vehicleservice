@@ -206,8 +206,10 @@ export async function getNotificationPreferences(
       console.error('Get notification preferences error:', error)
       return null
     }
-    
-    return data
+
+    // Type-only: the row's booleans are nullable and each form applies its own
+    // default for null, so the row is passed through unchanged.
+    return data as NotificationPreferences | null
   } catch (error) {
     console.error('Get notification preferences error:', error)
     return null

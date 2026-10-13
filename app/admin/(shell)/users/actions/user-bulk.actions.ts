@@ -169,7 +169,7 @@ export async function exportUsersToCSV(
       user.email_verified ? 'Yes' : 'No',
       user.two_factor_enabled ? 'Yes' : 'No',
       user.last_sign_in_at || 'Never',
-      user.sign_in_count.toString(),
+      (user.sign_in_count ?? 0).toString(),
       user.created_at
     ])
 

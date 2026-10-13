@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server"
 import {
   LocationFilters,
   PaginatedLocations,
-  LocationFormData
+  LocationFormData,
+  LocationWithType
 } from "@/lib/types/location"
 import { revalidatePath } from "next/cache"
 import { generateSlug, getCountrySlug } from "@/lib/utils/slug"
@@ -78,7 +79,8 @@ export async function getLocations(filters: LocationFilters = {}): Promise<Pagin
   }
 
   return {
-    locations: locations || [],
+    // Type-only: location_types.color_config is jsonb holding a LocationTypeColorConfig.
+    locations: (locations || []) as unknown as LocationWithType[],
     total: count || 0,
     page,
     limit,

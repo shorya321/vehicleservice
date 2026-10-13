@@ -674,7 +674,8 @@ export function parseThemeConfig(themeConfig: unknown): ThemeConfig {
  * @returns Complete ThemeConfig
  */
 export function mergeThemeConfig(
-  partial: Partial<ThemeConfig>,
+  // Each section is spread over the base, so a section may itself be partial.
+  partial: { [K in keyof ThemeConfig]?: Partial<ThemeConfig[K]> },
   base: ThemeConfig = DEFAULT_THEME_CONFIG
 ): ThemeConfig {
   return {

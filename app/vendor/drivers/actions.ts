@@ -67,7 +67,8 @@ export async function getDrivers() {
     
     if (error) throw error
     
-    return { data, error: null }
+    // Type-only: nullable flag/timestamp columns, read as set by the driver UI.
+    return { data: data as VendorDriver[], error: null }
   } catch (error: any) {
     console.error('Error fetching drivers:', error)
     return { data: null, error: error.message }
@@ -90,7 +91,8 @@ export async function getDriver(driverId: string) {
     
     if (error) throw error
     
-    return { data, error: null }
+    // Type-only: nullable flag/timestamp columns, read as set by the driver UI.
+    return { data: data as VendorDriver, error: null }
   } catch (error: any) {
     console.error('Error fetching driver:', error)
     return { data: null, error: error.message }

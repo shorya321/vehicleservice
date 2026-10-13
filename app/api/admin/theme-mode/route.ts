@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Update mode in config
     const updatedConfig = {
-      ...currentTheme.config,
+      ...(currentTheme.config as Record<string, unknown>),
       mode: newMode,
     }
 

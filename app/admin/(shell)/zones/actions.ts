@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { Database } from '@/lib/supabase/types'
 
 export interface Zone {
   id: string
@@ -13,6 +14,19 @@ export interface Zone {
   created_at: string
   updated_at: string
   location_count?: number
+}
+
+type ZoneRow = Database['public']['Tables']['zones']['Row']
+
+/** The columns are nullable with defaults; the admin UI reads them as always set. */
+function toZone(row: ZoneRow): Zone {
+  return {
+    ...row,
+    sort_order: row.sort_order ?? 0,
+    is_active: row.is_active ?? false,
+    created_at: row.created_at ?? '',
+    updated_at: row.updated_at ?? '',
+  }
 }
 
 export interface ZoneFilters {
@@ -89,9 +103,9 @@ export async function getZones(filters: ZoneFilters = {}): Promise<PaginatedZone
   const total = count || 0
 
   return {
-    zones: (zones || []).map(zone => ({
-      ...zone,
-      location_count: zone.locations?.[0]?.count || 0,
+    zones: (zones || []).map(({ locations, ...zone }) => ({
+      ...toZone(zone),
+      location_count: locations?.[0]?.count || 0,
     })),
     total,
     page,
@@ -114,7 +128,7 @@ export async function getZone(id: string): Promise<Zone | null> {
     return null
   }
 
-  return data
+  return toZone(data)
 }
 
 export async function createZone(formData: FormData) {

@@ -7,6 +7,7 @@ import { LocationForm } from '../../components/location-form'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveLocationTypes } from '@/lib/actions/location-types'
 import { LocationTypeRecord } from '@/lib/types/location-type'
+import type { LocationWithType } from '@/lib/types/location'
 
 export const metadata: Metadata = {
   title: 'Edit Location - Admin',
@@ -59,7 +60,7 @@ export default async function EditLocationPage({
           </div>
         </div>
 
-        <LocationForm location={location} mode="edit" locationTypes={locationTypes} />
+        <LocationForm location={location as unknown as LocationWithType} mode="edit" locationTypes={locationTypes} />
       </div>
   )
 }

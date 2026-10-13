@@ -20,6 +20,11 @@ import {
   type RevenueRangeInput,
 } from '@/lib/dashboard/revenue-range'
 
+/** Truthy ids only, typed as strings for `.in()`. */
+function ids(values: (string | null)[]): string[] {
+  return values.filter((v): v is string => Boolean(v))
+}
+
 export type PeriodType = 'daily' | 'weekly' | 'monthly'
 
 /**
@@ -99,13 +104,9 @@ export async function getVendorDashboardStats(): Promise<VendorDashboardStats> {
 
   if (completedAssignments && completedAssignments.length > 0) {
     // Fetch revenue from both customer and business bookings
-    const customerBookingIds = completedAssignments
-      .filter(a => a.booking_id)
-      .map(a => a.booking_id)
+    const customerBookingIds = ids(completedAssignments.map(a => a.booking_id))
 
-    const businessBookingIds = completedAssignments
-      .filter(a => a.business_booking_id)
-      .map(a => a.business_booking_id)
+    const businessBookingIds = ids(completedAssignments.map(a => a.business_booking_id))
 
     // Get customer booking totals
     if (customerBookingIds.length > 0) {
@@ -145,7 +146,7 @@ export async function getVendorDashboardStats(): Promise<VendorDashboardStats> {
   let hasRatings = false
 
   if (allCompletedAssignments && allCompletedAssignments.length > 0) {
-    const bookingIds = allCompletedAssignments.map(a => a.booking_id).filter(Boolean)
+    const bookingIds = ids(allCompletedAssignments.map(a => a.booking_id))
 
     if (bookingIds.length > 0) {
       const { data: reviews } = await adminClient
@@ -207,7 +208,7 @@ export async function getRecentBusinessActivities(): Promise<BusinessActivity[]>
         id: n.id,
         action: n.title,
         details: n.message,
-        time: formatTimeAgo(new Date(n.created_at)),
+        time: formatTimeAgo(new Date(n.created_at ?? 0)),
         type: n.type as any || 'update'
       })
     })
@@ -252,7 +253,7 @@ export async function getRecentBusinessActivities(): Promise<BusinessActivity[]>
         id: d.id,
         action: 'New driver added',
         details: `${d.first_name} ${d.last_name} joined the team`,
-        time: formatTimeAgo(new Date(d.created_at)),
+        time: formatTimeAgo(new Date(d.created_at ?? 0)),
         type: 'driver'
       })
     })
@@ -367,8 +368,8 @@ export async function getVendorRevenueTrend(
   }
 
   // Fetch booking amounts
-  const customerBookingIds = completedAssignments.filter(a => a.booking_id).map(a => a.booking_id)
-  const businessBookingIds = completedAssignments.filter(a => a.business_booking_id).map(a => a.business_booking_id)
+  const customerBookingIds = ids(completedAssignments.map(a => a.booking_id))
+  const businessBookingIds = ids(completedAssignments.map(a => a.business_booking_id))
 
   const bookingAmounts: Map<string, { amount: number; date: string }> = new Map()
 
@@ -547,13 +548,9 @@ export async function getAnalyticsData(): Promise<{
       monthBookings = assignments.length
 
       // Get customer booking totals
-      const customerBookingIds = assignments
-        .filter(a => a.booking_id)
-        .map(a => a.booking_id)
+      const customerBookingIds = ids(assignments.map(a => a.booking_id))
 
-      const businessBookingIds = assignments
-        .filter(a => a.business_booking_id)
-        .map(a => a.business_booking_id)
+      const businessBookingIds = ids(assignments.map(a => a.business_booking_id))
 
       if (customerBookingIds.length > 0) {
         const { data: customerBookings } = await adminClient
@@ -612,9 +609,7 @@ export async function getAnalyticsData(): Promise<{
       const completionRate = totalAssignments > 0 ? (completedAssignments.length / totalAssignments) * 100 : 0
 
       // Get ratings for completed bookings
-      const bookingIds = completedAssignments
-        .map(a => a.booking_id)
-        .filter(Boolean)
+      const bookingIds = ids(completedAssignments.map(a => a.booking_id))
 
       let averageRating = 0
       let hasRatings = false

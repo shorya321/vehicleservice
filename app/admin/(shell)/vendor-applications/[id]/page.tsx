@@ -27,6 +27,23 @@ import {
 import Link from "next/link"
 import { format, formatDistanceToNow } from "date-fns"
 
+/** Shape app/become-vendor/actions.ts writes into the documents jsonb column. */
+interface VendorDocuments {
+  trade_license_number?: string | null
+  trade_license_expiry?: string | null
+  insurance_policy_number?: string | null
+  insurance_expiry?: string | null
+}
+
+/** Shape app/become-vendor/actions.ts writes into the banking_details jsonb column. */
+interface VendorBankingDetails {
+  bank_name?: string | null
+  account_holder_name?: string | null
+  account_number?: string | null
+  iban?: string | null
+  swift_code?: string | null
+}
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
@@ -57,6 +74,9 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
   if (error || !application) {
     notFound()
   }
+
+  const documents = application.documents as VendorDocuments | null
+  const bankingDetails = application.banking_details as VendorBankingDetails | null
 
   const statusConfig = {
     pending: {
@@ -227,7 +247,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {application.documents ? (
+              {documents ? (
                 <>
                   {/* Trade License */}
                   <div className="space-y-3">
@@ -237,12 +257,12 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                         <p className="text-sm font-medium">Trade License</p>
                         <div className="mt-1 space-y-1">
                           <p className="text-sm text-muted-foreground">
-                            Number: {application.documents.trade_license_number || 'Not provided'}
+                            Number: {documents.trade_license_number || 'Not provided'}
                           </p>
-                          {application.documents.trade_license_expiry && (
+                          {documents.trade_license_expiry && (
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
-                              Expires: {format(new Date(application.documents.trade_license_expiry), 'PPP')}
-                              {new Date(application.documents.trade_license_expiry) < new Date() && (
+                              Expires: {format(new Date(documents.trade_license_expiry), 'PPP')}
+                              {new Date(documents.trade_license_expiry) < new Date() && (
                                 <Badge variant="destructive" className="text-xs">
                                   <AlertCircle className="mr-1 h-3 w-3" />
                                   Expired
@@ -263,12 +283,12 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                         <p className="text-sm font-medium">Insurance Policy</p>
                         <div className="mt-1 space-y-1">
                           <p className="text-sm text-muted-foreground">
-                            Policy Number: {application.documents.insurance_policy_number || 'Not provided'}
+                            Policy Number: {documents.insurance_policy_number || 'Not provided'}
                           </p>
-                          {application.documents.insurance_expiry && (
+                          {documents.insurance_expiry && (
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
-                              Expires: {format(new Date(application.documents.insurance_expiry), 'PPP')}
-                              {new Date(application.documents.insurance_expiry) < new Date() && (
+                              Expires: {format(new Date(documents.insurance_expiry), 'PPP')}
+                              {new Date(documents.insurance_expiry) < new Date() && (
                                 <Badge variant="destructive" className="text-xs">
                                   <AlertCircle className="mr-1 h-3 w-3" />
                                   Expired
@@ -288,7 +308,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
           </Card>
 
           {/* Banking Details */}
-          {application.banking_details && Object.values(application.banking_details).some(v => v) && (
+          {bankingDetails && Object.values(bankingDetails).some(v => v) && (
             <Card>
               <CardHeader>
                 <CardTitle>Banking Details</CardTitle>
@@ -297,52 +317,52 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {application.banking_details.bank_name && (
+                {bankingDetails.bank_name && (
                   <div className="flex items-start gap-3">
                     <BanknoteIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Bank Name</p>
-                      <p className="text-sm text-muted-foreground">{application.banking_details.bank_name}</p>
+                      <p className="text-sm text-muted-foreground">{bankingDetails.bank_name}</p>
                     </div>
                   </div>
                 )}
 
-                {application.banking_details.account_holder_name && (
+                {bankingDetails.account_holder_name && (
                   <div className="flex items-start gap-3">
                     <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Account Holder</p>
-                      <p className="text-sm text-muted-foreground">{application.banking_details.account_holder_name}</p>
+                      <p className="text-sm text-muted-foreground">{bankingDetails.account_holder_name}</p>
                     </div>
                   </div>
                 )}
 
-                {application.banking_details.account_number && (
+                {bankingDetails.account_number && (
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">Account Number</p>
-                      <p className="text-sm text-muted-foreground font-mono">{application.banking_details.account_number}</p>
+                      <p className="text-sm text-muted-foreground font-mono">{bankingDetails.account_number}</p>
                     </div>
                   </div>
                 )}
 
-                {application.banking_details.iban && (
+                {bankingDetails.iban && (
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">IBAN</p>
-                      <p className="text-sm text-muted-foreground font-mono">{application.banking_details.iban}</p>
+                      <p className="text-sm text-muted-foreground font-mono">{bankingDetails.iban}</p>
                     </div>
                   </div>
                 )}
 
-                {application.banking_details.swift_code && (
+                {bankingDetails.swift_code && (
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">SWIFT Code</p>
-                      <p className="text-sm text-muted-foreground font-mono">{application.banking_details.swift_code}</p>
+                      <p className="text-sm text-muted-foreground font-mono">{bankingDetails.swift_code}</p>
                     </div>
                   </div>
                 )}

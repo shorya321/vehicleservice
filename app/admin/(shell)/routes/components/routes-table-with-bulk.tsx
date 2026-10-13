@@ -219,7 +219,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleTogglePopular(route.id, route.is_popular)}
+                        onClick={() => handleTogglePopular(route.id, route.is_popular ?? false)}
                         disabled={loadingId === route.id}
                       >
                         {route.is_popular ? (
@@ -239,8 +239,8 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Switch
-                      checked={route.is_active}
-                      onCheckedChange={() => handleToggleStatus(route.id, route.is_active)}
+                      checked={route.is_active ?? false}
+                      onCheckedChange={() => handleToggleStatus(route.id, route.is_active ?? false)}
                       disabled={loadingId === route.id}
                     />
                     {route.is_active ? (

@@ -110,7 +110,7 @@ export class NotificationService {
 
     const { error } = await supabase.rpc('mark_all_notifications_read', {
       p_user_id: userId,
-      p_category: category || null,
+      p_category: category || undefined,
     });
 
     if (error) {

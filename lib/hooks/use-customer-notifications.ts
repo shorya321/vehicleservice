@@ -74,6 +74,7 @@ export function useCustomerNotifications(limit: number = 5): UseCustomerNotifica
 
   // Mark notification as read
   const markAsRead = async (id: string) => {
+    if (!userId) return;
     try {
       const { error } = await supabase
         .from('notifications')

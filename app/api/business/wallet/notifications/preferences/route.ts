@@ -95,7 +95,7 @@ export const PUT = requireBusinessOwner(async (request: NextRequest, user) => {
     }
 
     // Merge with existing preferences
-    const currentPreferences = businessAccount.notification_preferences || {};
+    const currentPreferences = (businessAccount.notification_preferences || {}) as Record<string, unknown>;
     const updatedPreferences = {
       ...currentPreferences,
       ...preferences,

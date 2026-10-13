@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import type { AdminThemeConfig } from './theme-utils';
 import { DEFAULT_ADMIN_THEME, mergeWithDefaults } from './theme-utils';
+import type { Json } from '@/lib/supabase/types'
 
 const THEME_SETTINGS_NAME = 'admin-vendor-portal';
 
@@ -50,7 +51,7 @@ export async function updateAdminThemeSettings(
     const { error } = await supabase
       .from('theme_settings')
       .update({
-        config,
+        config: config as unknown as Json,
         updated_at: new Date().toISOString(),
       })
       .eq('name', THEME_SETTINGS_NAME);

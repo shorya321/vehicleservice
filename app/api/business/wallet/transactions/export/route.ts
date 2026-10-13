@@ -28,10 +28,10 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
     // Call export_transactions function
     const { data: transactions, error } = await supabase.rpc('export_transactions', {
       p_business_account_id: user.businessAccountId,
-      p_start_date: startDate || null,
-      p_end_date: endDate || null,
-      p_transaction_types: transactionTypes ? transactionTypes.split(',') : null,
-      p_currency: currency || null,
+      p_start_date: startDate || undefined,
+      p_end_date: endDate || undefined,
+      p_transaction_types: transactionTypes ? transactionTypes.split(',') : undefined,
+      p_currency: currency || undefined,
       p_limit: limit,
     });
 

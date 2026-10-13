@@ -16,7 +16,8 @@ export async function getLocationTypes(): Promise<LocationTypeRecord[]> {
     return []
   }
 
-  return (data ?? []) as LocationTypeRecord[]
+  // color_config is jsonb; LocationTypeRecord gives it the shape the admin writes.
+  return (data ?? []) as unknown as LocationTypeRecord[]
 }
 
 export async function getActiveLocationTypes(): Promise<LocationTypeRecord[]> {
@@ -33,5 +34,6 @@ export async function getActiveLocationTypes(): Promise<LocationTypeRecord[]> {
     return []
   }
 
-  return (data ?? []) as LocationTypeRecord[]
+  // color_config is jsonb; LocationTypeRecord gives it the shape the admin writes.
+  return (data ?? []) as unknown as LocationTypeRecord[]
 }

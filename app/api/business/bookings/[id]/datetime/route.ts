@@ -198,7 +198,7 @@ export const PATCH = requireBusinessAuth(
         .maybeSingle();
 
       if (assignment?.vendor_applications) {
-        const vendor = assignment.vendor_applications as {
+        const vendor = assignment.vendor_applications as unknown as {
           id: string;
           business_name: string;
           business_email: string;

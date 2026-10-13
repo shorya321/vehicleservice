@@ -11,7 +11,7 @@ import path from 'path';
 config({ path: path.resolve(__dirname, '../.env.local') });
 
 // Set test environment variables
-process.env.NODE_ENV = 'test';
+Object.assign(process.env, { NODE_ENV: 'test' });
 
 // Mock environment variables if not present (for CI/CD)
 if (!process.env.STRIPE_CONNECT_CLIENT_ID) {

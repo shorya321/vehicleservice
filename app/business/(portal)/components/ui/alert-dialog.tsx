@@ -36,7 +36,7 @@ const AlertDialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
 >(({ className, onAnimationEnd, ...props }, ref) => {
   // Force cleanup body styles to fix DropdownMenu + AlertDialog race condition
-  const handleAnimationEnd = React.useCallback((e: React.AnimationEvent) => {
+  const handleAnimationEnd = React.useCallback((e: React.AnimationEvent<HTMLDivElement>) => {
     // Clean up pointer-events when exit animation completes
     if (document.body.style.pointerEvents === 'none') {
       document.body.style.pointerEvents = '';

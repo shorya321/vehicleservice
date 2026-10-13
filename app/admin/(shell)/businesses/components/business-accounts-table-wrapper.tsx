@@ -17,11 +17,11 @@ interface BusinessAccount {
   id: string;
   business_name: string;
   business_email: string;
-  business_phone: string;
-  contact_person_name: string;
+  business_phone: string | null;
+  contact_person_name: string | null;
   subdomain: string;
   custom_domain: string | null;
-  custom_domain_verified: boolean;
+  custom_domain_verified: boolean | null;
   wallet_balance: number;
   status: string;
   total_bookings: number;
