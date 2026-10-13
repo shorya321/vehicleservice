@@ -3,8 +3,9 @@ import { ctaSchema, href, imageSrc, optionalText, text } from '@/lib/cms/fields'
 
 /**
  * About page copy, laid out on the blog board (bold title, featured photo,
- * photo cards, number rows, closing plate). Infinia is a marketplace: vendors
- * own the cars and employ the drivers, so nothing here may claim a fleet.
+ * photo cards, number rows). The closing panel is shared with Blog and FAQ and
+ * lives in lib/cms/blocks. Infinia is a marketplace: vendors own the cars and
+ * employ the drivers, so nothing here may claim a fleet.
  */
 
 const figureSchema = z.object({
@@ -65,16 +66,6 @@ export const aboutContentSchema = z.object({
   places: z.object({
     ...sectionHead,
     items: z.array(placeSchema).min(1, 'Add at least one place').max(8),
-  }),
-  close: z.object({
-    visible: z.boolean(),
-    eyebrow: text(40),
-    title: text(90),
-    body: optionalText(320),
-    primary: ctaSchema,
-    secondary: ctaSchema,
-    trust: z.array(optionalText(40)).length(3),
-    images: z.array(imageSrc).length(2),
   }),
 })
 

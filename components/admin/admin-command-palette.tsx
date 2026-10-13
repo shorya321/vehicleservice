@@ -54,6 +54,7 @@ const navigationItems = [
   { name: 'Addons', href: '/admin/addons', icon: Package, shortcut: '' },
   { name: 'Reviews', href: '/admin/reviews', icon: Star, shortcut: '' },
   { name: 'Pages', href: '/admin/content/pages', icon: FileText, shortcut: '' },
+  { name: 'Closing Panel', href: '/admin/content/shared/closing-panel', icon: FileText, shortcut: '' },
   { name: 'SEO', href: '/admin/seo', icon: Search, shortcut: '' },
   { name: 'Blog Posts', href: '/admin/blog/posts', icon: PenLine, shortcut: '' },
   { name: 'Blog Categories', href: '/admin/blog/categories', icon: FolderOpen, shortcut: '' },

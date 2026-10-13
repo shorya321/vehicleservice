@@ -38,6 +38,12 @@ describe('about content', () => {
     expect(result.places).toEqual(DEFAULT_ABOUT_CONTENT.places)
   })
 
+  it('ignores the closing panel an older row still stores', () => {
+    const result = parseAboutContent({ close: { title: 'Old', visible: true }, steps: { title: 'Kept' } })
+    expect(result).not.toHaveProperty('close')
+    expect(result.steps.title).toBe('Kept')
+  })
+
   it('ships images that exist under public/', () => {
     const fs = jest.requireActual<typeof import('fs')>('fs')
     const paths = JSON.stringify(DEFAULT_ABOUT_CONTENT).match(/"\/[a-z/-]+\.(?:jpg|webp)"/g) ?? []

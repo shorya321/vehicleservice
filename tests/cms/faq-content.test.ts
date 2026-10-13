@@ -30,12 +30,16 @@ describe('faq content', () => {
     const result = parseFaqContent({
       hero: { title: 'Edited' },
       topics: [{ name: '', items: [] }],
-      help: { title: '' },
     })
     expect(result.hero.title).toBe('Edited')
     expect(result.hero.body).toBe(DEFAULT_FAQ_CONTENT.hero.body)
     expect(result.topics).toEqual(DEFAULT_FAQ_CONTENT.topics)
-    expect(result.help).toEqual(DEFAULT_FAQ_CONTENT.help)
+  })
+
+  it('ignores the help panel an older row still stores', () => {
+    const result = parseFaqContent({ help: { title: 'Old', visible: true }, hero: { title: 'Kept' } })
+    expect(result).not.toHaveProperty('help')
+    expect(result.hero.title).toBe('Kept')
   })
 
   it('takes a valid topics list whole instead of merging it with the defaults', () => {

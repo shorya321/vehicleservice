@@ -1,23 +1,23 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import type { FaqContent, FaqTopic } from '@/lib/cms/templates/faq/schema'
 import { FaqHero } from './faq-hero'
 import { FaqRail, type FaqRailTopic } from './faq-rail'
 import { FaqItem } from './faq-item'
 import { matchesTerm } from './highlight'
+import { CONTACT_HREF } from './faq-rail'
 
 interface FaqExplorerProps {
   hero: FaqContent['hero']
   topics: FaqTopic[]
   /** Anchor id per topic, same order as `topics`. */
   topicIds: string[]
-  /** Anchor of the help panel, or null when it is hidden. */
-  helpHref: string | null
 }
 
 /** Hero search, topic rail and grouped questions; the search filters in place. */
-export function FaqExplorer({ hero, topics, topicIds, helpHref }: FaqExplorerProps) {
+export function FaqExplorer({ hero, topics, topicIds }: FaqExplorerProps) {
   const [rawTerm, setRawTerm] = useState('')
   const term = rawTerm.trim()
 
@@ -42,7 +42,7 @@ export function FaqExplorer({ hero, topics, topicIds, helpHref }: FaqExplorerPro
         countLabel={term ? `${shown} of ${total}` : `${total} answers`}
       />
       <div className="luxury-container faq-page__board">
-        <FaqRail topics={railTopics} helpHref={helpHref} />
+        <FaqRail topics={railTopics} />
         <div className="faq-page__groups">
           {groups.map((group) => (
             <section key={group.id} id={group.id} aria-labelledby={`${group.id}-heading`} className="faq-page__group">
@@ -59,7 +59,7 @@ export function FaqExplorer({ hero, topics, topicIds, helpHref }: FaqExplorerPro
           ))}
           {groups.length === 0 && (
             <p className="faq-page__empty">
-              No answer mentions &quot;{term}&quot;. Try a shorter word{helpHref ? <>, or <a href={helpHref}>ask the team</a></> : null}.
+              No answer mentions &quot;{term}&quot;. Try a shorter word, or <Link href={CONTACT_HREF}>ask the team</Link>.
             </p>
           )}
         </div>

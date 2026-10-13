@@ -6,7 +6,7 @@ import { getPublishedPosts, getBlogCategories, getPopularTags, getFeaturedPosts 
 import { BoardHero } from "./components/board-hero"
 import { BoardLatest } from "./components/board-latest"
 import { BoardRail } from "./components/board-rail"
-import { BoardClose } from "./components/board-close"
+import { ClosingPanel } from "@/components/cms/closing-panel"
 import { BlogMotionSection } from "./components/blog-motion-wrapper"
 import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { buildEntityMetadata } from '@/lib/seo/page-metadata'
@@ -174,7 +174,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
       {/* Closing: from reading to booking */}
       <div className="blog-board-scope">
-        <BoardClose />
+        <ClosingPanel />
       </div>
     </div>
   )

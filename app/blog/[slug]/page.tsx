@@ -5,7 +5,7 @@ import { getPublishedPost, getRelatedPosts, incrementViewCount } from "@/lib/blo
 import { ArticleBoardHero } from "../components/article-board-hero"
 import { ArticleBoardAuthor } from "../components/article-board-author"
 import { BoardRelated } from "../components/board-related"
-import { BoardClose } from "../components/board-close"
+import { ClosingPanel } from "@/components/cms/closing-panel"
 import { FloatingShare } from "../components/floating-share"
 import { ShareButtons } from "../components/share-buttons"
 import { ReadingProgressBar } from "../components/reading-progress-bar"
@@ -185,7 +185,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       <BoardRelated posts={relatedPosts} />
 
       {/* Closing: from reading to booking */}
-      <BoardClose />
+      <ClosingPanel />
     </article>
   )
 }

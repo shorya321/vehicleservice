@@ -8,7 +8,7 @@ import { getPublishedPosts, getCategoryBySlug, getBlogCategories, getFeaturedPos
 import { BoardHero } from "../../components/board-hero"
 import { BoardLatest } from "../../components/board-latest"
 import { BoardRail } from "../../components/board-rail"
-import { BoardClose } from "../../components/board-close"
+import { ClosingPanel } from "@/components/cms/closing-panel"
 import { buildEntityMetadata } from '@/lib/seo/page-metadata'
 import { listCanonical } from '@/lib/seo/list-canonical'
 
@@ -171,7 +171,7 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
 
       {/* Closing: from reading to booking */}
       <div className="blog-board-scope">
-        <BoardClose />
+        <ClosingPanel />
       </div>
     </div>
   )

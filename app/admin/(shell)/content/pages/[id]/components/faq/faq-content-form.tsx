@@ -7,7 +7,6 @@ import { toast } from 'sonner'
 import { Form } from '@/components/ui/form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TextField } from '@/components/admin/cms/text-field'
-import { SwitchField } from '@/components/admin/cms/switch-field'
 import { EDITOR_TAB_TRIGGER, SaveBar } from '@/components/admin/cms/save-bar'
 import { usePageContentForm } from '@/components/admin/cms/use-page-content-form'
 import { faqContentSchema, type FaqContent, type FaqSectionKey } from '@/lib/cms/templates/faq/schema'
@@ -16,7 +15,6 @@ import { FaqTopicsFields } from './faq-topics-fields'
 const TABS: { key: FaqSectionKey; label: string }[] = [
   { key: 'hero', label: 'Hero' },
   { key: 'topics', label: 'Topics and questions' },
-  { key: 'help', label: 'Help panel' },
 ]
 
 const p = (value: string): FieldPath<FaqContent> => value as FieldPath<FaqContent>
@@ -62,22 +60,6 @@ export function FaqContentForm({ pageId, initialContent }: { pageId: string; ini
               <FaqTopicsFields control={control} />
             </TabsContent>
 
-            <TabsContent value="help" className="space-y-4">
-              <SwitchField control={control} name={p('help.visible')} label="Show this section" />
-              <TextField control={control} name={p('help.eyebrow')} label="Eyebrow" max={40} />
-              <TextField control={control} name={p('help.title')} label="Heading (H2)" max={90} recommended={60} />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <TextField control={control} name={p('help.replies')} label="Reply time" max={30} />
-                <TextField control={control} name={p('help.hours')} label="Hours" max={40} />
-              </div>
-              <p className="text-sm text-muted-foreground">The email shown comes from Settings, General (support email).</p>
-              <div className="grid gap-4 rounded-lg border bg-card p-4 sm:grid-cols-2">
-                <TextField control={control} name={p('help.primary.label')} label="Gold button text" max={40} />
-                <TextField control={control} name={p('help.primary.href')} label="Gold button link" max={300} />
-                <TextField control={control} name={p('help.secondary.label')} label="Outline button text" max={40} />
-                <TextField control={control} name={p('help.secondary.href')} label="Outline button link" max={300} />
-              </div>
-            </TabsContent>
           </div>
         </Tabs>
 

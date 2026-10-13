@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export interface FaqRailTopic {
   id: string
@@ -11,11 +12,14 @@ export interface FaqRailTopic {
 /** Below this many pixels from the viewport top, a topic counts as the one being read. */
 const ACTIVE_OFFSET = 160
 
+/** Where "Ask the team" goes. */
+export const CONTACT_HREF = '/contact'
+
 /**
  * Sticky topic menu, desktop only (phones use the hero chips). Highlights the
  * topic whose heading has most recently passed the top of the viewport.
  */
-export function FaqRail({ topics, helpHref }: { topics: FaqRailTopic[]; helpHref: string | null }) {
+export function FaqRail({ topics }: { topics: FaqRailTopic[] }) {
   const [active, setActive] = useState(topics[0]?.id ?? '')
 
   useEffect(() => {
@@ -45,11 +49,9 @@ export function FaqRail({ topics, helpHref }: { topics: FaqRailTopic[]; helpHref
               <small className="numeric">{topic.count}</small>
             </a>
           ))}
-          {helpHref && (
-            <p className="faq-page__rail-help">
-              Not listed? <a href={helpHref}>Ask the team</a>
-            </p>
-          )}
+          <p className="faq-page__rail-help">
+            Not listed? <Link href={CONTACT_HREF}>Ask the team</Link>
+          </p>
         </nav>
       </div>
     </aside>

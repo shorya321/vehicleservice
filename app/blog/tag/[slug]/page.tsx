@@ -9,7 +9,7 @@ import { BoardHero } from "../../components/board-hero"
 import { BoardLatest } from "../../components/board-latest"
 import { BoardTags } from "../../components/board-tags"
 import { BoardRail } from "../../components/board-rail"
-import { BoardClose } from "../../components/board-close"
+import { ClosingPanel } from "@/components/cms/closing-panel"
 import { buildEntityMetadata } from '@/lib/seo/page-metadata'
 import { listCanonical } from '@/lib/seo/list-canonical'
 
@@ -177,7 +177,7 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
 
       {/* Closing: from reading to booking */}
       <div className="blog-board-scope">
-        <BoardClose />
+        <ClosingPanel />
       </div>
     </div>
   )

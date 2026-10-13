@@ -123,13 +123,4 @@ export const DEFAULT_FAQ_CONTENT: FaqContent = {
       ],
     },
   ],
-  help: {
-    visible: true,
-    eyebrow: 'Still stuck',
-    title: 'Ask the team directly.',
-    replies: 'Within 1 hour',
-    hours: 'Open 24/7',
-    primary: { label: 'Write to support', href: '/contact' },
-    secondary: { label: 'Manage a booking', href: '/account/bookings' },
-  },
 }

@@ -6,7 +6,7 @@ import { AboutHero } from './components/about-hero'
 import { AboutSteps } from './components/about-steps'
 import { AboutValues } from './components/about-values'
 import { AboutPlaces } from './components/about-places'
-import { AboutClose } from './components/about-close'
+import { ClosingPanel } from '@/components/cms/closing-panel'
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/about', PAGE_FALLBACKS['/about'])
@@ -25,7 +25,7 @@ export default async function AboutPage() {
         {content.steps.visible && <AboutSteps content={content.steps} />}
         {content.values.visible && <AboutValues content={content.values} />}
         {content.places.visible && <AboutPlaces content={content.places} />}
-        {content.close.visible && <AboutClose content={content.close} />}
+        <ClosingPanel />
       </div>
     </div>
   )

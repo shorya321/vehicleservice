@@ -1,9 +1,10 @@
 import { z } from 'zod'
-import { ctaSchema, optionalText, text } from '@/lib/cms/fields'
+import { optionalText, text } from '@/lib/cms/fields'
 
 /**
- * /faq copy on the blog board: hero with search, questions grouped by topic,
- * closing help panel. Every question is also sent to Google as FAQPage data.
+ * /faq copy on the blog board: hero with search and questions grouped by
+ * topic. The closing panel is shared with Blog and About (lib/cms/blocks).
+ * Every question is also sent to Google as FAQPage data.
  */
 
 export const MAX_FAQ_TOPICS = 8
@@ -28,15 +29,6 @@ export const faqContentSchema = z.object({
     body: text(240),
   }),
   topics: z.array(faqTopicSchema).min(1, 'Add at least one topic').max(MAX_FAQ_TOPICS),
-  help: z.object({
-    visible: z.boolean(),
-    eyebrow: text(40),
-    title: text(90),
-    replies: optionalText(30),
-    hours: optionalText(40),
-    primary: ctaSchema,
-    secondary: ctaSchema,
-  }),
 })
 
 export type FaqContent = z.infer<typeof faqContentSchema>

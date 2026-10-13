@@ -79,14 +79,4 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
       { name: 'Dubai Creek', note: 'Deira and Bur Dubai', image: '/images/cities/dubai-creek.webp' },
     ],
   },
-  close: {
-    visible: true,
-    eyebrow: 'Ready when you land',
-    title: 'Search a route. See the fixed fare.',
-    body: 'Pick a route, choose a vehicle, and the fare is fixed at booking. Questions first? A person at the desk answers, day or night.',
-    primary: { label: 'Find your transfer', href: '/' },
-    secondary: { label: 'Contact the desk', href: '/contact' },
-    trust: ['Fixed price at booking', 'Flight tracked', 'Free cancellation'],
-    images: ['/images/onboard/child-seat.webp', '/images/onboard/in-car-refreshments.webp'],
-  },
 }

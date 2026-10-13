@@ -10,7 +10,7 @@ import { EDITOR_TAB_TRIGGER, SaveBar } from '@/components/admin/cms/save-bar'
 import { usePageContentForm } from '@/components/admin/cms/use-page-content-form'
 import { aboutContentSchema, type AboutContent, type AboutSectionKey } from '@/lib/cms/templates/about/schema'
 import { AboutHeroFields } from './about-hero-fields'
-import { AboutCloseFields, AboutStepsFields, AboutValuesFields } from './about-section-fields'
+import { AboutStepsFields, AboutValuesFields } from './about-section-fields'
 import { AboutPlacesFields } from './about-places-fields'
 
 const TABS: { key: AboutSectionKey; label: string }[] = [
@@ -18,7 +18,6 @@ const TABS: { key: AboutSectionKey; label: string }[] = [
   { key: 'steps', label: 'How it works' },
   { key: 'values', label: 'Standard' },
   { key: 'places', label: 'Places' },
-  { key: 'close', label: 'Closing panel' },
 ]
 
 export function AboutContentForm({ pageId, initialContent }: { pageId: string; initialContent: AboutContent }) {
@@ -53,7 +52,6 @@ export function AboutContentForm({ pageId, initialContent }: { pageId: string; i
             <TabsContent value="steps"><AboutStepsFields control={control} /></TabsContent>
             <TabsContent value="values"><AboutValuesFields control={control} /></TabsContent>
             <TabsContent value="places"><AboutPlacesFields control={control} /></TabsContent>
-            <TabsContent value="close"><AboutCloseFields control={control} /></TabsContent>
           </div>
         </Tabs>
 
