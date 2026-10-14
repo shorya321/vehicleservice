@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { detectCurrencyFromAcceptLanguage, isValidCurrencyCode } from '@/lib/currency/detect'
+import { detectCurrencyFromAcceptLanguage, isWellFormedCurrencyCode } from '@/lib/currency/detect'
 import { CURRENCY_COOKIE_NAME, CURRENCY_COOKIE_MAX_AGE } from '@/lib/currency/types'
 
 /**
@@ -125,7 +125,7 @@ export async function proxy(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: false,
     })
-  } else if (!isValidCurrencyCode(currencyCookie.value)) {
+  } else if (!isWellFormedCurrencyCode(currencyCookie.value)) {
     const acceptLanguage = request.headers.get('accept-language')
     const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
     supabaseResponse.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {

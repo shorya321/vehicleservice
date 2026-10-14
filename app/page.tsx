@@ -20,6 +20,7 @@ import { Footer } from '@/components/layout/footer'
 import { getEnabledCurrencies, getFeaturedCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
+import { resolveCurrentCurrency } from '@/lib/currency/resolve'
 import { getSiteSettings } from '@/lib/site-settings/server'
 import { HEADER_PROFILE_COLUMNS, type HeaderProfile } from '@/components/layout/header-profile'
 import type { Metadata } from 'next'
@@ -86,7 +87,7 @@ export default async function HomePage() {
 
   // Get user's currency preference from cookie
   const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
-  const currentCurrency = currencyCookie?.value || defaultCurrency
+  const currentCurrency = resolveCurrentCurrency(currencyCookie?.value, allEnabledCurrencies, defaultCurrency)
 
   return (
     <CurrencyProvider

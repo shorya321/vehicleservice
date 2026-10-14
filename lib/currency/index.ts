@@ -82,8 +82,12 @@ export {
   detectCurrencyFromLocale,
   detectCurrencyFromAcceptLanguage,
   isValidCurrencyCode,
+  isWellFormedCurrencyCode,
   getUserCurrency,
 } from './detect'
+
+// Resolution (cookie value -> rendered currency)
+export { isEnabledCurrency, resolveCurrentCurrency } from './resolve'
 
 // Context (client-side currency switching)
 export { CurrencyProvider, useCurrency } from './context'

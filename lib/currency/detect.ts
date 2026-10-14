@@ -201,7 +201,17 @@ export function detectCurrencyFromAcceptLanguage(acceptLanguage: string | null):
 }
 
 /**
- * Validate if a currency code is supported
+ * Whether a value is shaped like an ISO 4217 code (three uppercase letters)
+ *
+ * The proxy uses this instead of a fixed list: admins can enable any currency in
+ * settings, and a list check reset every code that was missing from it.
+ */
+export function isWellFormedCurrencyCode(code: string): boolean {
+  return /^[A-Z]{3}$/.test(code)
+}
+
+/**
+ * Validate if a currency code is one locale detection can return
  */
 export function isValidCurrencyCode(code: string): code is SupportedCurrencyCode {
   return SUPPORTED_CURRENCY_CODES.includes(code as SupportedCurrencyCode)
@@ -226,7 +236,7 @@ export function getUserCurrency(
   enabledCurrencies: string[]
 ): { code: string; source: 'cookie' | 'browser' | 'default' } {
   // Check cookie first
-  if (cookieValue && isValidCurrencyCode(cookieValue) && enabledCurrencies.includes(cookieValue)) {
+  if (cookieValue && enabledCurrencies.includes(cookieValue)) {
     return { code: cookieValue, source: 'cookie' }
   }
 

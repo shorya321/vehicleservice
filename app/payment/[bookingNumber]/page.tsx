@@ -24,6 +24,7 @@ import {
   getExchangeRatesObject,
   getDefaultCurrency,
   formatPrice,
+  resolveCurrentCurrency,
 } from '@/lib/currency'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
@@ -184,7 +185,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   ])
 
   const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
-  const currentCurrency = currencyCookie?.value || defaultCurrency
+  const currentCurrency = resolveCurrentCurrency(currencyCookie?.value, allCurrencies, defaultCurrency)
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
 
   // A round trip or multi-city trip is paid as one, under its group number.

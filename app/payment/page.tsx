@@ -22,6 +22,7 @@ import {
   getExchangeRatesObject,
   getDefaultCurrency,
   formatPrice,
+  resolveCurrentCurrency,
 } from '@/lib/currency'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
@@ -202,7 +203,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
 
   // Get user's currency preference from cookie
   const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
-  const currentCurrency = currencyCookie?.value || defaultCurrency
+  const currentCurrency = resolveCurrentCurrency(currencyCookie?.value, allCurrencies, defaultCurrency)
   // Helper function to format price in user's currency (used in error state)
   const formatUserPrice = (amount: number) => formatPrice(amount, currentCurrency, rates)
 

@@ -5,6 +5,7 @@ import { Footer } from './footer'
 import { getFeaturedCurrencies, getEnabledCurrencies, getDefaultCurrency, getExchangeRatesObject } from '@/lib/currency/server'
 import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
 import { CurrencyProvider } from '@/lib/currency/context'
+import { resolveCurrentCurrency } from '@/lib/currency/resolve'
 import { getSiteSettings } from '@/lib/site-settings/server'
 
 export async function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +35,7 @@ export async function PublicLayout({ children }: { children: React.ReactNode }) 
 
   // Get user's currency preference from cookie
   const currencyCookie = cookieStore.get(CURRENCY_COOKIE_NAME)
-  const currentCurrency = currencyCookie?.value || defaultCurrency
+  const currentCurrency = resolveCurrentCurrency(currencyCookie?.value, allEnabledCurrencies, defaultCurrency)
 
   return (
     <CurrencyProvider

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { finalizeBookingPayment } from '@/lib/payment/finalize-booking'
-import { CURRENCY_COOKIE_NAME } from '@/lib/currency/types'
+import { CURRENCY_COOKIE_NAME, DEFAULT_CURRENCY_CODE } from '@/lib/currency/types'
+import { getEnabledCurrencies } from '@/lib/currency/server'
+import { resolveCurrentCurrency } from '@/lib/currency/resolve'
 import { finalizeGroupPayment } from '@/lib/payment/finalize-group'
 
 export async function POST(request: NextRequest) {
@@ -28,7 +30,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine user's selected currency from cookie (email display only)
-    const userCurrency = request.cookies.get(CURRENCY_COOKIE_NAME)?.value || 'AED'
+    const userCurrency = resolveCurrentCurrency(
+      request.cookies.get(CURRENCY_COOKIE_NAME)?.value,
+      await getEnabledCurrencies(),
+      DEFAULT_CURRENCY_CODE
+    )
 
     // Delegate to the shared, idempotent finalizers (also used by the webhook backstop).
     // A round trip or multi-city trip is paid as its group.
