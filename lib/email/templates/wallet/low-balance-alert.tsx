@@ -1,9 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import StatBlock from '../../components/stat-block';
 import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import { boxStyles, emailStyles } from '../../styles/constants';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 import { getCurrentBrand } from '../../brand/brand';
 
@@ -26,11 +28,13 @@ export const LowBalanceAlertEmail = ({
     <EmailLayout
       preview={`Low Balance Alert - ${formatCurrency(currentBalance, currency)} remaining`}
       heading="Low Balance Alert"
+      eyebrow="Wallet alert"
+      tone="warning"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <InfoBox type="warning">
-        <Text style={emailStyles.text}>
+        <Text style={boxStyles.warning.text}>
           <strong>Your wallet balance is running low.</strong>
           <br />
           Current balance: <strong>{formatCurrency(currentBalance, currency)}</strong>
@@ -43,18 +47,11 @@ export const LowBalanceAlertEmail = ({
         To avoid service interruptions, please add funds to your wallet as soon as possible.
       </Text>
 
+      <StatBlock label="Current Balance" value={formatCurrency(currentBalance, currency)} />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Current Balance:</strong> {formatCurrency(currentBalance, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Alert Threshold:</strong> {formatCurrency(threshold, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Recommended Action:</strong> Add funds to wallet
-        </Text>
+        <DetailRow label="Alert Threshold">{formatCurrency(threshold, currency)}</DetailRow>
+        <DetailRow label="Recommended Action">Add funds to wallet</DetailRow>
       </DetailsSection>
 
       <Text style={emailStyles.text}>

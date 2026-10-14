@@ -2,8 +2,11 @@ import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import InfoBox from '../../components/info-box';
 import List from '../../components/list';
-import { emailStyles } from '../../styles/constants';
+import SectionLabel from '../../components/section-label';
+import { boxStyles, emailStyles } from '../../styles/constants';
 
 interface VendorApplicationReceivedEmailProps {
   name: string;
@@ -20,6 +23,7 @@ export const VendorApplicationReceivedEmail = ({
     <EmailLayout
       preview="Vendor Application Received - Infinia Transfers"
       heading="Application Received"
+      eyebrow="Application received"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
@@ -28,17 +32,11 @@ export const VendorApplicationReceivedEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Application Reference:</strong> {applicationReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Submitted Date:</strong> {submittedDate}
-        </Text>
+        <DetailRow label="Application Reference">{applicationReference}</DetailRow>
+        <DetailRow label="Submitted Date">{submittedDate}</DetailRow>
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>What happens next?</strong>
-      </Text>
+      <SectionLabel>What happens next?</SectionLabel>
 
       <Text style={emailStyles.text}>
         Review takes 3-5 business days. We&apos;ll assess your:
@@ -58,10 +56,12 @@ export const VendorApplicationReceivedEmail = ({
         additional information, we&apos;ll reach out to you directly.
       </Text>
 
-      <Text style={infoBoxStyle}>
-        <strong>Important:</strong> Please keep your application reference number (
-        {applicationReference}) for your records.
-      </Text>
+      <InfoBox type="info">
+        <Text style={boxStyles.info.text}>
+          <strong>Important:</strong> Please keep your application reference number (
+          {applicationReference}) for your records.
+        </Text>
+      </InfoBox>
 
       <Text style={emailStyles.text}>
         Contact vendor support if you have questions in the meantime.
@@ -74,18 +74,6 @@ export const VendorApplicationReceivedEmail = ({
       </Text>
     </EmailLayout>
   );
-};
-
-// Template-specific info box style (slightly different padding than standard)
-const infoBoxStyle = {
-  color: '#1e40af',
-  fontSize: '14px',
-  lineHeight: '20px',
-  backgroundColor: '#eff6ff',
-  border: '1px solid #bfdbfe',
-  borderRadius: '8px',
-  padding: '12px 16px',
-  margin: '16px 0',
 };
 
 export default VendorApplicationReceivedEmail;

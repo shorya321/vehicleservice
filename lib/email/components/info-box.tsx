@@ -9,8 +9,8 @@ interface InfoBoxProps {
 }
 
 /**
- * Reusable info box component for emails
- * Supports different visual styles: info (blue), success (green), warning (yellow), error (red), message (light blue)
+ * A tinted notice. Tones carry meaning: info (gold), success (green), warning (amber),
+ * error (red), message (a quoted note from a person).
  */
 export const InfoBox = ({ type = 'info', title, children }: InfoBoxProps) => {
   const styles = boxStyles[type];

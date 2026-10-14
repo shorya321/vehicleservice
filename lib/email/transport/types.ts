@@ -31,9 +31,12 @@ export interface MailIdentity {
 /**
  * The palette a template renders under.
  *
- * Only the business module's own templates read this. Every shared template
- * (customer, vendor, driver, auth, wallet, admin) keeps its own static styles, so
- * adding this field cannot change what a customer receives.
+ * Only the business module's own templates read this at render time. Every shared
+ * template (customer, vendor, driver, auth, wallet, admin) paints from styles computed
+ * once from PLATFORM_BRAND_COLORS, so a tenant brand in scope cannot recolour them.
+ *
+ * The layout derives its remaining tones (tints, eyebrow ink) from these in
+ * lib/email/brand/palette.ts.
  *
  * Semantic colours are deliberately absent: status badges and info/success/warning
  * boxes carry meaning, and a tenant whose accent happens to be red must not end up
@@ -53,6 +56,13 @@ export interface EmailBrandColors {
   /** Footer text and secondary captions. */
   readonly muted: string;
   readonly border: string;
+  /**
+   * A second brand colour for the wordmark, the rule under the masthead and timeline
+   * dots. Only the platform sets one (its gold); tenants derive it from `primary`.
+   */
+  readonly accent?: string;
+  /** A darker shade of `accent` that stays readable on white, for eyebrows and links. */
+  readonly accentText?: string;
 }
 
 /**

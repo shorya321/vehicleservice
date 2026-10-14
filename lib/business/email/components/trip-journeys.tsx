@@ -1,7 +1,7 @@
-import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
+import DetailRow from './detail-row';
 import DetailsSection from './details-section';
-import { emailStyles } from '../styles/constants';
+import Journey from './journey';
 import type { BusinessEmailTrip } from '../trip';
 
 interface TripJourneysProps {
@@ -16,43 +16,31 @@ interface TripJourneysProps {
  */
 export const TripJourneys = ({ trip, currency }: TripJourneysProps) => {
   return (
-    <DetailsSection>
-      <Text style={emailStyles.detailRow}>
-        <strong>Trip type:</strong> {trip.label}
-        {trip.groupNumber ? ` (${trip.groupNumber})` : ''}
-      </Text>
-      {trip.hourlySummary && (
-        <Text style={emailStyles.detailRow}>
-          <strong>Package:</strong> {trip.hourlySummary}, as directed
-        </Text>
-      )}
+    <>
+      <DetailsSection>
+        <DetailRow label="Trip type">
+          {trip.label}
+          {trip.groupNumber ? ` (${trip.groupNumber})` : ''}
+        </DetailRow>
+        {trip.hourlySummary && (
+          <DetailRow label="Package">{trip.hourlySummary}, as directed</DetailRow>
+        )}
+        {currency && trip.discountAmount !== undefined && trip.discountAmount > 0 && (
+          <DetailRow label="Round-trip saving">
+            {currency} {trip.discountAmount.toFixed(2)}
+          </DetailRow>
+        )}
+      </DetailsSection>
       {(trip.journeys ?? []).map((journey, index) => (
-        <React.Fragment key={index}>
-          <Hr style={emailStyles.hr} />
-          <Text style={emailStyles.detailRow}>
-            <strong>{journey.label}</strong>
-            {journey.tripNumber ? ` · #${journey.tripNumber}` : ''}
-          </Text>
-          <Text style={emailStyles.detailRow}>
-            <strong>Pickup:</strong> {journey.pickupLocation}
-          </Text>
-          <Text style={emailStyles.detailRow}>
-            <strong>Dropoff:</strong> {journey.dropoffLocation}
-          </Text>
-          <Text style={emailStyles.detailRow}>
-            <strong>Date & Time:</strong> {journey.pickupDateTime}
-          </Text>
-        </React.Fragment>
+        <Journey
+          key={index}
+          label={`${journey.label}${journey.tripNumber ? ` · #${journey.tripNumber}` : ''}`}
+          when={journey.pickupDateTime}
+          pickup={journey.pickupLocation}
+          dropoff={journey.dropoffLocation}
+        />
       ))}
-      {currency && trip.discountAmount !== undefined && trip.discountAmount > 0 && (
-        <>
-          <Hr style={emailStyles.hr} />
-          <Text style={emailStyles.detailRow}>
-            <strong>Round-trip saving:</strong> {currency} {trip.discountAmount.toFixed(2)}
-          </Text>
-        </>
-      )}
-    </DetailsSection>
+    </>
   );
 };
 

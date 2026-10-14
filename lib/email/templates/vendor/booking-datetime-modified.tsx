@@ -3,8 +3,9 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
 import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import { boxStyles, emailStyles, palette } from '../../styles/constants';
 import { format } from 'date-fns';
 import { toBookingTz } from '@/lib/utils/timezone';
 
@@ -43,55 +44,40 @@ export const BookingDatetimeModifiedEmail = ({
     <EmailLayout
       preview={`Booking Time Changed - ${tripNumber || bookingNumber}`}
       heading="Booking Time Updated"
+      eyebrow="Time changed"
+      tone="warning"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {vendorName},</Text>
 
       <InfoBox type="warning">
-        The pickup time for booking <strong>#{tripNumber || bookingNumber}</strong> has been changed by the
-        business.
+        <Text style={boxStyles.warning.text}>
+          The pickup time for booking <strong>#{tripNumber || bookingNumber}</strong> has been changed by the
+          business.
+        </Text>
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Time Change Details:</strong>
-      </Text>
-
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Previous Time:</strong>{' '}
-          <span style={{ textDecoration: 'line-through', color: '#6b7280' }}>
+      <DetailsSection title="Time Change Details">
+        <DetailRow label="Previous Time">
+          <span style={{ textDecoration: 'line-through', color: palette.muted }}>
             {formatDatetime(previousDatetime)}
           </span>
-        </Text>
-        <Text style={{ ...emailStyles.detailRow, color: '#059669', fontWeight: 600 }}>
-          <strong>New Time:</strong> {formatDatetime(newDatetime)}
-        </Text>
+        </DetailRow>
+        <DetailRow label="New Time" emphasis>
+          <span style={{ color: '#059669' }}>{formatDatetime(newDatetime)}</span>
+        </DetailRow>
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>Booking Details:</strong>
-      </Text>
-
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupAddress}
-        </Text>
+      <DetailsSection title="Booking Details">
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        <DetailRow label="Customer">{customerName}</DetailRow>
+        <DetailRow label="Pickup Location">{pickupAddress}</DetailRow>
       </DetailsSection>
 
       {modificationReason && (
-        <>
-          <Text style={emailStyles.text}>
-            <strong>Reason for Change:</strong>
-          </Text>
-          <DetailsSection>
-            <Text style={emailStyles.detailRow}>{modificationReason}</Text>
-          </DetailsSection>
-        </>
+        <DetailsSection title="Reason for Change">
+          <Text style={emailStyles.detailRow}>{modificationReason}</Text>
+        </DetailsSection>
       )}
 
       <Button href={bookingUrl}>View Booking Details</Button>

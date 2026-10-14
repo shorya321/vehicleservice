@@ -4,6 +4,7 @@ import EmailLayout from '../base/layout';
 import Button from '../base/button';
 import InfoBox from '../../components/info-box';
 import List from '../../components/list';
+import SectionLabel from '../../components/section-label';
 import { emailStyles, boxStyles } from '../../styles/constants';
 
 interface VendorApplicationApprovedEmailProps {
@@ -23,20 +24,22 @@ export const VendorApplicationApprovedEmail = ({
     <EmailLayout
       preview="Your vendor application is approved"
       heading="Welcome to Infinia Transfers!"
+      eyebrow="Application approved"
+      tone="success"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
       <InfoBox type="success">
-        <strong>Your vendor application has been approved.</strong>
+        <Text style={boxStyles.success.text}>
+          <strong>Your vendor application has been approved.</strong>
+        </Text>
       </InfoBox>
 
       <Text style={emailStyles.text}>
         Your application (Reference: {applicationReference}) is approved. You&apos;re now part of our vendor network.
       </Text>
 
-      <Text style={emailStyles.text}>
-        <strong>Getting Started:</strong>
-      </Text>
+      <SectionLabel>Getting Started</SectionLabel>
 
       <Text style={emailStyles.text}>
         You can now access your vendor dashboard to:
@@ -54,7 +57,7 @@ export const VendorApplicationApprovedEmail = ({
 
       <Button href={dashboardUrl}>Access Your Vendor Dashboard</Button>
 
-      <Text style={emailStyles.text}>
+      <Text style={emailStyles.muted}>
         Or log in at:{' '}
         <a href={loginUrl} style={emailStyles.link}>
           {loginUrl}

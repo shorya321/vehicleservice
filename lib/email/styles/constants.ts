@@ -1,33 +1,58 @@
 /**
- * Shared email style constants
- * Single source of truth for all email styling
+ * Shared email style constants.
+ * Single source of truth for all platform email styling.
+ *
+ * Static on purpose: shared templates (customer, vendor, driver, auth, wallet, admin)
+ * always paint in the platform palette, computed once from PLATFORM_BRAND_COLORS. The
+ * business module keeps its own brand-aware copy in lib/business/email/styles.
  */
+
+import { PLATFORM_BRAND_COLORS } from '../brand/brand';
+import {
+  EMAIL_FONT_DISPLAY,
+  EMAIL_FONT_MONO,
+  EMAIL_FONT_SANS,
+  emailPalette,
+} from '../brand/palette';
+
+export const palette = emailPalette(PLATFORM_BRAND_COLORS);
+
+export const fonts = {
+  display: EMAIL_FONT_DISPLAY,
+  sans: EMAIL_FONT_SANS,
+  mono: EMAIL_FONT_MONO,
+} as const;
 
 export const emailStyles = {
   // Text styles
   text: {
-    color: '#525f7f',
-    fontSize: '16px',
-    lineHeight: '24px',
+    color: palette.body,
+    fontFamily: fonts.sans,
+    fontSize: '15px',
+    lineHeight: '25px',
     margin: '0 0 16px',
   },
 
+  /** A sub-heading inside the body, below the hero headline. */
   heading: {
-    color: '#1a1a1a',
-    fontSize: '24px',
-    fontWeight: '600',
-    lineHeight: '1.4',
-    margin: '0 0 24px',
+    color: palette.ink,
+    fontFamily: fonts.display,
+    fontSize: '20px',
+    fontWeight: '500',
+    lineHeight: '1.35',
+    margin: '28px 0 12px',
   },
 
   link: {
-    color: '#556cd6',
+    color: palette.accentInk,
     textDecoration: 'underline',
   },
 
   linkWithMargin: {
-    color: '#556cd6',
-    fontSize: '14px',
+    color: palette.accentInk,
+    fontFamily: fonts.mono,
+    fontSize: '12px',
+    lineHeight: '19px',
     textDecoration: 'underline',
     wordBreak: 'break-all' as const,
     margin: '0 0 16px',
@@ -35,15 +60,18 @@ export const emailStyles = {
 
   // Detail/Info rows
   detailRow: {
-    color: '#2d3748',
+    color: palette.ink,
+    fontFamily: fonts.sans,
     fontSize: '14px',
-    lineHeight: '20px',
-    margin: '8px 0',
+    lineHeight: '22px',
+    margin: '6px 0',
   },
 
   totalRow: {
-    color: '#1a202c',
+    color: palette.ink,
+    fontFamily: fonts.sans,
     fontSize: '16px',
+    fontWeight: '600',
     lineHeight: '24px',
     margin: '8px 0',
   },
@@ -51,148 +79,95 @@ export const emailStyles = {
   // List styles
   list: {
     margin: '0 0 16px 0',
-    paddingLeft: '24px',
+    paddingLeft: '22px',
   },
 
   listItem: {
-    color: '#525f7f',
-    fontSize: '16px',
-    lineHeight: '24px',
+    color: palette.body,
+    fontFamily: fonts.sans,
+    fontSize: '15px',
+    lineHeight: '25px',
     margin: '4px 0',
   },
 
   // Divider
   hr: {
-    borderColor: '#e2e8f0',
-    margin: '16px 0',
+    borderColor: palette.line,
+    borderTopWidth: '1px',
+    margin: '14px 0',
   },
+
+  /** Secondary captions. */
+  muted: {
+    color: palette.muted,
+    fontFamily: fonts.sans,
+    fontSize: '13px',
+    lineHeight: '20px',
+    margin: '0 0 16px',
+  },
+} as const;
+
+const boxBase = {
+  borderRadius: '10px',
+  padding: '16px 20px',
+  margin: '20px 0',
+} as const;
+
+const boxTitle = {
+  fontFamily: fonts.sans,
+  fontSize: '14px',
+  fontWeight: '600',
+  lineHeight: '20px',
+  margin: '0 0 4px',
+} as const;
+
+const boxText = {
+  fontFamily: fonts.sans,
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0',
 } as const;
 
 // Container/Box styles
 export const boxStyles = {
-  // Gray details box (used for booking details, application info, etc.)
+  // Neutral details card (used for booking details, application info, etc.)
   details: {
-    backgroundColor: '#f7fafc',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '24px',
-    margin: '24px 0',
+    backgroundColor: palette.card,
+    border: `1px solid ${palette.line}`,
+    borderRadius: '12px',
+    padding: '14px 20px',
+    margin: '20px 0',
   },
 
-  // Blue info box
   info: {
-    container: {
-      backgroundColor: '#eff6ff',
-      border: '1px solid #bfdbfe',
-      borderRadius: '8px',
-      padding: '20px',
-      margin: '20px 0',
-    },
-    title: {
-      color: '#1e40af',
-      fontSize: '16px',
-      fontWeight: 'bold',
-      margin: '0 0 12px',
-    },
-    text: {
-      color: '#1e3a8a',
-      fontSize: '14px',
-      lineHeight: '20px',
-      margin: '0',
-    },
+    container: { ...boxBase, backgroundColor: palette.pale, border: `1px solid ${palette.paleLine}` },
+    title: { ...boxTitle, color: palette.accentInk },
+    text: { ...boxText, color: '#5c4a2c' },
   },
 
-  // Green success box
   success: {
-    container: {
-      backgroundColor: '#f0fdf4',
-      border: '2px solid #10b981',
-      borderRadius: '8px',
-      padding: '16px',
-      margin: '24px 0',
-      textAlign: 'center' as const,
-    },
-    title: {
-      color: '#065f46',
-      fontSize: '16px',
-      fontWeight: 'bold',
-      margin: '0 0 12px',
-    },
-    text: {
-      color: '#065f46',
-      fontSize: '18px',
-      lineHeight: '28px',
-      margin: '0',
-    },
+    container: { ...boxBase, backgroundColor: '#ecf7f1', border: '1px solid #10b981' },
+    title: { ...boxTitle, color: '#065f46' },
+    text: { ...boxText, color: '#14532d' },
   },
 
-  // Warning box (yellow/orange)
   warning: {
-    container: {
-      backgroundColor: '#fffbeb',
-      border: '1px solid #fcd34d',
-      borderRadius: '8px',
-      padding: '20px',
-      margin: '20px 0',
-    },
-    title: {
-      color: '#92400e',
-      fontSize: '16px',
-      fontWeight: 'bold',
-      margin: '0 0 12px',
-    },
-    text: {
-      color: '#78350f',
-      fontSize: '14px',
-      lineHeight: '20px',
-      margin: '0',
-    },
+    container: { ...boxBase, backgroundColor: '#fbf3e2', border: '1px solid #f0dfb8' },
+    title: { ...boxTitle, color: '#7a5410' },
+    text: { ...boxText, color: '#6b5222' },
   },
 
-  // Error box (red)
   error: {
-    container: {
-      backgroundColor: '#fef2f2',
-      border: '1px solid #fca5a5',
-      borderRadius: '8px',
-      padding: '20px',
-      margin: '20px 0',
-    },
-    title: {
-      color: '#991b1b',
-      fontSize: '16px',
-      fontWeight: 'bold',
-      margin: '0 0 12px',
-    },
-    text: {
-      color: '#7f1d1d',
-      fontSize: '14px',
-      lineHeight: '20px',
-      margin: '0',
-    },
+    container: { ...boxBase, backgroundColor: '#fbeceb', border: '1px solid #f2d0cc' },
+    title: { ...boxTitle, color: '#8a2b20' },
+    text: { ...boxText, color: '#7a3a32' },
   },
 
-  // Message box (lighter blue than info)
+  // Quoted message from a person (contact replies, notes)
   message: {
-    container: {
-      backgroundColor: '#eff6ff',
-      border: '1px solid #bfdbfe',
-      borderRadius: '8px',
-      padding: '16px',
-      margin: '16px 0',
-    },
-    title: {
-      color: '#1e40af',
-      fontSize: '14px',
-      fontWeight: 'bold',
-      margin: '0 0 8px',
-    },
-    text: {
-      color: '#1e3a8a',
-      fontSize: '14px',
-      lineHeight: '20px',
-      margin: '0',
-    },
+    container: { ...boxBase, backgroundColor: palette.soft, border: `1px solid ${palette.line}` },
+    title: { ...boxTitle, color: palette.muted, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const },
+    text: { ...boxText, color: palette.ink },
   },
 } as const;
 
@@ -205,3 +180,13 @@ export const statusColors = {
   pending: '#6b7280',
   default: '#6b7280',
 } as const;
+
+/** Notice tones, shared by the layout's eyebrow and the InfoBox. */
+export const toneInk = {
+  info: palette.accentInk,
+  success: '#065f46',
+  warning: '#7a5410',
+  danger: '#8a2b20',
+} as const;
+
+export type EmailTone = keyof typeof toneInk;

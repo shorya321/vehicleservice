@@ -3,6 +3,7 @@ import * as React from 'react';
 import EmailLayout from './base/layout';
 import InfoBox from '../components/info-box';
 import List from '../components/list';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 
 interface BusinessWelcomePendingEmailProps {
@@ -20,6 +21,8 @@ export const BusinessWelcomePendingEmail = ({
     <EmailLayout
       preview="Welcome to Infinia Transfers - Registration Received"
       heading="Registration Received!"
+      eyebrow="Registration received"
+      tone="warning"
     >
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
 
@@ -32,9 +35,7 @@ export const BusinessWelcomePendingEmail = ({
         team.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>What happens next?</strong>
-      </Text>
+      <SectionLabel>What happens next?</SectionLabel>
 
       <List
         items={[

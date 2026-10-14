@@ -4,6 +4,10 @@ import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
+import StatBlock from '../components/stat-block';
 import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
@@ -70,6 +74,9 @@ export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEma
     <EmailLayout
       preview={`Booking Cancelled - ${tripNumber || bookingNumber}`}
       heading="Booking Cancelled"
+      eyebrow="Booking cancelled"
+      tone="danger"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -79,64 +86,35 @@ export const BusinessBookingCancelledEmail = (props: BusinessBookingCancelledEma
         Booking <strong>#{tripNumber || bookingNumber}</strong> has been cancelled.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Cancelled Booking Details:</strong>
-      </Text>
+      <SectionLabel>Cancelled Booking Details</SectionLabel>
+
+      <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        {tripContext && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Part of:</strong> {tripContext}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Date & Time:</strong> {pickupDateTime}
-        </Text>
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        {tripContext && <DetailRow label="Part of">{tripContext}</DetailRow>}
+        <DetailRow label="Customer">{customerName}</DetailRow>
         {cancellationReason && (
           <>
             <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Reason:</strong> {cancellationReason}
-            </Text>
+            <DetailRow label="Reason">{cancellationReason}</DetailRow>
           </>
         )}
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>Refund Summary:</strong>
-      </Text>
+      <SectionLabel>Refund Summary</SectionLabel>
 
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Refund Amount:</strong> {currency} {refundAmount.toFixed(2)}
-        </Text>
-        {showChargeNote && (
-          <Text style={{ ...emailStyles.muted, fontSize: '13px' }}>
-            Refunded in {originalCurrency} {originalAmount!.toFixed(2)}
-          </Text>
-        )}
-        {props.audience === 'owner' && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.totalRow}>
-              <strong>New Wallet Balance:</strong> {currency} {props.newBalance.toFixed(2)}
-            </Text>
-          </>
-        )}
-      </DetailsSection>
+      <StatBlock label="Refund Amount" value={`${currency} ${refundAmount.toFixed(2)}`}>
+        {showChargeNote ? `Refunded in ${originalCurrency} ${originalAmount!.toFixed(2)}` : null}
+      </StatBlock>
+
+      {props.audience === 'owner' && (
+        <DetailsSection>
+          <DetailRow label="New Wallet Balance" emphasis>
+            {currency} {props.newBalance.toFixed(2)}
+          </DetailRow>
+        </DetailsSection>
+      )}
 
       {props.audience === 'owner' && (
         <>

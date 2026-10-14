@@ -7,6 +7,10 @@ import { emailStyles } from '../../styles/constants';
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown';
 import { formatChildAges } from '@/lib/utils/child-ages';
 import TripDetails from '../../components/trip-details';
+import DetailRow from '../../components/detail-row';
+import FareLedger from '../../components/fare-ledger';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
 import type { EmailTripDetails } from '../../types';
 
 interface BookingConfirmationEmailProps {
@@ -79,6 +83,9 @@ export const BookingConfirmationEmail = ({
     <EmailLayout
       preview={`Booking Confirmed - ${tripNumber || bookingReference}`}
       heading="Booking Confirmation"
+      eyebrow="Booking confirmed"
+      tone="success"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -86,147 +93,93 @@ export const BookingConfirmationEmail = ({
         Your booking is confirmed. Here are the details:
       </Text>
 
+      {isGrouped && trip ? (
+        <>
+          <SectionLabel>Your journeys</SectionLabel>
+          <TripDetails trip={trip} currency={currency} />
+        </>
+      ) : (
+        <>
+          <SectionLabel>Your journey</SectionLabel>
+          <Journey
+            time={pickupTime}
+            date={pickupDate}
+            pickup={pickupLocation}
+            dropoff={isHourly ? undefined : dropoffLocation}
+          />
+        </>
+      )}
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle Category:</strong> {vehicleCategory}
-        </Text>
-        {vehicleType && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Vehicle Type:</strong> {vehicleType}
-          </Text>
-        )}
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
+        <DetailRow label="Vehicle Category">{vehicleCategory}</DetailRow>
+        {vehicleType && <DetailRow label="Vehicle Type">{vehicleType}</DetailRow>}
         {(passengerCapacity || luggageCapacity) && (
-          <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
+          <Text style={{ ...emailStyles.muted, margin: '2px 0 6px' }}>
             {passengerCapacity ? `Up to ${passengerCapacity} passengers` : ''}
             {passengerCapacity && luggageCapacity ? ' · ' : ''}
             {luggageCapacity ? `Up to ${luggageCapacity} luggage` : ''}
           </Text>
         )}
-        <Hr style={emailStyles.hr} />
-        {isGrouped && trip ? (
+        {passengerLabel != null && <DetailRow label="Passengers">{passengerLabel}</DetailRow>}
+        {!isGrouped && isHourly && trip ? (
           <>
+            <Hr style={emailStyles.hr} />
             <TripDetails trip={trip} currency={currency} />
-            {passengerLabel != null && (
-              <>
-                <Hr style={emailStyles.hr} />
-                <Text style={emailStyles.detailRow}>
-                  <strong>Passengers:</strong> {passengerLabel}
-                </Text>
-              </>
-            )}
           </>
-        ) : (
-          <>
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup Location:</strong> {pickupLocation}
-            </Text>
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup Date & Time:</strong> {pickupDate} at {pickupTime}
-            </Text>
-            {passengerLabel != null && (
-              <Text style={emailStyles.detailRow}>
-                <strong>Passengers:</strong> {passengerLabel}
-              </Text>
-            )}
-            <Hr style={emailStyles.hr} />
-            {isHourly && trip ? (
-              <TripDetails trip={trip} currency={currency} />
-            ) : (
-              <Text style={emailStyles.detailRow}>
-                <strong>Dropoff Location:</strong> {dropoffLocation}
-              </Text>
-            )}
-          </>
-        )}
-        {hasBookingSummary && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={{ ...emailStyles.detailRow, fontWeight: 'bold', fontSize: '16px' }}>
-              Booking Summary
-            </Text>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }} cellPadding={0} cellSpacing={0}>
-              <tbody>
-                <tr>
-                  <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333' }}>
-                    {baseFareLabel} ({passengerCount} Passenger{passengerCount !== 1 ? 's' : ''})
-                  </td>
-                  <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333', textAlign: 'right' as const }}>
-                    {currency} {basePrice.toFixed(2)}
-                  </td>
-                </tr>
-                {extras && extras.length > 0 && extras.map((extra, index) => (
-                  <tr key={index}>
-                    <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333' }}>
-                      {extra.label}{extra.quantity > 1 ? ` x${extra.quantity}` : ''}{formatChildAges(extra.childAges)}
-                    </td>
-                    <td style={{ padding: '4px 0', fontSize: '14px', color: '#333333', textAlign: 'right' as const }}>
-                      {currency} {extra.price.toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan={2} style={{ padding: '8px 0 0' }}>
-                    <Hr style={{ ...emailStyles.hr, margin: '0' }} />
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 0', fontSize: '15px', fontWeight: 'bold', color: '#333333' }}>
-                    Total Amount
-                  </td>
-                  <td style={{ padding: '4px 0', fontSize: '15px', fontWeight: 'bold', color: '#333333', textAlign: 'right' as const }}>
-                    {currency} {totalAmount.toFixed(2)}
-                  </td>
-                </tr>
-                {showChargeNote && (
-                  <tr>
-                    <td colSpan={2} style={{ padding: '2px 0', fontSize: '13px', color: '#666666', textAlign: 'right' as const }}>
-                      Payment charged in {originalCurrency} {originalAmount!.toFixed(2)}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </>
-        )}
-
-        {!hasBookingSummary && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.totalRow}>
-              <strong>Total Amount:</strong> {currency} {totalAmount.toFixed(2)}
-            </Text>
-            {showChargeNote && (
-              <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
-                Payment charged in {originalCurrency} {originalAmount!.toFixed(2)}
-              </Text>
-            )}
-          </>
-        )}
-
+        ) : null}
         {customerNotes && (
           <>
             <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Special Requests:</strong> {customerNotes}
-            </Text>
+            <DetailRow label="Special Requests">{customerNotes}</DetailRow>
           </>
         )}
       </DetailsSection>
 
+      <SectionLabel>{hasBookingSummary ? 'Booking Summary' : 'Payment'}</SectionLabel>
+      {hasBookingSummary ? (
+        <FareLedger
+          items={[
+            {
+              label: `${baseFareLabel} (${passengerCount} Passenger${passengerCount !== 1 ? 's' : ''})`,
+              amount: `${currency} ${basePrice.toFixed(2)}`,
+            },
+            ...(extras ?? []).map((extra) => ({
+              label: `${extra.label}${extra.quantity > 1 ? ` x${extra.quantity}` : ''}${formatChildAges(extra.childAges)}`,
+              amount: `${currency} ${extra.price.toFixed(2)}`,
+            })),
+          ]}
+          totalLabel="Total Amount"
+          total={`${currency} ${totalAmount.toFixed(2)}`}
+          note={
+            showChargeNote
+              ? `Payment charged in ${originalCurrency} ${originalAmount!.toFixed(2)}`
+              : undefined
+          }
+        />
+      ) : (
+        <FareLedger
+          items={[]}
+          totalLabel="Total Amount"
+          total={`${currency} ${totalAmount.toFixed(2)}`}
+          note={
+            showChargeNote
+              ? `Payment charged in ${originalCurrency} ${originalAmount!.toFixed(2)}`
+              : undefined
+          }
+        />
+      )}
+
       {invoiceUrl && (
         <>
           <Button href={invoiceUrl}>Download Invoice (PDF)</Button>
-          <Text style={{ ...emailStyles.text, fontSize: '13px', color: '#666666', textAlign: 'center' as const }}>
+          <Text style={{ ...emailStyles.muted, margin: '8px 0 16px' }}>
             Keep this invoice for your records.
           </Text>
         </>
       )}
 
-      <Text style={emailStyles.text}>
+      <Text style={{ ...emailStyles.text, marginTop: '24px' }}>
         We&apos;ll send you updates about your booking, including vendor assignment and any changes to
         your reservation.
       </Text>

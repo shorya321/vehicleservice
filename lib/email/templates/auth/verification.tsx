@@ -14,6 +14,7 @@ export const VerificationEmail = ({ name, verificationUrl }: VerificationEmailPr
     <EmailLayout
       preview="Verify your email address"
       heading="Verify Your Email Address"
+      eyebrow="Verify your email"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
@@ -27,13 +28,13 @@ export const VerificationEmail = ({ name, verificationUrl }: VerificationEmailPr
 
       <Button href={verificationUrl}>Verify Email Address</Button>
 
-      <Text style={emailStyles.text}>
+      <Text style={{ ...emailStyles.muted, margin: '20px 0 6px' }}>
         Or copy and paste this link into your browser:
       </Text>
 
       <Text style={emailStyles.linkWithMargin}>{verificationUrl}</Text>
 
-      <Text style={emailStyles.text}>
+      <Text style={{ ...emailStyles.muted }}>
         This verification link will expire in 24 hours.
       </Text>
 

@@ -1,15 +1,17 @@
-import { Hr, Link, Text } from '@react-email/components';
+import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import DriverCard from '../components/driver-card';
+import SectionLabel from '../components/section-label';
 import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
-/** Strips spaces, dashes and brackets so the tel: href is dialable. Keeps a leading +. */
-const toDialableNumber = (phone: string): string => phone.replace(/[^\d+]/g, '');
+// The tel: href is built by DriverCard, which strips the number to digits and a leading +.
 
 interface BusinessBookingDriverAssignedEmailProps {
   businessName: string;
@@ -41,6 +43,9 @@ export const BusinessBookingDriverAssignedEmail = ({
     <EmailLayout
       preview={`Driver assigned for #${tripNumber || bookingReference}`}
       heading="Driver Assigned"
+      eyebrow="Driver assigned"
+      tone="success"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -52,37 +57,14 @@ export const BusinessBookingDriverAssignedEmail = ({
         <strong>{passengerName}</strong>.
       </InfoBox>
 
-      <InfoBox type="info" title="Assigned Driver">
-        <Text style={emailStyles.detailRow}>
-          <strong>Name:</strong> {driverName}
-        </Text>
-        {driverPhone && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Phone:</strong>{' '}
-            <Link href={`tel:${toDialableNumber(driverPhone)}`} style={emailStyles.link}>
-              {driverPhone}
-            </Link>
-          </Text>
-        )}
-      </InfoBox>
+      <SectionLabel>Assigned Driver</SectionLabel>
+      <DriverCard name={driverName} phone={driverPhone || undefined} />
 
-      <Text style={emailStyles.text}>
-        <strong>Booking Details:</strong>
-      </Text>
-
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Passenger:</strong> {passengerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date:</strong> {pickupDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Time:</strong> {pickupTime}
-        </Text>
+      <DetailsSection title="Booking Details">
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
+        <DetailRow label="Passenger">{passengerName}</DetailRow>
+        <DetailRow label="Pickup Date">{pickupDate}</DetailRow>
+        <DetailRow label="Pickup Time">{pickupTime}</DetailRow>
       </DetailsSection>
 
       <Button href={bookingUrl}>View Booking</Button>

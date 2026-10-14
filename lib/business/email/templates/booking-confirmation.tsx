@@ -1,10 +1,14 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
 import BookedBy from '../components/booked-by';
+import DetailRow from '../components/detail-row';
+import FareLedger from '../components/fare-ledger';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
@@ -103,6 +107,9 @@ export const BusinessBookingConfirmationEmail = (
     <EmailLayout
       preview={`Booking Created - ${reference}`}
       heading="Booking Confirmation"
+      eyebrow="Booking confirmed"
+      tone="success"
+      reference={{ label: 'Trip', value: reference }}
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -112,87 +119,50 @@ export const BusinessBookingConfirmationEmail = (
         Your {trip ? trip.label.toLowerCase() + ' ' : ''}booking <strong>#{reference}</strong> has been created successfully!
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Customer Details:</strong>
-      </Text>
-
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer Name:</strong> {customerName}
-        </Text>
-        {customerPhone && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Phone:</strong> {customerPhone}
-          </Text>
-        )}
-        {referenceNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Reference #:</strong> {referenceNumber}
-          </Text>
-        )}
+      <DetailsSection title="Customer Details">
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        <DetailRow label="Customer Name">{customerName}</DetailRow>
+        {customerPhone && <DetailRow label="Phone">{customerPhone}</DetailRow>}
+        {referenceNumber && <DetailRow label="Reference #">{referenceNumber}</DetailRow>}
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>Trip Details:</strong>
-      </Text>
+      <SectionLabel>Trip Details</SectionLabel>
 
       {trip && <TripJourneys trip={trip} currency={currency} />}
 
+      {!hasJourneys && (
+        <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
+      )}
+
       <DetailsSection>
-        {!hasJourneys && (
-          <>
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup:</strong> {pickupLocation}
-            </Text>
-            <Text style={emailStyles.detailRow}>
-              <strong>Dropoff:</strong> {dropoffLocation}
-            </Text>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Date & Time:</strong> {pickupDateTime}
-            </Text>
-          </>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle:</strong> {vehicleType}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Passengers:</strong> {passengerLabel}
-        </Text>
+        <DetailRow label="Vehicle">{vehicleType}</DetailRow>
+        <DetailRow label="Passengers">{passengerLabel}</DetailRow>
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>Payment Summary:</strong>
-      </Text>
+      <SectionLabel>Payment Summary</SectionLabel>
+
+      <FareLedger
+        items={(extras && extras.length > 0 ? extras : []).map((extra) => ({
+          label: `${extra.label}${extra.quantity > 1 ? ` x${extra.quantity}` : ''}${formatChildAges(extra.childAges)}`,
+          amount: `${currency} ${extra.price.toFixed(2)}`,
+        }))}
+        totalLabel="Booking Total"
+        total={`${currency} ${totalPrice.toFixed(2)}`}
+        note={
+          showChargeNote
+            ? `Payment charged in ${originalCurrency} ${originalAmount!.toFixed(2)}`
+            : undefined
+        }
+      />
 
       <DetailsSection>
-        {extras && extras.length > 0 && extras.map((extra, index) => (
-          <Text key={index} style={emailStyles.detailRow}>
-            <strong>{extra.label}{extra.quantity > 1 ? ` x${extra.quantity}` : ''}{formatChildAges(extra.childAges)}:</strong>{' '}
-            {currency} {extra.price.toFixed(2)}
-          </Text>
-        ))}
-        <Text style={emailStyles.detailRow}>
-          <strong>Booking Total:</strong> {currency} {totalPrice.toFixed(2)}
-        </Text>
-        {showChargeNote && (
-          <Text style={{ ...emailStyles.muted, fontSize: '13px' }}>
-            Payment charged in {originalCurrency} {originalAmount!.toFixed(2)}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Deducted from Wallet:</strong> {currency} {walletDeducted.toFixed(2)}
-        </Text>
+        <DetailRow label="Deducted from Wallet">
+          {currency} {walletDeducted.toFixed(2)}
+        </DetailRow>
         {props.audience === 'owner' && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.totalRow}>
-              <strong>New Wallet Balance:</strong> {currency} {props.newBalance.toFixed(2)}
-            </Text>
-          </>
+          <DetailRow label="New Wallet Balance" emphasis>
+            {currency} {props.newBalance.toFixed(2)}
+          </DetailRow>
         )}
       </DetailsSection>
 

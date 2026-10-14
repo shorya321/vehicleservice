@@ -3,6 +3,9 @@ import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 import { formatGuestSummary } from '@/lib/business/guest-breakdown';
 import { formatChildAges } from '@/lib/business/format-child-ages';
@@ -61,6 +64,9 @@ export const CustomerBookingConfirmationEmail = ({
     <EmailLayout
       preview={`Your Transfer Booking - ${reference}`}
       heading="Your Transfer Has Been Booked"
+      eyebrow="Booking confirmed"
+      tone="success"
+      reference={{ label: 'Trip', value: reference }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -69,55 +75,28 @@ export const CustomerBookingConfirmationEmail = ({
         Your {trip ? trip.label.toLowerCase() + ' ' : ''}trip number is <strong>#{reference}</strong>
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Trip Details:</strong>
-      </Text>
+      <SectionLabel>Trip Details</SectionLabel>
+
+      {!hasJourneys && (
+        <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
+      )}
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {reference}
-        </Text>
-        {referenceNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Reference #:</strong> {referenceNumber}
-          </Text>
-        )}
-        {!hasJourneys && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup:</strong> {pickupLocation}
-            </Text>
-            <Text style={emailStyles.detailRow}>
-              <strong>Dropoff:</strong> {dropoffLocation}
-            </Text>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Date & Time:</strong> {pickupDateTime}
-            </Text>
-          </>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle:</strong> {vehicleType}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Passengers:</strong> {passengerLabel}
-        </Text>
-        {customerPhone && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Contact:</strong> {customerPhone}
-          </Text>
-        )}
+        <DetailRow label="Trip #">{reference}</DetailRow>
+        {referenceNumber && <DetailRow label="Reference #">{referenceNumber}</DetailRow>}
+        <DetailRow label="Vehicle">{vehicleType}</DetailRow>
+        <DetailRow label="Passengers">{passengerLabel}</DetailRow>
+        {customerPhone && <DetailRow label="Contact">{customerPhone}</DetailRow>}
         {extras && extras.length > 0 && (
           <>
             <Hr style={emailStyles.hr} />
             {extras.map((extra, index) => (
-              <Text key={index} style={emailStyles.detailRow}>
-                {/* Prices stay hidden here. The end customer books through the business, not us. */}
-                <strong>Extra:</strong> {extra.label}
+              // Prices stay hidden here. The end customer books through the business, not us.
+              <DetailRow key={index} label="Extra">
+                {extra.label}
                 {extra.quantity > 1 ? ` x${extra.quantity}` : ''}
                 {formatChildAges(extra.childAges)}
-              </Text>
+              </DetailRow>
             ))}
           </>
         )}

@@ -2,6 +2,7 @@ import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
 import InfoBox from '../../components/info-box';
 import { emailStyles, statusColors } from '../../styles/constants';
 
@@ -39,6 +40,8 @@ export const BookingStatusUpdateEmail = ({
     <EmailLayout
       preview={`Booking Status Update - ${tripNumber || bookingReference}`}
       heading="Booking Status Update"
+      eyebrow="Status update"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -47,25 +50,16 @@ export const BookingStatusUpdateEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle Category:</strong> {vehicleCategory}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date:</strong> {pickupDate}
-        </Text>
-        <Text style={{ ...emailStyles.detailRow, marginTop: '16px' }}>
-          <strong>Status Changed:</strong>
-        </Text>
-        <Text style={emailStyles.detailRow}>
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
+        <DetailRow label="Vehicle Category">{vehicleCategory}</DetailRow>
+        <DetailRow label="Pickup Date">{pickupDate}</DetailRow>
+        <DetailRow label="Status Changed">
           <span style={{ color: statusColors.pending }}>{previousStatus}</span>
           {' → '}
           <span style={{ color: getStatusColor(newStatus), fontWeight: 'bold' }}>
             {newStatus}
           </span>
-        </Text>
+        </DetailRow>
       </DetailsSection>
 
       {statusMessage && (

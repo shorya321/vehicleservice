@@ -2,6 +2,9 @@ import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 
@@ -50,6 +53,9 @@ export const DirectBookingDriverAssignmentEmail = ({
     <EmailLayout
       preview={`Trip Assignment - ${bookingReference}`}
       heading="Trip Assigned to You"
+      eyebrow="Trip assigned"
+      tone="success"
+      reference={{ label: 'Booking', value: bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {driverName},</Text>
 
@@ -58,47 +64,26 @@ export const DirectBookingDriverAssignmentEmail = ({
         <strong>#{bookingReference}</strong>.
       </InfoBox>
 
+      <SectionLabel>Job</SectionLabel>
+      <Journey
+        time={pickupTime}
+        date={pickupDate}
+        pickup={pickupLocation}
+        dropoff={dropoffLocation || undefined}
+      />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
-        </Text>
-
-        <Hr style={emailStyles.hr} />
-
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-
-        <Hr style={emailStyles.hr} />
-
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle:</strong> {vehicleLabel}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Registration:</strong> {vehicleRegistration}
-        </Text>
-
-        <Hr style={emailStyles.hr} />
-
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date &amp; Time:</strong> {pickupDate} at {pickupTime}
-        </Text>
-        {dropoffLocation && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Drop-off:</strong> {dropoffLocation}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Return Date &amp; Time:</strong> {returnDate} at {returnTime}
-        </Text>
+        <DetailRow label="Booking Reference">{bookingReference}</DetailRow>
+        <DetailRow label="Customer">{customerName}</DetailRow>
+        <DetailRow label="Vehicle">{vehicleLabel}</DetailRow>
+        <DetailRow label="Registration">{vehicleRegistration}</DetailRow>
+        <DetailRow label="Return Date & Time">
+          {returnDate} at {returnTime}
+        </DetailRow>
       </DetailsSection>
 
       <InfoBox type="info" title="Action Required">
-        Please confirm you are available for this pickup. If you have a conflict, tell{' '}
-        {vendorName} as soon as possible so the job can be reassigned.
+        {`Please confirm you are available for this pickup. If you have a conflict, tell ${vendorName} as soon as possible so the job can be reassigned.`}
       </InfoBox>
 
       <Hr style={emailStyles.hr} />

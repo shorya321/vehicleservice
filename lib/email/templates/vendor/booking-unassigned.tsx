@@ -3,8 +3,11 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
 import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
+import { boxStyles, emailStyles } from '../../styles/constants';
 
 interface BookingUnassignedEmailProps {
   vendorName: string;
@@ -33,42 +36,26 @@ export const BookingUnassignedEmail = ({
     <EmailLayout
       preview={`Booking Reassigned - ${tripNumber || bookingReference}`}
       heading="Booking Reassigned"
+      eyebrow="Booking reassigned"
+      tone="danger"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {vendorName},</Text>
 
       <InfoBox type="warning">
-        Booking <strong>#{tripNumber || bookingReference}</strong> has been reassigned to another vendor.
+        <Text style={boxStyles.warning.text}>
+          Booking <strong>#{tripNumber || bookingReference}</strong> has been reassigned to another vendor.
+        </Text>
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Booking Details:</strong>
-      </Text>
+      <SectionLabel>Job</SectionLabel>
+      <Journey time={pickupTime} date={pickupDate} pickup={pickupLocation} />
 
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date:</strong> {pickupDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Time:</strong> {pickupTime}
-        </Text>
+      <DetailsSection title="Booking Details">
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
+        <DetailRow label="Customer">{customerName}</DetailRow>
+        {reassignmentReason && <DetailRow label="Reason">{reassignmentReason}</DetailRow>}
       </DetailsSection>
-
-      {reassignmentReason && (
-        <DetailsSection>
-          <Text style={emailStyles.detailRow}>
-            <strong>Reason:</strong> {reassignmentReason}
-          </Text>
-        </DetailsSection>
-      )}
 
       <InfoBox type="info">
         You no longer need to take any action on this booking. If you had assigned a driver or

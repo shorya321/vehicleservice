@@ -4,6 +4,7 @@ import EmailLayout from './base/layout';
 import Button from './base/button';
 import InfoBox from '../components/info-box';
 import List from '../components/list';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 
 interface BusinessAccountApprovedEmailProps {
@@ -21,6 +22,8 @@ export const BusinessAccountApprovedEmail = ({
     <EmailLayout
       preview="Your business account is approved"
       heading="Welcome to Infinia Transfers!"
+      eyebrow="Account approved"
+      tone="success"
     >
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
 
@@ -32,9 +35,7 @@ export const BusinessAccountApprovedEmail = ({
         Your business is now on the platform. You can start managing bookings.
       </Text>
 
-      <Text style={emailStyles.text}>
-        <strong>What you can do now:</strong>
-      </Text>
+      <SectionLabel>What you can do now</SectionLabel>
 
       <List
         items={[

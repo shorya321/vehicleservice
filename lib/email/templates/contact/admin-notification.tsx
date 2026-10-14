@@ -3,6 +3,8 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import Button from '../base/button';
+import DetailRow from '../../components/detail-row';
+import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 
 interface ContactAdminNotificationEmailProps {
@@ -26,6 +28,7 @@ export const ContactAdminNotificationEmail = ({
     <EmailLayout
       preview={`New Contact Submission from ${name}`}
       heading="New Contact Form Submission"
+      eyebrow="New enquiry"
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
@@ -34,24 +37,15 @@ export const ContactAdminNotificationEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Name:</strong> {name}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Email:</strong> {email}
-        </Text>
-        {phone && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Phone:</strong> {phone}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Subject:</strong> {subject}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Message:</strong> {message}
-        </Text>
+        <DetailRow label="Name">{name}</DetailRow>
+        <DetailRow label="Email">{email}</DetailRow>
+        {phone && <DetailRow label="Phone">{phone}</DetailRow>}
+        <DetailRow label="Subject">{subject}</DetailRow>
       </DetailsSection>
+
+      <InfoBox type="message" title="Message">
+        {message}
+      </InfoBox>
 
       <Button href={submissionUrl}>View in Admin Panel</Button>
 

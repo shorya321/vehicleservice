@@ -3,8 +3,11 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import Button from '../base/button';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
 import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
+import { boxStyles, emailStyles } from '../../styles/constants';
 
 interface BookingAssignedEmailProps {
   vendorName: string;
@@ -39,47 +42,32 @@ export const BookingAssignedEmail = ({
     <EmailLayout
       preview={`New Booking Assignment - ${tripNumber || bookingReference}`}
       heading="New Booking Assigned"
+      eyebrow="Booking assigned"
+      tone="success"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {vendorName},</Text>
 
       <InfoBox type="success">
-        A new booking <strong>#{tripNumber || bookingReference}</strong> has been assigned to your company.
+        <Text style={boxStyles.success.text}>
+          A new booking <strong>#{tripNumber || bookingReference}</strong> has been assigned to your company.
+        </Text>
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Booking Details:</strong>
-      </Text>
+      <SectionLabel>Job</SectionLabel>
+      <Journey
+        time={pickupTime}
+        date={pickupDate}
+        pickup={pickupLocation}
+        dropoff={dropoffLocation}
+      />
 
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle Category:</strong> {vehicleCategory}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle Type:</strong> {vehicleType}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff Location:</strong> {dropoffLocation}
-        </Text>
-        {tripLabel && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Service:</strong> {tripLabel}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date:</strong> {pickupDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Time:</strong> {pickupTime}
-        </Text>
+      <DetailsSection title="Booking Details">
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
+        <DetailRow label="Customer">{customerName}</DetailRow>
+        <DetailRow label="Vehicle Category">{vehicleCategory}</DetailRow>
+        <DetailRow label="Vehicle Type">{vehicleType}</DetailRow>
+        {tripLabel && <DetailRow label="Service">{tripLabel}</DetailRow>}
       </DetailsSection>
 
       <Button href={bookingUrl}>View My Bookings</Button>

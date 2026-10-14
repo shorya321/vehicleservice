@@ -7,7 +7,9 @@
  * nothing as a claim, so this renders all 28 shared templates and pins the bytes.
  *
  * If a snapshot here changes, a shared template regressed. That is a blocker, not an
- * improvement to be accepted with -u.
+ * improvement to be accepted with -u. The one exception is a deliberate redesign: the
+ * October 2026 charcoal and gold redesign rewrote every shared template and regenerated
+ * these snapshots in the same change.
  *
  * Business templates are deliberately absent: they are expected to change, and they live
  * in lib/business/email/ where this file has no business looking.

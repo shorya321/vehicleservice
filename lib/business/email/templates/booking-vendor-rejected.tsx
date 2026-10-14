@@ -1,9 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
 import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
@@ -44,6 +46,9 @@ export const BusinessVendorRejectedEmail = ({
     <EmailLayout
       preview={`Reassigning transport - ${tripNumber || bookingNumber}`}
       heading="Arranging New Transport"
+      eyebrow="Reassigning transport"
+      tone="warning"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -60,20 +65,11 @@ export const BusinessVendorRejectedEmail = ({
         details are unchanged.
       </Text>
 
+      <Journey when={pickupDateTime} pickup={pickupLocation} />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Passenger:</strong> {customerName}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Date &amp; Time:</strong> {pickupDateTime}
-        </Text>
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        <DetailRow label="Passenger">{customerName}</DetailRow>
       </DetailsSection>
 
       <Button href={bookingUrl}>View Booking</Button>

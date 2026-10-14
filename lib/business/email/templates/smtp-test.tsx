@@ -2,6 +2,7 @@ import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
+import DetailRow from '../components/detail-row';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -29,7 +30,12 @@ export const SmtpTestEmail = ({
   const brand = getBusinessBrand();
 
   return (
-    <EmailLayout preview="Your email settings are working" heading="Your email settings are working">
+    <EmailLayout
+      preview="Your email settings are working"
+      heading="Your email settings are working"
+      eyebrow="Test email"
+      tone="success"
+    >
       <Text style={emailStyles.text}>Hi {recipientName},</Text>
 
       <Text style={emailStyles.text}>
@@ -38,15 +44,11 @@ export const SmtpTestEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Server:</strong> {smtpHost}:{smtpPort}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Sent from:</strong> {fromEmail}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Sent at:</strong> {sentAt}
-        </Text>
+        <DetailRow label="Server">
+          {smtpHost}:{smtpPort}
+        </DetailRow>
+        <DetailRow label="Sent from">{fromEmail}</DetailRow>
+        <DetailRow label="Sent at">{sentAt}</DetailRow>
       </DetailsSection>
 
       <Text style={emailStyles.text}>

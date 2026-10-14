@@ -3,7 +3,9 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import Button from '../base/button';
-import { emailStyles } from '../../styles/constants';
+import DetailRow from '../../components/detail-row';
+import InfoBox from '../../components/info-box';
+import { boxStyles, emailStyles } from '../../styles/constants';
 
 interface NewUserNotificationEmailProps {
   userName: string;
@@ -24,6 +26,7 @@ export const NewUserNotificationEmail = ({
     <EmailLayout
       preview="New User Registration - Infinia Transfers"
       heading="New User Registered"
+      eyebrow="New user"
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
@@ -32,23 +35,17 @@ export const NewUserNotificationEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Name:</strong> {userName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Email:</strong> {userEmail}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Phone:</strong> {userPhone}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Registration Date:</strong> {registrationDate}
-        </Text>
+        <DetailRow label="Name">{userName}</DetailRow>
+        <DetailRow label="Email">{userEmail}</DetailRow>
+        <DetailRow label="Phone">{userPhone}</DetailRow>
+        <DetailRow label="Registration Date">{registrationDate}</DetailRow>
       </DetailsSection>
 
-      <Text style={infoBoxStyle}>
-        <strong>Note:</strong> The user needs to verify their email address before they can access the platform.
-      </Text>
+      <InfoBox type="info">
+        <Text style={boxStyles.info.text}>
+          <strong>Note:</strong> The user needs to verify their email address before they can access the platform.
+        </Text>
+      </InfoBox>
 
       <Button href={userDetailsUrl}>View User Details</Button>
 
@@ -63,18 +60,6 @@ export const NewUserNotificationEmail = ({
       </Text>
     </EmailLayout>
   );
-};
-
-// Template-specific info box style
-const infoBoxStyle = {
-  color: '#1e40af',
-  fontSize: '14px',
-  lineHeight: '20px',
-  backgroundColor: '#eff6ff',
-  border: '1px solid #bfdbfe',
-  borderRadius: '8px',
-  padding: '12px 16px',
-  margin: '16px 0',
 };
 
 export default NewUserNotificationEmail;

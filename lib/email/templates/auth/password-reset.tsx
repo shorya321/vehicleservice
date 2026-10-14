@@ -6,6 +6,8 @@ import { emailStyles } from '../../styles/constants';
 import InfoBox from '../../components/info-box';
 import List from '../../components/list';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import SectionLabel from '../../components/section-label';
 
 interface PasswordResetEmailProps {
   name: string;
@@ -17,6 +19,7 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
     <EmailLayout
       preview="Reset your password - Infinia Transfers"
       heading="Reset Your Password"
+      eyebrow="Password reset"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
@@ -25,9 +28,7 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
         Follow the steps below to set a new password.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>How to reset your password:</strong>
-      </Text>
+      <SectionLabel>How to reset your password:</SectionLabel>
 
       <List
         ordered
@@ -41,13 +42,12 @@ export const PasswordResetEmail = ({ name, resetUrl }: PasswordResetEmailProps) 
       <Button href={resetUrl}>Reset Password</Button>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Link expires:</strong> 1 hour from the time of this email
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Reset URL:</strong>{' '}
-          <a href={resetUrl} style={emailStyles.link}>{resetUrl}</a>
-        </Text>
+        <DetailRow label="Link expires">1 hour from the time of this email</DetailRow>
+        <DetailRow label="Reset URL">
+          <a href={resetUrl} style={{ ...emailStyles.link, wordBreak: 'break-all' }}>
+            {resetUrl}
+          </a>
+        </DetailRow>
       </DetailsSection>
 
       <InfoBox type="warning" title="Security Notice">

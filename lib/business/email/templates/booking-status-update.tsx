@@ -1,8 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
 import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
@@ -53,6 +56,9 @@ export const BusinessBookingStatusUpdateEmail = ({
     <EmailLayout
       preview={`Booking ${statusLabel(newStatus)} - ${tripNumber || bookingNumber}`}
       heading="Booking Status Update"
+      eyebrow="Status update"
+      tone={infoType}
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -68,27 +74,13 @@ export const BusinessBookingStatusUpdateEmail = ({
         <Text style={emailStyles.text}>{statusMessage}</Text>
       )}
 
-      <Text style={emailStyles.text}>
-        <strong>Booking Details:</strong>
-      </Text>
+      <SectionLabel>Booking Details</SectionLabel>
+
+      <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Date & Time:</strong> {pickupDateTime}
-        </Text>
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        <DetailRow label="Customer">{customerName}</DetailRow>
       </DetailsSection>
 
       <Text style={emailStyles.text}>

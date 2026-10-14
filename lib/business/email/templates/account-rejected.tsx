@@ -2,6 +2,9 @@ import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import InfoBox from '../components/info-box';
+import DetailsSection from '../components/details-section';
+import DetailRow from '../components/detail-row';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 
 interface BusinessAccountRejectedEmailProps {
@@ -21,6 +24,8 @@ export const BusinessAccountRejectedEmail = ({
     <EmailLayout
       preview="Business Account Application Update"
       heading="Application Status Update"
+      eyebrow="Application declined"
+      tone="danger"
     >
       <Text style={emailStyles.text}>Hi {ownerName},</Text>
 
@@ -34,19 +39,12 @@ export const BusinessAccountRejectedEmail = ({
       </InfoBox>
 
       {reason && (
-        <>
-          <Text style={emailStyles.text}>
-            <strong>Reason:</strong>
-          </Text>
-          <Text style={{ ...emailStyles.text, marginLeft: '16px', fontStyle: 'italic' }}>
-            {reason}
-          </Text>
-        </>
+        <DetailsSection>
+          <DetailRow label="Reason">{reason}</DetailRow>
+        </DetailsSection>
       )}
 
-      <Text style={emailStyles.text}>
-        <strong>What can you do?</strong>
-      </Text>
+      <SectionLabel>What can you do?</SectionLabel>
 
       <Text style={emailStyles.text}>
         Contact support if you think this decision was made in error, or if you have information that would change it.

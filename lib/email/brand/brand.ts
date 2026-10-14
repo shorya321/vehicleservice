@@ -23,22 +23,23 @@ export const PLATFORM_BRAND_NAME = 'Infinia Transfers';
 export const PLATFORM_BRAND_ADDRESS = '123 Business Bay, Dubai, UAE';
 
 /**
- * The platform palette, transcribed from the values already hardcoded in
- * lib/email/templates/base/layout.tsx and lib/email/styles/constants.ts.
+ * The platform palette, taken from the site's light theme tokens in app/globals.css:
+ * charcoal ink (--text-primary), gold (--gold) and gold text (--gold-text).
  *
- * These are not a new design. They exist so that anything rendering without a tenant in
- * scope resolves to exactly what it renders today, which is what makes the shared
- * template snapshots hold.
+ * Also the fallback for a tenant with no usable theme_config, so an unthemed tenant gets
+ * the platform's look under its own name and logo.
  */
 export const PLATFORM_BRAND_COLORS: EmailBrandColors = {
-  primary: '#556cd6',
-  primaryText: '#ffffff',
-  background: '#f6f9fc',
+  primary: '#1a1917',
+  primaryText: '#f4ece0',
+  background: '#f3efe9',
   surface: '#ffffff',
-  heading: '#1a1a1a',
-  text: '#525f7f',
-  muted: '#8898aa',
-  border: '#e6ebf1',
+  heading: '#1a1917',
+  text: '#5c5955',
+  muted: '#77726b',
+  border: '#ebe6df',
+  accent: '#c6aa88',
+  accentText: '#6b5530',
 };
 
 function platformUrl(): string {

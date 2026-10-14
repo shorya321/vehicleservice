@@ -1,8 +1,10 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
-import { emailStyles } from '../../styles/constants';
+import DetailRow from '../../components/detail-row';
+import StatBlock from '../../components/stat-block';
+import { emailStyles, statusColors } from '../../styles/constants';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 import { getCurrentBrand } from '../../brand/brand';
 
@@ -37,6 +39,8 @@ export const TransactionCompletedEmail = ({
     <EmailLayout
       preview={`Transaction ${isCredit ? 'Credit' : 'Debit'} - ${formatCurrency(Math.abs(amount), currency)}`}
       heading="Transaction Completed"
+      eyebrow="Transaction completed"
+      tone="success"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -44,32 +48,25 @@ export const TransactionCompletedEmail = ({
         A transaction has been {isCredit ? 'credited to' : 'debited from'} your wallet.
       </Text>
 
+      <StatBlock
+        label="Amount"
+        value={
+          <span style={{ color: isCredit ? statusColors.confirmed : statusColors.cancelled }}>
+            {isCredit ? '+' : '-'}
+            {formatCurrency(Math.abs(amount), currency)}
+          </span>
+        }
+      />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Transaction Type:</strong> {isCredit ? 'Credit' : 'Debit'}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={{...emailStyles.detailRow, color: isCredit ? '#10b981' : '#ef4444', fontWeight: 'bold'}}>
-          <strong>Amount:</strong> {isCredit ? '+' : '-'}{formatCurrency(Math.abs(amount), currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Description:</strong> {description}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Previous Balance:</strong> {formatCurrency(previousBalance, currency)}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>New Balance:</strong> {formatCurrency(newBalance, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Transaction Date:</strong> {transactionDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Transaction ID:</strong> {transactionId}
-        </Text>
+        <DetailRow label="Transaction Type">{isCredit ? 'Credit' : 'Debit'}</DetailRow>
+        <DetailRow label="Description">{description}</DetailRow>
+        <DetailRow label="Previous Balance">{formatCurrency(previousBalance, currency)}</DetailRow>
+        <DetailRow label="New Balance" emphasis>
+          {formatCurrency(newBalance, currency)}
+        </DetailRow>
+        <DetailRow label="Transaction Date">{transactionDate}</DetailRow>
+        <DetailRow label="Transaction ID">{transactionId}</DetailRow>
       </DetailsSection>
 
       <Text style={emailStyles.text}>

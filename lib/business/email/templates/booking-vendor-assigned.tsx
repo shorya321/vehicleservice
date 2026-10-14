@@ -1,9 +1,12 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import Button from './base/button';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
 import BookedBy from '../components/booked-by';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
@@ -47,6 +50,9 @@ export const BusinessVendorAssignedEmail = ({
     <EmailLayout
       preview={`Transport arranged - ${tripNumber || bookingNumber}`}
       heading="Transport Arranged"
+      eyebrow="Transport arranged"
+      tone="success"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -57,27 +63,13 @@ export const BusinessVendorAssignedEmail = ({
         transport partner. A driver and vehicle will be confirmed closer to the pickup time.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Booking Details:</strong>
-      </Text>
+      <SectionLabel>Booking Details</SectionLabel>
+
+      <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Passenger:</strong> {customerName}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Date &amp; Time:</strong> {pickupDateTime}
-        </Text>
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        <DetailRow label="Passenger">{customerName}</DetailRow>
       </DetailsSection>
 
       <Button href={bookingUrl}>View Booking</Button>

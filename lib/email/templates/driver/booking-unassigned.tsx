@@ -2,6 +2,9 @@ import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 
@@ -32,6 +35,9 @@ export const DriverBookingUnassignedEmail = ({
     <EmailLayout
       preview={`Trip Removed - ${tripNumber || bookingReference}`}
       heading="Trip Removed"
+      eyebrow="Trip removed"
+      tone="danger"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {driverName},</Text>
 
@@ -39,35 +45,14 @@ export const DriverBookingUnassignedEmail = ({
         You have been removed from trip <strong>#{tripNumber || bookingReference}</strong>.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Trip Details:</strong>
-      </Text>
+      <SectionLabel>Trip Details</SectionLabel>
+      <Journey time={pickupTime} date={pickupDate} pickup={pickupLocation} />
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date:</strong> {pickupDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Time:</strong> {pickupTime}
-        </Text>
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
+        <DetailRow label="Customer">{customerName}</DetailRow>
+        {reason && <DetailRow label="Reason">{reason}</DetailRow>}
       </DetailsSection>
-
-      {reason && (
-        <DetailsSection>
-          <Text style={emailStyles.detailRow}>
-            <strong>Reason:</strong> {reason}
-          </Text>
-        </DetailsSection>
-      )}
 
       <InfoBox type="info">
         You no longer need to be available for this trip. Your schedule has been updated

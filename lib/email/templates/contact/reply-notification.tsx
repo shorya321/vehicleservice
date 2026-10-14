@@ -1,7 +1,8 @@
 import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
-import { emailStyles } from '../../styles/constants';
+import InfoBox from '../../components/info-box';
+import { boxStyles, emailStyles } from '../../styles/constants';
 
 interface ContactReplyEmailProps {
   name: string;
@@ -16,6 +17,7 @@ export const ContactReplyEmail = ({
     <EmailLayout
       preview="Reply from Infinia Transfers"
       heading="Response to Your Inquiry"
+      eyebrow="Our reply"
     >
       <Text style={emailStyles.text}>Dear {name},</Text>
 
@@ -24,7 +26,9 @@ export const ContactReplyEmail = ({
         your inquiry:
       </Text>
 
-      <Text style={messageStyle}>{replyMessage}</Text>
+      <InfoBox type="message">
+        <Text style={{ ...boxStyles.message.text, whiteSpace: 'pre-wrap' as const }}>{replyMessage}</Text>
+      </InfoBox>
 
       <Text style={emailStyles.text}>
         Reply to this email or contact us directly if you have more questions.
@@ -37,18 +41,6 @@ export const ContactReplyEmail = ({
       </Text>
     </EmailLayout>
   );
-};
-
-const messageStyle = {
-  color: '#2d3748',
-  fontSize: '15px',
-  lineHeight: '24px',
-  backgroundColor: '#f7fafc',
-  border: '1px solid #e2e8f0',
-  borderRadius: '8px',
-  padding: '20px',
-  margin: '16px 0',
-  whiteSpace: 'pre-wrap' as const,
 };
 
 export default ContactReplyEmail;

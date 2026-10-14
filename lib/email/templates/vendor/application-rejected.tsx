@@ -1,7 +1,9 @@
-import { Section, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import Button from '../base/button';
+import InfoBox from '../../components/info-box';
+import SectionLabel from '../../components/section-label';
 import { emailStyles } from '../../styles/constants';
 
 interface VendorApplicationRejectedEmailProps {
@@ -22,6 +24,8 @@ export const VendorApplicationRejectedEmail = ({
     <EmailLayout
       preview="Vendor Application Update - Infinia Transfers"
       heading="Application Status Update"
+      eyebrow="Application update"
+      tone="danger"
     >
       <Text style={emailStyles.text}>Hi {name},</Text>
 
@@ -29,19 +33,11 @@ export const VendorApplicationRejectedEmail = ({
         We&apos;ve completed our review of your application (Reference: {applicationReference}).
       </Text>
 
-      <Section style={rejectionBox}>
-        <Text style={rejectionText}>
-          We can&apos;t approve your vendor application.
-        </Text>
-      </Section>
+      <InfoBox type="error">We can&apos;t approve your vendor application.</InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Reason for decision:</strong>
-      </Text>
+      <SectionLabel>Reason for decision</SectionLabel>
 
-      <Section style={reasonBox}>
-        <Text style={reasonText}>{rejectionReason}</Text>
-      </Section>
+      <InfoBox type="message">{rejectionReason}</InfoBox>
 
       <Text style={emailStyles.text}>
         This is usually about service area coverage, fleet requirements or vendor capacity in your region rather than the quality of your service.
@@ -49,9 +45,7 @@ export const VendorApplicationRejectedEmail = ({
 
       {resubmitUrl && (
         <>
-          <Text style={emailStyles.text}>
-            <strong>Can you resubmit?</strong>
-          </Text>
+          <SectionLabel>Can you resubmit?</SectionLabel>
 
           <Text style={emailStyles.text}>
             Yes, and there is no waiting period. Update your application to address the feedback
@@ -78,40 +72,6 @@ export const VendorApplicationRejectedEmail = ({
       </Text>
     </EmailLayout>
   );
-};
-
-// Template-specific rejection box styles
-const rejectionBox = {
-  backgroundColor: '#fef2f2',
-  border: '1px solid #fecaca',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '20px 0',
-};
-
-const rejectionText = {
-  color: '#991b1b',
-  fontSize: '16px',
-  lineHeight: '24px',
-  margin: '0',
-  fontWeight: '500',
-};
-
-const reasonBox = {
-  backgroundColor: '#f7fafc',
-  border: '1px solid #e2e8f0',
-  borderLeft: '4px solid #ef4444',
-  borderRadius: '4px',
-  padding: '16px',
-  margin: '16px 0',
-};
-
-const reasonText = {
-  color: '#2d3748',
-  fontSize: '15px',
-  lineHeight: '22px',
-  margin: '0',
-  fontStyle: 'italic',
 };
 
 export default VendorApplicationRejectedEmail;

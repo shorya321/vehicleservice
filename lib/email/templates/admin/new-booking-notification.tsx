@@ -5,6 +5,10 @@ import DetailsSection from '../../components/details-section';
 import Button from '../base/button';
 import { emailStyles } from '../../styles/constants';
 import TripDetails from '../../components/trip-details';
+import DetailRow from '../../components/detail-row';
+import FareLedger from '../../components/fare-ledger';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
 import type { EmailTripDetails } from '../../types';
 
 interface NewBookingNotificationEmailProps {
@@ -48,6 +52,8 @@ export const NewBookingNotificationEmail = ({
     <EmailLayout
       preview={`New Booking Received - ${tripNumber || bookingReference}`}
       heading="New Booking Received"
+      eyebrow="New booking"
+      reference={{ label: 'Trip', value: tripNumber || bookingReference }}
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
@@ -55,58 +61,41 @@ export const NewBookingNotificationEmail = ({
         A new booking has been received and payment confirmed. Here are the details:
       </Text>
 
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingReference}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer Name:</strong> {customerName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer Email:</strong> {customerEmail}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer Phone:</strong> {customerPhone}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle Category:</strong> {vehicleCategory}
-        </Text>
-        {vehicleType && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Vehicle Type:</strong> {vehicleType}
-          </Text>
-        )}
-        <Hr style={emailStyles.hr} />
-        {isGrouped && trip ? (
+      {isGrouped && trip ? (
+        <>
+          <SectionLabel>Journeys</SectionLabel>
           <TripDetails trip={trip} currency={currency} />
-        ) : (
-          <>
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup Location:</strong> {pickupLocation}
-            </Text>
-            {isHourly && trip ? (
-              <TripDetails trip={trip} currency={currency} />
-            ) : (
-              <Text style={emailStyles.detailRow}>
-                <strong>Dropoff Location:</strong> {dropoffLocation}
-              </Text>
-            )}
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup Date:</strong> {pickupDate}
-            </Text>
-            <Text style={emailStyles.detailRow}>
-              <strong>Pickup Time:</strong> {pickupTime}
-            </Text>
-          </>
-        )}
+        </>
+      ) : (
+        <>
+          <SectionLabel>Trip</SectionLabel>
+          <Journey
+            time={pickupTime}
+            date={pickupDate}
+            pickup={pickupLocation}
+            dropoff={isHourly && trip ? undefined : dropoffLocation}
+          />
+        </>
+      )}
+
+      <DetailsSection>
+        <DetailRow label="Trip #">{tripNumber || bookingReference}</DetailRow>
         <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.totalRow}>
-          <strong>Total Amount:</strong> {currency} {totalAmount.toFixed(2)}
-        </Text>
+        <DetailRow label="Customer Name">{customerName}</DetailRow>
+        <DetailRow label="Customer Email">{customerEmail}</DetailRow>
+        <DetailRow label="Customer Phone">{customerPhone}</DetailRow>
+        <Hr style={emailStyles.hr} />
+        <DetailRow label="Vehicle Category">{vehicleCategory}</DetailRow>
+        {vehicleType && <DetailRow label="Vehicle Type">{vehicleType}</DetailRow>}
+        {!isGrouped && isHourly && trip ? (
+          <>
+            <Hr style={emailStyles.hr} />
+            <TripDetails trip={trip} currency={currency} />
+          </>
+        ) : null}
       </DetailsSection>
+
+      <FareLedger items={[]} totalLabel="Total Amount" total={`${currency} ${totalAmount.toFixed(2)}`} />
 
       <Button href={bookingDetailsUrl}>View Booking Details</Button>
 

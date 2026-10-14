@@ -3,7 +3,9 @@ import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import Button from '../base/button';
-import { emailStyles } from '../../styles/constants';
+import DetailRow from '../../components/detail-row';
+import InfoBox from '../../components/info-box';
+import { boxStyles, emailStyles } from '../../styles/constants';
 
 interface NewVendorApplicationNotificationEmailProps {
   applicationReference: string;
@@ -28,6 +30,8 @@ export const NewVendorApplicationNotificationEmail = ({
     <EmailLayout
       preview="New Vendor Application - Infinia Transfers"
       heading="New Vendor Application"
+      eyebrow="New application"
+      tone="warning"
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
@@ -37,30 +41,20 @@ export const NewVendorApplicationNotificationEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Business:</strong> {companyName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Applicant:</strong> {applicantName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Email:</strong> {applicantEmail}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Phone:</strong> {businessPhone}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Submitted:</strong> {submittedDate}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Reference:</strong> {applicationReference}
-        </Text>
+        <DetailRow label="Business">{companyName}</DetailRow>
+        <DetailRow label="Applicant">{applicantName}</DetailRow>
+        <DetailRow label="Email">{applicantEmail}</DetailRow>
+        <DetailRow label="Phone">{businessPhone}</DetailRow>
+        <DetailRow label="Submitted">{submittedDate}</DetailRow>
+        <DetailRow label="Reference">{applicationReference}</DetailRow>
       </DetailsSection>
 
-      <Text style={infoBoxStyle}>
-        <strong>Action required:</strong> The application is pending review. The applicant was told
-        to expect a decision within 48 hours.
-      </Text>
+      <InfoBox type="warning">
+        <Text style={boxStyles.warning.text}>
+          <strong>Action required:</strong> The application is pending review. The applicant was told
+          to expect a decision within 48 hours.
+        </Text>
+      </InfoBox>
 
       <Button href={applicationDetailsUrl}>Review Application</Button>
 
@@ -71,18 +65,6 @@ export const NewVendorApplicationNotificationEmail = ({
       </Text>
     </EmailLayout>
   );
-};
-
-// Template-specific info box style
-const infoBoxStyle = {
-  color: '#92400e',
-  fontSize: '14px',
-  lineHeight: '20px',
-  backgroundColor: '#fffbeb',
-  border: '1px solid #fde68a',
-  borderRadius: '8px',
-  padding: '12px 16px',
-  margin: '16px 0',
 };
 
 export default NewVendorApplicationNotificationEmail;

@@ -2,6 +2,7 @@ import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
 import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 
@@ -36,6 +37,9 @@ export const DirectBookingCustomerCancelledEmail = ({
     <EmailLayout
       preview={`Booking Cancelled - ${bookingReference}`}
       heading="Booking Cancelled"
+      eyebrow="Booking cancelled"
+      tone="danger"
+      reference={{ label: 'Booking', value: bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -45,15 +49,11 @@ export const DirectBookingCustomerCancelledEmail = ({
       </InfoBox>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle:</strong> {vehicleLabel}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Original Pickup:</strong> {pickupDate} at {pickupTime}
-        </Text>
+        <DetailRow label="Booking Reference">{bookingReference}</DetailRow>
+        <DetailRow label="Vehicle">{vehicleLabel}</DetailRow>
+        <DetailRow label="Original Pickup">
+          {pickupDate} at {pickupTime}
+        </DetailRow>
       </DetailsSection>
 
       <Hr style={emailStyles.hr} />

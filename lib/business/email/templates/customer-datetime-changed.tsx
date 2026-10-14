@@ -3,6 +3,7 @@ import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -34,6 +35,9 @@ export const CustomerDatetimeChangedEmail = ({
     <EmailLayout
       preview={`Pickup Time Changed - ${tripNumber || bookingNumber}`}
       heading="Your Pickup Time Has Changed"
+      eyebrow="Time changed"
+      tone="warning"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -42,36 +46,22 @@ export const CustomerDatetimeChangedEmail = ({
         been updated by <strong>{businessName}</strong>.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Updated Schedule:</strong>
-      </Text>
-
-      <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        {tripContext && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Part of:</strong> {tripContext}
-          </Text>
-        )}
+      <DetailsSection title="Updated Schedule">
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        {tripContext && <DetailRow label="Part of">{tripContext}</DetailRow>}
         <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Previous Time:</strong> {previousDateTime}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>New Time:</strong> {newDateTime}
-        </Text>
+        <DetailRow label="Previous Time">
+          <span style={{ textDecoration: 'line-through' }}>{previousDateTime}</span>
+        </DetailRow>
+        <DetailRow label="New Time" emphasis>
+          {newDateTime}
+        </DetailRow>
         <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
+        <DetailRow label="Pickup">{pickupLocation}</DetailRow>
         {modificationReason && (
           <>
             <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Reason:</strong> {modificationReason}
-            </Text>
+            <DetailRow label="Reason">{modificationReason}</DetailRow>
           </>
         )}
       </DetailsSection>

@@ -2,6 +2,7 @@ import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
 import { emailStyles, statusColors } from '../../styles/constants';
 
 /** Tells the customer their offline booking moved between statuses. */
@@ -41,6 +42,8 @@ export const DirectBookingCustomerStatusUpdateEmail = ({
     <EmailLayout
       preview={`Booking Update - ${bookingReference}`}
       heading="Booking Status Update"
+      eyebrow="Status update"
+      reference={{ label: 'Booking', value: bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -49,25 +52,18 @@ export const DirectBookingCustomerStatusUpdateEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle:</strong> {vehicleLabel}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupDate} at {pickupTime}
-        </Text>
-        <Text style={{ ...emailStyles.detailRow, marginTop: '16px' }}>
-          <strong>Status Changed:</strong>
-        </Text>
-        <Text style={emailStyles.detailRow}>
+        <DetailRow label="Booking Reference">{bookingReference}</DetailRow>
+        <DetailRow label="Vehicle">{vehicleLabel}</DetailRow>
+        <DetailRow label="Pickup">
+          {pickupDate} at {pickupTime}
+        </DetailRow>
+        <DetailRow label="Status Changed">
           <span style={{ color: statusColors.pending }}>{previousStatusLabel}</span>
           {' → '}
           <span style={{ color: getStatusColor(newStatusLabel), fontWeight: 'bold' }}>
             {newStatusLabel}
           </span>
-        </Text>
+        </DetailRow>
       </DetailsSection>
 
       <Hr style={emailStyles.hr} />

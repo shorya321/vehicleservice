@@ -19,10 +19,19 @@
  */
 
 import { getCurrentBrand } from '@/lib/email/brand/brand';
+import {
+  EMAIL_FONT_DISPLAY,
+  EMAIL_FONT_MONO,
+  EMAIL_FONT_SANS,
+  EMAIL_FONTS_HREF,
+  emailPalette,
+  type EmailPalette,
+} from '@/lib/email/brand/palette';
 import type { EmailBrand, EmailBrandColors } from '@/lib/email/transport/types';
 import type { DriverAssignedTripDetails, EmailResult } from '@/lib/email/types';
 
-export type { EmailBrand, EmailBrandColors, EmailResult, DriverAssignedTripDetails };
+export type { EmailBrand, EmailBrandColors, EmailResult, DriverAssignedTripDetails, EmailPalette };
+export { EMAIL_FONT_DISPLAY, EMAIL_FONT_MONO, EMAIL_FONT_SANS, EMAIL_FONTS_HREF };
 
 /**
  * The brand the email currently being rendered belongs to.
@@ -34,4 +43,12 @@ export type { EmailBrand, EmailBrandColors, EmailResult, DriverAssignedTripDetai
  */
 export function getBusinessBrand(): EmailBrand {
   return getCurrentBrand();
+}
+
+/**
+ * Every tone the layout paints with, derived from the current brand's colours. Called at
+ * render time, inside the brand scope, so each tenant gets its own tints.
+ */
+export function getBusinessPalette(): EmailPalette {
+  return emailPalette(getBusinessBrand().colors);
 }

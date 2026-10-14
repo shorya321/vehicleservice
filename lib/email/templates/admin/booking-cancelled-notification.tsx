@@ -1,8 +1,12 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
 import Button from '../base/button';
+import DetailRow from '../../components/detail-row';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
+import StatBlock from '../../components/stat-block';
 import { emailStyles } from '../../styles/constants';
 
 interface AdminBookingCancelledEmailProps {
@@ -39,7 +43,13 @@ export const AdminBookingCancelledEmail = ({
 }: AdminBookingCancelledEmailProps) => {
   const reference = tripNumber || bookingReference;
   return (
-    <EmailLayout preview={`Booking cancelled by customer - ${reference}`} heading="Booking Cancelled by Customer">
+    <EmailLayout
+      preview={`Booking cancelled by customer - ${reference}`}
+      heading="Booking Cancelled by Customer"
+      eyebrow="Booking cancelled"
+      tone="danger"
+      reference={{ label: 'Trip', value: reference }}
+    >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
       <Text style={emailStyles.text}>
@@ -48,44 +58,31 @@ export const AdminBookingCancelledEmail = ({
           : 'A customer cancelled a booking. Nothing was paid, so there is nothing to refund.'}
       </Text>
 
+      <SectionLabel>Trip</SectionLabel>
+      <Journey
+        label="Was due"
+        time={pickupTime}
+        date={pickupDate}
+        pickup={pickupLocation}
+        dropoff={dropoffLocation}
+      />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {reference}
-        </Text>
-        {groupNumber && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Part of trip:</strong> {groupNumber}
-          </Text>
-        )}
-        {tripLabel && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Journey:</strong> {tripLabel}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Customer:</strong> {customerName} ({customerEmail})
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Route:</strong> {pickupLocation} to {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Was due:</strong> {pickupDate} at {pickupTime}
-        </Text>
-        {refundDue !== null && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.totalRow}>
-              <strong>Refund due:</strong> AED {refundDue.toFixed(2)}
-            </Text>
-            {discountForfeited && (
-              <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
-                Net of the round-trip saving the remaining journey no longer qualifies for.
-              </Text>
-            )}
-          </>
-        )}
+        <DetailRow label="Trip #">{reference}</DetailRow>
+        {groupNumber && <DetailRow label="Part of trip">{groupNumber}</DetailRow>}
+        {tripLabel && <DetailRow label="Journey">{tripLabel}</DetailRow>}
+        <DetailRow label="Customer">
+          {customerName} ({customerEmail})
+        </DetailRow>
       </DetailsSection>
+
+      {refundDue !== null && (
+        <StatBlock label="Refund due" value={`AED ${refundDue.toFixed(2)}`}>
+          {discountForfeited
+            ? 'Net of the round-trip saving the remaining journey no longer qualifies for.'
+            : null}
+        </StatBlock>
+      )}
 
       <Button href={bookingDetailsUrl}>View Booking</Button>
 

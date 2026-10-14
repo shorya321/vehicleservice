@@ -3,6 +3,9 @@ import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -34,6 +37,9 @@ export const CustomerBookingCancelledEmail = ({
     <EmailLayout
       preview={`Booking Cancelled - ${tripNumber || bookingNumber}`}
       heading="Your Transfer Has Been Cancelled"
+      eyebrow="Booking cancelled"
+      tone="danger"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -42,35 +48,17 @@ export const CustomerBookingCancelledEmail = ({
         cancelled.
       </InfoBox>
 
-      <Text style={emailStyles.text}>
-        <strong>Cancelled Booking Details:</strong>
-      </Text>
+      <SectionLabel>Cancelled Booking Details</SectionLabel>
+
+      <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {tripNumber || bookingNumber}
-        </Text>
-        {tripContext && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Part of:</strong> {tripContext}
-          </Text>
-        )}
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Date & Time:</strong> {pickupDateTime}
-        </Text>
+        <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
+        {tripContext && <DetailRow label="Part of">{tripContext}</DetailRow>}
         {cancellationReason && (
           <>
             <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Reason:</strong> {cancellationReason}
-            </Text>
+            <DetailRow label="Reason">{cancellationReason}</DetailRow>
           </>
         )}
       </DetailsSection>

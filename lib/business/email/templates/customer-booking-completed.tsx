@@ -1,8 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
 import InfoBox from '../components/info-box';
+import DetailRow from '../components/detail-row';
+import Journey from '../components/journey';
+import SectionLabel from '../components/section-label';
 import { emailStyles } from '../styles/constants';
 import { getBusinessBrand } from '../brand';
 
@@ -38,6 +41,9 @@ export const BusinessCustomerBookingCompletedEmail = ({
     <EmailLayout
       preview={`Thanks for travelling with ${businessName}`}
       heading="Your Trip Is Complete"
+      eyebrow="Trip completed"
+      tone="success"
+      reference={{ label: 'Trip', value: tripNumber || bookingNumber }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -46,20 +52,12 @@ export const BusinessCustomerBookingCompletedEmail = ({
         travelling with {businessName}.
       </InfoBox>
 
+      <SectionLabel>Your journey</SectionLabel>
+
+      <Journey when={pickupDateTime} pickup={pickupLocation} dropoff={dropoffLocation} />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Reference:</strong> {tripNumber || bookingNumber}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Date &amp; Time:</strong> {pickupDateTime}
-        </Text>
+        <DetailRow label="Reference">{tripNumber || bookingNumber}</DetailRow>
       </DetailsSection>
 
       <Text style={emailStyles.text}>

@@ -2,6 +2,10 @@ import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import DriverCard from '../../components/driver-card';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
 import InfoBox from '../../components/info-box';
 import { emailStyles, statusColors } from '../../styles/constants';
 
@@ -77,6 +81,9 @@ export const DirectBookingCustomerConfirmationEmail = ({
     <EmailLayout
       preview={`Booking Confirmed - ${bookingReference}`}
       heading="Your Booking"
+      eyebrow="Booking confirmed"
+      tone="success"
+      reference={{ label: 'Booking', value: bookingReference }}
     >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
@@ -85,68 +92,49 @@ export const DirectBookingCustomerConfirmationEmail = ({
         email for your records.
       </Text>
 
+      <SectionLabel>Your journey</SectionLabel>
+      <Journey
+        time={pickupTime}
+        date={pickupDate}
+        pickup={pickupLocation}
+        dropoff={dropoffLocation || undefined}
+      >
+        <DetailRow label="Return Date & Time">
+          {returnDate} at {returnTime}
+        </DetailRow>
+      </Journey>
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Booking Reference:</strong> {bookingReference}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Status:</strong>{' '}
+        <DetailRow label="Booking Reference">{bookingReference}</DetailRow>
+        <DetailRow label="Status">
           <span style={{ color: getStatusColor(statusLabel), fontWeight: 'bold' }}>
             {statusLabel}
           </span>
-        </Text>
+        </DetailRow>
+      </DetailsSection>
 
-        <Hr style={emailStyles.hr} />
+      <SectionLabel>Your driver</SectionLabel>
+      <DriverCard
+        name={driverName}
+        phone={driverPhone || undefined}
+        vehicle={vehicleLabel}
+        plate={vehicleRegistration}
+      />
 
-        <Text style={emailStyles.detailRow}>
-          <strong>Vehicle:</strong> {vehicleLabel}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Registration:</strong> {vehicleRegistration}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Driver:</strong> {driverName}
-        </Text>
-        {driverPhone && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Driver Phone:</strong> {driverPhone}
-          </Text>
-        )}
-
-        <Hr style={emailStyles.hr} />
-
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Date &amp; Time:</strong> {pickupDate} at {pickupTime}
-        </Text>
-        {dropoffLocation && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Drop-off:</strong> {dropoffLocation}
-          </Text>
-        )}
-        <Text style={emailStyles.detailRow}>
-          <strong>Return Date &amp; Time:</strong> {returnDate} at {returnTime}
-        </Text>
-
-        <Hr style={emailStyles.hr} />
-
-        <Text style={emailStyles.detailRow}>
-          <strong>Total:</strong> {currency} {totalAmount.toFixed(2)}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Paid:</strong> {currency} {amountPaid.toFixed(2)} ({paymentStatusLabel})
-        </Text>
+      <DetailsSection title="Payment">
+        <DetailRow label="Total">
+          {currency} {totalAmount.toFixed(2)}
+        </DetailRow>
+        <DetailRow label="Paid">
+          {currency} {amountPaid.toFixed(2)} ({paymentStatusLabel})
+        </DetailRow>
         {balanceDue > 0 && (
-          <Text style={emailStyles.totalRow}>
-            <strong>Balance Due:</strong> {currency} {balanceDue.toFixed(2)}
-          </Text>
+          <DetailRow label="Balance Due" emphasis>
+            {currency} {balanceDue.toFixed(2)}
+          </DetailRow>
         )}
         {paymentMethodLabel && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Payment Method:</strong> {paymentMethodLabel}
-          </Text>
+          <DetailRow label="Payment Method">{paymentMethodLabel}</DetailRow>
         )}
       </DetailsSection>
 

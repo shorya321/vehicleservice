@@ -1,9 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import SectionLabel from '../../components/section-label';
 import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import { boxStyles, emailStyles, statusColors } from '../../styles/constants';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 import { getCurrentBrand } from '../../brand/brand';
 
@@ -36,11 +38,13 @@ export const SpendingLimitReachedEmail = ({
     <EmailLayout
       preview={`${limitTypeText} spending limit reached`}
       heading="Spending Limit Reached"
+      eyebrow="Spending limit"
+      tone="warning"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <InfoBox type="warning">
-        <Text style={emailStyles.text}>
+        <Text style={boxStyles.warning.text}>
           <strong>Your {limitTypeText} spending limit has been reached!</strong>
           {rejectedTransactionAmount && (
             <>
@@ -58,38 +62,22 @@ export const SpendingLimitReachedEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Limit Type:</strong> {limitTypeText.charAt(0).toUpperCase() + limitTypeText.slice(1)} Limit
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Limit Amount:</strong> {formatCurrency(limitAmount, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Current Spend:</strong> {formatCurrency(currentSpend, currency)}
-        </Text>
+        <DetailRow label="Limit Type">
+          {limitTypeText.charAt(0).toUpperCase() + limitTypeText.slice(1)} Limit
+        </DetailRow>
+        <DetailRow label="Limit Amount">{formatCurrency(limitAmount, currency)}</DetailRow>
+        <DetailRow label="Current Spend">{formatCurrency(currentSpend, currency)}</DetailRow>
         {rejectedTransactionAmount && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={{...emailStyles.detailRow, color: '#ef4444'}}>
-              <strong>Rejected Transaction:</strong> {formatCurrency(rejectedTransactionAmount, currency)}
-            </Text>
-          </>
+          <DetailRow label="Rejected Transaction">
+            <span style={{ color: statusColors.cancelled }}>
+              {formatCurrency(rejectedTransactionAmount, currency)}
+            </span>
+          </DetailRow>
         )}
-        {resetDate && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.detailRow}>
-              <strong>Limit Resets:</strong> {resetDate}
-            </Text>
-          </>
-        )}
+        {resetDate && <DetailRow label="Limit Resets">{resetDate}</DetailRow>}
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>What you can do:</strong>
-      </Text>
+      <SectionLabel>What you can do:</SectionLabel>
 
       <ul style={emailStyles.list}>
         {limitType !== 'transaction' && resetDate && (

@@ -14,6 +14,7 @@ export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
     <EmailLayout
       preview="Welcome to Infinia Transfers - Verify your email"
       heading={`Welcome to Infinia Transfers, ${name}!`}
+      eyebrow="Account created"
     >
       <Text style={emailStyles.text}>
         Thanks for creating an Infinia Transfers account.
@@ -25,13 +26,13 @@ export const WelcomeEmail = ({ name, verificationUrl }: WelcomeEmailProps) => {
 
       <Button href={verificationUrl}>Verify Email Address</Button>
 
-      <Text style={emailStyles.text}>
+      <Text style={{ ...emailStyles.muted, margin: '20px 0 6px' }}>
         Or copy and paste this link into your browser:
       </Text>
 
       <Text style={emailStyles.linkWithMargin}>{verificationUrl}</Text>
 
-      <Text style={emailStyles.text}>
+      <Text style={{ ...emailStyles.muted }}>
         This verification link will expire in 24 hours for security reasons.
       </Text>
 

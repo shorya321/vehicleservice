@@ -1,9 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import SectionLabel from '../../components/section-label';
 import InfoBox from '../../components/info-box';
-import { emailStyles } from '../../styles/constants';
+import { boxStyles, emailStyles, statusColors } from '../../styles/constants';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 
 interface WalletFrozenEmailProps {
@@ -29,11 +31,13 @@ export const WalletFrozenEmail = ({
     <EmailLayout
       preview="Your wallet has been frozen - Action required"
       heading="Wallet Frozen"
+      eyebrow="Wallet frozen"
+      tone="danger"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
       <InfoBox type="error">
-        <Text style={emailStyles.text}>
+        <Text style={boxStyles.error.text}>
           <strong>Your wallet has been frozen!</strong>
           <br />
           You cannot use wallet funds until the freeze is lifted.
@@ -46,29 +50,16 @@ export const WalletFrozenEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Current Balance:</strong> {formatCurrency(currentBalance, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={{...emailStyles.detailRow, color: '#ef4444'}}>
-          <strong>Status:</strong> Frozen
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Reason:</strong> {freezeReason}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Frozen By:</strong> {frozenBy}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Freeze Date:</strong> {freezeDate}
-        </Text>
+        <DetailRow label="Current Balance">{formatCurrency(currentBalance, currency)}</DetailRow>
+        <DetailRow label="Status">
+          <span style={{ color: statusColors.cancelled }}>Frozen</span>
+        </DetailRow>
+        <DetailRow label="Reason">{freezeReason}</DetailRow>
+        <DetailRow label="Frozen By">{frozenBy}</DetailRow>
+        <DetailRow label="Freeze Date">{freezeDate}</DetailRow>
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>What this means:</strong>
-      </Text>
+      <SectionLabel>What this means:</SectionLabel>
 
       <ul style={emailStyles.list}>
         <li style={emailStyles.listItem}>
@@ -85,9 +76,7 @@ export const WalletFrozenEmail = ({
         </li>
       </ul>
 
-      <Text style={emailStyles.text}>
-        <strong>Next Steps:</strong>
-      </Text>
+      <SectionLabel>Next Steps:</SectionLabel>
 
       <Text style={emailStyles.text}>
         Please contact our support team to resolve the issue and have your wallet unfrozen. Our team

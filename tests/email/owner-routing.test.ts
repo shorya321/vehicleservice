@@ -38,7 +38,7 @@ jest.mock('@/lib/email/config', () => ({
 }));
 
 import { sendEmail } from '@/lib/email/utils/send-email';
-import { getCurrentBrand } from '@/lib/email/brand/brand';
+import { getCurrentBrand, PLATFORM_BRAND_COLORS } from '@/lib/email/brand/brand';
 import { encryptSecret, resetMailCryptoCache } from '@/lib/email/transport/crypto';
 import { clearMailConfigCache, resolveMailConfig } from '@/lib/email/transport/resolve-config';
 import { buildBusinessBrand, type BusinessBrandRow } from '@/lib/email/transport/business-brand';
@@ -250,7 +250,7 @@ describe('brand colours', () => {
   });
 
   it('falls back to the platform palette when theme_config is absent', () => {
-    expect(buildBusinessBrand(brandFor(null)).colors.primary).toBe('#556cd6');
+    expect(buildBusinessBrand(brandFor(null)).colors.primary).toBe(PLATFORM_BRAND_COLORS.primary);
   });
 
   it('rejects anything that is not a plain hex, rather than emitting it into a style', () => {
@@ -260,7 +260,7 @@ describe('brand colours', () => {
     };
     const { colors } = buildBusinessBrand(brandFor(hostile));
 
-    expect(colors.primary).toBe('#556cd6');
-    expect(colors.heading).toBe('#1a1a1a');
+    expect(colors.primary).toBe(PLATFORM_BRAND_COLORS.primary);
+    expect(colors.heading).toBe(PLATFORM_BRAND_COLORS.heading);
   });
 });

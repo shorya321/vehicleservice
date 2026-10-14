@@ -2,6 +2,8 @@ import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import InfoBox from '../../components/info-box';
 import { emailStyles } from '../../styles/constants';
 
 interface ContactConfirmationEmailProps {
@@ -19,6 +21,7 @@ export const ContactConfirmationEmail = ({
     <EmailLayout
       preview="Thank you for contacting Infinia Transfers"
       heading="We've Received Your Message"
+      eyebrow="Message received"
     >
       <Text style={emailStyles.text}>Dear {name},</Text>
 
@@ -27,13 +30,12 @@ export const ContactConfirmationEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Subject:</strong> {subject}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Message:</strong> {message}
-        </Text>
+        <DetailRow label="Subject">{subject}</DetailRow>
       </DetailsSection>
+
+      <InfoBox type="message" title="Message">
+        {message}
+      </InfoBox>
 
       <Text style={emailStyles.text}>
         We typically respond within 24 hours during business days. If your

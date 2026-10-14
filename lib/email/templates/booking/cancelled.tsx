@@ -1,7 +1,11 @@
-import { Hr, Text } from '@react-email/components';
+import { Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
+import DetailRow from '../../components/detail-row';
+import Journey from '../../components/journey';
+import SectionLabel from '../../components/section-label';
+import StatBlock from '../../components/stat-block';
 import { emailStyles } from '../../styles/constants';
 
 interface BookingCancelledEmailProps {
@@ -34,7 +38,13 @@ export const BookingCancelledEmail = ({
 }: BookingCancelledEmailProps) => {
   const reference = tripNumber || bookingReference;
   return (
-    <EmailLayout preview={`Booking cancelled - ${reference}`} heading="Booking Cancelled">
+    <EmailLayout
+      preview={`Booking cancelled - ${reference}`}
+      heading="Booking Cancelled"
+      eyebrow="Booking cancelled"
+      tone="danger"
+      reference={{ label: 'Trip', value: reference }}
+    >
       <Text style={emailStyles.text}>Hi {customerName},</Text>
 
       <Text style={emailStyles.text}>
@@ -43,39 +53,26 @@ export const BookingCancelledEmail = ({
           : 'Your booking is cancelled.'}
       </Text>
 
+      <SectionLabel>Your journey</SectionLabel>
+      <Journey
+        label="Was due"
+        time={pickupTime}
+        date={pickupDate}
+        pickup={pickupLocation}
+        dropoff={dropoffLocation}
+      />
+
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Trip #:</strong> {reference}
-        </Text>
-        {tripLabel && (
-          <Text style={emailStyles.detailRow}>
-            <strong>Journey:</strong> {tripLabel}
-          </Text>
-        )}
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Pickup Location:</strong> {pickupLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Dropoff Location:</strong> {dropoffLocation}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Was due:</strong> {pickupDate} at {pickupTime}
-        </Text>
-        {refundDue !== null && (
-          <>
-            <Hr style={emailStyles.hr} />
-            <Text style={emailStyles.totalRow}>
-              <strong>Refund:</strong> AED {refundDue.toFixed(2)}
-            </Text>
-            {discountForfeited && (
-              <Text style={{ ...emailStyles.detailRow, fontSize: '13px', color: '#666666' }}>
-                The round-trip saving no longer applies to the rest of your trip, so it is taken from this refund.
-              </Text>
-            )}
-          </>
-        )}
+        <DetailRow label="Trip #">{reference}</DetailRow>
+        {tripLabel && <DetailRow label="Journey">{tripLabel}</DetailRow>}
       </DetailsSection>
+
+      {refundDue !== null && (
+        <StatBlock label="Refund" value={`AED ${refundDue.toFixed(2)}`}>
+          {discountForfeited &&
+            'The round-trip saving no longer applies to the rest of your trip, so it is taken from this refund.'}
+        </StatBlock>
+      )}
 
       <Text style={emailStyles.text}>
         {refundDue !== null && refundDue > 0

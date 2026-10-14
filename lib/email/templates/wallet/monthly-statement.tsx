@@ -2,7 +2,9 @@ import { Hr, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from '../base/layout';
 import DetailsSection from '../../components/details-section';
-import { emailStyles } from '../../styles/constants';
+import DetailRow from '../../components/detail-row';
+import SectionLabel from '../../components/section-label';
+import { emailStyles, statusColors } from '../../styles/constants';
 import { formatCurrency } from '@/lib/utils/currency-converter';
 import { getCurrentBrand } from '../../brand/brand';
 
@@ -40,6 +42,7 @@ export const MonthlyStatementEmail = ({
     <EmailLayout
       preview={`Monthly Wallet Statement - ${statementMonth} ${statementYear}`}
       heading="Monthly Wallet Statement"
+      eyebrow="Monthly statement"
     >
       <Text style={emailStyles.text}>Hi {businessName},</Text>
 
@@ -48,41 +51,34 @@ export const MonthlyStatementEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Statement Period:</strong> {statementMonth} {statementYear}
-        </Text>
+        <DetailRow label="Statement Period">
+          {statementMonth} {statementYear}
+        </DetailRow>
+        <DetailRow label="Opening Balance">{formatCurrency(openingBalance, currency)}</DetailRow>
+        <DetailRow label="Total Credits">
+          <span style={{ color: statusColors.confirmed }}>
+            +{formatCurrency(totalCredits, currency)}
+          </span>
+        </DetailRow>
+        <DetailRow label="Total Debits">
+          <span style={{ color: statusColors.cancelled }}>
+            -{formatCurrency(totalDebits, currency)}
+          </span>
+        </DetailRow>
+        <DetailRow label="Net Change" emphasis>
+          <span style={{ color: isPositiveChange ? statusColors.confirmed : statusColors.cancelled }}>
+            {isPositiveChange ? '+' : ''}
+            {formatCurrency(netChange, currency)}
+          </span>
+        </DetailRow>
         <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Opening Balance:</strong> {formatCurrency(openingBalance, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={{...emailStyles.detailRow, color: '#10b981'}}>
-          <strong>Total Credits:</strong> +{formatCurrency(totalCredits, currency)}
-        </Text>
-        <Text style={{...emailStyles.detailRow, color: '#ef4444'}}>
-          <strong>Total Debits:</strong> -{formatCurrency(totalDebits, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={{
-          ...emailStyles.detailRow,
-          color: isPositiveChange ? '#10b981' : '#ef4444',
-          fontWeight: 'bold'
-        }}>
-          <strong>Net Change:</strong> {isPositiveChange ? '+' : ''}{formatCurrency(netChange, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={{...emailStyles.totalRow, fontSize: '18px'}}>
-          <strong>Closing Balance:</strong> {formatCurrency(closingBalance, currency)}
-        </Text>
-        <Hr style={emailStyles.hr} />
-        <Text style={emailStyles.detailRow}>
-          <strong>Total Transactions:</strong> {transactionCount}
-        </Text>
+        <DetailRow label="Closing Balance" emphasis>
+          {formatCurrency(closingBalance, currency)}
+        </DetailRow>
+        <DetailRow label="Total Transactions">{transactionCount}</DetailRow>
       </DetailsSection>
 
-      <Text style={emailStyles.text}>
-        <strong>Summary:</strong>
-      </Text>
+      <SectionLabel>Summary:</SectionLabel>
 
       <ul style={emailStyles.list}>
         <li style={emailStyles.listItem}>
@@ -104,9 +100,7 @@ export const MonthlyStatementEmail = ({
 
       {pdfUrl && (
         <>
-          <Text style={emailStyles.text}>
-            <strong>Download Full Statement:</strong>
-          </Text>
+          <SectionLabel>Download Full Statement:</SectionLabel>
 
           <Text style={emailStyles.text}>
             <a href={pdfUrl} style={emailStyles.link}>

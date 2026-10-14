@@ -1,6 +1,7 @@
 import { Text } from '@react-email/components';
 import EmailLayout from './base/layout';
 import DetailsSection from '../components/details-section';
+import DetailRow from '../components/detail-row';
 import InfoBox from '../components/info-box';
 import Button from './base/button';
 import { emailStyles } from '../styles/constants';
@@ -26,6 +27,8 @@ export const NewBusinessRegistrationAdminNotificationEmail = ({
     <EmailLayout
       preview="New Business Registration - Action Required"
       heading="New Business Registration"
+      eyebrow="New registration"
+      tone="warning"
     >
       <Text style={emailStyles.text}>Hi Admin,</Text>
 
@@ -35,21 +38,11 @@ export const NewBusinessRegistrationAdminNotificationEmail = ({
       </Text>
 
       <DetailsSection>
-        <Text style={emailStyles.detailRow}>
-          <strong>Business Name:</strong> {businessName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Contact Person:</strong> {contactPersonName}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Email:</strong> {businessEmail}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Phone:</strong> {businessPhone}
-        </Text>
-        <Text style={emailStyles.detailRow}>
-          <strong>Registration Date:</strong> {registrationDate}
-        </Text>
+        <DetailRow label="Business Name">{businessName}</DetailRow>
+        <DetailRow label="Contact Person">{contactPersonName}</DetailRow>
+        <DetailRow label="Email">{businessEmail}</DetailRow>
+        <DetailRow label="Phone">{businessPhone}</DetailRow>
+        <DetailRow label="Registration Date">{registrationDate}</DetailRow>
       </DetailsSection>
 
       <InfoBox type="warning" title="Action Required">
