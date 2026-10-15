@@ -84,7 +84,7 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
                   {leg.discount_amount > 0 ? ` (after ${formatCurrency(leg.discount_amount)} discount)` : ''}
                 </p>
                 {leg.refund_due !== null && (
-                  <p className="mt-1 text-sm font-medium text-amber-600">
+                  <p className="mt-1 text-sm font-medium text-amber-600 dark:text-amber-400">
                     Refund due {formatCurrency(leg.refund_due)}.{' '}
                     {isWallet ? 'Credit it to the business wallet by hand.' : 'Issue it manually in Stripe.'}
                   </p>
@@ -112,7 +112,7 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
           {refundsDue > 0 && (
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Refunds due</dt>
-              <dd className="font-semibold text-amber-600">{formatCurrency(refundsDue)}</dd>
+              <dd className="font-semibold text-amber-600 dark:text-amber-400">{formatCurrency(refundsDue)}</dd>
             </div>
           )}
           {group.stripe_payment_intent_id && (

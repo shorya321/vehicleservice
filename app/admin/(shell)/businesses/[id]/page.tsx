@@ -295,7 +295,7 @@ export default async function AdminBusinessDetailsPage({
                   </div>
                   <div className="text-right">
                     <p
-                      className={`font-medium ${tx.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`font-medium ${tx.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                     >
                       {tx.amount >= 0 ? '+' : ''}
                       {formatCurrency(tx.amount)}

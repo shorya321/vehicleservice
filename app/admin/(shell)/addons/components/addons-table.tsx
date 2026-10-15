@@ -193,7 +193,7 @@ export function AddonsTable({ addons }: AddonsTableProps) {
                 <TableCell>
                   <div className="font-medium">
                     {addon.price === 0 ? (
-                      <span className="text-green-600">Free</span>
+                      <span className="text-green-600 dark:text-green-400">Free</span>
                     ) : (
                       formatCurrency(addon.price)
                     )}

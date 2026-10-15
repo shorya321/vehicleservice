@@ -246,7 +246,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                       disabled={loadingId === route.id}
                     />
                     {route.is_active ? (
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                     ) : (
                       <X className="h-4 w-4 text-muted-foreground" />
                     )}

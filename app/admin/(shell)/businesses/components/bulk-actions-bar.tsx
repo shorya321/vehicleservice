@@ -162,15 +162,15 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setPendingAction('approve')}>
-                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                <CheckCircle className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
                 Approve All
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setPendingAction('suspend')}>
-                <AlertTriangle className="mr-2 h-4 w-4 text-orange-600" />
+                <AlertTriangle className="mr-2 h-4 w-4 text-orange-600 dark:text-orange-400" />
                 Suspend All
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setPendingAction('reactivate')}>
-                <CheckCircle className="mr-2 h-4 w-4 text-blue-600" />
+                <CheckCircle className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
                 Reactivate All
               </DropdownMenuItem>
               <DropdownMenuSeparator />

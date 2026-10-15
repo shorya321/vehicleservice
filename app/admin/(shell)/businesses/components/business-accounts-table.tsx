@@ -191,7 +191,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
         return {
           label: 'Approve',
           icon: CheckCircle,
-          className: 'text-green-600',
+          className: 'text-green-600 dark:text-green-400',
           title: 'Approve Business',
           description: 'This will activate the business account and allow them to login.',
         };
@@ -199,7 +199,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
         return {
           label: 'Reject',
           icon: XCircle,
-          className: 'text-red-600',
+          className: 'text-red-600 dark:text-red-400',
           title: 'Reject Business',
           description: 'This will reject the business application. They will not be able to login.',
         };
@@ -207,7 +207,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
         return {
           label: 'Suspend',
           icon: PauseCircle,
-          className: 'text-orange-600',
+          className: 'text-orange-600 dark:text-orange-400',
           title: 'Suspend Business',
           description: 'This will suspend the business account. They will lose access immediately.',
         };
@@ -215,7 +215,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
         return {
           label: 'Reactivate',
           icon: CheckCircle,
-          className: 'text-blue-600',
+          className: 'text-blue-600 dark:text-blue-400',
           title: 'Reactivate Business',
           description: 'This will reactivate the suspended business account.',
         };

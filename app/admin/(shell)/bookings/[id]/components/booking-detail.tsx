@@ -434,8 +434,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
 
                           {currentAssignment.completed_at && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-green-600">Completed: {format(toBookingTz(currentAssignment.completed_at), 'PPp')}</span>
+                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              <span className="font-medium text-green-600 dark:text-green-400">Completed: {format(toBookingTz(currentAssignment.completed_at), 'PPp')}</span>
                             </div>
                           )}
 
