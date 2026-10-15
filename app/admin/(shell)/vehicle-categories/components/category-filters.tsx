@@ -43,7 +43,7 @@ export function CategoryFiltersComponent({ filters, onFiltersChange }: CategoryF
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-1 items-center gap-4">
+      <div className="flex flex-1 flex-wrap items-center gap-4">
         <SearchInput aria-label="Search categories"
           placeholder="Search by name or description..."
           value={localSearch}

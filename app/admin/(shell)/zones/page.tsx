@@ -35,7 +35,7 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
   return (
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Zones', href: '/admin/zones' }]} />
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Zones</h1>
             <p className="text-muted-foreground">

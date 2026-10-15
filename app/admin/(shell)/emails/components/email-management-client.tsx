@@ -115,9 +115,9 @@ export function EmailManagementClient() {
       </div>
 
       {/* 2 Column Layout */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Side - Controls */}
-        <div className="col-span-4 space-y-6">
+        <div className="space-y-6 lg:col-span-4">
           {/* Template Selector */}
           <Card>
             <CardHeader>
@@ -278,7 +278,7 @@ export function EmailManagementClient() {
         </div>
 
         {/* Right Side - Preview */}
-        <div className="col-span-8">
+        <div className="lg:col-span-8">
           <Card className="h-full">
             <CardHeader>
               <CardTitle>Email Preview</CardTitle>
@@ -287,7 +287,7 @@ export function EmailManagementClient() {
             <CardContent>
               <div className="flex justify-center">
                 <div
-                  className="border rounded-lg overflow-hidden bg-white shadow-lg transition-all duration-300"
+                  className="max-w-full border rounded-lg overflow-hidden bg-white shadow-lg transition-all duration-300"
                   style={{ width: previewWidth }}
                 >
                   <iframe

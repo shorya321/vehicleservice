@@ -100,7 +100,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-1 items-center gap-4">
+      <div className="flex flex-1 flex-wrap items-center gap-4">
         <SearchInput aria-label="Search locations"
           placeholder="Search by name, city, or address..."
           value={localSearch}

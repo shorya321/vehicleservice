@@ -77,7 +77,7 @@ export function CurrencyFilters() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1 rounded-lg border border-border p-1 bg-muted/50">
+      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border p-1 bg-muted/50">
         {FILTER_TABS.map((tab) => (
           <Button
             key={tab.value}

@@ -27,12 +27,12 @@ export function CurrencyPagination({
   if (totalPages <= 1) return null
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <p className="text-sm text-muted-foreground">
         Showing page {currentPage} of {totalPages} ({totalCount} total currencies)
       </p>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -43,7 +43,7 @@ export function CurrencyPagination({
           Previous
         </Button>
 
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
             let page: number
             if (totalPages <= 5) {

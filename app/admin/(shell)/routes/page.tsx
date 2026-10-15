@@ -45,7 +45,7 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
   return (
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Routes', href: '/admin/routes' }]} />
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Routes</h1>
             <p className="text-muted-foreground mt-1">
