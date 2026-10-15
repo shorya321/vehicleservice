@@ -294,7 +294,7 @@ export function EmailManagementClient() {
                     srcDoc={emailHtml}
                     className="w-full h-[700px]"
                     title="Email Preview"
-                    sandbox="allow-same-origin allow-scripts"
+                    sandbox="allow-same-origin"
                   />
                 </div>
               </div>
