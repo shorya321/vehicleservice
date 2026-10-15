@@ -237,12 +237,18 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <span className={cn(
-                          'font-mono',
-                          hasChanged && 'font-semibold text-yellow-600 dark:text-yellow-400'
-                        )}>
+                        // A real button so the cell is reachable by keyboard. It has no handler of
+                        // its own: Enter/Space fire a click that bubbles to the cell's onClick.
+                        <button
+                          type="button"
+                          aria-label={`Edit price from ${fromZone.name} to ${toZone.name}, AED ${price.toFixed(2)}`}
+                          className={cn(
+                            'font-mono rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            hasChanged && 'font-semibold text-yellow-600 dark:text-yellow-400'
+                          )}
+                        >
                           AED {price.toFixed(2)}
-                        </span>
+                        </button>
                       )}
                     </TableCell>
                   )

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
 import { cn } from "@/lib/utils"
@@ -10,7 +11,16 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
+  const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Close the mobile drawer whenever the route changes. Adjusting state during
+  // render (rather than in an effect) is React's documented pattern for this.
+  const [lastPathname, setLastPathname] = useState(pathname)
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
+    setSidebarOpen(false)
+  }
+  const closeSidebar = () => setSidebarOpen(false)
 
   return (
     <div className="relative flex h-screen overflow-hidden">
@@ -19,13 +29,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm md:hidden",
           sidebarOpen ? "block" : "hidden"
         )}
-        onClick={() => setSidebarOpen(false)}
+        onClick={closeSidebar}
       />
-      
+
       <aside
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && sidebarOpen) closeSidebar()
+        }}
         className={cn(
-          "fixed left-0 z-50 h-full transition-transform md:relative md:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed left-0 z-50 h-full transition-[transform,visibility] md:visible md:relative md:translate-x-0",
+          // invisible (not just off-screen) keeps the closed drawer's links out of
+          // the tab order and the accessibility tree on mobile
+          sidebarOpen ? "visible translate-x-0" : "invisible -translate-x-full"
         )}
       >
         <Sidebar />
