@@ -175,7 +175,7 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center gap-4">
-        <SearchInput
+        <SearchInput aria-label="Search routes"
           placeholder="Search routes..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
@@ -187,7 +187,7 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
           value={filters.isActive === true ? 'true' : filters.isActive === false ? 'false' : ALL} 
           onValueChange={handleActiveChange}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -201,7 +201,7 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
           value={filters.isPopular === true ? 'true' : filters.isPopular === false ? 'false' : ALL} 
           onValueChange={handlePopularChange}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by popularity" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

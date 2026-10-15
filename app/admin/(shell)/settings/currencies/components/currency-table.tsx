@@ -189,6 +189,7 @@ export function CurrencyTable({ currencies, rates, defaultCurrencyCode }: Curren
                         className="h-8 w-8"
                         onClick={() => handleSetDefault(currency.currency_code)}
                         disabled={isPending || !currency.is_enabled}
+                        aria-label={`Set ${currency.currency_code} as default`}
                         title={
                           currency.is_enabled
                             ? `Set ${currency.currency_code} as default`

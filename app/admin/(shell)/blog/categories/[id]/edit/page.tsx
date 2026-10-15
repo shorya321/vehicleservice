@@ -38,6 +38,7 @@ export default async function EditBlogCategoryPage({ params }: PageProps) {
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/blog/categories">
             <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
           </Link>
         </Button>
         <div>

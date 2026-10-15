@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { requireAdmin } from "@/lib/auth/actions"
 import { RouteForm } from "../components/route-form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 
@@ -22,9 +22,10 @@ export default async function NewRoutePage() {
               <Button variant="ghost" size="icon" asChild>
                 <Link href="/admin/routes">
                   <ArrowLeft className="h-4 w-4" />
+                  <span className="sr-only">Back</span>
                 </Link>
               </Button>
-              <CardTitle>Add New Route</CardTitle>
+              <h1 className="text-2xl font-semibold leading-none tracking-tight text-foreground">Add New Route</h1>
             </div>
           </CardHeader>
           <CardContent>

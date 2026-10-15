@@ -108,7 +108,7 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClearSelection }:
     <>
       <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-4 py-2">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={onClearSelection} className="h-8 px-2">
+          <Button variant="ghost" size="sm" onClick={onClearSelection} aria-label="Clear selection" className="h-8 px-2">
             <X className="h-4 w-4" />
           </Button>
           <p className="text-sm font-medium">

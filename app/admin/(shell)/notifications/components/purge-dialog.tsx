@@ -196,7 +196,7 @@ export function PurgeDialog({ open, adminEmail, onOpenChange, onPurged }: PurgeD
               Whose notifications
             </label>
             <Select value={scope} onValueChange={(next) => setScope(next as ScopeKey)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Whose notifications">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -211,7 +211,7 @@ export function PurgeDialog({ open, adminEmail, onOpenChange, onPurged }: PurgeD
               Delete notifications
             </label>
             <Select value={cutoff} onValueChange={(next) => setCutoff(next as CutoffKey)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Delete notifications">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -278,7 +278,7 @@ export function PurgeDialog({ open, adminEmail, onOpenChange, onPurged }: PurgeD
               <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Type <span className="font-semibold">{adminEmail}</span> to confirm
               </label>
-              <Input
+              <Input aria-label={`Type ${adminEmail} to confirm`}
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
                 placeholder={adminEmail}

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ZoneForm } from '../components/zone-form'
 import { getZone } from '../actions'
 import { requireAdmin } from '@/lib/auth/actions'
@@ -37,9 +37,10 @@ export default async function EditZonePage({ params }: EditZonePageProps) {
               <Button variant="ghost" size="icon" asChild>
                 <Link href="/admin/zones">
                   <ArrowLeft className="h-4 w-4" />
+                  <span className="sr-only">Back</span>
                 </Link>
               </Button>
-              <CardTitle>Edit Zone</CardTitle>
+              <h1 className="text-2xl font-semibold leading-none tracking-tight text-foreground">Edit Zone</h1>
             </div>
           </CardHeader>
           <CardContent>

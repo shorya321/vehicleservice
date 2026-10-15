@@ -17,6 +17,7 @@ export default function NewZonePage() {
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/zones">
             <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
           </Link>
         </Button>
         <h1 className="text-3xl font-bold tracking-tight">Create Zone</h1>

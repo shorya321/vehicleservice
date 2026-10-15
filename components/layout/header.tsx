@@ -77,6 +77,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           size="icon"
           className="md:hidden text-primary hover:bg-primary/10"
           onClick={onMenuClick}
+          aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -100,7 +101,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
+            <Button variant="ghost" aria-label="Account menu" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
               <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                 <AvatarImage
                   src={userProfile?.avatar_url || undefined}

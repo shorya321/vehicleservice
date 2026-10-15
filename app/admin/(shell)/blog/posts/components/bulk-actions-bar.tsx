@@ -111,6 +111,7 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClearSelection }:
             variant="ghost"
             size="sm"
             onClick={onClearSelection}
+            aria-label="Clear selection"
             className="h-8 px-2"
           >
             <X className="h-4 w-4" />

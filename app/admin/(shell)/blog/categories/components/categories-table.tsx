@@ -157,7 +157,7 @@ export function BlogCategoriesTable({ categories }: CategoriesTableProps) {
                     </p>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Switch
+                    <Switch aria-label={`${cat.name} active`}
                       checked={cat.is_active || false}
                       onCheckedChange={(checked) => handleToggleStatus(cat.id, checked)}
                       disabled={togglingId === cat.id}

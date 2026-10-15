@@ -159,7 +159,7 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Textarea
+            <Textarea aria-label="Reply message"
               value={replyMessage}
               onChange={(e) => setReplyMessage(e.target.value)}
               placeholder="Type your reply here..."
@@ -186,7 +186,7 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
             <CardDescription>Internal notes (not visible to the customer)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Textarea
+            <Textarea aria-label="Internal notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add internal notes about this submission..."
@@ -258,7 +258,7 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
             <div>
               <label className="text-sm font-medium mb-2 block">Status</label>
               <Select value={status} onValueChange={handleStatusChange}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -274,7 +274,7 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
                 Priority
               </label>
               <Select value={priority} onValueChange={handlePriorityChange}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Priority">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

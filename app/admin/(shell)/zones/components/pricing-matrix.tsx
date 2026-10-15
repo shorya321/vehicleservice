@@ -171,7 +171,7 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
       )}
 
       <div className="flex items-center gap-3">
-        <Input
+        <Input aria-label="Filter zones"
           value={zoneFilter}
           onChange={(e) => setZoneFilter(e.target.value)}
           placeholder="Filter zones by name..."
@@ -224,7 +224,7 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
                       onClick={() => !isEditing && handleCellClick(fromZone.id, toZone.id)}
                     >
                       {isEditing ? (
-                        <Input
+                        <Input aria-label="Base price (AED)"
                           type="number"
                           min="0"
                           step="0.01"

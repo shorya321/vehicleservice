@@ -188,6 +188,7 @@ export function VehicleTypesTable({ vehicleTypes }: VehicleTypesTableProps) {
                   <TableCell className="text-center">
                     <Switch
                       checked={type.is_active || false}
+                      aria-label={`${type.name} active`}
                       onCheckedChange={(checked) => handleToggleStatus(type.id, checked)}
                       disabled={togglingId === type.id}
                     />

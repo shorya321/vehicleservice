@@ -86,7 +86,7 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
+        <Input aria-label="Search vehicle types"
           placeholder="Search vehicle types..."
           className="pl-9"
           value={searchValue}
@@ -98,7 +98,7 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
         value={searchParams.get('categoryId') || 'all'}
         onValueChange={(value) => updateFilter('categoryId', value)}
       >
-        <SelectTrigger className="w-full md:w-[200px]">
+        <SelectTrigger aria-label="Filter by category" className="w-full md:w-[200px]">
           <SelectValue placeholder="All categories" />
         </SelectTrigger>
         <SelectContent>
@@ -115,7 +115,7 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
         value={searchParams.get('isActive') || 'all'}
         onValueChange={(value) => updateFilter('isActive', value)}
       >
-        <SelectTrigger className="w-full md:w-[160px]">
+        <SelectTrigger aria-label="Filter by status" className="w-full md:w-[160px]">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>
@@ -133,6 +133,7 @@ export function VehicleTypeFilters({ categories }: VehicleTypeFiltersProps) {
           className="shrink-0"
         >
           <X className="h-4 w-4" />
+          <span className="sr-only">Clear filters</span>
         </Button>
       )}
     </div>

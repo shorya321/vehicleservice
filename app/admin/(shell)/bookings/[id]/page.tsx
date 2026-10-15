@@ -46,6 +46,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           <Button variant="ghost" size="icon" asChild>
             <Link href="/admin/bookings">
               <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
             </Link>
           </Button>
           <div>

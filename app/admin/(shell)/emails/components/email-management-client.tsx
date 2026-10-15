@@ -126,7 +126,7 @@ export function EmailManagementClient() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger aria-label="Email template" className="w-full">
                   <SelectValue placeholder="Select a template" />
                 </SelectTrigger>
                 <SelectContent>

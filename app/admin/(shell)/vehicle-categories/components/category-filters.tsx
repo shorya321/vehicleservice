@@ -44,7 +44,7 @@ export function CategoryFiltersComponent({ filters, onFiltersChange }: CategoryF
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center gap-4">
-        <SearchInput
+        <SearchInput aria-label="Search categories"
           placeholder="Search by name or description..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
@@ -53,7 +53,7 @@ export function CategoryFiltersComponent({ filters, onFiltersChange }: CategoryF
         />
         
         <Select value={currentSort} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger aria-label="Sort by" className="w-[200px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -75,7 +75,7 @@ export function AddressAutocomplete({
       }}
       onPlacesChanged={handlePlacesChanged}
     >
-      <Input
+      <Input aria-label="Address search"
         ref={inputRef}
         type="text"
         value={inputValue}

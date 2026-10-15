@@ -323,6 +323,7 @@ export function Sidebar() {
       return (
         <div key={item.name}>
           <button
+            aria-expanded={isExpanded}
             onClick={() => {
               setExpandedItems(prev =>
                 prev.includes(item.name)
@@ -359,6 +360,7 @@ export function Sidebar() {
                   <Link
                     key={subItem.name}
                     href={subItem.href}
+                    aria-current={isSubActive ? "page" : undefined}
                     className={cn(
                       "group flex items-center rounded-xl py-2 pl-6 pr-2 text-sm font-medium transition-all duration-200",
                       isSubActive
@@ -384,6 +386,9 @@ export function Sidebar() {
       <Link
         key={item.name}
         href={item.href}
+        aria-current={pathname === item.href ? "page" : undefined}
+        aria-label={collapsed ? item.name : undefined}
+        title={collapsed ? item.name : undefined}
         className={cn(
           "group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
           isActive
@@ -435,6 +440,7 @@ export function Sidebar() {
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn("h-8 w-8 text-primary hover:bg-primary/10", collapsed && "mx-auto")}
         >
           {collapsed ? (
@@ -445,7 +451,7 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto admin-scrollbar px-2 py-4">
+      <nav aria-label="Main navigation" className="flex-1 overflow-y-auto admin-scrollbar px-2 py-4">
         {navGroups.map((group, groupIndex) => (
           <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
             {/* Section Header */}

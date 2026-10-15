@@ -21,7 +21,12 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/10"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />

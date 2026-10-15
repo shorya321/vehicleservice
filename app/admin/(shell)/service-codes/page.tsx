@@ -100,14 +100,14 @@ export default async function ServiceCodesPage({ searchParams }: PageProps) {
 
       <div className="flex gap-4">
         <form className="flex gap-4 flex-1">
-          <Input
+          <Input aria-label="Search codes"
             name="search"
             placeholder="Search codes..."
             defaultValue={params.search || ''}
             className="max-w-xs"
           />
           <Select name="serviceType" defaultValue={params.serviceType || 'all'}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger aria-label="Filter by service type" className="w-[180px]">
               <SelectValue placeholder="Service Type" />
             </SelectTrigger>
             <SelectContent>

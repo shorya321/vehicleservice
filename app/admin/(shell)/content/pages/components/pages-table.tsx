@@ -58,10 +58,10 @@ export function PagesTable({ pages }: { pages: PageRowView[] }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search pages" className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input aria-label="Search pages" placeholder="Search pages" className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={seo} onValueChange={(v) => setSeo(v as SeoFilter)}>
-          <SelectTrigger className="w-full md:w-[200px]">
+          <SelectTrigger aria-label="Filter by SEO status" className="w-full md:w-[200px]">
             <SelectValue placeholder="All SEO" />
           </SelectTrigger>
           <SelectContent>
@@ -71,7 +71,7 @@ export function PagesTable({ pages }: { pages: PageRowView[] }) {
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-full md:w-[160px]">
+          <SelectTrigger aria-label="Filter by status" className="w-full md:w-[160px]">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>

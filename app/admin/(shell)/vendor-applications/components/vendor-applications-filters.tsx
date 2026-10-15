@@ -68,7 +68,7 @@ export function VendorApplicationsFilters({ search, status }: VendorApplications
     <div className="flex flex-col sm:flex-row gap-4">
       <div className="relative flex-1 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
+        <Input aria-label="Search applications"
           placeholder="Search by business name or email..."
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
@@ -81,7 +81,7 @@ export function VendorApplicationsFilters({ search, status }: VendorApplications
         onValueChange={(value) => updateFilter('status', value === 'all' ? '' : value)}
         disabled={isPending}
       >
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger aria-label="Filter by status" className="w-[160px]">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>

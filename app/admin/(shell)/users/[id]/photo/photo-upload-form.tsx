@@ -114,12 +114,20 @@ export function PhotoUploadForm({ user }: PhotoUploadFormProps) {
 
         <div className="flex-1 space-y-2">
           <div className="flex gap-2">
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              className="peer sr-only"
+              onChange={handleFileSelect}
+              disabled={uploading || deleting}
+            />
             <Button
               variant="outline"
               disabled={uploading || deleting}
               asChild
             >
-              <label htmlFor="photo-upload" className="cursor-pointer">
+              <label htmlFor="photo-upload" className="cursor-pointer peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
                 {uploading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -128,15 +136,6 @@ export function PhotoUploadForm({ user }: PhotoUploadFormProps) {
                 {uploading ? 'Uploading...' : 'Upload Photo'}
               </label>
             </Button>
-            
-            <input
-              id="photo-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileSelect}
-              disabled={uploading || deleting}
-            />
 
             {user.avatar_url && (
               <Button

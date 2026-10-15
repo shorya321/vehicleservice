@@ -154,7 +154,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <Checkbox
+                <Checkbox aria-label="Select all"
                   checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
                   onCheckedChange={handleSelectAll}
                 />
@@ -171,7 +171,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
             {routes.map((route) => (
               <TableRow key={route.id}>
                 <TableCell>
-                  <Checkbox
+                  <Checkbox aria-label="Select row"
                     checked={selectedIds.includes(route.id)}
                     onCheckedChange={(checked) => handleSelectRoute(route.id, checked as boolean)}
                   />
@@ -220,6 +220,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleTogglePopular(route.id, route.is_popular ?? false)}
+                        aria-label={route.is_popular ? "Unmark as popular" : "Mark as popular"}
                         disabled={loadingId === route.id}
                       >
                         {route.is_popular ? (
@@ -240,6 +241,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                   <div className="flex items-center justify-center gap-2">
                     <Switch
                       checked={route.is_active ?? false}
+                      aria-label={`${route.route_name} active`}
                       onCheckedChange={() => handleToggleStatus(route.id, route.is_active ?? false)}
                       disabled={loadingId === route.id}
                     />
@@ -255,6 +257,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">
                         <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

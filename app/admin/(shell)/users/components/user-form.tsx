@@ -172,6 +172,7 @@ export function UserForm({ user, mode, businessProfile }: UserFormProps) {
                       size="sm"
                       variant="ghost"
                       onClick={() => copyToClipboard(result.temporaryPassword!)}
+                      aria-label="Copy password"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -571,6 +572,8 @@ export function UserForm({ user, mode, businessProfile }: UserFormProps) {
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -585,6 +588,7 @@ export function UserForm({ user, mode, businessProfile }: UserFormProps) {
                       size="icon"
                       onClick={handleGeneratePassword}
                       disabled={loading}
+                      aria-label="Generate password"
                     >
                       <RefreshCw className="h-4 w-4" />
                     </Button>

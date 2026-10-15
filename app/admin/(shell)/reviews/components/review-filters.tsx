@@ -47,7 +47,7 @@ export function ReviewFilters() {
       {/* Search */}
       <div className="relative flex-1 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
+        <Input aria-label="Search reviews"
           type="text"
           placeholder="Search reviews..."
           value={search}
@@ -61,7 +61,7 @@ export function ReviewFilters() {
         value={searchParams.get('status') || 'all'}
         onValueChange={(value) => updateFilter('status', value)}
       >
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger aria-label="Filter by status" className="w-[160px]">
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
           <SelectContent>
@@ -77,7 +77,7 @@ export function ReviewFilters() {
         value={searchParams.get('ratingRange') || 'all'}
         onValueChange={(value) => updateFilter('ratingRange', value)}
       >
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger aria-label="Filter by rating" className="w-[160px]">
           <SelectValue placeholder="All Ratings" />
         </SelectTrigger>
           <SelectContent>
@@ -108,7 +108,7 @@ export function ReviewFilters() {
         value={searchParams.get('sortBy') || 'newest'}
         onValueChange={(value) => updateFilter('sortBy', value)}
       >
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger aria-label="Sort by" className="w-[160px]">
           <SelectValue placeholder="Sort By" />
         </SelectTrigger>
           <SelectContent>

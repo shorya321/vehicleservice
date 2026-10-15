@@ -144,6 +144,7 @@ export function ImageUpload({
                       variant="destructive"
                       size="icon"
                       onClick={() => handleRemove(index)}
+                      aria-label="Remove image"
                     >
                       <X className="h-4 w-4" />
                     </Button>

@@ -319,6 +319,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" disabled={isLoading}>
                           <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">

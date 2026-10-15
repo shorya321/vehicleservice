@@ -101,7 +101,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center gap-4">
-        <SearchInput
+        <SearchInput aria-label="Search locations"
           placeholder="Search by name, city, or address..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
@@ -110,7 +110,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
         />
         
         <Select value={filters.type || "all"} onValueChange={handleTypeChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by type" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -124,7 +124,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
         </Select>
 
         <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -176,7 +176,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
                       setAllowPickup(value === "all" ? null : value === "yes")
                     }
                   >
-                    <SelectTrigger className="w-24 h-8">
+                    <SelectTrigger aria-label="Allow pickup" className="w-24 h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -200,7 +200,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
                       setAllowDropoff(value === "all" ? null : value === "yes")
                     }
                   >
-                    <SelectTrigger className="w-24 h-8">
+                    <SelectTrigger aria-label="Allow dropoff" className="w-24 h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -220,7 +220,7 @@ export function LocationFiltersComponent({ filters, onFiltersChange, countries =
                       value={country}
                       onValueChange={setCountry}
                     >
-                      <SelectTrigger className="w-24 h-8">
+                      <SelectTrigger aria-label="Country" className="w-24 h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

@@ -127,6 +127,7 @@ export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
                 <TableCell>
                   <Switch
                     checked={lt.is_active}
+                    aria-label={`${lt.name} active`}
                     onCheckedChange={() => handleToggle(lt.id, lt.is_active)}
                   />
                 </TableCell>
@@ -135,6 +136,7 @@ export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

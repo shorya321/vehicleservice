@@ -50,6 +50,7 @@ export default async function EditLocationPage({
           <Button variant="ghost" size="icon" asChild>
             <Link href="/admin/locations">
               <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
             </Link>
           </Button>
           <div>

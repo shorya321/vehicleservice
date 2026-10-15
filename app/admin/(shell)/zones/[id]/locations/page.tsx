@@ -48,6 +48,7 @@ export default async function ZoneLocationsPage({ params, searchParams }: ZoneLo
           <Button variant="ghost" size="icon" asChild>
             <Link href="/admin/zones">
               <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
             </Link>
           </Button>
           <div>

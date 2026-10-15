@@ -153,7 +153,7 @@ export function LocationAssignment({ zone, locations, currentSearch, currentZone
       <div className="flex flex-col sm:flex-row gap-4">
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <Input aria-label="Search locations"
             placeholder="Search locations..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -161,7 +161,7 @@ export function LocationAssignment({ zone, locations, currentSearch, currentZone
           />
         </form>
         <Select value={currentZoneFilter} onValueChange={handleZoneFilterChange}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger aria-label="Filter by zone" className="w-[200px]">
             <SelectValue placeholder="Filter by zone" />
           </SelectTrigger>
           <SelectContent>
@@ -204,7 +204,7 @@ export function LocationAssignment({ zone, locations, currentSearch, currentZone
           <TableHeader>
             <TableRow>
               <TableHead className="w-[40px]">
-                <Checkbox
+                <Checkbox aria-label="Select all"
                   checked={
                     locations.length > 0 &&
                     selectedLocations.size === locations.length
@@ -235,7 +235,7 @@ export function LocationAssignment({ zone, locations, currentSearch, currentZone
                 return (
                   <TableRow key={location.id}>
                     <TableCell>
-                      <Checkbox
+                      <Checkbox aria-label="Select location"
                         checked={selectedLocations.has(location.id)}
                         onCheckedChange={() => toggleSelectLocation(location.id)}
                       />

@@ -23,8 +23,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       />
       
       <aside
-        role="navigation"
-        aria-label="Main navigation"
         className={cn(
           "fixed left-0 z-50 h-full transition-transform md:relative md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"

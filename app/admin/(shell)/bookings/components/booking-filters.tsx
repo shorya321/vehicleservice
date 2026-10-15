@@ -174,7 +174,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
       <div className="flex flex-1 items-center gap-4">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <Input aria-label="Search bookings"
             placeholder="Search by booking number, customer, or location..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -183,7 +183,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
         </div>
         
         <Select value={filters.status || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by status" className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -196,7 +196,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
         </Select>
 
         <Select value={filters.timeframe || 'upcoming'} onValueChange={handleTimeframeChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by timeframe" className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -207,7 +207,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
         </Select>
 
         <Select value={filters.bookingType || 'all'} onValueChange={handleBookingTypeChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by booking type" className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -309,7 +309,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
                     value={paymentStatus}
                     onValueChange={setPaymentStatus}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Payment status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -329,7 +329,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
                     <User className="h-4 w-4 text-muted-foreground" />
                     <Label>Customer Email</Label>
                   </div>
-                  <Input
+                  <Input aria-label="Customer ID"
                     type="text"
                     value={customerId}
                     onChange={(e) => setCustomerId(e.target.value)}

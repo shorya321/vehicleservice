@@ -23,6 +23,7 @@ export default function NewBlogCategoryPage() {
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/blog/categories">
             <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
           </Link>
         </Button>
         <div>

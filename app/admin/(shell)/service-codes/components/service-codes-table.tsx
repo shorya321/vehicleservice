@@ -122,6 +122,7 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
                 <TableCell>
                   <Switch
                     checked={sc.is_active === true}
+                    aria-label={`${sc.code} active`}
                     onCheckedChange={() => handleToggle(sc.code, sc.is_active)}
                   />
                 </TableCell>
@@ -130,6 +131,7 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

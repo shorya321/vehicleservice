@@ -76,7 +76,7 @@ export function ContactFilters() {
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
+        <Input aria-label="Search submissions"
           placeholder="Search by name, email, or subject..."
           className="pl-9"
           value={searchValue}
@@ -88,7 +88,7 @@ export function ContactFilters() {
         value={searchParams.get('status') || 'all'}
         onValueChange={(value) => updateFilter('status', value)}
       >
-        <SelectTrigger className="w-full md:w-[160px]">
+        <SelectTrigger aria-label="Filter by status" className="w-full md:w-[160px]">
           <SelectValue placeholder="All statuses" />
         </SelectTrigger>
         <SelectContent>
@@ -104,7 +104,7 @@ export function ContactFilters() {
         value={searchParams.get('priority') || 'all'}
         onValueChange={(value) => updateFilter('priority', value)}
       >
-        <SelectTrigger className="w-full md:w-[160px]">
+        <SelectTrigger aria-label="Filter by priority" className="w-full md:w-[160px]">
           <SelectValue placeholder="All priorities" />
         </SelectTrigger>
         <SelectContent>
@@ -124,6 +124,7 @@ export function ContactFilters() {
           className="shrink-0"
         >
           <X className="h-4 w-4" />
+          <span className="sr-only">Clear filters</span>
         </Button>
       )}
     </div>

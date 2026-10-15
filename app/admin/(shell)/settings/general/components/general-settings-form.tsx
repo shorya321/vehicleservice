@@ -482,7 +482,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                     <FormControl>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input className="pl-9" placeholder="+971 50 123 4567" {...field} />
+                        <Input aria-label="Support phone" className="pl-9" placeholder="+971 50 123 4567" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -498,7 +498,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                     <FormControl>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input className="pl-9" placeholder="+971 4 123 4567" {...field} />
+                        <Input aria-label="Secondary phone" className="pl-9" placeholder="+971 4 123 4567" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />

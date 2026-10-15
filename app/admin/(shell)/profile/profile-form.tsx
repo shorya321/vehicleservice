@@ -210,12 +210,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
               </Avatar>
               
               <div>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="peer sr-only"
+                  onChange={handleAvatarUpload}
+                  disabled={uploadingAvatar}
+                />
                 <Button
                   variant="outline"
                   disabled={uploadingAvatar}
                   asChild
                 >
-                  <label htmlFor="avatar-upload" className="cursor-pointer">
+                  <label htmlFor="avatar-upload" className="cursor-pointer peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
                     {uploadingAvatar ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -224,14 +232,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     {uploadingAvatar ? 'Uploading...' : 'Upload Picture'}
                   </label>
                 </Button>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                  disabled={uploadingAvatar}
-                />
                 <p className="mt-2 text-sm text-muted-foreground">
                   Recommended: Square image, at least 200x200px
                 </p>
@@ -426,7 +426,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     Get notified when new users sign up
                   </p>
                 </div>
-                <Switch
+                <Switch aria-label="New user registrations"
                   checked={notificationPreferences.email_new_user_registration}
                   onCheckedChange={async (checked) => {
                     setNotificationPreferences(prev => ({
@@ -470,7 +470,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     Important security notifications
                   </p>
                 </div>
-                <Switch
+                <Switch aria-label="Security alerts"
                   checked={notificationPreferences.email_security_alerts}
                   onCheckedChange={async (checked) => {
                     setNotificationPreferences(prev => ({
@@ -514,7 +514,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     Updates about system maintenance and features
                   </p>
                 </div>
-                <Switch
+                <Switch aria-label="System updates"
                   checked={notificationPreferences.email_system_updates}
                   onCheckedChange={async (checked) => {
                     setNotificationPreferences(prev => ({

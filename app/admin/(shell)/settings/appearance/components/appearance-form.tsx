@@ -9,7 +9,7 @@
  * Changes affect both admin and vendor portals
  */
 
-import { useState, useMemo, useTransition } from 'react'
+import { useId, useState, useMemo, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -79,17 +79,20 @@ function ColorInput({
   onChange: (value: string) => void
   description?: string
 }) {
+  const id = useId()
   return (
     <div className="space-y-2">
-      <Label className="text-sm text-foreground">{label}</Label>
+      <Label htmlFor={id} className="text-sm text-foreground">{label}</Label>
       <div className="flex gap-2 items-center">
         <Input
           type="color"
+          aria-label={`${label} picker`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-12 h-10 cursor-pointer rounded-lg bg-muted border-border hover:border-primary/30 p-1"
         />
         <Input
+          id={id}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}

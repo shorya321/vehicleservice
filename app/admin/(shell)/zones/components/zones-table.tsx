@@ -173,6 +173,7 @@ export function ZonesTable({ zones }: ZonesTableProps) {
                     <div className="flex items-center justify-center gap-2">
                       <Switch
                         checked={zone.is_active}
+                        aria-label={`${zone.name} active`}
                         onCheckedChange={() => handleStatusToggle(zone)}
                         disabled={loadingStates[zone.id]}
                       />

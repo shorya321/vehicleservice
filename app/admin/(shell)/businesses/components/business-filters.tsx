@@ -105,7 +105,7 @@ export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersPro
         {/* Search Input */}
         <div className="relative w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <Input aria-label="Search business accounts"
             placeholder="Search by name, email, or subdomain..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -115,7 +115,7 @@ export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersPro
 
         {/* Status Filter */}
         <Select value={filters.status || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-full sm:w-[160px]">
+          <SelectTrigger aria-label="Filter by status" className="w-full sm:w-[160px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -160,7 +160,7 @@ export function BusinessFilters({ filters, onFiltersChange }: BusinessFiltersPro
                   value={filters.domainVerified || 'all'}
                   onValueChange={handleDomainVerifiedChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Custom domain verified">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

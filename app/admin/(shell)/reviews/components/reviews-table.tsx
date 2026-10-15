@@ -301,6 +301,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">

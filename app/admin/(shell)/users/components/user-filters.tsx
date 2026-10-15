@@ -112,7 +112,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
       <div className="flex flex-1 items-center gap-4">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <Input aria-label="Search users"
             placeholder="Search by name, email, or phone..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -121,7 +121,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
         </div>
         
         <Select value={filters.role || "all"} onValueChange={handleRoleChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by role" className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -134,7 +134,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
         </Select>
 
         <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by status" className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -187,7 +187,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
                       setEmailVerified(value === "all" ? null : value === "yes")
                     }
                   >
-                    <SelectTrigger className="w-24 h-8">
+                    <SelectTrigger aria-label="Email verified" className="w-24 h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -211,7 +211,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
                       setTwoFactorEnabled(value === "all" ? null : value === "yes")
                     }
                   >
-                    <SelectTrigger className="w-24 h-8">
+                    <SelectTrigger aria-label="Two-factor enabled" className="w-24 h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -235,7 +235,7 @@ export function UserFiltersComponent({ filters, onFiltersChange }: UserFiltersPr
                       setHasSignedIn(value === "all" ? null : value === "yes")
                     }
                   >
-                    <SelectTrigger className="w-24 h-8">
+                    <SelectTrigger aria-label="Has signed in" className="w-24 h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

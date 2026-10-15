@@ -101,6 +101,7 @@ export function AdminResponseSection({
         </h4>
         <div className="space-y-3">
           <Textarea
+            aria-label="Admin response"
             value={response}
             onChange={(e) => setResponse(e.target.value)}
             placeholder="Write your response to the customer..."

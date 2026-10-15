@@ -151,7 +151,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-4">
-        <SearchInput
+        <SearchInput aria-label="Search vehicles"
           placeholder="Search by make, model, or registration..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
@@ -160,7 +160,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
         />
         
         <Select value={filters.vendorId || "all"} onValueChange={handleVendorChange}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger aria-label="Filter by vendor" className="w-[200px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -174,7 +174,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
         </Select>
 
         <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by status" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -185,7 +185,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
         </Select>
 
         <Select value={filters.categoryId || "all"} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by category" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -200,7 +200,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
 
         {filters.categoryId && filters.categoryId !== 'all' && (
           <Select value={filters.vehicleTypeId || "all"} onValueChange={handleVehicleTypeChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger aria-label="Filter by vehicle type" className="w-[180px]">
               <SelectValue placeholder={loadingVehicleTypes ? "Loading types..." : "All vehicle types"} />
             </SelectTrigger>
             <SelectContent>
@@ -217,7 +217,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
 
       <div className="flex flex-wrap items-center gap-4">
         <Select value={filters.fuelType || "all"} onValueChange={handleFuelTypeChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by fuel type" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -230,7 +230,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
         </Select>
 
         <Select value={filters.transmission || "all"} onValueChange={handleTransmissionChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger aria-label="Filter by transmission" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

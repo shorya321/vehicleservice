@@ -142,7 +142,7 @@ export function BulkActionsBar({ selectedIds, onClearSelection, onExportCsv }: B
     <>
       <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/50 px-4 py-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onClearSelection}>
+          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onClearSelection} aria-label="Clear selection">
             <X className="h-4 w-4" />
           </Button>
           <p className="text-sm font-medium">

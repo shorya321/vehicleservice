@@ -90,7 +90,7 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div className="relative flex-1 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
+        <Input aria-label="Search addons"
           placeholder="Search addons..."
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
@@ -103,7 +103,7 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
           value={searchParams.get('category') || 'all'}
           onValueChange={(value) => handleFilterChange('category', value)}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by category" className="w-[160px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
@@ -120,7 +120,7 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
           value={searchParams.get('isActive') || 'all'}
           onValueChange={(value) => handleFilterChange('isActive', value)}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger aria-label="Filter by status" className="w-[160px]">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
@@ -138,6 +138,7 @@ export function AddonFilters({ categories }: AddonFiltersProps) {
             title="Clear filters"
           >
             <X className="h-4 w-4" />
+            <span className="sr-only">Clear filters</span>
           </Button>
         )}
       </div>

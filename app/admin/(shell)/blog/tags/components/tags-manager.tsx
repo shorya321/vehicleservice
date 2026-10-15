@@ -96,7 +96,7 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
     <div className="space-y-4">
       {/* Create new tag */}
       <div className="flex gap-2">
-        <Input
+        <Input aria-label="New tag name"
           placeholder="New tag name..."
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
@@ -137,7 +137,7 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
                   <TableCell>
                     {editingId === tag.id ? (
                       <div className="flex items-center gap-2">
-                        <Input
+                        <Input aria-label="Tag name"
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
                           onKeyDown={(e) => {
@@ -153,6 +153,7 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
                           className="h-8 w-8"
                           onClick={handleUpdate}
                           disabled={isUpdating}
+                          aria-label="Save tag"
                         >
                           {isUpdating ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
@@ -165,6 +166,7 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => setEditingId(null)}
+                          aria-label="Cancel editing"
                         >
                           <X className="h-3 w-3" />
                         </Button>
@@ -184,6 +186,7 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => startEditing(tag)}
+                          aria-label={`Edit ${tag.name}`}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -191,6 +194,7 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => setDeletingId(tag.id)}
+                          aria-label={`Delete ${tag.name}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
