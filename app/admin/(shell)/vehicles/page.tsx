@@ -88,7 +88,7 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Across all vendors</p>
               </CardContent>
@@ -104,7 +104,7 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{availableCount}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{availableCount}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Ready for booking</p>
               </CardContent>
@@ -120,7 +120,7 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{vendorCount}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{vendorCount}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">With vehicles</p>
               </CardContent>
@@ -136,7 +136,7 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
                     {new Set(vehicles.map(v => v.vehicle_type_id).filter(Boolean)).size}
                   </span>
                 </div>

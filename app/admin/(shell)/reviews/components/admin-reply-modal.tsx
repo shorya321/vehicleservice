@@ -21,7 +21,7 @@ export function AdminReplyModal({ reviewId, onClose, onSuccess }: AdminReplyModa
       <DialogContent className="bg-luxury-black border-luxury-lightGray/20">
         <DialogHeader>
           <DialogTitle className="text-luxury-pearl">Quick Reply</DialogTitle>
-          <DialogDescription className="text-luxury-lightGray">
+          <DialogDescription className="text-muted-foreground">
             Add a professional response to this review that will be visible to all customers.
           </DialogDescription>
         </DialogHeader>

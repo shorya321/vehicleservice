@@ -100,7 +100,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{stats.total}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">All reviews</p>
                 </CardContent>
@@ -117,7 +117,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.pending}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.pending}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Need review</p>
                 </CardContent>
@@ -134,7 +134,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.averageRating.toFixed(1)}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.averageRating.toFixed(1)}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Out of 5 stars</p>
                 </CardContent>
@@ -151,7 +151,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{reviews?.length || 0}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{reviews?.length || 0}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Showing now</p>
                 </CardContent>

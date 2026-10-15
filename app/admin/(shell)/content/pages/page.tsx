@@ -63,7 +63,7 @@ export default async function ContentPagesPage() {
           value={pages.length}
           hint="All site pages"
           icon={FileText}
-          tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-400' }}
+          tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-600 dark:text-sky-400' }}
           delay={0.1}
         />
         <PageStatCard
@@ -71,7 +71,7 @@ export default async function ContentPagesPage() {
           value={published}
           hint="Live pages"
           icon={PenLine}
-          tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-400' }}
+          tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-600 dark:text-emerald-400' }}
           delay={0.2}
         />
         <PageStatCard
@@ -79,7 +79,7 @@ export default async function ContentPagesPage() {
           value={seoSet}
           hint="Own title and description"
           icon={CheckCircle2}
-          tone={{ disc: 'bg-sky-500/20', icon: 'text-sky-500', value: 'text-violet-400' }}
+          tone={{ disc: 'bg-sky-500/20', icon: 'text-sky-500', value: 'text-violet-600 dark:text-violet-400' }}
           delay={0.3}
         />
         <PageStatCard
@@ -87,7 +87,7 @@ export default async function ContentPagesPage() {
           value={pages.length - seoSet}
           hint="Fall back to site SEO"
           icon={Search}
-          tone={{ disc: 'bg-amber-500/20', icon: 'text-amber-500', value: 'text-amber-400' }}
+          tone={{ disc: 'bg-amber-500/20', icon: 'text-amber-500', value: 'text-amber-600 dark:text-amber-400' }}
           delay={0.4}
         />
       </div>

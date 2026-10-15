@@ -129,7 +129,7 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{totalCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{totalCount}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">All business accounts</p>
                 </CardContent>
@@ -146,7 +146,7 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{pendingCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{pendingCount}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">{pendingCount > 0 ? 'Action needed' : 'No pending'}</p>
                 </CardContent>
@@ -163,7 +163,7 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{activeCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{activeCount}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Currently active</p>
                 </CardContent>
@@ -180,7 +180,7 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{totalBookings}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{totalBookings}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Across all accounts</p>
                 </CardContent>

@@ -68,7 +68,7 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{total}</span>
               </div>
             </CardContent>
           </Card>
@@ -83,7 +83,7 @@ export default async function BlogCategoriesPage({ searchParams }: PageProps) {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                   {categories.filter(c => c.is_active).length}
                 </span>
               </div>

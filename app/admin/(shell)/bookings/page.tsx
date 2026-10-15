@@ -90,7 +90,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{stats.total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All bookings</p>
               </CardContent>
@@ -124,7 +124,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.upcoming}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.upcoming}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Future bookings</p>
               </CardContent>
@@ -141,7 +141,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.completed}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.completed}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Successfully done</p>
               </CardContent>
@@ -158,7 +158,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.cancelled}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">{stats.cancelled}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Cancelled bookings</p>
               </CardContent>
@@ -175,7 +175,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{formatCurrency(stats.revenue)}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{formatCurrency(stats.revenue)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All time revenue</p>
               </CardContent>

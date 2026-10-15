@@ -67,11 +67,11 @@ interface BookingsTableProps {
 }
 
 const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  accepted: 'bg-green-50 text-green-700 border-green-200',
-  completed: 'bg-green-50 text-green-700 border-green-200',
-  rejected: 'bg-red-50 text-red-700 border-red-200',
-  cancelled: 'bg-red-50 text-red-700 border-red-200',
+  pending: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
+  accepted: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+  completed: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+  rejected: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+  cancelled: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
 }
 
 export function BookingsTable({ bookings }: BookingsTableProps) {

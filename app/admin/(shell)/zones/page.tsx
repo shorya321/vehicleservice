@@ -68,7 +68,7 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{zonesData.total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{zonesData.total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All zones</p>
               </CardContent>

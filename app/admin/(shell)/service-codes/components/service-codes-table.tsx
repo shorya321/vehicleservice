@@ -114,7 +114,7 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={typeColors[sc.service_type] || 'bg-gray-100 text-gray-800'}
+                    className={typeColors[sc.service_type] || 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300'}
                   >
                     {sc.service_type}
                   </Badge>

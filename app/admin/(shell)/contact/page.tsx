@@ -82,7 +82,7 @@ export default async function ContactSubmissionsPage({
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{stats.total}</span>
               </div>
               <p className="text-xs text-muted-foreground">All submissions</p>
             </CardContent>
@@ -98,7 +98,7 @@ export default async function ContactSubmissionsPage({
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.newCount}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.newCount}</span>
               </div>
               <p className="text-xs text-muted-foreground">Awaiting response</p>
             </CardContent>
@@ -114,7 +114,7 @@ export default async function ContactSubmissionsPage({
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.repliedCount}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.repliedCount}</span>
               </div>
               <p className="text-xs text-muted-foreground">Responded</p>
             </CardContent>
@@ -130,7 +130,7 @@ export default async function ContactSubmissionsPage({
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.archivedCount}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.archivedCount}</span>
               </div>
               <p className="text-xs text-muted-foreground">Closed</p>
             </CardContent>

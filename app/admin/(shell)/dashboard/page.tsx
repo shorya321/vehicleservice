@@ -96,7 +96,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">
                     {formatCurrency(metrics.todayRevenue)}
                   </span>
                 </div>
@@ -130,7 +130,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                     {metrics.activeBookings}
                   </span>
                 </div>
@@ -149,7 +149,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
                     {metrics.pendingActions}
                   </span>
                 </div>
@@ -168,7 +168,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">
                     {metrics.rejectedBookings}
                   </span>
                 </div>
@@ -192,7 +192,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">
                     {metrics.completedBookingsToday}
                   </span>
                 </div>

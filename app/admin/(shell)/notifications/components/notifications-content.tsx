@@ -311,7 +311,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{stats.total}</span>
               </div>
             </CardContent>
           </Card>
@@ -347,7 +347,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.unread}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.unread}</span>
               </div>
             </CardContent>
           </Card>
@@ -363,7 +363,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.read}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.read}</span>
               </div>
             </CardContent>
           </Card>
@@ -379,7 +379,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.booking}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.booking}</span>
               </div>
             </CardContent>
           </Card>
@@ -395,7 +395,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.user}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.user}</span>
               </div>
             </CardContent>
           </Card>
@@ -414,7 +414,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.vendor_application}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.vendor_application}</span>
               </div>
             </CardContent>
           </Card>
@@ -430,7 +430,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.review}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.review}</span>
               </div>
             </CardContent>
           </Card>
@@ -446,7 +446,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.payment}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.payment}</span>
               </div>
             </CardContent>
           </Card>

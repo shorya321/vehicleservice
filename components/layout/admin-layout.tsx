@@ -48,7 +48,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main role="main" aria-label="Main content" className="flex-1 overflow-y-auto bg-background">
+        {/* text-luxury-lightGray (#7a7672, the default for shared table cells) is 4.3:1
+            on the admin background, under AA. Inside the admin only, map it to the
+            theme-aware muted foreground. Shared components stay untouched. */}
+        <main role="main" aria-label="Main content" className="flex-1 overflow-y-auto bg-background [&_.text-luxury-lightGray]:text-muted-foreground">
           <div className="w-full px-4 py-6 md:px-6 lg:px-8">
             {children}
           </div>

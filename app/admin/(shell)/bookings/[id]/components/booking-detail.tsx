@@ -341,37 +341,37 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                     <>
                       <div className={`p-3 rounded-lg border ${
                         currentAssignment.status === 'completed'
-                          ? 'bg-blue-50 border-blue-200'
+                          ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800'
                           : currentAssignment.status === 'accepted'
-                          ? 'bg-green-50 border-green-200'
-                          : 'bg-yellow-50 border-yellow-200'
+                          ? 'bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-800'
+                          : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800'
                       }`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {currentAssignment.status === 'completed' ? (
-                              <CheckCircle className="h-5 w-5 text-blue-600" />
+                              <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             ) : currentAssignment.status === 'accepted' ? (
-                              <CheckCircle className="h-5 w-5 text-green-600" />
+                              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                             ) : (
-                              <Clock className="h-5 w-5 text-yellow-600" />
+                              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                             )}
                             <span className={`font-semibold ${
                               currentAssignment.status === 'completed'
-                                ? 'text-blue-700'
+                                ? 'text-blue-700 dark:text-blue-400'
                                 : currentAssignment.status === 'accepted'
-                                ? 'text-green-700'
-                                : 'text-yellow-700'
+                                ? 'text-green-700 dark:text-green-400'
+                                : 'text-yellow-700 dark:text-yellow-400'
                             }`}>
                               Assignment {currentAssignment.status.charAt(0).toUpperCase() + currentAssignment.status.slice(1)}
                             </span>
                           </div>
                           {currentAssignment.status === 'completed' && currentAssignment.completed_at && (
-                            <span className="text-sm text-blue-600 font-medium">
+                            <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
                               {format(toBookingTz(currentAssignment.completed_at), 'PPp')}
                             </span>
                           )}
                           {currentAssignment.status === 'accepted' && currentAssignment.accepted_at && (
-                            <span className="text-sm text-green-600">
+                            <span className="text-sm text-green-600 dark:text-green-400">
                               {format(toBookingTz(currentAssignment.accepted_at), 'PPp')}
                             </span>
                           )}
@@ -489,13 +489,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                         {cancelledAssignments.map((assignment: any) => (
                           <div key={assignment.id} className={`p-3 rounded-lg border ${
                             assignment.status === 'rejected'
-                              ? 'bg-red-50/50 border-red-100'
+                              ? 'bg-red-50/50 border-red-100 dark:bg-red-900/20 dark:border-red-900'
                               : 'bg-muted/50 border-muted'
                           }`}>
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
                                 <XCircle className={`h-4 w-4 ${
-                                  assignment.status === 'rejected' ? 'text-red-400' : 'text-muted-foreground'
+                                  assignment.status === 'rejected' ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
                                 }`} />
                                 <span className="text-sm font-medium">
                                   {assignment.vendor?.business_name || 'Unknown Vendor'}

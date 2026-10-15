@@ -134,7 +134,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{totalCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{totalCount}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -150,7 +150,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{enabledCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{enabledCount}</span>
                     <span className="text-sm text-muted-foreground">of {totalCount}</span>
                   </div>
                 </CardContent>
@@ -167,7 +167,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{featuredCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{featuredCount}</span>
                   </div>
                 </CardContent>
               </Card>

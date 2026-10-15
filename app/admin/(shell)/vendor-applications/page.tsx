@@ -71,7 +71,7 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{stats.total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All time applications</p>
               </CardContent>
@@ -88,7 +88,7 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.pending}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.pending}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Awaiting admin action</p>
               </CardContent>
@@ -105,7 +105,7 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.approved}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.approved}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Active vendors</p>
               </CardContent>
@@ -122,7 +122,7 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.rejected}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">{stats.rejected}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Declined applications</p>
               </CardContent>
