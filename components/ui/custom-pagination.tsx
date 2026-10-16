@@ -44,12 +44,13 @@ export function CustomPagination({
   return (
     <div className="flex items-center justify-center space-x-2">
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
+        className="h-9 gap-1 px-2.5 font-normal normal-case tracking-normal"
         onClick={() => navigateToPage(currentPage - 1)}
         disabled={currentPage <= 1}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-3.5 w-3.5" />
         Previous
       </Button>
       
@@ -71,9 +72,10 @@ export function CustomPagination({
           return (
             <Button
               key={page}
-              variant={page === currentPage ? "default" : "outline"}
+              variant="ghost"
               size="sm"
-              className="w-10"
+              aria-current={page === currentPage ? "page" : undefined}
+              className={page === currentPage ? "h-9 w-9 border border-border bg-card font-semibold" : "h-9 w-9 font-normal"}
               onClick={() => navigateToPage(page)}
             >
               {page}
@@ -83,13 +85,14 @@ export function CustomPagination({
       </div>
       
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
+        className="h-9 gap-1 px-2.5 font-normal normal-case tracking-normal"
         onClick={() => navigateToPage(currentPage + 1)}
         disabled={currentPage >= totalPages}
       >
         Next
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-3.5 w-3.5" />
       </Button>
     </div>
   )

@@ -25,7 +25,7 @@
   --background: 240 10% 4%;          /* #09090B - zinc-950 */
   --foreground: 0 0% 98%;            /* #FAFAFA - zinc-50 */
 
-  --card: 240 6% 6%;                 /* #0F0F12 */
+  --card: 240 8% 8%;                 /* #121215 */
   --card-foreground: 0 0% 98%;       /* #FAFAFA */
 
   --popover: 240 6% 6%;              /* Same as card */
@@ -94,7 +94,8 @@
   --card-bg-elevated: #27272A;
   --card-border: rgba(255, 255, 255, 0.1);
   --card-border-hover: rgba(255, 255, 255, 0.15);
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --card-sheen: rgba(255, 255, 255, 0.025);
   --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
   --card-radius: 0.75rem;
 
@@ -153,7 +154,7 @@
    ============================================ */
 .light {
   /* Core shadcn theme variables - Light mode */
-  --background: 0 0% 100%;           /* #FFFFFF */
+  --background: 240 5% 96%;          /* #F5F5F6 */
   --foreground: 240 10% 4%;          /* #09090B */
 
   --card: 0 0% 100%;                 /* #FFFFFF */
@@ -199,7 +200,8 @@
   --card-bg-elevated: #FAFAFA;
   --card-border: rgba(0, 0, 0, 0.1);
   --card-border-hover: rgba(0, 0, 0, 0.15);
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 1px 2px rgba(9, 9, 11, 0.04), 0 2px 6px rgba(9, 9, 11, 0.03);
+  --card-sheen: rgba(255, 255, 255, 0);
   --card-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
 
   /* Shadows - light mode */
@@ -965,3 +967,109 @@ html.light[style*="--admin-surface-0"] .bg-emerald-500\/15.text-emerald-500 { co
 html.light[style*="--admin-surface-0"] .bg-red-500\/15.text-red-500 { color: rgb(185 28 28); }
 html.light[style*="--admin-surface-0"] .bg-amber-500\/15.text-amber-500 { color: rgb(180 83 9); }
 html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: rgb(14 116 144); }
+
+/* ============================================
+   Portal restyle (admin + vendor)
+   ============================================
+   Every rule is scoped to .portal-shell, the wrapper div rendered by
+   app/admin/layout.tsx and app/vendor/layout.tsx. Shared ui components
+   (card, table, badge) are restyled here rather than in their files, because
+   the business portal and the public site use the same files. */
+
+/* Cards: a faint top sheen over the card colour, raised by --card-shadow. */
+.portal-shell main .rounded-xl.border.bg-card {
+  background-image: linear-gradient(180deg, var(--card-sheen), transparent 120px);
+}
+
+/* Stat cards: a corner glow in the icon's own hue, and a gold border on hover. */
+.portal-shell .admin-card-hover {
+  background-image:
+    radial-gradient(130% 90% at 100% 0%, var(--stat-tone, transparent), transparent 62%),
+    linear-gradient(180deg, var(--card-sheen), transparent 120px);
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.2s ease-out;
+}
+.portal-shell .admin-card-hover:hover {
+  border-color: hsl(var(--primary) / 0.7);
+}
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-sky-500/"]) { --stat-tone: rgba(14, 165, 233, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-blue-500/"]) { --stat-tone: rgba(59, 130, 246, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-cyan-500/"]) { --stat-tone: rgba(6, 182, 212, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-teal-500/"]) { --stat-tone: rgba(20, 184, 166, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-emerald-500/"]) { --stat-tone: rgba(34, 197, 94, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-green-500/"]) { --stat-tone: rgba(34, 197, 94, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-amber-500/"]) { --stat-tone: rgba(245, 158, 11, 0.13); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-orange-500/"]) { --stat-tone: rgba(249, 115, 22, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-red-500/"]) { --stat-tone: rgba(239, 68, 68, 0.11); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-violet-500/"]) { --stat-tone: rgba(139, 92, 246, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-purple-500/"]) { --stat-tone: rgba(168, 85, 247, 0.12); }
+.portal-shell .admin-card-hover:has(.rounded-full[class*="bg-primary/"]) { --stat-tone: rgba(186, 149, 94, 0.13); }
+
+/* Page title: 26px, same face, 10px down to the subtitle. The :not([hidden])
+   matches the weight of Tailwind's space-y rule so this one wins. */
+.portal-shell main h1.text-3xl {
+  font-size: 1.625rem;
+  line-height: 2rem;
+}
+.portal-shell main .space-y-2 > h1.text-3xl + p:not([hidden]) {
+  margin-top: 10px;
+}
+
+/* Tables: quiet grey sentence-case headers and neutral row rules in place of
+   the public site's gold. !important on the colour only, because the light
+   theme's .text-luxury-gold remap above is scoped more heavily. */
+.portal-shell main thead th {
+  color: hsl(var(--muted-foreground)) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-size: 13px;
+}
+.portal-shell main thead tr,
+.portal-shell main tbody tr {
+  border-color: hsl(var(--border));
+}
+.portal-shell main tbody tr:hover {
+  background-color: hsl(var(--muted) / 0.4);
+}
+.portal-shell main tbody tr[data-state="selected"] {
+  background-color: hsl(var(--primary) / 0.08);
+}
+.portal-shell main .text-luxury-lightGray {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Status pills (components/admin/ui/status-pill.tsx). Not scoped to
+   .portal-shell so a pill inside a portalled dialog keeps its colour; the
+   class names are only used by admin and vendor code. Dark values first,
+   .light overrides after, like the token blocks above. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 21px;
+  padding: 0 9px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.status-pill svg { width: 12px; height: 12px; }
+.status-pill--success { background: #16A34A; color: #FFFFFF; }
+.status-pill--success-strong { background: #15803D; color: #FFFFFF; }
+.status-pill--success-soft { background: rgba(34, 197, 94, 0.12); color: #4ADE80; }
+.status-pill--pending { background: #3A3024; color: #E7D3B3; border-color: rgba(186, 149, 94, 0.12); }
+.status-pill--warning { background: rgba(245, 158, 11, 0.16); color: #FBBF24; border-color: rgba(245, 158, 11, 0.45); }
+.status-pill--info { background: rgba(14, 165, 233, 0.12); color: #7DD3FC; }
+.status-pill--refund { background: rgba(249, 115, 22, 0.10); color: #FB923C; border-color: rgba(249, 115, 22, 0.55); }
+.status-pill--danger { background: #DC2626; color: #FFFFFF; }
+.status-pill--danger-outline { background: transparent; color: #F87171; border-color: rgba(239, 68, 68, 0.45); }
+.status-pill--neutral { background: transparent; color: hsl(var(--foreground)); border-color: hsl(var(--border)); font-weight: 500; }
+
+.light .status-pill--success-soft { background: rgba(22, 163, 74, 0.10); color: #15803D; }
+.light .status-pill--pending { background: #EFE6D8; color: #6B5232; }
+.light .status-pill--warning { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+.light .status-pill--info { background: rgba(14, 165, 233, 0.12); color: #0369A1; }
+.light .status-pill--refund { background: #FFF7ED; color: #C2410C; border-color: #FDBA74; }
+.light .status-pill--danger-outline { color: #B91C1C; border-color: #FECACA; }

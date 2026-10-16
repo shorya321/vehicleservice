@@ -21,7 +21,7 @@ export default async function AdminRootLayout({
 }) {
   const theme = await getAdminThemeSettings();
   return (
-    <div className="font-[family-name:var(--admin-font-body)]">
+    <div className="portal-shell font-[family-name:var(--admin-font-body)]">
       <AdminThemeContextProvider theme={theme}>
         {children}
       </AdminThemeContextProvider>

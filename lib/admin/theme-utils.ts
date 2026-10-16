@@ -45,7 +45,7 @@ export const DEFAULT_ADMIN_THEME: AdminThemeConfig = {
   dark: {
     background: '#09090B',
     surface: '#0F0F12',
-    card: '#0e0e10',
+    card: '#121215',
     sidebar: '#0F0F12',
     muted: '#27272A',
     text_primary: '#FAFAFA',
@@ -53,7 +53,7 @@ export const DEFAULT_ADMIN_THEME: AdminThemeConfig = {
     border: '#323234',
   },
   light: {
-    background: '#FFFFFF',
+    background: '#F5F5F6',
     surface: '#FAFAFA',
     card: '#FFFFFF',
     sidebar: '#FFFFFF',

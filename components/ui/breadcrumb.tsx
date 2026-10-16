@@ -11,17 +11,32 @@ interface BreadcrumbItem {
 interface BreadcrumbProps {
   items: BreadcrumbItem[]
   className?: string
+  /** Where the leading home crumb links. Defaults to the admin dashboard. */
+  homeHref?: string
+  /** Text of the leading home crumb. Defaults to "Admin". */
+  homeLabel?: string
 }
 
-export function Breadcrumb({ items, className }: BreadcrumbProps) {
+const crumbClass =
+  "inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[13px] text-muted-foreground transition-colors"
+
+export function Breadcrumb({
+  items,
+  className,
+  homeHref = "/admin/dashboard",
+  homeLabel = "Admin",
+}: BreadcrumbProps) {
   return (
-    <nav aria-label="Breadcrumb" className={cn("flex items-center space-x-2 text-sm", className)}>
-      <Link
-        href="/admin/dashboard"
-        className="flex items-center text-muted-foreground hover:text-primary transition-colors"
-      >
-        <Home className="h-4 w-4" />
-        <span className="sr-only">Dashboard</span>
+    <nav
+      aria-label="Breadcrumb"
+      className={cn(
+        "flex flex-wrap items-center gap-2 rounded-xl border bg-card px-4 py-3 shadow-[var(--card-shadow)]",
+        className
+      )}
+    >
+      <Link href={homeHref} className={cn(crumbClass, "hover:text-foreground")}>
+        <Home className="h-3.5 w-3.5" />
+        {homeLabel}
       </Link>
 
       {items.map((item, index) => {
@@ -29,20 +44,14 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
 
         return (
           <React.Fragment key={index}>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
             {item.href && !isLast ? (
-              <Link
-                href={item.href}
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
+              <Link href={item.href} className={cn(crumbClass, "hover:text-foreground")}>
                 {item.label}
               </Link>
             ) : (
               <span
-                className={cn(
-                  "font-medium",
-                  isLast ? "text-foreground" : "text-muted-foreground"
-                )}
+                className={cn(crumbClass, isLast && "bg-primary/10 text-foreground")}
                 aria-current={isLast ? "page" : undefined}
               >
                 {item.label}

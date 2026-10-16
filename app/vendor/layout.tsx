@@ -48,7 +48,7 @@ export default async function VendorRootLayout({
   }
 
   return (
-    <div className="font-[family-name:var(--admin-font-body)]">
+    <div className="portal-shell font-[family-name:var(--admin-font-body)]">
       <AdminThemeContextProvider theme={theme}>
         <VendorDataProvider data={vendorData}>
           <VendorLayoutShell>

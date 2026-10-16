@@ -202,6 +202,8 @@ export function NotificationsContent() {
     <div className="space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb
+        homeHref="/vendor/dashboard"
+        homeLabel="Vendor"
         items={[
           { label: 'Notifications', href: '/vendor/notifications' }
         ]}
