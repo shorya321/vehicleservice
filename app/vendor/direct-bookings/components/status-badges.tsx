@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { StatusPill, type StatusTone } from '@/components/admin/ui/status-pill'
 import {
   BOOKING_STATUS_LABELS,
   PAYMENT_STATUS_LABELS,
@@ -6,27 +6,20 @@ import {
   type DirectBookingStatus,
 } from '@/lib/vendor/direct-bookings/schema'
 
-/**
- * Local badge mappers, matching how every other list in this codebase does it,
- * there is no shared StatusBadge component, and inventing one here would mean
- * reconciling ten slightly different existing mappings.
- */
-
-type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning'
-
-const BOOKING_VARIANTS: Record<DirectBookingStatus, BadgeVariant> = {
-  pending: 'outline',
-  confirmed: 'default',
-  in_progress: 'warning',
-  completed: 'secondary',
-  cancelled: 'destructive',
+/** Offline booking statuses mapped onto the portal's shared pill tones. */
+const BOOKING_TONES: Record<DirectBookingStatus, StatusTone> = {
+  pending: 'pending',
+  confirmed: 'success',
+  in_progress: 'info',
+  completed: 'success-strong',
+  cancelled: 'danger',
 }
 
-const PAYMENT_VARIANTS: Record<DirectBookingPaymentStatus, BadgeVariant> = {
-  unpaid: 'outline',
+const PAYMENT_TONES: Record<DirectBookingPaymentStatus, StatusTone> = {
+  unpaid: 'warning',
   partial: 'warning',
-  paid: 'success',
-  refunded: 'secondary',
+  paid: 'success-soft',
+  refunded: 'refund',
 }
 
 export function BookingStatusBadge({ status }: { status: string }) {
@@ -35,16 +28,16 @@ export function BookingStatusBadge({ status }: { status: string }) {
 
   // Guard the unknown case: a value added in the database but not yet here
   // should render as-is rather than crash the row.
-  if (!label) return <Badge variant="outline">{status || 'Unknown'}</Badge>
+  if (!label) return <StatusPill tone="neutral">{status || 'Unknown'}</StatusPill>
 
-  return <Badge variant={BOOKING_VARIANTS[key]}>{label}</Badge>
+  return <StatusPill tone={BOOKING_TONES[key]}>{label}</StatusPill>
 }
 
 export function PaymentStatusBadge({ status }: { status: string }) {
   const key = status as DirectBookingPaymentStatus
   const label = PAYMENT_STATUS_LABELS[key]
 
-  if (!label) return <Badge variant="outline">{status || 'Unknown'}</Badge>
+  if (!label) return <StatusPill tone="neutral">{status || 'Unknown'}</StatusPill>
 
-  return <Badge variant={PAYMENT_VARIANTS[key]}>{label}</Badge>
+  return <StatusPill tone={PAYMENT_TONES[key]}>{label}</StatusPill>
 }

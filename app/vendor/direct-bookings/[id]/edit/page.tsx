@@ -16,6 +16,7 @@ import type {
 } from '@/lib/vendor/direct-bookings/schema'
 import { getDirectBooking, getVendorFleetOptions } from '../../actions'
 import { DirectBookingForm } from '../../components/direct-booking-form'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Edit Offline Booking - Vendor Portal',
@@ -89,6 +90,7 @@ export default async function EditDirectBookingPage({
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Offline Bookings', href: '/vendor/direct-bookings' }, { label: 'Edit Offline Booking' }]} />
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/vendor/direct-bookings">

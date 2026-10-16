@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DriverForm } from '../../components/driver-form'
 import { getDriver } from '../../actions'
 import { requireVendor } from '@/lib/auth/user-actions'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Edit Driver | Vendor Dashboard',
@@ -31,6 +32,7 @@ export default async function EditDriverPage({ params }: EditDriverPageProps) {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Drivers', href: '/vendor/drivers' }, { label: 'Edit Driver' }]} />
       {/* Page Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>

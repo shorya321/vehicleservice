@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { requireVendor } from "@/lib/auth/user-actions"
 import { VehicleForm } from "../../components/vehicle-form"
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 interface EditVehiclePageProps {
   params: Promise<{
@@ -42,6 +43,7 @@ export default async function EditVehiclePage({ params }: EditVehiclePageProps) 
 
   return (
     <div className="max-w-4xl mx-auto">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" className="mb-6" items={[{ label: 'Vehicle Fleet', href: '/vendor/vehicles' }, { label: 'Edit Vehicle' }]} />
         <div className="mb-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>

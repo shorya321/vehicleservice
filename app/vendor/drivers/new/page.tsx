@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DriverForm } from '../components/driver-form'
 import { requireVendor } from '@/lib/auth/user-actions'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Add New Driver | Vendor Dashboard',
@@ -16,6 +17,7 @@ export default async function NewDriverPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Drivers', href: '/vendor/drivers' }, { label: 'Add New Driver' }]} />
       {/* Page Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>

@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Car, CheckCircle, Clock, XCircle } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Assigned Bookings - Vendor',
@@ -35,6 +37,14 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
     endDate: params.endDate,
   }
 
+  // Filters the URL sets on top of the default sort; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.status && params.status !== 'all',
+    params.sortBy && params.sortBy !== 'newest',
+    params.startDate || params.endDate,
+  ].filter(Boolean).length
+
   const bookings = await getVendorAssignedBookings(filters)
   
   // Calculate stats
@@ -53,6 +63,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
   
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Assigned Bookings' }]} />
         {/* Header */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Assigned Bookings</h1>
@@ -152,14 +163,20 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
         {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Filter Bookings</CardTitle>
-            <CardDescription>
-              Search and filter your assigned bookings
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>Filter Bookings</CardTitle>
+                  <CardDescription>
+                    Search and filter your assigned bookings
+                  </CardDescription>
+                </div>
+              }
+            >
+              <BookingFilters />
+            </FilterToggle>
           </CardHeader>
-          <CardContent>
-            <BookingFilters />
-          </CardContent>
         </Card>
 
         {/* Bookings Table */}

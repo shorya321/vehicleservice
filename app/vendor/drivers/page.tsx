@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DriversTableWithBulk } from './components/drivers-table-with-bulk'
 import { getDrivers, getDriverStats } from './actions'
 import { requireVendor } from '@/lib/auth/user-actions'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Drivers | Vendor Dashboard',
@@ -32,6 +33,7 @@ export default async function DriversPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Drivers' }]} />
       {/* Page Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-2">

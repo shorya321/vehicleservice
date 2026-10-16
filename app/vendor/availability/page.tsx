@@ -3,6 +3,7 @@ import { requireVendor } from '@/lib/auth/user-actions'
 import { getVendorCalendarEvents, getVendorResources } from './actions'
 import { AvailabilityCalendar } from './components/availability-calendar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Availability Calendar - Vendor',
@@ -24,6 +25,7 @@ export default async function VendorAvailabilityPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Availability Calendar' }]} />
         {/* Header */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Availability Calendar</h1>

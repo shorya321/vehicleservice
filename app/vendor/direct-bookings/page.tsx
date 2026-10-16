@@ -22,6 +22,9 @@ import type {
 import { getDirectBookingStats, getDirectBookings } from './actions'
 import { ClientFilters } from './components/client-filters'
 import { DirectBookingsTable } from './components/direct-bookings-table'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
   title: 'Offline Bookings - Vendor Portal',
@@ -86,8 +89,16 @@ export default async function VendorDirectBookingsPage({
     !!filters.from ||
     !!filters.to
 
+  const activeFilterCount = [
+    filters.search,
+    filters.status !== 'all',
+    filters.paymentStatus !== 'all',
+    filters.from || filters.to,
+  ].filter(Boolean).length
+
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Offline Bookings' }]} />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Offline Bookings</h1>
@@ -132,53 +143,35 @@ export default async function VendorDirectBookingsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Offline Bookings</CardTitle>
-          <CardDescription>
-            Offline and phone bookings recorded by your team
-          </CardDescription>
+          <FilterToggle
+            activeCount={activeFilterCount}
+            header={
+              <div className="space-y-1.5">
+                <CardTitle>All Offline Bookings</CardTitle>
+                <CardDescription>
+                  Offline and phone bookings recorded by your team
+                </CardDescription>
+              </div>
+            }
+          >
+            <ClientFilters initialFilters={filters} />
+          </FilterToggle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <ClientFilters initialFilters={filters} />
 
           {bookings.length > 0 ? (
             <>
               <DirectBookingsTable bookings={bookings} />
 
-              {totalPages > 1 && (
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {(page - 1) * filters.limit! + 1} to{' '}
-                    {Math.min(page * filters.limit!, total)} of {total} bookings
-                  </p>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" disabled={page === 1} asChild>
-                      <Link
-                        href={{
-                          pathname: '/vendor/direct-bookings',
-                          query: { ...params, page: page - 1 },
-                        }}
-                      >
-                        Previous
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page === totalPages}
-                      asChild
-                    >
-                      <Link
-                        href={{
-                          pathname: '/vendor/direct-bookings',
-                          query: { ...params, page: page + 1 },
-                        }}
-                      >
-                        Next
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <PagePagination
+                pathname="/vendor/direct-bookings"
+                page={page}
+                totalPages={totalPages}
+                total={total}
+                limit={filters.limit!}
+                noun="bookings"
+                query={params}
+              />
             </>
           ) : (
             <div className="text-center py-8">

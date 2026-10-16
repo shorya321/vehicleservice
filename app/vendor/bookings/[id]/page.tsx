@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { requireVendor } from '@/lib/auth/user-actions'
 import { getVendorBookingDetail } from '../actions'
 import { BookingDetail } from './components/booking-detail'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: 'Booking Details - Vendor',
@@ -45,6 +46,7 @@ export default async function VendorBookingDetailPage({
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Assigned Bookings', href: '/vendor/bookings' }, { label: 'Booking Details' }]} />
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/vendor/bookings" aria-label="Back to assigned bookings">

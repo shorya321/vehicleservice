@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusPill, statusLabel, type StatusTone } from '@/components/admin/ui/status-pill'
+import { RowViewLink } from '@/components/admin/ui/row-view-link'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,27 +84,27 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   }
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      accepted: 'default',
-      completed: 'secondary',
-      rejected: 'destructive',
-      cancelled: 'destructive',
-      pending: 'outline',
+    const tones: Record<string, StatusTone> = {
+      accepted: 'success',
+      completed: 'success-strong',
+      rejected: 'danger',
+      cancelled: 'danger',
+      pending: 'pending',
     }
 
     const icons: Record<string, React.ReactNode> = {
-      accepted: <CheckCircle className="h-3 w-3 mr-1" />,
-      completed: <CheckCircle className="h-3 w-3 mr-1" />,
-      rejected: <XCircle className="h-3 w-3 mr-1" />,
-      cancelled: <XCircle className="h-3 w-3 mr-1" />,
-      pending: <Calendar className="h-3 w-3 mr-1" />,
+      accepted: <CheckCircle />,
+      completed: <CheckCircle />,
+      rejected: <XCircle />,
+      cancelled: <XCircle />,
+      pending: <Calendar />,
     }
-    
+
     return (
-      <Badge variant={variants[status] || 'outline'} className="text-xs">
+      <StatusPill tone={tones[status] ?? 'neutral'}>
         {icons[status]}
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
+        {statusLabel(status)}
+      </StatusPill>
     )
   }
 
@@ -220,9 +222,9 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         <span className="truncate">{assignment.booking?.dropoff_address || 'N/A'}</span>
                       </div>
                       {assignment.booking?.trip_label && (
-                        <Badge variant="outline" className="text-xs whitespace-normal">
+                        <StatusPill tone="neutral" className="h-auto whitespace-normal py-0.5">
                           {assignment.booking.trip_label}
-                        </Badge>
+                        </StatusPill>
                       )}
                     </div>
                   </TableCell>
@@ -274,9 +276,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         )}
                       </div>
                     ) : (
-                      <Badge variant="outline" className="text-xs">
-                        Not assigned
-                      </Badge>
+                      <StatusPill tone="warning">Not assigned</StatusPill>
                     )}
                   </TableCell>
                   <TableCell>
@@ -286,6 +286,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     {assignment.booking?.total_price ? formatCurrency(assignment.booking.total_price) : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-0.5">
+                    <RowViewLink href={`/vendor/bookings/${assignment.id}`} />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -380,6 +382,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

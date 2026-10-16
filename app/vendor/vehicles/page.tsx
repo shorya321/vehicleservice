@@ -17,6 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
   title: 'Vehicles - Vendor Portal',
@@ -65,8 +68,18 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
 
   const { vehicles, total, page, totalPages } = await getVehicles(vendorApplication.id, filters)
 
+  const activeFilterCount = [
+    params.search,
+    params.categoryId && params.categoryId !== 'all',
+    params.status && params.status !== 'all',
+    params.fuelType && params.fuelType !== 'all',
+    params.transmission && params.transmission !== 'all',
+    params.seats,
+  ].filter(Boolean).length
+
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Vehicle Fleet' }]} />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Fleet</h1>
@@ -102,13 +115,21 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
 
         <Card>
           <CardHeader>
-            <CardTitle>All Vehicles</CardTitle>
-            <CardDescription>
-              View and manage your vehicle fleet
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Vehicles</CardTitle>
+                  <CardDescription>
+                    View and manage your vehicle fleet
+                  </CardDescription>
+                </div>
+              }
+            >
+              <ClientFilters initialFilters={filters} />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ClientFilters initialFilters={filters} />
             
             {vehicles.length > 0 ? (
               <>
@@ -117,52 +138,15 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
                   businessId={vendorApplication.id}
                 />
 
-                {totalPages > 1 && (
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {((page - 1) * filters.limit!) + 1} to{" "}
-                      {Math.min(page * filters.limit!, total)} of {total} vehicles
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page === 1}
-                        asChild
-                      >
-                        <Link
-                          href={{
-                            pathname: "/vendor/vehicles",
-                            query: {
-                              ...params,
-                              page: page - 1,
-                            },
-                          }}
-                        >
-                          Previous
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page === totalPages}
-                        asChild
-                      >
-                        <Link
-                          href={{
-                            pathname: "/vendor/vehicles",
-                            query: {
-                              ...params,
-                              page: page + 1,
-                            },
-                          }}
-                        >
-                          Next
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                <PagePagination
+                  pathname="/vendor/vehicles"
+                  page={page}
+                  totalPages={totalPages}
+                  total={total}
+                  limit={filters.limit!}
+                  noun="vehicles"
+                  query={params}
+                />
               </>
             ) : (
               <div className="text-center py-8">

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { AccountForm } from "./account-form"
 import { requireVendor } from "@/lib/auth/user-actions"
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export const metadata: Metadata = {
   title: "Account Settings | Vendor Portal",
@@ -25,6 +26,7 @@ export default async function VendorAccountPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Account Settings' }]} />
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
         <p className="text-muted-foreground">

@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { StatusPill, type StatusTone } from '@/components/admin/ui/status-pill'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
@@ -125,15 +125,15 @@ export function DriversTable({ drivers: initialDrivers, selectable, selectedIds 
   }
 
   const getStatusBadge = (status: string | null | undefined) => {
-    const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      active: { label: 'Active', variant: 'default' },
-      inactive: { label: 'Inactive', variant: 'secondary' },
-      on_leave: { label: 'On Leave', variant: 'outline' },
-      terminated: { label: 'Terminated', variant: 'destructive' },
+    const statusMap: Record<string, { label: string; tone: StatusTone }> = {
+      active: { label: 'Active', tone: 'success-soft' },
+      inactive: { label: 'Inactive', tone: 'neutral' },
+      on_leave: { label: 'On Leave', tone: 'warning' },
+      terminated: { label: 'Terminated', tone: 'danger-outline' },
     }
     
     const statusInfo = statusMap[status || 'active'] || statusMap.active
-    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+    return <StatusPill tone={statusInfo.tone}>{statusInfo.label}</StatusPill>
   }
 
   const getLicenseTypeBadge = (type: string | null | undefined) => {
@@ -278,10 +278,10 @@ export function DriversTable({ drivers: initialDrivers, selectable, selectedIds 
                         </span>
                       </div>
                       {isLicenseExpired(driver.license_expiry) && (
-                        <Badge variant="destructive" className="text-xs">Expired</Badge>
+                        <StatusPill tone="danger">Expired</StatusPill>
                       )}
                       {isLicenseExpiringSoon(driver.license_expiry) && !isLicenseExpired(driver.license_expiry) && (
-                        <Badge variant="outline" className="text-xs text-orange-700 dark:text-orange-400">Expiring Soon</Badge>
+                        <StatusPill tone="refund">Expiring Soon</StatusPill>
                       )}
                     </div>
                   </TableCell>

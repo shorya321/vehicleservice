@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/admin/ui/status-pill"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -206,9 +207,9 @@ export function VehicleTable({
                       }
                       disabled={isUpdating === vehicle.id}
                     />
-                    <Badge variant={vehicle.is_available ? "default" : "secondary"}>
+                    <StatusPill tone={vehicle.is_available ? "success-soft" : "neutral"}>
                       {vehicle.is_available ? "Available" : "Unavailable"}
-                    </Badge>
+                    </StatusPill>
                   </div>
                 </TableCell>
                 <TableCell className="text-right">

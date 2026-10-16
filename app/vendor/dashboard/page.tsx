@@ -22,6 +22,7 @@ import { getVendorDashboardStats, getRecentBusinessActivities, getAnalyticsData,
 import { RevenueChart } from "./components/revenue-chart"
 import { BookingPipelineChart } from "./components/booking-pipeline-chart"
 import { DriverPerformance } from "./components/driver-performance"
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 
 export default async function VendorDashboard() {
   const user = await requireVendor()
@@ -46,6 +47,7 @@ export default async function VendorDashboard() {
   return (
     <AnimatedPage>
       <div className="space-y-8">
+        <Breadcrumb homeHref="/vendor/dashboard" homeLabel="Vendor" items={[{ label: 'Dashboard' }]} />
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             Vendor Dashboard
