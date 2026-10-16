@@ -42,6 +42,10 @@ export interface QuotationPdfLineItem {
   route: string;
   /** "Thu 12 Mar 2026 - 14:30", or a dash when the trip is undated. */
   when: string;
+  /** Round trip and multi-city: every journey with its own route and time. Absent otherwise. */
+  journeys?: Array<{ label: string; route: string; when: string }>;
+  /** Hourly hire: "Half day · 5 h · 100 km included". Absent otherwise. */
+  service?: string;
   vehicle: string;
   /** Photo of the quoted vehicle. Absent when the type has none or it could not be loaded. */
   vehicleImage?: QuotationPdfLogo;
@@ -119,6 +123,15 @@ function TripCard({ item }: { item: QuotationPdfLineItem }) {
         </Text>
       </View>
       <Text style={{ fontSize: 11, fontWeight: 700, marginBottom: 6 }}>{item.route}</Text>
+      {item.journeys && item.journeys.length > 0 && (
+        <View style={{ marginBottom: 6 }}>
+          {item.journeys.map((journey, index) => (
+            <Text key={index} style={detail}>
+              {journey.label}: {journey.route} · {journey.when}
+            </Text>
+          ))}
+        </View>
+      )}
       <View style={{ flexDirection: 'row' }}>
         {/* Photo column only when there is a photo, so such a trip reads as before. */}
         {item.vehicleImage && (
@@ -138,7 +151,9 @@ function TripCard({ item }: { item: QuotationPdfLineItem }) {
           <Text style={{ fontSize: 9.5, fontWeight: 700, marginBottom: 2 }}>
             Vehicle: {item.vehicle}
           </Text>
-          <Text style={detail}>{item.when}</Text>
+          {/* A multi-journey trip prints each journey's time above instead. */}
+          {!item.journeys?.length && <Text style={detail}>{item.when}</Text>}
+          {item.service && <Text style={detail}>{item.service}</Text>}
           <Text style={detail}>{item.guests}</Text>
           {item.addons && <Text style={detail}>Includes: {item.addons}</Text>}
           {item.notes && <Text style={detail}>{item.notes}</Text>}

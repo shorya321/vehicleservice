@@ -21,6 +21,7 @@ import type {
   QuotationWithItems,
   QuotationItemWithAddons,
   QuotationItemVehicleOption,
+  QuotationItemLegRow,
   QuotationStats,
 } from '@/lib/business/quotations/types';
 
@@ -212,10 +213,29 @@ export async function getQuotation(id: string): Promise<QuotationWithItems | nul
     }
   }
 
+  // Journeys of round trip and multi-city trips. Same rule as the options: a failed read must
+  // not look like "no journeys", or the next save would rewrite the trip without them.
+  const legsByItem = new Map<string, QuotationItemLegRow[]>();
+  if ((items ?? []).some((i) => i.trip_type === 'round_trip' || i.trip_type === 'multi_city')) {
+    const { data: legRows, error: legsError } = await supabase
+      .from('business_quotation_item_legs')
+      .select('*')
+      .in('item_id', itemIds)
+      .order('leg_index', { ascending: true });
+    if (legsError) {
+      console.error('Error loading quotation trip journeys:', legsError);
+      return null;
+    }
+    for (const row of legRows ?? []) {
+      legsByItem.set(row.item_id, [...(legsByItem.get(row.item_id) ?? []), row]);
+    }
+  }
+
   return {
     ...quotation,
     items: (items ?? []).map((item) => ({
       ...item,
+      legs: legsByItem.get(item.id) ?? [],
       addons: addonsByItem.get(item.id) ?? [],
       vehicle_options: optionsByItem.get(item.id) ?? [],
     })),

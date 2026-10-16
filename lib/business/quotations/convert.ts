@@ -20,6 +20,9 @@ import { startOfBookingDayUtc, startOfBookingMonthUtc } from "@/lib/business/uti
 import crypto from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
+import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
+import type { BusinessTripSettings } from '@/lib/business/trips/settings';
+import { isTripConversion, priceQuotationTrip } from './convert-trip';
 import { roundAed } from './pricing';
 import { missingConversionContact } from './status';
 import type { VehicleSelections } from './schema';
@@ -42,9 +45,10 @@ export const UNIQUE_VIOLATION = '23505';
 export interface ConvertibleItem {
   id: string;
   from_location_id: string;
-  to_location_id: string;
+  /** Null only on an hourly trip. */
+  to_location_id: string | null;
   pickup_address: string;
-  dropoff_address: string;
+  dropoff_address: string | null;
   pickup_datetime: string | null;
   vehicle_type_id: string;
   passenger_count: number;
@@ -63,6 +67,19 @@ export interface ConvertibleItem {
   addons: Array<{ addon_id: string; quantity: number; child_ages: number[] | null }>;
   /** Alternatives offered on this trip. Absent or empty on a trip without any. */
   vehicle_options?: Array<{ vehicle_type_id: string; net_total_aed: number; sell_total_aed: number }>;
+  /** Absent or 'one_way' converts through convertQuotationItem, exactly as before trip types. */
+  trip_type?: string | null;
+  hourly_package?: string | null;
+  /** Round trip and multi-city journeys in travel order. */
+  legs?: ConvertibleLeg[];
+}
+
+export interface ConvertibleLeg {
+  from_location_id: string;
+  to_location_id: string;
+  pickup_address: string;
+  dropoff_address: string;
+  pickup_datetime: string | null;
 }
 
 export interface ConvertibleQuotation {
@@ -120,11 +137,33 @@ export function effectiveSelections(
   return result;
 }
 
-/** Re-price one trip as if it used `vehicleTypeId`. */
-function priceTripWith(supabase: SupabaseClient, item: ConvertibleItem, vehicleTypeId: string) {
+/** What a round trip, multi-city or hourly trip needs to be priced the way the wizard prices it. */
+interface TripPricingContext {
+  quotation: ConvertibleQuotation;
+  /** Null when no pending trip needs it: an all-one-way quotation never reads the settings. */
+  settings: BusinessTripSettings | null;
+}
+
+/**
+ * Re-price one trip as if it used `vehicleTypeId`. One way goes through the same calculation as
+ * always; the other types through the booking wizard's trip pricing, so the figure shown here is
+ * exactly what conversion will charge.
+ */
+async function priceTripWith(
+  supabase: SupabaseClient,
+  item: ConvertibleItem,
+  vehicleTypeId: string,
+  context: TripPricingContext
+): Promise<{ totalPrice: number } | { error: string }> {
+  if (isTripConversion(item)) {
+    if (!context.settings) return { error: 'Trip settings unavailable' };
+    const priced = await priceQuotationTrip(supabase, context.quotation, item, context.settings, vehicleTypeId);
+    return priced.ok ? { totalPrice: priced.trip.quote.total } : { error: priced.error };
+  }
   return calculateBusinessBookingPrice(supabase, {
     fromLocationId: item.from_location_id,
-    toLocationId: item.to_location_id,
+    // A one-way trip always has a destination (bqi_destination).
+    toLocationId: item.to_location_id ?? '',
     vehicleTypeId,
     passengerCount: item.passenger_count,
     selectedAddons: item.addons.map((a) => ({
@@ -144,7 +183,8 @@ function priceTripWith(supabase: SupabaseClient, item: ConvertibleItem, vehicleT
 async function priceChoices(
   supabase: SupabaseClient,
   item: ConvertibleItem,
-  vehicleNames: Record<string, string>
+  vehicleNames: Record<string, string>,
+  context: TripPricingContext
 ): Promise<QuotationRepriceChoice[]> {
   const candidates = [
     { vehicleTypeId: item.vehicle_type_id, sellAed: roundAed(item.sell_total_aed), quoted: true },
@@ -157,7 +197,7 @@ async function priceChoices(
 
   return Promise.all(
     candidates.map(async (candidate) => {
-      const priced = await priceTripWith(supabase, item, candidate.vehicleTypeId);
+      const priced = await priceTripWith(supabase, item, candidate.vehicleTypeId, context);
       const name = vehicleNames[candidate.vehicleTypeId] ?? 'Vehicle';
       return 'error' in priced
         ? { ...candidate, name, netAedFresh: null, error: priced.error }
@@ -207,8 +247,15 @@ export async function preflightConversion(
   const earliest = new Date(Date.now() + MIN_LEAD_HOURS * 60 * 60 * 1000);
   let totalNetAed = 0;
 
+  // Read fresh, as the wizard does, so an admin switch applies to the very next conversion.
+  const context: TripPricingContext = {
+    quotation,
+    settings: pending.some(isTripConversion) ? await getBusinessTripSettings(supabase) : null,
+  };
+
   for (const item of pending) {
-    const label = `${item.pickup_address} » ${item.dropoff_address}`;
+    const dropoff = item.dropoff_address ?? '';
+    const label = `${item.pickup_address} » ${dropoff}`;
     let error: string | undefined;
 
     if (!item.pickup_datetime) {
@@ -235,12 +282,12 @@ export async function preflightConversion(
     // Present only on a trip that offers alternatives; a plain trip's line is unchanged.
     const choiceFields =
       (item.vehicle_options?.length ?? 0) > 0
-        ? { vehicleTypeId, choices: await priceChoices(supabase, item, vehicleNames) }
+        ? { vehicleTypeId, choices: await priceChoices(supabase, item, vehicleNames, context) }
         : {};
 
     // Re-price regardless of the date problem, so the user sees every issue at once rather
     // than fixing them one failed attempt at a time.
-    const priced = await priceTripWith(supabase, item, vehicleTypeId);
+    const priced = await priceTripWith(supabase, item, vehicleTypeId, context);
 
     if ('error' in priced) {
       // Covers a deactivated zone price, an inactive or shrunken vehicle, and a deactivated
@@ -250,7 +297,7 @@ export async function preflightConversion(
         itemId: item.id,
         label,
         pickup: item.pickup_address,
-        dropoff: item.dropoff_address,
+        dropoff,
         netAedStored,
         netAedFresh: netAedStored,
         sellAed,
@@ -271,7 +318,7 @@ export async function preflightConversion(
       itemId: item.id,
       label,
       pickup: item.pickup_address,
-      dropoff: item.dropoff_address,
+      dropoff,
       netAedStored,
       netAedFresh,
       // The number the business actually cares about: has cost overtaken what we quoted?

@@ -70,7 +70,8 @@ export const GET = requireBusinessAuth(async (
       .select(
         `id, sort_order, from_location_id, to_location_id, pickup_address, dropoff_address,
          pickup_datetime, vehicle_type_id, passenger_count, adults, children, infants,
-         description, sell_total_aed, converted_booking_id`
+         description, sell_total_aed, converted_booking_id,
+         trip_type, hourly_package, duration_hours, included_km`
       )
       .eq('quotation_id', id)
       .order('sort_order', { ascending: true });
@@ -127,9 +128,32 @@ export const GET = requireBusinessAuth(async (
       optionsByItem.set(row.item_id, list);
     }
 
+    // Journeys of round trip and multi-city trips. Route data only, never a price.
+    const legsByItem = new Map<string, NonNullable<QuotationPdfSourceItem['legs']>>();
+    if (items.some((i) => i.trip_type === 'round_trip' || i.trip_type === 'multi_city')) {
+      const { data: legRows, error: legsError } = await supabase
+        .from('business_quotation_item_legs')
+        .select('item_id, from_location_id, to_location_id, pickup_address, dropoff_address, pickup_datetime')
+        .in('item_id', itemIds)
+        .order('leg_index', { ascending: true });
+      if (legsError) {
+        console.error('Error loading quotation journeys for PDF:', legsError);
+        return apiError('Failed to load quotation items', 500);
+      }
+      for (const { item_id, ...leg } of legRows ?? []) {
+        legsByItem.set(item_id, [...(legsByItem.get(item_id) ?? []), leg]);
+      }
+    }
+
     const locationIds = Array.from(
-      new Set(items.flatMap((i) => [i.from_location_id, i.to_location_id]))
-    );
+      new Set(
+        items.flatMap((i) => [
+          i.from_location_id,
+          i.to_location_id,
+          ...(legsByItem.get(i.id) ?? []).flatMap((l) => [l.from_location_id, l.to_location_id]),
+        ])
+      )
+    ).filter((locationId): locationId is string => Boolean(locationId));
     const vehicleIds = Array.from(
       new Set([
         ...items.map((i) => i.vehicle_type_id),
@@ -180,6 +204,11 @@ export const GET = requireBusinessAuth(async (
       children: item.children,
       infants: item.infants,
       description: item.description,
+      trip_type: item.trip_type,
+      hourly_package: item.hourly_package,
+      duration_hours: item.duration_hours === null ? null : Number(item.duration_hours),
+      included_km: item.included_km,
+      legs: legsByItem.get(item.id) ?? [],
       sell_total_aed: Number(item.sell_total_aed),
       addons: addonsByItem.get(item.id) ?? [],
       // A booked trip's vehicle is settled, so its choice is no longer offered.

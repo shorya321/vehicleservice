@@ -37,7 +37,19 @@ import { FieldGroup } from '../../../components/field-group';
 // Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { bookingLocalInputToUtc, bookingUtcToLocalInput } from '@/lib/business/utils/timezone';
-import { getAvailableVehicleTypesForRoute } from '../../../../bookings/new/actions';
+import { TripTypeTabs } from '../../../../bookings/new/components/trips/trip-type-tabs';
+import type { BusinessTripSettings } from '@/lib/business/trips/settings';
+import type { BusinessTripType } from '@/lib/business/trips/types';
+import {
+  isGroupedTrip,
+  journeyCount,
+  switchTripType,
+  tripAddressesReady,
+  tripRouteReady,
+  tripTypeOf,
+} from '@/lib/business/quotations/trip-legs';
+import { loadTripVehicles, tripPricingKey, type SheetVehicle } from './load-trip-vehicles';
+import { QuotationTripRoute } from './quotation-trip-route';
 import { roundAed, applyMarkup, optionPricing } from '@/lib/business/quotations/pricing';
 import {
   canAddVehicleOption,
@@ -57,14 +69,7 @@ import type { LocationSearchResult } from '@/lib/types/location';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
 
 /** Local shape for a vehicle option. Declared here, not imported from the 'use server' module. */
-interface VehicleOption {
-  id: string;
-  name: string;
-  category: string;
-  capacity: number;
-  price: number;
-  image?: string;
-}
+type VehicleOption = SheetVehicle;
 
 interface TripEditorSheetProps {
   open: boolean;
@@ -75,7 +80,43 @@ interface TripEditorSheetProps {
   currency: string;
   exchangeRate: number;
   defaultMarkupPct: number;
+  /** Admin trip-type switches. Decide which types the sheet offers. */
+  tripSettings: BusinessTripSettings;
   onSave: (trip: QuotationTripDraft) => void;
+}
+
+/** One way always; the others only while the admin has them switched on, or the trip already is one. */
+function tripTypeOptions(settings: BusinessTripSettings, current: BusinessTripType): BusinessTripType[] {
+  const enabled: Record<BusinessTripType, boolean> = {
+    one_way: true,
+    round_trip: settings.round_trip_enabled,
+    multi_city: settings.multi_city_enabled,
+    hourly: settings.hourly_enabled,
+  };
+  return (Object.keys(enabled) as BusinessTripType[]).filter((type) => enabled[type] || type === current);
+}
+
+/**
+ * The money fields that must move together. `bqi_amounts` asserts
+ * net_total_aed = ROUND(net_base_price_aed + net_addons_price_aed, 2), and the sell price follows
+ * the net unless it was typed by hand.
+ */
+function tripPricing(trip: QuotationTripDraft, netBase: number, netAddons: number, defaultMarkupPct: number) {
+  const netTotal = roundAed(netBase + netAddons);
+  return {
+    net_base_price_aed: roundAed(netBase),
+    net_addons_price_aed: roundAed(netAddons),
+    net_total_aed: netTotal,
+    sell_total_aed:
+      trip.price_mode === 'manual'
+        ? trip.sell_total_aed
+        : applyMarkup(netTotal, trip.price_mode === 'markup' ? trip.markup_percent ?? 0 : defaultMarkupPct),
+  };
+}
+
+/** Add-on cost for the whole trip: once per journey, as the booking charges it. */
+function tripAddonsNet(addons: readonly { total_price: number }[], journeys: number): number {
+  return addons.reduce((sum, a) => sum + a.total_price, 0) * journeys;
 }
 
 const VEHICLE_DEBOUNCE_MS = 400;
@@ -131,6 +172,7 @@ export function TripEditorSheet({
   currency,
   exchangeRate,
   defaultMarkupPct,
+  tripSettings,
   onSave,
 }: TripEditorSheetProps) {
   // Edited on a COPY so Cancel genuinely discards.
@@ -139,6 +181,7 @@ export function TripEditorSheet({
   const [toQuery, setToQuery] = useState('');
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
+  const [vehicleError, setVehicleError] = useState<string | null>(null);
   /**
    * Whether the addon catalogue offers a child seat at all. Starts false so the seat rule below
    * cannot block Save before AddonPicker has reported, and stays false if every seat addon has
@@ -158,6 +201,9 @@ export function TripEditorSheet({
 
   // Guards against an out-of-order response overwriting a newer one.
   const requestSeq = useRef(0);
+  // The route the trip had when the sheet opened. Re-quoting that same route must not touch the
+  // saved vehicle or price; only a route the operator actually changed moves them.
+  const openedKeyRef = useRef<string | null>(null);
 
   // Latest draft, for the vehicle loader below, which runs from a stale closure. Read there
   // only to decide whether to tell the operator an option was dropped.
@@ -173,6 +219,7 @@ export function TripEditorSheet({
     setFromQuery(next.from_location_name ?? next.pickup_address ?? '');
     setToQuery(next.to_location_name ?? next.dropoff_address ?? '');
     setVehicles([]);
+    openedKeyRef.current = trip ? tripPricingKey(next) : null;
     setNowLocal(bookingUtcToLocalInput(new Date().toISOString()));
   }, [open, trip]);
 
@@ -180,16 +227,16 @@ export function TripEditorSheet({
     setDraft((current) => ({ ...current, ...updates }));
   }, []);
 
-  const routeReady =
-    Boolean(draft.from_location_id) &&
-    Boolean(draft.to_location_id) &&
-    draft.from_location_id !== draft.to_location_id;
+  const tripType = tripTypeOf(draft);
+  const routeReady = tripRouteReady(draft);
+  const pricingKey = tripPricingKey(draft);
 
   // Re-quote whenever the route or headcount changes. Debounced so dragging the guest count
   // does not fire a request per click.
   useEffect(() => {
     if (!open || !routeReady) {
       setVehicles([]);
+      setVehicleError(null);
       return;
     }
 
@@ -198,22 +245,11 @@ export function TripEditorSheet({
 
     const timer = setTimeout(async () => {
       try {
-        const result = await getAvailableVehicleTypesForRoute(
-          draft.from_location_id,
-          draft.to_location_id,
-          draft.passenger_count,
-          businessAccountId
-        );
+        const result = await loadTripVehicles(draftRef.current, businessAccountId);
         if (seq !== requestSeq.current) return;
-        const loaded = result.vehicleTypes.map((v) => ({
-          id: v.id,
-          name: v.name,
-          category: v.category,
-          capacity: v.capacity,
-          price: v.price,
-          image: v.image,
-        }));
+        const loaded = result.vehicles;
         setVehicles(loaded);
+        setVehicleError(result.error);
 
         const before = draftRef.current;
         if (before.vehicle_options?.length) {
@@ -229,8 +265,8 @@ export function TripEditorSheet({
         // Refresh offered alternatives against the new route and guest count. Only after a
         // successful load: the catch below empties the list, which must not wipe them.
         // A trip without options is left untouched.
-        setDraft((current) =>
-          current.vehicle_options?.length
+        setDraft((current) => {
+          const withOptions = current.vehicle_options?.length
             ? {
                 ...current,
                 vehicle_options: reconcileVehicleOptions(
@@ -239,8 +275,23 @@ export function TripEditorSheet({
                   current.vehicle_type_id
                 ),
               }
-            : current
-        );
+            : current;
+          // One way keeps its behaviour exactly. For the other types a journey added, moved or
+          // re-dated changes the whole trip's price, so the chosen vehicle follows the new quote,
+          // or is cleared when it can no longer drive the trip.
+          if (tripTypeOf(withOptions) === 'one_way' || !withOptions.vehicle_type_id) return withOptions;
+          // A failed or empty quote says nothing about the vehicle: keep it and show the error.
+          if (result.error || loaded.length === 0) return withOptions;
+          if (tripPricingKey(withOptions) === openedKeyRef.current) return withOptions;
+          const main = loaded.find((v) => v.id === withOptions.vehicle_type_id);
+          if (!main) {
+            return { ...withOptions, vehicle_type_id: '', vehicle_type_name: undefined, vehicle_type_image: null };
+          }
+          return {
+            ...withOptions,
+            ...tripPricing(withOptions, main.price, withOptions.net_addons_price_aed, defaultMarkupPct),
+          };
+        });
       } catch {
         if (seq === requestSeq.current) setVehicles([]);
       } finally {
@@ -249,7 +300,7 @@ export function TripEditorSheet({
     }, VEHICLE_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [open, routeReady, draft.from_location_id, draft.to_location_id, draft.passenger_count, businessAccountId]);
+  }, [open, routeReady, pricingKey, businessAccountId, defaultMarkupPct]);
 
   /**
    * The three money fields that must move together.
@@ -258,21 +309,25 @@ export function TripEditorSheet({
    * writing an addon total without rewriting net_total_aed makes the row unsaveable. Both the
    * vehicle picker and the extras picker go through here for exactly that reason.
    */
+  function pricingFor(trip: QuotationTripDraft, netBase: number, netAddons: number) {
+    return tripPricing(trip, netBase, netAddons, defaultMarkupPct);
+  }
+
   function pricingPatch(netBase: number, netAddons: number) {
-    const netTotal = roundAed(netBase + netAddons);
-    return {
-      net_base_price_aed: roundAed(netBase),
-      net_addons_price_aed: roundAed(netAddons),
-      net_total_aed: netTotal,
-      // Recompute the sell price unless it was typed by hand.
-      sell_total_aed:
-        draft.price_mode === 'manual'
-          ? draft.sell_total_aed
-          : applyMarkup(
-              netTotal,
-              draft.price_mode === 'markup' ? draft.markup_percent ?? 0 : defaultMarkupPct
-            ),
-    };
+    return pricingFor(draft, netBase, netAddons);
+  }
+
+  /** A route change. Re-derives the add-on cost, which follows the number of journeys. */
+  function patchRoute(update: Partial<QuotationTripDraft>) {
+    setDraft((current) => {
+      const next = { ...current, ...update };
+      const netAddons = tripAddonsNet(next.addons, journeyCount(next));
+      return { ...next, ...pricingFor(next, next.net_base_price_aed, netAddons) };
+    });
+  }
+
+  function changeTripType(type: BusinessTripType) {
+    patchRoute(switchTripType(draft, type));
   }
 
   function selectVehicle(vehicle: VehicleOption) {
@@ -302,7 +357,7 @@ export function TripEditorSheet({
   const canAddOption = canAddVehicleOption(draft.vehicle_options ?? []);
 
   function setAddons(addons: DraftAddon[]) {
-    const netAddons = addons.reduce((sum, a) => sum + a.total_price, 0);
+    const netAddons = tripAddonsNet(addons, journeyCount(draft));
     patch({
       addons: addons as QuotationTripDraft['addons'],
       ...pricingPatch(draft.net_base_price_aed, netAddons),
@@ -362,8 +417,7 @@ export function TripEditorSheet({
     routeReady &&
     guestsValid &&
     Boolean(draft.vehicle_type_id) &&
-    draft.pickup_address.trim().length >= 5 &&
-    draft.dropoff_address.trim().length >= 5 &&
+    tripAddressesReady(draft) &&
     // A child seat without an age fails the zod schema and the DB CHECK; block it here so the
     // operator sees which field is missing instead of a save-time error.
     addonsReadyToSave(draft.addons as DraftAddon[]) &&
@@ -387,6 +441,15 @@ export function TripEditorSheet({
           <div className="space-y-4 py-4">
             {/* Route */}
             <FieldGroup title="Route" icon={MapPin} tone="bg-primary/10 text-primary">
+              <TripTypeTabs
+                value={tripType}
+                options={tripTypeOptions(tripSettings, tripTypeOf(trip ?? draft))}
+                onChange={changeTripType}
+              />
+              {tripType !== 'one_way' ? (
+                <QuotationTripRoute trip={draft} settings={tripSettings} onChange={patchRoute} />
+              ) : (
+              <>
               <div className="space-y-2">
                 <Label>Pick up from</Label>
                 <LocationSearchAutocomplete
@@ -520,6 +583,8 @@ export function TripEditorSheet({
                   bookings later.
                 </p>
               </div>
+              </>
+              )}
             </FieldGroup>
 
             {/* Guests */}
@@ -557,7 +622,11 @@ export function TripEditorSheet({
             <FieldGroup title="Vehicle" icon={Car} tone="bg-primary/10 text-primary">
               {!routeReady ? (
                 <p className="text-sm text-muted-foreground">
-                  Choose a pickup and dropoff to see available vehicles.
+                  {tripType === 'one_way'
+                    ? 'Choose a pickup and dropoff to see available vehicles.'
+                    : tripType === 'hourly'
+                      ? 'Choose a pickup, a package and a start date and time to see available vehicles.'
+                      : 'Complete every journey, with its date and time, to see available vehicles.'}
                 </p>
               ) : loadingVehicles ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -565,8 +634,8 @@ export function TripEditorSheet({
                   Pricing this route...
                 </div>
               ) : vehicles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No vehicles are available for this route and guest count.
+                <p className={cn('text-sm', vehicleError ? 'text-destructive' : 'text-muted-foreground')}>
+                  {vehicleError ?? 'No vehicles are available for this route and guest count.'}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -645,7 +714,11 @@ export function TripEditorSheet({
                 title="Extras"
                 icon={Package}
                 tone="bg-primary/10 text-primary"
-                description="Added to the trip's net cost. The customer sees the names, not the prices."
+                description={
+                  isGroupedTrip(draft)
+                    ? `Added to the trip's net cost once per journey (${journeyCount(draft)}). The customer sees the names, not the prices.`
+                    : "Added to the trip's net cost. The customer sees the names, not the prices."
+                }
               >
                 <AddonPicker
                   value={draft.addons as DraftAddon[]}

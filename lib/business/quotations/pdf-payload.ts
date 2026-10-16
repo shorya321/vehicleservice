@@ -15,6 +15,8 @@ import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { parseThemeConfig, DEFAULT_THEME_CONFIG } from '@/lib/business/branding-utils';
 import { safeHexColor, type PdfImageSource } from './brand-logo';
 import type { QuotationPdfData, QuotationPdfLineItem } from '@/lib/pdf/generators/quotation';
+import { BUSINESS_TRIP_TYPE_LABELS } from '@/lib/business/trips/constants';
+import { businessHourlySummary, businessLegLabel, businessTripTypeOf } from '@/lib/business/trips/display';
 
 /**
  * The narrow projection this module accepts.
@@ -27,10 +29,24 @@ import type { QuotationPdfData, QuotationPdfLineItem } from '@/lib/pdf/generator
 export interface QuotationPdfSourceItem {
   sort_order: number;
   from_location_id: string;
-  to_location_id: string;
+  /** Null for an hourly hire, which has no destination. */
+  to_location_id: string | null;
   pickup_address: string;
-  dropoff_address: string;
+  dropoff_address: string | null;
   pickup_datetime: string | null;
+  /** Absent on trips saved before trip types existed, which are all one way. */
+  trip_type?: string | null;
+  hourly_package?: string | null;
+  duration_hours?: number | null;
+  included_km?: number | null;
+  /** Round trip and multi-city journeys in travel order. */
+  legs?: Array<{
+    from_location_id: string;
+    to_location_id: string;
+    pickup_address: string;
+    dropoff_address: string;
+    pickup_datetime: string | null;
+  }>;
   vehicle_type_id: string;
   passenger_count: number;
   adults: number;
@@ -131,6 +147,36 @@ function guestSummary(item: QuotationPdfSourceItem): string {
   return parts.length > 0 ? parts.join(', ') : `${item.passenger_count} passengers`;
 }
 
+/**
+ * The trip-type parts of a line: an hourly hire's package, a multi-journey trip's journeys.
+ * Empty for one way.
+ */
+function tripTypeLines(
+  item: QuotationPdfSourceItem,
+  from: string,
+  locationNames: Record<string, string>
+): Partial<QuotationPdfLineItem> {
+  const type = businessTripTypeOf(item);
+  if (type === 'one_way') return {};
+  if (type === 'hourly') {
+    return {
+      route: `${from} ${ROUTE_ARROW} Hourly hire, as directed`,
+      service: businessHourlySummary(item) ?? undefined,
+    };
+  }
+  const legs = item.legs ?? [];
+  return {
+    route: `${BUSINESS_TRIP_TYPE_LABELS[type]} · ${legs.length} journeys`,
+    journeys: legs.map((leg, index) => ({
+      label: businessLegLabel({ trip_type: type, leg_index: index }, legs.length) ?? `Journey ${index + 1}`,
+      route: `${locationNames[leg.from_location_id] ?? leg.pickup_address} ${ROUTE_ARROW} ${
+        locationNames[leg.to_location_id] ?? leg.dropoff_address
+      }`,
+      when: formatDateTime(leg.pickup_datetime),
+    })),
+  };
+}
+
 export interface BuildQuotationPdfArgs {
   quotation: QuotationPdfSource;
   business: QuotationPdfBusiness;
@@ -191,7 +237,8 @@ export function buildQuotationPdfData({
     subtotalDisplay = roundTo(subtotalDisplay + lineDisplay, decimals);
 
     const from = locationNames[item.from_location_id] ?? item.pickup_address;
-    const to = locationNames[item.to_location_id] ?? item.dropoff_address;
+    const to = (item.to_location_id && locationNames[item.to_location_id]) || item.dropoff_address || '';
+    const tripLines = tripTypeLines(item, from, locationNames);
 
     // Addons are NAMED without prices: itemising a quotation invites line-by-line haggling.
     // Child ages are appended because the customer has to be able to check the seats match their
@@ -211,6 +258,8 @@ export function buildQuotationPdfData({
       label: `Trip ${index + 1} of ${ordered.length}`,
       route: `${from} ${ROUTE_ARROW} ${to}`,
       when: formatDateTime(item.pickup_datetime),
+      // One way gains no key, so its line is exactly as before.
+      ...tripLines,
       vehicle: vehicleNames[item.vehicle_type_id] ?? 'Vehicle',
       ...photoOf(vehicleImages, item.vehicle_type_id, 'vehicleImage'),
       guests: guestSummary(item),

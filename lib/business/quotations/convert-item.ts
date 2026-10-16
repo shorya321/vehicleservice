@@ -47,7 +47,8 @@ export async function convertQuotationItem({
   // moved. The wallet is charged from THIS number, never the stored estimate.
   const priced = await calculateBusinessBookingPrice(admin, {
     fromLocationId: item.from_location_id,
-    toLocationId: item.to_location_id,
+    // A one-way trip always has a destination (bqi_destination).
+    toLocationId: item.to_location_id ?? '',
     vehicleTypeId: item.vehicle_type_id,
     passengerCount: item.passenger_count,
     selectedAddons: item.addons.map((a) => ({
@@ -73,9 +74,9 @@ export async function convertQuotationItem({
     p_customer_email: quotation.customer_email,
     p_customer_phone: quotation.customer_phone,
     p_from_location_id: item.from_location_id,
-    p_to_location_id: item.to_location_id,
+    p_to_location_id: item.to_location_id ?? '',
     p_pickup_address: item.pickup_address,
-    p_dropoff_address: item.dropoff_address,
+    p_dropoff_address: item.dropoff_address ?? '',
     p_pickup_datetime: item.pickup_datetime,
     p_vehicle_type_id: item.vehicle_type_id,
     p_passenger_count: item.passenger_count,
@@ -206,7 +207,7 @@ async function stampConverted(
 }
 
 /** deduct_from_wallet raises prose exceptions; surface the useful ones verbatim. */
-function friendlyError(message: string): string {
+export function friendlyError(message: string): string {
   if (message.includes('Insufficient wallet balance')) return 'Insufficient wallet balance';
   if (message.includes('frozen')) return 'Your wallet is frozen';
   if (message.includes('limit')) return message.replace(/^.*?ERROR:\s*/, '');

@@ -31,6 +31,10 @@ import {
 } from '@/lib/business/quotations/convert';
 import { computeStoredTotals } from '@/lib/business/quotations/persist';
 import { convertQuotationItem } from '@/lib/business/quotations/convert-item';
+import { convertQuotationTrip, isTripConversion } from '@/lib/business/quotations/convert-trip';
+import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
+import type { ConvertedTripLine } from '@/lib/business/quotations/convert-trip';
+import { sendTripCreatedEmails } from '../../../bookings/trips/trip-emails';
 import { normalizeQuotationStatus, canConvert } from '@/lib/business/quotations/status';
 import { activityLogger } from '@/lib/business/activity/log';
 import type {
@@ -75,7 +79,8 @@ async function loadForConversion(
     .select(
       `id, from_location_id, to_location_id, pickup_address, dropoff_address, pickup_datetime,
        vehicle_type_id, passenger_count, adults, children, infants,
-       net_total_aed, sell_total_aed, conversion_nonce, converted_booking_id`
+       net_total_aed, sell_total_aed, conversion_nonce, converted_booking_id,
+       trip_type, hourly_package`
     )
     .eq('quotation_id', quotationId)
     .order('sort_order', { ascending: true });
@@ -143,8 +148,27 @@ async function loadForConversion(
     }
   }
 
+  // Journeys of round trip and multi-city trips. Skipped entirely for a quotation without any.
+  const legsByItem = new Map<string, NonNullable<ConvertibleItem['legs']>>();
+  if ((items ?? []).some((i) => i.trip_type === 'round_trip' || i.trip_type === 'multi_city')) {
+    const { data: legRows, error: legsError } = await admin
+      .from('business_quotation_item_legs')
+      .select('item_id, from_location_id, to_location_id, pickup_address, dropoff_address, pickup_datetime')
+      .in('item_id', itemIds)
+      .order('leg_index', { ascending: true });
+    // Fail closed, like getQuotation: a trip read without its journeys must not be priced.
+    if (legsError) {
+      console.error('Failed to load quotation journeys for conversion:', legsError);
+      return null;
+    }
+    for (const { item_id, ...leg } of legRows ?? []) {
+      legsByItem.set(item_id, [...(legsByItem.get(item_id) ?? []), leg]);
+    }
+  }
+
   const convertible: ConvertibleItem[] = (items ?? []).map((item) => ({
     ...item,
+    legs: legsByItem.get(item.id) ?? [],
     net_total_aed: Number(item.net_total_aed),
     sell_total_aed: Number(item.sell_total_aed),
     addons: addonsByItem.get(item.id) ?? [],
@@ -205,6 +229,13 @@ async function revertChosenVehicle(
     .eq('price_signature_nonce', item.conversion_nonce)
     .maybeSingle();
   if (existing) return;
+  // A round trip or multi-city trip keeps its nonce on the group, not on its journeys.
+  const { data: group } = await admin
+    .from('business_booking_groups')
+    .select('id')
+    .eq('price_signature_nonce', item.conversion_nonce)
+    .maybeSingle();
+  if (group) return;
 
   const { error } = await admin.rpc('swap_quotation_item_vehicle', {
     p_item_id: item.id,
@@ -391,6 +422,11 @@ export const POST = requireBusinessAuth(async (
 
     const pending = items.filter((item) => !item.converted_booking_id);
     const results: QuotationConversionLineResult[] = [];
+    // Read once for the run, and only when a trip needs it. Preflight just checked the same rules.
+    const tripSettings = pending.some(isTripConversion) ? await getBusinessTripSettings(admin) : null;
+    /** Trips converted in this run, kept apart: they get the wizard's one email per trip. */
+    const convertedTrips: NonNullable<ConvertedTripLine['email']>[] = [];
+    const convertedTripItems = new Set<string>();
     // Trips whose stored vehicle was switched in this run, so the header totals can follow.
     let anySwapped = false;
 
@@ -417,12 +453,27 @@ export const POST = requireBusinessAuth(async (
         toConvert = { ...item, vehicle_type_id: applied };
       }
 
-      const result = await convertQuotationItem({
-        admin,
-        quotation: quotation as ConvertibleQuotation,
-        item: toConvert,
-        createdByUserId: user.businessId,
-      });
+      const result: ConvertedTripLine =
+        isTripConversion(toConvert) && tripSettings
+          ? await convertQuotationTrip({
+              admin,
+              quotation: quotation as ConvertibleQuotation,
+              item: toConvert,
+              createdByUserId: user.businessId,
+              settings: tripSettings,
+            })
+          : await convertQuotationItem({
+              admin,
+              quotation: quotation as ConvertibleQuotation,
+              item: toConvert,
+              createdByUserId: user.businessId,
+            });
+      if (result.email) {
+        convertedTripItems.add(item.id);
+        convertedTrips.push(result.email);
+      }
+      // The email payload stays server-side; the response carries the line only.
+      const { email: _email, ...line } = result;
 
       // Nothing was booked for this trip, so put its quoted vehicle back. Skipped when a
       // booking exists under the trip's nonce (e.g. created but the child seat failed to
@@ -431,7 +482,7 @@ export const POST = requireBusinessAuth(async (
         await revertChosenVehicle(admin, item);
       }
 
-      results.push(result);
+      results.push(line);
       // Stop at the first hard failure: the wallet may be exhausted, and every later trip
       // would fail the same way while charging for the ones before it.
       if (result.status === 'failed') break;
@@ -507,9 +558,18 @@ export const POST = requireBusinessAuth(async (
     // Inside after() and never awaited, matching the create route: the money has already
     // moved and an unreachable mail server must not turn a completed conversion into a
     // failed one.
+    // One way keeps its per-booking emails below. A round trip, multi-city or hourly trip gets
+    // the wizard's single trip email instead, so the passenger hears once per trip, not per journey.
     const newBookingIds = results
-      .filter((r) => r.status === 'converted' && r.bookingId)
+      .filter((r) => r.status === 'converted' && r.bookingId && !convertedTripItems.has(r.itemId))
       .map((r) => r.bookingId as string);
+    if (convertedTrips.length > 0) {
+      after(async () => {
+        for (const trip of convertedTrips) {
+          await sendTripCreatedEmails({ supabase: admin, user, ...trip });
+        }
+      });
+    }
 
     if (newBookingIds.length > 0) {
       after(async () => {

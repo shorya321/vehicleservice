@@ -13,6 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { Plus, CalendarCheck } from 'lucide-react';
 import { getBusinessMember, restrictedToOwnBookings } from '@/lib/business/member-scope';
 import type { QuotationBookingLink } from '@/lib/business/bookings/group-quotation-bookings';
+import { withTripJourneyLinks } from '@/lib/business/bookings/group-trip-entries';
 import { BookingsPageContent } from './components/bookings-page-content';
 
 const FIRST_JOURNEY_ONLY = 'booking_group_id.is.null,leg_index.eq.0';
@@ -135,7 +136,7 @@ export default async function BusinessBookingsPage() {
       // that refusal no longer emails anyone. The list just shows ungrouped rows.
       console.error('Failed to read quotation links for bookings list:', quotationLinkError);
     } else {
-      quotationLinks = (linkRows || []).flatMap((q) =>
+      const stamped = (linkRows || []).flatMap((q) =>
         q.converted_booking_id
           ? [
               {
@@ -147,6 +148,8 @@ export default async function BusinessBookingsPage() {
             ]
           : []
       );
+      // A converted round trip or multi-city trip: its later journeys belong to the quotation too.
+      quotationLinks = withTripJourneyLinks(stamped, bookings || []);
     }
   }
 

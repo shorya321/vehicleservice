@@ -17,7 +17,8 @@ import { canEditHeader, normalizeQuotationStatus } from '@/lib/business/quotatio
 import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
 import { getQuotation } from '../../actions';
 import { QuotationBuilder } from './components/quotation-builder';
-import type { QuotationTripDraft } from '@/lib/business/quotations/types';
+import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
+import { tripDraftFromItem } from './trip-draft-from-item';
 
 export const metadata: Metadata = {
   title: 'Edit Quotation | Business Portal',
@@ -50,8 +51,14 @@ export default async function EditQuotationPage({ params }: PageProps) {
 
   // Resolve display names so trips read as places rather than UUIDs.
   const locationIds = Array.from(
-    new Set(quotation.items.flatMap((i) => [i.from_location_id, i.to_location_id]))
-  );
+    new Set(
+      quotation.items.flatMap((i) => [
+        i.from_location_id,
+        i.to_location_id,
+        ...(i.legs ?? []).flatMap((l) => [l.from_location_id, l.to_location_id]),
+      ])
+    )
+  ).filter((locationId): locationId is string => Boolean(locationId));
   const vehicleIds = Array.from(
     new Set(
       quotation.items.flatMap((i) => [
@@ -61,7 +68,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
     )
   );
 
-  const [locationsResult, vehiclesResult] = await Promise.all([
+  const [locationsResult, vehiclesResult, tripSettings] = await Promise.all([
     locationIds.length
       ? supabase.from('locations').select('id, name').in('id', locationIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -70,6 +77,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
       : Promise.resolve({
           data: [] as { id: string; name: string; image_url: string | null }[],
         }),
+    getBusinessTripSettings(supabase),
   ]);
 
   const locationNames = new Map(
@@ -82,40 +90,9 @@ export default async function EditQuotationPage({ params }: PageProps) {
     (vehiclesResult.data ?? []).map((v) => [v.id, v.image_url] as const)
   );
 
-  const initialTrips: QuotationTripDraft[] = quotation.items.map((item) => ({
-    id: item.id,
-    sort_order: item.sort_order,
-    from_location_id: item.from_location_id,
-    to_location_id: item.to_location_id,
-    from_location_name: locationNames.get(item.from_location_id),
-    to_location_name: locationNames.get(item.to_location_id),
-    pickup_address: item.pickup_address,
-    dropoff_address: item.dropoff_address,
-    pickup_datetime: item.pickup_datetime,
-    vehicle_type_id: item.vehicle_type_id,
-    vehicle_type_name: vehicleNames.get(item.vehicle_type_id),
-    vehicle_type_image: vehicleImages.get(item.vehicle_type_id) ?? null,
-    passenger_count: item.passenger_count,
-    adults: item.adults,
-    children: item.children,
-    infants: item.infants,
-    description: item.description,
-    addons: item.addons,
-    net_base_price_aed: Number(item.net_base_price_aed),
-    net_addons_price_aed: Number(item.net_addons_price_aed),
-    net_total_aed: Number(item.net_total_aed),
-    sell_total_aed: Number(item.sell_total_aed),
-    price_mode: item.price_mode as QuotationTripDraft['price_mode'],
-    markup_percent: item.markup_percent === null ? null : Number(item.markup_percent),
-    vehicle_options: (item.vehicle_options ?? []).map((option) => ({
-      vehicle_type_id: option.vehicle_type_id,
-      vehicle_type_name: vehicleNames.get(option.vehicle_type_id),
-      vehicle_type_image: vehicleImages.get(option.vehicle_type_id) ?? null,
-      net_base_price_aed: option.net_base_price_aed,
-    })),
-    converted_booking_id: item.converted_booking_id,
-    converted_booking_number: item.converted_booking_number,
-  }));
+  const initialTrips = quotation.items.map((item) =>
+    tripDraftFromItem(item, { locationNames, vehicleNames, vehicleImages })
+  );
 
   return (
     <div className="space-y-6">
@@ -155,6 +132,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
           discount_aed: Number(quotation.discount_aed),
         }}
         initialTrips={initialTrips}
+        tripSettings={tripSettings}
       />
     </div>
   );

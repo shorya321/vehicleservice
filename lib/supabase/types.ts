@@ -1620,6 +1620,50 @@ export type Database = {
           },
         ]
       }
+      business_quotation_item_legs: {
+        Row: {
+          created_at: string
+          dropoff_address: string
+          from_location_id: string
+          id: string
+          item_id: string
+          leg_index: number
+          pickup_address: string
+          pickup_datetime: string | null
+          to_location_id: string
+        }
+        Insert: {
+          created_at?: string
+          dropoff_address: string
+          from_location_id: string
+          id?: string
+          item_id: string
+          leg_index: number
+          pickup_address: string
+          pickup_datetime?: string | null
+          to_location_id: string
+        }
+        Update: {
+          created_at?: string
+          dropoff_address?: string
+          from_location_id?: string
+          id?: string
+          item_id?: string
+          leg_index?: number
+          pickup_address?: string
+          pickup_datetime?: string | null
+          to_location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_quotation_item_legs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "business_quotation_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_quotation_item_vehicle_options: {
         Row: {
           created_at: string
@@ -1678,11 +1722,16 @@ export type Database = {
           converted_at: string | null
           converted_booking_id: string | null
           converted_booking_number: string | null
+          converted_group_id: string | null
           created_at: string
           description: string | null
-          dropoff_address: string
+          dropoff_address: string | null
+          duration_hours: number | null
+          extra_hour_price: number | null
           from_location_id: string
+          hourly_package: string | null
           id: string
+          included_km: number | null
           infants: number
           markup_percent: number | null
           net_addons_price_aed: number
@@ -1696,7 +1745,8 @@ export type Database = {
           quotation_id: string
           sell_total_aed: number
           sort_order: number
-          to_location_id: string
+          to_location_id: string | null
+          trip_type: string
           updated_at: string
           vehicle_type_id: string
         }
@@ -1709,11 +1759,16 @@ export type Database = {
           converted_at?: string | null
           converted_booking_id?: string | null
           converted_booking_number?: string | null
+          converted_group_id?: string | null
           created_at?: string
           description?: string | null
-          dropoff_address: string
+          dropoff_address?: string | null
+          duration_hours?: number | null
+          extra_hour_price?: number | null
           from_location_id: string
+          hourly_package?: string | null
           id?: string
+          included_km?: number | null
           infants?: number
           markup_percent?: number | null
           net_addons_price_aed?: number
@@ -1727,7 +1782,8 @@ export type Database = {
           quotation_id: string
           sell_total_aed?: number
           sort_order?: number
-          to_location_id: string
+          to_location_id?: string | null
+          trip_type?: string
           updated_at?: string
           vehicle_type_id: string
         }
@@ -1740,11 +1796,16 @@ export type Database = {
           converted_at?: string | null
           converted_booking_id?: string | null
           converted_booking_number?: string | null
+          converted_group_id?: string | null
           created_at?: string
           description?: string | null
-          dropoff_address?: string
+          dropoff_address?: string | null
+          duration_hours?: number | null
+          extra_hour_price?: number | null
           from_location_id?: string
+          hourly_package?: string | null
           id?: string
+          included_km?: number | null
           infants?: number
           markup_percent?: number | null
           net_addons_price_aed?: number
@@ -1758,7 +1819,8 @@ export type Database = {
           quotation_id?: string
           sell_total_aed?: number
           sort_order?: number
-          to_location_id?: string
+          to_location_id?: string | null
+          trip_type?: string
           updated_at?: string
           vehicle_type_id?: string
         }

@@ -13,6 +13,7 @@ import {
   type QuotationPricedLine,
 } from './pricing';
 import type { QuotationTripInput } from './schema';
+import type { PreparedQuotationTrip } from './prepare-trips';
 
 /** AED-based rates, keyed by target currency, as returned by getExchangeRates(). */
 export type RatesMap = Record<string, number>;
@@ -62,7 +63,7 @@ export interface SaveTripsArgs {
   supabase: SupabaseClient;
   quotationId: string;
   businessAccountId: string;
-  trips: QuotationTripInput[];
+  trips: PreparedQuotationTrip[];
   defaultMarkupPct: number;
 }
 
@@ -146,6 +147,11 @@ export async function saveQuotationTrips({
       pickup_address: trip.pickup_address,
       dropoff_address: trip.dropoff_address,
       pickup_datetime: trip.pickup_datetime,
+      trip_type: trip.trip_type,
+      hourly_package: trip.hourly?.hourly_package ?? null,
+      duration_hours: trip.hourly?.duration_hours ?? null,
+      included_km: trip.hourly?.included_km ?? null,
+      extra_hour_price: trip.hourly?.extra_hour_price ?? null,
       vehicle_type_id: trip.vehicle_type_id,
       passenger_count: trip.passenger_count,
       adults: trip.adults,
@@ -207,6 +213,9 @@ export async function saveQuotationTrips({
       );
       if (error) return { error: 'Failed to save trip extras', lines: [] };
     }
+
+    const legsError = await replaceTripLegs(supabase, itemId as string, trip, Boolean(trip.id));
+    if (legsError) return { error: legsError, lines: [] };
 
     const optionsError = await replaceVehicleOptions(
       supabase,
@@ -277,4 +286,35 @@ async function replaceVehicleOptions(
     }))
   );
   return error ? 'Failed to save vehicle options' : null;
+}
+
+/**
+ * Replace a trip's journeys wholesale. One way and hourly trips have none, so a trip switched
+ * from round trip back to one way loses its old journeys here. Returns an error message or null.
+ */
+async function replaceTripLegs(
+  supabase: SupabaseClient,
+  itemId: string,
+  trip: QuotationTripInput,
+  clearExisting: boolean
+): Promise<string | null> {
+  if (clearExisting) {
+    const { error } = await supabase.from('business_quotation_item_legs').delete().eq('item_id', itemId);
+    if (error) return 'Failed to update the trip journeys';
+  }
+
+  if (trip.legs.length === 0) return null;
+
+  const { error } = await supabase.from('business_quotation_item_legs').insert(
+    trip.legs.map((leg, index) => ({
+      item_id: itemId,
+      leg_index: index,
+      from_location_id: leg.from_location_id,
+      to_location_id: leg.to_location_id,
+      pickup_address: leg.pickup_address,
+      dropoff_address: leg.dropoff_address,
+      pickup_datetime: leg.pickup_datetime,
+    }))
+  );
+  return error ? 'Failed to save the trip journeys' : null;
 }

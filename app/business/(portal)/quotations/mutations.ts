@@ -34,6 +34,7 @@ import {
   computeStoredTotals,
   resolveExchangeRate,
 } from '@/lib/business/quotations/persist';
+import { prepareQuotationTrips } from '@/lib/business/quotations/prepare-trips';
 import type { QuotationActionResult } from '@/lib/business/quotations/types';
 import { z } from 'zod';
 
@@ -175,11 +176,24 @@ export async function updateQuotation(
     const trips = z.array(quotationTripSchema).max(20).safeParse(tripsInput);
     if (!trips.success) return { error: firstIssueMessage(trips.error) };
 
+    const { data: savedRows, error: savedRowsError } = await supabase
+      .from('business_quotation_items')
+      .select('id, trip_type')
+      .eq('quotation_id', id);
+    if (savedRowsError) return { error: 'Failed to load existing trips' };
+
+    const prepared = await prepareQuotationTrips(
+      supabase,
+      trips.data,
+      new Map((savedRows ?? []).map((row) => [row.id, row.trip_type]))
+    );
+    if ('error' in prepared) return { error: prepared.error };
+
     const saved = await saveQuotationTrips({
       supabase,
       quotationId: id,
       businessAccountId: member.businessAccountId,
-      trips: trips.data,
+      trips: prepared.trips,
       defaultMarkupPct: header.data.default_markup_pct,
     });
     if (saved.error) return { error: saved.error };

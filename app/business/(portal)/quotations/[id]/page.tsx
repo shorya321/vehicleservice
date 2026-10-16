@@ -46,6 +46,9 @@ import { QuotationStatusBadge } from '../components/quotation-status-badge';
 import { VehicleThumb } from '../components/vehicle-thumb';
 import { QuotationActions } from './components/quotation-actions';
 import { ConvertDialog } from './components/convert-dialog';
+import { ItineraryRoute } from './components/itinerary-route';
+import { isGroupedTrip } from '@/lib/business/quotations/trip-legs';
+import { businessTripTypeOf } from '@/lib/business/trips/display';
 
 export const metadata: Metadata = {
   title: 'Quotation | Business Portal',
@@ -288,10 +291,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                           ? ` · booked as ${item.converted_booking_number}`
                           : ''}
                       </div>
-                      {/* Two lines rather than one crammed run: addresses here are full
-                          postal strings and read as noise when joined. */}
-                      <div className="mt-1 font-medium">{item.pickup_address}</div>
-                      <div className="text-muted-foreground">→ {item.dropoff_address}</div>
+                      <ItineraryRoute item={item} />
                       <div className="mt-1 flex items-center gap-2 text-sm font-medium text-foreground">
                         <VehicleThumb
                           size="sm"
@@ -303,10 +303,11 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {item.pickup_datetime
-                          ? fmtDate(item.pickup_datetime)
-                          : 'Date to be confirmed'}{' '}
-                        · {item.passenger_count} guest
+                        {/* A multi-journey trip shows each journey's time above. */}
+                        {isGroupedTrip({ trip_type: businessTripTypeOf(item) })
+                          ? ''
+                          : `${item.pickup_datetime ? fmtDate(item.pickup_datetime) : 'Date to be confirmed'} · `}
+                        {item.passenger_count} guest
                         {item.passenger_count === 1 ? '' : 's'}
                       </div>
                       {item.addons.length > 0 && (

@@ -37,6 +37,9 @@ import { CustomerDetailsCard } from './customer-details-card';
 import { VehicleThumb } from '../../../components/vehicle-thumb';
 import type { QuotationCustomerDraft } from './customer-details-card';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
+import type { BusinessTripSettings } from '@/lib/business/trips/settings';
+import { shiftTripByDays, tripTypeOf } from '@/lib/business/quotations/trip-legs';
+import { TripRowRoute } from './trip-row-route';
 
 interface QuotationBuilderProps {
   quotationId: string;
@@ -60,6 +63,8 @@ interface QuotationBuilderProps {
     discount_aed: number;
   };
   initialTrips: QuotationTripDraft[];
+  /** Admin trip-type switches, read fresh on every page load. */
+  tripSettings: BusinessTripSettings;
 }
 
 export function QuotationBuilder({
@@ -69,6 +74,7 @@ export function QuotationBuilder({
   exchangeRate,
   header,
   initialTrips,
+  tripSettings,
 }: QuotationBuilderProps) {
   const router = useRouter();
   const [isSaving, startSaving] = useTransition();
@@ -122,10 +128,9 @@ export function QuotationBuilder({
         id: undefined,
         converted_booking_id: null,
         converted_booking_number: null,
-        // Same route a day later is overwhelmingly the common multi-leg case.
-        pickup_datetime: source.pickup_datetime
-          ? new Date(new Date(source.pickup_datetime).getTime() + 86_400_000).toISOString()
-          : null,
+        // Same route a day later is overwhelmingly the common multi-leg case. Every journey of
+        // a round trip or multi-city trip moves with it.
+        ...shiftTripByDays(source, 1),
       };
       return [...current, { ...copy, sort_order: current.length }];
     });
@@ -174,6 +179,15 @@ export function QuotationBuilder({
         editable.map((trip, index) => ({
           id: trip.id,
           sort_order: index,
+          trip_type: tripTypeOf(trip),
+          legs: (trip.legs ?? []).map((leg) => ({
+            from_location_id: leg.from_location_id,
+            to_location_id: leg.to_location_id,
+            pickup_address: leg.pickup_address,
+            dropoff_address: leg.dropoff_address,
+            pickup_datetime: leg.pickup_datetime,
+          })),
+          hourly_package: trip.hourly_package ?? null,
           from_location_id: trip.from_location_id,
           to_location_id: trip.to_location_id,
           pickup_address: trip.pickup_address,
@@ -273,12 +287,7 @@ export function QuotationBuilder({
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 break-words font-medium text-foreground">
-                        {trip.from_location_name ?? trip.pickup_address}
-                      </div>
-                      <div className="break-words text-muted-foreground">
-                        → {trip.to_location_name ?? trip.dropoff_address}
-                      </div>
+                      <TripRowRoute trip={trip} />
                       <div className="mt-1 flex items-center gap-2 text-sm">
                         <VehicleThumb
                           size="sm"
@@ -444,6 +453,7 @@ export function QuotationBuilder({
         currency={currency}
         exchangeRate={exchangeRate}
         defaultMarkupPct={defaultMarkupPct}
+        tripSettings={tripSettings}
         onSave={upsertTrip}
       />
     </div>

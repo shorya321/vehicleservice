@@ -10,6 +10,9 @@
 
 import { z } from 'zod';
 import { CONTACT_PHONE_RE, QUOTATION_STATUSES } from './status';
+import { BUSINESS_HOURLY_PACKAGES, BUSINESS_TRIP_TYPES } from '@/lib/business/trips/types';
+import { BUSINESS_AS_DIRECTED, BUSINESS_MAX_LEGS_HARD_LIMIT } from '@/lib/business/trips/constants';
+import { addTripTypeIssues } from './trip-type-rules';
 
 /** Alternatives a trip may offer on top of its quoted vehicle. */
 export const MAX_VEHICLE_OPTIONS = 5;
@@ -96,15 +99,46 @@ export const quotationAddonSchema = z
     path: ['child_ages'],
   });
 
+/** One journey of a round trip or multi-city trip. */
+export const quotationTripLegSchema = z
+  .object({
+    from_location_id: z.string().uuid('Invalid pickup location'),
+    to_location_id: z.string().uuid('Invalid dropoff location'),
+    pickup_address: z.string().trim().min(5, 'Pickup address required').max(500),
+    dropoff_address: z.string().trim().min(5, 'Dropoff address required').max(500),
+    // Nullable here so the trip-level rule can name the journey that is missing a date.
+    pickup_datetime: z
+      .string()
+      .datetime({ offset: true, message: 'Invalid datetime format' })
+      .nullable()
+      .default(null),
+  })
+  .refine((l) => l.from_location_id !== l.to_location_id, {
+    message: 'Pickup and dropoff must be different locations',
+    path: ['to_location_id'],
+  });
+
+export type QuotationTripLegInput = z.infer<typeof quotationTripLegSchema>;
+
 export const quotationTripSchema = z
   .object({
     id: z.string().uuid().optional(),
     sort_order: z.number().int().min(0).default(0),
 
     from_location_id: z.string().uuid('Invalid pickup location'),
-    to_location_id: z.string().uuid('Invalid dropoff location'),
+    // Blank for an hourly trip, which has no destination. Every other type requires both; see
+    // addTripTypeIssues.
+    to_location_id: z
+      .union([z.string().uuid('Invalid dropoff location'), z.literal('')])
+      .nullable()
+      .default(null),
     pickup_address: z.string().trim().min(5, 'Pickup address required').max(500),
-    dropoff_address: z.string().trim().min(5, 'Dropoff address required').max(500),
+    dropoff_address: z.string().trim().max(500).nullable().default(null),
+
+    // Trips saved before trip types existed carry none, and they are all one way.
+    trip_type: z.enum(BUSINESS_TRIP_TYPES).default('one_way'),
+    legs: z.array(quotationTripLegSchema).max(BUSINESS_MAX_LEGS_HARD_LIMIT).default([]),
+    hourly_package: z.enum(BUSINESS_HOURLY_PACKAGES).nullable().default(null),
 
     // Nullable: an undated quote is legitimate. The UI flags it as non-convertible up front
     // rather than letting the business discover it at conversion.
@@ -179,7 +213,29 @@ export const quotationTripSchema = z
       message: 'markup_percent is required for a pinned line and must be absent otherwise',
       path: ['markup_percent'],
     }
-  );
+  )
+  .superRefine(addTripTypeIssues)
+  // One shape per type, so persistence never has to reason about it. A multi-journey trip's own
+  // route columns are its first journey; hourly has no destination, and its dropoff reads
+  // "As directed" exactly as the booking row will.
+  .transform((d) => {
+    if (d.trip_type === 'hourly') {
+      return { ...d, to_location_id: null, dropoff_address: BUSINESS_AS_DIRECTED, legs: [] };
+    }
+    if (d.trip_type === 'one_way') {
+      return { ...d, to_location_id: d.to_location_id || null, legs: [], hourly_package: null };
+    }
+    const first = d.legs[0];
+    return {
+      ...d,
+      hourly_package: null,
+      from_location_id: first.from_location_id,
+      to_location_id: first.to_location_id,
+      pickup_address: first.pickup_address,
+      dropoff_address: first.dropoff_address,
+      pickup_datetime: first.pickup_datetime,
+    };
+  });
 
 export type QuotationTripInput = z.infer<typeof quotationTripSchema>;
 

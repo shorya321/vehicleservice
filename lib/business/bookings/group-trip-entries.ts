@@ -1,13 +1,15 @@
 /**
  * Folds the journeys of a round trip or multi-city trip into one list entry.
  *
- * Runs after groupQuotationBookings. Trips are never converted from quotations, so a journey is
- * always a `single` entry going in. The trip entry takes the place of its first journey, so the
- * list keeps its order, and a trip never splits across two pages.
+ * Runs after groupQuotationBookings. A trip converted from a quotation has every journey linked to
+ * that quotation (withTripJourneyLinks), so it stays whole inside the quotation's group and never
+ * reaches this fold. Every other journey is a `single` entry going in. The trip entry takes the
+ * place of its first journey, so the list keeps its order, and a trip never splits across two
+ * pages.
  *
  * SCOPE: Business module ONLY
  */
-import type { BookingListEntry } from './group-quotation-bookings';
+import type { BookingListEntry, QuotationBookingLink } from './group-quotation-bookings';
 
 /** A list entry: a single booking, a quotation's bookings, or a trip's journeys. */
 export type BusinessListEntry<T> =
@@ -82,4 +84,28 @@ export function withWholeTrips<T extends { id: string; booking_group_id?: string
 /** Every booking held by a set of entries, in display order. */
 export function flattenListEntries<T>(entries: readonly BusinessListEntry<T>[]): T[] {
   return entries.flatMap((e) => (e.kind === 'single' ? [e.booking as T] : (e.bookings as T[])));
+}
+
+/**
+ * A quotation trip converts into a round trip or multi-city group, but only its first journey is
+ * stamped on the quotation item. Link the other journeys to the same quotation, so the group shows
+ * the whole trip and none of its journeys can be deleted on its own.
+ */
+export function withTripJourneyLinks(
+  links: readonly QuotationBookingLink[],
+  bookings: readonly { id: string; booking_group_id?: string | null }[]
+): QuotationBookingLink[] {
+  const linkByBooking = new Map(links.map((l) => [l.bookingId, l]));
+  const linkByGroup = new Map<string, QuotationBookingLink>();
+  for (const b of bookings) {
+    const link = linkByBooking.get(b.id);
+    if (link && b.booking_group_id) linkByGroup.set(b.booking_group_id, link);
+  }
+  if (linkByGroup.size === 0) return [...links];
+
+  const extra = bookings.flatMap((b) => {
+    const link = b.booking_group_id ? linkByGroup.get(b.booking_group_id) : undefined;
+    return link && !linkByBooking.has(b.id) ? [{ ...link, bookingId: b.id }] : [];
+  });
+  return [...links, ...extra];
 }

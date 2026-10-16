@@ -11,6 +11,7 @@
 import type { Database } from '@/lib/supabase/types';
 import type { QuotationStatus } from './status';
 import type { QuotationPriceMode } from './pricing';
+import type { BusinessHourlyPackage, BusinessTripType } from '@/lib/business/trips/types';
 
 type Tables = Database['public']['Tables'];
 
@@ -49,9 +50,28 @@ export interface QuotationItemVehicleOption {
   sort_order: number;
 }
 
+export type QuotationItemLegRow = Tables['business_quotation_item_legs']['Row'];
+
+/**
+ * One journey of a round trip or multi-city quotation trip. Leg 0 always repeats the trip's own
+ * route and pickup columns, so code that only knows one-way trips still reads a sensible route.
+ */
+export interface QuotationTripLegDraft {
+  from_location_id: string;
+  to_location_id: string;
+  from_location_name?: string;
+  to_location_name?: string;
+  pickup_address: string;
+  dropoff_address: string;
+  /** ISO string. Every journey of a multi-journey trip is dated. */
+  pickup_datetime: string | null;
+}
+
 /** One trip, with its addons resolved. */
 export interface QuotationItemWithAddons extends QuotationItemRow {
   addons: QuotationItemAddon[];
+  /** Journeys in travel order. Empty for one way and hourly. */
+  legs?: QuotationItemLegRow[];
   /** Alternatives offered on top of vehicle_type_id. Empty for a trip without any. */
   vehicle_options?: QuotationItemVehicleOption[];
 }
@@ -170,7 +190,16 @@ export interface QuotationVehicleOptionDraft {
 export interface QuotationTripDraft {
   id?: string;
   sort_order: number;
+  /** Absent on trips saved before trip types existed, which are all one way. */
+  trip_type?: BusinessTripType;
+  /** Round trip and multi-city only: every journey in travel order, leg 0 = the fields below. */
+  legs?: QuotationTripLegDraft[];
+  /** Hourly only. Hours and km are snapshotted from the vehicle's package on save. */
+  hourly_package?: BusinessHourlyPackage | null;
+  duration_hours?: number | null;
+  included_km?: number | null;
   from_location_id: string;
+  /** Empty for an hourly trip, which has no destination. */
   to_location_id: string;
   from_location_name?: string;
   to_location_name?: string;

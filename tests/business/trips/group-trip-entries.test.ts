@@ -52,3 +52,23 @@ describe('groupBusinessTripRows / expandToWholeTrips', () => {
     expect(expandToWholeTrips(['one'], rows)).toEqual(['one'])
   })
 })
+
+describe('withTripJourneyLinks', () => {
+  const { withTripJourneyLinks } = jest.requireActual('@/lib/business/bookings/group-trip-entries');
+  const link = { bookingId: 'leg0', quotationId: 'q1', quotationNumber: 'QUO1', sortOrder: 0 };
+
+  it('links every journey of a converted trip to its quotation', () => {
+    const links = withTripJourneyLinks([link], [
+      { id: 'leg0', booking_group_id: 'g1' },
+      { id: 'leg1', booking_group_id: 'g1' },
+      { id: 'other', booking_group_id: 'g2' },
+      { id: 'single', booking_group_id: null },
+    ]);
+    expect(links.map((l: { bookingId: string }) => l.bookingId)).toEqual(['leg0', 'leg1']);
+    expect(links[1]).toEqual({ ...link, bookingId: 'leg1' });
+  });
+
+  it('leaves one-way links untouched', () => {
+    expect(withTripJourneyLinks([link], [{ id: 'leg0', booking_group_id: null }])).toEqual([link]);
+  });
+});

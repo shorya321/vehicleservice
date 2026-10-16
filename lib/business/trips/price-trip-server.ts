@@ -86,16 +86,19 @@ function draftLegs(body: BusinessTripCreationInput): DraftLeg[] {
   }));
 }
 
+function tripTypeEnabled(body: BusinessTripCreationInput, settings: BusinessTripSettings): boolean {
+  return body.trip_type === 'round_trip' ? settings.round_trip_enabled
+    : body.trip_type === 'multi_city' ? settings.multi_city_enabled
+    : settings.hourly_enabled;
+}
+
 export async function priceBusinessTrip(
   supabase: Client,
   body: BusinessTripCreationInput,
   settings: BusinessTripSettings,
   businessAccountId: string
 ): Promise<PriceTripResult> {
-  const enabled = body.trip_type === 'round_trip' ? settings.round_trip_enabled
-    : body.trip_type === 'multi_city' ? settings.multi_city_enabled
-    : settings.hourly_enabled;
-  if (!enabled) return fail(403, 'This trip type is not available right now.');
+  if (!tripTypeEnabled(body, settings)) return fail(403, 'This trip type is not available right now.');
 
   const drafts = draftLegs(body);
   const hourlyPackage = body.trip_type === 'hourly' ? body.hourly.hourly_package : null;
@@ -115,6 +118,27 @@ export async function priceBusinessTrip(
     console.error('SECURITY ALERT: Business trip quote HMAC failed', { reason: signature.reason, businessAccountId });
     return fail(403, 'Price quote verification failed. Please choose the vehicle again.');
   }
+
+  return priceServerSideBusinessTrip(supabase, body, settings, body.base_price);
+}
+
+/**
+ * The same pricing and rules as priceBusinessTrip, without the client quote signature, for
+ * callers whose trip never came from a client price: quotation conversion re-prices a stored trip
+ * here. `expectedBasePrice` is the fare the caller already agreed to (null to accept the fresh
+ * one); a mismatch is refused exactly as a stale signed quote is. The signature fields of `body`
+ * are not read.
+ */
+export async function priceServerSideBusinessTrip(
+  supabase: Client,
+  body: BusinessTripCreationInput,
+  settings: BusinessTripSettings,
+  expectedBasePrice: number | null
+): Promise<PriceTripResult> {
+  if (!tripTypeEnabled(body, settings)) return fail(403, 'This trip type is not available right now.');
+
+  const drafts = draftLegs(body);
+  const hourlyPackage = body.trip_type === 'hourly' ? body.hourly.hourly_package : null;
 
   if (body.trip_type === 'round_trip') {
     const routeError = validateRoundTripRoute(drafts.map((d) => ({ fromId: d.from, toId: d.to ?? '' })));
@@ -180,7 +204,7 @@ export async function priceBusinessTrip(
 
   const discountPercent = body.trip_type === 'round_trip' ? settings.round_trip_discount_percent : 0;
   const fareQuote = quoteBusinessTrip(fares.map((baseFare) => ({ baseFare })), discountPercent);
-  if (toCents(fareQuote.total) !== toCents(body.base_price)) {
+  if (expectedBasePrice !== null && toCents(fareQuote.total) !== toCents(expectedBasePrice)) {
     return fail(409, 'Prices changed since you chose the vehicle. Please choose it again.');
   }
 
