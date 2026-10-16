@@ -135,7 +135,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             ) : (
               bookings.map((assignment) => (
                 <TableRow key={assignment.id}>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className="font-mono text-xs">
                     <Link
                       href={`/vendor/bookings/${assignment.id}`}
                       className="font-medium underline-offset-4 hover:underline"
@@ -144,7 +144,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
+                    <div className="max-w-[140px] text-sm [&>div]:truncate">
                       {assignment.booking?.booking_passengers && assignment.booking.booking_passengers.length > 0 ? (
                         (() => {
                           const primaryPassenger = assignment.booking.booking_passengers.find(p => p.is_primary) || assignment.booking.booking_passengers[0]
@@ -186,8 +186,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center gap-2 whitespace-nowrap text-sm">
                       <div>
                         <div className="font-medium">
                           {assignment.booking?.pickup_datetime ? format(toBookingTz(assignment.booking.pickup_datetime), 'MMM dd, yyyy') : 'N/A'}
@@ -212,14 +211,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-1 text-sm max-w-xs">
+                    <div className="space-y-1 text-sm max-w-[140px]">
                       <div className="flex items-start gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span className="truncate">{assignment.booking?.pickup_address || 'N/A'}</span>
+                        <span className="truncate" title={assignment.booking?.pickup_address ?? undefined}>{assignment.booking?.pickup_address || 'N/A'}</span>
                       </div>
                       <div className="flex items-start gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span className="truncate">{assignment.booking?.dropoff_address || 'N/A'}</span>
+                        <span className="truncate" title={assignment.booking?.dropoff_address ?? undefined}>{assignment.booking?.dropoff_address || 'N/A'}</span>
                       </div>
                       {assignment.booking?.trip_label && (
                         <StatusPill tone="neutral" className="h-auto whitespace-normal py-0.5">
@@ -231,7 +230,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   <TableCell>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-sm">
-                        <Car className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
                           {assignment.booking?.vehicle_type?.name || 'N/A'}
                         </span>
@@ -282,7 +280,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   <TableCell>
                     {getStatusBadge(assignment.status)}
                   </TableCell>
-                  <TableCell className="text-right font-semibold">
+                  <TableCell className="whitespace-nowrap text-right font-semibold">
                     {assignment.booking?.total_price ? formatCurrency(assignment.booking.total_price) : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
