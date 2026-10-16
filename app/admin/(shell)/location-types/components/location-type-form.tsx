@@ -271,7 +271,7 @@ export function LocationTypeForm({ initialData }: LocationTypeFormProps) {
                   name="is_active"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
+                      <div className="space-y-1">
                         <FormLabel>Active</FormLabel>
                         <FormDescription>
                           Inactive types won&apos;t appear in location forms or filters
@@ -319,7 +319,7 @@ export function LocationTypeForm({ initialData }: LocationTypeFormProps) {
               <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${selectedTheme?.config.bg || 'bg-muted'}`}>
                 {getLocationTypeIcon(watchedIcon, `h-5 w-5 ${selectedTheme?.config.color || ''}`)}
               </div>
-              <div>
+              <div className="space-y-1">
                 <p className="font-medium">{watchedLabel || 'Location Type'}</p>
                 <p className="text-xs text-muted-foreground">How it appears in lists</p>
               </div>

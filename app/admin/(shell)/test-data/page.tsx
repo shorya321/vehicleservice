@@ -51,7 +51,7 @@ export default async function TestDataPage() {
 
   return (
       <div className="space-y-6">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Test Data Generator</h1>
           <p className="text-muted-foreground">
             Generate sample bookings for testing and development

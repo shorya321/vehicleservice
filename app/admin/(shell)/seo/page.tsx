@@ -19,7 +19,7 @@ export default async function SeoSettingsPage() {
   return (
     <AnimatedPage>
       <div className="space-y-6">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">SEO</h1>
           <p className="text-muted-foreground">
             Site-wide search defaults. Set a page&apos;s own title and description from its SEO tab under{' '}

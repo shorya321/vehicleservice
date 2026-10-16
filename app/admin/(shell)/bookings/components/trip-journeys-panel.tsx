@@ -71,7 +71,7 @@ export function TripJourneysPanel({
                     className="flex cursor-pointer items-center gap-4 px-4 py-3 text-sm hover:bg-muted/50"
                     onClick={(e) => handleClick(e, leg.id)}
                   >
-                    <div className="w-[150px] flex-shrink-0">
+                    <div className="w-[150px] flex-shrink-0 space-y-1">
                       <div className="font-medium">{legLabel(leg, legCount)}</div>
                       <div className="font-mono text-xs text-muted-foreground">
                         {leg.trip_number || leg.booking_number}

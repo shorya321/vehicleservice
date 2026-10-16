@@ -135,7 +135,7 @@ export function AdjustCreditsButton({
             </div>
             <div className="flex justify-between">
               <span>Adjustment:</span>
-              <span className={`font-medium ${parseFloat(amount || '0') >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              <span className={`font-medium ${parseFloat(amount || '0') >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {parseFloat(amount || '0') >= 0 ? '+' : ''}
                 {formatCurrency(parseFloat(amount || '0'))}
               </span>

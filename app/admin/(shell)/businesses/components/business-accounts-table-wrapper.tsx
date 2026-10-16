@@ -130,7 +130,7 @@ export function BusinessAccountsTableWrapper({
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
             <Button
@@ -140,7 +140,7 @@ export function BusinessAccountsTableWrapper({
               disabled={currentPage === totalPages}
             >
               Next
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>

@@ -254,7 +254,7 @@ export function AppearanceSettingsForm({ currentTheme }: AppearanceSettingsFormP
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <Palette className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="space-y-1">
               <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Theme Settings
               </CardTitle>

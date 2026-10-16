@@ -68,7 +68,7 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
 
   return (
     <Card className="admin-card-hover">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
             <DollarSign className="h-4 w-4 text-emerald-500" />

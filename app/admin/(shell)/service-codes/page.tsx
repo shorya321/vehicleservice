@@ -43,7 +43,7 @@ export default async function ServiceCodesPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">Service Codes</h1>
           <p className="text-muted-foreground">
             Manage trip number service codes

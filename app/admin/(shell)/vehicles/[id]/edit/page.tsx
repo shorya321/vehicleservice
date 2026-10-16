@@ -44,7 +44,7 @@ export default async function AdminEditVehiclePage({ params }: AdminEditVehicleP
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Edit Vehicle</h1>
             <p className="text-muted-foreground">
               Update vehicle information for {vehicleResult.vehicle.make} {vehicleResult.vehicle.model}

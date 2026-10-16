@@ -96,7 +96,7 @@ export default async function EditDirectBookingPage({
             <span className="sr-only">Back to offline bookings</span>
           </Link>
         </Button>
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Edit Offline Booking</h1>
           <p className="text-muted-foreground font-mono text-sm">
             {booking.reference_number}

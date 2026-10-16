@@ -236,7 +236,7 @@ export function RouteFiltersComponent({ filters, onFiltersChange }: RouteFilters
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
             <div className="space-y-4">
-              <div>
+              <div className="space-y-1">
                 <h4 className="font-medium text-sm">Advanced Filters</h4>
                 <p className="text-xs text-muted-foreground">
                   Search for an origin and destination to filter routes

@@ -195,7 +195,7 @@ export function AdminVehicleTable({
                 </div>
               </TableCell>
               <TableCell>
-                <div>
+                <div className="space-y-1">
                   <div className="font-medium">
                     {vehicle.make} {vehicle.model}
                   </div>
@@ -207,7 +207,7 @@ export function AdminVehicleTable({
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <div>
+                  <div className="space-y-1">
                     <div className="font-medium text-sm">
                       {vehicle.vendor?.business_name || 'Unknown'}
                     </div>

@@ -40,7 +40,7 @@ export default async function UserActivityPage({ params }: UserActivityPageProps
                 <span className="sr-only">Back</span>
               </Link>
             </Button>
-            <div>
+            <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight">
                 Activity Log
               </h1>

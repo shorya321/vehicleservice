@@ -259,7 +259,7 @@ export function AdminVehicleFiltersComponent({ filters, onFiltersChange, vendors
           </PopoverTrigger>
           <PopoverContent className="w-80" align="end">
             <div className="space-y-4">
-              <div>
+              <div className="space-y-1">
                 <h4 className="font-medium text-sm">Advanced Filters</h4>
                 <p className="text-xs text-muted-foreground">
                   Filter vehicles by additional criteria

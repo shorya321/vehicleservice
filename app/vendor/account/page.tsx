@@ -25,7 +25,7 @@ export default async function VendorAccountPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
         <p className="text-muted-foreground">
           Manage your personal account settings and preferences

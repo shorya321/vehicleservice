@@ -72,7 +72,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
       <AnimatedPage>
         {/* Header */}
         <div className="flex justify-between items-center">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground">
               Welcome back! Here&apos;s what&apos;s happening today.
@@ -96,20 +96,20 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">
                     {formatCurrency(metrics.todayRevenue)}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-xs">
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs [&>span]:whitespace-nowrap">
                   {metrics.revenueChange > 0 ? (
                     <>
                       <TrendingUp className="h-3 w-3 text-emerald-500" />
-                      <span className="text-emerald-500">+{metrics.revenueChange.toFixed(1)}%</span>
+                      <span className="text-emerald-700 dark:text-emerald-400">+{metrics.revenueChange.toFixed(1)}%</span>
                     </>
                   ) : metrics.revenueChange < 0 ? (
                     <>
                       <TrendingDown className="h-3 w-3 text-red-500" />
-                      <span className="text-red-500">{metrics.revenueChange.toFixed(1)}%</span>
+                      <span className="text-red-600 dark:text-red-400">{metrics.revenueChange.toFixed(1)}%</span>
                     </>
                   ) : (
                     <span className="text-muted-foreground">No change</span>
@@ -130,7 +130,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
                     {metrics.activeBookings}
                   </span>
                 </div>
@@ -149,7 +149,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">
                     {metrics.pendingActions}
                   </span>
                 </div>

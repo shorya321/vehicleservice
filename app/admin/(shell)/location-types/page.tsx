@@ -36,7 +36,7 @@ export default async function LocationTypesPage({ searchParams }: LocationTypesP
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">Location Types</h1>
           <p className="text-muted-foreground">
             Manage location type categories for your service areas

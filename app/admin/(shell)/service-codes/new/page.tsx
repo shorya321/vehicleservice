@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function NewServiceCodePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div>
+      <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">
           Create Service Code
         </h1>

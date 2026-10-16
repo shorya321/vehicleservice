@@ -176,7 +176,7 @@ export function AddonsTable({ addons }: AddonsTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div>
+                  <div className="space-y-1">
                     <div className="font-medium">{addon.name}</div>
                     {addon.description && (
                       <div className="text-sm text-muted-foreground line-clamp-1">
@@ -190,10 +190,10 @@ export function AddonsTable({ addons }: AddonsTableProps) {
                     {addon.category}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="space-y-1">
                   <div className="font-medium">
                     {addon.price === 0 ? (
-                      <span className="text-green-600 dark:text-green-400">Free</span>
+                      <span className="text-green-700 dark:text-green-400">Free</span>
                     ) : (
                       formatCurrency(addon.price)
                     )}

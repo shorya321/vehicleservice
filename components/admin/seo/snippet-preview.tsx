@@ -17,7 +17,7 @@ export function SnippetPreview({ title, description, url, noindex }: SnippetPrev
     <div className="rounded-lg border bg-card p-4">
       <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Google preview</p>
       {noindex ? (
-        <p className="text-sm text-amber-500">Hidden from search results (noindex is on).</p>
+        <p className="text-sm text-amber-700 dark:text-amber-400">Hidden from search results (noindex is on).</p>
       ) : (
         <div className="space-y-1">
           <p className="truncate text-xs text-muted-foreground">{url}</p>

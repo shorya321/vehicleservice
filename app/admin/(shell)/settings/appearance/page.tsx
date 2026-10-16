@@ -47,7 +47,7 @@ export default async function AppearanceSettingsPage() {
         <Breadcrumb items={[{ label: 'Settings', href: '/admin/settings' }, { label: 'Appearance' }]} />
         <div className="space-y-6">
           {/* Page Header */}
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Appearance Settings</h1>
             <p className="text-muted-foreground">
               Customize the look and feel of admin and vendor dashboards. Changes apply to all users.

@@ -158,7 +158,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Wrench className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Site Availability</CardTitle>
                 <CardDescription>Control public access to the site</CardDescription>
               </div>
@@ -223,7 +223,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Globe className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Operating Timezone</CardTitle>
                 <CardDescription>
                   The clock the whole product runs on
@@ -273,7 +273,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <CalendarX className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Booking Cancellation</CardTitle>
                 <CardDescription>
                   How long a business may cancel its own booking
@@ -322,7 +322,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Type className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Branding</CardTitle>
                 <CardDescription>Brand name and copyright text displayed across the site</CardDescription>
               </div>
@@ -368,7 +368,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <ImageIcon className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Logos</CardTitle>
                 <CardDescription>Upload logos for the header and footer. If not set, the brand name text is used.</CardDescription>
               </div>
@@ -411,7 +411,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Mail className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Contact Information</CardTitle>
                 <CardDescription>Email addresses, phone numbers, and office address shown on the site</CardDescription>
               </div>
@@ -516,7 +516,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Share2 className="h-5 w-5" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Social Media</CardTitle>
                 <CardDescription>Social media profile URLs. Leave empty to hide the icon.</CardDescription>
               </div>

@@ -102,7 +102,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
         <Breadcrumb items={[{ label: 'Settings', href: '/admin/settings' }, { label: 'Currencies' }]} />
         <div className="space-y-6">
           {/* Page Header */}
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Currency Settings</h1>
             <p className="text-muted-foreground">
               Configure which currencies are available for price display on the public website.
@@ -134,7 +134,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{totalCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{totalCount}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -150,7 +150,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{enabledCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{enabledCount}</span>
                     <span className="text-sm text-muted-foreground">of {totalCount}</span>
                   </div>
                 </CardContent>
@@ -167,7 +167,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
                     </div>
                   </div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{featuredCount}</span>
+                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{featuredCount}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -215,7 +215,7 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
           {/* Currency Table */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div>
+              <div className="space-y-1.5">
                 <CardTitle>Currencies</CardTitle>
                 <CardDescription>
                   Enable currencies to make them available in the currency selector.

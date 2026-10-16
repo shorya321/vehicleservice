@@ -191,7 +191,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
         return {
           label: 'Approve',
           icon: CheckCircle,
-          className: 'text-green-600 dark:text-green-400',
+          className: 'text-green-700 dark:text-green-400',
           title: 'Approve Business',
           description: 'This will activate the business account and allow them to login.',
         };
@@ -207,7 +207,7 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
         return {
           label: 'Suspend',
           icon: PauseCircle,
-          className: 'text-orange-600 dark:text-orange-400',
+          className: 'text-orange-700 dark:text-orange-400',
           title: 'Suspend Business',
           description: 'This will suspend the business account. They will lose access immediately.',
         };
@@ -277,20 +277,20 @@ export function BusinessAccountsTable({ accounts, selectedIds, onSelectionChange
                     />
                   </TableCell>
                   <TableCell>
-                    <div>
+                    <div className="space-y-1">
                       <p className="font-medium">{account.business_name}</p>
                       <p className="text-xs text-muted-foreground">{account.subdomain}</p>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
+                    <div className="space-y-1">
                       <p className="font-medium text-sm">{account.contact_person_name}</p>
                       <p className="text-xs text-muted-foreground">{account.business_email}</p>
                     </div>
                   </TableCell>
                   <TableCell>
                     {account.custom_domain ? (
-                      <div>
+                      <div className="space-y-1">
                         <p className="text-sm">{account.custom_domain}</p>
                         {account.custom_domain_verified && (
                           <Badge variant="outline" className="text-xs">

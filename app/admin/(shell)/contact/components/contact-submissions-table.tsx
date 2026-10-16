@@ -70,7 +70,7 @@ function getStatusBadge(status: string) {
     case 'read':
       return <Badge variant="secondary">Read</Badge>
     case 'replied':
-      return <Badge className="bg-green-600/20 text-green-500 border-green-600/30">Replied</Badge>
+      return <Badge className="bg-green-600/20 text-green-700 dark:text-green-400 border-green-600/30">Replied</Badge>
     case 'archived':
       return <Badge variant="outline">Archived</Badge>
     default:
@@ -83,7 +83,7 @@ function getPriorityBadge(priority: string) {
     case 'urgent':
       return <Badge variant="destructive">Urgent</Badge>
     case 'high':
-      return <Badge className="bg-orange-600/20 text-orange-500 border-orange-600/30">High</Badge>
+      return <Badge className="bg-orange-600/20 text-orange-700 dark:text-orange-400 border-orange-600/30">High</Badge>
     case 'normal':
       return <Badge variant="secondary">Normal</Badge>
     case 'low':

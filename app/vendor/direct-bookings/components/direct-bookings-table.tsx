@@ -124,7 +124,7 @@ export function DirectBookingsTable({ bookings }: DirectBookingsTableProps) {
   return (
     <div className="space-y-4">
       {selected.size > 0 && (
-        <div className="flex items-center justify-between rounded-md border bg-muted/40 px-4 py-2">
+        <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/40 px-4 py-2">
           <span className="text-sm text-muted-foreground">
             {selected.size} selected
           </span>

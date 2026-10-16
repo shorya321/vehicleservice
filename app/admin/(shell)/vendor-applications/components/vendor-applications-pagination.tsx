@@ -39,7 +39,7 @@ export function VendorApplicationsPagination({
           onClick={() => navigateToPage(currentPage - 1)}
           disabled={currentPage <= 1}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
         
@@ -79,7 +79,7 @@ export function VendorApplicationsPagination({
           disabled={currentPage >= totalPages}
         >
           Next
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>

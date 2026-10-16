@@ -54,7 +54,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
   return (
     <div className="space-y-6">
         {/* Header */}
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Assigned Bookings</h1>
           <p className="text-muted-foreground">
             Manage bookings assigned to you by the admin
@@ -73,7 +73,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{stats.total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All bookings</p>
               </CardContent>
@@ -90,7 +90,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.pending}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.pending}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">{stats.pending > 0 ? 'Action required' : 'No pending'}</p>
               </CardContent>
@@ -107,7 +107,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.accepted}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{stats.accepted}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">In progress</p>
               </CardContent>
@@ -124,7 +124,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.completed}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.completed}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Successfully done</p>
               </CardContent>
@@ -141,7 +141,7 @@ export default async function VendorBookingsPage({ searchParams }: VendorBooking
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.today}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">{stats.today}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Scheduled today</p>
               </CardContent>

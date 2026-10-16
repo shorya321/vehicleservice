@@ -492,7 +492,7 @@ export function Sidebar() {
                   {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 space-y-1">
                 <p className="text-sm font-medium truncate text-foreground">
                   {userProfile?.full_name || 'Admin User'}
                 </p>

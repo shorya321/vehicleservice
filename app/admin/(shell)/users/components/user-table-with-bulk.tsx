@@ -209,7 +209,7 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
                           <span className="font-medium">
                             {user.full_name || "No name"}
                           </span>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-muted-foreground mt-1">
                             {user.email}
                           </span>
                           {user.phone && (

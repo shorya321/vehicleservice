@@ -36,7 +36,7 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Zones', href: '/admin/zones' }]} />
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Zones</h1>
             <p className="text-muted-foreground">
               Manage pricing zones for location-based fare calculation
@@ -68,7 +68,7 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{zonesData.total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{zonesData.total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All zones</p>
               </CardContent>

@@ -10,17 +10,17 @@ import type { VendorBookingDetail } from '@/lib/vendor/bookings/types'
 const STATUS_STYLES: Record<string, { wrap: string; text: string; icon: typeof CheckCircle }> = {
   completed: {
     wrap: 'bg-sky-500/10 border-sky-500/30',
-    text: 'text-sky-500',
+    text: 'text-sky-700 dark:text-sky-400',
     icon: CheckCircle,
   },
   accepted: {
     wrap: 'bg-emerald-500/10 border-emerald-500/30',
-    text: 'text-emerald-500',
+    text: 'text-emerald-700 dark:text-emerald-400',
     icon: CheckCircle,
   },
   pending: {
     wrap: 'bg-amber-500/10 border-amber-500/30',
-    text: 'text-amber-500',
+    text: 'text-amber-700 dark:text-amber-400',
     icon: Clock,
   },
   rejected: {
@@ -74,7 +74,7 @@ export function AssignmentPanel({ booking }: AssignmentPanelProps) {
             {booking.driver && (
               <div className="flex items-start gap-2 text-sm">
                 <UserCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                <div className="min-w-0">
+                <div className="min-w-0 space-y-1">
                   <p className="font-medium">
                     {booking.driver.firstName} {booking.driver.lastName}
                   </p>
@@ -95,7 +95,7 @@ export function AssignmentPanel({ booking }: AssignmentPanelProps) {
             {booking.vehicle && (
               <div className="flex items-start gap-2 text-sm">
                 <Car className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                <div className="min-w-0">
+                <div className="min-w-0 space-y-1">
                   <p className="font-medium">
                     {booking.vehicle.make} {booking.vehicle.model} ({booking.vehicle.year})
                   </p>
@@ -150,7 +150,7 @@ export function AssignmentPanel({ booking }: AssignmentPanelProps) {
             </div>
           )}
           {booking.completedAt && (
-            <div className="flex items-center gap-2 text-emerald-500">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
               <CheckCircle className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium">Completed {stamp(booking.completedAt)}</span>
             </div>
@@ -158,7 +158,7 @@ export function AssignmentPanel({ booking }: AssignmentPanelProps) {
           {booking.rejectedAt && (
             <div className="flex items-start gap-2 text-destructive">
               <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              <div>
+              <div className="space-y-1">
                 <p className="font-medium">Rejected {stamp(booking.rejectedAt)}</p>
                 {booking.rejectionReason && (
                   <p className="text-xs">Reason: {booking.rejectionReason}</p>
@@ -169,7 +169,7 @@ export function AssignmentPanel({ booking }: AssignmentPanelProps) {
           {booking.cancelledAt && (
             <div className="flex items-start gap-2 text-destructive">
               <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              <div>
+              <div className="space-y-1">
                 <p className="font-medium">Cancelled {stamp(booking.cancelledAt)}</p>
                 {booking.cancellationReason && (
                   <p className="text-xs">Reason: {booking.cancellationReason}</p>

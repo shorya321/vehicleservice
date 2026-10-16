@@ -84,7 +84,7 @@ export function TripTypesSettingsCard({ control }: TripTypesSettingsCardProps) {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Route className="h-5 w-5" />
           </div>
-          <div>
+          <div className="space-y-1.5">
             <CardTitle>Trip Types</CardTitle>
             <CardDescription>
               Which journeys customers can book, and the rules for each. One way is always on.

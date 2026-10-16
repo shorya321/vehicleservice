@@ -167,7 +167,7 @@ export function VendorApplicationsTableClient({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
+                    <div className="space-y-1">
                       <p className="font-medium">{application.user?.full_name || 'N/A'}</p>
                       <p className="text-sm text-muted-foreground">{application.user?.email}</p>
                     </div>

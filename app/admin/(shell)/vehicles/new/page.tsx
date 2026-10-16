@@ -30,7 +30,7 @@ export default async function AdminAddVehiclePage() {
                 <span className="sr-only">Back</span>
               </Link>
             </Button>
-            <div>
+            <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight">Add Vehicle</h1>
               <p className="text-muted-foreground">
                 Add a new vehicle to the system
@@ -62,7 +62,7 @@ export default async function AdminAddVehiclePage() {
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Add Vehicle</h1>
             <p className="text-muted-foreground">
               Add a new vehicle to the system

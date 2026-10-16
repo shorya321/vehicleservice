@@ -321,18 +321,18 @@ export function AssignResourcesModal({
                               </span>
                               {driver.availability?.available ? (
                                 <Badge variant="outline" className="text-xs">
-                                  <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                                  <CheckCircle className="h-3 w-3 mr-1 text-green-700 dark:text-green-400" />
                                   Available
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="text-xs">
-                                  <XCircle className="h-3 w-3 mr-1 text-red-600" />
+                                  <XCircle className="h-3 w-3 mr-1 text-red-600 dark:text-red-400" />
                                   Unavailable
                                 </Badge>
                               )}
                             </div>
                             {!driver.availability?.available && (
-                              <span className="text-xs text-red-600">
+                              <span className="text-xs text-red-600 dark:text-red-400">
                                 {driver.availability?.unavailableReason ??
                                   driver.availability?.conflicts
                                     .map((conflict) => conflict.label)
@@ -388,18 +388,18 @@ export function AssignResourcesModal({
                               </span>
                               {vehicle.availability?.available ? (
                                 <Badge variant="outline" className="text-xs">
-                                  <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                                  <CheckCircle className="h-3 w-3 mr-1 text-green-700 dark:text-green-400" />
                                   Available
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="text-xs">
-                                  <XCircle className="h-3 w-3 mr-1 text-red-600" />
+                                  <XCircle className="h-3 w-3 mr-1 text-red-600 dark:text-red-400" />
                                   Unavailable
                                 </Badge>
                               )}
                             </div>
                             {!vehicle.availability?.available && (
-                              <span className="text-xs text-red-600">
+                              <span className="text-xs text-red-600 dark:text-red-400">
                                 {vehicle.availability?.unavailableReason ??
                                   vehicle.availability?.conflicts
                                     .map((conflict) => conflict.label)

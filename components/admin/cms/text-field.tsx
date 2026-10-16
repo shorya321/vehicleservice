@@ -21,7 +21,7 @@ interface TextFieldProps<T extends FieldValues> {
 
 function counterTone(length: number, max: number, recommended?: number): string {
   if (length > max) return 'text-destructive'
-  if (recommended && length > recommended) return 'text-amber-500'
+  if (recommended && length > recommended) return 'text-amber-700 dark:text-amber-400'
   return 'text-muted-foreground'
 }
 

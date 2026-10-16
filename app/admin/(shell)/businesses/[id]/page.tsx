@@ -110,7 +110,7 @@ export default async function AdminBusinessDetailsPage({
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold">{businessAccount.business_name}</h1>
             <p className="text-muted-foreground">{businessAccount.business_email}</p>
           </div>
@@ -155,7 +155,7 @@ export default async function AdminBusinessDetailsPage({
             <CardTitle>Account Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Status</p>
               <Badge
                 variant={
@@ -169,15 +169,15 @@ export default async function AdminBusinessDetailsPage({
                 {businessAccount.status}
               </Badge>
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Contact Person</p>
               <p className="font-medium">{businessAccount.contact_person_name}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Phone</p>
               <p className="font-medium">{businessAccount.business_phone}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Created</p>
               <p className="font-medium">
                 {new Date(businessAccount.created_at).toLocaleString(undefined, { timeZone: getBookingTimezone() })}
@@ -191,11 +191,11 @@ export default async function AdminBusinessDetailsPage({
             <CardTitle>Domain Configuration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Subdomain</p>
               <p className="font-medium">{businessAccount.subdomain}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Custom Domain</p>
               {businessAccount.custom_domain ? (
                 <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default async function AdminBusinessDetailsPage({
             <div className="space-y-2">
               {recentBookings.map((booking) => (
                 <div key={booking.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
+                  <div className="space-y-1">
                     <p className="font-medium">{booking.trip_number || booking.booking_number}</p>
                     <p className="text-sm text-muted-foreground">
                       {booking.customer_name}
@@ -247,7 +247,7 @@ export default async function AdminBusinessDetailsPage({
                         }`}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right space-y-1">
                     <p className="font-medium">{formatCurrency(booking.total_price)}</p>
                     <p className="text-xs text-muted-foreground capitalize">
                       {booking.booking_status}
@@ -288,14 +288,14 @@ export default async function AdminBusinessDetailsPage({
                 <div key={tx.id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <p className="font-medium capitalize">{tx.transaction_type.replace('_', ' ')}</p>
-                    <p className="text-sm text-muted-foreground">{tx.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{tx.description}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(tx.created_at).toLocaleString(undefined, { timeZone: getBookingTimezone() })}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right space-y-1">
                     <p
-                      className={`font-medium ${tx.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                      className={`font-medium ${tx.amount >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                     >
                       {tx.amount >= 0 ? '+' : ''}
                       {formatCurrency(tx.amount)}

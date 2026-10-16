@@ -63,7 +63,7 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Locations', href: '/admin/locations' }]} />
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">
               Locations
             </h1>
@@ -90,7 +90,7 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">All locations</p>
               </CardContent>

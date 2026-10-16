@@ -224,7 +224,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                         disabled={loadingId === route.id}
                       >
                         {route.is_popular ? (
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-600 dark:text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-700 dark:text-yellow-400" />
                         ) : (
                           <StarOff className="h-4 w-4" />
                         )}
@@ -246,7 +246,7 @@ export function RoutesTableWithBulk({ routes }: RoutesTableWithBulkProps) {
                       disabled={loadingId === route.id}
                     />
                     {route.is_active ? (
-                      <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <Check className="h-4 w-4 text-green-700 dark:text-green-400" />
                     ) : (
                       <X className="h-4 w-4 text-muted-foreground" />
                     )}

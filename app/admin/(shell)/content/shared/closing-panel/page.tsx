@@ -28,7 +28,7 @@ export default async function ClosingPanelPage() {
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Shared Sections', href: '/admin/content/shared' }, { label: 'Footer Banner' }]} />
       <div className="space-y-6">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Footer Banner</h1>
           <p className="text-muted-foreground">Shared section above the footer on every Blog page, About and FAQ</p>
         </div>

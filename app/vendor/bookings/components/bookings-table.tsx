@@ -371,7 +371,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                                 assignment.booking?.trip_number || assignment.booking?.booking_number || 'N/A'
                               )}
                               disabled={isCompleting}
-                              className="text-green-600"
+                              className="text-green-700 dark:text-green-400"
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
                               Mark Completed

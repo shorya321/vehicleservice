@@ -248,7 +248,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                           {initials}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col space-y-1">
                         <span className="font-medium">{customerName}</span>
                         <span className="text-xs text-muted-foreground">{review.customer.email}</span>
                       </div>
@@ -261,7 +261,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                         {truncateText(review.review_text)}
                       </p>
                       {review.admin_response && (
-                        <div className="mt-1 flex items-center gap-1 text-xs text-luxury-gold">
+                        <div className="mt-1 flex items-center gap-1 text-xs text-amber-700 dark:text-luxury-gold">
                           <MessageSquare className="h-3 w-3" />
                           Admin replied
                         </div>
@@ -322,7 +322,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                                 setActionReviewId(review.id)
                                 setActionType('approve')
                               }}
-                              className="text-emerald-500"
+                              className="text-emerald-700 dark:text-emerald-400"
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
                               Approve
@@ -332,7 +332,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                                 setActionReviewId(review.id)
                                 setActionType('reject')
                               }}
-                              className="text-red-500"
+                              className="text-red-600 dark:text-red-400"
                             >
                               <XCircle className="mr-2 h-4 w-4" />
                               Reject

@@ -153,15 +153,15 @@ function RefundForm({ bookingId, onBusyChange, onDone }: RefundFormProps) {
         {summary && (
           <div className="space-y-4">
             <dl className="grid grid-cols-3 gap-2 rounded-lg border border-border p-3 text-sm">
-              <div>
+              <div className="space-y-1">
                 <dt className="text-xs text-muted-foreground">Paid</dt>
                 <dd className="font-medium tabular-nums">{formatCurrency(summary.paid)}</dd>
               </div>
-              <div>
+              <div className="space-y-1">
                 <dt className="text-xs text-muted-foreground">Refunded</dt>
                 <dd className="font-medium tabular-nums">{formatCurrency(summary.alreadyRefunded)}</dd>
               </div>
-              <div>
+              <div className="space-y-1">
                 <dt className="text-xs text-muted-foreground">Refundable</dt>
                 <dd className="font-semibold tabular-nums">{formatCurrency(summary.refundable)}</dd>
               </div>

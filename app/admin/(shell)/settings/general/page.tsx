@@ -35,7 +35,7 @@ export default async function GeneralSettingsPage() {
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Settings', href: '/admin/settings' }, { label: 'General' }]} />
       <div className="space-y-6">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">General Settings</h1>
           <p className="text-muted-foreground">
             Configure site identity, logos, contact details, and social media links.

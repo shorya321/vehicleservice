@@ -271,7 +271,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-3 py-4">
+            <nav className="flex-1 overflow-y-auto admin-scrollbar px-3 py-4">
               {navGroups.map((group, groupIndex) => (
                 <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
                   {/* Section Header */}
@@ -298,7 +298,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
                   <AvatarImage src={user?.profile?.avatar_url || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">{user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 space-y-1">
                   <p className="text-sm font-medium truncate text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
                   <p className="text-xs text-foreground/60 truncate">
                     {user?.email || ''}

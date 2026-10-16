@@ -395,7 +395,7 @@ export function AccountForm({ user }: AccountFormProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Booking Updates</p>
                   <p className="text-sm text-muted-foreground">
@@ -439,7 +439,7 @@ export function AccountForm({ user }: AccountFormProps) {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Payment Alerts</p>
                   <p className="text-sm text-muted-foreground">
@@ -483,7 +483,7 @@ export function AccountForm({ user }: AccountFormProps) {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Security Alerts</p>
                   <p className="text-sm text-muted-foreground">
@@ -527,7 +527,7 @@ export function AccountForm({ user }: AccountFormProps) {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">System Updates</p>
                   <p className="text-sm text-muted-foreground">

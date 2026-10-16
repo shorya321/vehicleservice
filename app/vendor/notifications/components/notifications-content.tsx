@@ -208,8 +208,8 @@ export function NotificationsContent() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
           <p className="text-muted-foreground">
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
@@ -241,7 +241,7 @@ export function NotificationsContent() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{stats.total}</span>
               </div>
             </CardContent>
           </Card>
@@ -257,7 +257,7 @@ export function NotificationsContent() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.unread}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.unread}</span>
               </div>
             </CardContent>
           </Card>
@@ -273,7 +273,7 @@ export function NotificationsContent() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.read}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{stats.read}</span>
               </div>
             </CardContent>
           </Card>
@@ -289,7 +289,7 @@ export function NotificationsContent() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.booking}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.booking}</span>
               </div>
             </CardContent>
           </Card>
@@ -308,7 +308,7 @@ export function NotificationsContent() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.vendor_application}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.vendor_application}</span>
               </div>
             </CardContent>
           </Card>
@@ -347,7 +347,7 @@ export function NotificationsContent() {
                   <div className="flex flex-col items-center justify-center py-12">
                     <Bell className="h-16 w-16 text-muted-foreground/50" />
                     <h3 className="mt-4 text-lg font-semibold">No notifications</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-1.5 text-sm text-muted-foreground">
                       {activeTab === 'all'
                         ? "You don't have any notifications yet"
                         : `No ${categoryLabels[activeTab as NotificationCategory].toLowerCase()} notifications`}

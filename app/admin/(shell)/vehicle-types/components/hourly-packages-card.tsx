@@ -49,7 +49,7 @@ function PackageRow({ vehicleTypeId, initial }: { vehicleTypeId: string; initial
   return (
     <div className="space-y-4 rounded-lg border p-4">
       <div className="flex items-center justify-between gap-4">
-        <div>
+        <div className="space-y-1">
           <p className="font-medium">{HOURLY_PACKAGE_LABELS[values.package]}</p>
           <p className="text-sm text-muted-foreground">
             {values.is_active ? 'Offered to customers' : 'Not offered'}
@@ -108,7 +108,7 @@ export function HourlyPackagesCard({ vehicleTypeId, vehicleTypeName, packages }:
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Clock className="h-5 w-5" />
           </div>
-          <div>
+          <div className="space-y-1.5">
             <CardTitle>Hourly Packages</CardTitle>
             <CardDescription>
               Fixed prices for hiring a {vehicleTypeName} with a chauffeur, as directed. A package

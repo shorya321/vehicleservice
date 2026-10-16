@@ -33,8 +33,8 @@ export default async function DriversPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Drivers</h1>
           <p className="text-muted-foreground">
             Manage your drivers and their availability
@@ -60,7 +60,7 @@ export default async function DriversPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{stats.total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{stats.total}</span>
               </div>
               <p className="text-xs text-muted-foreground">All registered drivers</p>
             </CardContent>
@@ -76,7 +76,7 @@ export default async function DriversPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">{stats.active}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{stats.active}</span>
               </div>
               <p className="text-xs text-muted-foreground">Currently active</p>
             </CardContent>
@@ -92,7 +92,7 @@ export default async function DriversPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">{stats.available}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">{stats.available}</span>
               </div>
               <p className="text-xs text-muted-foreground">Ready for assignments</p>
             </CardContent>
@@ -108,7 +108,7 @@ export default async function DriversPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">{stats.onLeave}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.onLeave}</span>
               </div>
               <p className="text-xs text-muted-foreground">Temporarily unavailable</p>
             </CardContent>
@@ -124,7 +124,7 @@ export default async function DriversPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-400">{stats.inactive}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">{stats.inactive}</span>
               </div>
               <p className="text-xs text-muted-foreground">Not currently working</p>
             </CardContent>

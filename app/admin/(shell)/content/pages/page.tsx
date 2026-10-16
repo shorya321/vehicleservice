@@ -51,7 +51,7 @@ export default async function ContentPagesPage() {
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Pages', href: '/admin/content/pages' }]} />
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Pages</h1>
           <p className="text-muted-foreground">Edit the words, images and SEO of the site&apos;s pages</p>
         </div>
@@ -63,7 +63,7 @@ export default async function ContentPagesPage() {
           value={pages.length}
           hint="All site pages"
           icon={FileText}
-          tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-600 dark:text-sky-400' }}
+          tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-700 dark:text-sky-400' }}
           delay={0.1}
         />
         <PageStatCard
@@ -71,7 +71,7 @@ export default async function ContentPagesPage() {
           value={published}
           hint="Live pages"
           icon={PenLine}
-          tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-600 dark:text-emerald-400' }}
+          tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-700 dark:text-emerald-400' }}
           delay={0.2}
         />
         <PageStatCard
@@ -87,7 +87,7 @@ export default async function ContentPagesPage() {
           value={pages.length - seoSet}
           hint="Fall back to site SEO"
           icon={Search}
-          tone={{ disc: 'bg-amber-500/20', icon: 'text-amber-500', value: 'text-amber-600 dark:text-amber-400' }}
+          tone={{ disc: 'bg-amber-500/20', icon: 'text-amber-500', value: 'text-amber-700 dark:text-amber-400' }}
           delay={0.4}
         />
       </div>

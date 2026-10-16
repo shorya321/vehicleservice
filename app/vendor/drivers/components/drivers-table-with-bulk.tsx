@@ -111,7 +111,7 @@ export function DriversTableWithBulk({ drivers: initialDrivers }: DriversTableWi
     <div className="space-y-4">
       {/* Bulk Actions Toolbar */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between bg-muted p-4 rounded-lg">
+        <div className="flex items-center justify-between gap-4 bg-muted p-4 rounded-lg">
           <div className="flex items-center gap-2">
             <Checkbox
               checked={selectedIds.length === initialDrivers.length}

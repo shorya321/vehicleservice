@@ -202,14 +202,14 @@ export function AssignVendorModal({
                       <>
                         {matching.length > 0 && (
                           <>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            <div className="px-2 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                               Recommended: has matching vehicle
                             </div>
                             {matching.map((vendor) => (
                               <SelectItem key={vendor.id} value={vendor.id}>
                                 <div className="flex items-center gap-2">
                                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                                  <div className="flex flex-col">
+                                  <div className="flex flex-col space-y-1">
                                     <span className="font-medium">{vendor.business_name}</span>
                                     {vendor.business_city && (
                                       <span className="text-xs text-muted-foreground">
@@ -232,7 +232,7 @@ export function AssignVendorModal({
                         )}
                         {others.map((vendor) => (
                           <SelectItem key={vendor.id} value={vendor.id}>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col space-y-1">
                               <span className="font-medium">{vendor.business_name}</span>
                               {vendor.business_city && (
                                 <span className="text-xs text-muted-foreground">

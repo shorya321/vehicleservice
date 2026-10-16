@@ -106,7 +106,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
       processing: { variant: 'secondary' as const, icon: Clock, color: 'text-blue-500' },
       failed: { variant: 'destructive' as const, icon: XCircle, color: 'text-red-500' },
       refunded: { variant: 'outline' as const, icon: AlertCircle, color: 'text-orange-500' },
-      pending: { variant: 'outline' as const, icon: Clock, color: 'text-gray-500' },
+      pending: { variant: 'outline' as const, icon: Clock, color: 'text-muted-foreground' },
     }
     
     const config = variants[status] || variants.pending
@@ -366,9 +366,9 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                             {currentAssignment.status === 'completed' ? (
                               <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             ) : currentAssignment.status === 'accepted' ? (
-                              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                              <CheckCircle className="h-5 w-5 text-green-700 dark:text-green-400" />
                             ) : (
-                              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                              <Clock className="h-5 w-5 text-yellow-700 dark:text-yellow-400" />
                             )}
                             <span className={`font-semibold ${
                               currentAssignment.status === 'completed'
@@ -386,7 +386,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                             </span>
                           )}
                           {currentAssignment.status === 'accepted' && currentAssignment.accepted_at && (
-                            <span className="text-sm text-green-600 dark:text-green-400">
+                            <span className="text-sm text-green-700 dark:text-green-400">
                               {format(toBookingTz(currentAssignment.accepted_at), 'PPp')}
                             </span>
                           )}
@@ -449,8 +449,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
 
                           {currentAssignment.completed_at && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                              <span className="font-medium text-green-600 dark:text-green-400">Completed: {format(toBookingTz(currentAssignment.completed_at), 'PPp')}</span>
+                              <CheckCircle className="h-4 w-4 text-green-700 dark:text-green-400" />
+                              <span className="font-medium text-green-700 dark:text-green-400">Completed: {format(toBookingTz(currentAssignment.completed_at), 'PPp')}</span>
                             </div>
                           )}
 
@@ -597,7 +597,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   {booking.customer?.full_name?.slice(0, 2).toUpperCase() || 'UN'}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="space-y-1">
                 <p className="font-medium">{booking.customer?.full_name || 'N/A'}</p>
                 <p className="text-sm text-muted-foreground">
                   {booking.customer?.role?.charAt(0).toUpperCase() + booking.customer?.role?.slice(1)}

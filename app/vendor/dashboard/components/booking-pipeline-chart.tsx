@@ -20,10 +20,10 @@ interface Segment {
 
 export function BookingPipelineChart({ data }: BookingPipelineChartProps) {
   const segments: Segment[] = [
-    { key: 'pending', label: 'Pending', value: data.pending, bar: 'bg-amber-500', text: 'text-amber-500' },
-    { key: 'upcoming', label: 'Upcoming', value: data.upcoming, bar: 'bg-sky-500', text: 'text-sky-500' },
-    { key: 'completed', label: 'Completed', value: data.completed, bar: 'bg-emerald-500', text: 'text-emerald-500' },
-    { key: 'cancelled', label: 'Cancelled', value: data.cancelled, bar: 'bg-rose-500', text: 'text-rose-500' },
+    { key: 'pending', label: 'Pending', value: data.pending, bar: 'bg-amber-500', text: 'text-amber-700 dark:text-amber-400' },
+    { key: 'upcoming', label: 'Upcoming', value: data.upcoming, bar: 'bg-sky-500', text: 'text-sky-700 dark:text-sky-400' },
+    { key: 'completed', label: 'Completed', value: data.completed, bar: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400' },
+    { key: 'cancelled', label: 'Cancelled', value: data.cancelled, bar: 'bg-rose-500', text: 'text-rose-600 dark:text-rose-400' },
   ]
 
   const maxValue = Math.max(...segments.map((s) => s.value))
@@ -32,7 +32,7 @@ export function BookingPipelineChart({ data }: BookingPipelineChartProps) {
 
   return (
     <Card className="admin-card-hover">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
             <ListChecks className="h-4 w-4 text-sky-500" />
@@ -48,7 +48,7 @@ export function BookingPipelineChart({ data }: BookingPipelineChartProps) {
           className={cn(
             'flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors',
             data.pending > 0
-              ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'
+              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20'
               : 'text-muted-foreground hover:bg-muted'
           )}
         >

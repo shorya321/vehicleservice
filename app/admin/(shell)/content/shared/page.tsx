@@ -29,7 +29,7 @@ export default async function SharedSectionsPage() {
   return (
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Shared Sections' }]} />
-      <div>
+      <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Shared Sections</h1>
         <p className="text-muted-foreground">Edit once, and every page that shows the section updates</p>
       </div>

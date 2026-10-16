@@ -31,7 +31,7 @@ export default async function ProfilePage() {
   return (
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Profile', href: '/admin/profile' }]} />
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
           <p className="text-muted-foreground">
             Manage your account settings and preferences

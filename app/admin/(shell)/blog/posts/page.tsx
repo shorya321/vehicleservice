@@ -55,7 +55,7 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Blog Posts', href: '/admin/blog/posts' }]} />
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Blog Posts</h1>
           <p className="text-muted-foreground">
             Create and manage blog content
@@ -80,7 +80,7 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{total}</span>
               </div>
               <p className="text-xs text-muted-foreground">All blog posts</p>
             </CardContent>
@@ -96,7 +96,7 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{publishedCount}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{publishedCount}</span>
               </div>
               <p className="text-xs text-muted-foreground">Live posts</p>
             </CardContent>
@@ -112,7 +112,7 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{draftCount}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{draftCount}</span>
               </div>
               <p className="text-xs text-muted-foreground">Unpublished posts</p>
             </CardContent>

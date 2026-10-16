@@ -272,7 +272,7 @@ export function DriversTable({ drivers: initialDrivers, selectable, selectedIds 
                         <Calendar className="h-3 w-3" />
                         <span className={cn(
                           isLicenseExpired(driver.license_expiry) && "text-destructive",
-                          isLicenseExpiringSoon(driver.license_expiry) && "text-orange-500"
+                          isLicenseExpiringSoon(driver.license_expiry) && "text-orange-700 dark:text-orange-400"
                         )}>
                           {format(new Date(driver.license_expiry), 'MMM d, yyyy')}
                         </span>
@@ -281,7 +281,7 @@ export function DriversTable({ drivers: initialDrivers, selectable, selectedIds 
                         <Badge variant="destructive" className="text-xs">Expired</Badge>
                       )}
                       {isLicenseExpiringSoon(driver.license_expiry) && !isLicenseExpired(driver.license_expiry) && (
-                        <Badge variant="outline" className="text-xs text-orange-500">Expiring Soon</Badge>
+                        <Badge variant="outline" className="text-xs text-orange-700 dark:text-orange-400">Expiring Soon</Badge>
                       )}
                     </div>
                   </TableCell>

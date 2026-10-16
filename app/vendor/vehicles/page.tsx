@@ -68,7 +68,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
   return (
     <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Fleet</h1>
             <p className="text-muted-foreground">
               Manage your rental vehicles
@@ -93,7 +93,7 @@ export default async function VendorVehiclesPage({ searchParams }: VendorVehicle
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">{total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{total}</span>
                 </div>
               </CardContent>
             </Card>

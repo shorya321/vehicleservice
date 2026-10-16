@@ -59,7 +59,7 @@ export function DriverPerformance({ data }: DriverPerformanceProps) {
                     <TableCell className="text-center">
                       {driver.hasRatings ? (
                         <div className="flex items-center justify-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                           <span className="text-sm font-medium">
                             {driver.averageRating.toFixed(1)}
                           </span>

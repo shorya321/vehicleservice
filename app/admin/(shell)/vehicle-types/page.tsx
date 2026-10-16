@@ -63,7 +63,7 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
       <AnimatedPage>
         <Breadcrumb items={[{ label: 'Vehicle Types', href: '/admin/vehicle-types' }]} />
         <div className="flex items-center justify-between">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Vehicle Types</h1>
             <p className="text-muted-foreground">
               Manage vehicle types and their capacities
@@ -88,7 +88,7 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{total}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{total}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Vehicle type configurations</p>
               </CardContent>
@@ -104,7 +104,7 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{activeCount}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{activeCount}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Available for booking</p>
               </CardContent>
@@ -136,7 +136,7 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{avgPassengerCapacity}</span>
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{avgPassengerCapacity}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Passengers per type</p>
               </CardContent>

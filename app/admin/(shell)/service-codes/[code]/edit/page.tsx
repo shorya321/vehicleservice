@@ -21,7 +21,7 @@ export default async function EditServiceCodePage({ params }: PageProps) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div>
+      <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">
           Edit Service Code: {serviceCode.code}
         </h1>

@@ -53,7 +53,7 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Edit User</h1>
             <p className="text-muted-foreground">
               Update user information and permissions

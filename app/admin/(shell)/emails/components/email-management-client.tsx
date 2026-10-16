@@ -107,7 +107,7 @@ export function EmailManagementClient() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Email Templates</h1>
         <p className="text-muted-foreground mt-1">
           Preview email templates and send test emails

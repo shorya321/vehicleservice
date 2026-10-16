@@ -53,7 +53,7 @@ export default async function EditLocationPage({
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Edit Location</h1>
             <p className="text-muted-foreground">
               Update location details for {location.name}

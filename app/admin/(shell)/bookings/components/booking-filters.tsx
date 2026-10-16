@@ -250,7 +250,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
           </PopoverTrigger>
           <PopoverContent className="w-96" align="end">
             <div className="space-y-4">
-              <div>
+              <div className="space-y-1">
                 <h4 className="font-medium text-sm">Advanced Filters</h4>
                 <p className="text-xs text-muted-foreground">
                   Filter bookings by additional criteria

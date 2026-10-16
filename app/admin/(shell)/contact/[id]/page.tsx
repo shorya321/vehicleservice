@@ -34,7 +34,7 @@ export default async function ContactSubmissionDetailPage({
             <span className="sr-only">Back</span>
           </Link>
         </Button>
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             Submission Details
           </h1>

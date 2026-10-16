@@ -261,9 +261,9 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
-          <p className="text-luxury-lightGray">
+          <p className="text-muted-foreground">
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
@@ -311,7 +311,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{stats.total}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{stats.total}</span>
               </div>
             </CardContent>
           </Card>
@@ -325,11 +325,11 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
               <div className="flex items-start justify-between mb-3">
                 <span className="text-sm font-medium text-muted-foreground">All Users</span>
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-500/20">
-                  <Globe className="h-4 w-4 text-slate-400" />
+                  <Globe className="h-4 w-4 text-muted-foreground" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-300">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-muted-foreground">
                   {platformTotal ?? '-'}
                 </span>
               </div>
@@ -347,7 +347,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.unread}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.unread}</span>
               </div>
             </CardContent>
           </Card>
@@ -363,7 +363,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.read}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{stats.read}</span>
               </div>
             </CardContent>
           </Card>
@@ -414,7 +414,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.vendor_application}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.vendor_application}</span>
               </div>
             </CardContent>
           </Card>
@@ -430,7 +430,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{stats.review}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">{stats.review}</span>
               </div>
             </CardContent>
           </Card>
@@ -446,7 +446,7 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.payment}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">{stats.payment}</span>
               </div>
             </CardContent>
           </Card>
@@ -484,8 +484,8 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
                 ) : notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Bell className="h-16 w-16 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-lg font-semibold text-luxury-pearl">No notifications</h3>
-                    <p className="text-sm text-luxury-lightGray">
+                    <h3 className="mt-4 text-lg font-semibold text-foreground">No notifications</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {activeTab === 'all'
                         ? "You don't have any notifications yet"
                         : `No ${categoryLabels[activeTab as NotificationCategory].toLowerCase()} notifications`}

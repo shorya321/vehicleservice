@@ -35,7 +35,7 @@ export default async function NewVehicleTypePage() {
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Add Vehicle Type</h1>
             <p className="text-muted-foreground">
               Create a new vehicle type for your fleet

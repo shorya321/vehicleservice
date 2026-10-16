@@ -117,7 +117,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Review Vendor Application</h1>
             <p className="text-muted-foreground">
               Review application from {application.business_name}
@@ -144,7 +144,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Business Name</p>
                       <p className="text-sm text-muted-foreground">{application.business_name}</p>
                     </div>
@@ -153,7 +153,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   {application.business_email && (
                     <div className="flex items-start gap-3">
                       <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <div>
+                      <div className="space-y-1">
                         <p className="text-sm font-medium">Business Email</p>
                         <p className="text-sm text-muted-foreground">{application.business_email}</p>
                       </div>
@@ -163,7 +163,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   {application.business_phone && (
                     <div className="flex items-start gap-3">
                       <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <div>
+                      <div className="space-y-1">
                         <p className="text-sm font-medium">Business Phone</p>
                         <p className="text-sm text-muted-foreground">{application.business_phone}</p>
                       </div>
@@ -175,7 +175,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   {(application.business_address || application.business_city) && (
                     <div className="flex items-start gap-3">
                       <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <div>
+                      <div className="space-y-1">
                         <p className="text-sm font-medium">Business Location</p>
                         <p className="text-sm text-muted-foreground">
                           {[application.business_address, application.business_city]
@@ -188,7 +188,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
 
                   <div className="flex items-start gap-3">
                     <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Submitted On</p>
                       <p className="text-sm text-muted-foreground">
                         {format(toBookingTz(application.created_at), 'PPP')}
@@ -199,7 +199,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                   {editedAfterSubmission && (
                     <div className="flex items-start gap-3">
                       <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
-                      <div>
+                      <div className="space-y-1">
                         <p className="text-sm font-medium">Last Edited</p>
                         <p className="text-sm text-muted-foreground">
                           {format(toBookingTz(application.updated_at), 'PPP p')}{" "}
@@ -229,7 +229,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 <div className="pt-4 border-t">
                   <div className="flex items-start gap-3">
                     <FileCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Business Registration Number</p>
                       <p className="text-sm text-muted-foreground">{application.registration_number}</p>
                     </div>
@@ -321,7 +321,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 {bankingDetails.bank_name && (
                   <div className="flex items-start gap-3">
                     <BanknoteIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Bank Name</p>
                       <p className="text-sm text-muted-foreground">{bankingDetails.bank_name}</p>
                     </div>
@@ -331,7 +331,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 {bankingDetails.account_holder_name && (
                   <div className="flex items-start gap-3">
                     <User className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Account Holder</p>
                       <p className="text-sm text-muted-foreground">{bankingDetails.account_holder_name}</p>
                     </div>
@@ -341,7 +341,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 {bankingDetails.account_number && (
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Account Number</p>
                       <p className="text-sm text-muted-foreground font-mono">{bankingDetails.account_number}</p>
                     </div>
@@ -351,7 +351,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 {bankingDetails.iban && (
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">IBAN</p>
                       <p className="text-sm text-muted-foreground font-mono">{bankingDetails.iban}</p>
                     </div>
@@ -361,7 +361,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 {bankingDetails.swift_code && (
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">SWIFT Code</p>
                       <p className="text-sm text-muted-foreground font-mono">{bankingDetails.swift_code}</p>
                     </div>
@@ -381,7 +381,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
                 {application.reviewed_at && (
                   <div className="flex items-start gap-3">
                     <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-sm font-medium">Reviewed On</p>
                       <p className="text-sm text-muted-foreground">
                         {format(toBookingTz(application.reviewed_at), 'PPP')} by{" "}
@@ -429,7 +429,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
             <CardContent className="space-y-3">
               <div className="flex items-start gap-3">
                 <User className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
+                <div className="space-y-1">
                   <p className="text-sm font-medium">Name</p>
                   <p className="text-sm text-muted-foreground">
                     {application.user?.full_name || 'Not provided'}
@@ -439,7 +439,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
 
               <div className="flex items-start gap-3">
                 <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
+                <div className="space-y-1">
                   <p className="text-sm font-medium">Email</p>
                   <p className="text-sm text-muted-foreground">{application.user?.email}</p>
                 </div>
@@ -448,7 +448,7 @@ export default async function VendorApplicationReviewPage({ params }: PageProps)
               {application.user?.phone && (
                 <div className="flex items-start gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
+                  <div className="space-y-1">
                     <p className="text-sm font-medium">Phone</p>
                     <p className="text-sm text-muted-foreground">{application.user.phone}</p>
                   </div>

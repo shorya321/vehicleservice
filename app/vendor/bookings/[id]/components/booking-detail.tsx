@@ -227,31 +227,31 @@ export function BookingDetail({ booking }: BookingDetailProps) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-4">
-                <div>
+                <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Adults</p>
                   <p className="text-2xl font-bold">{booking.adults}</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Children</p>
                   <p
                     className={`text-2xl font-bold ${
-                      booking.children > 0 ? 'text-amber-500' : ''
+                      booking.children > 0 ? 'text-amber-700 dark:text-amber-400' : ''
                     }`}
                   >
                     {booking.children}
                   </p>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Infants</p>
                   <p
                     className={`text-2xl font-bold ${
-                      booking.infants > 0 ? 'text-amber-500' : ''
+                      booking.infants > 0 ? 'text-amber-700 dark:text-amber-400' : ''
                     }`}
                   >
                     {booking.infants}
                   </p>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Total</p>
                   <p className="text-2xl font-bold">{booking.passengerCount}</p>
                 </div>

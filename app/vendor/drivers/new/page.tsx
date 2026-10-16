@@ -23,7 +23,7 @@ export default async function NewDriverPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Add New Driver</h1>
           <p className="text-muted-foreground">
             Register a new driver for your fleet

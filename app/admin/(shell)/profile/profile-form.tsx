@@ -391,7 +391,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div>
+              <div className="space-y-1">
                 <p className="text-sm font-medium">
                   Two-factor authentication is {user.two_factor_enabled ? 'enabled' : 'disabled'}
                 </p>

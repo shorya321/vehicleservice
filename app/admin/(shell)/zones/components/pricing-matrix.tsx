@@ -157,7 +157,7 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
       {changedCells.size > 0 && (
         <div className="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950 p-4">
           <div className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+            <DollarSign className="h-5 w-5 text-yellow-700 dark:text-yellow-400" />
             <span className="text-sm font-medium">
               You have {changedCells.size} unsaved pricing change(s)
             </span>
@@ -244,7 +244,7 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
                           aria-label={`Edit price from ${fromZone.name} to ${toZone.name}, AED ${price.toFixed(2)}`}
                           className={cn(
                             'font-mono rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            hasChanged && 'font-semibold text-yellow-600 dark:text-yellow-400'
+                            hasChanged && 'font-semibold text-yellow-700 dark:text-yellow-400'
                           )}
                         >
                           AED {price.toFixed(2)}

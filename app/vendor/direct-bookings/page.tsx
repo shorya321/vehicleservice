@@ -40,10 +40,10 @@ interface DirectBookingsPageProps {
 }
 
 const STAT_CARDS = [
-  { key: 'total', label: 'Total', accent: 'text-sky-400' },
-  { key: 'today', label: 'Today', accent: 'text-emerald-400' },
-  { key: 'pending', label: 'Pending', accent: 'text-amber-400' },
-  { key: 'unpaid', label: 'Unpaid', accent: 'text-rose-400' },
+  { key: 'total', label: 'Total', accent: 'text-sky-700 dark:text-sky-400' },
+  { key: 'today', label: 'Today', accent: 'text-emerald-700 dark:text-emerald-400' },
+  { key: 'pending', label: 'Pending', accent: 'text-amber-700 dark:text-amber-400' },
+  { key: 'unpaid', label: 'Unpaid', accent: 'text-rose-600 dark:text-rose-400' },
 ] as const
 
 export default async function VendorDirectBookingsPage({
@@ -89,7 +89,7 @@ export default async function VendorDirectBookingsPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Offline Bookings</h1>
           <p className="text-muted-foreground">
             Bookings you took offline from customers, kept separate from your

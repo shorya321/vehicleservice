@@ -46,7 +46,7 @@ export default async function VendorDashboard() {
   return (
     <AnimatedPage>
       <div className="space-y-8">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             Vendor Dashboard
           </h1>
@@ -59,7 +59,7 @@ export default async function VendorDashboard() {
         {vendorApplication && vendorApplication.status === 'approved' && (
           <Card className="admin-card-hover border-emerald-500/30 bg-emerald-500/5">
             <CardContent className="p-5">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20">
                     <Shield className="h-5 w-5 text-emerald-500" />
@@ -92,7 +92,7 @@ export default async function VendorDashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">
                     {stats.totalVehicles}
                   </span>
                 </div>
@@ -111,7 +111,7 @@ export default async function VendorDashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
                     {stats.totalDrivers}
                   </span>
                 </div>
@@ -130,7 +130,7 @@ export default async function VendorDashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">
                     ${stats.monthlyRevenue.toLocaleString()}
                   </span>
                 </div>
@@ -149,7 +149,7 @@ export default async function VendorDashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-400">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">
                     {stats.hasRatings ? stats.averageRating.toFixed(1) : "N/A"}
                   </span>
                 </div>

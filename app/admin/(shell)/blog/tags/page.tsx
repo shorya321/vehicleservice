@@ -24,7 +24,7 @@ export default async function BlogTagsPage() {
   return (
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Blog', href: '/admin/blog/posts' }, { label: 'Tags' }]} />
-      <div>
+      <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Blog Tags</h1>
         <p className="text-muted-foreground">
           Manage tags for organizing blog content
@@ -42,7 +42,7 @@ export default async function BlogTagsPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-600 dark:text-sky-400">{tags.length}</span>
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-sky-700 dark:text-sky-400">{tags.length}</span>
               </div>
             </CardContent>
           </Card>
@@ -57,7 +57,7 @@ export default async function BlogTagsPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
                   {tags.filter(t => (t.post_count || 0) > 0).length}
                 </span>
               </div>
