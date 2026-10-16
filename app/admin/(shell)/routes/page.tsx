@@ -10,6 +10,7 @@ import { AnimatedPage } from "@/components/layout/animated-page"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Plus, Route } from "lucide-react"
 import Link from "next/link"
+import { PagePagination } from "@/components/admin/ui/page-pagination"
 
 export const metadata: Metadata = {
   title: 'Routes - Admin Portal',
@@ -83,46 +84,7 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
           <ClientFilters initialFilters={filters} />
           <RoutesTableWithBulk routes={routesData.routes} />
 
-          {routesData.totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Showing {((routesData.page - 1) * routesData.limit) + 1} to{' '}
-                {Math.min(routesData.page * routesData.limit, routesData.total)} of {routesData.total} routes
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={routesData.page === 1}
-                  asChild
-                >
-                  <Link
-                    href={{
-                      pathname: '/admin/routes',
-                      query: { ...params, page: routesData.page - 1 },
-                    }}
-                  >
-                    Previous
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={routesData.page === routesData.totalPages}
-                  asChild
-                >
-                  <Link
-                    href={{
-                      pathname: '/admin/routes',
-                      query: { ...params, page: routesData.page + 1 },
-                    }}
-                  >
-                    Next
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          )}
+          <PagePagination pathname="/admin/routes" page={routesData.page} totalPages={routesData.totalPages} total={routesData.total} limit={routesData.limit} noun="routes" query={params} />
         </div>
       </AnimatedPage>
   )

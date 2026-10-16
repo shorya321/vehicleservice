@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
   title: 'Locations - Admin',
@@ -110,52 +111,7 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
 
             <LocationTableWithBulk locations={locations} locationTypes={locationTypes} />
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Showing {((page - 1) * filters.limit!) + 1} to{" "}
-                  {Math.min(page * filters.limit!, total)} of {total} locations
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === 1}
-                    asChild
-                  >
-                    <Link
-                      href={{
-                        pathname: "/admin/locations",
-                        query: {
-                          ...params,
-                          page: page - 1,
-                        },
-                      }}
-                    >
-                      Previous
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === totalPages}
-                    asChild
-                  >
-                    <Link
-                      href={{
-                        pathname: "/admin/locations",
-                        query: {
-                          ...params,
-                          page: page + 1,
-                        },
-                      }}
-                    >
-                      Next
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            )}
+            <PagePagination pathname="/admin/locations" page={page} totalPages={totalPages} total={total} limit={filters.limit!} noun="locations" query={params} />
           </CardContent>
         </Card>
       </AnimatedPage>

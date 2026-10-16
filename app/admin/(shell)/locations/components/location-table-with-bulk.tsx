@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusPill } from '@/components/admin/ui/status-pill'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
@@ -175,9 +176,9 @@ export function LocationTableWithBulk({ locations, locationTypes = [] }: Locatio
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={location.is_active ? 'default' : 'secondary'}>
+                      <StatusPill tone={location.is_active ? 'success-soft' : 'neutral'}>
                         {location.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      </StatusPill>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

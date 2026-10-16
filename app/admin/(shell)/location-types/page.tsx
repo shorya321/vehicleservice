@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getLocationTypesAdmin, getLocationTypeStats } from './actions'
 import { LocationTypesTable } from './components/location-types-table'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 const PAGE_LIMIT = 10
 
@@ -82,46 +83,7 @@ export default async function LocationTypesPage({ searchParams }: LocationTypesP
 
       <LocationTypesTable locationTypes={result.locationTypes} />
 
-      {result.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {((result.page - 1) * PAGE_LIMIT) + 1} to{' '}
-            {Math.min(result.page * PAGE_LIMIT, result.total)} of {result.total} location types
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={result.page === 1}
-              asChild
-            >
-              <Link
-                href={{
-                  pathname: '/admin/location-types',
-                  query: { ...params, page: result.page - 1 },
-                }}
-              >
-                Previous
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={result.page === result.totalPages}
-              asChild
-            >
-              <Link
-                href={{
-                  pathname: '/admin/location-types',
-                  query: { ...params, page: result.page + 1 },
-                }}
-              >
-                Next
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
+      <PagePagination pathname="/admin/location-types" page={result.page} totalPages={result.totalPages} total={result.total} limit={PAGE_LIMIT} noun="location types" query={params} />
     </div>
   )
 }

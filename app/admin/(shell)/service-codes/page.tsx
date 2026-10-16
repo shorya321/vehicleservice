@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { getServiceCodes, getServiceCodeStats } from './actions'
 import { ServiceCodesTable } from './components/service-codes-table'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
   title: 'Service Codes | Admin',
@@ -129,46 +130,7 @@ export default async function ServiceCodesPage({ searchParams }: PageProps) {
         <ServiceCodesTable serviceCodes={result.serviceCodes} />
       </Suspense>
 
-      {result.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {((result.page - 1) * result.limit) + 1} to{' '}
-            {Math.min(result.page * result.limit, result.total)} of {result.total} service codes
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={result.page === 1}
-              asChild
-            >
-              <Link
-                href={{
-                  pathname: '/admin/service-codes',
-                  query: { ...params, page: result.page - 1 },
-                }}
-              >
-                Previous
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={result.page === result.totalPages}
-              asChild
-            >
-              <Link
-                href={{
-                  pathname: '/admin/service-codes',
-                  query: { ...params, page: result.page + 1 },
-                }}
-              >
-                Next
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
+      <PagePagination pathname="/admin/service-codes" page={result.page} totalPages={result.totalPages} total={result.total} limit={result.limit} noun="service codes" query={params} />
     </div>
   )
 }

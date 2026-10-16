@@ -17,6 +17,7 @@ import {
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { AnimatedPage } from "@/components/layout/animated-page"
 import { AnimatedCard } from "@/components/ui/animated-card"
+import { PagePagination } from "@/components/admin/ui/page-pagination"
 
 interface UsersPageProps {
   searchParams: Promise<{
@@ -114,52 +115,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               currentUserId={currentUser?.id}
             />
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Showing {((page - 1) * filters.limit!) + 1} to{" "}
-                  {Math.min(page * filters.limit!, total)} of {total} users
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === 1}
-                    asChild
-                  >
-                    <Link
-                      href={{
-                        pathname: "/admin/users",
-                        query: {
-                          ...params,
-                          page: page - 1,
-                        },
-                      }}
-                    >
-                      Previous
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === totalPages}
-                    asChild
-                  >
-                    <Link
-                      href={{
-                        pathname: "/admin/users",
-                        query: {
-                          ...params,
-                          page: page + 1,
-                        },
-                      }}
-                    >
-                      Next
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            )}
+            <PagePagination pathname="/admin/users" page={page} totalPages={totalPages} total={total} limit={filters.limit!} noun="users" query={params} />
           </CardContent>
         </Card>
         </AnimatedCard>

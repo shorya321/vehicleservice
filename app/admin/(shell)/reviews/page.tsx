@@ -9,8 +9,7 @@ import { getReviews, getAdminReviewStats } from './actions'
 import { ReviewsTable } from './components/reviews-table'
 import { ReviewFilters } from './components/review-filters'
 import { ReviewsTableWrapper } from './components/reviews-table-wrapper'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 interface PageProps {
   searchParams: Promise<{
@@ -58,6 +57,13 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
   const rating = params.rating ? parseInt(params.rating) : undefined
   const ratingRange = (params.ratingRange as any) || 'all'
   const search = params.search || ''
+  // Same keys the old Previous/Next links carried; rating was never kept.
+  const paginationQuery = {
+    status,
+    sortBy,
+    ...(ratingRange && ratingRange !== 'all' ? { ratingRange } : {}),
+    ...(search ? { search } : {}),
+  }
 
   // Get reviews
   const { data: reviews, total, totalPages } = await getReviews({
@@ -187,33 +193,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
               <ReviewsTableWrapper reviews={reviews || []} />
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-4">
-                  {page > 1 && (
-                    <Link
-                      href={`/admin/reviews?page=${page - 1}&status=${status}&sortBy=${sortBy}${ratingRange && ratingRange !== 'all' ? `&ratingRange=${ratingRange}` : ''}${search ? `&search=${search}` : ''}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Previous
-                      </Button>
-                    </Link>
-                  )}
-
-                  <span className="text-sm text-muted-foreground px-4">
-                    Page {page} of {totalPages}
-                  </span>
-
-                  {page < totalPages && (
-                    <Link
-                      href={`/admin/reviews?page=${page + 1}&status=${status}&sortBy=${sortBy}${ratingRange && ratingRange !== 'all' ? `&ratingRange=${ratingRange}` : ''}${search ? `&search=${search}` : ''}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Next
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              )}
+              <PagePagination pathname="/admin/reviews" page={page} totalPages={totalPages} total={total} limit={20} noun="reviews" query={paginationQuery} className="pt-4" />
             </CardContent>
           </Card>
         </AnimatedCard>

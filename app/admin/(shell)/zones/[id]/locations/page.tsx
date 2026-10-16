@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { LocationAssignment } from '../../components/location-assignment'
 import { getZone } from '../../actions'
 import { getLocationsWithZones } from './actions'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
   title: 'Zone Locations | Admin',
@@ -68,46 +69,7 @@ export default async function ZoneLocationsPage({ params, searchParams }: ZoneLo
           currentZoneFilter={queryParams.zoneFilter || 'all'}
         />
 
-        {locationsData.totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {((locationsData.page - 1) * locationsData.limit) + 1} to{' '}
-              {Math.min(locationsData.page * locationsData.limit, locationsData.total)} of {locationsData.total} locations
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={locationsData.page === 1}
-                asChild
-              >
-                <Link
-                  href={{
-                    pathname: `/admin/zones/${id}/locations`,
-                    query: { ...queryParams, page: locationsData.page - 1 },
-                  }}
-                >
-                  Previous
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={locationsData.page === locationsData.totalPages}
-                asChild
-              >
-                <Link
-                  href={{
-                    pathname: `/admin/zones/${id}/locations`,
-                    query: { ...queryParams, page: locationsData.page + 1 },
-                  }}
-                >
-                  Next
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
+        <PagePagination pathname={`/admin/zones/${id}/locations`} page={locationsData.page} totalPages={locationsData.totalPages} total={locationsData.total} limit={locationsData.limit} noun="locations" query={queryParams} />
       </div>
   )
 }

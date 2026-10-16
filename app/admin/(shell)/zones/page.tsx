@@ -8,6 +8,7 @@ import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { ZonesTable } from './components/zones-table'
 import { getZones } from './actions'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
   title: 'Zones | Admin',
@@ -78,46 +79,7 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
 
         <ZonesTable zones={zonesData.zones} />
 
-        {zonesData.totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {((zonesData.page - 1) * zonesData.limit) + 1} to{' '}
-              {Math.min(zonesData.page * zonesData.limit, zonesData.total)} of {zonesData.total} zones
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={zonesData.page === 1}
-                asChild
-              >
-                <Link
-                  href={{
-                    pathname: '/admin/zones',
-                    query: { ...params, page: zonesData.page - 1 },
-                  }}
-                >
-                  Previous
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={zonesData.page === zonesData.totalPages}
-                asChild
-              >
-                <Link
-                  href={{
-                    pathname: '/admin/zones',
-                    query: { ...params, page: zonesData.page + 1 },
-                  }}
-                >
-                  Next
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
+        <PagePagination pathname="/admin/zones" page={zonesData.page} totalPages={zonesData.totalPages} total={zonesData.total} limit={zonesData.limit} noun="zones" query={params} />
       </AnimatedPage>
   )
 }

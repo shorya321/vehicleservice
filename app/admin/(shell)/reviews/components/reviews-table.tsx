@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusPill, type StatusTone } from '@/components/admin/ui/status-pill'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
@@ -84,16 +85,16 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
   const [replyModalReviewId, setReplyModalReviewId] = useState<string | null>(null)
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      pending: 'outline',
-      approved: 'secondary',
-      rejected: 'destructive',
+    const tones: Record<string, StatusTone> = {
+      pending: 'warning',
+      approved: 'success-soft',
+      rejected: 'danger-outline',
     }
 
     return (
-      <Badge variant={variants[status] || 'outline'}>
+      <StatusPill tone={tones[status] || 'neutral'}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
+      </StatusPill>
     )
   }
 

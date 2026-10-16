@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { StatusPill, type StatusTone } from "@/components/admin/ui/status-pill"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -70,16 +71,14 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
     }
   }
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusTone = (status: string): StatusTone => {
     switch (status) {
       case "active":
-        return "default"
-      case "inactive":
-        return "secondary"
+        return "success-soft"
       case "suspended":
-        return "destructive"
+        return "danger-outline"
       default:
-        return "secondary"
+        return "neutral"
     }
   }
 
@@ -226,9 +225,9 @@ export function UserTableWithBulk({ users, currentUserId, onExport }: UserTableP
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(user.status)}>
+                      <StatusPill tone={getStatusTone(user.status)}>
                         {user.status}
-                      </Badge>
+                      </StatusPill>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
