@@ -122,12 +122,12 @@ export interface CalendarEvent {
  * without relying on colour alone.
  */
 export const CALENDAR_COLORS = {
-  onlineUpcoming: '#3B82F6',
-  onlinePastRan: '#10B981',
-  pastNoTrip: '#6B7280',
-  offlineUpcoming: '#8B5CF6',
-  offlineCompleted: '#0D9488',
-  blocked: '#EF4444',
+  onlineUpcoming: '#2563EB', // blue-600, 5.2:1
+  onlinePastRan: '#047857', // emerald-700, 5.5:1
+  pastNoTrip: '#4B5563', // gray-600, 7.6:1
+  offlineUpcoming: '#7C3AED', // violet-600, 5.7:1
+  offlineCompleted: '#0F766E', // teal-700, 5.5:1
+  blocked: '#DC2626', // red-600, 4.8:1
   pendingFill: '#FEF3C7',
   pendingBorder: '#F59E0B',
   pendingText: '#78350F',

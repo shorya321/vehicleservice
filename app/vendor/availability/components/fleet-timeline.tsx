@@ -88,7 +88,7 @@ function Bar({
       style={{
         left: bar.leftPx,
         width: bar.widthPx,
-        opacity: past ? 0.6 : 1,
+        filter: past ? 'saturate(0.35)' : undefined,
         ...(unreserved
           ? {
               backgroundColor: CALENDAR_COLORS.pendingFill,

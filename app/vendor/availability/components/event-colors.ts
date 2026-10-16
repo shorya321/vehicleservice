@@ -33,7 +33,9 @@ export function eventStyleGetter(event: CustomEvent) {
   const style: React.CSSProperties = {
     backgroundColor: event.color || CALENDAR_COLORS.onlineUpcoming,
     borderRadius: '5px',
-    opacity: past ? 0.6 : 0.9,
+    // Past events recede by losing colour, not opacity. Fading the block also
+    // fades its white text into the page, which is what made history unreadable.
+    filter: past ? 'saturate(0.35)' : undefined,
     color: 'white',
     border: '0px',
     display: 'block',
