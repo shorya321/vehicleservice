@@ -44,7 +44,6 @@ import {
   FileText, 
   CheckCircle,
   XCircle,
-  Calendar,
   MapPin,
   Car,
   CreditCard,
@@ -100,8 +99,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
 
   const getPaymentStatusBadge = (status: string) => (
     <StatusPill tone={paymentStatusTone(status || 'pending')}>
-      <CreditCard />
-      {status ? statusLabel(status) : 'Pending'}
+      {status === 'completed' ? 'Paid' : status ? statusLabel(status) : 'Pending'}
     </StatusPill>
   )
 
@@ -440,9 +438,9 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             aria-label={`Select booking ${booking.booking_number}`}
           />
         </TableCell>
-        <TableCell className="font-mono text-sm">
+        <TableCell className="font-mono text-xs">
           <div>{booking.trip_number || booking.booking_number}</div>
-          {booking.trip_number && <div className="text-xs text-muted-foreground">{booking.booking_number}</div>}
+          {booking.trip_number && <div className="max-w-[130px] truncate text-[11px] text-muted-foreground" title={booking.booking_number}>{booking.booking_number}</div>}
         </TableCell>
         <TableCell>
           <div className="flex flex-col items-start gap-1">
@@ -459,7 +457,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2 whitespace-nowrap text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
             <div className="space-y-1">
               <div className="font-medium">
                 {format(toBookingTz(booking.pickup_datetime), 'MMM dd, yyyy')}
@@ -471,14 +468,14 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </div>
         </TableCell>
         <TableCell>
-          <div className="space-y-1 text-sm max-w-xs">
+          <div className="space-y-1 text-sm max-w-[150px]">
             <div className="flex items-start gap-1">
               <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <span className="truncate">{booking.pickup_address}</span>
+              <span className="truncate" title={booking.pickup_address}>{booking.pickup_address}</span>
             </div>
             <div className="flex items-start gap-1">
               <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <span className="truncate">
+              <span className="truncate" title={(isHourlyBooking(booking) ? hourlySummary(booking) : booking.dropoff_address) ?? undefined}>
                 {isHourlyBooking(booking) ? hourlySummary(booking) : booking.dropoff_address}
               </span>
             </div>
@@ -497,7 +494,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             const vendorName = assignment.vendor?.business_name || 'Unknown Vendor'
 
             return (
-              <div className="flex items-start gap-2 max-w-[200px]">
+              <div className="flex items-start gap-2 max-w-[150px]">
                 <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="min-w-0 space-y-1">
                   <div className="font-medium text-sm truncate" title={vendorName}>
@@ -525,7 +522,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         <TableCell>
           {getPaymentStatusBadge(booking.payment_status)}
         </TableCell>
-        <TableCell className="text-right font-semibold">
+        <TableCell className="whitespace-nowrap text-right font-semibold">
           {formatCurrency(booking.total_price)}
         </TableCell>
         <TableCell className="text-right no-row-click">

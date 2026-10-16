@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { format } from 'date-fns'
-import { Building2, Calendar, ChevronDown, ChevronRight, Eye, MapPin, MoreHorizontal, User } from 'lucide-react'
+import { Building2, ChevronDown, ChevronRight, Eye, MapPin, MoreHorizontal, User } from 'lucide-react'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { StatusPill } from '@/components/admin/ui/status-pill'
 import { Button } from '@/components/ui/button'
@@ -57,7 +57,7 @@ function VendorSummary({ legs }: { legs: BookingWithCustomer[] }) {
 
   const sameVendor = assigned === legs.length && new Set(vendors).size === 1
   return (
-    <div className="flex items-start gap-2 max-w-[200px]">
+    <div className="flex items-start gap-2 max-w-[150px]">
       <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
       <div className="min-w-0 space-y-1">
         {sameVendor && (
@@ -109,7 +109,7 @@ export function TripGroupRow({
           aria-label={`Select trip ${groupNumber}`}
         />
       </TableCell>
-      <TableCell className="font-mono text-sm">
+      <TableCell className="font-mono text-xs">
         <button
           type="button"
           className="no-row-click flex items-center gap-1 text-left hover:underline"
@@ -118,7 +118,7 @@ export function TripGroupRow({
           aria-label={`${expanded ? 'Hide' : 'Show'} journeys of ${groupNumber}`}
         >
           <Chevron className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          <span>{groupNumber}</span>
+          <span className="whitespace-nowrap">{groupNumber}</span>
         </button>
         <div className="pl-5 text-xs text-muted-foreground font-sans whitespace-nowrap">
           {legs.length === legCount ? `${legCount} journeys` : `${legs.length} of ${legCount} journeys shown`}
@@ -136,7 +136,6 @@ export function TripGroupRow({
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2 whitespace-nowrap text-sm">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
           <div className="space-y-1">
             <div className="font-medium">{format(toBookingTz(first.pickup_datetime), 'MMM dd, yyyy')}</div>
             <div className="text-muted-foreground">
@@ -147,14 +146,14 @@ export function TripGroupRow({
         </div>
       </TableCell>
       <TableCell>
-        <div className="space-y-1 text-sm max-w-xs">
+        <div className="space-y-1 text-sm max-w-[150px]">
           <div className="flex items-start gap-1">
             <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <span className="truncate">{first.pickup_address}</span>
+            <span className="truncate" title={first.pickup_address}>{first.pickup_address}</span>
           </div>
           <div className="flex items-start gap-1">
             <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <span className="truncate">{last.dropoff_address}</span>
+            <span className="truncate" title={last.dropoff_address ?? undefined}>{last.dropoff_address}</span>
           </div>
         </div>
       </TableCell>
@@ -165,7 +164,7 @@ export function TripGroupRow({
         {statuses.size === 1 ? statusBadge(first.booking_status) : <StatusPill tone="neutral">Mixed</StatusPill>}
       </TableCell>
       <TableCell>{paymentBadge(first.payment_status)}</TableCell>
-      <TableCell className="text-right font-semibold">{formatCurrency(total)}</TableCell>
+      <TableCell className="whitespace-nowrap text-right font-semibold">{formatCurrency(total)}</TableCell>
       <TableCell className="text-right no-row-click">
         <div className="inline-flex items-center gap-0.5">
           <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" aria-label="View details" title="View details" onClick={onOpen}>

@@ -1018,7 +1018,6 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
    the public site's gold. !important on the colour only, because the light
    theme's .text-luxury-gold remap above is scoped more heavily. */
 .portal-shell main thead th {
-  white-space: nowrap;
   color: hsl(var(--muted-foreground)) !important;
   text-transform: none;
   letter-spacing: 0;
@@ -1189,4 +1188,12 @@ html[style*="--admin-surface-0"] [role="alertdialog"] :is(button, a).border-2.bo
   border-color: hsl(var(--primary));
   background-color: hsl(var(--card));
   color: hsl(var(--foreground));
+}
+
+/* Table cells: 10px side padding so a ten-column list fits the content width
+   at 1440px without a sideways scroll. */
+.portal-shell main table th,
+.portal-shell main table td {
+  padding-left: 10px;
+  padding-right: 10px;
 }
