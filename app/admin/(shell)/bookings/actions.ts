@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireAdminAction } from '@/lib/auth/admin-action'
 import { after } from 'next/server'
 import { getUnifiedBookingsList, createBookingAssignment, closeActiveAssignments, getUnifiedBookingDetails, type BookingType } from '@/lib/bookings/unified-service'
 import { sendBookingAssignmentEmail, sendBookingUnassignmentEmail } from '@/lib/email/services/vendor-emails'
@@ -22,6 +23,8 @@ import {
 } from '@/lib/business/email/recipients'
 import { getAppUrl } from '@/lib/email/config'
 import { isActiveBookingStatus } from '@/lib/business/booking-utils'
+import { businessDeleteBlockedReason, businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
+import { expandToWholeBusinessTrips } from '@/lib/business/trips/delete-server'
 import { format } from 'date-fns'
 import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
 import { legLabel, tripAssignmentLabel, tripTypeLabel } from '@/lib/trips/display'
@@ -559,6 +562,11 @@ export async function updateBookingStatus(
   bookingType: 'customer' | 'business',
   cancellationReason?: string
 ) {
+  // These actions write with the service role, so the admin check cannot be left to the
+  // /admin route gate alone: a Server Action is reachable by its id from any signed-in session.
+  const auth = await requireAdminAction()
+  if ('error' in auth) return { error: auth.error }
+
   const adminClient = createAdminClient()
 
   const updateData: any = {
@@ -595,14 +603,29 @@ export async function updateBookingStatus(
     return { success: true, unchanged: true }
   }
 
-  const { error } = await adminClient
-    .from(tableName)
-    .update(updateData)
-    .eq('id', bookingId)
+  // A business booking's cancellation is final (its wallet may already have been refunded),
+  // and a completed trip cannot be cancelled. Customer bookings keep their existing rules.
+  if (bookingType === 'business' && beforeUpdate) {
+    const blocked = businessStatusChangeBlockedReason(previousStatus, status)
+    if (blocked) return { error: blocked }
+  }
+
+  // For a business booking the guard is repeated in the write itself, so a cancellation that
+  // lands between the read above and this update (the portal, or another admin) cannot be undone.
+  let statusUpdate = adminClient.from(tableName).update(updateData).eq('id', bookingId)
+  if (bookingType === 'business') {
+    statusUpdate = statusUpdate.neq('booking_status', 'cancelled')
+    if (status === 'cancelled') statusUpdate = statusUpdate.neq('booking_status', 'completed')
+  }
+  const { data: changedRows, error } = await statusUpdate.select('id')
 
   if (error) {
     console.error('Error updating booking status:', error)
     throw new Error('Failed to update booking status')
+  }
+
+  if (bookingType === 'business' && (changedRows ?? []).length === 0) {
+    return { error: 'This booking changed while you were editing it. Reload and try again.' }
   }
 
   // Close the assignment and free vehicle and driver when the booking is completed or
@@ -779,7 +802,10 @@ export async function updatePaymentStatus(
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded',
   bookingType: 'customer' | 'business',
   paymentError?: string
-) {
+): Promise<{ success?: boolean; error?: string }> {
+  const auth = await requireAdminAction()
+  if ('error' in auth) return { error: auth.error }
+
   const adminClient = createAdminClient()
 
   // Same rule as updateBookingStatus above: the id alone does not say which table
@@ -787,6 +813,25 @@ export async function updatePaymentStatus(
   // booking updated zero rows, which PostgREST does not report as an error, and the
   // caller showed a success toast for a write that never happened.
   const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
+
+  // A business booking is paid from its wallet, so marking it refunded without moving money
+  // would tell everyone a refund happened that did not. That goes through refundBusinessBooking.
+  if (bookingType === 'business' && status === 'refunded') {
+    return { error: 'Refund a business booking with Refund to wallet.' }
+  }
+
+  // And the reverse: a refunded business booking had its money returned to the wallet, so
+  // relabelling it paid (or failed) would misstate a charge that no longer exists.
+  if (bookingType === 'business') {
+    const { data: current } = await adminClient
+      .from('business_bookings')
+      .select('payment_status')
+      .eq('id', bookingId)
+      .maybeSingle()
+    if (current?.payment_status === 'refunded') {
+      return { error: "A refunded business booking's payment status cannot be changed." }
+    }
+  }
 
   const updateData: any = {
     payment_status: status,
@@ -1008,7 +1053,10 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
 export async function bulkUpdateBookingStatus(
   bookingIds: string[],
   status: 'confirmed' | 'cancelled'
-) {
+): Promise<{ success?: boolean; unchanged?: boolean; skipped?: number; error?: string }> {
+  const auth = await requireAdminAction()
+  if ('error' in auth) return { error: auth.error }
+
   const adminClient = createAdminClient()
 
   const updateData: any = {
@@ -1027,6 +1075,9 @@ export async function bulkUpdateBookingStatus(
   // moved from pending. Both tables are read because the action is table-agnostic and
   // fires the same update at each.
   const previousStatuses = new Map<string, string>()
+  // Business bookings this change may not touch: a cancelled one stays cancelled, a completed
+  // one is never cancelled. They are left out of the update and its notifications entirely.
+  const blockedBusinessIds = new Set<string>()
 
   for (const table of ['bookings', 'business_bookings'] as const) {
     const { data: before } = await adminClient
@@ -1036,6 +1087,9 @@ export async function bulkUpdateBookingStatus(
 
     for (const row of (before ?? []) as Array<{ id: string; booking_status: string | null }>) {
       if (row.booking_status) previousStatuses.set(row.id, row.booking_status)
+      if (table === 'business_bookings' && businessStatusChangeBlockedReason(row.booking_status, status)) {
+        blockedBusinessIds.add(row.id)
+      }
     }
   }
 
@@ -1044,10 +1098,12 @@ export async function bulkUpdateBookingStatus(
   // bulk cancel that overlapped an earlier one mailed those passengers a second
   // "your transfer has been cancelled". Ids with no snapshot are kept: they were not
   // readable here, and the update below is a no-op for them anyway.
-  const idsToUpdate = bookingIds.filter((id) => previousStatuses.get(id) !== status)
+  const idsToUpdate = bookingIds.filter(
+    (id) => previousStatuses.get(id) !== status && !blockedBusinessIds.has(id)
+  )
 
   if (idsToUpdate.length === 0) {
-    return { success: true, unchanged: true }
+    return { success: true, unchanged: true, skipped: blockedBusinessIds.size }
   }
 
   // Update customer bookings
@@ -1061,10 +1117,15 @@ export async function bulkUpdateBookingStatus(
   }
 
   // Update business bookings
-  const { error: bizError } = await adminClient
+  // The guard is repeated in the write, as in updateBookingStatus, so a booking cancelled
+  // meanwhile is not reopened and a completed one is not cancelled.
+  let bizUpdate = adminClient
     .from('business_bookings')
     .update(updateData)
     .in('id', idsToUpdate)
+    .neq('booking_status', 'cancelled')
+  if (status === 'cancelled') bizUpdate = bizUpdate.neq('booking_status', 'completed')
+  const { error: bizError } = await bizUpdate
 
   if (bizError) {
     console.error('Error bulk updating business booking status:', bizError)
@@ -1190,13 +1251,95 @@ export async function bulkUpdateBookingStatus(
 
   revalidatePath('/admin/bookings')
 
-  return { success: true }
+  return { success: true, skipped: blockedBusinessIds.size }
+}
+
+/**
+ * Which business bookings deleting `bookingId` removes, or why it may not.
+ *
+ * A journey takes its whole trip with it, as in the business portal, so a round trip is never
+ * left with only its return. Every booking removed must be cancelled, completed or past
+ * (deleting never refunds, so a live paid booking has to be cancelled first), and none may
+ * belong to a quotation trip.
+ */
+async function planBusinessDelete(
+  adminClient: ReturnType<typeof createAdminClient>,
+  bookingId: string
+): Promise<{ ids: string[] } | { error: string }> {
+  const { data: booking, error } = await adminClient
+    .from('business_bookings')
+    .select('business_account_id')
+    .eq('id', bookingId)
+    .maybeSingle()
+  if (error) return { error: 'Failed to load the booking' }
+  if (!booking) return { error: 'Booking not found or already deleted' }
+
+  const expanded = await expandToWholeBusinessTrips(adminClient, [bookingId], booking.business_account_id)
+  if (expanded.error) return { error: 'Failed to load the rest of this trip' }
+
+  const { data: rows, error: rowsError } = await adminClient
+    .from('business_bookings')
+    .select('id, booking_number, booking_status, pickup_datetime')
+    .in('id', expanded.ids)
+  if (rowsError) return { error: 'Failed to load the rest of this trip' }
+
+  for (const row of rows ?? []) {
+    const blocked = businessDeleteBlockedReason(row)
+    if (blocked) {
+      return { error: expanded.ids.length > 1 ? `${row.booking_number}: ${blocked}` : blocked }
+    }
+  }
+
+  // A quotation stamps only a trip's first journey (converted_booking_id) and the trip itself
+  // (converted_group_id), so both are checked; the later journeys carry no link of their own.
+  const quotationChecks = [
+    adminClient.from('business_quotation_items').select('id').in('converted_booking_id', expanded.ids).limit(1),
+    ...(expanded.groupIds.length > 0
+      ? [adminClient.from('business_quotation_items').select('id').in('converted_group_id', expanded.groupIds).limit(1)]
+      : []),
+  ]
+  for (const { data: linked, error: linkError } of await Promise.all(quotationChecks)) {
+    if (linkError) return { error: 'Failed to check whether this booking came from a quotation' }
+    if ((linked ?? []).length > 0) {
+      return { error: 'This booking was created from a quotation. Remove it from its quotation before deleting.' }
+    }
+  }
+
+  return { ids: expanded.ids }
 }
 
 export async function deleteBooking(
   bookingId: string,
   bookingType: 'customer' | 'business'
-) {
+): Promise<{ success?: boolean; error?: string; deletedIds?: string[] }> {
+  const auth = await requireAdminAction()
+  if ('error' in auth) return { error: auth.error }
+
+  if (bookingType === 'customer') {
+    const result = await deleteSingleBooking(bookingId, 'customer')
+    return result.success ? { ...result, deletedIds: [bookingId] } : result
+  }
+
+  const plan = await planBusinessDelete(createAdminClient(), bookingId)
+  if ('error' in plan) return { error: plan.error }
+
+  const deletedIds: string[] = []
+  for (const id of plan.ids) {
+    const result = await deleteSingleBooking(id, 'business')
+    if (result.error) {
+      return deletedIds.length > 0
+        ? { error: `Deleted ${deletedIds.length} of ${plan.ids.length} journeys. ${result.error}`, deletedIds }
+        : { error: result.error }
+    }
+    deletedIds.push(id)
+  }
+  return { success: true, deletedIds }
+}
+
+async function deleteSingleBooking(
+  bookingId: string,
+  bookingType: 'customer' | 'business'
+): Promise<{ success?: boolean; error?: string }> {
   const adminClient = createAdminClient()
 
   try {
@@ -1382,13 +1525,20 @@ interface BulkDeleteBookingsResult {
 export async function bulkDeleteBookings(
   bookingIds: string[]
 ): Promise<BulkDeleteBookingsResult> {
+  const auth = await requireAdminAction()
+  if ('error' in auth) return { error: auth.error }
+
   const adminClient = createAdminClient()
 
   try {
     const deleted: string[] = []
     const failed: { id: string; reason: string }[] = []
 
+    // Deleting a journey removes its whole trip, so the other journeys may already be gone.
+    const alreadyDeleted = new Set<string>()
+
     for (const bookingId of bookingIds) {
+      if (alreadyDeleted.has(bookingId)) continue
       // Try customer booking first
       const { data: customerBooking } = await adminClient
         .from('bookings')
@@ -1398,12 +1548,15 @@ export async function bulkDeleteBookings(
 
       const bookingType: 'customer' | 'business' = customerBooking ? 'customer' : 'business'
       const result = await deleteBooking(bookingId, bookingType)
+      for (const id of result.deletedIds ?? []) alreadyDeleted.add(id)
 
       if (result.error) {
         console.error(`Failed to delete booking ${bookingId}:`, result.error)
         failed.push({ id: bookingId, reason: result.error })
+        // Journeys removed before a trip delete stopped are still gone.
+        deleted.push(...(result.deletedIds ?? []))
       } else {
-        deleted.push(bookingId)
+        deleted.push(...(result.deletedIds ?? [bookingId]))
       }
     }
 

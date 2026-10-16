@@ -43,8 +43,21 @@ export function BulkActionsBar({
   const handleBulkStatusUpdate = async (status: 'confirmed' | 'cancelled') => {
     setIsUpdating(true)
     try {
-      await bulkUpdateBookingStatus(selectedBookingIds, status)
-      toast.success(`${selectedCount} bookings ${status === 'confirmed' ? 'confirmed' : 'cancelled'}`)
+      const result = await bulkUpdateBookingStatus(selectedBookingIds, status)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      const skipped = result.skipped ?? 0
+      const changed = selectedCount - skipped
+      if (changed > 0) {
+        toast.success(`${changed} bookings ${status === 'confirmed' ? 'confirmed' : 'cancelled'}`)
+      }
+      if (skipped > 0) {
+        toast.warning(
+          `${skipped} business booking${skipped === 1 ? ' was' : 's were'} left unchanged: cancelled bookings stay cancelled and completed ones cannot be cancelled.`
+        )
+      }
       onClearSelection()
       router.refresh()
     } catch (error) {

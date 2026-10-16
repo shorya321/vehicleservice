@@ -4620,6 +4620,20 @@ export type Database = {
         }
         Returns: string
       }
+      refund_business_booking: {
+        Args: {
+          p_admin_email: string
+          p_amount: number
+          p_booking_id: string
+          p_reason: string
+        }
+        Returns: {
+          new_balance: number
+          refundable_after: number
+          refunded_amount: number
+          total_refunded: number
+        }[]
+      }
       reject_vendor_application: {
         Args: {
           p_admin_notes?: string

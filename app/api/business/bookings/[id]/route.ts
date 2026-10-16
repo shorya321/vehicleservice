@@ -15,6 +15,7 @@ import { sendBusinessCustomerBookingCancelledEmail } from '@/lib/business/email/
 import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { hasActiveVendorAssignment } from '@/lib/business/bookings/active-assignments';
 import { isActiveBookingStatus } from '@/lib/business/booking-utils';
+import { businessPortalDeleteBlockedReason } from '@/lib/business/booking-guards';
 import { activityLogger } from '@/lib/business/activity/log';
 
 /**
@@ -44,7 +45,7 @@ export const DELETE = requireBusinessAuth(
       const { data: booking, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
         .select(`
-          id, business_account_id, booking_status, wallet_deduction_amount,
+          id, business_account_id, booking_status, payment_status, wallet_deduction_amount,
           booking_number, trip_number, customer_name, customer_email,
           pickup_address, dropoff_address, pickup_datetime, created_by_user_id, booking_group_id,
           from_location:from_location_id(name),
@@ -64,6 +65,17 @@ export const DELETE = requireBusinessAuth(
       // Staff may only delete bookings they created themselves.
       if (user.role !== 'owner' && booking.created_by_user_id !== user.businessId) {
         return apiError('Forbidden: you can only delete bookings you created', 403);
+      }
+
+      // Deleting never refunds, so an upcoming paid booking is cancelled, not deleted. Otherwise
+      // the trip would vanish and the charge stay with no cancellation on record.
+      const deleteBlocked = businessPortalDeleteBlockedReason(booking);
+      if (deleteBlocked) {
+        const upcoming = booking.booking_status !== 'cancelled';
+        return apiError(
+          upcoming ? `${deleteBlocked} If it can no longer be cancelled here, contact support.` : deleteBlocked,
+          409
+        );
       }
 
       // One journey of a trip is never deleted on its own. The bookings list sends the whole trip

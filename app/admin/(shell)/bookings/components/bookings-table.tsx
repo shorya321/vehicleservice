@@ -55,6 +55,13 @@ import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
 import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus, deleteBooking } from '../actions'
+import { RefundBusinessBookingDialog } from './refund-business-booking-dialog'
+import { businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
+
+/** Same rule the server applies: a business cancellation is final, a completed trip stays completed. */
+function canMoveTo(booking: { bookingType?: string; booking_status?: string | null }, to: string): boolean {
+  return booking.bookingType !== 'business' || businessStatusChangeBlockedReason(booking.booking_status, to) === null
+}
 import { BulkActionsBar } from './bulk-actions-bar'
 import { AssignVendorModal } from './assign-vendor-modal'
 import { TripGroupRow, activeAssignmentOf, unassignedOtherLegIds } from './trip-group-row'
@@ -85,6 +92,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [deleteBookingId, setDeleteBookingId] = useState<string | null>(null)
   const [deleteBookingType, setDeleteBookingType] = useState<'customer' | 'business'>('customer')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [refundBookingId, setRefundBookingId] = useState<string | null>(null)
   const [expandedTrips, setExpandedTrips] = useState<Set<string>>(new Set())
 
   const getStatusBadge = (status: string) => {
@@ -259,12 +267,16 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         cancellationReason = 'Cancelled by admin'
       }
 
-      await updateBookingStatus(
+      const result = await updateBookingStatus(
         statusUpdateId,
         newStatus,
         statusUpdateBookingType || 'customer',
         cancellationReason
       )
+      if ('error' in result && result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success(`Booking status updated to ${newStatus}`)
       router.refresh()
     } catch (error) {
@@ -284,7 +296,11 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   ) => {
     try {
       // The action needs the type to pick the table, exactly as the status update does.
-      await updatePaymentStatus(bookingId, status, bookingType)
+      const result = await updatePaymentStatus(bookingId, status, bookingType)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success(`Payment status updated to ${status}`)
       router.refresh()
     } catch (error) {
@@ -300,7 +316,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       if (result.error) {
         toast.error(result.error)
       } else {
-        toast.success('Booking deleted successfully')
+        const removed = result.deletedIds?.length ?? 1
+        toast.success(removed > 1 ? `Trip deleted (${removed} journeys)` : 'Booking deleted successfully')
         router.refresh()
       }
     } catch (error) {
@@ -346,7 +363,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-xs">Update Status</DropdownMenuLabel>
         
-        {booking.booking_status !== 'confirmed' && (
+        {booking.booking_status !== 'confirmed' && canMoveTo(booking, 'confirmed') && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation()
@@ -360,7 +377,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </DropdownMenuItem>
         )}
         
-        {booking.booking_status !== 'completed' && (
+        {booking.booking_status !== 'completed' && canMoveTo(booking, 'completed') && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation()
@@ -374,7 +391,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </DropdownMenuItem>
         )}
         
-        {booking.booking_status !== 'cancelled' && (
+        {booking.booking_status !== 'cancelled' && canMoveTo(booking, 'cancelled') && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation()
@@ -392,7 +409,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-xs">Payment</DropdownMenuLabel>
         
-        {booking.payment_status !== 'completed' && (
+        {booking.payment_status !== 'completed' &&
+          !(booking.bookingType === 'business' && booking.payment_status === 'refunded') && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation()
@@ -404,17 +422,32 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </DropdownMenuItem>
         )}
         
-        {booking.payment_status === 'completed' && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              handleUpdatePaymentStatus(booking.id, 'refunded', booking.bookingType || 'customer')
-            }}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Process Refund
-          </DropdownMenuItem>
-        )}
+        {/* Business bookings are paid from the wallet, so a refund moves real money back through
+            the refund dialog, and only once the booking is cancelled. Customer bookings keep the
+            status-only action: their refunds are issued by hand in Stripe. */}
+        {booking.bookingType === 'business'
+          ? booking.booking_status === 'cancelled' && booking.payment_status !== 'refunded' && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setRefundBookingId(booking.id)
+                }}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refund to Wallet
+              </DropdownMenuItem>
+            )
+          : booking.payment_status === 'completed' && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleUpdatePaymentStatus(booking.id, 'refunded', booking.bookingType || 'customer')
+                }}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Process Refund
+              </DropdownMenuItem>
+            )}
         
         <DropdownMenuSeparator />
         
@@ -725,6 +758,12 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           />
         )
       })()}
+
+      <RefundBusinessBookingDialog
+        bookingId={refundBookingId}
+        open={!!refundBookingId}
+        onOpenChange={(open) => !open && setRefundBookingId(null)}
+      />
     </>
   )
 }

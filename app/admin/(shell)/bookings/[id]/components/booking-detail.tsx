@@ -48,6 +48,8 @@ import { toast } from 'sonner'
 import { hourlyEndTime, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 import { journeyTabs, viewingJourney } from '@/lib/trips/journey-tabs'
 import { TripGroupCard } from './trip-group-card'
+import { RefundBusinessBookingDialog } from '../../components/refund-business-booking-dialog'
+import { businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
 
 interface BookingDetailProps {
   booking: any // We'll define proper types later
@@ -62,6 +64,11 @@ const actionButtonClass = (isCurrent: boolean): string =>
     : ''
 
 export function BookingDetail({ booking }: BookingDetailProps) {
+  const isBusinessBooking = booking.bookingType === 'business'
+  // Same rule the server applies: a business cancellation is final, a completed trip stays completed.
+  const businessStatusLocked = (to: string) =>
+    isBusinessBooking && businessStatusChangeBlockedReason(booking.booking_status, to) !== null
+  const [refundOpen, setRefundOpen] = useState(false)
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
   const [statusToUpdate, setStatusToUpdate] = useState<'confirmed' | 'completed' | 'cancelled' | null>(null)
@@ -120,12 +127,16 @@ export function BookingDetail({ booking }: BookingDetailProps) {
     try {
       // The booking type must be passed: without it the action defaults to
       // `business_bookings` and a customer booking's status is written to the wrong table.
-      await updateBookingStatus(
+      const result = await updateBookingStatus(
         booking.id,
         statusToUpdate,
         booking.bookingType || 'customer',
         statusToUpdate === 'cancelled' ? 'Cancelled by admin' : undefined
       )
+      if ('error' in result && result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success(`Booking status updated to ${statusToUpdate}`)
       router.refresh()
     } catch (error) {
@@ -143,11 +154,15 @@ export function BookingDetail({ booking }: BookingDetailProps) {
     try {
       // The booking type must be passed here too: without it the action wrote every
       // payment status to `bookings`, so a business booking updated nothing.
-      await updatePaymentStatus(
+      const result = await updatePaymentStatus(
         booking.id,
         paymentStatusToUpdate,
         booking.bookingType || 'customer'
       )
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
       toast.success(`Payment status updated to ${paymentStatusToUpdate}`)
       router.refresh()
     } catch (error) {
@@ -697,7 +712,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setStatusToUpdate('confirmed')}
                   className={actionButtonClass(booking.booking_status === 'confirmed')}
                   aria-pressed={booking.booking_status === 'confirmed'}
-                  disabled={booking.booking_status === 'confirmed' || isUpdating}
+                  disabled={booking.booking_status === 'confirmed' || isUpdating || businessStatusLocked('confirmed')}
                 >
                   Confirm
                 </Button>
@@ -707,7 +722,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setStatusToUpdate('completed')}
                   className={actionButtonClass(booking.booking_status === 'completed')}
                   aria-pressed={booking.booking_status === 'completed'}
-                  disabled={booking.booking_status === 'completed' || isUpdating}
+                  disabled={booking.booking_status === 'completed' || isUpdating || businessStatusLocked('completed')}
                 >
                   Complete
                 </Button>
@@ -717,7 +732,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setStatusToUpdate('cancelled')}
                   className={actionButtonClass(booking.booking_status === 'cancelled')}
                   aria-pressed={booking.booking_status === 'cancelled'}
-                  disabled={booking.booking_status === 'cancelled' || isUpdating}
+                  disabled={booking.booking_status === 'cancelled' || isUpdating || businessStatusLocked('cancelled')}
                 >
                   Cancel
                 </Button>
@@ -735,7 +750,11 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setPaymentStatusToUpdate('completed')}
                   className={actionButtonClass(booking.payment_status === 'completed')}
                   aria-pressed={booking.payment_status === 'completed'}
-                  disabled={booking.payment_status === 'completed' || isUpdating}
+                  disabled={
+                    booking.payment_status === 'completed' ||
+                    isUpdating ||
+                    (isBusinessBooking && booking.payment_status === 'refunded')
+                  }
                 >
                   Paid
                 </Button>
@@ -745,20 +764,43 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setPaymentStatusToUpdate('failed')}
                   className={actionButtonClass(booking.payment_status === 'failed')}
                   aria-pressed={booking.payment_status === 'failed'}
-                  disabled={booking.payment_status === 'failed' || isUpdating}
+                  disabled={
+                    booking.payment_status === 'failed' ||
+                    isUpdating ||
+                    (isBusinessBooking && booking.payment_status === 'refunded')
+                  }
                 >
                   Failed
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setPaymentStatusToUpdate('refunded')}
-                  className={actionButtonClass(booking.payment_status === 'refunded')}
-                  aria-pressed={booking.payment_status === 'refunded'}
-                  disabled={booking.payment_status === 'refunded' || isUpdating}
-                >
-                  Refund
-                </Button>
+                {/* A business booking's refund moves real money back to its wallet, so it goes
+                    through the refund dialog and only once the booking is cancelled. Customer
+                    bookings keep the status-only action (refunded by hand in Stripe). */}
+                {isBusinessBooking ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRefundOpen(true)}
+                    className={actionButtonClass(booking.payment_status === 'refunded')}
+                    aria-pressed={booking.payment_status === 'refunded'}
+                    disabled={
+                      booking.booking_status !== 'cancelled' || booking.payment_status === 'refunded' || isUpdating
+                    }
+                    title={booking.booking_status !== 'cancelled' ? 'Cancel the booking before refunding it' : undefined}
+                  >
+                    Refund to wallet
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPaymentStatusToUpdate('refunded')}
+                    className={actionButtonClass(booking.payment_status === 'refunded')}
+                    aria-pressed={booking.payment_status === 'refunded'}
+                    disabled={booking.payment_status === 'refunded' || isUpdating}
+                  >
+                    Refund
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -841,6 +883,9 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           />
         )
       })()}
+      {isBusinessBooking && (
+        <RefundBusinessBookingDialog bookingId={booking.id} open={refundOpen} onOpenChange={setRefundOpen} />
+      )}
     </div>
   )
 }

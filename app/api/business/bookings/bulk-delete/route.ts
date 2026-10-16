@@ -18,6 +18,7 @@ import { isActiveBookingStatus } from '@/lib/business/booking-utils';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 import { findBookingsWithActiveAssignment } from '@/lib/business/bookings/active-assignments';
 import { expandToWholeBusinessTrips, pruneEmptyBusinessTrips } from '@/lib/business/trips/delete-server';
+import { businessPortalDeleteBlockedReason } from '@/lib/business/booking-guards';
 
 const bulkDeleteSchema = z.object({
   booking_ids: z.array(z.string().uuid()).min(1).max(50),
@@ -25,7 +26,7 @@ const bulkDeleteSchema = z.object({
 
 /**
  * POST /api/business/bookings/bulk-delete
- * Delete multiple bookings permanently (with refunds if applicable)
+ * Delete multiple bookings permanently
  */
 export const POST = requireBusinessOwner(
   async (request: NextRequest, user) => {
@@ -63,7 +64,7 @@ export const POST = requireBusinessOwner(
       const { data: bookings, error: fetchError } = await supabaseAdmin
         .from('business_bookings')
         .select(`
-          id, business_account_id, booking_status, wallet_deduction_amount,
+          id, business_account_id, booking_status, payment_status, wallet_deduction_amount,
           booking_number, trip_number, customer_name, customer_email,
           pickup_address, dropoff_address, pickup_datetime, created_by_user_id,
           from_location:from_location_id(name),
@@ -87,6 +88,31 @@ export const POST = requireBusinessOwner(
 
       if (unauthorizedBookings.length > 0) {
         return apiError('Unauthorized: Some bookings do not belong to your account', 403);
+      }
+
+      // Deleting never refunds, so upcoming paid bookings are cancelled, not deleted. Named, all or
+      // nothing, like the checks below.
+      const awaitingRefund = bookings.filter(
+        (b) => b.booking_status === 'cancelled' && businessPortalDeleteBlockedReason(b) !== null
+      );
+      if (awaitingRefund.length > 0) {
+        const names = awaitingRefund.map((b) => b.trip_number || b.booking_number).join(', ');
+        return apiError(
+          `${names} ${awaitingRefund.length === 1 ? 'is' : 'are'} cancelled and waiting for the platform team to review a refund. Deselect ${
+            awaitingRefund.length === 1 ? 'it' : 'them'
+          } and try again.`,
+          409
+        );
+      }
+      const liveBookings = bookings.filter((b) => businessPortalDeleteBlockedReason(b) !== null);
+      if (liveBookings.length > 0) {
+        const names = liveBookings.map((b) => b.trip_number || b.booking_number).join(', ');
+        return apiError(
+          `${names} ${liveBookings.length === 1 ? 'is' : 'are'} still upcoming. Cancel ${
+            liveBookings.length === 1 ? 'it' : 'them'
+          } first, or deselect and try again. If a booking can no longer be cancelled here, contact support.`,
+          409
+        );
       }
 
       // Bookings a vendor is on cannot be deleted from the portal. All or
