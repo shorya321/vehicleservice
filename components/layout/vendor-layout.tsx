@@ -247,7 +247,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
             if (sidebarOpen && e.target instanceof Element && e.target.closest("a[href]")) setSidebarOpen(false)
           }}
           className={cn(
-            "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+            "portal-sidebar fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
@@ -255,10 +255,13 @@ export function VendorLayout({ children }: VendorLayoutProps) {
             {/* Logo */}
             <div className="flex h-16 items-center justify-between px-6 border-b border-border">
               <Link href="/vendor/dashboard" className="flex items-center gap-2 group">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center transition-transform group-hover:scale-105">
-                  <Package className="h-5 w-5 text-primary-foreground" />
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Package className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-lg font-semibold font-serif">Vendor Portal</span>
+                <span className="flex flex-col leading-tight">
+                  <span className="font-[family-name:var(--admin-font-display)] text-sm font-bold text-primary">VehicleService</span>
+                  <span className="text-[11.5px] text-muted-foreground">Vendor Portal</span>
+                </span>
               </Link>
               <Button
                 variant="ghost"
@@ -277,7 +280,6 @@ export function VendorLayout({ children }: VendorLayoutProps) {
                   {/* Section Header */}
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-2">
-                      <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
                       <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
                         {group.label}
                       </span>
@@ -312,7 +314,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
         {/* Main content */}
         <div className="flex flex-1 flex-col overflow-hidden lg:pl-64">
           {/* Top bar */}
-          <header className="z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
+          <header className="portal-header z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"

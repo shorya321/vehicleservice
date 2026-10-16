@@ -30,7 +30,7 @@ export function Breadcrumb({
     <nav
       aria-label="Breadcrumb"
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-xl border bg-card px-4 py-3 shadow-[var(--card-shadow)]",
+        "flex flex-wrap items-center gap-2 rounded-xl border bg-card px-4 py-3",
         className
       )}
     >

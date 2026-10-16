@@ -29,9 +29,12 @@ export function FilterToggle({ activeCount = 0, header, children, className }: F
         {header ?? <span />}
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className={cn('h-9 gap-2 px-3', open && 'border-primary text-primary')}
+          className={cn(
+            'h-9 gap-2 border border-border bg-card px-3 font-medium normal-case tracking-normal hover:border-primary hover:bg-card',
+            open && 'border-primary text-primary'
+          )}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((v) => !v)}

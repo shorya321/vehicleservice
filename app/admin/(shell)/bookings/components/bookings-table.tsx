@@ -458,7 +458,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </div>
         </TableCell>
         <TableCell>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 whitespace-nowrap text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <div className="space-y-1">
               <div className="font-medium">

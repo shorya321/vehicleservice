@@ -70,7 +70,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header role="banner" className="z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
+    <header role="banner" className="portal-header z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
       <div className="flex items-center gap-2 md:gap-4">
         <Button
           variant="ghost"

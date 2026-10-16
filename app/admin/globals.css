@@ -982,13 +982,13 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
 }
 
 /* Stat cards: a corner glow in the icon's own hue, and a gold border on hover. */
-.portal-shell .admin-card-hover {
+.portal-shell main .admin-card-hover.rounded-xl.border.bg-card {
   background-image:
     radial-gradient(130% 90% at 100% 0%, var(--stat-tone, transparent), transparent 62%),
     linear-gradient(180deg, var(--card-sheen), transparent 120px);
   transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.2s ease-out;
 }
-.portal-shell .admin-card-hover:hover {
+.portal-shell main .admin-card-hover.rounded-xl.border.bg-card:hover {
   border-color: hsl(var(--primary) / 0.7);
 }
 .portal-shell .admin-card-hover:has(.rounded-full[class*="bg-sky-500/"]) { --stat-tone: rgba(14, 165, 233, 0.12); }
@@ -1018,6 +1018,7 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
    the public site's gold. !important on the colour only, because the light
    theme's .text-luxury-gold remap above is scoped more heavily. */
 .portal-shell main thead th {
+  white-space: nowrap;
   color: hsl(var(--muted-foreground)) !important;
   text-transform: none;
   letter-spacing: 0;
@@ -1073,3 +1074,119 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
 .light .status-pill--info { background: rgba(14, 165, 233, 0.12); color: #0369A1; }
 .light .status-pill--refund { background: #FFF7ED; color: #C2410C; border-color: #FDBA74; }
 .light .status-pill--danger-outline { color: #B91C1C; border-color: #FECACA; }
+
+/* Sidebar and header: the surface colour with a hairline border, no drop
+   shadow and no inner glow on nav items. Light mode sits them on white. */
+.portal-shell .portal-sidebar,
+.portal-shell .portal-header {
+  background-color: var(--admin-surface-1);
+  backdrop-filter: none;
+}
+.light .portal-shell .portal-sidebar,
+.light .portal-shell .portal-header {
+  background-color: hsl(var(--card));
+}
+.portal-shell .portal-header {
+  box-shadow: none;
+}
+@media (min-width: 1024px) {
+  .portal-shell .portal-sidebar { box-shadow: none; }
+}
+.portal-shell .portal-sidebar nav a,
+.portal-shell .portal-sidebar nav button {
+  box-shadow: none;
+}
+.portal-shell .portal-sidebar nav a:hover,
+.portal-shell .portal-sidebar nav button:hover {
+  transform: none;
+}
+
+/* Header controls: bordered 36px squares on the card colour. */
+.portal-shell .portal-header button.h-9.w-9 {
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  background-color: hsl(var(--card));
+}
+.portal-shell .portal-header button.h-9.w-9:hover {
+  border-color: hsl(var(--primary) / 0.6);
+}
+.portal-shell .portal-header button.bg-secondary {
+  background-color: hsl(var(--card));
+}
+
+/* Scrollbars: the sidebar's thin gold thumb on every portal scroller, on a
+   clear track. */
+.portal-shell main,
+.portal-shell main .overflow-auto,
+.portal-shell main .overflow-x-auto,
+.portal-shell .portal-sidebar nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(186, 149, 94, 0.35) transparent;
+}
+.portal-shell main::-webkit-scrollbar,
+.portal-shell main .overflow-auto::-webkit-scrollbar,
+.portal-shell main .overflow-x-auto::-webkit-scrollbar,
+.portal-shell .portal-sidebar nav::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.portal-shell main::-webkit-scrollbar-track,
+.portal-shell main .overflow-auto::-webkit-scrollbar-track,
+.portal-shell main .overflow-x-auto::-webkit-scrollbar-track,
+.portal-shell .portal-sidebar nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.portal-shell main::-webkit-scrollbar-thumb,
+.portal-shell main .overflow-auto::-webkit-scrollbar-thumb,
+.portal-shell main .overflow-x-auto::-webkit-scrollbar-thumb,
+.portal-shell .portal-sidebar nav::-webkit-scrollbar-thumb {
+  background-color: rgba(186, 149, 94, 0.35);
+  border-radius: 3px;
+}
+
+/* Type: sentence-case buttons and badges at medium weight, 18px card titles
+   and 28px stat figures in the display face, as in the approved design.
+   Dialogs and menus are portalled out of .portal-shell, so they are matched
+   through the html element the admin theme provider writes onto. */
+.portal-shell button.uppercase.tracking-wider,
+.portal-shell a.uppercase.tracking-wider,
+.portal-shell .rounded-full.uppercase.tracking-wider,
+html[style*="--admin-surface-0"] [role="dialog"] button.uppercase.tracking-wider,
+html[style*="--admin-surface-0"] [role="alertdialog"] button.uppercase.tracking-wider {
+  text-transform: none;
+  letter-spacing: normal;
+}
+.portal-shell button.uppercase.tracking-wider.font-semibold,
+.portal-shell a.uppercase.tracking-wider.font-semibold,
+html[style*="--admin-surface-0"] [role="dialog"] button.uppercase.tracking-wider.font-semibold,
+html[style*="--admin-surface-0"] [role="alertdialog"] button.uppercase.tracking-wider.font-semibold {
+  font-weight: 500;
+}
+.portal-shell main h3.text-2xl.font-semibold {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-family: var(--admin-font-display);
+}
+.portal-shell main .admin-card-hover [class*="text-3xl"] {
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  font-family: var(--admin-font-display);
+}
+
+/* Outline buttons: a neutral hairline on the card colour that turns gold on
+   hover, in place of the shared Button's 2px gold outline. */
+.portal-shell :is(button, a).border-2.border-primary.bg-transparent,
+html[style*="--admin-surface-0"] [role="dialog"] :is(button, a).border-2.border-primary.bg-transparent,
+html[style*="--admin-surface-0"] [role="alertdialog"] :is(button, a).border-2.border-primary.bg-transparent {
+  border-width: 1px;
+  border-color: hsl(var(--border));
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
+.portal-shell :is(button, a).border-2.border-primary.bg-transparent:hover,
+html[style*="--admin-surface-0"] [role="dialog"] :is(button, a).border-2.border-primary.bg-transparent:hover,
+html[style*="--admin-surface-0"] [role="alertdialog"] :is(button, a).border-2.border-primary.bg-transparent:hover {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+}

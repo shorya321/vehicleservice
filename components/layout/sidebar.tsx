@@ -411,7 +411,7 @@ export function Sidebar() {
             "ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold uppercase tracking-wider",
             showNotificationBadge
               ? "bg-destructive/20 border border-destructive/40 text-destructive"
-              : "bg-primary/20 border border-primary/40 text-primary"
+              : "bg-primary border border-primary text-primary-foreground font-bold"
           )}>
             {showNotificationBadge ? badgeText : item.badge}
           </span>
@@ -423,17 +423,20 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col border-r bg-card border-border shadow-lg transition-all duration-300",
+        "portal-sidebar relative flex h-full flex-col border-r bg-card border-border shadow-lg transition-all duration-300",
         collapsed ? "w-[72px]" : "w-64"
       )}
     >
       <div className="flex h-16 items-center justify-between px-4 border-b border-border">
         {!collapsed && (
           <Link href="/admin/dashboard" className="flex items-center space-x-2 group">
-            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary to-primary/70 transition-transform group-hover:scale-105">
-              <Car className="h-5 w-5 text-primary-foreground" />
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-primary/10 transition-transform group-hover:scale-105">
+              <Car className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-lg font-bold font-serif text-foreground">VehicleService</span>
+            <span className="flex flex-col leading-tight">
+              <span className="font-[family-name:var(--admin-font-display)] text-sm font-bold text-primary">VehicleService</span>
+              <span className="text-[11.5px] text-muted-foreground">Admin Panel</span>
+            </span>
           </Link>
         )}
         <Button
@@ -458,7 +461,6 @@ export function Sidebar() {
             {!collapsed && (
               <div className="px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
                   <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
                     {group.label}
                   </span>
