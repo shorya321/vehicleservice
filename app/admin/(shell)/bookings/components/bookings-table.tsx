@@ -11,7 +11,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import {
+  StatusPill,
+  assignmentStatusTone,
+  bookingStatusTone,
+  paymentStatusTone,
+  statusLabel,
+} from '@/components/admin/ui/status-pill'
+import { RowViewLink } from '@/components/admin/ui/row-view-link'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
@@ -50,7 +57,7 @@ import {
   Trash2,
   Loader2
 } from 'lucide-react'
-import { cn, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
@@ -73,14 +80,6 @@ interface BookingsTableProps {
   bookings: BookingWithCustomer[]
 }
 
-const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
-  accepted: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  completed: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  rejected: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
-  cancelled: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
-}
-
 export function BookingsTable({ bookings }: BookingsTableProps) {
   const router = useRouter()
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set())
@@ -95,94 +94,27 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [refundBookingId, setRefundBookingId] = useState<string | null>(null)
   const [expandedTrips, setExpandedTrips] = useState<Set<string>>(new Set())
 
-  const getStatusBadge = (status: string) => {
-    // Handle undefined/null status
-    if (!status) {
-      return (
-        <Badge variant="outline">
-          Unknown
-        </Badge>
-      )
-    }
+  const getStatusBadge = (status: string) => (
+    <StatusPill tone={bookingStatusTone(status)}>{statusLabel(status)}</StatusPill>
+  )
 
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      confirmed: 'default',
-      completed: 'secondary',
-      cancelled: 'destructive',
-      pending: 'outline',
-    }
+  const getPaymentStatusBadge = (status: string) => (
+    <StatusPill tone={paymentStatusTone(status || 'pending')}>
+      <CreditCard />
+      {status ? statusLabel(status) : 'Pending'}
+    </StatusPill>
+  )
 
-    return (
-      <Badge variant={variants[status] || 'outline'}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    )
-  }
+  const getBookingTypeBadge = (type?: 'customer' | 'business') => (
+    <StatusPill tone="neutral">
+      <User />
+      {type === 'business' ? 'Business' : 'Customer'}
+    </StatusPill>
+  )
 
-  const getPaymentStatusBadge = (status: string) => {
-    // Handle undefined/null status
-    if (!status) {
-      return (
-        <Badge variant="outline" className="text-xs">
-          <CreditCard className="h-3 w-3 mr-1" />
-          Pending
-        </Badge>
-      )
-    }
-
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      completed: 'default',
-      processing: 'secondary',
-      failed: 'destructive',
-      refunded: 'outline',
-      pending: 'outline',
-    }
-
-    return (
-      <Badge variant={variants[status] || 'outline'} className="text-xs">
-        <CreditCard className="h-3 w-3 mr-1" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    )
-  }
-
-  const getBookingTypeBadge = (type?: 'customer' | 'business') => {
-    if (!type || type === 'customer') {
-      return (
-        <Badge variant="outline" className="text-xs">
-          <User className="h-3 w-3 mr-1" />
-          Customer
-        </Badge>
-      )
-    }
-
-    return (
-      <Badge variant="secondary" className="text-xs">
-        <User className="h-3 w-3 mr-1" />
-        Business
-      </Badge>
-    )
-  }
-
-  const getAssignmentStatusBadge = (status?: string | null) => {
-    // Handle undefined/null status
-    if (!status) {
-      return (
-        <Badge variant="outline" className="text-xs font-normal">
-          Unknown
-        </Badge>
-      )
-    }
-
-    return (
-      <Badge
-        variant="outline"
-        className={cn('text-xs font-normal', ASSIGNMENT_STATUS_STYLES[status])}
-      >
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    )
-  }
+  const getAssignmentStatusBadge = (status?: string | null) => (
+    <StatusPill tone={assignmentStatusTone(status)}>{statusLabel(status)}</StatusPill>
+  )
 
   // A grouped trip row stands for several journeys; selection and lookups work on the journeys.
   const journeys = bookings.flatMap((booking) => booking.trip_legs ?? [booking])
@@ -516,9 +448,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           <div className="flex flex-col items-start gap-1">
             {getBookingTypeBadge(booking.bookingType)}
             {tripTypeOf(booking) !== 'one_way' && (
-              <Badge variant="outline" className="text-xs whitespace-nowrap">
-                {tripTypeLabel(booking)}
-              </Badge>
+              <StatusPill tone="neutral">{tripTypeLabel(booking)}</StatusPill>
             )}
             {booking.booking_group && legLabel(booking, booking.booking_group.leg_count) && (
               <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -560,9 +490,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
 
             if (!assignment) {
               return (
-                <Badge variant="outline" className="text-xs">
-                  Unassigned
-                </Badge>
+                <StatusPill tone="warning">Unassigned</StatusPill>
               )
             }
 
@@ -601,7 +529,10 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           {formatCurrency(booking.total_price)}
         </TableCell>
         <TableCell className="text-right no-row-click">
-          {renderBookingMenu(booking)}
+          <div className="inline-flex items-center gap-0.5">
+            <RowViewLink href={`/admin/bookings/${booking.id}`} />
+            {renderBookingMenu(booking)}
+          </div>
         </TableCell>
       </TableRow>
   )

@@ -4,7 +4,7 @@ import type { MouseEvent, ReactNode } from 'react'
 import { format } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { StatusPill } from '@/components/admin/ui/status-pill'
 import { cn, formatCurrency } from '@/lib/utils'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { legLabel } from '@/lib/trips/display'
@@ -95,7 +95,7 @@ export function TripJourneysPanel({
                           {assignmentBadge(assignment.status)}
                         </div>
                       ) : (
-                        <Badge variant="outline" className="text-xs">Unassigned</Badge>
+                        <StatusPill tone="warning">Unassigned</StatusPill>
                       )}
                     </div>
                     <div className="w-[100px] flex-shrink-0">{statusBadge(leg.booking_status)}</div>

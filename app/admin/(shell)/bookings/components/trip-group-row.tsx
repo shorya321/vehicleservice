@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { format } from 'date-fns'
 import { Building2, Calendar, ChevronDown, ChevronRight, Eye, MapPin, MoreHorizontal, User } from 'lucide-react'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { StatusPill } from '@/components/admin/ui/status-pill'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -52,7 +52,7 @@ function VendorSummary({ legs }: { legs: BookingWithCustomer[] }) {
   const assigned = vendors.filter(Boolean).length
 
   if (assigned === 0) {
-    return <Badge variant="outline" className="text-xs">Unassigned</Badge>
+    return <StatusPill tone="warning">Unassigned</StatusPill>
   }
 
   const sameVendor = assigned === legs.length && new Set(vendors).size === 1
@@ -127,20 +127,11 @@ export function TripGroupRow({
       <TableCell>
         <div className="flex flex-col items-start gap-1">
           {/* Same badge as a flat row: business trips group here too. */}
-          {row.bookingType === 'business' ? (
-            <Badge variant="secondary" className="text-xs">
-              <User className="h-3 w-3 mr-1" />
-              Business
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-xs">
-              <User className="h-3 w-3 mr-1" />
-              Customer
-            </Badge>
-          )}
-          <Badge variant="outline" className="text-xs whitespace-nowrap">
-            {tripTypeLabel(row)}
-          </Badge>
+          <StatusPill tone="neutral">
+            <User />
+            {row.bookingType === 'business' ? 'Business' : 'Customer'}
+          </StatusPill>
+          <StatusPill tone="neutral">{tripTypeLabel(row)}</StatusPill>
         </div>
       </TableCell>
       <TableCell>
@@ -171,35 +162,40 @@ export function TripGroupRow({
         <VendorSummary legs={legs} />
       </TableCell>
       <TableCell>
-        {statuses.size === 1 ? statusBadge(first.booking_status) : <Badge variant="outline">Mixed</Badge>}
+        {statuses.size === 1 ? statusBadge(first.booking_status) : <StatusPill tone="neutral">Mixed</StatusPill>}
       </TableCell>
       <TableCell>{paymentBadge(first.payment_status)}</TableCell>
       <TableCell className="text-right font-semibold">{formatCurrency(total)}</TableCell>
       <TableCell className="text-right no-row-click">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Trip {groupNumber}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onOpen}>
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onToggle}>
-              <Chevron className="mr-2 h-4 w-4" />
-              {expanded ? 'Hide journeys' : 'Show journeys'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-              Assign, reassign, status, payment and delete are per journey
-            </DropdownMenuLabel>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="inline-flex items-center gap-0.5">
+          <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" aria-label="View details" title="View details" onClick={onOpen}>
+            <Eye className="h-4 w-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Trip {groupNumber}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onOpen}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onToggle}>
+                <Chevron className="mr-2 h-4 w-4" />
+                {expanded ? 'Hide journeys' : 'Show journeys'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                Assign, reassign, status, payment and delete are per journey
+              </DropdownMenuLabel>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </TableCell>
     </TableRow>
   )

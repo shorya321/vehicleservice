@@ -3,11 +3,11 @@ import { BookingsTable } from './components/bookings-table'
 import { ClientFilters } from './components/client-filters'
 import { getBookings, getBookingStats, BookingFilters } from './actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Calendar, Car, CheckCircle, XCircle, DollarSign, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
+import { PagePagination } from '@/components/admin/ui/page-pagination'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { AnimatedCard } from '@/components/ui/animated-card'
 
@@ -55,6 +55,18 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
     limit: 10,
     groupTrips: true,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.status && params.status !== 'all',
+    params.timeframe,
+    params.paymentStatus && params.paymentStatus !== 'all',
+    params.bookingType && params.bookingType !== 'all',
+    params.tripType && params.tripType !== 'all',
+    params.dateFrom || params.dateTo,
+    params.customerId,
+  ].filter(Boolean).length
 
   const { bookings, total, page, totalPages } = await getBookings(filters)
   const stats = await getBookingStats()
@@ -187,65 +199,33 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
         <AnimatedCard delay={0.7}>
           <Card>
             <CardHeader>
-              <CardTitle>All Bookings</CardTitle>
-            <CardDescription>
-              Manage customer bookings and track payment status
-            </CardDescription>
-          </CardHeader>
+              <FilterToggle
+                activeCount={activeFilterCount}
+                header={
+                  <div className="space-y-1.5">
+                    <CardTitle>All Bookings</CardTitle>
+                    <CardDescription>
+                      Manage customer bookings and track payment status
+                    </CardDescription>
+                  </div>
+                }
+              >
+                <ClientFilters initialFilters={filters} />
+              </FilterToggle>
+            </CardHeader>
           <CardContent className="space-y-4">
-            {/* Filters */}
-            <ClientFilters initialFilters={filters} />
-            
             {/* Table */}
             <BookingsTable bookings={bookings} />
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Showing {((page - 1) * filters.limit!) + 1} to{" "}
-                  {Math.min(page * filters.limit!, total)} of {total} bookings
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === 1}
-                    asChild
-                  >
-                    <Link
-                      href={{
-                        pathname: "/admin/bookings",
-                        query: {
-                          ...params,
-                          page: page - 1,
-                        },
-                      }}
-                    >
-                      Previous
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === totalPages}
-                    asChild
-                  >
-                    <Link
-                      href={{
-                        pathname: "/admin/bookings",
-                        query: {
-                          ...params,
-                          page: page + 1,
-                        },
-                      }}
-                    >
-                      Next
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            )}
+            <PagePagination
+              pathname="/admin/bookings"
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              limit={filters.limit!}
+              noun="bookings"
+              query={params}
+            />
           </CardContent>
         </Card>
         </AnimatedCard>
