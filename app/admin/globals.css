@@ -174,7 +174,7 @@
   --accent: 36 40% 55%;              /* Gold */
   --accent-foreground: 240 10% 4%;
 
-  --destructive: 0 84% 60%;
+  --destructive: 0 72% 51%;          /* #DC2626, white text reads on it */
   --destructive-foreground: 0 0% 98%;
 
   --border: 240 6% 90%;              /* #E4E4E7 - zinc-200 */
@@ -909,3 +909,59 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 1;
   transform: translateX(4px);
 }
+
+/* ============================================
+   Dialogs in the light theme
+   ============================================
+   components/ui/dialog.tsx paints every dialog charcoal with pearl text,
+   which is right for the public site and for this portal's dark mode. In the
+   light mode it leaves a dark box over a white page, and any bg-muted panel
+   inside it turns white with pearl text that cannot be read.
+
+   Scoped to the html element the admin theme provider has written its
+   variables onto, so the public site keeps its dialogs as they are. */
+html.light[style*="--admin-surface-0"] [role="dialog"].bg-luxury-darkGray\/95 {
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+html.light[style*="--admin-surface-0"] [role="dialog"].bg-luxury-darkGray\/95 .text-luxury-pearl {
+  color: hsl(var(--foreground));
+}
+
+html.light[style*="--admin-surface-0"] [role="dialog"].bg-luxury-darkGray\/95 .text-luxury-lightGray {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   Gold and pearl text in the light theme
+   ============================================
+   Shared components (Table head, EmptyState, the default Button) hard-code
+   the public site's gold and pearl, which are tuned for charcoal. On this
+   portal's white they drop to 1.1:1 to 2.2:1. Same scoping as the dialog
+   rules above, so the public site is untouched. */
+html.light[style*="--admin-surface-0"] .text-luxury-gold {
+  color: hsl(var(--primary));
+}
+
+html.light[style*="--admin-surface-0"] main .text-luxury-pearl {
+  color: hsl(var(--foreground));
+}
+
+html.light[style*="--admin-surface-0"] main .text-luxury-lightGray {
+  color: hsl(var(--muted-foreground));
+}
+
+/* The default Button is a light gold gradient. White on it is about 2.2:1;
+   dark mode already sets dark text there, so light mode matches it. */
+html.light[style*="--admin-surface-0"] .from-\[\#C6AA88\].text-primary-foreground {
+  color: hsl(var(--foreground));
+}
+
+/* Status badges (components/ui/badge.tsx) use -500 text, about 2.5:1 to
+   3.8:1 on white. The -700 step of the same hue reads in the light theme. */
+html.light[style*="--admin-surface-0"] .bg-emerald-500\/15.text-emerald-500 { color: rgb(4 120 87); }
+html.light[style*="--admin-surface-0"] .bg-red-500\/15.text-red-500 { color: rgb(185 28 28); }
+html.light[style*="--admin-surface-0"] .bg-amber-500\/15.text-amber-500 { color: rgb(180 83 9); }
+html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: rgb(14 116 144); }

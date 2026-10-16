@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import type { AdminThemeConfig } from './theme-utils';
-import { DEFAULT_ADMIN_THEME, hexToHsl } from './theme-utils';
+import { DEFAULT_ADMIN_THEME, hexToHsl, readableAccentHsl } from './theme-utils';
 
 /**
  * Admin Theme Context
@@ -73,7 +73,13 @@ function applyThemeToDOM(config: AdminThemeConfig, mode: 'dark' | 'light') {
 
   // Primary color (accent) - shared across modes
   const primaryHsl = hexToHsl(config.accent.primary);
-  root.style.setProperty('--primary', primaryHsl);
+  // --primary is used as text (labels, links, outline buttons) and behind
+  // white text. On the light background the raw gold fails both, so it is
+  // deepened there until it reads. --accent keeps the raw gold: it sits
+  // behind dark text, which the deeper shade would hurt.
+  const textPrimaryHsl =
+    mode === 'light' ? readableAccentHsl(config.accent.primary, colors.background) : primaryHsl;
+  root.style.setProperty('--primary', textPrimaryHsl);
   root.style.setProperty('--primary-foreground', mode === 'dark' ? '240 10% 4%' : '0 0% 100%');
   root.style.setProperty('--secondary', hexToHsl(colors.muted));
   root.style.setProperty('--secondary-foreground', hexToHsl(colors.text_primary));

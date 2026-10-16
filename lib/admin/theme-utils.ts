@@ -109,6 +109,60 @@ export function hexToHsl(hex: string): string {
   return `${hDeg} ${sPercent}% ${lPercent}%`;
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace(/^#/, '');
+  return [0, 2, 4].map((i) => parseInt(clean.slice(i, i + 2), 16)) as [number, number, number];
+}
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const a = (s / 100) * Math.min(l / 100, 1 - l / 100);
+  const channel = (n: number): number => {
+    const k = (n + h / 30) % 12;
+    return Math.round((l / 100 - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255);
+  };
+  return [channel(0), channel(8), channel(4)];
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const linear = (v: number): number => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+}
+
+function ratioOf(a: [number, number, number], b: [number, number, number]): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/** WCAG contrast ratio between two hex colors (1 to 21). */
+export function contrastRatio(foregroundHex: string, backgroundHex: string): number {
+  return ratioOf(hexToRgb(foregroundHex), hexToRgb(backgroundHex));
+}
+
+/**
+ * The accent as an HSL string, darkened only as far as it takes to read as
+ * text on `backgroundHex`.
+ *
+ * The admin gold is picked to glow on charcoal. On the light theme's white it
+ * sits near 2.8:1, so every gold label, link and outline button fades. Hue and
+ * saturation are kept, so it still reads as the same gold.
+ */
+export function readableAccentHsl(accentHex: string, backgroundHex: string, minRatio = 4.5): string {
+  const accentHsl = hexToHsl(accentHex);
+  const background = hexToRgb(backgroundHex);
+  if (ratioOf(hexToRgb(accentHex), background) >= minRatio) return accentHsl;
+
+  const [h, s, l] = accentHsl.replace(/%/g, '').split(' ').map(Number);
+  let lightness = l;
+  while (lightness > 0 && ratioOf(hslToRgb(h, s, lightness), background) < minRatio) {
+    lightness -= 1;
+  }
+  return `${h} ${s}% ${lightness}%`;
+}
+
 /**
  * Merge partial config with defaults
  */
