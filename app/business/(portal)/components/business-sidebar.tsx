@@ -60,7 +60,7 @@ interface NavGroup {
   items: SidebarNavItem[];
 }
 
-const navGroups: NavGroup[] = [
+export const navGroups: NavGroup[] = [
   {
     label: 'Overview',
     items: [
