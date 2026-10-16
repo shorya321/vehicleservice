@@ -41,6 +41,10 @@ import {
 import { useVendorData } from "@/lib/vendor/vendor-data-context"
 import { VendorCommandPalette } from "@/components/vendor/vendor-command-palette"
 import { useCommandPalette } from "@/lib/hooks/use-command-palette"
+import { NavigationProgressProvider } from "./navigation-progress/navigation-progress-provider"
+import { TopProgressBar } from "./navigation-progress/top-progress-bar"
+import { ContentLoader } from "./navigation-progress/content-loader"
+import { flattenNavLabels } from "./navigation-progress/classify-navigation"
 
 interface VendorLayoutProps {
   children: React.ReactNode
@@ -103,6 +107,8 @@ const navGroups: NavGroup[] = [
     ]
   },
 ]
+
+const VENDOR_NAV_LABELS = flattenNavLabels(navGroups)
 
 export function VendorLayout({ children }: VendorLayoutProps) {
   const { user, vendorApplication } = useVendorData()
@@ -222,170 +228,181 @@ export function VendorLayout({ children }: VendorLayoutProps) {
   }
 
   return (
-    <div className="relative flex h-screen overflow-hidden bg-background">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+    <NavigationProgressProvider navLabels={VENDOR_NAV_LABELS}>
+      <TopProgressBar />
+      <div className="relative flex h-screen overflow-hidden bg-background">
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
-      >
-        <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-6 border-b border-border">
-            <Link href="/vendor/dashboard" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center transition-transform group-hover:scale-105">
-                <Package className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold font-serif">Vendor Portal</span>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-3 py-4">
-            {navGroups.map((group, groupIndex) => (
-              <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
-                {/* Section Header */}
-                <div className="px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
-                    <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
-                      {group.label}
-                    </span>
+        {/* Sidebar */}
+        <aside
+          // Close the mobile drawer as soon as a link is tapped, so the page
+          // loader underneath is visible while the next page loads.
+          onClick={(e) => {
+            if (sidebarOpen && e.target instanceof Element && e.target.closest("a[href]")) setSidebarOpen(false)
+          }}
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          <div className="flex h-full flex-col">
+            {/* Logo */}
+            <div className="flex h-16 items-center justify-between px-6 border-b border-border">
+              <Link href="/vendor/dashboard" className="flex items-center gap-2 group">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Package className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-semibold font-serif">Vendor Portal</span>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto px-3 py-4">
+              {navGroups.map((group, groupIndex) => (
+                <div key={group.label} className={cn(groupIndex > 0 && 'mt-6')}>
+                  {/* Section Header */}
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-4 h-px bg-gradient-to-r from-primary/60 to-transparent" />
+                      <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary">
+                        {group.label}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Navigation Items */}
+                  <div className="space-y-1">
+                    {group.items.map((item) => renderNavItem(item))}
                   </div>
                 </div>
-                {/* Navigation Items */}
-                <div className="space-y-1">
-                  {group.items.map((item) => renderNavItem(item))}
-                </div>
-              </div>
-            ))}
-          </nav>
+              ))}
+            </nav>
 
-          {/* Business info */}
-          <div className="border-t border-border p-4">
-            <div className="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]">
-              <Avatar className="h-10 w-10 ring-2 ring-primary/40">
-                <AvatarImage src={user?.profile?.avatar_url || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">{user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
-                <p className="text-xs text-foreground/60 truncate">
-                  {user?.email || ''}
-                </p>
+            {/* Business info */}
+            <div className="border-t border-border p-4">
+              <div className="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-primary/5 hover:shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]">
+                <Avatar className="h-10 w-10 ring-2 ring-primary/40">
+                  <AvatarImage src={user?.profile?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">{user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
+                  <p className="text-xs text-foreground/60 truncate">
+                    {user?.email || ''}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </aside>
+        </aside>
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden lg:pl-64">
-        {/* Top bar */}
-        <header className="z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-primary hover:bg-primary/10"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+        {/* Main content */}
+        <div className="flex flex-1 flex-col overflow-hidden lg:pl-64">
+          {/* Top bar */}
+          <header className="z-50 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-sm shadow-sm px-4 md:px-6">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden text-primary hover:bg-primary/10"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
 
-            {/* Search Trigger */}
-            <Button
-              variant="ghost"
-              onClick={() => setCommandOpen(true)}
-              className="hidden sm:flex items-center gap-2 sm:w-64 lg:w-80 rounded-lg border border-border bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30 h-9 justify-start"
-            >
-              <Search className="h-4 w-4" />
-              <span className="flex-1 text-left text-sm">Search...</span>
-              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs">
-                <span>⌘</span>
-                <span>K</span>
+              {/* Search Trigger */}
+              <Button
+                variant="ghost"
+                onClick={() => setCommandOpen(true)}
+                className="hidden sm:flex items-center gap-2 sm:w-64 lg:w-80 rounded-lg border border-border bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/30 h-9 justify-start"
+              >
+                <Search className="h-4 w-4" />
+                <span className="flex-1 text-left text-sm">Search...</span>
+                <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-xs">
+                  <span>⌘</span>
+                  <span>K</span>
+                </div>
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Theme Toggle */}
+              <AdminThemeToggle size="default" />
+
+              {/* Notification Bell */}
+              <VendorNotificationBell />
+
+              {/* User menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
+                    <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                      <AvatarImage src={user?.profile?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
+                        {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8}>
+                  <DropdownMenuLabel className="font-normal !text-primary">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email || ''}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="!bg-border" />
+                  <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                    <Link href="/vendor/account">
+                      <UserCircle className="mr-2 h-4 w-4 text-primary" />
+                      My Account
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
+                    <Link href="/vendor/profile">
+                      <User className="mr-2 h-4 w-4 text-primary" />
+                      Business Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="!bg-border" />
+                  <DropdownMenuItem onClick={handleLogout} className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <VendorCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+          </header>
+
+          {/* Page content */}
+          <div className="relative isolate flex min-h-0 flex-1 flex-col">
+            <main className="flex-1 overflow-y-auto bg-background">
+              <div className="w-full px-4 py-6 md:px-6 lg:px-8">
+                {children}
               </div>
-            </Button>
+            </main>
+            <ContentLoader />
           </div>
-
-          <div className="flex items-center gap-2">
-            {/* Theme Toggle */}
-            <AdminThemeToggle size="default" />
-
-            {/* Notification Bell */}
-            <VendorNotificationBell />
-
-            {/* User menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
-                  <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                    <AvatarImage src={user?.profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
-                      {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8}>
-                <DropdownMenuLabel className="font-normal !text-primary">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email || ''}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="!bg-border" />
-                <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                  <Link href="/vendor/account">
-                    <UserCircle className="mr-2 h-4 w-4 text-primary" />
-                    My Account
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                  <Link href="/vendor/profile">
-                    <User className="mr-2 h-4 w-4 text-primary" />
-                    Business Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="!bg-border" />
-                <DropdownMenuItem onClick={handleLogout} className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <VendorCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-background">
-          <div className="w-full px-4 py-6 md:px-6 lg:px-8">
-            {children}
-          </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </NavigationProgressProvider>
   )
 }
