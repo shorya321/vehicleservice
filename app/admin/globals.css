@@ -1261,26 +1261,26 @@ html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"]) .roun
 
 /* Gold as text: the lighter gold in dark, the deeper one in light. Fills keep
    --primary. */
-html[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role="alertdialog"], [role="menu"]) .text-primary {
+html[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role="alertdialog"], [role="menu"]) .text-primary:not(.border-2.border-primary.bg-transparent) {
   color: #D4B07A;
 }
-html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role="alertdialog"], [role="menu"]) .text-primary {
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role="alertdialog"], [role="menu"]) .text-primary:not(.border-2.border-primary.bg-transparent) {
   color: #85663A;
 }
 
 /* Buttons (components/ui/button.tsx): 36px, 13.5px medium. The large size
    is left alone. */
-:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold {
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.whitespace-nowrap.rounded-md.font-semibold.tracking-wider:not(.text-xs, .text-base, .text-lg) {
   font-size: 13.5px;
 }
-:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold:is(.h-12, .h-10) {
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.whitespace-nowrap.rounded-md.font-semibold.tracking-wider:is(.h-12, .h-10) {
   height: 36px;
 }
-:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold.h-12 {
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.whitespace-nowrap.rounded-md.font-semibold.tracking-wider.h-12 {
   padding-left: 16px;
   padding-right: 16px;
 }
-:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold.h-10.w-10 {
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.whitespace-nowrap.rounded-md.font-semibold.tracking-wider.h-10.w-10 {
   width: 36px;
 }
 .portal-shell label.uppercase.tracking-wider {
@@ -1290,13 +1290,141 @@ html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role
 }
 
 /* Fields (components/ui/input.tsx, select.tsx): 36px, 13px. */
-:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) :is(input, button).flex.h-10.w-full.rounded-md.border {
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) :is(input.flex.h-10.w-full, button[role="combobox"].h-10).rounded-md.border {
   height: 36px;
   font-size: 13px;
 }
 
 /* Table cells: primary text, as in the approved design. Secondary lines keep
    their own text-muted-foreground. */
-.portal-shell main td.text-luxury-lightGray {
+.portal-shell main td.text-luxury-lightGray,
+html.light[style*="--admin-surface-0"] .portal-shell main td.text-luxury-lightGray {
+  color: hsl(var(--foreground));
+}
+
+/* Menus and select lists (components/ui/dropdown-menu.tsx, select.tsx).
+   Radix portals them to <body>, so they are matched through the html element
+   the admin theme provider writes onto. The card colour with a hairline
+   border in place of the public site's blurred charcoal and gold; items in
+   primary text with a muted hover, as on the table's row actions. */
+html[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]) {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  backdrop-filter: none;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+html.light[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]) {
+  box-shadow: 0 10px 28px rgba(9, 9, 11, 0.08), 0 1px 2px rgba(9, 9, 11, 0.04);
+}
+html[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]).rounded-md {
+  border-radius: 8px;
+}
+html[style*="--admin-surface-0"] [role="menu"] :is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]),
+html[style*="--admin-surface-0"] [role="listbox"] [role="option"] {
+  color: hsl(var(--foreground));
+  font-size: 13.5px;
+  border-radius: 6px;
+}
+html[style*="--admin-surface-0"] [role="menu"] :is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]) > svg:not([class*="text-"]) {
+  color: hsl(var(--muted-foreground));
+}
+html[style*="--admin-surface-0"] [role="menu"] :is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]):is([data-highlighted], :focus, [data-state="open"]),
+html[style*="--admin-surface-0"] [role="listbox"] [role="option"]:is([data-highlighted], :focus) {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+html[style*="--admin-surface-0"] [role="menu"] [role="menuitem"].text-destructive {
+  color: #F87171;
+}
+html[style*="--admin-surface-0"] [role="menu"] [role="menuitem"].text-destructive:is([data-highlighted], :focus) {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+}
+html.light[style*="--admin-surface-0"] [role="menu"] [role="menuitem"].text-destructive,
+html.light[style*="--admin-surface-0"] [role="menu"] [role="menuitem"].text-destructive:is([data-highlighted], :focus) {
+  color: #B91C1C;
+}
+html.light[style*="--admin-surface-0"] [role="menu"] [role="menuitem"].text-destructive:is([data-highlighted], :focus) {
+  background-color: rgba(220, 38, 38, 0.08);
+}
+html[style*="--admin-surface-0"] [role="menu"] .px-2.font-semibold:not([role]) {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 500;
+}
+html[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]) [role="separator"] {
+  background-color: hsl(var(--border));
+}
+html[style*="--admin-surface-0"] [role="menu"] [role="menuitem"] > svg.text-luxury-gold {
+  color: hsl(var(--muted-foreground));
+}
+html[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]) :is([role="menuitemcheckbox"], [role="menuitemradio"], [role="option"]) span svg {
+  color: #D4B07A;
+}
+html.light[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]) :is([role="menuitemcheckbox"], [role="menuitemradio"], [role="option"]) span svg {
+  color: #85663A;
+}
+
+/* Dialogs (components/ui/dialog.tsx, alert-dialog.tsx): the card colour with a
+   hairline border and 12px corners, like the page's panels, in place of the
+   public site's blurred charcoal and gold. Matched on the centring class so
+   popovers, which Radix also gives role="dialog", are left alone. */
+html[style*="--admin-surface-0"] :is([role="dialog"], [role="alertdialog"]).fixed.translate-x-\[-50\%\],
+html.light[style*="--admin-surface-0"] :is([role="dialog"], [role="alertdialog"]).fixed.translate-x-\[-50\%\] {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+  backdrop-filter: none;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+html.light[style*="--admin-surface-0"] :is([role="dialog"], [role="alertdialog"]).fixed.translate-x-\[-50\%\] {
+  box-shadow: 0 24px 64px rgba(9, 9, 11, 0.12), 0 2px 6px rgba(9, 9, 11, 0.04);
+}
+@media (min-width: 640px) {
+  html[style*="--admin-surface-0"] :is([role="dialog"], [role="alertdialog"]).fixed.translate-x-\[-50\%\] {
+    border-radius: 12px;
+  }
+}
+html[style*="--admin-surface-0"] :is([role="dialog"], [role="alertdialog"]).fixed.translate-x-\[-50\%\] h2 {
+  font-family: var(--admin-font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+html[style*="--admin-surface-0"] :is([role="dialog"], [role="alertdialog"]).fixed.translate-x-\[-50\%\] h2 + p {
+  font-size: 13.5px;
+  color: hsl(var(--muted-foreground));
+}
+html[style*="--admin-surface-0"] [role="dialog"].fixed.translate-x-\[-50\%\] > button.absolute.right-4.top-4 {
+  color: hsl(var(--muted-foreground));
+}
+html[style*="--admin-surface-0"] [role="dialog"].fixed.translate-x-\[-50\%\] > button.absolute.right-4.top-4:hover {
+  color: hsl(var(--foreground));
+}
+
+/* Every select trigger in the portal, filters and in-row, at the field size. */
+.portal-shell main button[role="combobox"] {
+  font-size: 13px;
+}
+
+/* Date picker triggers (components/ui/form-date-picker.tsx) at the field size. */
+.portal-shell main button.flex.min-h-10.w-full.rounded-md.border {
+  min-height: 36px;
+  font-size: 13px;
+}
+
+/* Calendar popover (form-date-picker): the card colour and hairline border in
+   place of the public site's warm black. The site rule uses !important, so this
+   one has to as well. */
+html[style*="--admin-surface-0"] .luxury-calendar-popover {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+html.light[style*="--admin-surface-0"] .luxury-calendar-popover {
+  box-shadow: 0 10px 28px rgba(9, 9, 11, 0.08), 0 1px 2px rgba(9, 9, 11, 0.04) !important;
+}
+html[style*="--admin-surface-0"] .luxury-calendar-popover .rdp-root {
   color: hsl(var(--foreground));
 }
