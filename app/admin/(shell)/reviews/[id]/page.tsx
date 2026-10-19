@@ -93,7 +93,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                   <div className="flex items-start gap-4">
                     <Avatar className="h-14 w-14">
                       <AvatarImage src={review.customer.avatar_url || undefined} />
-                      <AvatarFallback className="bg-luxury-gold/20 text-amber-700 dark:text-luxury-gold text-lg">
+                      <AvatarFallback className="bg-luxury-gold/20 text-primary text-lg">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -104,7 +104,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                       </div>
                       <div className="flex items-center gap-3">
                         <StarRating rating={review.rating} size="md" />
-                        <span className="text-lg font-semibold text-amber-700 dark:text-luxury-gold">{review.rating}.0</span>
+                        <span className="text-lg font-semibold text-primary">{review.rating}.0</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />

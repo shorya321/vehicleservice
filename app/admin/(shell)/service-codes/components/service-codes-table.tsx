@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { StatusPill } from '@/components/admin/ui/status-pill'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -37,13 +37,6 @@ import { toggleServiceCodeStatus, deleteServiceCode } from '../actions'
 
 interface ServiceCodesTableProps {
   serviceCodes: ServiceCode[]
-}
-
-const typeColors: Record<string, string> = {
-  transfer: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  yacht: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
-  jet: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
-  desert: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
 }
 
 export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
@@ -112,12 +105,7 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
                 </TableCell>
                 <TableCell>{sc.description}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={typeColors[sc.service_type] || 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300'}
-                  >
-                    {sc.service_type}
-                  </Badge>
+                  <StatusPill tone="neutral" className="capitalize">{sc.service_type}</StatusPill>
                 </TableCell>
                 <TableCell>
                   <Switch

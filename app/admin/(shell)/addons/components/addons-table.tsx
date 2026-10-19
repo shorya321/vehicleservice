@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/admin/ui/status-pill"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,19 +104,6 @@ export function AddonsTable({ addons }: AddonsTableProps) {
     }
   }
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Child Safety':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-      case 'Luggage':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-      case 'Comfort':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
-    }
-  }
-
   return (
     <>
       <div className="space-y-4">
@@ -186,9 +174,7 @@ export function AddonsTable({ addons }: AddonsTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={getCategoryColor(addon.category)}>
-                    {addon.category}
-                  </Badge>
+                  <StatusPill tone="neutral">{addon.category}</StatusPill>
                 </TableCell>
                 <TableCell className="space-y-1">
                   <div className="font-medium">

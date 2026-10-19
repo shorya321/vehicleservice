@@ -1199,3 +1199,104 @@ html[style*="--admin-surface-0"] [role="alertdialog"] :is(button, a).border-2.bo
   padding-left: 10px;
   padding-right: 10px;
 }
+
+/* Badges (components/ui/badge.tsx) take the status pill's size and tones, so
+   every pill in the portal reads as one system. Matched on the badge's base
+   classes; dialogs are reached through the html element, as above. */
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs {
+  height: 21px;
+  padding: 0 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-primary\/15 {
+  background: rgba(186, 149, 94, 0.12); color: #D4B07A; border-color: transparent;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs:is(.bg-secondary, .bg-transparent) {
+  background: transparent; color: hsl(var(--foreground)); border-color: hsl(var(--border)); font-weight: 500;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-emerald-500\/15 {
+  background: rgba(34, 197, 94, 0.12); color: #4ADE80; border-color: transparent;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-amber-500\/15 {
+  background: rgba(245, 158, 11, 0.16); color: #FBBF24; border-color: rgba(245, 158, 11, 0.45);
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-red-500\/15 {
+  background: transparent; color: #F87171; border-color: rgba(239, 68, 68, 0.45);
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-cyan-500\/15 {
+  background: rgba(14, 165, 233, 0.12); color: #7DD3FC; border-color: transparent;
+}
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-primary\/15 { color: #85663A; }
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-emerald-500\/15 { background: rgba(22, 163, 74, 0.10); color: #15803D; }
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-amber-500\/15 { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-red-500\/15 { color: #B91C1C; border-color: #FECACA; }
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"]) .rounded-full.border.uppercase.tracking-wider.text-xs.bg-cyan-500\/15 { color: #0369A1; }
+
+/* Paragraphs: the public site's base p (16px, warm grey #b8b4ae, 1.65 line
+   height, 75ch) does not belong in the portal. :where() keeps this at the
+   base rule's weight, so any Tailwind size or colour class still wins. */
+:where(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) p {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  max-width: none;
+}
+
+/* Page title and subtitle: 26px over 13px secondary text, whichever size
+   class the page used. */
+.portal-shell main h1:is(.text-2xl, .text-3xl) {
+  font-size: 1.625rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+.portal-shell main h1:is(.text-2xl, .text-3xl) + p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Gold as text: the lighter gold in dark, the deeper one in light. Fills keep
+   --primary. */
+html[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role="alertdialog"], [role="menu"]) .text-primary {
+  color: #D4B07A;
+}
+html.light[style*="--admin-surface-0"] :is(.portal-shell, [role="dialog"], [role="alertdialog"], [role="menu"]) .text-primary {
+  color: #85663A;
+}
+
+/* Buttons (components/ui/button.tsx): 36px, 13.5px medium. The large size
+   is left alone. */
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold {
+  font-size: 13.5px;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold:is(.h-12, .h-10) {
+  height: 36px;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold.h-12 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) .inline-flex.items-center.justify-center.whitespace-nowrap.rounded-md.text-sm.font-semibold.h-10.w-10 {
+  width: 36px;
+}
+.portal-shell label.uppercase.tracking-wider {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+}
+
+/* Fields (components/ui/input.tsx, select.tsx): 36px, 13px. */
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"], html[style*="--admin-surface-0"] [role="alertdialog"]) :is(input, button).flex.h-10.w-full.rounded-md.border {
+  height: 36px;
+  font-size: 13px;
+}
+
+/* Table cells: primary text, as in the approved design. Secondary lines keep
+   their own text-muted-foreground. */
+.portal-shell main td.text-luxury-lightGray {
+  color: hsl(var(--foreground));
+}

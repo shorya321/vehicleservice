@@ -18,9 +18,9 @@ interface AdminReplyModalProps {
 export function AdminReplyModal({ reviewId, onClose, onSuccess }: AdminReplyModalProps) {
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-luxury-black border-luxury-lightGray/20">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-luxury-pearl">Quick Reply</DialogTitle>
+          <DialogTitle>Quick Reply</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Add a professional response to this review that will be visible to all customers.
           </DialogDescription>

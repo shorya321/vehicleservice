@@ -262,7 +262,7 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                         {truncateText(review.review_text)}
                       </p>
                       {review.admin_response && (
-                        <div className="mt-1 flex items-center gap-1 text-xs text-amber-700 dark:text-luxury-gold">
+                        <div className="mt-1 flex items-center gap-1 text-xs text-primary">
                           <MessageSquare className="h-3 w-3" />
                           Admin replied
                         </div>

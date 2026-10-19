@@ -67,9 +67,12 @@ export const DEFAULT_ADMIN_THEME: AdminThemeConfig = {
 /**
  * Convert hex color to HSL string for CSS variables
  * @param hex - Hex color string (e.g., "#BA955E")
+ * @param decimals - Decimal places kept. Whole percents shift near-white and
+ *   near-black surfaces by a step (#F5F5F6 paints as #F4F4F5), so surface
+ *   tokens pass 1.
  * @returns HSL string (e.g., "36 40% 55%")
  */
-export function hexToHsl(hex: string): string {
+export function hexToHsl(hex: string, decimals = 0): string {
   // Remove # if present
   hex = hex.replace(/^#/, '');
 
@@ -102,9 +105,11 @@ export function hexToHsl(hex: string): string {
   }
 
   // Convert to CSS format (h s% l%)
-  const hDeg = Math.round(h * 360);
-  const sPercent = Math.round(s * 100);
-  const lPercent = Math.round(l * 100);
+  const factor = Math.pow(10, decimals);
+  const round = (value: number): number => Math.round(value * factor) / factor;
+  const hDeg = round(h * 360);
+  const sPercent = round(s * 100);
+  const lPercent = round(l * 100);
 
   return `${hDeg} ${sPercent}% ${lPercent}%`;
 }
@@ -197,12 +202,12 @@ export function generateThemeCSSVariables(config: AdminThemeConfig): string {
   const primaryHsl = hexToHsl(config.accent.primary);
 
   // Convert surface colors to HSL
-  const backgroundHsl = hexToHsl(colors.background);
-  const cardHsl = hexToHsl(colors.card);
-  const mutedHsl = hexToHsl(colors.muted);
-  const textPrimaryHsl = hexToHsl(colors.text_primary);
-  const textSecondaryHsl = hexToHsl(colors.text_secondary);
-  const borderHsl = hexToHsl(colors.border);
+  const backgroundHsl = hexToHsl(colors.background, 1);
+  const cardHsl = hexToHsl(colors.card, 1);
+  const mutedHsl = hexToHsl(colors.muted, 1);
+  const textPrimaryHsl = hexToHsl(colors.text_primary, 1);
+  const textSecondaryHsl = hexToHsl(colors.text_secondary, 1);
+  const borderHsl = hexToHsl(colors.border, 1);
 
   return `
     --background: ${backgroundHsl};

@@ -60,16 +60,16 @@ function applyThemeToDOM(config: AdminThemeConfig, mode: 'dark' | 'light') {
   root.classList.add(mode);
 
   // Apply CSS variables
-  root.style.setProperty('--background', hexToHsl(colors.background));
-  root.style.setProperty('--foreground', hexToHsl(colors.text_primary));
-  root.style.setProperty('--card', hexToHsl(colors.card));
-  root.style.setProperty('--card-foreground', hexToHsl(colors.text_primary));
-  root.style.setProperty('--popover', hexToHsl(colors.card));
-  root.style.setProperty('--popover-foreground', hexToHsl(colors.text_primary));
-  root.style.setProperty('--muted', hexToHsl(colors.muted));
-  root.style.setProperty('--muted-foreground', hexToHsl(colors.text_secondary));
-  root.style.setProperty('--border', hexToHsl(colors.border));
-  root.style.setProperty('--input', hexToHsl(colors.border));
+  root.style.setProperty('--background', hexToHsl(colors.background, 1));
+  root.style.setProperty('--foreground', hexToHsl(colors.text_primary, 1));
+  root.style.setProperty('--card', hexToHsl(colors.card, 1));
+  root.style.setProperty('--card-foreground', hexToHsl(colors.text_primary, 1));
+  root.style.setProperty('--popover', hexToHsl(colors.card, 1));
+  root.style.setProperty('--popover-foreground', hexToHsl(colors.text_primary, 1));
+  root.style.setProperty('--muted', hexToHsl(colors.muted, 1));
+  root.style.setProperty('--muted-foreground', hexToHsl(colors.text_secondary, 1));
+  root.style.setProperty('--border', hexToHsl(colors.border, 1));
+  root.style.setProperty('--input', hexToHsl(colors.border, 1));
 
   // Primary color (accent) - shared across modes
   const primaryHsl = hexToHsl(config.accent.primary);
@@ -81,8 +81,8 @@ function applyThemeToDOM(config: AdminThemeConfig, mode: 'dark' | 'light') {
     mode === 'light' ? readableAccentHsl(config.accent.primary, colors.background) : primaryHsl;
   root.style.setProperty('--primary', textPrimaryHsl);
   root.style.setProperty('--primary-foreground', mode === 'dark' ? '240 10% 4%' : '0 0% 100%');
-  root.style.setProperty('--secondary', hexToHsl(colors.muted));
-  root.style.setProperty('--secondary-foreground', hexToHsl(colors.text_primary));
+  root.style.setProperty('--secondary', hexToHsl(colors.muted, 1));
+  root.style.setProperty('--secondary-foreground', hexToHsl(colors.text_primary, 1));
   root.style.setProperty('--accent', primaryHsl);
   root.style.setProperty('--accent-foreground', mode === 'dark' ? '240 10% 4%' : '240 10% 4%');
   root.style.setProperty('--ring', primaryHsl);

@@ -218,7 +218,7 @@ export default async function AdminBusinessDetailsPage({
           <CardTitle>Wallet Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold">
+          <div className="font-[family-name:var(--admin-font-display)] text-[28px] font-bold leading-9 tracking-[-0.01em] tabular-nums">
             {formatCurrency(businessAccount.wallet_balance)}
           </div>
         </CardContent>
