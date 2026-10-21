@@ -19,7 +19,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
     },
     corporate: {
       label: 'Corporate accounts',
-      body: 'Monthly invoicing, priority booking and a named account manager. Pick Corporate Services in the form and we set it up in one call.',
+      body: "One prepaid wallet for your team's bookings, with an invoice for each ride. Open a business account online, or pick Corporate Services in the form to talk to us first.",
     },
   },
   promises: {
@@ -34,7 +34,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
       },
       {
         title: 'You get an answer within 24 hours.',
-        body: 'Most land the same hour during Dubai business hours. Anything urgent gets picked up by phone.',
+        body: 'Most get an answer sooner. Anything urgent gets picked up by phone.',
         meta: 'Within 24 hours',
       },
       {
@@ -48,7 +48,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
     visible: true,
     eyebrow: 'Asked',
     title: 'Questions travellers actually ask.',
-    body: 'If none of these covers it, the form above reaches the same team. They reply within an hour during Dubai business hours.',
+    body: 'If none of these covers it, the form above reaches the same team.',
     cta: { label: 'Write to the desk', href: '#contact-form' },
     items: [
       {
@@ -64,12 +64,12 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
       {
         question: 'Do you offer corporate accounts?',
         answer:
-          'Yes, we offer tailored corporate accounts with dedicated account management, priority booking, monthly invoicing, and volume-based pricing. Contact us via the "Corporate Services" option in the form above to learn more.',
+          'Yes. Hotels, travel agents and companies can open a business account online. Your team books from one dashboard, every trip is charged to a prepaid wallet, and each ride gets its own invoice. Pick Corporate Services in the form if you would like to talk to us first.',
       },
       {
         question: 'What areas do you serve?',
         answer:
-          'We provide luxury transfer services across the UAE and select international cities. Core coverage includes Dubai, Abu Dhabi, Sharjah, and their airports, hotels, and business districts. Cross-emirate and intercity transfers are available on all routes.',
+          'We run transfers within Dubai: DXB and Al Maktoum airports, hotels, homes and business districts across the city. Contact us before you book a trip to another emirate.',
       },
     ],
   },

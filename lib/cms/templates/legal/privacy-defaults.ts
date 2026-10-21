@@ -17,7 +17,7 @@ export const DEFAULT_PRIVACY_CONTENT: LegalContent = {
       "id": "introduction",
       "title": "Introduction",
       "toc_label": "Introduction",
-      "body": "<p>Infinia Transfers operates a private airport and city transfer service across more than 40 cities worldwide. When you search for a route, book a vehicle, or contact our concierge team, we handle certain personal information to deliver the service you expect from us.</p><p>This Privacy Policy explains what data we collect, why we collect it, who we share it with, and the choices available to you. It applies to our website, booking platform, and any communication between you and our team, whether by email, phone, or live chat.</p><p>Our approach to privacy is straightforward: collect only what we need and protect it properly.</p>"
+      "body": "<p>Infinia Transfers operates a private airport and city transfer service in Dubai. When you search for a route, book a vehicle, or contact our concierge team, we handle certain personal information to deliver the service you expect from us.</p><p>This Privacy Policy explains what data we collect, why we collect it, who we share it with, and the choices available to you. It applies to our website, booking platform, and any communication between you and our team, whether by email, phone, or live chat.</p><p>Our approach to privacy is straightforward: collect only what we need and protect it properly.</p>"
     },
     {
       "id": "information-we-collect",
@@ -59,7 +59,7 @@ export const DEFAULT_PRIVACY_CONTENT: LegalContent = {
       "id": "international-data-transfers",
       "title": "International Data Transfers",
       "toc_label": "International data transfers",
-      "body": "<p>Infinia Transfers operates across more than 40 cities worldwide. When you book a transfer in a different country, your booking information is shared with the local vehicle provider in that region. This means your data may cross international borders.</p><p>We ensure that any international transfer of personal data is protected by appropriate safeguards, including standard contractual clauses where required, and that receiving parties maintain security standards consistent with this policy.</p>"
+      "body": "<p>When you book, your booking information is shared with the partner company that provides your vehicle and chauffeur. Some of the services we rely on, such as payment processing and hosting, may store or process data outside the UAE.</p><p>We ensure that any international transfer of personal data is protected by appropriate safeguards, including standard contractual clauses where required, and that receiving parties maintain security standards consistent with this policy.</p>"
     },
     {
       "id": "childrens-privacy",

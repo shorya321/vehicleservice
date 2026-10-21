@@ -14,8 +14,8 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
       'Pick a route, choose a vehicle, confirm your transfer. Fixed pricing in your currency across 40+ cities.',
     trust: ['Fixed price at booking', 'Flight tracked', 'Free cancellation'],
     stats: [
-      { label: 'Cities', value: '40+', is_rating: false },
-      { label: 'Vehicles', value: '120+', is_rating: false },
+      { label: 'Dubai zones', value: '29', is_rating: false },
+      { label: 'Free waiting', value: '60 min', is_rating: false },
       { label: 'Rating', value: '4.9', is_rating: true },
     ],
   },
@@ -41,25 +41,25 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
     items: [
       {
         name: 'Downtown',
-        meta: '214 routes',
+        meta: '',
         image: '/images/cities/downtown.webp',
         alt: 'Burj Khalifa above the Sheikh Zayed Road interchange at dusk',
       },
       {
         name: 'Palm Jumeirah',
-        meta: '96 routes',
+        meta: '',
         image: '/images/cities/palm-jumeirah.webp',
         alt: 'The fronds of Palm Jumeirah and Atlantis seen from the air at dawn',
       },
       {
         name: 'Dubai Marina',
-        meta: '147 routes',
+        meta: '',
         image: '/images/cities/dubai-marina.webp',
         alt: 'Cayan Tower and the Dubai Marina berths seen across the water',
       },
       {
         name: 'Dubai Creek',
-        meta: '63 routes',
+        meta: '',
         image: '/images/cities/dubai-creek.webp',
         alt: 'Abras crossing the creek in front of the old Deira waterfront',
       },
@@ -109,15 +109,15 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
       },
       {
         title: 'Wi-Fi and refreshments',
-        body: 'Complimentary on every transfer. Onboard router with international roaming, bottled water, and a selection of soft drinks.',
-        meta: 'Included',
+        body: 'In-car Wi-Fi and refreshments, each added at checkout for a small charge.',
+        meta: 'Added at checkout',
         image: '/images/onboard/in-car-refreshments.webp',
         alt: 'Two iced drinks resting in a car console, city towers through the window behind',
       },
       {
-        title: 'Extended waiting',
-        body: 'Hold the vehicle for an additional hour beyond the included grace period. Useful for delayed bag drop, customs, or unscheduled stops.',
-        meta: '+1 hour included free',
+        title: 'Waiting time',
+        body: 'Your chauffeur waits up to 60 minutes at no charge, counted from the actual landing time on airport pickups. After that, extra waiting may be charged.',
+        meta: '60 minutes free',
         image: '',
         alt: '',
       },
@@ -155,13 +155,13 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
     visible: true,
     eyebrow: 'Asked',
     title: 'Questions travellers actually ask.',
-    body: 'If none of these covers it, our team replies within an hour during local business hours.',
+    body: 'If none of these covers it, write to our support team.',
     cta: { label: 'Write to support', href: '/contact' },
     items: [
       {
         question: 'How does pricing work?',
         answer:
-          "Every transfer is fixed-price at the moment of booking. The number you see at checkout is the number on your card. No surge, no waiting-time surcharge, no driver-tip prompt. Prices are quoted in your selected currency; payment settles in AED at your bank's exchange rate.",
+          "Every transfer is fixed-price at the moment of booking. The number you see at checkout is the number on your card. No surge and no driver-tip prompt. Prices are quoted in your selected currency; payment settles in AED at your bank's exchange rate.",
       },
       {
         question: 'Do I need an account to book?',
@@ -176,12 +176,12 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
       {
         question: 'What happens if my flight is delayed?',
         answer:
-          'We track the flight number you provided and shift the pickup time automatically. The chauffeur waits up to 60 minutes past the rescheduled arrival at no extra charge. Extended waiting can be added at checkout.',
+          'We track the flight number you provided and shift the pickup time automatically. The chauffeur waits up to 60 minutes past the rescheduled arrival at no extra charge. After that, extra waiting may be charged.',
       },
       {
         question: 'How do I find my driver at the airport?',
         answer:
-          "Your chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. The driver's name and phone number appear on the confirmation page and again 30 minutes before pickup.",
+          "Your chauffeur waits inside arrivals with a signed name placard and walks you to the vehicle. The driver's name and phone number are emailed to you once they are assigned and show on your booking page.",
       },
       {
         question: 'Is the price per person or per vehicle?',

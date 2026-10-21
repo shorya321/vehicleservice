@@ -69,7 +69,7 @@ export const DEFAULT_ABOUT_TRUST: Pick<AboutContent, 'story' | 'vetting' | 'comp
       },
       {
         question: 'Who is my driver employed by?',
-        answer: 'Your driver works for the partner company that owns the vehicle. Their name and phone number show on your booking page before pickup, and are sent again 30 minutes before.',
+        answer: 'Your driver works for the partner company that owns the vehicle. Their name and phone number are emailed to you once they are assigned and show on your booking page.',
       },
       {
         question: 'Who do I contact if something goes wrong?',
@@ -81,7 +81,7 @@ export const DEFAULT_ABOUT_TRUST: Pick<AboutContent, 'story' | 'vetting' | 'comp
       },
       {
         question: 'Do you only operate in Dubai?',
-        answer: 'Trips start in Dubai: the airport, hotels, homes and city zones. You can also book a fixed-fare transfer from Dubai to Abu Dhabi.',
+        answer: 'Yes, for now. Trips run within Dubai: the airports, hotels, homes and city zones. Contact us before you book a trip to another emirate.',
       },
     ],
   },
