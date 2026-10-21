@@ -1,12 +1,15 @@
 import { HeroMap } from './hero-map'
 import { SearchForm } from './search-form'
 import type { TripSettings } from '@/lib/trips/settings'
+import type { TripType } from '@/lib/trips/types'
 import type { HeroContent } from '@/lib/cms/templates/home/schema'
 
 interface HeroProps {
   todayDate: string
   /** Trip types the admin has switched on (Settings > General). */
   tripSettings?: TripSettings
+  /** Tab to open first, from `?trip=`. Ignored when the admin has it switched off. */
+  initialTrip?: TripType
   content: HeroContent
   /**
    * False while there are no approved reviews. A rating stat then reads as a
@@ -15,7 +18,7 @@ interface HeroProps {
   hasReviews: boolean
 }
 
-export function Hero({ todayDate, tripSettings, content, hasReviews }: HeroProps) {
+export function Hero({ todayDate, tripSettings, initialTrip, content, hasReviews }: HeroProps) {
   const stats = content.stats.filter((stat) => hasReviews || !stat.is_rating)
 
   return (
@@ -56,7 +59,7 @@ export function Hero({ todayDate, tripSettings, content, hasReviews }: HeroProps
           </p>
 
           <div className="hero-booking-reveal mt-12 w-full">
-            <SearchForm todayDate={todayDate} tripSettings={tripSettings} />
+            <SearchForm todayDate={todayDate} tripSettings={tripSettings} initialTrip={initialTrip} />
           </div>
 
           <p className="hero-reveal hero-reveal--trust hero-trust mt-5">

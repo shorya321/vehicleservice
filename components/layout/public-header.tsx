@@ -151,7 +151,7 @@ export function PublicHeader({
   /**
    * Hash links point at sections of the homepage, so they can never identify a
    * page on their own. Only the real routes get the active treatment, which
-   * keeps Fleet from reading as current on every homepage visit.
+   * keeps a homepage anchor from reading as current on every homepage visit.
    */
   const isCurrentPage = (href: string) => {
     if (href.includes('#')) return false
@@ -162,7 +162,7 @@ export function PublicHeader({
   const navItems = [
     { name: "About us", href: "/about" },
     { name: "Routes", href: "/routes" },
-    { name: "Fleet", href: "/#fleet" },
+    { name: "Services", href: "/services" },
     { name: "Blog", href: "/blog" },
     { name: "FAQ", href: "/faq" },
     { name: "Contact", href: "/contact" },

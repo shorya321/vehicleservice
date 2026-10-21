@@ -8,6 +8,7 @@ import type { ZodTypeAny } from 'zod'
 import { homeContentSchema } from '@/lib/cms/templates/home/schema'
 import { contactContentSchema } from '@/lib/cms/templates/contact/schema'
 import { aboutContentSchema } from '@/lib/cms/templates/about/schema'
+import { servicesContentSchema } from '@/lib/cms/templates/services/schema'
 import { faqContentSchema } from '@/lib/cms/templates/faq/schema'
 import { legalContentSchema } from '@/lib/cms/templates/legal/schema'
 import { PAGES_TAG, canChangePageStatus, pageTag, type PageKind, type PageStatus, type PageTemplate } from '@/lib/cms/types'
@@ -25,6 +26,7 @@ const CONTENT_SCHEMAS: Readonly<Record<string, ZodTypeAny>> = {
   home: homeContentSchema,
   contact: contactContentSchema,
   about: aboutContentSchema,
+  services: servicesContentSchema,
   faq: faqContentSchema,
   terms: legalContentSchema,
   privacy: legalContentSchema,

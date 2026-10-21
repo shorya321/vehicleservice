@@ -18,6 +18,11 @@ export const PAGE_FALLBACKS: Readonly<Record<string, { title: string; descriptio
     description:
       'Infinia Transfers books fixed-fare airport and city transfers in Dubai with licensed, vetted partner companies. Meet the desk behind your driver.',
   },
+  '/services': {
+    title: 'Car with Driver in Dubai | Airport & Hourly',
+    description:
+      'Airport transfers, city rides and hourly chauffeur hire in Dubai at one fixed fare. Fuel, Salik and parking included. Book online in minutes.',
+  },
   '/faq': {
     title: 'Frequently Asked Questions',
     description:

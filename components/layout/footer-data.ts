@@ -7,7 +7,7 @@ export interface FooterLinkCategory {
 }
 
 export const FOOTER_BLURB =
-  'Private airport and city transfers, fixed-price, worldwide. Search a route, pick a vehicle, book in minutes.'
+  'Private airport and city transfers, fixed-price, across Dubai. Search a route, pick a vehicle, book in minutes.'
 
 export const FOOTER_LINK_CATEGORIES: readonly FooterLinkCategory[] = [
   {
@@ -25,7 +25,7 @@ export const FOOTER_LINK_CATEGORIES: readonly FooterLinkCategory[] = [
     title: 'Company',
     links: [
       { name: 'About us', href: '/about' },
-      { name: 'Services', href: '/#services' },
+      { name: 'Services', href: '/services' },
       { name: 'Partner with us', href: '/become-vendor' },
       { name: 'Blog', href: '/blog' },
       { name: 'Business', href: '/business/login' },

@@ -18,6 +18,7 @@ import {
   X,
   MapPin,
   Car,
+  Compass,
   BookOpen,
   HelpCircle,
   Mail,
@@ -146,7 +147,7 @@ export function MobileMenu({
           <MenuSection label="Navigate" reducedMotion={reducedMotion}>
             <MenuNavItem href="/about" label="About us" icon={Info} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/about')} />
             <MenuNavItem href="/routes" label="Routes" icon={MapPin} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/routes')} />
-            <MenuNavItem href="/#fleet" label="Fleet" icon={Car} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#fleet')} />
+            <MenuNavItem href="/services" label="Services" icon={Compass} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/services')} />
             <MenuNavItem href="/blog" label="Blog" icon={BookOpen} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/blog')} />
             <MenuNavItem href="/faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/faq')} />
             <MenuNavItem href="/contact" label="Contact" icon={Mail} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/contact')} />

@@ -30,6 +30,7 @@ import { buildPageMetadata } from '@/lib/seo/page-metadata'
 import { getSeoSettings } from '@/lib/seo/server'
 import { faqPageJsonLd, organizationJsonLd, websiteJsonLd, type JsonLdObject } from '@/lib/seo/json-ld'
 import { JsonLd } from '@/components/seo/json-ld'
+import { TRIP_TYPES, type TripType } from '@/lib/trips/types'
 
 // No fallback title: the home page uses the site default title from Admin > SEO
 // as-is, without the brand suffix every other page gets.
@@ -37,7 +38,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/')
 }
 
-export default async function HomePage() {
+/** `?trip=hourly` opens that search tab, so /services can link each card to its tab. */
+function parseTripParam(value: string | string[] | undefined): TripType | undefined {
+  return typeof value === 'string' && (TRIP_TYPES as readonly string[]).includes(value) ? (value as TripType) : undefined
+}
+
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ trip?: string | string[] }> }) {
+  const initialTrip = parseTripParam((await searchParams).trip)
   const supabase = await createClient()
   const cookieStore = await cookies()
   const todayStr = bookingToday()
@@ -115,6 +122,7 @@ export default async function HomePage() {
       <Hero
         todayDate={todayStr}
         tripSettings={siteSettings.trip_types}
+        initialTrip={initialTrip}
         content={content.hero}
         hasReviews={reviewCount > 0}
       />

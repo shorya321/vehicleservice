@@ -19,6 +19,8 @@ interface SearchFormProps {
   todayDate: string
   /** Which trip types the admin has switched on. One way is always offered. */
   tripSettings?: Pick<TripSettings, 'round_trip_enabled' | 'multi_city_enabled' | 'hourly_enabled' | 'multi_city_max_legs'>
+  /** Tab to open first. Falls back to one way when that tab is switched off. */
+  initialTrip?: TripType
 }
 
 /** Tab order: the three single-bar searches, then multi-city with its own journey editor. */
@@ -31,7 +33,7 @@ const BAR_CLASS: Record<TripType, string> = {
   hourly: 'search-bar search-bar--hourly',
 }
 
-export function SearchForm({ todayDate, tripSettings }: SearchFormProps) {
+export function SearchForm({ todayDate, tripSettings, initialTrip }: SearchFormProps) {
   const router = useRouter()
 
   const tabs = useMemo<TripType[]>(() => {
@@ -44,7 +46,7 @@ export function SearchForm({ todayDate, tripSettings }: SearchFormProps) {
     return SUPPORTED.filter((trip) => enabled[trip])
   }, [tripSettings])
 
-  const [tripType, setTripType] = useState<TripType>('one_way')
+  const [tripType, setTripType] = useState<TripType>(initialTrip && tabs.includes(initialTrip) ? initialTrip : 'one_way')
   const from = useLocationInput()
   const to = useLocationInput()
   const [guests, setGuests] = useState<GuestBreakdown>({ adults: 2, children: 0, infants: 0 })

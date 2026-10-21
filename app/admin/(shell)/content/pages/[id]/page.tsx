@@ -24,6 +24,8 @@ import { LegalContentForm } from './components/legal/legal-content-form'
 import { parseContactContent } from '@/lib/cms/templates/contact/parse'
 import { parseAboutContent } from '@/lib/cms/templates/about/parse'
 import { AboutContentForm } from './components/about/about-content-form'
+import { parseServicesContent } from '@/lib/cms/templates/services/parse'
+import { ServicesContentForm } from './components/services/services-content-form'
 import { parseFaqContent } from '@/lib/cms/templates/faq/parse'
 import { FaqContentForm } from './components/faq/faq-content-form'
 import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
@@ -134,6 +136,8 @@ function renderContentEditor(page: CmsPage) {
       return <ContactContentForm pageId={page.id} initialContent={parseContactContent(page.content)} />
     case 'about':
       return <AboutContentForm pageId={page.id} initialContent={parseAboutContent(page.content)} />
+    case 'services':
+      return <ServicesContentForm pageId={page.id} initialContent={parseServicesContent(page.content)} />
     case 'faq':
       return <FaqContentForm pageId={page.id} initialContent={parseFaqContent(page.content)} />
     case 'terms':

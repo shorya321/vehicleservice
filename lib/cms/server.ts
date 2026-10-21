@@ -10,6 +10,8 @@ import { parseContactContent } from './templates/contact/parse'
 import type { ContactContent } from './templates/contact/schema'
 import { parseAboutContent } from './templates/about/parse'
 import type { AboutContent } from './templates/about/schema'
+import { parseServicesContent } from './templates/services/parse'
+import type { ServicesContent } from './templates/services/schema'
 import { parseFaqContent } from './templates/faq/parse'
 import type { FaqContent } from './templates/faq/schema'
 
@@ -92,4 +94,9 @@ export async function getAboutContent(): Promise<AboutContent> {
 export async function getFaqContent(): Promise<FaqContent> {
   const page = await getPublishedPage('/faq')
   return parseFaqContent(page?.content)
+}
+
+export async function getServicesContent(): Promise<ServicesContent> {
+  const page = await getPublishedPage('/services')
+  return parseServicesContent(page?.content)
 }
