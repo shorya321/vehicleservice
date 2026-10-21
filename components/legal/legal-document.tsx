@@ -18,7 +18,7 @@ export function LegalDocument({ content }: { content: LegalContent }) {
           <p className="text-[0.75rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-4">
             {content.hero.eyebrow}
           </p>
-          <h1 className="text-[clamp(2.5rem,5vw,3.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)] mb-4 [text-wrap:balance]">
+          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-primary)] mb-4 [text-wrap:balance]">
             {content.hero.title}
           </h1>
           {content.hero.intro && (

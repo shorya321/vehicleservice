@@ -65,7 +65,7 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
           <p className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-4">
             What Our Customers Say
           </p>
-          <h1 className="editorial-section-title--promoted">
+          <h1 className="editorial-section-title">
             Customer Reviews
           </h1>
           <p className="mt-4 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-xl [text-wrap:pretty]">

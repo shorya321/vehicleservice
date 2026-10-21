@@ -3214,7 +3214,7 @@
 
   .prose-luxury h2 {
     font-family: var(--font-body);
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 400;
     color: var(--text-primary);
     margin: 2.5rem 0 1rem;
@@ -6353,7 +6353,7 @@
   .editorial-section-title {
     font-family: var(--font-body);
     font-weight: 600;
-    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-size: clamp(1.625rem, 2.4vw, 2rem);
     line-height: 1.15;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -6373,7 +6373,7 @@
   .editorial-body {
     font-family: var(--font-body);
     font-weight: 400;
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1.7;
     letter-spacing: 0.01em;
     color: var(--text-secondary);
@@ -6936,7 +6936,7 @@
 
   .record-score__avg {
     font-family: var(--font-body);
-    font-size: clamp(2.5rem, 4.5vw, 3.25rem);
+    font-size: clamp(2.25rem, 3.2vw, 2.75rem);
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.045em;
@@ -9241,7 +9241,7 @@
   margin-top: 26px;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: clamp(2.5rem, 6.2vw, 4.75rem);
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
   line-height: 1;
   letter-spacing: -0.045em;
   color: var(--text-primary);
@@ -9598,7 +9598,7 @@
   margin: 18px 0 0;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-size: clamp(1.625rem, 2.4vw, 2rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
   color: var(--text-primary);
@@ -9855,7 +9855,7 @@
   margin: 18px 0 0;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-size: clamp(1.625rem, 2.4vw, 2rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
   color: var(--text-primary);
@@ -10057,7 +10057,7 @@
 }
 
 .blog-board-title--article {
-  font-size: clamp(2.25rem, 4.4vw, 3.5rem);
+  font-size: clamp(2rem, 3.6vw, 3rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
 }
@@ -10206,7 +10206,7 @@
 .article-board-body .prose-luxury h2 {
   margin: 3rem 0 1rem;
   font-weight: 700;
-  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  font-size: clamp(1.375rem, 1.9vw, 1.625rem);
   line-height: 1.08;
   letter-spacing: -0.03em;
   text-wrap: balance;
@@ -10222,7 +10222,7 @@
 
 .article-board-body .prose-luxury p,
 .article-board-body .prose-luxury li {
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.8;
 }
 
@@ -10424,7 +10424,7 @@
 .article-faq__title {
   margin: 0 0 1.25rem;
   font-weight: 700;
-  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  font-size: clamp(1.375rem, 1.9vw, 1.625rem);
   line-height: 1.08;
   letter-spacing: -0.03em;
   color: var(--text-primary);
@@ -10612,7 +10612,7 @@
   margin: 0;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  font-size: clamp(2.25rem, 3.2vw, 2.75rem);
   line-height: 1;
   letter-spacing: -0.05em;
   color: var(--text-primary);

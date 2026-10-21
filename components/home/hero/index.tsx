@@ -46,12 +46,12 @@ export function Hero({ todayDate, tripSettings, content, hasReviews }: HeroProps
 
           <h1
             id="hero-headline"
-            className="hero-reveal hero-reveal--headline hero-headline mt-[1.625rem] text-[clamp(2.5rem,6.2vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.032em] text-[var(--text-primary)]"
+            className="hero-reveal hero-reveal--headline hero-headline mt-[1.625rem] text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.04] tracking-[-0.032em] text-[var(--text-primary)]"
           >
             {content.title}
           </h1>
 
-          <p className="hero-reveal hero-reveal--summary hero-summary mx-auto mt-[1.625rem] max-w-[46ch] text-[1.0625rem] leading-[1.62] text-[var(--text-secondary)]">
+          <p className="hero-reveal hero-reveal--summary hero-summary mx-auto mt-[1.625rem] max-w-[46ch] text-base leading-[1.62] text-[var(--text-secondary)]">
             {content.summary}
           </p>
 

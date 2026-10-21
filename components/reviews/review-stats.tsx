@@ -43,7 +43,7 @@ export function ReviewStats({ stats, layout = 'horizontal', className }: ReviewS
         <div className="space-y-6">
           {/* Average Rating */}
           <div className="text-center space-y-2">
-            <div className="text-[clamp(2.5rem,5vw,3.5rem)] font-medium text-[var(--text-primary)] font-display">
+            <div className="text-[clamp(2.25rem,3.2vw,2.75rem)] font-medium text-[var(--text-primary)] font-display">
               {stats.averageRating.toFixed(1)}
             </div>
             <StarRating rating={stats.averageRating} size="lg" className="justify-center" />
@@ -95,7 +95,7 @@ export function ReviewStats({ stats, layout = 'horizontal', className }: ReviewS
       <div className="flex items-center gap-8">
         {/* Average Rating - Left Side */}
         <div className="flex flex-col items-center space-y-2 min-w-[180px]">
-          <div className="text-[clamp(3rem,6vw,4rem)] font-medium text-[var(--text-primary)] font-display">
+          <div className="text-[clamp(2.25rem,3.2vw,2.75rem)] font-medium text-[var(--text-primary)] font-display">
             {stats.averageRating.toFixed(1)}
           </div>
           <StarRating rating={stats.averageRating} size="lg" />
