@@ -151,7 +151,7 @@ export function PublicHeader({
   /**
    * Hash links point at sections of the homepage, so they can never identify a
    * page on their own. Only the real routes get the active treatment, which
-   * keeps Services from reading as current on every homepage visit.
+   * keeps Fleet from reading as current on every homepage visit.
    */
   const isCurrentPage = (href: string) => {
     if (href.includes('#')) return false
@@ -160,7 +160,8 @@ export function PublicHeader({
 
   // Adjusted nav items for luxury theme
   const navItems = [
-    { name: "Services", href: "/#services" },
+    { name: "About us", href: "/about" },
+    { name: "Routes", href: "/routes" },
     { name: "Fleet", href: "/#fleet" },
     { name: "Blog", href: "/blog" },
     { name: "FAQ", href: "/faq" },
@@ -176,7 +177,7 @@ export function PublicHeader({
             container rather than against whatever space the wordmark leaves.
             brand_name is white-label configurable, so justify-between alone
             moved the nav for every tenant. */}
-        <div className="flex items-center justify-between lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        <div className="flex items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr]">
           {/* Logo */}
           <Link
             href="/"
@@ -200,7 +201,7 @@ export function PublicHeader({
           </Link>
 
           {/* Navigation Links */}
-          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-10">
+          <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-6 2xl:gap-10">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -213,7 +214,7 @@ export function PublicHeader({
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-4 md:gap-5 lg:justify-self-end">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-5 xl:justify-self-end">
             {/* Theme Toggle */}
             <ThemeToggle size="sm" />
 

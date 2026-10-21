@@ -16,7 +16,7 @@ import { MenuNavItem, MenuButtonItem } from './menu-nav-item'
 import { MenuFooter } from './menu-footer'
 import {
   X,
-  Compass,
+  MapPin,
   Car,
   BookOpen,
   HelpCircle,
@@ -144,11 +144,11 @@ export function MobileMenu({
 
           {/* Navigate section */}
           <MenuSection label="Navigate" reducedMotion={reducedMotion}>
-            <MenuNavItem href="/#services" label="Services" icon={Compass} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#services')} />
+            <MenuNavItem href="/about" label="About us" icon={Info} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/about')} />
+            <MenuNavItem href="/routes" label="Routes" icon={MapPin} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/routes')} />
             <MenuNavItem href="/#fleet" label="Fleet" icon={Car} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/#fleet')} />
             <MenuNavItem href="/blog" label="Blog" icon={BookOpen} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/blog')} />
             <MenuNavItem href="/faq" label="FAQ" icon={HelpCircle} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/faq')} />
-            <MenuNavItem href="/about" label="About" icon={Info} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/about')} />
             <MenuNavItem href="/contact" label="Contact" icon={Mail} onClick={close} reducedMotion={reducedMotion} active={isCurrent('/contact')} />
           </MenuSection>
 
