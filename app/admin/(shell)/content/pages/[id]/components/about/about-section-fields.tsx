@@ -5,16 +5,15 @@ import { SwitchField } from '@/components/admin/cms/switch-field'
 import { ImageField } from '@/components/admin/cms/image-field'
 import { p, type AboutControl } from './fields'
 
-type HeadSection = 'steps' | 'values' | 'places'
+type HeadSection = 'steps' | 'values' | 'story' | 'vetting' | 'company' | 'partner' | 'faq'
 
-/** Show switch, eyebrow, heading and lede: the head every board section shares. */
+/** Show switch, eyebrow and heading: the head every board section shares. */
 export function SectionHead({ control, section }: { control: AboutControl; section: HeadSection }) {
   return (
     <>
       <SwitchField control={control} name={p(`${section}.visible`)} label="Show this section" />
       <TextField control={control} name={p(`${section}.eyebrow`)} label="Eyebrow" max={40} />
       <TextField control={control} name={p(`${section}.title`)} label="Heading (H2)" max={90} recommended={60} />
-      <TextField control={control} name={p(`${section}.lede`)} label="Side note" max={200} rows={2} />
     </>
   )
 }

@@ -32,14 +32,6 @@ export function AboutHeroFields({ control }: { control: AboutControl }) {
         </Card>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <Card key={i} title={`Figure ${i + 1}`}>
-            <TextField control={control} name={p(`hero.figures.${i}.value`)} label="Value" max={16} />
-            <TextField control={control} name={p(`hero.figures.${i}.label`)} label="Label" max={20} />
-          </Card>
-        ))}
-      </div>
 
       <Card title="Featured photo">
         <ImageField control={control} name={p('hero.feature.image')} label="Photo" description="Landscape or square, about 1200 x 1000." />
@@ -55,18 +47,11 @@ export function AboutHeroFields({ control }: { control: AboutControl }) {
         </div>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Floating card, bottom left">
-          <TextField control={control} name={p('hero.note.text')} label="Text" max={60} />
-          <TextField control={control} name={p('hero.note.label')} label="Link text" max={30} />
-          <TextField control={control} name={p('hero.note.href')} label="Link" max={300} placeholder="#about-how" />
-        </Card>
-        <Card title="Floating card, top right">
-          <TextField control={control} name={p('hero.stat.eyebrow')} label="Label" max={30} />
-          <TextField control={control} name={p('hero.stat.value')} label="Figure" max={16} />
-          <TextField control={control} name={p('hero.stat.caption')} label="Caption" max={40} />
-        </Card>
-      </div>
+      <Card title="Floating card, top right">
+        <TextField control={control} name={p('hero.stat.eyebrow')} label="Label" max={30} />
+        <TextField control={control} name={p('hero.stat.value')} label="Figure" max={16} />
+        <TextField control={control} name={p('hero.stat.caption')} label="Caption" max={40} />
+      </Card>
     </div>
   )
 }

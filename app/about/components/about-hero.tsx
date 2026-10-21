@@ -1,12 +1,10 @@
-import { ArrowUpRight } from 'lucide-react'
-import { CmsLink } from '@/components/cms/cms-link'
 import type { AboutContent } from '@/lib/cms/templates/about/schema'
 import { AboutImage } from './about-image'
 import { BoardLink } from './board-link'
 
-/** Blog board hero: title, actions and figures left; featured photo with two floating cards right. */
+/** Blog board hero: title and actions left; featured photo with a floating fare card right. */
 export function AboutHero({ content }: { content: AboutContent['hero'] }) {
-  const { feature, note, stat } = content
+  const { feature, stat } = content
 
   return (
     <section aria-labelledby="about-heading" className="blog-board-hero">
@@ -23,14 +21,6 @@ export function AboutHero({ content }: { content: AboutContent['hero'] }) {
               <BoardLink cta={content.primary} />
               <BoardLink cta={content.secondary} ghost />
             </div>
-            <dl className="blog-board-figures numeric">
-              {content.figures.map((figure, index) => (
-                <div key={index}>
-                  <dt>{figure.label}</dt>
-                  <dd>{figure.value}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </div>
 
@@ -62,15 +52,6 @@ export function AboutHero({ content }: { content: AboutContent['hero'] }) {
             </div>
           </div>
 
-          <CmsLink href={note.href} className="blog-board-bezel blog-board-float blog-board-float--a">
-            <div className="blog-board-core blog-board-float__core">
-              <p className="line-clamp-2">{note.text}</p>
-              <span className="blog-board-go">
-                {note.label}
-                <span className="blog-board-go__ic"><ArrowUpRight className="h-[15px] w-[15px]" strokeWidth={1.5} /></span>
-              </span>
-            </div>
-          </CmsLink>
 
           <div className="blog-board-bezel blog-board-float blog-board-float--b" aria-hidden="true">
             <div className="blog-board-core blog-board-float__core">

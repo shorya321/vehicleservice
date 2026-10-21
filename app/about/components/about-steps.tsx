@@ -6,7 +6,7 @@ import { BoardHead } from './board-head'
 export function AboutSteps({ content }: { content: AboutContent['steps'] }) {
   return (
     <section id="about-how" aria-labelledby="about-how-heading" className="blog-board-rail-sec about-board-steps-sec">
-      <BoardHead id="about-how-heading" eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
+      <BoardHead id="about-how-heading" eyebrow={content.eyebrow} title={content.title} />
       <div className="luxury-container">
         <ol className="about-board-steps">
           {content.items.map((step, index) => (

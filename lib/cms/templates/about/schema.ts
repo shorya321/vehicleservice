@@ -1,17 +1,14 @@
 import { z } from 'zod'
-import { ctaSchema, href, imageSrc, optionalText, text } from '@/lib/cms/fields'
+import { ctaSchema, imageSrc, optionalText, text } from '@/lib/cms/fields'
 
 /**
  * About page copy, laid out on the blog board (bold title, featured photo,
- * photo cards, number rows). The closing panel is shared with Blog and FAQ and
- * lives in lib/cms/blocks. Infinia is a marketplace: vendors own the cars and
+ * photo cards, number rows), then the trust sections: story, vetting, the
+ * company's legal and contact facts, partner recruiting and an FAQ. Blank
+ * company facts are hidden, never shown as placeholders. The closing panel is
+ * shared with Blog and FAQ and lives in lib/cms/blocks. Infinia is a marketplace: vendors own the cars and
  * employ the drivers, so nothing here may claim a fleet.
  */
-
-const figureSchema = z.object({
-  label: text(20),
-  value: text(16),
-})
 
 const stepSchema = z.object({
   tag: text(24),
@@ -27,17 +24,20 @@ const valueSchema = z.object({
   body: text(220),
 })
 
-const placeSchema = z.object({
-  name: text(40),
-  note: optionalText(60),
-  image: imageSrc,
+const cardSchema = z.object({
+  title: text(60),
+  body: text(220),
+})
+
+const faqItemSchema = z.object({
+  question: text(140),
+  answer: text(800),
 })
 
 const sectionHead = {
   visible: z.boolean(),
   eyebrow: text(40),
   title: text(90),
-  lede: optionalText(200),
 }
 
 export const aboutContentSchema = z.object({
@@ -48,7 +48,6 @@ export const aboutContentSchema = z.object({
     body: text(320),
     primary: ctaSchema,
     secondary: ctaSchema,
-    figures: z.array(figureSchema).length(3),
     feature: z.object({
       image: imageSrc,
       alt: optionalText(140),
@@ -58,15 +57,36 @@ export const aboutContentSchema = z.object({
       metaStart: optionalText(40),
       metaEnd: optionalText(40),
     }),
-    note: z.object({ text: text(60), label: text(30), href }),
     stat: z.object({ eyebrow: text(30), value: text(16), caption: text(40) }),
   }),
   steps: z.object({ ...sectionHead, items: z.array(stepSchema).length(3) }),
   values: z.object({ ...sectionHead, items: z.array(valueSchema).length(3) }),
-  places: z.object({
+  story: z.object({
     ...sectionHead,
-    items: z.array(placeSchema).min(1, 'Add at least one place').max(8),
+    paragraphs: z.array(optionalText(600)).length(2),
+    image: z.union([imageSrc, z.literal('')]),
+    imageAlt: optionalText(140),
   }),
+  vetting: z.object({ ...sectionHead, items: z.array(cardSchema).length(4), footnote: optionalText(200) }),
+  company: z.object({
+    ...sectionHead,
+    legalName: optionalText(80),
+    licence: optionalText(80),
+    licenceIssuer: optionalText(80),
+    founded: optionalText(10),
+    deskHours: optionalText(80),
+    payments: optionalText(120),
+    zonesNote: optionalText(120),
+    zonesLink: ctaSchema,
+  }),
+  partner: z.object({
+    ...sectionHead,
+    items: z.array(cardSchema).length(3),
+    primary: ctaSchema,
+    secondary: ctaSchema,
+    footnote: optionalText(200),
+  }),
+  faq: z.object({ ...sectionHead, items: z.array(faqItemSchema).min(1, 'Add at least one question').max(12) }),
 })
 
 export type AboutContent = z.infer<typeof aboutContentSchema>

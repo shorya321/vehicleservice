@@ -14,9 +14,9 @@ export const PAGE_FALLBACKS: Readonly<Record<string, { title: string; descriptio
       'Get in touch with Infinia Transfers for luxury vehicle transfer services in Dubai. Our concierge team is available around the clock.',
   },
   '/about': {
-    title: 'About Us',
+    title: 'About the Dubai Chauffeur Booking Desk',
     description:
-      'Infinia Transfers connects travellers with vetted local transport companies for fixed-price private airport and city transfers.',
+      'Infinia Transfers books fixed-fare airport and city transfers in Dubai with licensed, vetted partner companies. Meet the desk behind your driver.',
   },
   '/faq': {
     title: 'Frequently Asked Questions',

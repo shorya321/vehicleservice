@@ -11,13 +11,18 @@ import { usePageContentForm } from '@/components/admin/cms/use-page-content-form
 import { aboutContentSchema, type AboutContent, type AboutSectionKey } from '@/lib/cms/templates/about/schema'
 import { AboutHeroFields } from './about-hero-fields'
 import { AboutStepsFields, AboutValuesFields } from './about-section-fields'
-import { AboutPlacesFields } from './about-places-fields'
+import { AboutFaqFields, AboutPartnerFields, AboutStoryFields, AboutVettingFields } from './about-trust-fields'
+import { AboutCompanyFields } from './about-company-fields'
 
 const TABS: { key: AboutSectionKey; label: string }[] = [
   { key: 'hero', label: 'Hero' },
+  { key: 'story', label: 'Our story' },
   { key: 'steps', label: 'How it works' },
+  { key: 'vetting', label: 'Vetting' },
   { key: 'values', label: 'Standard' },
-  { key: 'places', label: 'Places' },
+  { key: 'company', label: 'Company' },
+  { key: 'partner', label: 'Partners' },
+  { key: 'faq', label: 'FAQ' },
 ]
 
 export function AboutContentForm({ pageId, initialContent }: { pageId: string; initialContent: AboutContent }) {
@@ -49,9 +54,13 @@ export function AboutContentForm({ pageId, initialContent }: { pageId: string; i
 
           <div className="mt-6 rounded-lg border bg-card/50 p-4 sm:p-6">
             <TabsContent value="hero"><AboutHeroFields control={control} /></TabsContent>
+            <TabsContent value="story"><AboutStoryFields control={control} /></TabsContent>
             <TabsContent value="steps"><AboutStepsFields control={control} /></TabsContent>
+            <TabsContent value="vetting"><AboutVettingFields control={control} /></TabsContent>
             <TabsContent value="values"><AboutValuesFields control={control} /></TabsContent>
-            <TabsContent value="places"><AboutPlacesFields control={control} /></TabsContent>
+            <TabsContent value="company"><AboutCompanyFields control={control} /></TabsContent>
+            <TabsContent value="partner"><AboutPartnerFields control={control} /></TabsContent>
+            <TabsContent value="faq"><AboutFaqFields control={control} /></TabsContent>
           </div>
         </Tabs>
 

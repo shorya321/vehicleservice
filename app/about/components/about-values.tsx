@@ -5,7 +5,7 @@ import { BoardHead } from './board-head'
 export function AboutValues({ content }: { content: AboutContent['values'] }) {
   return (
     <section aria-labelledby="about-values-heading" className="editorial-section editorial-section--ground bg-[var(--black-void)]">
-      <BoardHead id="about-values-heading" eyebrow={content.eyebrow} title={content.title} lede={content.lede} />
+      <BoardHead id="about-values-heading" eyebrow={content.eyebrow} title={content.title} />
       <div className="luxury-container">
         <div className="about-board-values">
           {content.items.map((item, index) => (

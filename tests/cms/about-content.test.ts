@@ -29,13 +29,37 @@ describe('about content', () => {
       hero: { title: '' },
       steps: { title: 'Edited' },
       values: { items: [] },
-      places: { items: [{ name: 'Deira', note: '', image: 'javascript:alert(1)' }] },
+      story: { image: 'javascript:alert(1)' },
+      company: { legalName: 'Infinia Transfers L.L.C' },
+      faq: { items: [] },
     })
     expect(result.hero).toEqual(DEFAULT_ABOUT_CONTENT.hero)
     expect(result.steps.title).toBe('Edited')
     expect(result.steps.items).toEqual(DEFAULT_ABOUT_CONTENT.steps.items)
     expect(result.values).toEqual(DEFAULT_ABOUT_CONTENT.values)
-    expect(result.places).toEqual(DEFAULT_ABOUT_CONTENT.places)
+    expect(result.story).toEqual(DEFAULT_ABOUT_CONTENT.story)
+    expect(result.company.legalName).toBe('Infinia Transfers L.L.C')
+    expect(result.company.payments).toBe(DEFAULT_ABOUT_CONTENT.company.payments)
+    expect(result.faq).toEqual(DEFAULT_ABOUT_CONTENT.faq)
+  })
+
+  it('drops the hero figures and places an older row still stores', () => {
+    const result = parseAboutContent({
+      hero: { figures: [{ label: 'Desk', value: '24/7' }], note: { text: 'Old', label: 'Go', href: '#x' } },
+      places: { visible: true },
+    })
+    expect(result.hero).not.toHaveProperty('figures')
+    expect(result.hero).not.toHaveProperty('note')
+    expect(result).not.toHaveProperty('places')
+  })
+
+  it('ships owner-only company facts blank so the page hides them', () => {
+    const { legalName, licence, licenceIssuer, founded, deskHours } = DEFAULT_ABOUT_CONTENT.company
+    expect([legalName, licence, licenceIssuer, founded, deskHours]).toEqual(['', '', '', '', ''])
+  })
+
+  it('never repeats the unconfirmed 24/7 desk claim', () => {
+    expect(JSON.stringify(DEFAULT_ABOUT_CONTENT)).not.toMatch(/24\/7/)
   })
 
   it('ignores the closing panel an older row still stores', () => {
