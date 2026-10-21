@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { User } from 'lucide-react'
-import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { userLogout } from '@/lib/auth/user-actions'
@@ -27,6 +27,11 @@ const MobileMenu = dynamic(
 
 type Profile = HeaderProfile
 
+// Nothing to subscribe to: the store only answers "server or client", false while hydrating.
+const subscribeNoop = () => () => {}
+const getClientSnapshot = () => true
+const getServerSnapshot = () => false
+
 interface PublicHeaderProps {
   initialUser?: SupabaseUser | null
   initialProfile?: Profile | null
@@ -47,19 +52,13 @@ export function PublicHeader({
   const [user, setUser] = useState<SupabaseUser | null>(initialUser)
   const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const supabase = useMemo(() => createClient(), [])
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(subscribeNoop, getClientSnapshot, getServerSnapshot)
   const userId = user?.id ?? null
   /** Which user's profile is already loaded, so the fetch below runs once. */
   const loadedProfileId = useRef<string | null>(initialProfile?.id ?? null)
 
-  useLayoutEffect(() => {
-    setMounted(true)
-  }, [])
-
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
-
-    setIsScrolled(window.scrollY > 50)
 
     const handleScroll = () => {
       if (timeoutId) clearTimeout(timeoutId)
@@ -68,6 +67,8 @@ export function PublicHeader({
       }, 10)
     }
 
+    // Read the starting position too (a reload mid-page), through the same debounce.
+    handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => {
       window.removeEventListener("scroll", handleScroll)

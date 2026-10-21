@@ -5,7 +5,6 @@ import { requireAdmin } from '@/lib/auth/actions'
 import { revalidatePath } from 'next/cache'
 import { LocationTypeRecord, LocationTypeColorConfig } from '@/lib/types/location-type'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = any
 
 export interface LocationTypeStats {

@@ -48,6 +48,8 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
   const [bookings, setBookings] = useState<BookingListItem[]>([])
   const [stats, setStats] = useState({ total: 0, upcoming: 0, completed: 0, travelled: 0, cancelled: 0 })
   const [isLoading, setIsLoading] = useState(true)
+  /** When `bookings` arrived; the upcoming/travelled split is taken against this clock. */
+  const [fetchedAt, setFetchedAt] = useState(0)
   const [filters, setFilters] = useState<BookingFilters>({
     search: "",
     status: "all",
@@ -59,33 +61,39 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
   const [searchInput, setSearchInput] = useState("")
   const debouncedSearch = useDebounce(searchInput, 300)
 
-  useEffect(() => {
-    setFilters((prev) => {
-      if (prev.search === debouncedSearch) return prev
-      return { ...prev, search: debouncedSearch, page: 1 }
-    })
-  }, [debouncedSearch])
+  // Fold the settled search into the filters during render, so it fetches once per change.
+  const [prevSearch, setPrevSearch] = useState(debouncedSearch)
+  if (debouncedSearch !== prevSearch) {
+    setPrevSearch(debouncedSearch)
+    setFilters((prev) => ({ ...prev, search: debouncedSearch, page: 1 }))
+    setIsLoading(true)
+  }
 
-  const fetchStats = useCallback(async () => {
-    const result = await getBookingStats(userId)
-    setStats(result)
-  }, [userId])
+  // .then rather than await: the set-state-in-effect rule treats an awaited setter as synchronous.
+  const fetchStats = useCallback(
+    () => getBookingStats(userId).then((result) => setStats(result)),
+    [userId]
+  )
 
   useEffect(() => {
     fetchStats()
   }, [fetchStats])
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    const bookingsResult = await getBookings(userId, filters)
-    setBookings(bookingsResult.bookings as BookingListItem[])
-    setPagination({
-      total: bookingsResult.total,
-      totalPages: bookingsResult.totalPages,
-      page: bookingsResult.page,
-    })
-    setIsLoading(false)
-  }, [userId, filters])
+  // isLoading is raised by whatever changed the filters; this only lowers it.
+  const fetchData = useCallback(
+    () =>
+      getBookings(userId, filters).then((bookingsResult) => {
+        setBookings(bookingsResult.bookings as BookingListItem[])
+        setFetchedAt(Date.now())
+        setPagination({
+          total: bookingsResult.total,
+          totalPages: bookingsResult.totalPages,
+          page: bookingsResult.page,
+        })
+        setIsLoading(false)
+      }),
+    [userId, filters]
+  )
 
   useEffect(() => {
     fetchData()
@@ -93,10 +101,12 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
 
   const handleFilterChange = (key: keyof BookingFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }))
+    setIsLoading(true)
   }
 
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }))
+    setIsLoading(true)
   }
 
   // "completed" read booking_status here while the row badges read payment_status,
@@ -115,14 +125,13 @@ export function BookingsTab({ userId, spend }: BookingsTabProps) {
    * taken three weeks ago sitting under "Upcoming".
    */
   const { upcoming, travelled } = useMemo(() => {
-    const now = Date.now()
     const upcoming: BookingListItem[] = []
     const travelled: BookingListItem[] = []
     for (const booking of bookings) {
-      ;(isStillAhead(booking, now) ? upcoming : travelled).push(booking)
+      ;(isStillAhead(booking, fetchedAt) ? upcoming : travelled).push(booking)
     }
     return { upcoming, travelled }
-  }, [bookings])
+  }, [bookings, fetchedAt])
 
   const inlineStats = useMemo(() => [
     { label: "booked", value: stats.total },

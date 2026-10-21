@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
@@ -72,9 +72,9 @@ export function LocationTypeForm({ initialData }: LocationTypeFormProps) {
     },
   })
 
-  const watchedIcon = form.watch('icon_name')
-  const watchedTheme = form.watch('color_theme')
-  const watchedLabel = form.watch('label')
+  const watchedIcon = useWatch({ control: form.control, name: 'icon_name' })
+  const watchedTheme = useWatch({ control: form.control, name: 'color_theme' })
+  const watchedLabel = useWatch({ control: form.control, name: 'label' })
 
   const selectedTheme = COLOR_THEME_PRESETS.find((p) => p.name === watchedTheme)
 

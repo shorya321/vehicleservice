@@ -59,27 +59,40 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
   const [searchInput, setSearchInput] = useState("")
   const debouncedSearch = useDebounce(searchInput, 300)
 
-  useEffect(() => {
+  // Fold the settled search into the filters during render, so it fetches once per change.
+  const [prevSearch, setPrevSearch] = useState(debouncedSearch)
+  if (debouncedSearch !== prevSearch) {
+    setPrevSearch(debouncedSearch)
     setFilters((prev) => ({ ...prev, search: debouncedSearch, page: 1 }))
-  }, [debouncedSearch])
-
-  const fetchData = useCallback(async () => {
     setIsLoading(true)
-    const [reviewsResult, statsResult, eligibleResult] = await Promise.all([
-      getMyReviews(filters),
-      getReviewStats(),
-      getEligibleBookings(),
-    ])
-    setReviews((reviewsResult.data || []) as ReviewListItem[])
-    setPagination({
-      total: reviewsResult.total,
-      totalPages: reviewsResult.totalPages,
-      page: reviewsResult.page || 1,
-    })
-    if (statsResult.data) setStats(statsResult.data)
-    if (eligibleResult.data) setEligibleBookings(eligibleResult.data as EligibleBooking[])
-    setIsLoading(false)
-  }, [filters])
+  }
+
+  // isLoading is raised by whatever asks for a refetch; this only lowers it. .then rather than
+  // await: the set-state-in-effect rule treats an awaited setter as synchronous.
+  const fetchData = useCallback(
+    () =>
+      Promise.all([
+        getMyReviews(filters),
+        getReviewStats(),
+        getEligibleBookings(),
+      ]).then(([reviewsResult, statsResult, eligibleResult]) => {
+        setReviews((reviewsResult.data || []) as ReviewListItem[])
+        setPagination({
+          total: reviewsResult.total,
+          totalPages: reviewsResult.totalPages,
+          page: reviewsResult.page || 1,
+        })
+        if (statsResult.data) setStats(statsResult.data)
+        if (eligibleResult.data) setEligibleBookings(eligibleResult.data as EligibleBooking[])
+        setIsLoading(false)
+      }),
+    [filters]
+  )
+
+  const refetch = () => {
+    setIsLoading(true)
+    fetchData()
+  }
 
   useEffect(() => {
     fetchData()
@@ -87,6 +100,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
 
   const handleFilterChange = (key: keyof ReviewFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }))
+    setIsLoading(true)
   }
 
   const handleDeleteRequest = (reviewId: string) => {
@@ -101,7 +115,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
       toast.error(result.error)
     } else {
       toast.success("Review deleted")
-      fetchData()
+      refetch()
     }
   }
 
@@ -260,7 +274,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
           </p>
           <div className="flex gap-2">
             <button
-              onClick={() => setFilters((p) => ({ ...p, page: p.page! - 1 }))}
+              onClick={() => { setFilters((p) => ({ ...p, page: p.page! - 1 })); setIsLoading(true) }}
               disabled={pagination.page === 1}
               className="btn btn-secondary disabled:opacity-50"
               aria-label="Previous page"
@@ -269,7 +283,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
               <span className="hidden sm:inline">Previous</span>
             </button>
             <button
-              onClick={() => setFilters((p) => ({ ...p, page: p.page! + 1 }))}
+              onClick={() => { setFilters((p) => ({ ...p, page: p.page! + 1 })); setIsLoading(true) }}
               disabled={pagination.page === pagination.totalPages}
               className="btn btn-secondary disabled:opacity-50"
               aria-label="Next page"
@@ -286,14 +300,14 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
         <ReviewFormModal
           eligibleBookings={eligibleBookings}
           onClose={() => setShowCreateModal(false)}
-          onSuccess={() => { setShowCreateModal(false); fetchData() }}
+          onSuccess={() => { setShowCreateModal(false); refetch() }}
         />
       )}
       {editingReview && (
         <ReviewFormModal
           review={editingReview}
           onClose={() => setEditingReview(null)}
-          onSuccess={() => { setEditingReview(null); fetchData() }}
+          onSuccess={() => { setEditingReview(null); refetch() }}
         />
       )}
 

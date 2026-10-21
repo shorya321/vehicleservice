@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import { VehicleTypeResult, VehicleTypesByCategory } from '../actions'
 import { VehicleTypeGridCard } from './vehicle-type-grid-card'
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
@@ -37,9 +37,16 @@ export function VehicleTypeCategoryTabs({
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
   const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
+  // A new category or sort starts again at page 1.
+  const selectCategory = useCallback((id: string) => {
+    setActiveCategory(id)
     setCurrentPage(1)
-  }, [activeCategory, sortBy])
+  }, [])
+
+  const changeSort = useCallback((option: SortOption) => {
+    setSortBy(option)
+    setCurrentPage(1)
+  }, [])
 
   const currentVehicles = useMemo(() => {
     if (activeCategory === 'all') return allVehicleTypes
@@ -70,14 +77,14 @@ export function VehicleTypeCategoryTabs({
     return sortedVehicles.slice(start, start + ITEMS_PER_PAGE)
   }, [sortedVehicles, currentPage])
 
-  const tabs = [
+  const tabs = useMemo(() => [
     { id: 'all', name: 'All', count: allVehicleTypes.length },
     ...vehicleTypesByCategory.map((c) => ({
       id: c.categoryId,
       name: c.categoryName,
       count: c.vehicleTypes.length,
     })),
-  ]
+  ], [allVehicleTypes, vehicleTypesByCategory])
 
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
 
@@ -89,10 +96,10 @@ export function VehicleTypeCategoryTabs({
     else if (e.key === 'End') nextIndex = tabs.length - 1
     if (nextIndex !== null) {
       e.preventDefault()
-      setActiveCategory(tabs[nextIndex].id)
+      selectCategory(tabs[nextIndex].id)
       tabRefs.current[nextIndex]?.focus()
     }
-  }, [tabs])
+  }, [tabs, selectCategory])
 
   return (
     <div className="w-full">
@@ -115,7 +122,7 @@ export function VehicleTypeCategoryTabs({
                 role="tab"
                 aria-selected={selected}
                 tabIndex={selected ? 0 : -1}
-                onClick={() => setActiveCategory(tab.id)}
+                onClick={() => selectCategory(tab.id)}
                 onKeyDown={(e) => handleTabKeyDown(e, tabIndex)}
                 className={`relative whitespace-nowrap pb-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)] ${selected ? "text-[var(--gold-text)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
               >
@@ -156,7 +163,7 @@ export function VehicleTypeCategoryTabs({
             value={sortBy}
             options={SORT_OPTIONS}
             labels={SORT_LABELS}
-            onChange={setSortBy}
+            onChange={changeSort}
             label="Sort"
           />
         </div>

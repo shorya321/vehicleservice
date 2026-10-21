@@ -10,7 +10,7 @@
 
 import { motion } from 'motion/react';
 import { Plane, Building2, Hotel, Train, MapPin, Navigation } from 'lucide-react';
-import { getLocationTypeIconComponent } from '@/lib/utils/location-type-utils';
+import { getLocationTypeIcon } from '@/lib/utils/location-type-utils';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/business/animation/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/business/ui/card';
@@ -451,10 +451,11 @@ function LocationItem({ location, maxBookings, index }: LocationItemProps) {
     ? { color: location.color_config.color, bg: location.color_config.bg, progressBg: location.color_config.progressBg, badgeClass: location.color_config.badgeClass }
     : { ...fallbackConfig, ...cityColorVariants[index % cityColorVariants.length] };
 
-  // Use dynamic icon from DB, fallback to MapPin
-  const Icon = location.icon_name
-    ? getLocationTypeIconComponent(location.icon_name)
-    : fallbackConfig.icon;
+  // Icon from DB, else the city icon. Rendered as an element so no component is created in render.
+  const iconClassName = cn('h-4 w-4', config.color);
+  const icon = location.icon_name
+    ? getLocationTypeIcon(location.icon_name, iconClassName)
+    : <Building2 className={iconClassName} />;
   const percentage = (location.booking_count / maxBookings) * 100;
 
   return (
@@ -471,7 +472,7 @@ function LocationItem({ location, maxBookings, index }: LocationItemProps) {
           'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
           config.bg
         )}>
-          <Icon className={cn('h-4 w-4', config.color)} />
+          {icon}
         </div>
 
         {/* Content */}

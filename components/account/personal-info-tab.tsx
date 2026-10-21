@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { User, Phone, Loader2 } from "lucide-react"
 import { FormDatePicker } from "@/components/ui/form-date-picker"
@@ -43,6 +43,7 @@ export function PersonalInfoTab({ user, onTabChange }: PersonalInfoTabProps) {
       address_country: user.address_country || "",
     },
   })
+  const dateOfBirth = useWatch({ control: form.control, name: "date_of_birth" })
 
   const onSubmit = async (data: PersonalInfoFormData) => {
     setIsLoading(true)
@@ -132,7 +133,7 @@ export function PersonalInfoTab({ user, onTabChange }: PersonalInfoTabProps) {
             <div>
               <label htmlFor="date_of_birth" className="form-label">Date of Birth</label>
               <FormDatePicker
-                value={form.watch("date_of_birth") ? parse(form.watch("date_of_birth") as string, "yyyy-MM-dd", new Date()) : undefined}
+                value={dateOfBirth ? parse(dateOfBirth as string, "yyyy-MM-dd", new Date()) : undefined}
                 onChange={(date) => {
                   const formatted = date ? new Intl.DateTimeFormat("en-CA").format(date) : ""
                   form.setValue("date_of_birth", formatted, { shouldValidate: true })

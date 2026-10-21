@@ -35,7 +35,6 @@ export interface ServiceCodeStats {
   serviceTypes: { type: string; count: number }[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = any
 
 export async function getServiceCodes(

@@ -72,12 +72,12 @@ export function AccountClient({
   const pathname = usePathname()
   const contentRef = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    const newTab = resolveTab(initialTab)
-    if (newTab !== activeTab) {
-      setActiveTabState(newTab)
-    }
-  }, [initialTab]) // eslint-disable-line react-hooks/exhaustive-deps
+  // A server navigation to a new ?tab= hands down a new initialTab; follow it during render.
+  const [prevInitialTab, setPrevInitialTab] = useState(initialTab)
+  if (initialTab !== prevInitialTab) {
+    setPrevInitialTab(initialTab)
+    setActiveTabState(resolveTab(initialTab))
+  }
 
   const handleTabChange = useCallback((tab: TabId) => {
     setActiveTabState(tab)

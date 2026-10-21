@@ -75,27 +75,30 @@ export function AssignVendorModal({
   const [selectedVendorId, setSelectedVendorId] = useState<string>(currentVendorId || '')
   const [notes, setNotes] = useState('')
   const [reassignmentReason, setReassignmentReason] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  // The modal mounts fresh on every open and loads vendors straight away.
+  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [driverWarningAcknowledged, setDriverWarningAcknowledged] = useState(false)
   const isReassignment = !!currentVendorId
 
   useEffect(() => {
-    loadVendors()
-  }, [])
-
-  const loadVendors = async () => {
-    setIsLoading(true)
-    try {
-      const vendorList = await getAvailableVendors(vehicleTypeId)
-      setVendors(vendorList)
-    } catch (error) {
-      toast.error('Failed to load vendors')
-      console.error(error)
-    } finally {
-      setIsLoading(false)
+    let cancelled = false
+    getAvailableVendors(vehicleTypeId)
+      .then((vendorList) => {
+        if (!cancelled) setVendors(vendorList)
+      })
+      .catch((error) => {
+        if (cancelled) return
+        toast.error('Failed to load vendors')
+        console.error(error)
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => {
+      cancelled = true
     }
-  }
+  }, [vehicleTypeId])
 
   const handleAssign = async () => {
     if (!selectedVendorId) {

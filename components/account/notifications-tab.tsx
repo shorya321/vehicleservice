@@ -40,34 +40,46 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
 
-  const fetchPage = useCallback(async (targetPage: number, append: boolean) => {
-    setIsLoading(true)
+  // isLoading is raised by whatever asks for a page; this only lowers it. .then rather than
+  // await: the set-state-in-effect rule treats an awaited setter as synchronous.
+  const fetchPage = useCallback(
+    (targetPage: number, append: boolean) =>
+      Promise.all([
+        getNotifications({ category, page: targetPage, limit: 20 }),
+        getNotificationStats(),
+      ]).then(([notifResult, statsResult]) => {
+        const items = (notifResult.data || []) as NotificationListItem[]
+        if (append) {
+          setNotifications((prev) => [...prev, ...items])
+        } else {
+          setNotifications(items)
+        }
 
-    const [notifResult, statsResult] = await Promise.all([
-      getNotifications({ category, page: targetPage, limit: 20 }),
-      getNotificationStats(),
-    ])
+        setHasMore(targetPage < (notifResult.totalPages || 1))
+        if (statsResult.data) setStats(statsResult.data)
+        setIsLoading(false)
+      }),
+    [category]
+  )
 
-    const items = (notifResult.data || []) as NotificationListItem[]
-    if (append) {
-      setNotifications((prev) => [...prev, ...items])
-    } else {
-      setNotifications(items)
-    }
-
-    setHasMore(targetPage < (notifResult.totalPages || 1))
-    if (statsResult.data) setStats(statsResult.data)
-    setIsLoading(false)
-  }, [category])
-
+  // fetchPage changes with category, so this loads page 1 on mount and on every category switch.
   useEffect(() => {
-    setPage(1)
     fetchPage(1, false)
-  }, [category, fetchPage])
+  }, [fetchPage])
 
-  useEffect(() => {
-    if (page > 1) fetchPage(page, true)
-  }, [page, fetchPage])
+  const handleCategoryChange = (next: NotificationCategory) => {
+    if (next === category) return
+    setCategory(next)
+    setPage(1)
+    setIsLoading(true)
+  }
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1
+    setPage(nextPage)
+    setIsLoading(true)
+    fetchPage(nextPage, true)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -255,7 +267,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
               role="tab"
               aria-selected={isActive}
               tabIndex={isActive ? 0 : -1}
-              onClick={() => setCategory(tab.value as NotificationCategory)}
+              onClick={() => handleCategoryChange(tab.value as NotificationCategory)}
               className={`account-pill ${isActive ? "active" : ""}`}
             >
               <tab.icon className="w-3.5 h-3.5" />
@@ -312,7 +324,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
           {hasMore && (
             <div className="text-center">
               <button
-                onClick={() => setPage((p) => p + 1)}
+                onClick={handleLoadMore}
                 disabled={isLoading}
                 className="btn btn-secondary"
               >
