@@ -189,24 +189,29 @@ export function BlogCategoryForm({ category }: CategoryFormProps) {
           disabled={isSubmitting}
         />
 
-        {imagePreview && (
-          <FormField
-            control={form.control}
-            name="image_alt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Image description (alt text)</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. Burj Khalifa above the Downtown skyline" maxLength={IMAGE_ALT_MAX} {...field} />
-                </FormControl>
-                <FormDescription>
-                  Describe what the photo shows, for screen readers and image search.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="image_alt"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image description (alt text)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={imagePreview ? "e.g. Burj Khalifa above the Downtown skyline" : "Upload an image first"}
+                  maxLength={IMAGE_ALT_MAX}
+                  disabled={!imagePreview || isSubmitting}
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                {imagePreview
+                  ? "Describe what the photo shows, for screen readers and image search."
+                  : "Available once an image is uploaded above."}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
