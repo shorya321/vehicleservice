@@ -37,6 +37,7 @@ import { CustomerDetailsCard } from './customer-details-card';
 import { VehicleThumb } from '../../../components/vehicle-thumb';
 import type { QuotationCustomerDraft } from './customer-details-card';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
+import { isLineConverted } from '@/lib/business/quotations/status';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import { shiftTripByDays, tripTypeOf } from '@/lib/business/quotations/trip-legs';
 import { TripRowRoute } from './trip-row-route';
@@ -109,7 +110,7 @@ export function QuotationBuilder({
   const inCurrency = (aed: number) => formatCurrency(aed * exchangeRate, currency);
 
   /** A converted trip is immutable. The wallet has been charged and a booking exists. */
-  const isLocked = (trip: QuotationTripDraft) => Boolean(trip.converted_booking_id);
+  const isLocked = (trip: QuotationTripDraft) => isLineConverted(trip);
 
   function upsertTrip(trip: QuotationTripDraft) {
     setTrips((current) => {
@@ -128,6 +129,7 @@ export function QuotationBuilder({
         id: undefined,
         converted_booking_id: null,
         converted_booking_number: null,
+        converted_booking_removed_at: null,
         // Same route a day later is overwhelmingly the common multi-leg case. Every journey of
         // a round trip or multi-city trip moves with it.
         ...shiftTripByDays(source, 1),
@@ -278,6 +280,7 @@ export function QuotationBuilder({
                           <span className="flex items-center gap-1">
                             <Lock className="h-3 w-3" />
                             booked as {trip.converted_booking_number}
+                            {trip.converted_booking_removed_at ? ' (booking deleted)' : ''}
                           </span>
                         )}
                         {!trip.pickup_datetime && (

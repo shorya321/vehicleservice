@@ -13,6 +13,7 @@ import {
   type QuotationPricedLine,
 } from './pricing';
 import type { QuotationTripInput } from './schema';
+import { isLineConverted } from './status';
 import type { PreparedQuotationTrip } from './prepare-trips';
 
 /** AED-based rates, keyed by target currency, as returned by getExchangeRates(). */
@@ -86,17 +87,19 @@ export async function saveQuotationTrips({
 }: SaveTripsArgs): Promise<{ error?: string; lines: QuotationPricedLine[] }> {
   const { data: existing, error: loadError } = await supabase
     .from('business_quotation_items')
-    .select('id, converted_booking_id, net_total_aed, sell_total_aed, price_mode, markup_percent')
+    .select(
+      'id, converted_booking_id, converted_booking_removed_at, net_total_aed, sell_total_aed, price_mode, markup_percent'
+    )
     .eq('quotation_id', quotationId);
 
   if (loadError) {
     return { error: 'Failed to load existing trips', lines: [] };
   }
 
-  const locked = (existing ?? []).filter((row) => row.converted_booking_id);
+  const locked = (existing ?? []).filter((row) => isLineConverted(row));
   const lockedIds = new Set(locked.map((row) => row.id));
   const editableIds = new Set(
-    (existing ?? []).filter((row) => !row.converted_booking_id).map((row) => row.id)
+    (existing ?? []).filter((row) => !isLineConverted(row)).map((row) => row.id)
   );
 
   // A converted trip may not be resubmitted for edit. Silently dropping it would look like a

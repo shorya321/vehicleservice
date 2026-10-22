@@ -326,7 +326,8 @@ export async function deleteQuotation(id: string): Promise<QuotationActionResult
       .from('business_quotation_items')
       .select('id', { count: 'exact', head: true })
       .eq('quotation_id', id)
-      .not('converted_booking_id', 'is', null);
+      // A trip whose booking sits in the trash still counts: it was charged once.
+      .or('converted_booking_id.not.is.null,converted_booking_removed_at.not.is.null');
 
     const hasConverted = (count ?? 0) > 0;
 

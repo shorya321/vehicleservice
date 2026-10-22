@@ -16,6 +16,7 @@ import {
   canDelete,
   shouldRelockExchangeRate,
   missingConversionContact,
+  isLineConverted,
 } from '@/lib/business/quotations/status';
 
 describe('normalizeQuotationStatus', () => {
@@ -168,5 +169,24 @@ describe('missingConversionContact', () => {
 
   it('treats an empty string the same as absent', () => {
     expect(missingConversionContact('', '')).toHaveLength(2);
+  });
+});
+
+describe('isLineConverted', () => {
+  it('is false for a line that never became a booking', () => {
+    expect(isLineConverted({ converted_booking_id: null, converted_booking_removed_at: null })).toBe(false);
+    expect(isLineConverted({})).toBe(false);
+  });
+
+  it('is true while the booking exists', () => {
+    expect(isLineConverted({ converted_booking_id: 'b1' })).toBe(true);
+  });
+
+  it('stays true after the booking was moved to the trash', () => {
+    // The FK forces converted_booking_id to be cleared, but the line was charged once.
+    // Reading it as unconverted would let the conversion run book and charge it again.
+    expect(
+      isLineConverted({ converted_booking_id: null, converted_booking_removed_at: '2026-10-22T10:00:00Z' })
+    ).toBe(true);
   });
 });

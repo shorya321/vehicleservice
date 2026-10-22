@@ -105,11 +105,11 @@ export function BulkActionsBar({
 
         if (failed.length > 0) {
           toast.warning(
-            `${deletedCount} booking${deletedCount !== 1 ? 's' : ''} deleted, ${failed.length} could not be deleted`,
+            `${deletedCount} booking${deletedCount !== 1 ? 's' : ''} moved to trash, ${failed.length} could not be deleted`,
             { description: failed[0].reason }
           )
         } else {
-          toast.success(`${deletedCount} booking${deletedCount !== 1 ? 's' : ''} deleted`)
+          toast.success(`${deletedCount} booking${deletedCount !== 1 ? 's' : ''} moved to trash`)
         }
 
         onClearSelection()
@@ -189,7 +189,7 @@ export function BulkActionsBar({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction === 'delete' ? (
-                <>Are you sure you want to permanently delete {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''}? This will remove all related data and cannot be undone.</>
+                <>Move {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''} to the trash? Whole trips move together. You can restore them from Bookings, Trash for 30 days.</>
               ) : (
                 <>Are you sure you want to {confirmAction === 'confirm' ? 'confirm' : 'cancel'}{' '}
                 {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''}?

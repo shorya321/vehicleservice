@@ -57,3 +57,13 @@ export function businessPortalDeleteBlockedReason(booking: PortalDeletableBookin
   }
   return null;
 }
+
+/**
+ * The extra rule for a trip created from a quotation: it may go to the trash only once every
+ * journey is cancelled. A trip that ran (completed, or past its pickup) is the history the
+ * quotation points to, and half a cancelled round trip still has a journey on the road.
+ */
+export function quotationTripDeleteBlockedReason(journeys: { booking_status: string | null }[]): string | null {
+  if (journeys.length > 0 && journeys.every((j) => j.booking_status === 'cancelled')) return null;
+  return 'This booking was created from a quotation. Cancel every journey of the trip before deleting it.';
+}

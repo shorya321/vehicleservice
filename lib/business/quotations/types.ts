@@ -228,6 +228,8 @@ export interface QuotationTripDraft {
   /** Present only once the trip has become a booking; makes the line immutable. */
   converted_booking_id?: string | null;
   converted_booking_number?: string | null;
+  /** Set once that booking was moved to the trash. The line stays booked and locked. */
+  converted_booking_removed_at?: string | null;
 }
 
 /**

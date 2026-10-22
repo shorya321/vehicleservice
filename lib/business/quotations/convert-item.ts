@@ -18,6 +18,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 import { roundAed } from './pricing';
+import { isLineConverted } from './status';
 import { UNIQUE_VIOLATION, type ConvertibleItem, type ConvertibleQuotation } from './convert';
 import type { QuotationConversionLineResult } from './types';
 
@@ -35,8 +36,12 @@ export async function convertQuotationItem({
   item,
   createdByUserId,
 }: ConvertItemArgs): Promise<QuotationConversionLineResult> {
-  if (item.converted_booking_id) {
-    return { itemId: item.id, status: 'already_converted', bookingId: item.converted_booking_id };
+  if (isLineConverted(item)) {
+    return {
+      itemId: item.id,
+      status: 'already_converted',
+      bookingId: item.converted_booking_id ?? undefined,
+    };
   }
 
   if (!item.pickup_datetime) {

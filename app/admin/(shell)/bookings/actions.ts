@@ -23,7 +23,12 @@ import {
 } from '@/lib/business/email/recipients'
 import { getAppUrl } from '@/lib/email/config'
 import { isActiveBookingStatus } from '@/lib/business/booking-utils'
-import { businessDeleteBlockedReason, businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
+import {
+  businessDeleteBlockedReason,
+  businessStatusChangeBlockedReason,
+  quotationTripDeleteBlockedReason,
+} from '@/lib/business/booking-guards'
+import { moveTripToTrash, planCustomerDelete } from './trash-helpers'
 import { expandToWholeBusinessTrips } from '@/lib/business/trips/delete-server'
 import { format } from 'date-fns'
 import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
@@ -1301,7 +1306,11 @@ async function planBusinessDelete(
   for (const { data: linked, error: linkError } of await Promise.all(quotationChecks)) {
     if (linkError) return { error: 'Failed to check whether this booking came from a quotation' }
     if ((linked ?? []).length > 0) {
-      return { error: 'This booking was created from a quotation. Remove it from its quotation before deleting.' }
+      // The trash keeps the quotation line locked, so a quotation trip may go once it is fully
+      // cancelled. A trip that ran stays: it is the history the quotation points to.
+      const blocked = quotationTripDeleteBlockedReason(rows ?? [])
+      if (blocked) return { error: blocked }
+      break
     }
   }
 
@@ -1315,203 +1324,87 @@ export async function deleteBooking(
   const auth = await requireAdminAction()
   if ('error' in auth) return { error: auth.error }
 
-  if (bookingType === 'customer') {
-    const result = await deleteSingleBooking(bookingId, 'customer')
-    return result.success ? { ...result, deletedIds: [bookingId] } : result
-  }
-
-  const plan = await planBusinessDelete(createAdminClient(), bookingId)
-  if ('error' in plan) return { error: plan.error }
-
-  const deletedIds: string[] = []
-  for (const id of plan.ids) {
-    const result = await deleteSingleBooking(id, 'business')
-    if (result.error) {
-      return deletedIds.length > 0
-        ? { error: `Deleted ${deletedIds.length} of ${plan.ids.length} journeys. ${result.error}`, deletedIds }
-        : { error: result.error }
-    }
-    deletedIds.push(id)
-  }
-  return { success: true, deletedIds }
-}
-
-async function deleteSingleBooking(
-  bookingId: string,
-  bookingType: 'customer' | 'business'
-): Promise<{ success?: boolean; error?: string }> {
   const adminClient = createAdminClient()
 
   try {
-    // Read the notification details while the row still exists. Everything the emails need
+    const plan = bookingType === 'customer'
+      ? await planCustomerDelete(adminClient, bookingId)
+      : await planBusinessDelete(adminClient, bookingId)
+    if ('error' in plan) return { error: plan.error }
+
+    // Read the notification details while the rows still exist. Everything the emails need
     // lives on the booking, and after the delete there is nothing left to read.
-    //
-    // bulkDeleteBookings delegates here, so both delete paths are covered by this.
-    const emailDetails =
-      bookingType === 'business' ? await getBusinessBookingEmailDetails(bookingId) : null
+    const emailDetailsList = bookingType === 'business'
+      ? await Promise.all(plan.ids.map((id) => getBusinessBookingEmailDetails(id)))
+      : []
 
-    // Check for booking assignment and clean up availability
-    const fieldName = bookingType === 'customer' ? 'booking_id' : 'business_booking_id'
-    const { data: assignment } = await adminClient
-      .from('booking_assignments')
-      .select('id')
-      .eq(fieldName, bookingId)
-      .maybeSingle()
+    const trashed = await moveTripToTrash(adminClient, { ids: plan.ids, source: bookingType, actorId: auth.userId })
+    if ('error' in trashed) return { error: trashed.error }
 
-    if (assignment) {
-      const { AvailabilityService } = await import('@/lib/availability/service')
-      await AvailabilityService.removeSchedule(assignment.id)
-    }
-
-    // Delete related records. These are all ON DELETE CASCADE at the database
-    // level, so they are belt-and-braces - log failures for diagnostics but do
-    // not abort, since the cascade will handle them anyway.
-    const logChildError = (table: string, error: unknown) => {
-      if (error) console.error(`Error clearing ${table} for booking ${bookingId}:`, error)
-    }
-
-    const { error: assignmentsError } = await adminClient
-      .from('booking_assignments')
-      .delete()
-      .eq(fieldName, bookingId)
-    logChildError('booking_assignments', assignmentsError)
-
-    if (bookingType === 'customer') {
-      const { error: passengersError } = await adminClient
-        .from('booking_passengers')
-        .delete()
-        .eq('booking_id', bookingId)
-      logChildError('booking_passengers', passengersError)
-
-      const { error: amenitiesError } = await adminClient
-        .from('booking_amenities')
-        .delete()
-        .eq('booking_id', bookingId)
-      logChildError('booking_amenities', amenitiesError)
-    } else {
-      const { error: addonsError } = await adminClient
-        .from('business_booking_addons')
-        .delete()
-        .eq('business_booking_id', bookingId)
-      logChildError('business_booking_addons', addonsError)
-    }
-
-    // A journey of a round trip or multi-city trip. Read before the row goes.
-    // Business trips live in business_booking_groups and are always paid (wallet), so only the
-    // last journey takes the trip row with it.
-    const { data: groupRef } = bookingType === 'customer'
-      ? await adminClient.from('bookings').select('booking_group_id').eq('id', bookingId).maybeSingle()
-      : await adminClient.from('business_bookings').select('booking_group_id').eq('id', bookingId).maybeSingle()
-    const groupId = groupRef?.booking_group_id ?? null
-
-    // Delete the booking itself. Select the deleted rows back so a delete that
-    // matched nothing is reported as a failure instead of a silent success.
-    const tableName = bookingType === 'customer' ? 'bookings' : 'business_bookings'
-    const { data: deletedRows, error } = await adminClient
-      .from(tableName)
-      .delete()
-      .eq('id', bookingId)
-      .select('id')
-
-    if (error) {
-      console.error('Error deleting booking:', error)
-      if (error.code === '23503') {
-        return {
-          error: 'This booking was created from a quotation. Remove it from its quotation before deleting.'
-        }
-      }
-      return { error: `Failed to delete booking: ${error.message}` }
-    }
-
-    if (!deletedRows || deletedRows.length === 0) {
-      return { error: 'Booking not found or already deleted' }
-    }
-
-    // An unpaid trip is only payable whole (the finalizer checks every journey is there), so
-    // removing one journey removes the trip. A paid trip keeps its other journeys, and its
-    // group row goes with the last one.
-    if (groupId && bookingType === 'business') {
-      const { count: remaining } = await adminClient
-        .from('business_bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('booking_group_id', groupId)
-      if ((remaining ?? 0) === 0) {
-        const { error: groupError } = await adminClient.from('business_booking_groups').delete().eq('id', groupId)
-        if (groupError) console.error('Failed to remove the business trip after deleting its last journey:', groupError)
-      }
-    } else if (groupId) {
-      const [{ data: group }, { count: remaining }] = await Promise.all([
-        adminClient.from('booking_groups').select('payment_status').eq('id', groupId).maybeSingle(),
-        adminClient.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_group_id', groupId),
-      ])
-      if (group && (group.payment_status !== 'completed' || (remaining ?? 0) === 0)) {
-        const { error: groupError } = await adminClient.from('booking_groups').delete().eq('id', groupId)
-        if (groupError) console.error('Failed to remove the trip after deleting its journey:', groupError)
-      }
-    }
-
-    // Deleting a booking from admin used to tell nobody, while the identical action taken
-    // by the business itself emailed the passenger. Same outcome for the passenger, so it
-    // gets the same email. Cancelled rather than deleted is the honest framing: "deleted"
-    // is an internal bookkeeping word.
-    if (emailDetails) {
-      after(async () => {
-        try {
-          // Only when the trip was still ahead of them. Deleting a booking the
-          // passenger already had a cancellation notice for sent them a second one,
-          // which is exactly what the tidy-up of an old cancelled row looks like.
-          // The business-side email below is NOT gated the same way: an admin
-          // deleting a tenant's booking is an outside action with no in-app bell
-          // behind it, so the owner has to hear about it either way.
-          if (emailDetails.wasActive && emailDetails.customerEmail) {
-            await sendBusinessCustomerBookingCancelledEmail({
-              businessAccountId: emailDetails.businessAccountId,
-              customerName: emailDetails.customerName,
-              customerEmail: emailDetails.customerEmail,
-              businessName: emailDetails.businessName,
-              bookingNumber: emailDetails.bookingNumber,
-              tripNumber: emailDetails.tripNumber,
-              pickupLocation: emailDetails.pickupLocation,
-              dropoffLocation: emailDetails.dropoffLocation,
-              pickupDateTime: emailDetails.pickupDateTime,
-              cancellationReason: 'Booking removed by administrator',
-            })
-          }
-
-          await notifyBusinessBookingCancelled(
-            buildBusinessSideRecipients({
-              ownerEmail: emailDetails.businessEmail || null,
-              ownerName: emailDetails.businessName,
-              creator: await loadBookingCreatorById(emailDetails.createdByUserId),
-            }),
-            {
-              businessAccountId: emailDetails.businessAccountId,
-              businessName: emailDetails.businessName,
-              bookingNumber: emailDetails.bookingNumber,
-              tripNumber: emailDetails.tripNumber,
-              customerName: emailDetails.customerName,
-              pickupLocation: emailDetails.pickupLocation,
-              dropoffLocation: emailDetails.dropoffLocation,
-              pickupDateTime: emailDetails.pickupDateTime,
-              cancellationReason: 'Booking removed by administrator',
-              refundAmount: 0,
-              newBalance: emailDetails.walletBalance,
-              currency: emailDetails.currency,
-              walletUrl: `${getAppUrl()}/business/wallet`,
-            }
-          )
-        } catch (deleteEmailError) {
-          console.error('Failed to send booking deletion emails:', deleteEmailError)
-        }
-      })
+    for (const emailDetails of emailDetailsList) {
+      if (emailDetails) queueAdminDeleteEmails(emailDetails)
     }
 
     revalidatePath('/admin/bookings')
-    return { success: true }
+    return { success: true, deletedIds: plan.ids }
   } catch (err) {
     console.error('Error deleting booking:', err)
     return { error: 'Failed to delete booking' }
   }
+}
+
+type BusinessBookingEmailDetails = NonNullable<Awaited<ReturnType<typeof getBusinessBookingEmailDetails>>>
+
+function queueAdminDeleteEmails(emailDetails: BusinessBookingEmailDetails): void {
+  after(async () => {
+    try {
+      // Only when the trip was still ahead of them. Deleting a booking the
+      // passenger already had a cancellation notice for sent them a second one,
+      // which is exactly what the tidy-up of an old cancelled row looks like.
+      // The business-side email below is NOT gated the same way: an admin
+      // deleting a tenant's booking is an outside action with no in-app bell
+      // behind it, so the owner has to hear about it either way.
+      if (emailDetails.wasActive && emailDetails.customerEmail) {
+        await sendBusinessCustomerBookingCancelledEmail({
+          businessAccountId: emailDetails.businessAccountId,
+          customerName: emailDetails.customerName,
+          customerEmail: emailDetails.customerEmail,
+          businessName: emailDetails.businessName,
+          bookingNumber: emailDetails.bookingNumber,
+          tripNumber: emailDetails.tripNumber,
+          pickupLocation: emailDetails.pickupLocation,
+          dropoffLocation: emailDetails.dropoffLocation,
+          pickupDateTime: emailDetails.pickupDateTime,
+          cancellationReason: 'Booking removed by administrator',
+        })
+      }
+
+      await notifyBusinessBookingCancelled(
+        buildBusinessSideRecipients({
+          ownerEmail: emailDetails.businessEmail || null,
+          ownerName: emailDetails.businessName,
+          creator: await loadBookingCreatorById(emailDetails.createdByUserId),
+        }),
+        {
+          businessAccountId: emailDetails.businessAccountId,
+          businessName: emailDetails.businessName,
+          bookingNumber: emailDetails.bookingNumber,
+          tripNumber: emailDetails.tripNumber,
+          customerName: emailDetails.customerName,
+          pickupLocation: emailDetails.pickupLocation,
+          dropoffLocation: emailDetails.dropoffLocation,
+          pickupDateTime: emailDetails.pickupDateTime,
+          cancellationReason: 'Booking removed by administrator',
+          refundAmount: 0,
+          newBalance: emailDetails.walletBalance,
+          currency: emailDetails.currency,
+          walletUrl: `${getAppUrl()}/business/wallet`,
+        }
+      )
+    } catch (deleteEmailError) {
+      console.error('Failed to send booking deletion emails:', deleteEmailError)
+    }
+  })
 }
 
 // Not exported: files with 'use server' may only export async functions.

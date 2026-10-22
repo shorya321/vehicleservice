@@ -28,6 +28,7 @@ import { isBusinessHourlyPackage } from '@/lib/business/trips/types';
 import type { BusinessTripCreationInput } from '@/lib/business/trips/schemas';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import { UNIQUE_VIOLATION, type ConvertibleItem, type ConvertibleQuotation } from './convert';
+import { isLineConverted } from './status';
 import { friendlyError } from './convert-item';
 import type { QuotationConversionLineResult } from './types';
 
@@ -142,8 +143,12 @@ export async function convertQuotationTrip({
   createdByUserId,
   settings,
 }: ConvertTripArgs): Promise<ConvertedTripLine> {
-  if (item.converted_booking_id) {
-    return { itemId: item.id, status: 'already_converted', bookingId: item.converted_booking_id };
+  if (isLineConverted(item)) {
+    return {
+      itemId: item.id,
+      status: 'already_converted',
+      bookingId: item.converted_booking_id ?? undefined,
+    };
   }
 
   // A run that died after the RPC committed but before the stamp: find the trip again first, so a

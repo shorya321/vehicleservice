@@ -26,7 +26,7 @@ import { validateBusinessPickupLead } from '@/lib/business/trips/validation';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import { isTripConversion, priceQuotationTrip } from './convert-trip';
 import { roundAed } from './pricing';
-import { missingConversionContact } from './status';
+import { isLineConverted, missingConversionContact } from './status';
 import type { VehicleSelections } from './schema';
 import type {
   QuotationRepriceChoice,
@@ -55,6 +55,8 @@ export interface ConvertibleItem {
   sell_total_aed: number;
   conversion_nonce: string;
   converted_booking_id: string | null;
+  /** Set when the trip's booking was moved to the trash. The line stays converted. */
+  converted_booking_removed_at?: string | null;
   /**
    * Prices are deliberately NOT carried: conversion re-prices from the live addons table.
    * `child_ages` IS carried. It is data the operator needs, not a price, and there is nowhere
@@ -127,7 +129,7 @@ export function effectiveSelections(
   const result: VehicleSelections = {};
   for (const item of items) {
     const chosen = raw[item.id];
-    if (!chosen || item.converted_booking_id || chosen === item.vehicle_type_id) continue;
+    if (!chosen || isLineConverted(item) || chosen === item.vehicle_type_id) continue;
     result[item.id] = chosen;
   }
   return result;
@@ -221,7 +223,7 @@ export async function preflightConversion(
   const blockingErrors: string[] = [];
   const lines: QuotationRepriceLine[] = [];
 
-  const pending = items.filter((item) => !item.converted_booking_id);
+  const pending = items.filter((item) => !isLineConverted(item));
 
   if (pending.length === 0) {
     return {

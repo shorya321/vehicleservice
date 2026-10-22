@@ -247,7 +247,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         toast.error(result.error)
       } else {
         const removed = result.deletedIds?.length ?? 1
-        toast.success(removed > 1 ? `Trip deleted (${removed} journeys)` : 'Booking deleted successfully')
+        toast.success(removed > 1 ? `Trip moved to trash (${removed} journeys)` : 'Booking moved to trash')
         router.refresh()
       }
     } catch (error) {
@@ -632,9 +632,9 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Booking</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to permanently delete this booking? This will remove
-              the booking and all related data (assignments, passengers, amenities). This
-              action cannot be undone.
+              Move this booking to the trash? Every journey of a round trip or multi-city
+              trip moves with it. You can restore it from Bookings, Trash for 30 days, after
+              which it is removed for good. Vendor assignments are not restored.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -38,6 +38,7 @@ import {
   canEditHeader,
   canConvert,
   missingConversionContact,
+  isLineConverted,
 } from '@/lib/business/quotations/status';
 import { quotationTotals } from '@/lib/business/quotations/pricing';
 import { formatChildAges } from '@/lib/business/format-child-ages';
@@ -288,7 +289,9 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">
                         Trip {index + 1}
                         {item.converted_booking_number
-                          ? ` · booked as ${item.converted_booking_number}`
+                          ? ` · booked as ${item.converted_booking_number}${
+                              item.converted_booking_removed_at ? ' (booking deleted)' : ''
+                            }`
                           : ''}
                       </div>
                       <ItineraryRoute item={item} />
@@ -318,7 +321,7 @@ export default async function QuotationDetailPage({ params }: PageProps) {
                             .join(', ')}
                         </div>
                       )}
-                      {!item.converted_booking_id && (item.vehicle_options?.length ?? 0) > 0 && (
+                      {!isLineConverted(item) && (item.vehicle_options?.length ?? 0) > 0 && (
                         <div className="mt-2 space-y-1 text-sm">
                           <div className="text-xs uppercase tracking-wide text-muted-foreground">
                             Vehicle options

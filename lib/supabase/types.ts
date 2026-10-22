@@ -1728,6 +1728,7 @@ export type Database = {
           converted_at: string | null
           converted_booking_id: string | null
           converted_booking_number: string | null
+          converted_booking_removed_at: string | null
           converted_group_id: string | null
           created_at: string
           description: string | null
@@ -1765,6 +1766,7 @@ export type Database = {
           converted_at?: string | null
           converted_booking_id?: string | null
           converted_booking_number?: string | null
+          converted_booking_removed_at?: string | null
           converted_group_id?: string | null
           created_at?: string
           description?: string | null
@@ -1802,6 +1804,7 @@ export type Database = {
           converted_at?: string | null
           converted_booking_id?: string | null
           converted_booking_number?: string | null
+          converted_booking_removed_at?: string | null
           converted_group_id?: string | null
           created_at?: string
           description?: string | null
@@ -2150,6 +2153,68 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      deleted_bookings: {
+        Row: {
+          booking_ids: string[]
+          business_account_id: string | null
+          customer_id: string | null
+          deleted_at: string
+          deleted_by: string | null
+          deleted_by_name: string | null
+          deleted_by_role: string
+          expires_at: string
+          id: string
+          pickup_datetime: string | null
+          snapshot: Json
+          source: string
+          summary: Json
+          trip_label: string
+          trip_type: string | null
+        }
+        Insert: {
+          booking_ids: string[]
+          business_account_id?: string | null
+          customer_id?: string | null
+          deleted_at?: string
+          deleted_by?: string | null
+          deleted_by_name?: string | null
+          deleted_by_role: string
+          expires_at?: string
+          id?: string
+          pickup_datetime?: string | null
+          snapshot: Json
+          source: string
+          summary?: Json
+          trip_label: string
+          trip_type?: string | null
+        }
+        Update: {
+          booking_ids?: string[]
+          business_account_id?: string | null
+          customer_id?: string | null
+          deleted_at?: string
+          deleted_by?: string | null
+          deleted_by_name?: string | null
+          deleted_by_role?: string
+          expires_at?: string
+          id?: string
+          pickup_datetime?: string | null
+          snapshot?: Json
+          source?: string
+          summary?: Json
+          trip_label?: string
+          trip_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deleted_bookings_business_account_id_fkey"
+            columns: ["business_account_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_verification_tokens: {
         Row: {
@@ -4598,6 +4663,38 @@ export type Database = {
           p_unread_retention_days?: number
         }
         Returns: number
+      }
+      purge_trashed_bookings: {
+        Args: { p_all?: boolean; p_trash_id?: string }
+        Returns: number
+      }
+      restore_trashed_trip: {
+        Args: {
+          p_actor_auth_id?: string
+          p_actor_name?: string
+          p_actor_role?: string
+          p_business_account_id?: string
+          p_trash_id: string
+        }
+        Returns: Json
+      }
+      trash_business_trip: {
+        Args: {
+          p_actor_auth_id: string
+          p_actor_name: string
+          p_actor_role: string
+          p_booking_ids: string[]
+        }
+        Returns: string
+      }
+      trash_customer_trip: {
+        Args: {
+          p_actor_auth_id: string
+          p_actor_name: string
+          p_actor_role: string
+          p_booking_ids: string[]
+        }
+        Returns: string
       }
       delete_notification: {
         Args: { p_notification_id: string }

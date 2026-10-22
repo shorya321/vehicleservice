@@ -98,6 +98,21 @@ export function canEditLine(
   return status !== 'converting' && status !== 'converted';
 }
 
+export interface LineConversionStamp {
+  converted_booking_id?: string | null;
+  converted_booking_removed_at?: string | null;
+}
+
+/**
+ * Whether a line has become a booking. Moving that booking to the trash has to clear
+ * converted_booking_id (the FK is RESTRICT) and stamps converted_booking_removed_at instead,
+ * so the line stays converted: reading it as open would let the conversion run book and charge
+ * the trip a second time. Every "is this line booked" check goes through here.
+ */
+export function isLineConverted(line: LineConversionStamp): boolean {
+  return Boolean(line.converted_booking_id || line.converted_booking_removed_at);
+}
+
 /** Adding or removing trips follows the same rule as editing the header. */
 export function canAddLines(status: QuotationStatus): boolean {
   return canEditHeader(status);

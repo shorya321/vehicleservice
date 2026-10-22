@@ -35,7 +35,7 @@ import { convertQuotationTrip, isTripConversion } from '@/lib/business/quotation
 import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
 import type { ConvertedTripLine } from '@/lib/business/quotations/convert-trip';
 import { sendTripCreatedEmails } from '../../../bookings/trips/trip-emails';
-import { normalizeQuotationStatus, canConvert } from '@/lib/business/quotations/status';
+import { normalizeQuotationStatus, canConvert, isLineConverted } from '@/lib/business/quotations/status';
 import { activityLogger } from '@/lib/business/activity/log';
 import type {
   ConvertibleItem,
@@ -79,7 +79,7 @@ async function loadForConversion(
     .select(
       `id, from_location_id, to_location_id, pickup_address, dropoff_address, pickup_datetime,
        vehicle_type_id, passenger_count, adults, children, infants,
-       net_total_aed, sell_total_aed, conversion_nonce, converted_booking_id,
+       net_total_aed, sell_total_aed, conversion_nonce, converted_booking_id, converted_booking_removed_at,
        trip_type, hourly_package`
     )
     .eq('quotation_id', quotationId)
@@ -420,7 +420,7 @@ export const POST = requireBusinessAuth(async (
       );
     }
 
-    const pending = items.filter((item) => !item.converted_booking_id);
+    const pending = items.filter((item) => !isLineConverted(item));
     const results: QuotationConversionLineResult[] = [];
     // Read once for the run, and only when a trip needs it. Preflight just checked the same rules.
     const tripSettings = pending.some(isTripConversion) ? await getBusinessTripSettings(admin) : null;

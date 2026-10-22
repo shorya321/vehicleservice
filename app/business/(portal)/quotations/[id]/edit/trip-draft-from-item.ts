@@ -67,5 +67,6 @@ export function tripDraftFromItem(
     })),
     converted_booking_id: item.converted_booking_id,
     converted_booking_number: item.converted_booking_number,
+    converted_booking_removed_at: item.converted_booking_removed_at,
   };
 }

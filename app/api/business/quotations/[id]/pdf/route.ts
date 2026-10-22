@@ -21,6 +21,7 @@ import {
   type QuotationPdfSourceItem,
 } from '@/lib/business/quotations/pdf-payload';
 import { resolveBrandLogo } from '@/lib/business/quotations/brand-logo';
+import { isLineConverted } from '@/lib/business/quotations/status';
 import { resolveVehiclePhotos } from '@/lib/business/quotations/vehicle-photos';
 
 export const dynamic = 'force-dynamic';
@@ -70,7 +71,7 @@ export const GET = requireBusinessAuth(async (
       .select(
         `id, sort_order, from_location_id, to_location_id, pickup_address, dropoff_address,
          pickup_datetime, vehicle_type_id, passenger_count, adults, children, infants,
-         description, sell_total_aed, converted_booking_id,
+         description, sell_total_aed, converted_booking_id, converted_booking_removed_at,
          trip_type, hourly_package, duration_hours, included_km`
       )
       .eq('quotation_id', id)
@@ -212,7 +213,7 @@ export const GET = requireBusinessAuth(async (
       sell_total_aed: Number(item.sell_total_aed),
       addons: addonsByItem.get(item.id) ?? [],
       // A booked trip's vehicle is settled, so its choice is no longer offered.
-      vehicle_options: item.converted_booking_id ? [] : optionsByItem.get(item.id) ?? [],
+      vehicle_options: isLineConverted(item) ? [] : optionsByItem.get(item.id) ?? [],
     }));
 
     const pdfData = buildQuotationPdfData({
