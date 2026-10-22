@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/actions'
 import { revalidatePath, updateTag } from 'next/cache'
 import { uploadBlogImage } from '../posts/actions/upload'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
+import { normaliseImageAlt } from '@/lib/blog/image-alt'
 
 export interface BlogCategoryFilters {
   search?: string
@@ -19,6 +20,7 @@ export interface BlogCategory {
   slug: string
   description: string | null
   image_url: string | null
+  image_alt: string | null
   sort_order: number | null
   is_active: boolean | null
   created_at: string | null
@@ -123,6 +125,7 @@ export interface BlogCategoryFormData {
   is_active: boolean
   imageBase64?: string | null
   existingImage?: string | null
+  image_alt?: string
 }
 
 export async function createBlogCategory(data: BlogCategoryFormData) {
@@ -143,6 +146,7 @@ export async function createBlogCategory(data: BlogCategoryFormData) {
       slug: data.slug.toLowerCase(),
       description: data.description || null,
       image_url: imageUrl,
+      image_alt: normaliseImageAlt(data.image_alt, imageUrl),
       sort_order: data.sort_order || null,
       is_active: data.is_active,
     })
@@ -183,6 +187,7 @@ export async function updateBlogCategory(id: string, data: BlogCategoryFormData)
       slug: data.slug.toLowerCase(),
       description: data.description || null,
       image_url: imageUrl,
+      image_alt: normaliseImageAlt(data.image_alt, imageUrl),
       sort_order: data.sort_order || null,
       is_active: data.is_active,
       updated_at: new Date().toISOString(),

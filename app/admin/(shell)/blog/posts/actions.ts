@@ -6,6 +6,7 @@ import { revalidatePath, updateTag } from 'next/cache'
 import { uploadBlogImage } from './actions/upload'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
 import { blogFaqsSchema, blogSectionsSchema, cleanFaqs, sectionsToHtml, type BlogSection } from '@/lib/blog/sections'
+import { normaliseImageAlt } from '@/lib/blog/image-alt'
 
 export interface BlogPostFilters {
   search?: string
@@ -27,6 +28,7 @@ export interface BlogPostWithRelations {
   /** jsonb `[{question, answer}]`; read through `getPostFaqs`. */
   faqs: unknown
   featured_image_url: string | null
+  featured_image_alt: string | null
   category_id: string | null
   author_id: string | null
   status: 'draft' | 'published' | 'archived' | null
@@ -180,6 +182,7 @@ export interface BlogPostFormData {
   tag_ids?: string[]
   imageBase64?: string | null
   existingImage?: string | null
+  featured_image_alt?: string
 }
 
 function calculateReadingTime(content: string): number {
@@ -232,6 +235,7 @@ export async function createBlogPost(data: BlogPostFormData) {
       excerpt: data.excerpt || null,
       ...body,
       featured_image_url: imageUrl,
+      featured_image_alt: normaliseImageAlt(data.featured_image_alt, imageUrl),
       category_id: data.category_id || null,
       author_id: user?.id || null,
       status: data.status,
@@ -297,6 +301,7 @@ export async function updateBlogPost(id: string, data: BlogPostFormData) {
       excerpt: data.excerpt || null,
       ...body,
       featured_image_url: imageUrl,
+      featured_image_alt: normaliseImageAlt(data.featured_image_alt, imageUrl),
       category_id: data.category_id || null,
       status: data.status,
       is_featured: data.is_featured,

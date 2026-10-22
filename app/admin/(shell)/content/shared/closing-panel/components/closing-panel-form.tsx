@@ -63,7 +63,16 @@ export function ClosingPanelForm({ initialContent }: { initialContent: ClosingPa
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {([0, 1] as const).map((i) => (
-              <ImageField key={i} control={control} name={`images.${i}`} label={`Photo ${i + 1}`} description="Portrait, about 480 x 600." />
+              <div key={i} className="space-y-4">
+                <ImageField control={control} name={`images.${i}`} label={`Photo ${i + 1}`} description="Portrait, about 480 x 600." />
+                <TextField
+                  control={control}
+                  name={`imageAlts.${i}`}
+                  label="Photo description (alt text)"
+                  max={140}
+                  description="Describe what the photo shows, for screen readers and image search."
+                />
+              </div>
             ))}
           </div>
         </div>

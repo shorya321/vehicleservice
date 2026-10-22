@@ -129,6 +129,15 @@ export function SeoPanel({
               label="Share image"
               description="1200 x 630 works best. Empty uses the page's own image or the site default."
             />
+            {values.og_image_url && (
+              <TextField
+                control={control}
+                name="og_image_alt"
+                label="Share image description (alt text)"
+                max={160}
+                description="Describe what the share image shows. Read out where the link is shared."
+              />
+            )}
           </FieldGroup>
 
           <FieldGroup title="Advanced" hint="Leave these alone unless you know you need them.">

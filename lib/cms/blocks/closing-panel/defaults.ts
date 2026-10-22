@@ -10,4 +10,8 @@ export const DEFAULT_CLOSING_PANEL: ClosingPanelContent = {
   secondary: { label: 'Browse vehicles', href: '/#fleet' },
   trust: ['Fixed price at booking', 'Flight tracked', 'Free cancellation'],
   images: ['/benefits/relaxed-safe-ride.jpg', '/benefits/easy-booking-process.jpg'],
+  imageAlts: [
+    'A smiling passenger checks her phone in the back seat',
+    'A passenger pays for a ride by tapping a phone on a card reader',
+  ],
 }

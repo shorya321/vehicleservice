@@ -27,6 +27,13 @@ export function AboutStepsFields({ control }: { control: AboutControl }) {
           <div key={i} className="space-y-4 rounded-lg border bg-card p-4">
             <h4 className="text-sm font-semibold">Card {i + 1}</h4>
             <ImageField control={control} name={p(`steps.items.${i}.image`)} label="Photo" description="Portrait, about 800 x 1000." />
+            <TextField
+              control={control}
+              name={p(`steps.items.${i}.alt`)}
+              label="Photo description (alt text)"
+              max={140}
+              description="Describe what the photo shows, for screen readers and image search."
+            />
             <TextField control={control} name={p(`steps.items.${i}.tag`)} label="Tag" max={24} />
             <TextField control={control} name={p(`steps.items.${i}.title`)} label="Title (H3)" max={60} />
             <TextField control={control} name={p(`steps.items.${i}.body`)} label="Text" max={200} rows={3} />

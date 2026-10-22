@@ -32,6 +32,7 @@ import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-
 import { Badge } from "@/components/ui/badge"
 import { blogSectionsSchema, getPostSections, type BlogSection } from "@/lib/blog/sections"
 import { BlogSectionsEditor } from "./blog-sections-editor"
+import { IMAGE_ALT_MAX } from "@/lib/blog/image-alt"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -41,6 +42,7 @@ const formSchema = z.object({
   category_id: z.string().optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   is_featured: z.boolean().default(false),
+  featured_image_alt: z.string().trim().max(IMAGE_ALT_MAX, `Keep it under ${IMAGE_ALT_MAX} characters`).optional(),
 })
 
 /** A post with no body at all still opens with one empty section to fill in. */
@@ -73,6 +75,7 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
       category_id: post?.category_id || "",
       status: (post?.status as 'draft' | 'published' | 'archived') || 'draft',
       is_featured: post?.is_featured || false,
+      featured_image_alt: post?.featured_image_alt || "",
     },
   })
 
@@ -295,6 +298,25 @@ export function BlogPostForm({ post, categories, tags }: BlogPostFormProps) {
           maxSize={5}
           disabled={isSubmitting}
         />
+
+        {imagePreview && (
+          <FormField
+            control={form.control}
+            name="featured_image_alt"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Image description (alt text)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Chauffeur holding the car door at DXB arrivals" maxLength={IMAGE_ALT_MAX} {...field} />
+                </FormControl>
+                <FormDescription>
+                  Describe what the photo shows, for screen readers and image search.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

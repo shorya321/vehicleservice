@@ -48,6 +48,13 @@ export function ServicesWaysFields({ control }: { control: ServicesControl }) {
         {[0, 1, 2, 3].map((i) => (
           <Card key={i} title={`Card ${i + 1}`}>
             <ImageField control={control} name={p(`ways.items.${i}.image`)} label="Photo" description="Portrait, about 800 x 1060." />
+            <TextField
+              control={control}
+              name={p(`ways.items.${i}.alt`)}
+              label="Photo description (alt text)"
+              max={140}
+              description="Describe what the photo shows, for screen readers and image search."
+            />
             <TextField control={control} name={p(`ways.items.${i}.title`)} label="Title (H3)" max={40} />
             <TextField control={control} name={p(`ways.items.${i}.body`)} label="Text" max={200} rows={3} />
             <div className="grid gap-4 sm:grid-cols-2">

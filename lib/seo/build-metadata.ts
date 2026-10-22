@@ -9,6 +9,8 @@ export interface MetadataInput {
   description?: string
   /** Fallback share image, e.g. a blog post's featured image. */
   image?: string | null
+  /** Alt text for `image`. */
+  imageAlt?: string | null
   type?: 'website' | 'article'
   seo: SeoMetaValues
   settings: SeoSettings
@@ -56,6 +58,22 @@ function parseKeywords(raw: string): string[] | undefined {
 }
 
 /**
+ * The share image with its alt text. Each alt travels only with the image it
+ * describes, and the site default image has none.
+ */
+function resolveImages(input: MetadataInput): { url: string; alt?: string }[] | undefined {
+  const [url, alt] = input.seo.og_image_url
+    ? [input.seo.og_image_url, input.seo.og_image_alt]
+    : input.image
+      ? [input.image, input.imageAlt]
+      : [input.settings.default_og_image_url, '']
+  if (!url) {
+    return undefined
+  }
+  return [alt ? { url, alt } : { url }]
+}
+
+/**
  * Builds a page's metadata from its SEO overrides and the site defaults. Pure,
  * so it is unit-tested; pages call it through `buildPageMetadata`.
  *
@@ -66,8 +84,7 @@ export function composeMetadata(input: MetadataInput): Metadata {
   const title = resolveTitle(input)
   const description = input.seo.meta_description || input.description || input.settings.default_description
   const canonical = input.seo.canonical_path || input.path
-  const image = input.seo.og_image_url || input.image || input.settings.default_og_image_url
-  const images = image ? [{ url: image }] : undefined
+  const images = resolveImages(input)
   const robots = resolveRobots(input)
   const keywords = parseKeywords(input.seo.meta_keywords)
   // Share cards can carry their own wording; otherwise they repeat the search snippet.

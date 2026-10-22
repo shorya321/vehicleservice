@@ -15,6 +15,8 @@ export const closingPanelSchema = z.object({
   secondary: ctaSchema,
   trust: z.array(optionalText(40)).length(3),
   images: z.array(imageSrc).length(2),
+  /** One description per photo, same order as `images`. */
+  imageAlts: z.array(optionalText(140)).length(2),
 })
 
 export type ClosingPanelContent = z.infer<typeof closingPanelSchema>

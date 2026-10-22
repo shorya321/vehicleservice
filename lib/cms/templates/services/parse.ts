@@ -1,3 +1,4 @@
+import { withItemAlts } from '@/lib/cms/item-alts'
 import { DEFAULT_SERVICES_CONTENT } from './defaults'
 import { servicesContentSchema, type ServicesContent, type ServicesSectionKey } from './schema'
 
@@ -17,7 +18,7 @@ export function parseServicesContent(raw: unknown): ServicesContent {
     if (!isRecord(section)) {
       return content
     }
-    const parsed = servicesContentSchema.shape[key].safeParse({ ...DEFAULT_SERVICES_CONTENT[key], ...section })
+    const parsed = servicesContentSchema.shape[key].safeParse({ ...DEFAULT_SERVICES_CONTENT[key], ...withItemAlts(section) })
     return parsed.success ? { ...content, [key]: parsed.data } : content
   }, DEFAULT_SERVICES_CONTENT)
 }

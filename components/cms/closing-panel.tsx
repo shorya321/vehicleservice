@@ -37,7 +37,7 @@ export async function ClosingPanel() {
           </div>
           <div className="blog-board-close__photos" aria-hidden="true">
             {content.images.map((src, index) => (
-              <AboutImage key={index} src={src} alt="" width={480} height={600} />
+              <AboutImage key={index} src={src} alt={content.imageAlts[index] ?? ''} width={480} height={600} />
             ))}
           </div>
         </div>

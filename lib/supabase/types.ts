@@ -178,6 +178,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          image_alt: string | null
           is_active: boolean | null
           name: string
           slug: string
@@ -189,6 +190,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          image_alt?: string | null
           is_active?: boolean | null
           name: string
           slug: string
@@ -200,6 +202,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          image_alt?: string | null
           is_active?: boolean | null
           name?: string
           slug?: string
@@ -285,6 +288,7 @@ export type Database = {
           excerpt: string | null
           faqs: Json
           featured_image_url: string | null
+          featured_image_alt: string | null
           id: string
           is_featured: boolean | null
           meta_description: string | null
@@ -307,6 +311,7 @@ export type Database = {
           excerpt?: string | null
           faqs?: Json
           featured_image_url?: string | null
+          featured_image_alt?: string | null
           id?: string
           is_featured?: boolean | null
           meta_description?: string | null
@@ -329,6 +334,7 @@ export type Database = {
           excerpt?: string | null
           faqs?: Json
           featured_image_url?: string | null
+          featured_image_alt?: string | null
           id?: string
           is_featured?: boolean | null
           meta_description?: string | null
@@ -2970,6 +2976,7 @@ export type Database = {
           noindex: boolean
           og_description: string | null
           og_image_url: string | null
+          og_image_alt: string | null
           og_title: string | null
           updated_at: string
           updated_by: string | null
@@ -2987,6 +2994,7 @@ export type Database = {
           noindex?: boolean
           og_description?: string | null
           og_image_url?: string | null
+          og_image_alt?: string | null
           og_title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -3004,6 +3012,7 @@ export type Database = {
           noindex?: boolean
           og_description?: string | null
           og_image_url?: string | null
+          og_image_alt?: string | null
           og_title?: string | null
           updated_at?: string
           updated_by?: string | null

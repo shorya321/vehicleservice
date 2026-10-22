@@ -5,7 +5,7 @@ import { composeMetadata, type MetadataInput } from './build-metadata'
 import { getSeoMeta, getSeoSettings } from './server'
 import { EMPTY_SEO_META, type SeoEntityType, type SeoMetaValues } from './types'
 
-type Fallbacks = Pick<MetadataInput, 'title' | 'description' | 'image' | 'type'>
+type Fallbacks = Pick<MetadataInput, 'title' | 'description' | 'image' | 'imageAlt' | 'type'>
 
 interface EntityMetadataArgs extends Fallbacks {
   path: string

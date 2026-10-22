@@ -47,7 +47,7 @@ export function BoardRail({ categories, excludeSlug }: BoardRailProps) {
                     re-fetch would get the maintenance page (see home Cities). */}
                 <Image
                   src={src}
-                  alt=""
+                  alt={own ? cat.image_alt ?? '' : ''}
                   fill
                   unoptimized={!own}
                   className="object-cover"

@@ -12,7 +12,7 @@ export function AboutSteps({ content }: { content: AboutContent['steps'] }) {
           {content.items.map((step, index) => (
             <li key={index} className="blog-board-bezel blog-board-pc">
               <div className="blog-board-core blog-board-pc__core">
-                <AboutImage src={step.image} alt="" fill className="object-cover" sizes="(max-width: 900px) 100vw, 33vw" />
+                <AboutImage src={step.image} alt={step.alt} fill className="object-cover" sizes="(max-width: 900px) 100vw, 33vw" />
                 <span className="blog-board-eyebrow blog-board-eyebrow--dark about-board-steps__tag">
                   <i aria-hidden="true" />{step.tag}
                 </span>

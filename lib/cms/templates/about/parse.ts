@@ -1,3 +1,4 @@
+import { withItemAlts } from '@/lib/cms/item-alts'
 import { DEFAULT_ABOUT_CONTENT } from './defaults'
 import { aboutContentSchema, type AboutContent, type AboutSectionKey } from './schema'
 
@@ -17,7 +18,7 @@ export function parseAboutContent(raw: unknown): AboutContent {
     if (!isRecord(section)) {
       return content
     }
-    const parsed = aboutContentSchema.shape[key].safeParse({ ...DEFAULT_ABOUT_CONTENT[key], ...section })
+    const parsed = aboutContentSchema.shape[key].safeParse({ ...DEFAULT_ABOUT_CONTENT[key], ...withItemAlts(section) })
     return parsed.success ? { ...content, [key]: parsed.data } : content
   }, DEFAULT_ABOUT_CONTENT)
 }

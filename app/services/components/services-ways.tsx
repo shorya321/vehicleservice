@@ -14,7 +14,7 @@ export function ServicesWays({ content }: { content: ServicesContent['ways'] }) 
           {content.items.map((item, index) => (
             <li key={index} className="blog-board-bezel blog-board-pc">
               <div className="blog-board-core blog-board-pc__core">
-                <AboutImage src={item.image} alt="" fill className="object-cover" sizes="(max-width: 900px) 100vw, 25vw" />
+                <AboutImage src={item.image} alt={item.alt} fill className="object-cover" sizes="(max-width: 900px) 100vw, 25vw" />
                 <div className="blog-board-pc__lbl">
                   <h3>{item.title}</h3>
                   <p>{item.body}</p>

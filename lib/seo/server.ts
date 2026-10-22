@@ -50,6 +50,7 @@ export function rowToSeoMeta(row: {
   og_title: string | null
   og_description: string | null
   og_image_url: string | null
+  og_image_alt: string | null
   canonical_path: string | null
   noindex: boolean
   nofollow: boolean
@@ -61,6 +62,7 @@ export function rowToSeoMeta(row: {
     og_title: row.og_title ?? '',
     og_description: row.og_description ?? '',
     og_image_url: row.og_image_url ?? '',
+    og_image_alt: row.og_image_alt ?? '',
     canonical_path: row.canonical_path ?? '',
     noindex: row.noindex,
     nofollow: row.nofollow,

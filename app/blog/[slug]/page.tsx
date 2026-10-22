@@ -43,6 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: post.title,
     description: post.excerpt || undefined,
     image: post.featured_image_url,
+    imageAlt: post.featured_image_alt,
     type: 'article',
     seo: {
       meta_title: post.meta_title ?? '',

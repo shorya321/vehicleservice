@@ -22,6 +22,7 @@ export interface PublicBlogPost {
   /** Single-post query only; read through `getPostFaqs`. */
   faqs?: unknown
   featured_image_url: string | null
+  featured_image_alt: string | null
   status: string | null
   is_featured: boolean | null
   meta_title: string | null
@@ -44,6 +45,7 @@ export interface PublicBlogCategory {
   slug: string
   description: string | null
   image_url: string | null
+  image_alt: string | null
 }
 
 const CACHE_TAGS = {
@@ -70,7 +72,7 @@ export const getPublishedPosts = unstable_cache(
       let query = supabase
         .from('blog_posts')
         .select(`
-          id, title, slug, excerpt, content, featured_image_url, status,
+          id, title, slug, excerpt, content, featured_image_url, featured_image_alt, status,
           is_featured, published_at, reading_time_minutes, view_count, created_at,
           category:category_id(id, name, slug),
           author:author_id(id, full_name, avatar_url)
@@ -184,7 +186,7 @@ export const getPublishedPost = unstable_cache(
       const { data, error } = await supabase
         .from('blog_posts')
         .select(`
-          id, title, slug, excerpt, content, sections, faqs, featured_image_url,
+          id, title, slug, excerpt, content, sections, faqs, featured_image_url, featured_image_alt,
           status, is_featured, meta_title, meta_description, meta_keywords,
           published_at, reading_time_minutes, view_count, created_at, updated_at,
           category:category_id(id, name, slug),
@@ -228,7 +230,7 @@ export const getBlogCategories = unstable_cache(
 
       const { data, error } = await supabase
         .from('blog_categories')
-        .select('id, name, slug, description, image_url')
+        .select('id, name, slug, description, image_url, image_alt')
         .eq('is_active', true)
         .order('sort_order', { ascending: true })
 
@@ -255,7 +257,7 @@ export const getFeaturedPosts = unstable_cache(
       const { data, error } = await supabase
         .from('blog_posts')
         .select(`
-          id, title, slug, excerpt, content, featured_image_url, status,
+          id, title, slug, excerpt, content, featured_image_url, featured_image_alt, status,
           is_featured, published_at, reading_time_minutes, view_count, created_at,
           category:category_id(id, name, slug),
           author:author_id(id, full_name, avatar_url)
@@ -332,7 +334,7 @@ export const getRelatedPosts = unstable_cache(
     try {
       const supabase = createAdminClient()
       const selectFields = `
-        id, title, slug, excerpt, featured_image_url, status,
+        id, title, slug, excerpt, featured_image_url, featured_image_alt, status,
         is_featured, published_at, reading_time_minutes, view_count, created_at,
         category:category_id(id, name, slug),
         author:author_id(id, full_name, avatar_url)
@@ -425,7 +427,7 @@ export const getCategoryBySlug = unstable_cache(
 
       const { data, error } = await supabase
         .from('blog_categories')
-        .select('id, name, slug, description, image_url')
+        .select('id, name, slug, description, image_url, image_alt')
         .eq('slug', slug)
         .eq('is_active', true)
         .single()

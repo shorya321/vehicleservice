@@ -15,6 +15,7 @@ const stepSchema = z.object({
   title: text(60),
   body: text(200),
   image: imageSrc,
+  alt: optionalText(140),
 })
 
 const valueSchema = z.object({

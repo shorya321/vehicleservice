@@ -97,6 +97,7 @@ export async function updateSeoMeta(
           og_title: v.og_title || null,
           og_description: v.og_description || null,
           og_image_url: v.og_image_url || null,
+          og_image_alt: (v.og_image_url && v.og_image_alt) || null,
           canonical_path: v.canonical_path || null,
           noindex: v.noindex,
           nofollow: v.nofollow,

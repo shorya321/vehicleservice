@@ -22,6 +22,7 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { createBlogCategory, updateBlogCategory, BlogCategory, BlogCategoryFormData } from "../actions"
 import { ImageUpload } from "@/app/admin/(shell)/vehicle-types/components/image-upload"
+import { IMAGE_ALT_MAX } from "@/lib/blog/image-alt"
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -29,6 +30,7 @@ const formSchema = z.object({
   description: z.string().optional(),
   sort_order: z.coerce.number().optional(),
   is_active: z.boolean().default(true),
+  image_alt: z.string().trim().max(IMAGE_ALT_MAX, `Keep it under ${IMAGE_ALT_MAX} characters`).optional(),
 })
 
 interface CategoryFormProps {
@@ -49,6 +51,7 @@ export function BlogCategoryForm({ category }: CategoryFormProps) {
       description: category?.description || "",
       sort_order: category?.sort_order || undefined,
       is_active: category?.is_active ?? true,
+      image_alt: category?.image_alt || "",
     },
   })
 
@@ -185,6 +188,25 @@ export function BlogCategoryForm({ category }: CategoryFormProps) {
           maxSize={5}
           disabled={isSubmitting}
         />
+
+        {imagePreview && (
+          <FormField
+            control={form.control}
+            name="image_alt"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Image description (alt text)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Burj Khalifa above the Downtown skyline" maxLength={IMAGE_ALT_MAX} {...field} />
+                </FormControl>
+                <FormDescription>
+                  Describe what the photo shows, for screen readers and image search.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

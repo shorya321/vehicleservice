@@ -9,7 +9,7 @@ export const META_DESCRIPTION_LIMIT = 160
 
 /** Every `seo_meta` column the app reads, kept in one place so no select drifts. */
 export const SEO_META_COLUMNS =
-  'meta_title, meta_description, meta_keywords, og_title, og_description, og_image_url, canonical_path, noindex, nofollow'
+  'meta_title, meta_description, meta_keywords, og_title, og_description, og_image_url, og_image_alt, canonical_path, noindex, nofollow'
 
 export const SEO_SETTINGS_TAG = 'seo-settings'
 export const SEO_META_TAG = 'seo-meta'
@@ -63,6 +63,8 @@ export const seoMetaSchema = z.object({
   og_title: z.string().trim().max(120),
   og_description: z.string().trim().max(320),
   og_image_url: optionalUrl,
+  /** og:image:alt for the share image above. */
+  og_image_alt: z.string().trim().max(160),
   canonical_path: z
     .string()
     .trim()
@@ -81,6 +83,7 @@ export const EMPTY_SEO_META: SeoMetaValues = {
   og_title: '',
   og_description: '',
   og_image_url: '',
+  og_image_alt: '',
   canonical_path: '',
   noindex: false,
   nofollow: false,

@@ -18,6 +18,7 @@ const serviceSchema = z.object({
   title: text(40),
   body: text(200),
   image: imageSrc,
+  alt: optionalText(140),
   cta: ctaSchema,
 })
 

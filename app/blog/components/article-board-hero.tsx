@@ -92,7 +92,7 @@ export function ArticleBoardHero({ post }: ArticleBoardHeroProps) {
               <div className="blog-board-core blog-board-feature__core">
                 <Image
                   src={image}
-                  alt={post.title}
+                  alt={post.featured_image_alt || post.title}
                   fill
                   priority
                   className="object-cover"
