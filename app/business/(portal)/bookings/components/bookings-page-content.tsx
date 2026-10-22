@@ -122,9 +122,9 @@ interface BookingsPageContentProps {
   totalCount: number;
   pendingCount: number;
   /**
-   * Bookings that were converted from a quotation. An ON DELETE RESTRICT foreign
-   * key holds them, so deleting one is impossible - the row can only ever be
-   * cancelled. Shown as a disabled action rather than a click that fails.
+   * Bookings that were converted from a quotation. They can be deleted (moved to the
+   * trash) only once every journey of the trip is cancelled; until then the action is
+   * shown disabled rather than as a click that fails.
    */
   quotationBookingIds?: string[];
   /**
@@ -244,10 +244,10 @@ export function BookingsPageContent({
 
   // Selection handlers - select all on current page
   const toggleSelectAll = () => {
-    // Quotation-derived bookings are excluded: the bulk delete is all or nothing,
-    // so one of them in the selection refuses the whole batch.
+    // Quotation trips that are not fully cancelled are excluded: the bulk delete is all or
+    // nothing, so one of them in the selection refuses the whole batch.
     const currentPageBookingIds = paginatedBookings
-      .filter((b) => !quotationBookings.has(b.id))
+      .filter((b) => !isDeleteLocked(b.id))
       .map((b) => b.id);
     const allCurrentPageSelected =
       currentPageBookingIds.length > 0 &&
@@ -272,8 +272,13 @@ export function BookingsPageContent({
     return groupId ? bookings.filter((b) => b.booking_group_id === groupId).map((b) => b.id) : [bookingId];
   };
 
+  /** A quotation trip stays undeletable until every one of its journeys is cancelled. */
+  const isDeleteLocked = (bookingId: string): boolean =>
+    quotationBookings.has(bookingId) &&
+    !wholeTripIds(bookingId).every((id) => bookings.find((b) => b.id === id)?.booking_status === 'cancelled');
+
   const toggleSelectBooking = (bookingId: string) => {
-    if (quotationBookings.has(bookingId)) return;
+    if (isDeleteLocked(bookingId)) return;
     // Journeys of a trip are deleted together, so they are selected together.
     const ids = wholeTripIds(bookingId);
     const newSelected = new Set(selectedBookings);
@@ -287,7 +292,7 @@ export function BookingsPageContent({
 
   // Check selection state for current page
   const currentPageBookingIds = paginatedBookings
-    .filter((b) => !quotationBookings.has(b.id))
+    .filter((b) => !isDeleteLocked(b.id))
     .map((b) => b.id);
   const isAllSelected =
     currentPageBookingIds.length > 0 &&
@@ -364,7 +369,7 @@ export function BookingsPageContent({
         if (!response.ok) {
           throw new Error(result.error || 'Failed to delete trip');
         }
-        toast.success('Trip deleted successfully');
+        toast.success('Trip moved to trash');
       } else if (bookingToDelete) {
         // Single delete
         const response = await fetch(`/api/business/bookings/${bookingToDelete}`, {
@@ -374,7 +379,7 @@ export function BookingsPageContent({
         if (!response.ok) {
           throw new Error(result.error || 'Failed to delete booking');
         }
-        toast.success('Booking deleted successfully');
+        toast.success('Booking moved to trash');
       } else {
         // Bulk delete
         const response = await fetch('/api/business/bookings/bulk-delete', {
@@ -386,7 +391,7 @@ export function BookingsPageContent({
         if (!response.ok) {
           throw new Error(result.error || 'Failed to delete bookings');
         }
-        toast.success(`${result.data.deleted_count} booking(s) deleted successfully`);
+        toast.success(`${result.data.deleted_count} booking(s) moved to trash`);
         setSelectedBookings(new Set());
       }
       router.refresh();
@@ -432,7 +437,7 @@ export function BookingsPageContent({
       index={index}
       prefersReducedMotion={prefersReducedMotion}
       isSelected={selectedBookings.has(booking.id)}
-      fromQuotation={quotationBookings.has(booking.id)}
+      deleteLocked={isDeleteLocked(booking.id)}
       onToggleSelect={() => toggleSelectBooking(booking.id)}
       onDelete={() => handleDeleteSingle(booking.id)}
       onRefresh={() => router.refresh()}
@@ -446,7 +451,7 @@ export function BookingsPageContent({
       index={index}
       prefersReducedMotion={prefersReducedMotion}
       isSelected={selectedBookings.has(booking.id)}
-      fromQuotation={quotationBookings.has(booking.id)}
+      deleteLocked={isDeleteLocked(booking.id)}
       onToggleSelect={() => toggleSelectBooking(booking.id)}
       onDelete={() => handleDeleteSingle(booking.id)}
       onRefresh={() => router.refresh()}
@@ -934,9 +939,9 @@ export function BookingsPageContent({
             <AlertDialogDescription>
               {bookingToDelete
                 ? wholeTripIds(bookingToDelete).length > 1
-                  ? `This booking is one journey of a trip, so all ${wholeTripIds(bookingToDelete).length} journeys will be deleted. This action cannot be undone.`
-                  : 'Are you sure you want to delete this booking? This action cannot be undone.'
-                : `Are you sure you want to delete ${selectedBookings.size} booking(s)? Journeys of the same trip are deleted together. This action cannot be undone.`}
+                  ? `This booking is one journey of a trip, so all ${wholeTripIds(bookingToDelete).length} journeys move to the trash together. The account owner can restore them for 30 days.`
+                  : 'Move this booking to the trash? The account owner can restore it for 30 days.'
+                : `Move ${selectedBookings.size} booking(s) to the trash? Journeys of the same trip move together. You can restore them for 30 days.`}
             </AlertDialogDescription>
             {/* Neither deleting nor cancelling returns the money by itself any more, so
                 this no longer points at cancelling as the way to get it back. Saying so
@@ -995,13 +1000,13 @@ interface TableRowProps {
   prefersReducedMotion: boolean;
   isSelected: boolean;
   /** Converted from a quotation: held by a foreign key, so it cannot be deleted. */
-  fromQuotation: boolean;
+  deleteLocked: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
   onRefresh: () => void;
 }
 
-function TableRow({ booking, index, prefersReducedMotion, isSelected, fromQuotation, onToggleSelect, onDelete, onRefresh }: TableRowProps) {
+function TableRow({ booking, index, prefersReducedMotion, isSelected, deleteLocked, onToggleSelect, onDelete, onRefresh }: TableRowProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const canEditDateTime = canModifyBookingDateTime(booking);
 
@@ -1034,11 +1039,11 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, fromQuotat
       <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
         <Checkbox
           checked={isSelected}
-          disabled={fromQuotation}
+          disabled={deleteLocked}
           onCheckedChange={onToggleSelect}
           aria-label={
-            fromQuotation
-              ? `Booking ${booking.trip_number || booking.booking_number} came from a quotation and cannot be deleted`
+            deleteLocked
+              ? `Booking ${booking.trip_number || booking.booking_number} came from a quotation and cannot be deleted until every journey is cancelled`
               : `Select booking ${booking.trip_number || booking.booking_number}`
           }
           className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
@@ -1110,10 +1115,10 @@ function TableRow({ booking, index, prefersReducedMotion, isSelected, fromQuotat
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              disabled={fromQuotation}
+              disabled={deleteLocked}
               title={
-                fromQuotation
-                  ? 'Created from a quotation and cannot be deleted. Cancel it instead.'
+                deleteLocked
+                  ? 'Created from a quotation. Cancel every journey of the trip before deleting it.'
                   : undefined
               }
               onClick={(e) => {
@@ -1198,7 +1203,7 @@ interface MobileBookingCardProps {
   prefersReducedMotion: boolean;
   isSelected: boolean;
   /** Converted from a quotation: held by a foreign key, so it cannot be deleted. */
-  fromQuotation: boolean;
+  deleteLocked: boolean;
   onToggleSelect: () => void;
   onDelete: () => void;
   onRefresh: () => void;
@@ -1209,7 +1214,7 @@ function MobileBookingCard({
   index,
   prefersReducedMotion,
   isSelected,
-  fromQuotation,
+  deleteLocked,
   onToggleSelect,
   onDelete,
   onRefresh,
@@ -1249,11 +1254,11 @@ function MobileBookingCard({
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={isSelected}
-                  disabled={fromQuotation}
+                  disabled={deleteLocked}
                   onCheckedChange={onToggleSelect}
                   aria-label={
-                    fromQuotation
-                      ? `Booking ${booking.trip_number || booking.booking_number} came from a quotation and cannot be deleted`
+                    deleteLocked
+                      ? `Booking ${booking.trip_number || booking.booking_number} came from a quotation and cannot be deleted until every journey is cancelled`
                       : `Select booking ${booking.trip_number || booking.booking_number}`
                   }
                   className="h-4 w-4 border-2 border-border rounded data-[state=unchecked]:bg-transparent hover:border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-colors"
@@ -1313,10 +1318,10 @@ function MobileBookingCard({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
-                  disabled={fromQuotation}
+                  disabled={deleteLocked}
                   title={
-                    fromQuotation
-                      ? 'Created from a quotation and cannot be deleted. Cancel it instead.'
+                    deleteLocked
+                      ? 'Created from a quotation. Cancel every journey of the trip before deleting it.'
                       : undefined
                   }
                   onClick={(e) => {

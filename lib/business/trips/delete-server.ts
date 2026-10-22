@@ -34,20 +34,6 @@ export async function expandToWholeBusinessTrips(
   return { ids: Array.from(new Set([...ids, ...(legs ?? []).map((l) => l.id as string)])), groupIds, error: false };
 }
 
-/** Removes trip rows whose journeys are all gone. Best effort: an orphan group is harmless. */
-export async function pruneEmptyBusinessTrips(supabase: SupabaseClient, groupIds: string[]): Promise<void> {
-  if (groupIds.length === 0) return;
-  const { data: remaining } = await supabase
-    .from('business_bookings')
-    .select('booking_group_id')
-    .in('booking_group_id', groupIds);
-  const stillUsed = new Set((remaining ?? []).map((r) => r.booking_group_id as string));
-  const empty = groupIds.filter((id) => !stillUsed.has(id));
-  if (empty.length === 0) return;
-  const { error } = await supabase.from('business_booking_groups').delete().in('id', empty);
-  if (error) console.error('Failed to remove empty business trips:', error);
-}
-
 /** How many journeys the trip of a booking has, or 1 for a booking outside any trip. */
 export async function businessTripJourneyCount(supabase: SupabaseClient, groupId: string | null): Promise<number> {
   if (!groupId) return 1;

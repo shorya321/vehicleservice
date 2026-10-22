@@ -17,7 +17,8 @@ import { getBookingTimezone } from '@/lib/business/utils/timezone';
 import { isActiveBookingStatus } from '@/lib/business/booking-utils';
 import { logBusinessActivityBatch } from '@/lib/business/activity/log';
 import { findBookingsWithActiveAssignment } from '@/lib/business/bookings/active-assignments';
-import { expandToWholeBusinessTrips, pruneEmptyBusinessTrips } from '@/lib/business/trips/delete-server';
+import { expandToWholeBusinessTrips } from '@/lib/business/trips/delete-server';
+import { blockedQuotationTrips, moveBusinessTripsToTrash } from '@/lib/business/trips/trash-server';
 import { businessPortalDeleteBlockedReason } from '@/lib/business/booking-guards';
 
 const bulkDeleteSchema = z.object({
@@ -26,7 +27,7 @@ const bulkDeleteSchema = z.object({
 
 /**
  * POST /api/business/bookings/bulk-delete
- * Delete multiple bookings permanently
+ * Move multiple bookings to the trash (restorable for 30 days)
  */
 export const POST = requireBusinessOwner(
   async (request: NextRequest, user) => {
@@ -66,7 +67,7 @@ export const POST = requireBusinessOwner(
         .select(`
           id, business_account_id, booking_status, payment_status, wallet_deduction_amount,
           booking_number, trip_number, customer_name, customer_email,
-          pickup_address, dropoff_address, pickup_datetime, created_by_user_id,
+          pickup_address, dropoff_address, pickup_datetime, created_by_user_id, booking_group_id,
           from_location:from_location_id(name),
           to_location:to_location_id(name)
         `)
@@ -146,39 +147,23 @@ export const POST = requireBusinessOwner(
         );
       }
 
-      // Bookings converted from a quotation are held by an ON DELETE RESTRICT
-      // foreign key and can never be deleted. Checked up front, because the
-      // delete below is all-or-nothing: one quotation-derived booking in the
-      // selection used to fail the whole statement AFTER every passenger in the
-      // batch had been emailed a cancellation for a booking that still exists.
-      const { data: quotationLinks, error: quotationLinkError } = await supabaseAdmin
-        .from('business_quotation_items')
-        .select('converted_booking_id')
-        .in('converted_booking_id', bookings.map((b) => b.id));
+      // Quotation trips may go to the trash once every journey is cancelled; the trash keeps
+      // their quotation line locked. Checked up front and named, because the move below is all
+      // or nothing and the caller picked these by checkbox.
+      const quotationCheck = await blockedQuotationTrips(supabaseAdmin, bookings);
 
       // Fail closed, same reasoning as the assignment guard above.
-      if (quotationLinkError) {
+      if (quotationCheck.error) {
         return apiError('Unable to verify these bookings right now. Please try again.', 503);
       }
 
-      if (quotationLinks && quotationLinks.length > 0) {
-        const quotationIds = new Set(
-          quotationLinks.map((q) => q.converted_booking_id).filter(Boolean) as string[]
-        );
-
-        // Named, for the same reason the assignment refusal names them: the
-        // caller picked these by checkbox and cannot otherwise tell which to drop.
-        const blocked = bookings
-          .filter((b) => quotationIds.has(b.id))
-          .map((b) => b.trip_number || b.booking_number)
-          .join(', ');
-
+      if (quotationCheck.blocked.length > 0) {
         return apiError(
-          `${blocked} ${
-            quotationIds.size === 1 ? 'was' : 'were'
-          } created from a quotation and cannot be deleted. Deselect ${
-            quotationIds.size === 1 ? 'it' : 'those'
-          } and try again.`,
+          `${quotationCheck.blocked.join(', ')} ${
+            quotationCheck.blocked.length === 1 ? 'was' : 'were'
+          } created from a quotation and still ${
+            quotationCheck.blocked.length === 1 ? 'has' : 'have'
+          } a journey that is not cancelled. Cancel every journey or deselect and try again.`,
           409
         );
       }
@@ -236,39 +221,17 @@ export const POST = requireBusinessOwner(
         }))
       );
 
-      // Delete all bookings
-      const bookingIdsToDelete = bookings.map((b) => b.id);
-      const { data: deletedRows, error: deleteError } = await supabaseAdmin
-        .from('business_bookings')
-        .delete()
-        .in('id', bookingIdsToDelete)
-        .select('id');
-
-      if (deleteError) {
-        console.error('Bulk delete error:', deleteError);
-
-        // At least one booking came from a quotation and is held by an ON DELETE RESTRICT
-        // foreign key. Nothing was deleted. The statement is all-or-nothing.
-        if (deleteError.code === '23503') {
-          return apiError(
-            'One or more of these bookings was created from a quotation and cannot be deleted. Deselect them and try again.',
-            409
-          );
-        }
-
-        return apiError('Failed to delete bookings', 500);
+      // Move every trip to the trash in one transaction. All or nothing, like the checks above.
+      const trashed = await moveBusinessTripsToTrash(
+        supabaseAdmin,
+        bookings.map((b) => b.id),
+        user
+      );
+      if ('error' in trashed) {
+        return apiError(trashed.error === 'Booking not found' ? 'No bookings found' : trashed.error, trashed.status);
       }
 
-      await pruneEmptyBusinessTrips(supabaseAdmin, expanded.groupIds);
-
-      const deletedIds = new Set((deletedRows ?? []).map((r) => r.id));
-
-      if (deletedIds.size === 0) {
-        // Another request got there first. Its response sent the notifications.
-        return apiError('No bookings found', 404);
-      }
-
-      const deleted = bookings.filter((b) => deletedIds.has(b.id));
+      const deleted = bookings;
 
       // -----------------------------------------------------------------------
       // Past this line the rows are gone. Only now does anyone get told, and only
@@ -326,7 +289,7 @@ export const POST = requireBusinessOwner(
       // activity feed carries the batch for everyone else.
 
       return apiSuccess({
-        message: `Successfully deleted ${deleted.length} booking(s)`,
+        message: `Moved ${deleted.length} booking(s) to the trash`,
         deleted_count: deleted.length,
         // Deletion never refunds. See the note above.
         refunded: false,

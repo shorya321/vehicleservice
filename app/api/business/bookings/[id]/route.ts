@@ -17,11 +17,12 @@ import { hasActiveVendorAssignment } from '@/lib/business/bookings/active-assign
 import { isActiveBookingStatus } from '@/lib/business/booking-utils';
 import { businessPortalDeleteBlockedReason } from '@/lib/business/booking-guards';
 import { activityLogger } from '@/lib/business/activity/log';
+import { blockedQuotationTrips, moveBusinessTripsToTrash } from '@/lib/business/trips/trash-server';
 
 /**
  * DELETE /api/business/bookings/[id]
- * Delete a booking permanently. Never moves money, and never emails anyone
- * until the row is actually gone.
+ * Move a booking to the trash (restorable for 30 days). Never moves money, and never emails
+ * anyone until the row is actually gone.
  */
 export const DELETE = requireBusinessAuth(
   async (request: NextRequest, user, context: { params: Promise<{ id: string }> }) => {
@@ -109,30 +110,18 @@ export const DELETE = requireBusinessAuth(
         );
       }
 
-      // A booking converted from a quotation is held by an ON DELETE RESTRICT
-      // foreign key and can never be deleted. That used to be discovered by
-      // attempting the delete and reading 23503 off the failure - by which point
-      // the passenger had already been emailed a cancellation for a booking that
-      // is still sitting there. Checked up front now, before anything is sent.
-      //
-      // limit(1) on an array, not maybeSingle(): maybeSingle throws PGRST116 if
-      // the unique index ever fails to hold, turning a clean 409 into a 503.
-      const { data: quotationLinks, error: quotationLinkError } = await supabaseAdmin
-        .from('business_quotation_items')
-        .select('id')
-        .eq('converted_booking_id', bookingId)
-        .limit(1);
+      // A quotation booking may go to the trash once cancelled: the trash keeps its quotation
+      // line locked, and restoring re-links it. One that ran stays as the quotation's history.
+      // Checked before anything is sent, so a refusal never follows a passenger email.
+      const quotationCheck = await blockedQuotationTrips(supabaseAdmin, [booking]);
 
       // Fail closed, same reasoning as the assignment guard above.
-      if (quotationLinkError) {
+      if (quotationCheck.error) {
         return apiError('Unable to verify this booking right now. Please try again.', 503);
       }
 
-      if (quotationLinks && quotationLinks.length > 0) {
-        return apiError(
-          'This booking was created from a quotation and cannot be deleted. Cancel it instead if the trip is not going ahead.',
-          409
-        );
+      if (quotationCheck.reason) {
+        return apiError(quotationCheck.reason, 409);
       }
 
       // Deleting NEVER moves money. Neither does cancelling any more: refunds are
@@ -195,34 +184,11 @@ export const DELETE = requireBusinessAuth(
         },
       });
 
-      // Delete the booking. select('id') so a no-op delete is distinguishable
-      // from a successful one: two clicks on a slow connection would otherwise
-      // both report success and both mail the passenger.
-      const { data: deletedRows, error: deleteError } = await supabaseAdmin
-        .from('business_bookings')
-        .delete()
-        .eq('id', bookingId)
-        .select('id');
-
-      if (deleteError) {
-        console.error('Delete booking error:', deleteError);
-
-        // Kept as a race fallback only: the pre-flight check above catches this
-        // before anything is sent. Reaching here means the booking was converted
-        // to a quotation line in the moments since.
-        if (deleteError.code === '23503') {
-          return apiError(
-            'This booking was created from a quotation and cannot be deleted. Cancel it instead if the trip is not going ahead.',
-            409
-          );
-        }
-
-        return apiError('Failed to delete booking', 500);
-      }
-
-      if (!deletedRows || deletedRows.length === 0) {
-        // Someone else deleted it first. Their request sent the notifications.
-        return apiError('Booking not found', 404);
+      // Move it to the trash. The RPC refuses a booking that is already gone, so two clicks on a
+      // slow connection cannot both report success and both mail the passenger.
+      const trashed = await moveBusinessTripsToTrash(supabaseAdmin, [bookingId], user);
+      if ('error' in trashed) {
+        return apiError(trashed.error, trashed.status);
       }
 
       // ---------------------------------------------------------------------

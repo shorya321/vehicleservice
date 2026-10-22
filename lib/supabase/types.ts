@@ -4687,6 +4687,15 @@ export type Database = {
         }
         Returns: string
       }
+      trash_business_trips: {
+        Args: {
+          p_actor_auth_id: string
+          p_actor_name: string
+          p_actor_role: string
+          p_booking_ids: string[]
+        }
+        Returns: string[]
+      }
       trash_customer_trip: {
         Args: {
           p_actor_auth_id: string

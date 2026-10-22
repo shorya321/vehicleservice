@@ -113,7 +113,8 @@ describe('the portal delete routes', () => {
   it.each(DELETE_ROUTES)('%s refuses a quotation-derived booking before sending', (path) => {
     const source = read(path);
 
-    const preflight = source.indexOf("from('business_quotation_items')");
+    // The quotation check lives in blockedQuotationTrips (lib/business/trips/trash-server.ts).
+    const preflight = source.indexOf('blockedQuotationTrips(');
     const send = source.indexOf('sendBusinessCustomerBookingCancelledEmail(');
 
     expect(preflight).toBeGreaterThan(-1);
@@ -124,7 +125,8 @@ describe('the portal delete routes', () => {
   it.each(DELETE_ROUTES)('%s sends nothing until the row is gone', (path) => {
     const source = read(path);
 
-    const del = source.indexOf('.delete()');
+    // Deletes go to the trash through one RPC call; the row is gone once it returns.
+    const del = source.indexOf('moveBusinessTripsToTrash(');
     const send = source.indexOf('sendBusinessCustomerBookingCancelledEmail(');
 
     expect(del).toBeGreaterThan(-1);
@@ -136,9 +138,11 @@ describe('the portal delete routes', () => {
   });
 
   it.each(DELETE_ROUTES)('%s can tell a real delete from a no-op', (path) => {
-    // .select('id') on the delete: without it two clicks both report success and both
-    // mail the passenger.
-    expect(read(path)).toContain(".select('id')");
+    // Without this two clicks both report success and both mail the passenger. The trash RPC
+    // raises "not found" for a booking that is already gone, and the helper turns that into an
+    // error the route returns before any send.
+    expect(read(path)).toContain("if ('error' in trashed)");
+    expect(read('lib/business/trips/trash-server.ts')).toContain("includes('not found')");
   });
 });
 
