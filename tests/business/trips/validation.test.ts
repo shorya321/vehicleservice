@@ -3,6 +3,7 @@ import {
   nextLegEarliestStart,
   validateBusinessHourlyStart,
   validateBusinessLegTiming,
+  validateBusinessPickupLead,
   validateRoundTripRoute,
 } from '@/lib/business/trips/validation'
 
@@ -46,6 +47,27 @@ describe('validateBusinessLegTiming', () => {
     expect(validateBusinessLegTiming([leg('a', 'b', '2030-01-11', '10:00')], opts)).toMatch(/at least two/)
   })
 
+  it('holds every pickup to the minimum lead time', () => {
+    const lead = { ...opts, minLeadMinutes: 120 }
+    // NOW is 10:00 Dubai, so 12:00 is exactly two hours away.
+    expect(validateBusinessLegTiming([leg('a', 'b', '2030-01-10', '12:00', 30), leg('b', 'a', '2030-01-10', '14:00')], lead)).toBeNull()
+    expect(
+      validateBusinessLegTiming([leg('a', 'b', '2030-01-10', '11:55', 30), leg('b', 'a', '2030-01-10', '14:00')], { ...lead, roundTrip: true })
+    ).toBe('Outbound: pickup must be at least 2 hours from now.')
+    // The past still reads as past, not as too soon.
+    expect(validateBusinessLegTiming([leg('a', 'b', '2030-01-10', '09:00'), leg('b', 'a', '2030-01-10', '14:00')], lead)).toMatch(/already passed/)
+  })
+
+  it('reports order alone when the real drive times are not known', () => {
+    const order = { ...opts, bufferMinutes: 0, orderOnly: true }
+    expect(
+      validateBusinessLegTiming([leg('a', 'b', '2030-01-11', '10:00', 1), leg('b', 'a', '2030-01-11', '08:00', 1)], { ...order, roundTrip: true })
+    ).toBe('The return must start after the outbound journey.')
+    expect(
+      validateBusinessLegTiming([leg('a', 'b', '2030-01-11', '10:00', 1), leg('b', 'c', '2030-01-11', '10:00', 1)], order)
+    ).toBe('Journey 2 must start after journey 1.')
+  })
+
   it('refuses malformed dates and times', () => {
     expect(validateBusinessLegTiming([leg('a', 'b', '2030-1-11', '10:00'), leg('b', 'a', '2030-01-11', '15:00')], opts)).toMatch(/valid date/)
     expect(validateBusinessLegTiming([leg('a', 'b', '2030-01-11', '25:00'), leg('b', 'a', '2030-01-11', '15:00')], opts)).toMatch(/valid date/)
@@ -81,5 +103,22 @@ describe('businessLegStart / nextLegEarliestStart', () => {
     const start = new Date('2030-01-11T06:00:00Z')
     expect(nextLegEarliestStart(start, 45, 15).toISOString()).toBe('2030-01-11T07:00:00.000Z')
     expect(nextLegEarliestStart(start, null, 0).toISOString()).toBe('2030-01-11T07:00:00.000Z')
+  })
+})
+
+describe('validateBusinessPickupLead', () => {
+  it('accepts a pickup exactly the lead time away and refuses one a minute sooner', () => {
+    expect(validateBusinessPickupLead('2030-01-10T08:00:00Z', 120, NOW)).toBeNull()
+    expect(validateBusinessPickupLead('2030-01-10T07:59:00Z', 120, NOW)).toBe('Pickup must be at least 2 hours from now.')
+  })
+
+  it('reports a past pickup as passed, whatever the lead', () => {
+    expect(validateBusinessPickupLead('2030-01-10T05:00:00Z', 120, NOW)).toBe('The pickup time has already passed.')
+    expect(validateBusinessPickupLead('2030-01-10T05:00:00Z', 0, NOW)).toBe('The pickup time has already passed.')
+    expect(validateBusinessPickupLead('2030-01-10T06:01:00Z', 0, NOW)).toBeNull()
+  })
+
+  it('refuses an unreadable instant', () => {
+    expect(validateBusinessPickupLead('nope', 120, NOW)).toBe('Choose a valid pickup date and time.')
   })
 })

@@ -13,6 +13,7 @@ import { GuestBreakdownSelector } from '../guest-breakdown-selector';
 import { getSeatedCount } from '@/lib/business/guest-breakdown';
 import { BUSINESS_MAX_LEGS_HARD_LIMIT } from '@/lib/business/trips/constants';
 import { emptyBusinessLeg, returnLegFor, validateBusinessTripDraft } from '@/lib/business/trips/draft';
+import { effectiveLeadMinutes } from '@/lib/business/trips/pickup-floor';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import type { BusinessHourlyPackage, BusinessTripLegInput, BusinessTripType } from '@/lib/business/trips/types';
 import { JourneyCard } from './journey-card';
@@ -99,7 +100,7 @@ export function TripRouteStep({
         <HourlyFields
           leg={legs[0] ?? emptyBusinessLeg()}
           hourlyPackage={hourlyPackage}
-          minNoticeHours={settings.hourly_min_notice_hours}
+          leadMinutes={effectiveLeadMinutes('hourly', settings)}
           onChange={(patch) => updateLeg(0, patch)}
           onPackageChange={onPackageChange}
         />
@@ -110,6 +111,7 @@ export function TripRouteStep({
             index={index}
             title={tripType === 'round_trip' ? (index === 0 ? 'Outbound' : 'Return') : `Journey ${index + 1}`}
             leg={leg}
+            leadMinutes={effectiveLeadMinutes(tripType, settings)}
             routeLocked={tripType === 'round_trip' && index === 1}
             onChange={(patch) => updateLeg(index, patch)}
             onRemove={tripType === 'multi_city' && legs.length > 2 ? () => onLegsChange(legs.filter((_, i) => i !== index)) : undefined}

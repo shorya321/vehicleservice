@@ -11,6 +11,8 @@ import {
   parseRequestBody,
 } from '@/lib/business/api-utils';
 import { bookingCreationSchema } from '@/lib/business/validators';
+import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
+import { validateBusinessPickupLead } from '@/lib/business/trips/validation';
 import { createClient } from '@supabase/supabase-js';
 import { sendBusinessCustomerBookingConfirmationEmail } from '@/lib/business/email/services/business-emails';
 import { notifyBusinessBookingCreated } from '@/lib/business/email/notify';
@@ -57,6 +59,15 @@ export const POST = requireBusinessAuth(async (request: NextRequest, user) => {
       },
     }
   );
+
+  // ─── Pickup lead time ───────────────────────────────────────────────────────
+  // The admin's business lead time. The wizard greys out anything sooner, but a stale tab or a
+  // direct request must not be able to book a pickup that has passed or is minutes away.
+  const tripSettings = await getBusinessTripSettings(supabaseAdmin);
+  const leadError = validateBusinessPickupLead(body.pickup_datetime, tripSettings.min_lead_hours * 60);
+  if (leadError) {
+    return apiError(leadError, 400);
+  }
 
   // ─── HMAC Signature Verification ────────────────────────────────────────────
   const hmacResult = verifyBusinessQuoteSignature({

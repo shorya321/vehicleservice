@@ -11,6 +11,13 @@ import { DEFAULT_TRIP_SETTINGS, parseTripSettings, type TripSettings } from '@/l
  */
 export const DEFAULT_CANCELLATION_WINDOW_MINUTES = 30
 
+/**
+ * Default minimum lead time for a business booking's pickup, in hours. The
+ * business module parses the same key itself; see `lib/business/trips/settings.ts`.
+ */
+export const DEFAULT_BUSINESS_MIN_LEAD_HOURS = 2
+export const MAX_BUSINESS_MIN_LEAD_HOURS = 72
+
 export interface SocialLinks {
   instagram: string
   facebook: string
@@ -48,6 +55,12 @@ export interface SiteSettingsConfig {
    * `getCancellationEligibility` in `lib/business/booking-utils.ts`.
    */
   business_cancellation_window_minutes: number
+  /**
+   * How far ahead a business booking's pickup must be, in hours. Governs New
+   * Booking and quotation conversion; hourly hire uses the larger of this and
+   * its own notice. 0 means any future time.
+   */
+  business_min_lead_hours: number
   /** Round trip, multi-city and hourly switches and rules. See `lib/trips/settings.ts`. */
   trip_types: TripSettings
 }
@@ -77,6 +90,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   block_search_indexing: true,
   timezone: DEFAULT_BOOKING_TIMEZONE,
   business_cancellation_window_minutes: DEFAULT_CANCELLATION_WINDOW_MINUTES,
+  business_min_lead_hours: DEFAULT_BUSINESS_MIN_LEAD_HOURS,
   trip_types: DEFAULT_TRIP_SETTINGS,
 }
 
@@ -139,6 +153,14 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
       obj.business_cancellation_window_minutes >= 0
         ? Math.floor(obj.business_cancellation_window_minutes)
         : DEFAULT_CANCELLATION_WINDOW_MINUTES,
+    // Whole hours in range or the default, so a bad value can never block every booking.
+    business_min_lead_hours:
+      typeof obj.business_min_lead_hours === 'number' &&
+      Number.isInteger(obj.business_min_lead_hours) &&
+      obj.business_min_lead_hours >= 0 &&
+      obj.business_min_lead_hours <= MAX_BUSINESS_MIN_LEAD_HOURS
+        ? obj.business_min_lead_hours
+        : DEFAULT_BUSINESS_MIN_LEAD_HOURS,
     trip_types: parseTripSettings(obj.trip_types),
   }
 }

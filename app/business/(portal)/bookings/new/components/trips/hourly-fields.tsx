@@ -17,12 +17,14 @@ import { DateTimeFields } from './date-time-fields';
 interface HourlyFieldsProps {
   leg: BusinessTripLegInput;
   hourlyPackage: BusinessHourlyPackage;
-  minNoticeHours: number;
+  /** Minutes from now before which no start may be picked: the notice or the lead, the longer. */
+  leadMinutes: number;
   onChange: (patch: Partial<BusinessTripLegInput>) => void;
   onPackageChange: (value: BusinessHourlyPackage) => void;
 }
 
-export function HourlyFields({ leg, hourlyPackage, minNoticeHours, onChange, onPackageChange }: HourlyFieldsProps) {
+export function HourlyFields({ leg, hourlyPackage, leadMinutes, onChange, onPackageChange }: HourlyFieldsProps) {
+  const noticeHours = leadMinutes / 60;
   return (
     <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-5">
       <div className="flex items-center gap-3">
@@ -33,7 +35,7 @@ export function HourlyFields({ leg, hourlyPackage, minNoticeHours, onChange, onP
           <h3 className="text-base font-semibold text-foreground">Hourly Hire</h3>
           <p className="text-xs text-muted-foreground">
             A chauffeur at your disposal, {BUSINESS_AS_DIRECTED.toLowerCase()}.
-            {minNoticeHours > 0 ? ` Book at least ${minNoticeHours} hours ahead.` : ''}
+            {noticeHours > 0 ? ` Book at least ${noticeHours} hour${noticeHours === 1 ? '' : 's'} ahead.` : ''}
           </p>
         </div>
       </div>
@@ -85,6 +87,7 @@ export function HourlyFields({ leg, hourlyPackage, minNoticeHours, onChange, onP
         idPrefix="hourly"
         date={leg.date}
         time={leg.time}
+        leadMinutes={leadMinutes}
         dateLabel="Start Date"
         timeLabel="Start Time"
         onChange={(next) => onChange(next)}

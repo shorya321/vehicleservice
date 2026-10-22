@@ -433,6 +433,7 @@ export function BookingWizard({
                   formData={formData}
                   onUpdate={updateFormData}
                   onNext={nextStep}
+                  settings={tripSettings}
                   onFetchVehicles={fetchAvailableVehicles}
                 />
               ) : (

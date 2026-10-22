@@ -7,7 +7,7 @@
  * Design: shadcn/ui theme-aware components
  */
 
-import { bookingTodayAsCalendarDate } from '@/lib/business/utils/timezone'
+import { bookingLocalInputToUtc, bookingTodayAsCalendarDate } from '@/lib/business/utils/timezone'
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,11 +31,17 @@ import { GuestBreakdownSelector } from './guest-breakdown-selector';
 import { getSeatedCount } from '@/lib/business/guest-breakdown';
 import { LocationSearchAutocomplete } from '@/components/search/location-search-autocomplete';
 import type { LocationSearchResult } from '@/lib/types/location';
+import { adjustToFloor, effectiveLeadMinutes } from '@/lib/business/trips/pickup-floor';
+import type { BusinessTripSettings } from '@/lib/business/trips/settings';
+import { validateBusinessPickupLead } from '@/lib/business/trips/validation';
+import { usePickupFloor } from './trips/use-pickup-floor';
 
 interface RouteStepProps {
   formData: Partial<BookingFormData>;
   onUpdate: (data: Partial<BookingFormData>) => void;
   onNext: () => void;
+  /** Admin trip settings, for the business lead time. */
+  settings: BusinessTripSettings;
   onFetchVehicles: (
     fromLocationId: string,
     toLocationId: string,
@@ -71,7 +77,10 @@ const routeSchema = z
     path: ['infants'],
   });
 
-export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: RouteStepProps) {
+export function RouteStep({ formData, onUpdate, onNext, settings, onFetchVehicles }: RouteStepProps) {
+  const leadMinutes = effectiveLeadMinutes('one_way', settings);
+  const floor = usePickupFloor(leadMinutes);
+
   const form = useForm<RouteFormData>({
     resolver: zodResolver(routeSchema),
     defaultValues: {
@@ -100,6 +109,17 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
     guestErrors.adults?.message;
 
   async function onSubmit(values: RouteFormData) {
+    // Checked here rather than in routeSchema because the lead time is an admin setting.
+    // The API checks it again.
+    const leadError = validateBusinessPickupLead(
+      bookingLocalInputToUtc(values.pickup_datetime).toISOString(),
+      leadMinutes
+    );
+    if (leadError) {
+      form.setError('pickup_datetime', { message: leadError });
+      return;
+    }
+
     // passenger_count is every guest, infants included. A child seat occupies a seat position.
     const seatedPassengers = getSeatedCount(values);
 
@@ -115,11 +135,6 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
 
     onNext();
   }
-
-  // Get minimum datetime (now + 2 hours)
-  const minDateTime = new Date();
-  minDateTime.setHours(minDateTime.getHours() + 2);
-  const minDateTimeString = minDateTime.toISOString().slice(0, 16);
 
   return (
     <Form {...form}>
@@ -185,10 +200,21 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
                       <FormDatePicker
                         value={dateValue ? parse(dateValue, 'yyyy-MM-dd', new Date()) : undefined}
                         onChange={(date) => {
-                          const d = date ? format(date, 'yyyy-MM-dd') : '';
-                          field.onChange(d && timeValue ? `${d}T${timeValue}` : d ? `${d}T12:00` : '');
+                          if (!date) {
+                            field.onChange('');
+                            return;
+                          }
+                          // Choosing a date also settles the time: filled in when empty,
+                          // moved up when the new date makes it too soon.
+                          const next = adjustToFloor(format(date, 'yyyy-MM-dd'), timeValue, floor);
+                          field.onChange(`${next.date}T${next.time}`);
                         }}
-                        disabled={(date) => date < bookingTodayAsCalendarDate()}
+                        // Compared as 'yyyy-MM-dd' strings: the calendar hands back a browser-local Date.
+                        disabled={(date) =>
+                          floor
+                            ? format(date, 'yyyy-MM-dd') < floor.date
+                            : date < bookingTodayAsCalendarDate()
+                        }
                         placeholder="Select date"
                       />
                     </FormControl>
@@ -210,10 +236,13 @@ export function RouteStep({ formData, onUpdate, onNext, onFetchVehicles }: Route
                       <FormTimePicker
                         value={timeValue}
                         onChange={(time) => {
-                          field.onChange(dateValue ? `${dateValue}T${time}` : '');
+                          if (dateValue) field.onChange(`${dateValue}T${time}`);
                         }}
+                        minTime={floor && dateValue === floor.date ? floor.time : undefined}
+                        // A time on its own has nothing to attach to, so it waits for a date.
+                        isDisabled={!dateValue}
                         popoverClassName=""
-                        placeholder="Select time"
+                        placeholder={dateValue ? 'Select time' : 'Pick a date first'}
                       />
                     </FormControl>
                   </FormItem>

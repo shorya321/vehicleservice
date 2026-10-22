@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
 import { bookingWallClockToUtc } from '@/lib/business/utils/timezone';
 import { BUSINESS_AS_DIRECTED, BUSINESS_MAX_LEGS_HARD_LIMIT } from './constants';
+import { effectiveLeadMinutes } from './pickup-floor';
 import { quoteBusinessTrip, toCents } from './pricing';
 import {
   businessLegFare,
@@ -191,13 +192,14 @@ export async function priceServerSideBusinessTrip(
   }
 
   const timingError = body.trip_type === 'hourly'
-    ? validateBusinessHourlyStart(drafts[0].date, drafts[0].time, { minNoticeHours: settings.hourly_min_notice_hours })
+    ? validateBusinessHourlyStart(drafts[0].date, drafts[0].time, { minNoticeHours: effectiveLeadMinutes('hourly', settings) / 60 })
     : validateBusinessLegTiming(
         drafts.map((d, i) => ({ fromId: d.from, toId: d.to ?? '', date: d.date, time: d.time, durationMinutes: durations[i] })),
         {
           bufferMinutes: settings.leg_buffer_minutes,
           maxLegs: body.trip_type === 'round_trip' ? 2 : Math.min(settings.multi_city_max_legs, BUSINESS_MAX_LEGS_HARD_LIMIT),
           roundTrip: body.trip_type === 'round_trip',
+          minLeadMinutes: effectiveLeadMinutes(body.trip_type, settings),
         }
       );
   if (timingError) return fail(400, timingError);

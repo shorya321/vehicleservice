@@ -7,6 +7,7 @@
  */
 import type { BusinessTripSettings } from './settings';
 import type { BusinessTripLegInput, BusinessTripType } from './types';
+import { effectiveLeadMinutes } from './pickup-floor';
 import { validateBusinessHourlyStart, validateBusinessLegTiming } from './validation';
 
 export function emptyBusinessLeg(): BusinessTripLegInput {
@@ -65,7 +66,7 @@ export function validateBusinessTripDraft(
     if (!leg?.from_location_id) return 'Choose a pickup location.';
     if ((leg.pickup_address ?? '').trim().length < MIN_ADDRESS) return 'Enter the pickup address.';
     if (!leg.date || !leg.time) return 'Choose a start date and time.';
-    return validateBusinessHourlyStart(leg.date, leg.time, { minNoticeHours: settings.hourly_min_notice_hours, now });
+    return validateBusinessHourlyStart(leg.date, leg.time, { minNoticeHours: effectiveLeadMinutes('hourly', settings) / 60, now });
   }
 
   for (let index = 0; index < legs.length; index += 1) {
@@ -84,6 +85,8 @@ export function validateBusinessTripDraft(
       bufferMinutes: 0,
       maxLegs: type === 'round_trip' ? 2 : settings.multi_city_max_legs,
       roundTrip: type === 'round_trip',
+      minLeadMinutes: effectiveLeadMinutes(type, settings),
+      orderOnly: true,
       now,
     }
   );

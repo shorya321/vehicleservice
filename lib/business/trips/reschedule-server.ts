@@ -3,15 +3,17 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
 import { getBusinessTripSettings } from './settings-server';
 import { getBusinessRouteDurationMinutes } from './pricing-server';
-import { nextLegEarliestStart } from './validation';
+import { effectiveLeadMinutes } from './pickup-floor';
+import { nextLegEarliestStart, validateBusinessPickupLead } from './validation';
 import { businessLegLabel } from './display';
 
 /**
- * Extra rules for moving one journey of a trip, on top of the normal reschedule rules:
+ * Extra rules for moving a booking, on top of the normal reschedule rules:
+ * - every booking keeps the admin's business lead time, and an hourly hire the longer of that
+ *   and its own notice period;
  * - a journey stays after the one before it (its drive time plus the buffer) and before the one
- *   after it, so a return can never be moved ahead of its outbound;
- * - an hourly hire keeps the hourly notice period.
- * Returns a user-facing message, or null when the move is allowed. One way: always null.
+ *   after it, so a return can never be moved ahead of its outbound.
+ * Returns a user-facing message, or null when the move is allowed.
  * SCOPE: Business module ONLY.
  */
 export interface ReschedulableBooking {
@@ -44,24 +46,22 @@ export async function checkBusinessTripReschedule(
   newPickupIso: string
 ): Promise<string | null> {
   const newStart = new Date(newPickupIso);
-  if (booking.trip_type === 'hourly') {
-    const settings = await getBusinessTripSettings(supabase);
-    const earliest = Date.now() + settings.hourly_min_notice_hours * 3_600_000;
-    return newStart.getTime() < earliest
-      ? `Hourly hire needs at least ${settings.hourly_min_notice_hours} hours notice.`
-      : null;
-  }
+  const settings = await getBusinessTripSettings(supabase);
+  // Round trip and multi-city journeys share the one way lead time.
+  const leadError = validateBusinessPickupLead(
+    newPickupIso,
+    effectiveLeadMinutes(booking.trip_type === 'hourly' ? 'hourly' : 'one_way', settings)
+  );
+  if (leadError) return leadError;
+  if (booking.trip_type === 'hourly') return null;
 
   if (!booking.booking_group_id || booking.leg_index === null || booking.leg_index === undefined) return null;
 
-  const [settings, { data: legs, error }] = await Promise.all([
-    getBusinessTripSettings(supabase),
-    supabase
-      .from('business_bookings')
-      .select('id, leg_index, pickup_datetime, from_location_id, to_location_id, booking_status, trip_type')
-      .eq('booking_group_id', booking.booking_group_id)
-      .order('leg_index', { ascending: true }),
-  ]);
+  const { data: legs, error } = await supabase
+    .from('business_bookings')
+    .select('id, leg_index, pickup_datetime, from_location_id, to_location_id, booking_status, trip_type')
+    .eq('booking_group_id', booking.booking_group_id)
+    .order('leg_index', { ascending: true });
   if (error || !legs) return 'Unable to check the other journeys of this trip. Please try again.';
 
   const others = legs.filter((leg) => leg.id !== booking.id && LIVE.includes(leg.booking_status));

@@ -128,7 +128,8 @@ export const PATCH = requireBusinessAuth(
         return apiError('New pickup time is the same as current time', 400);
       }
 
-      // Round trip, multi-city and hourly rules. One way returns null and is unaffected.
+      // The admin's business lead time for every booking, plus the round trip, multi-city and
+      // hourly rules.
       const tripError = await checkBusinessTripReschedule(supabaseAdmin, booking, newPickupDatetime);
       if (tripError) {
         return apiError(tripError, 400);

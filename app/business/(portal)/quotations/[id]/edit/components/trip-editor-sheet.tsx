@@ -37,6 +37,9 @@ import { FieldGroup } from '../../../components/field-group';
 // Portal money format ("AED 150.00"); the customer PDF keeps formatAmount.
 import { formatCurrency } from '@/lib/business/wallet-operations';
 import { bookingLocalInputToUtc, bookingUtcToLocalInput } from '@/lib/business/utils/timezone';
+import { adjustToFloor, effectiveLeadMinutes } from '@/lib/business/trips/pickup-floor';
+import { validateBusinessPickupLead } from '@/lib/business/trips/validation';
+import { usePickupFloor } from '../../../../bookings/new/components/trips/use-pickup-floor';
 import { TripTypeTabs } from '../../../../bookings/new/components/trips/trip-type-tabs';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import type { BusinessTripType } from '@/lib/business/trips/types';
@@ -143,27 +146,6 @@ const emptyTrip = (): QuotationTripDraft => ({
   markup_percent: null,
 });
 
-/**
- * `hhmm` rounded up to the next `stepMinutes` boundary. The earliest slot still bookable
- * today. The step matches FormTimePicker's default `minuteStep`, so what this returns is
- * always an option the picker actually offers.
- *
- * Rounding past 23:55 clamps rather than rolling into tomorrow: the operator picked today,
- * so the sheet must not move the day under them. In those last few minutes nothing is
- * genuinely bookable and the past-pickup hint says so.
- */
-function nextTimeSlot(hhmm: string, stepMinutes = 5): string {
-  const [h, m] = hhmm.split(':').map((part) => parseInt(part, 10));
-  if (Number.isNaN(h) || Number.isNaN(m)) return '12:00';
-
-  const rounded = Math.ceil(m / stepMinutes) * stepMinutes;
-  const hour = rounded >= 60 ? h + 1 : h;
-  const minute = rounded >= 60 ? 0 : rounded;
-
-  if (hour > 23) return '23:55';
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-}
-
 export function TripEditorSheet({
   open,
   onOpenChange,
@@ -190,14 +172,18 @@ export function TripEditorSheet({
   const [seatAddonsAvailable, setSeatAddonsAvailable] = useState(false);
 
   /**
-   * "Now" in Dubai wall-clock as 'yyyy-MM-ddTHH:mm', the lower bound for the two pickers.
+   * When the sheet was opened, for the lead-time hint on a loaded pickup.
    *
    * Read in an effect rather than during render: reading the clock while rendering risks a
-   * server/client hydration mismatch, and a value captured once would go stale on a portal
-   * left open across midnight. Re-reading on `open` refreshes it every time the sheet is
-   * used. Null until mounted, which disables the bound rather than guessing it.
+   * server/client hydration mismatch. Re-reading on `open` refreshes it every time the sheet
+   * is used. Null until mounted, which hides the hint rather than guessing.
    */
-  const [nowLocal, setNowLocal] = useState<string | null>(null);
+  const [openedAt, setOpenedAt] = useState<Date | null>(null);
+
+  // The admin's business lead time: the pickers offer nothing sooner, as New Booking does and
+  // as conversion requires. Null until mounted, which leaves the pickers unbounded.
+  const leadMinutes = effectiveLeadMinutes('one_way', tripSettings);
+  const floor = usePickupFloor(leadMinutes);
 
   // Guards against an out-of-order response overwriting a newer one.
   const requestSeq = useRef(0);
@@ -220,7 +206,7 @@ export function TripEditorSheet({
     setToQuery(next.to_location_name ?? next.dropoff_address ?? '');
     setVehicles([]);
     openedKeyRef.current = trip ? tripPricingKey(next) : null;
-    setNowLocal(bookingUtcToLocalInput(new Date().toISOString()));
+    setOpenedAt(new Date());
   }, [open, trip]);
 
   const patch = useCallback((updates: Partial<QuotationTripDraft>) => {
@@ -374,9 +360,9 @@ export function TripEditorSheet({
     draft.pickup_datetime ? bookingUtcToLocalInput(draft.pickup_datetime) : ''
   ).split('T');
 
-  // Both bounds come from the same Dubai wall-clock string, so the date and the time
-  // controls can never disagree about where "now" is.
-  const [todayStr = '', nowTimeStr = ''] = (nowLocal ?? '').split('T');
+  // Both bounds come from the same floor, so the date and the time controls can never
+  // disagree about the earliest bookable pickup.
+  const floorDate = floor?.date ?? '';
 
   /**
    * Earliest month the calendar may navigate to.
@@ -386,19 +372,20 @@ export function TripEditorSheet({
    * entirely, so fall back to the selected month when it is older. The `disabled`
    * predicate still stops a past day from being picked.
    */
-  const calendarStartMonth = todayStr
+  const calendarStartMonth = floorDate
     ? parse(
-        (pickupDateStr && pickupDateStr < todayStr ? pickupDateStr : todayStr).slice(0, 7),
+        (pickupDateStr && pickupDateStr < floorDate ? pickupDateStr : floorDate).slice(0, 7),
         'yyyy-MM',
         new Date()
       )
     : undefined;
 
-  // A pickup already in the past. Either loaded from an old quotation, or left behind by
-  // the sheet sitting open past the chosen time. Surfaced as a hint, never a save block.
-  const pickupInPast = Boolean(
-    nowLocal && draft.pickup_datetime && bookingUtcToLocalInput(draft.pickup_datetime) < nowLocal
-  );
+  // A pickup that has passed or is inside the lead time, usually loaded from an old
+  // quotation. Conversion would refuse it, so say so here. A hint, never a save block.
+  const pickupLeadError =
+    openedAt && draft.pickup_datetime
+      ? validateBusinessPickupLead(draft.pickup_datetime, leadMinutes, openedAt)
+      : null;
 
   /**
    * Every child and infant on the trip needs its own restraint.
@@ -525,17 +512,13 @@ export function TripEditorSheet({
                           patch({ pickup_datetime: null });
                           return;
                         }
-                        const d = format(date, 'yyyy-MM-dd');
-                        // Noon rather than midnight when only a date is chosen, matching the
-                        // booking wizard. Except on today, where noon is already gone by
-                        // the afternoon and would stamp a past pickup the operator never
-                        // typed. A time they DID choose is always kept, so moving a trip
-                        // between days never discards it.
-                        const fallbackTime =
-                          d === todayStr && nowTimeStr ? nextTimeSlot(nowTimeStr) : '12:00';
+                        // Noon when only a date is chosen, as in New Booking, or the first
+                        // bookable slot on the first bookable day. A chosen time is kept unless
+                        // the new day makes it too soon, when it moves up to the floor.
+                        const next = adjustToFloor(format(date, 'yyyy-MM-dd'), pickupTimeStr, floor);
                         patch({
                           pickup_datetime: bookingLocalInputToUtc(
-                            `${d}T${pickupTimeStr || fallbackTime}`
+                            `${next.date}T${next.time}`
                           ).toISOString(),
                         });
                       }}
@@ -543,7 +526,7 @@ export function TripEditorSheet({
                       // browser-local Date, so comparing Date objects against a Dubai
                       // instant would drift by the operator's offset.
                       disabled={(date) =>
-                        Boolean(todayStr) && format(date, 'yyyy-MM-dd') < todayStr
+                        Boolean(floorDate) && format(date, 'yyyy-MM-dd') < floorDate
                       }
                       startMonth={calendarStartMonth}
                       placeholder="Select date"
@@ -563,9 +546,9 @@ export function TripEditorSheet({
                           ).toISOString(),
                         });
                       }}
-                      // Only today's times need a floor; any later day is fully open.
+                      // Only the first bookable day needs a floor; any later day is fully open.
                       minTime={
-                        pickupDateStr && pickupDateStr === todayStr ? nowTimeStr : undefined
+                        floor && pickupDateStr === floor.date ? floor.time : undefined
                       }
                       isDisabled={!pickupDateStr}
                       placeholder="Select time"
@@ -573,9 +556,9 @@ export function TripEditorSheet({
                     />
                   </div>
                 </div>
-                {pickupInPast && (
+                {pickupLeadError && (
                   <p className="text-xs text-destructive">
-                    This pickup time has already passed, so it cannot be turned into a booking.
+                    {pickupLeadError} It cannot be turned into a booking until it is moved.
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">

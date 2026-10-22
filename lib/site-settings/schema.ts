@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { isValidTimezone } from '@/lib/utils/timezone'
 import { tripSettingsSchema } from '@/lib/trips/settings'
+import { MAX_BUSINESS_MIN_LEAD_HOURS } from './types'
 
 export const siteSettingsSchema = z.object({
   brand_name: z.string().min(1, 'Brand name is required').max(100),
@@ -36,6 +37,13 @@ export const siteSettingsSchema = z.object({
     .int('Enter a whole number of minutes')
     .min(0, 'Cannot be negative')
     .max(1440, 'Cannot exceed 1440 minutes (24 hours)'),
+  // 0 means any future time. Same bounds as parseSiteSettings. The form hands a cleared field
+  // over as NaN (see general-settings-form.tsx), which fails here instead of coercing to 0.
+  business_min_lead_hours: z.coerce
+    .number({ invalid_type_error: 'Enter a number of hours' })
+    .int('Enter a whole number of hours')
+    .min(0, 'Cannot be negative')
+    .max(MAX_BUSINESS_MIN_LEAD_HOURS, `Cannot exceed ${MAX_BUSINESS_MIN_LEAD_HOURS} hours`),
   trip_types: tripSettingsSchema,
 })
 

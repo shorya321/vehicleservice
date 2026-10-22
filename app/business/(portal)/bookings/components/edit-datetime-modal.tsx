@@ -6,7 +6,7 @@
  */
 
 import { bookingTodayAsCalendarDate } from '@/lib/business/utils/timezone'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,6 +36,9 @@ import {
 } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/app/business/(portal)/components/ui/alert';
 import { toast } from 'sonner';
+import { adjustToFloor } from '@/lib/business/trips/pickup-floor';
+import { usePickupFloor } from '../new/components/trips/use-pickup-floor';
+import { getRescheduleLeadMinutes } from './reschedule-lead-action';
 import {
   getHoursRemainingToModify,
   MODIFICATION_CUTOFF_HOURS,
@@ -66,6 +69,21 @@ export function EditDateTimeModal({
   onSuccess,
 }: EditDateTimeModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // The reschedule cutoff until the booking's own lead time arrives; the server checks both.
+  const [leadMinutes, setLeadMinutes] = useState(MODIFICATION_CUTOFF_HOURS * 60);
+  const floor = usePickupFloor(leadMinutes);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    getRescheduleLeadMinutes(bookingId).then((minutes) => {
+      if (!cancelled && minutes !== null) setLeadMinutes(minutes);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, bookingId]);
+  const leadHours = Math.ceil(leadMinutes / 60);
 
   const hoursRemaining = getHoursRemainingToModify(currentDatetime);
 
@@ -172,10 +190,20 @@ export function EditDateTimeModal({
                         <FormDatePicker
                           value={dateValue ? parse(dateValue, 'yyyy-MM-dd', new Date()) : undefined}
                           onChange={(date) => {
-                            const d = date ? format(date, 'yyyy-MM-dd') : '';
-                            field.onChange(d && timeValue ? `${d}T${timeValue}` : d ? `${d}T12:00` : '');
+                            if (!date) {
+                              field.onChange('');
+                              return;
+                            }
+                            // Fills an empty time, and moves a time the new date makes too soon.
+                            const next = adjustToFloor(format(date, 'yyyy-MM-dd'), timeValue, floor);
+                            field.onChange(`${next.date}T${next.time}`);
                           }}
-                          disabled={(date) => date < bookingTodayAsCalendarDate()}
+                          // Compared as 'yyyy-MM-dd' strings: the calendar hands back a browser-local Date.
+                          disabled={(date) =>
+                            floor
+                              ? format(date, 'yyyy-MM-dd') < floor.date
+                              : date < bookingTodayAsCalendarDate()
+                          }
                           placeholder="Select date"
                         />
                       </FormControl>
@@ -197,14 +225,16 @@ export function EditDateTimeModal({
                         <FormTimePicker
                           value={timeValue}
                           onChange={(time) => {
-                            field.onChange(dateValue ? `${dateValue}T${time}` : '');
+                            if (dateValue) field.onChange(`${dateValue}T${time}`);
                           }}
+                          minTime={floor && dateValue === floor.date ? floor.time : undefined}
+                          isDisabled={!dateValue}
                           popoverClassName=""
                           placeholder="Select time"
                         />
                       </FormControl>
                       <FormDescription>
-                        Must be at least {MODIFICATION_CUTOFF_HOURS}h from now
+                        Must be at least {leadHours}h from now
                       </FormDescription>
                     </FormItem>
                   );

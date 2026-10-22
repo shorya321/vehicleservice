@@ -63,7 +63,19 @@ describe('validateBusinessTripDraft', () => {
     const legs = [outbound, { ...returnLegFor(outbound), date: '2030-01-11', time: '10:05' }]
     expect(validateBusinessTripDraft('round_trip', legs, settings, NOW)).toBeNull()
     const backwards = [outbound, { ...returnLegFor(outbound), date: '2030-01-11', time: '09:00' }]
-    expect(validateBusinessTripDraft('round_trip', backwards, settings, NOW)).toMatch(/too soon/)
+    expect(validateBusinessTripDraft('round_trip', backwards, settings, NOW)).toBe('The return must start after the outbound journey.')
+  })
+
+  it('holds a trip to the admin lead time', () => {
+    // NOW is 10:00 Dubai on the 10th; the default lead is 2 hours.
+    const soon = [{ ...outbound, date: '2030-01-10', time: '11:30' }, { ...returnLegFor(outbound), date: '2030-01-10', time: '18:00' }]
+    expect(validateBusinessTripDraft('round_trip', soon, settings, NOW)).toBe('Outbound: pickup must be at least 2 hours from now.')
+    expect(validateBusinessTripDraft('round_trip', soon, { ...settings, min_lead_hours: 0 }, NOW)).toBeNull()
+  })
+
+  it('uses the lead time for hourly hire when it is longer than the notice', () => {
+    const hourly = [{ ...outbound, to_location_id: '', date: '2030-01-10', time: '11:00' }]
+    expect(validateBusinessTripDraft('hourly', hourly, { ...settings, hourly_min_notice_hours: 0 }, NOW)).toMatch(/2 hours notice/)
   })
 
   it('names the missing field', () => {

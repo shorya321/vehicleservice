@@ -21,6 +21,7 @@ import {
 import { quoteBusinessTrip } from '@/lib/business/trips/pricing';
 import { businessTripRouteKey, signBusinessTripQuote } from '@/lib/business/trips/quote-hmac';
 import { BUSINESS_MAX_LEGS_HARD_LIMIT } from '@/lib/business/trips/constants';
+import { effectiveLeadMinutes } from '@/lib/business/trips/pickup-floor';
 import { validateBusinessHourlyStart, validateBusinessLegTiming } from '@/lib/business/trips/validation';
 import {
   isBusinessHourlyPackage,
@@ -171,7 +172,12 @@ export async function getBusinessTripVehicles(input: {
         time: leg.time,
         durationMinutes: durations[index],
       })),
-      { bufferMinutes: settings.leg_buffer_minutes, maxLegs, roundTrip: input.tripType === 'round_trip' }
+      {
+        bufferMinutes: settings.leg_buffer_minutes,
+        maxLegs,
+        roundTrip: input.tripType === 'round_trip',
+        minLeadMinutes: effectiveLeadMinutes(input.tripType, settings),
+      }
     );
     if (timingError) return { ...EMPTY, error: timingError };
 
@@ -225,7 +231,7 @@ export async function getBusinessHourlyVehicles(input: {
     const settings = await getBusinessTripSettings(supabase);
     if (!settings.hourly_enabled) return { ...EMPTY, error: 'Hourly hire is not available right now.' };
     const noticeError = validateBusinessHourlyStart(input.date, input.time, {
-      minNoticeHours: settings.hourly_min_notice_hours,
+      minNoticeHours: effectiveLeadMinutes('hourly', settings) / 60,
     });
     if (noticeError) return { ...EMPTY, error: noticeError };
 

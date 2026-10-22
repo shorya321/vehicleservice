@@ -34,7 +34,7 @@ import {
 import { DEFAULT_BOOKING_TIMEZONE } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
 import { updateSiteSettings, uploadSiteLogo, removeSiteLogo } from '../actions'
-import type { SiteSettingsConfig } from '@/lib/site-settings/types'
+import { MAX_BUSINESS_MIN_LEAD_HOURS, type SiteSettingsConfig } from '@/lib/site-settings/types'
 import { siteSettingsSchema, type SiteSettingsFormValues } from '@/lib/site-settings/schema'
 import { TripTypesSettingsCard } from './trip-types-settings-card'
 
@@ -105,6 +105,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       timezone: currentSettings.timezone,
       business_cancellation_window_minutes:
         currentSettings.business_cancellation_window_minutes,
+      business_min_lead_hours: currentSettings.business_min_lead_hours,
       trip_types: currentSettings.trip_types,
     },
   })
@@ -266,7 +267,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
           </CardContent>
         </Card>
 
-        {/* Booking Cancellation Section */}
+        {/* Business Bookings Section: self-cancellation and pickup lead time */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -274,9 +275,9 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                 <CalendarX className="h-5 w-5" />
               </div>
               <div className="space-y-1.5">
-                <CardTitle>Booking Cancellation</CardTitle>
+                <CardTitle>Business Bookings</CardTitle>
                 <CardDescription>
-                  How long a business may cancel its own booking
+                  How soon a business may book a pickup, and how long it may cancel
                 </CardDescription>
               </div>
             </div>
@@ -305,6 +306,36 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                     however new it is. Set to 0 to stop businesses cancelling their own
                     bookings altogether. Cancelling never returns money to a wallet:
                     refunds are issued by your team from the business account.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="business_min_lead_hours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Minimum lead time (hours)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      max={String(MAX_BUSINESS_MIN_LEAD_HOURS)}
+                      step="1"
+                      aria-label="Business minimum lead time in hours"
+                      {...field}
+                      // Number('') is 0, so a cleared box would save as "no lead time".
+                      // NaN fails validation and asks for a number instead.
+                      value={Number.isNaN(field.value) ? '' : field.value}
+                      onChange={(e) => field.onChange(e.target.value === '' ? Number.NaN : e.target.value)}
+                    />
+                  </FormControl>
+                  <p className="text-sm text-muted-foreground">
+                    How soon a business booking may be picked up. Applies to New Booking
+                    and to turning a quotation into a booking, for every trip type. Hourly
+                    hire uses this or its own minimum notice, whichever is longer. Set to
+                    0 to allow any time that has not yet passed.
                   </p>
                   <FormMessage />
                 </FormItem>

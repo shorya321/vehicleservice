@@ -20,12 +20,14 @@ interface JourneyCardProps {
   index: number;
   title: string;
   leg: BusinessTripLegInput;
+  /** Minutes from now before which no pickup may be picked. */
+  leadMinutes: number;
   routeLocked?: boolean;
   onChange: (patch: Partial<BusinessTripLegInput>) => void;
   onRemove?: () => void;
 }
 
-export function JourneyCard({ index, title, leg, routeLocked, onChange, onRemove }: JourneyCardProps) {
+export function JourneyCard({ index, title, leg, leadMinutes, routeLocked, onChange, onRemove }: JourneyCardProps) {
   const id = `journey-${index}`;
 
   return (
@@ -93,7 +95,13 @@ export function JourneyCard({ index, title, leg, routeLocked, onChange, onRemove
         </div>
       </div>
 
-      <DateTimeFields idPrefix={id} date={leg.date} time={leg.time} onChange={(next) => onChange(next)} />
+      <DateTimeFields
+        idPrefix={id}
+        date={leg.date}
+        time={leg.time}
+        leadMinutes={leadMinutes}
+        onChange={(next) => onChange(next)}
+      />
     </div>
   );
 }

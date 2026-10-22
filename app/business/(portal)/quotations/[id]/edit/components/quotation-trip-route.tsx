@@ -17,6 +17,7 @@ import { JourneyCard } from '../../../../bookings/new/components/trips/journey-c
 import { HourlyFields } from '../../../../bookings/new/components/trips/hourly-fields';
 import { BUSINESS_MAX_LEGS_HARD_LIMIT } from '@/lib/business/trips/constants';
 import { emptyBusinessLeg, returnLegFor, validateBusinessTripDraft } from '@/lib/business/trips/draft';
+import { effectiveLeadMinutes } from '@/lib/business/trips/pickup-floor';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import type { BusinessHourlyPackage, BusinessTripLegInput } from '@/lib/business/trips/types';
 import {
@@ -27,17 +28,6 @@ import {
   tripTypeOf,
 } from '@/lib/business/quotations/trip-legs';
 import type { QuotationTripDraft } from '@/lib/business/quotations/types';
-
-/**
- * A journey is stored as one instant, so a date picked before its time would be lost. Noon fills
- * the gap, as the one-way fields do, and the time stays editable.
- */
-const DEFAULT_TIME = '12:00';
-
-function withDefaultTime(leg: BusinessTripLegInput, patch: Partial<BusinessTripLegInput>): BusinessTripLegInput {
-  const next = { ...leg, ...patch };
-  return patch.date && !next.time ? { ...next, time: DEFAULT_TIME } : next;
-}
 
 interface QuotationTripRouteProps {
   trip: QuotationTripDraft;
@@ -56,7 +46,8 @@ export function QuotationTripRoute({ trip, settings, onChange }: QuotationTripRo
   }
 
   function updateLeg(index: number, patch: Partial<BusinessTripLegInput>) {
-    const next = legs.map((leg, i) => (i === index ? withDefaultTime(leg, patch) : leg));
+    // DateTimeFields fills the time whenever a date is chosen, so a journey always joins into an instant.
+    const next = legs.map((leg, i) => (i === index ? { ...leg, ...patch } : leg));
     if (type === 'round_trip' && index === 0 && next[1]) next[1] = returnLegFor(next[0], next[1]);
     commitLegs(next);
   }
@@ -80,9 +71,9 @@ export function QuotationTripRoute({ trip, settings, onChange }: QuotationTripRo
       <HourlyFields
         leg={start}
         hourlyPackage={trip.hourly_package ?? 'half_day'}
-        minNoticeHours={settings.hourly_min_notice_hours}
+        leadMinutes={effectiveLeadMinutes('hourly', settings)}
         onChange={(patch) => {
-          const next = fromWizardLeg(withDefaultTime(start, patch));
+          const next = fromWizardLeg({ ...start, ...patch });
           onChange({
             from_location_id: next.from_location_id,
             from_location_name: next.from_location_name,
@@ -107,6 +98,7 @@ export function QuotationTripRoute({ trip, settings, onChange }: QuotationTripRo
           index={index}
           title={type === 'round_trip' ? (index === 0 ? 'Outbound' : 'Return') : `Journey ${index + 1}`}
           leg={leg}
+          leadMinutes={effectiveLeadMinutes(type, settings)}
           routeLocked={type === 'round_trip' && index === 1}
           onChange={(patch) => updateLeg(index, patch)}
           onRemove={

@@ -1,9 +1,9 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { parseBusinessTripSettings, type BusinessTripSettings } from './settings';
+import { parseBusinessMinLeadHours, parseBusinessTripSettings, type BusinessTripSettings } from './settings';
 
 /**
- * Reads the trip-type settings straight from `site_settings`.
+ * Reads the trip-type settings, and the business lead time, straight from `site_settings`.
  * SCOPE: Business module ONLY.
  *
  * Not cached on purpose: the admin toggles take effect on the next booking, and this is one
@@ -15,5 +15,5 @@ export async function getBusinessTripSettings(supabase: SupabaseClient): Promise
     console.error('[business trips] settings read failed:', error.message);
   }
   const config = (data?.config ?? null) as Record<string, unknown> | null;
-  return parseBusinessTripSettings(config?.trip_types);
+  return { ...parseBusinessTripSettings(config?.trip_types), min_lead_hours: parseBusinessMinLeadHours(config?.business_min_lead_hours) };
 }

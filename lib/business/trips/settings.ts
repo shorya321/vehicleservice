@@ -5,6 +5,9 @@
  * The values themselves are the admin's Settings > General trip-types card, stored under
  * `site_settings.config.trip_types`, so one admin switch governs both portals. Only the
  * parsing is duplicated here.
+ *
+ * `min_lead_hours` is business-only and lives at `site_settings.config.business_min_lead_hours`,
+ * beside the business cancellation window, in the admin's Business Bookings card.
  */
 export interface BusinessTripSettings {
   round_trip_enabled: boolean;
@@ -14,6 +17,8 @@ export interface BusinessTripSettings {
   multi_city_max_legs: number;
   hourly_min_notice_hours: number;
   leg_buffer_minutes: number;
+  /** How far ahead any business pickup must be. 0 means any future time. */
+  min_lead_hours: number;
 }
 
 export const DEFAULT_BUSINESS_TRIP_SETTINGS: BusinessTripSettings = {
@@ -24,7 +29,11 @@ export const DEFAULT_BUSINESS_TRIP_SETTINGS: BusinessTripSettings = {
   multi_city_max_legs: 4,
   hourly_min_notice_hours: 12,
   leg_buffer_minutes: 60,
+  min_lead_hours: 2,
 };
+
+/** Same bounds as the admin form (`lib/site-settings/schema.ts`). */
+const MAX_MIN_LEAD_HOURS = 72;
 
 type NumberKey = 'round_trip_discount_percent' | 'multi_city_max_legs' | 'hourly_min_notice_hours' | 'leg_buffer_minutes';
 type BooleanKey = 'round_trip_enabled' | 'multi_city_enabled' | 'hourly_enabled';
@@ -64,4 +73,11 @@ export function parseBusinessTripSettings(raw: unknown): BusinessTripSettings {
     if (parsed !== null) result[key] = parsed;
   }
   return result;
+}
+
+/** The stored lead time, or the default when it is missing or out of range. */
+export function parseBusinessMinLeadHours(raw: unknown): number {
+  return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 && raw <= MAX_MIN_LEAD_HOURS
+    ? raw
+    : DEFAULT_BUSINESS_TRIP_SETTINGS.min_lead_hours;
 }

@@ -21,6 +21,8 @@ import crypto from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { calculateBusinessBookingPrice } from '@/lib/business/price-calculation';
 import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
+import { effectiveLeadMinutes } from '@/lib/business/trips/pickup-floor';
+import { validateBusinessPickupLead } from '@/lib/business/trips/validation';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import { isTripConversion, priceQuotationTrip } from './convert-trip';
 import { roundAed } from './pricing';
@@ -32,12 +34,6 @@ import type {
   QuotationPreflightResult,
 } from './types';
 
-/**
- * Minimum lead time for a NEW booking, matching the wizard
- * (app/business/(portal)/bookings/new/components/route-step.tsx:120). A quote converting to a
- * pickup ten minutes out is operationally impossible, so it is refused up front.
- */
-const MIN_LEAD_HOURS = 2;
 
 /** Postgres unique_violation. How a duplicate conversion attempt announces itself. */
 export const UNIQUE_VIOLATION = '23505';
@@ -244,13 +240,15 @@ export async function preflightConversion(
     ...missingConversionContact(quotation.customer_email, quotation.customer_phone)
   );
 
-  const earliest = new Date(Date.now() + MIN_LEAD_HOURS * 60 * 60 * 1000);
+  const now = new Date();
   let totalNetAed = 0;
 
   // Read fresh, as the wizard does, so an admin switch applies to the very next conversion.
+  // Always read: the lead time governs one way trips too.
+  const settings = await getBusinessTripSettings(supabase);
   const context: TripPricingContext = {
     quotation,
-    settings: pending.some(isTripConversion) ? await getBusinessTripSettings(supabase) : null,
+    settings: pending.some(isTripConversion) ? settings : null,
   };
 
   for (const item of pending) {
@@ -260,8 +258,15 @@ export async function preflightConversion(
 
     if (!item.pickup_datetime) {
       error = 'This trip has no pickup date';
-    } else if (new Date(item.pickup_datetime) < earliest) {
-      error = `Pickup must be at least ${MIN_LEAD_HOURS} hours from now`;
+    } else {
+      // The admin's business lead time (hourly: its notice, if longer), the same rule New Booking applies. A quote converting
+      // to a pickup ten minutes out is operationally impossible, so it is refused up front.
+      error =
+        validateBusinessPickupLead(
+          item.pickup_datetime,
+          effectiveLeadMinutes(item.trip_type === 'hourly' ? 'hourly' : 'one_way', settings),
+          now
+        ) ?? undefined;
     }
 
     // The vehicle this trip will be booked with: the customer's pick when one was made,

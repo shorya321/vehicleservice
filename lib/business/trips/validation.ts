@@ -47,19 +47,33 @@ export function nextLegEarliestStart(start: Date, durationMinutes: number | null
   return new Date(start.getTime() + (duration + bufferMinutes) * 60_000);
 }
 
+export interface BusinessLegTimingOptions {
+  bufferMinutes: number;
+  maxLegs: number;
+  now?: Date;
+  roundTrip?: boolean;
+  /** Every pickup must be at least this far from now. The admin's business lead time. */
+  minLeadMinutes?: number;
+  /**
+   * The caller does not know the real drive times (the wizard and quotation editor, before the
+   * server has priced the trip), so a clash is reported as order alone rather than as a gap
+   * computed from a made-up duration.
+   */
+  orderOnly?: boolean;
+}
+
 /**
- * Journeys must be complete, distinct, within the limit, in the future and in travel order:
+ * Journeys must be complete, distinct, within the limit, far enough ahead and in travel order:
  * each pickup at or after the previous journey's estimated arrival plus the buffer.
  */
-export function validateBusinessLegTiming(
-  legs: BusinessTimedLeg[],
-  options: { bufferMinutes: number; maxLegs: number; now?: Date; roundTrip?: boolean }
-): string | null {
+export function validateBusinessLegTiming(legs: BusinessTimedLeg[], options: BusinessLegTimingOptions): string | null {
   if (legs.length < 2) return 'Add at least two journeys.';
   const maxLegs = Math.min(options.maxLegs, BUSINESS_MAX_LEGS_HARD_LIMIT);
   if (legs.length > maxLegs) return `A trip can hold at most ${maxLegs} journeys.`;
 
   const now = options.now ?? new Date();
+  const leadMinutes = options.minLeadMinutes ?? 0;
+  const earliest = now.getTime() + leadMinutes * 60_000;
   let previousEnd: Date | null = null;
 
   for (let index = 0; index < legs.length; index += 1) {
@@ -71,8 +85,14 @@ export function validateBusinessLegTiming(
     const start = businessLegStart(leg);
     if (!start) return `${label}: choose a valid date and time.`;
     if (start.getTime() <= now.getTime()) return `${label}: the pickup time has already passed.`;
+    if (start.getTime() < earliest) return `${label}: pickup must be at least ${formatGap(leadMinutes)} from now.`;
 
     if (previousEnd && start.getTime() < previousEnd.getTime()) {
+      if (options.orderOnly) {
+        return options.roundTrip
+          ? 'The return must start after the outbound journey.'
+          : `${label} must start after journey ${index}.`;
+      }
       const gap = formatGap(Math.round((previousEnd.getTime() - start.getTime()) / 60_000));
       return options.roundTrip
         ? `The return starts too soon after the outbound journey. Move it at least ${gap} later.`
@@ -82,6 +102,18 @@ export function validateBusinessLegTiming(
     previousEnd = nextLegEarliestStart(start, leg.durationMinutes, options.bufferMinutes);
   }
 
+  return null;
+}
+
+/**
+ * A single pickup instant against the admin's business lead time. For one way bookings and
+ * quotation conversion, where there is no journey list to walk.
+ */
+export function validateBusinessPickupLead(pickupIso: string, leadMinutes: number, now: Date = new Date()): string | null {
+  const start = new Date(pickupIso).getTime();
+  if (Number.isNaN(start)) return 'Choose a valid pickup date and time.';
+  if (start <= now.getTime()) return 'The pickup time has already passed.';
+  if (start < now.getTime() + leadMinutes * 60_000) return `Pickup must be at least ${formatGap(leadMinutes)} from now.`;
   return null;
 }
 
