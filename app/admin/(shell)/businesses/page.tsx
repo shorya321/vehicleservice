@@ -11,6 +11,7 @@ import { ClientFilters } from './components/client-filters';
 import { AnimatedPage } from '@/components/layout/animated-page';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { FilterToggle } from '@/components/admin/ui/filter-toggle';
 import { Building2, Clock, CheckCircle, Car } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -40,6 +41,9 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
   const page = parseInt(resolvedSearchParams.page || '1', 10);
   const limit = 10;
   const offset = (page - 1) * limit;
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [search, status, domainVerified].filter(Boolean).length;
 
   // Build query with filters
   let query = supabase
@@ -188,24 +192,23 @@ export default async function AdminBusinessAccountsPage({ searchParams }: AdminB
             </AnimatedCard>
           </div>
 
-          {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ClientFilters />
-            </CardContent>
-          </Card>
-
           {/* Business Accounts Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Business Accounts</CardTitle>
-              <CardDescription>
-                Showing {accountsWithCounts.length} of {count || 0} business{' '}
-                {(count || 0) === 1 ? 'account' : 'accounts'}
-              </CardDescription>
+              <FilterToggle
+                activeCount={activeFilterCount}
+                header={
+                  <div className="space-y-1.5">
+                    <CardTitle>Business Accounts</CardTitle>
+                    <CardDescription>
+                      Showing {accountsWithCounts.length} of {count || 0} business{' '}
+                      {(count || 0) === 1 ? 'account' : 'accounts'}
+                    </CardDescription>
+                  </div>
+                }
+              >
+                <ClientFilters />
+              </FilterToggle>
             </CardHeader>
             <CardContent>
               <BusinessAccountsTableWrapper

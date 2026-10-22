@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 import { PagePagination } from '@/components/admin/ui/page-pagination'
 
 export const metadata: Metadata = {
@@ -53,6 +54,16 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
       allowDropoff: params.allowDropoff === 'true'
     })
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.type && params.type !== 'all',
+    params.status && params.status !== 'all',
+    params.country && params.country !== 'all',
+    params.allowPickup,
+    params.allowDropoff,
+  ].filter(Boolean).length
 
   const [{ locations, total, page, totalPages }, countries, locationTypes] = await Promise.all([
     getLocations(filters),
@@ -101,14 +112,21 @@ export default async function LocationsPage({ searchParams }: LocationsPageProps
 
         <Card>
           <CardHeader>
-            <CardTitle>All Locations</CardTitle>
-            <CardDescription>
-              View and manage all pickup and dropoff locations
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Locations</CardTitle>
+                  <CardDescription>
+                    View and manage all pickup and dropoff locations
+                  </CardDescription>
+                </div>
+              }
+            >
+              <ClientFilters initialFilters={filters} countries={countries} locationTypes={locationTypes} />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ClientFilters initialFilters={filters} countries={countries} locationTypes={locationTypes} />
-
             <LocationTableWithBulk locations={locations} locationTypes={locationTypes} />
 
             <PagePagination pathname="/admin/locations" page={page} totalPages={totalPages} total={total} limit={filters.limit!} noun="locations" query={params} />

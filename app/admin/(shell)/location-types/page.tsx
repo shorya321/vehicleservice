@@ -2,10 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Plus, Tag, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getLocationTypesAdmin, getLocationTypeStats } from './actions'
 import { LocationTypesTable } from './components/location-types-table'
 import { PagePagination } from '@/components/admin/ui/page-pagination'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
+import { StatCard } from '@/components/admin/ui/stat-card'
+import { SearchStatusFilters } from '@/components/admin/ui/search-status-filters'
 
 const PAGE_LIMIT = 10
 
@@ -23,6 +26,12 @@ interface LocationTypesPageProps {
 
 export default async function LocationTypesPage({ searchParams }: LocationTypesPageProps) {
   const params = await searchParams
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.status && params.status !== 'all',
+  ].filter(Boolean).length
+
   const filters = {
     search: params.search,
     status: params.status,
@@ -52,38 +61,52 @@ export default async function LocationTypesPage({ searchParams }: LocationTypesP
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Types</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inactive</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.inactive}</div>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Total Types"
+          value={stats.total}
+          hint="All location types"
+          icon={Tag}
+          tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-700 dark:text-sky-400' }}
+          delay={0.1}
+        />
+        <StatCard
+          label="Active"
+          value={stats.active}
+          hint="Enabled types"
+          icon={CheckCircle}
+          tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-700 dark:text-emerald-400' }}
+          delay={0.2}
+        />
+        <StatCard
+          label="Inactive"
+          value={stats.inactive}
+          hint="Disabled types"
+          icon={XCircle}
+          tone={{ disc: 'bg-red-500/20', icon: 'text-red-500', value: 'text-red-700 dark:text-red-400' }}
+          delay={0.3}
+        />
       </div>
 
-      <LocationTypesTable locationTypes={result.locationTypes} />
+      <Card>
+        <CardHeader>
+          <FilterToggle
+            activeCount={activeFilterCount}
+            header={
+              <div className="space-y-1.5">
+                <CardTitle>All Location Types</CardTitle>
+                <CardDescription>View and manage location types</CardDescription>
+              </div>
+            }
+          >
+            <SearchStatusFilters searchPlaceholder="Search by label or name" searchLabel="Search location types" />
+          </FilterToggle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <LocationTypesTable locationTypes={result.locationTypes} />
 
-      <PagePagination pathname="/admin/location-types" page={result.page} totalPages={result.totalPages} total={result.total} limit={PAGE_LIMIT} noun="location types" query={params} />
+          <PagePagination pathname="/admin/location-types" page={result.page} totalPages={result.totalPages} total={result.total} limit={PAGE_LIMIT} noun="location types" query={params} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

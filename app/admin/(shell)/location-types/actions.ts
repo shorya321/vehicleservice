@@ -228,3 +228,36 @@ export async function toggleLocationTypeStatus(
   revalidatePath('/admin/locations')
   return { success: true }
 }
+
+export async function bulkToggleLocationTypeStatus(
+  ids: string[],
+  isActive: boolean
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  await requireAdmin()
+  const supabase: AnyClient = await createClient()
+
+  const { error } = await supabase
+    .from('location_types')
+    .update({ is_active: isActive })
+    .in('id', ids)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/admin/location-types')
+  revalidatePath('/admin/locations')
+  return { success: true, count: ids.length }
+}
+
+/** Deletes one by one through deleteLocationType so types still in use are kept. */
+export async function bulkDeleteLocationTypes(
+  ids: string[]
+): Promise<{ success: boolean; count: number; failed: string[] }> {
+  let count = 0
+  const failed: string[] = []
+  for (const id of ids) {
+    const result = await deleteLocationType(id)
+    if (result.success) count++
+    else failed.push(result.error ?? 'Failed to delete')
+  }
+  return { success: failed.length === 0, count, failed }
+}

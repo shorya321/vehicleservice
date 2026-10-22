@@ -1,5 +1,7 @@
 import { Suspense } from "react"
 import { VendorApplicationsTable } from "./components/vendor-applications-table"
+import { VendorApplicationsFilters } from "./components/vendor-applications-filters"
+import { FilterToggle } from "@/components/admin/ui/filter-toggle"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getVendorApplicationsStats } from "./actions"
@@ -25,6 +27,12 @@ interface PageProps {
 export default async function VendorApplicationsPage({ searchParams }: PageProps) {
   const params = await searchParams
   
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.status && params.status !== 'all',
+  ].filter(Boolean).length
+
   // Get statistics with error handling
   let stats = { total: 0, pending: 0, approved: 0, rejected: 0 }
   let statsError = null
@@ -132,10 +140,19 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
 
         <Card>
           <CardHeader>
-            <CardTitle>All Applications</CardTitle>
-            <CardDescription>
-              Review vendor applications and approve or reject them
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Applications</CardTitle>
+                  <CardDescription>
+                    Review vendor applications and approve or reject them
+                  </CardDescription>
+                </div>
+              }
+            >
+              <VendorApplicationsFilters search={params.search} status={params.status} />
+            </FilterToggle>
           </CardHeader>
           <CardContent>
             <Suspense fallback={<TableSkeleton />}>
@@ -154,10 +171,6 @@ export default async function VendorApplicationsPage({ searchParams }: PageProps
 function TableSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-10 w-[300px]" />
-        <Skeleton className="h-10 w-[150px]" />
-      </div>
       <div className="border rounded-lg">
         <div className="h-[400px] flex items-center justify-center">
           <div className="space-y-2">

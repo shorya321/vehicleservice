@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { CustomPagination } from '@/components/ui/custom-pagination'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 
 export const metadata: Metadata = {
   title: 'Vehicle Categories - Admin',
@@ -41,6 +42,13 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
     sortBy: (params.sortBy as any) || 'sort_order',
     sortOrder: (params.sortOrder as any) || 'asc',
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  // Sort is one control writing both sortBy and sortOrder, so it counts once.
+  const activeFilterCount = [
+    params.search,
+    (params.sortBy && params.sortBy !== 'sort_order') || (params.sortOrder && params.sortOrder !== 'asc'),
+  ].filter(Boolean).length
 
   const { categories, total, page, totalPages } = await getCategories(filters)
   
@@ -91,13 +99,21 @@ export default async function VehicleCategoriesPage({ searchParams }: VehicleCat
 
         <Card>
           <CardHeader>
-            <CardTitle>All Categories</CardTitle>
-            <CardDescription>
-              View and manage vehicle categories
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Categories</CardTitle>
+                  <CardDescription>
+                    View and manage vehicle categories
+                  </CardDescription>
+                </div>
+              }
+            >
+              <ClientFilters />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ClientFilters />
             <CategoryTableWithBulk categories={categoriesWithUsage} />
             {totalPages > 1 && (
               <div className="flex justify-center">

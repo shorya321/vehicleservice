@@ -1,5 +1,4 @@
 import { AlertCircle } from "lucide-react"
-import { VendorApplicationsFilters } from "./vendor-applications-filters"
 import { VendorApplicationsPagination } from "./vendor-applications-pagination"
 import { VendorApplicationsTableClient } from "./vendor-applications-table-client"
 import { getVendorApplications } from "../actions"
@@ -41,11 +40,6 @@ export async function VendorApplicationsTable({
 
   return (
     <div className="space-y-4">
-      <VendorApplicationsFilters
-        search={search}
-        status={status}
-      />
-
       <VendorApplicationsTableClient applications={applications} />
 
       <VendorApplicationsPagination

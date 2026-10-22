@@ -16,6 +16,8 @@ import {
 import { StatusPill } from '@/components/admin/ui/status-pill'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
+import { BulkActionsBar } from '@/components/admin/ui/bulk-actions-bar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +35,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import type { ServiceCode } from '../actions'
-import { toggleServiceCodeStatus, deleteServiceCode } from '../actions'
+import {
+  toggleServiceCodeStatus,
+  deleteServiceCode,
+  bulkToggleServiceCodeStatus,
+  bulkDeleteServiceCodes,
+} from '../actions'
 
 interface ServiceCodesTableProps {
   serviceCodes: ServiceCode[]
@@ -43,6 +50,21 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
   const router = useRouter()
   const [deleteCode, setDeleteCode] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  // Only rows on this page count, so a filter or page change drops stale picks.
+  const selectedCodes = serviceCodes.filter((sc) => selected.has(sc.code)).map((sc) => sc.code)
+  const isAllSelected = serviceCodes.length > 0 && selectedCodes.length === serviceCodes.length
+  const isIndeterminate = selectedCodes.length > 0 && !isAllSelected
+
+  function handleSelect(code: string, checked: boolean) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(code)
+      else next.delete(code)
+      return next
+    })
+  }
 
   async function handleToggle(code: string, currentActive: boolean | null) {
     const result = await toggleServiceCodeStatus(code, !currentActive)
@@ -85,11 +107,30 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
   }
 
   return (
-    <>
+    <div className="space-y-4">
+      {selectedCodes.length > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedCodes.length}
+          noun={['service code', 'service codes']}
+          onClearSelection={() => setSelected(new Set())}
+          onSetStatus={(isActive) => bulkToggleServiceCodeStatus(selectedCodes, isActive)}
+          onDelete={() => bulkDeleteServiceCodes(selectedCodes)}
+        />
+      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? 'indeterminate' : false}
+                  onCheckedChange={(checked) =>
+                    setSelected(checked === true ? new Set(serviceCodes.map((sc) => sc.code)) : new Set())
+                  }
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead className="w-[120px]">Code</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="w-[140px]">Service Type</TableHead>
@@ -99,7 +140,15 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
           </TableHeader>
           <TableBody>
             {serviceCodes.map((sc) => (
-              <TableRow key={sc.code}>
+              <TableRow key={sc.code} data-state={selected.has(sc.code) ? 'selected' : undefined}>
+                <TableCell>
+                  <Checkbox
+                    checked={selected.has(sc.code)}
+                    onCheckedChange={(checked) => handleSelect(sc.code, checked === true)}
+                    aria-label={`Select ${sc.code}`}
+                    className="translate-y-[2px]"
+                  />
+                </TableCell>
                 <TableCell>
                   <span className="font-mono font-bold text-sm">{sc.code}</span>
                 </TableCell>
@@ -167,6 +216,6 @@ export function ServiceCodesTable({ serviceCodes }: ServiceCodesTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

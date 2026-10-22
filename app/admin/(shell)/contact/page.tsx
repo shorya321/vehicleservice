@@ -23,6 +23,7 @@ import {
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 
 export const metadata: Metadata = {
   title: 'Contact Submissions | Admin',
@@ -52,6 +53,13 @@ export default async function ContactSubmissionsPage({
       : 1,
     limit: 10,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    resolvedSearchParams.search,
+    resolvedSearchParams.status && resolvedSearchParams.status !== 'all',
+    resolvedSearchParams.priority && resolvedSearchParams.priority !== 'all',
+  ].filter(Boolean).length
 
   const [{ submissions, total, page, totalPages }, stats] = await Promise.all([
     getContactSubmissions(filters),
@@ -141,13 +149,21 @@ export default async function ContactSubmissionsPage({
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Submissions</CardTitle>
-          <CardDescription>
-            View and manage contact form submissions
-          </CardDescription>
+          <FilterToggle
+            activeCount={activeFilterCount}
+            header={
+              <div className="space-y-1.5">
+                <CardTitle>All Submissions</CardTitle>
+                <CardDescription>
+                  View and manage contact form submissions
+                </CardDescription>
+              </div>
+            }
+          >
+            <ContactFilters />
+          </FilterToggle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <ContactFilters />
           <ContactSubmissionsTable submissions={submissions} />
           {totalPages > 1 && (
             <div className="flex justify-center">

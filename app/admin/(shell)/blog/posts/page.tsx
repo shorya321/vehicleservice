@@ -9,6 +9,7 @@ import { getBlogPosts, BlogPostFilters } from "./actions"
 import { BlogPostsTable } from "./components/blog-posts-table"
 import { BlogPostFilters as BlogPostFiltersComponent } from "./components/blog-post-filters"
 import { CustomPagination } from "@/components/ui/custom-pagination"
+import { FilterToggle } from "@/components/admin/ui/filter-toggle"
 import { getAllBlogCategories } from "../categories/actions"
 import {
   Card,
@@ -43,6 +44,13 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
     page: resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1,
     limit: 10,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    resolvedSearchParams.search,
+    resolvedSearchParams.categoryId && resolvedSearchParams.categoryId !== "all",
+    resolvedSearchParams.status && resolvedSearchParams.status !== "all",
+  ].filter(Boolean).length
 
   const { posts, total, page, totalPages } = await getBlogPosts(filters)
 
@@ -138,13 +146,21 @@ export default async function BlogPostsPage({ searchParams }: PageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Blog Posts</CardTitle>
-          <CardDescription>
-            Manage your blog content and publishing
-          </CardDescription>
+          <FilterToggle
+            activeCount={activeFilterCount}
+            header={
+              <div className="space-y-1.5">
+                <CardTitle>All Blog Posts</CardTitle>
+                <CardDescription>
+                  Manage your blog content and publishing
+                </CardDescription>
+              </div>
+            }
+          >
+            <BlogPostFiltersComponent categories={categories} />
+          </FilterToggle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <BlogPostFiltersComponent categories={categories} />
           <BlogPostsTable posts={posts} />
           {totalPages > 1 && (
             <div className="flex justify-center">

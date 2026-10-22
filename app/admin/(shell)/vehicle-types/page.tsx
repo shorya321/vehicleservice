@@ -9,6 +9,7 @@ import { getVehicleTypes, VehicleTypeFilters } from "./actions"
 import { VehicleTypesTable } from "./components/vehicle-types-table"
 import { VehicleTypeFilters as VehicleTypeFiltersComponent } from "./components/vehicle-type-filters"
 import { CustomPagination } from "@/components/ui/custom-pagination"
+import { FilterToggle } from "@/components/admin/ui/filter-toggle"
 import { createClient } from '@/lib/supabase/server'
 import {
   Card,
@@ -49,6 +50,13 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
     page: resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1,
     limit: 10,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    resolvedSearchParams.search,
+    resolvedSearchParams.categoryId && resolvedSearchParams.categoryId !== 'all',
+    resolvedSearchParams.isActive && resolvedSearchParams.isActive !== 'all',
+  ].filter(Boolean).length
 
   const { vehicleTypes, total, page, limit, totalPages } = await getVehicleTypes(filters)
 
@@ -146,13 +154,21 @@ export default async function VehicleTypesPage({ searchParams }: PageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>All Vehicle Types</CardTitle>
-            <CardDescription>
-              Define vehicle types with passenger and luggage capacities
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Vehicle Types</CardTitle>
+                  <CardDescription>
+                    Define vehicle types with passenger and luggage capacities
+                  </CardDescription>
+                </div>
+              }
+            >
+              <VehicleTypeFiltersComponent categories={categories || []} />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <VehicleTypeFiltersComponent categories={categories || []} />
             <VehicleTypesTable vehicleTypes={vehicleTypes} />
             {totalPages > 1 && (
               <div className="flex justify-center">

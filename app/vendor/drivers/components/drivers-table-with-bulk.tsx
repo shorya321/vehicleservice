@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { DriversTable } from './drivers-table'
 import { VendorDriver, bulkDeleteDrivers, bulkUpdateDriverStatus, bulkToggleDriverAvailability } from '../actions'
 import { Button } from '@/components/ui/button'
@@ -28,9 +28,11 @@ import { useRouter } from 'next/navigation'
 
 interface DriversTableWithBulkProps {
   drivers: VendorDriver[]
+  /** Title block shown left of the Show / Hide Filters button. */
+  header?: ReactNode
 }
 
-export function DriversTableWithBulk({ drivers: initialDrivers }: DriversTableWithBulkProps) {
+export function DriversTableWithBulk({ drivers: initialDrivers, header }: DriversTableWithBulkProps) {
   const router = useRouter()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -109,61 +111,6 @@ export function DriversTableWithBulk({ drivers: initialDrivers }: DriversTableWi
 
   return (
     <div className="space-y-4">
-      {/* Bulk Actions Toolbar */}
-      {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between gap-4 bg-muted p-4 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={selectedIds.length === initialDrivers.length}
-              onCheckedChange={handleSelectAll}
-            />
-            <span className="text-sm font-medium">
-              {selectedIds.length} driver(s) selected
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setNewAvailability(true)
-                setShowAvailabilityDialog(true)
-              }}
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Mark Available
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setNewAvailability(false)
-                setShowAvailabilityDialog(true)
-              }}
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Mark Unavailable
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowStatusDialog(true)}
-            >
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Change Status
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Drivers Table with Selection */}
       <DriversTable
         drivers={initialDrivers}
@@ -171,6 +118,62 @@ export function DriversTableWithBulk({ drivers: initialDrivers }: DriversTableWi
         selectedIds={selectedIds}
         onSelectDriver={handleSelectDriver}
         onSelectAll={handleSelectAll}
+        header={header}
+        toolbar={
+          selectedIds.length > 0 && (
+            <div className="flex items-center justify-between gap-4 bg-muted p-4 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedIds.length === initialDrivers.length}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm font-medium">
+                  {selectedIds.length} driver(s) selected
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setNewAvailability(true)
+                    setShowAvailabilityDialog(true)
+                  }}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Mark Available
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setNewAvailability(false)
+                    setShowAvailabilityDialog(true)
+                  }}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Mark Unavailable
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowStatusDialog(true)}
+                >
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Change Status
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )
+        }
       />
 
       {/* Delete Confirmation Dialog */}

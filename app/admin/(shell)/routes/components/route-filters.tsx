@@ -88,7 +88,7 @@ export function RouteFilters({ initialFilters }: RouteFiltersProps) {
     isPopular !== 'all'
 
   return (
-    <div className="space-y-4 bg-card p-4 rounded-lg border">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Search</label>

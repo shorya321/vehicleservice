@@ -8,7 +8,7 @@ import { formatBookingDate } from '@/lib/utils/timezone'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageStatCard } from './components/page-stat-card'
+import { StatCard } from '@/components/admin/ui/stat-card'
 import { PagesTable, type PageRowView } from './components/pages-table'
 
 export const metadata: Metadata = {
@@ -47,6 +47,13 @@ export default async function ContentPagesPage() {
   const published = pages.filter((p) => p.status === 'published').length
   const seoSet = pages.filter((p) => p.seoDone).length
 
+  const pagesHeading = (
+    <div className="space-y-1.5">
+      <CardTitle>All Pages</CardTitle>
+      <CardDescription>Manage page content and search settings</CardDescription>
+    </div>
+  )
+
   return (
     <AnimatedPage>
       <Breadcrumb items={[{ label: 'Pages', href: '/admin/content/pages' }]} />
@@ -58,7 +65,7 @@ export default async function ContentPagesPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <PageStatCard
+        <StatCard
           label="Total Pages"
           value={pages.length}
           hint="All site pages"
@@ -66,7 +73,7 @@ export default async function ContentPagesPage() {
           tone={{ disc: 'bg-primary/20', icon: 'text-primary', value: 'text-sky-700 dark:text-sky-400' }}
           delay={0.1}
         />
-        <PageStatCard
+        <StatCard
           label="Published"
           value={published}
           hint="Live pages"
@@ -74,7 +81,7 @@ export default async function ContentPagesPage() {
           tone={{ disc: 'bg-emerald-500/20', icon: 'text-emerald-500', value: 'text-emerald-700 dark:text-emerald-400' }}
           delay={0.2}
         />
-        <PageStatCard
+        <StatCard
           label="SEO Set"
           value={seoSet}
           hint="Own title and description"
@@ -82,7 +89,7 @@ export default async function ContentPagesPage() {
           tone={{ disc: 'bg-sky-500/20', icon: 'text-sky-500', value: 'text-violet-600 dark:text-violet-400' }}
           delay={0.3}
         />
-        <PageStatCard
+        <StatCard
           label="Using Defaults"
           value={pages.length - seoSet}
           hint="Fall back to site SEO"
@@ -93,17 +100,18 @@ export default async function ContentPagesPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>All Pages</CardTitle>
-          <CardDescription>Manage page content and search settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error ? (
-            <p className="text-sm text-destructive">Could not load pages. Refresh to try again.</p>
-          ) : (
-            <PagesTable pages={pages} />
-          )}
-        </CardContent>
+        {error ? (
+          <>
+            <CardHeader>{pagesHeading}</CardHeader>
+            <CardContent>
+              <p className="text-sm text-destructive">Could not load pages. Refresh to try again.</p>
+            </CardContent>
+          </>
+        ) : (
+          <CardContent className="pt-6">
+            <PagesTable pages={pages} header={pagesHeading} />
+          </CardContent>
+        )}
       </Card>
     </AnimatedPage>
   )

@@ -1038,6 +1038,54 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
   color: hsl(var(--muted-foreground));
 }
 
+/* Checkboxes (components/ui/checkbox.tsx): a neutral 1.5px outline at 4px
+   radius, gold only once checked. The reference border (#323234) is a step
+   lighter than --border, so it is set here rather than through the token. */
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) button[role="checkbox"] {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #323234;
+  border-radius: 4px;
+  background: transparent;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+:is(.light .portal-shell, html.light[style*="--admin-surface-0"] [role="dialog"]) button[role="checkbox"] {
+  border-color: #E4E4E7;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) button[role="checkbox"]:not(:disabled):hover {
+  border-color: #BA955E;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) button[role="checkbox"]:is([data-state="checked"], [data-state="indeterminate"]) {
+  border-color: #BA955E;
+  background: #BA955E;
+  color: #1a1408;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) button[role="checkbox"] svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+:is(.portal-shell, html[style*="--admin-surface-0"] [role="dialog"]) button[role="checkbox"]:focus-visible {
+  outline: 2px solid #BA955E;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Show / Hide Filters (components/admin/ui/filter-toggle.tsx): gold border
+   and the lighter gold text while open; the count badge keeps dark ink on
+   gold in both themes. */
+.portal-shell .filter-toggle[aria-expanded="true"] {
+  border-color: #BA955E;
+  color: #D4B07A;
+}
+.light .portal-shell .filter-toggle[aria-expanded="true"] {
+  color: #85663A;
+}
+.portal-shell .filter-toggle__count {
+  background: #BA955E;
+  color: #1a1408;
+}
+
 /* Status pills (components/admin/ui/status-pill.tsx). Not scoped to
    .portal-shell so a pill inside a portalled dialog keeps its colour; the
    class names are only used by admin and vendor code. Dark values first,

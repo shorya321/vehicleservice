@@ -10,6 +10,7 @@ import { ReviewsTable } from './components/reviews-table'
 import { ReviewFilters } from './components/review-filters'
 import { ReviewsTableWrapper } from './components/reviews-table-wrapper'
 import { PagePagination } from '@/components/admin/ui/page-pagination'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 
 interface PageProps {
   searchParams: Promise<{
@@ -64,6 +65,14 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
     ...(ratingRange && ratingRange !== 'all' ? { ratingRange } : {}),
     ...(search ? { search } : {}),
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.status && params.status !== 'all',
+    params.ratingRange && params.ratingRange !== 'all',
+    params.sortBy && params.sortBy !== 'newest',
+  ].filter(Boolean).length
 
   // Get reviews
   const { data: reviews, total, totalPages } = await getReviews({
@@ -170,15 +179,21 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
         <AnimatedCard delay={0.5}>
           <Card>
             <CardHeader>
-              <CardTitle>All Reviews</CardTitle>
-              <CardDescription>
-                Manage and moderate customer reviews - {total} total reviews
-              </CardDescription>
+              <FilterToggle
+                activeCount={activeFilterCount}
+                header={
+                  <div className="space-y-1.5">
+                    <CardTitle>All Reviews</CardTitle>
+                    <CardDescription>
+                      Manage and moderate customer reviews - {total} total reviews
+                    </CardDescription>
+                  </div>
+                }
+              >
+                <ReviewFilters />
+              </FilterToggle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Filters */}
-              <ReviewFilters />
-
               {/* Results Info */}
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <p>

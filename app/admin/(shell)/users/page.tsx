@@ -18,6 +18,7 @@ import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { AnimatedPage } from "@/components/layout/animated-page"
 import { AnimatedCard } from "@/components/ui/animated-card"
 import { PagePagination } from "@/components/admin/ui/page-pagination"
+import { FilterToggle } from "@/components/admin/ui/filter-toggle"
 
 interface UsersPageProps {
   searchParams: Promise<{
@@ -53,6 +54,16 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       hasSignedIn: params.hasSignedIn === 'true'
     })
   } as any
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.role && params.role !== 'all',
+    params.status && params.status !== 'all',
+    params.emailVerified,
+    params.twoFactorEnabled,
+    params.hasSignedIn,
+  ].filter(Boolean).length
 
   const { users, total, page, totalPages } = await getUsers(filters)
 
@@ -102,14 +113,21 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         <AnimatedCard delay={0.2}>
           <Card>
           <CardHeader>
-            <CardTitle>All Users</CardTitle>
-            <CardDescription>
-              View and manage all registered users
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Users</CardTitle>
+                  <CardDescription>
+                    View and manage all registered users
+                  </CardDescription>
+                </div>
+              }
+            >
+              <ClientFilters initialFilters={filters} />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ClientFilters initialFilters={filters} />
-            
             <UserTableWithBulk 
               users={users} 
               currentUserId={currentUser?.id}

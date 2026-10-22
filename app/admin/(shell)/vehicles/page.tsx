@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { CustomPagination } from '@/components/ui/custom-pagination'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 
 export const metadata: Metadata = {
   title: 'Vehicles - Admin',
@@ -51,6 +52,17 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
     page: params.page ? parseInt(params.page) : 1,
     limit: 10,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.vendorId && params.vendorId !== 'all',
+    params.categoryId && params.categoryId !== 'all',
+    params.status && params.status !== 'all',
+    params.fuelType && params.fuelType !== 'all',
+    params.transmission && params.transmission !== 'all',
+    params.seats,
+  ].filter(Boolean).length
 
   const { vehicles, total, page, totalPages } = await getAdminVehicles(filters)
   const { vendors } = await getVendors()
@@ -148,13 +160,21 @@ export default async function AdminVehiclesPage({ searchParams }: AdminVehiclesP
 
         <Card>
           <CardHeader>
-            <CardTitle>All Vehicles</CardTitle>
-            <CardDescription>
-              View and manage vehicles from all vendors
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Vehicles</CardTitle>
+                  <CardDescription>
+                    View and manage vehicles from all vendors
+                  </CardDescription>
+                </div>
+              }
+            >
+              <ClientFilters vendors={vendors} />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ClientFilters vendors={vendors} />
             <AdminVehicleTableWithBulk vehicles={vehicles} />
             {totalPages > 1 && (
               <div className="flex justify-center">

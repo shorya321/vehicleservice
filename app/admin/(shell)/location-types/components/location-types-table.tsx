@@ -16,6 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
+import { BulkActionsBar } from '@/components/admin/ui/bulk-actions-bar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +36,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import { LocationTypeRecord } from '@/lib/types/location-type'
 import { getLocationTypeIcon } from '@/lib/utils/location-type-utils'
-import { toggleLocationTypeStatus, deleteLocationType } from '../actions'
+import {
+  toggleLocationTypeStatus,
+  deleteLocationType,
+  bulkToggleLocationTypeStatus,
+  bulkDeleteLocationTypes,
+} from '../actions'
 
 interface LocationTypesTableProps {
   locationTypes: LocationTypeRecord[]
@@ -44,6 +51,21 @@ export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  // Only rows on this page count, so a filter or page change drops stale picks.
+  const selectedIds = locationTypes.filter((lt) => selected.has(lt.id)).map((lt) => lt.id)
+  const isAllSelected = locationTypes.length > 0 && selectedIds.length === locationTypes.length
+  const isIndeterminate = selectedIds.length > 0 && !isAllSelected
+
+  function handleSelect(id: string, checked: boolean) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
 
   async function handleToggle(id: string, currentActive: boolean) {
     const result = await toggleLocationTypeStatus(id, !currentActive)
@@ -88,11 +110,30 @@ export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
   }
 
   return (
-    <>
+    <div className="space-y-4">
+      {selectedIds.length > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedIds.length}
+          noun={['location type', 'location types']}
+          onClearSelection={() => setSelected(new Set())}
+          onSetStatus={(isActive) => bulkToggleLocationTypeStatus(selectedIds, isActive)}
+          onDelete={() => bulkDeleteLocationTypes(selectedIds)}
+        />
+      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected ? true : isIndeterminate ? 'indeterminate' : false}
+                  onCheckedChange={(checked) =>
+                    setSelected(checked === true ? new Set(locationTypes.map((lt) => lt.id)) : new Set())
+                  }
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
+              </TableHead>
               <TableHead className="w-[60px]">Icon</TableHead>
               <TableHead>Label</TableHead>
               <TableHead className="w-[100px]">Slug</TableHead>
@@ -105,7 +146,15 @@ export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
           </TableHeader>
           <TableBody>
             {locationTypes.map((lt) => (
-              <TableRow key={lt.id}>
+              <TableRow key={lt.id} data-state={selected.has(lt.id) ? 'selected' : undefined}>
+                <TableCell>
+                  <Checkbox
+                    checked={selected.has(lt.id)}
+                    onCheckedChange={(checked) => handleSelect(lt.id, checked === true)}
+                    aria-label={`Select ${lt.label}`}
+                    className="translate-y-[2px]"
+                  />
+                </TableCell>
                 <TableCell>
                   <div className={`flex items-center justify-center w-8 h-8 rounded-md ${lt.color_config?.bg || ''}`}>
                     {getLocationTypeIcon(lt.icon_name, `h-4 w-4 ${lt.color_config?.color || ''}`)}
@@ -183,6 +232,6 @@ export function LocationTypesTable({ locationTypes }: LocationTypesTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

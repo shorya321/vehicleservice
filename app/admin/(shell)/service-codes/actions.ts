@@ -222,3 +222,35 @@ export async function deleteServiceCode(
   revalidatePath('/admin/service-codes')
   return { success: true }
 }
+
+export async function bulkToggleServiceCodeStatus(
+  codes: string[],
+  isActive: boolean
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  await requireAdmin()
+  const supabase: AnyClient = await createClient()
+
+  const { error } = await supabase
+    .from('service_codes')
+    .update({ is_active: isActive })
+    .in('code', codes)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/admin/service-codes')
+  return { success: true, count: codes.length }
+}
+
+/** Deletes one by one through deleteServiceCode so codes still in use are kept. */
+export async function bulkDeleteServiceCodes(
+  codes: string[]
+): Promise<{ success: boolean; count: number; failed: string[] }> {
+  let count = 0
+  const failed: string[] = []
+  for (const code of codes) {
+    const result = await deleteServiceCode(code)
+    if (result.success) count++
+    else failed.push(result.error ?? 'Failed to delete')
+  }
+  return { success: failed.length === 0, count, failed }
+}

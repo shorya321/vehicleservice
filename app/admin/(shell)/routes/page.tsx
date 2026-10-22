@@ -4,13 +4,14 @@ import { getRoutes } from "./actions"
 import { RoutesTableWithBulk } from "./components/routes-table-with-bulk"
 import { ClientFilters } from "./components/client-filters"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnimatedCard } from "@/components/ui/animated-card"
 import { AnimatedPage } from "@/components/layout/animated-page"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Plus, Route } from "lucide-react"
 import Link from "next/link"
 import { PagePagination } from "@/components/admin/ui/page-pagination"
+import { FilterToggle } from "@/components/admin/ui/filter-toggle"
 
 export const metadata: Metadata = {
   title: 'Routes - Admin Portal',
@@ -40,6 +41,15 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
     isPopular: params.isPopular === 'true' ? true : params.isPopular === 'false' ? false : ('all' as const),
     page: params.page ? parseInt(params.page) : 1,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.originLocationId && params.originLocationId !== 'all',
+    params.destinationLocationId && params.destinationLocationId !== 'all',
+    params.isActive === 'true' || params.isActive === 'false',
+    params.isPopular === 'true' || params.isPopular === 'false',
+  ].filter(Boolean).length
 
   const routesData = await getRoutes(filters)
 
@@ -80,12 +90,26 @@ export default async function AdminRoutesPage({ searchParams }: AdminRoutesPageP
           </AnimatedCard>
         </div>
 
-        <div className="space-y-4">
-          <ClientFilters initialFilters={filters} />
-          <RoutesTableWithBulk routes={routesData.routes} />
+        <Card>
+          <CardHeader>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Routes</CardTitle>
+                  <CardDescription>View and manage all transfer routes</CardDescription>
+                </div>
+              }
+            >
+              <ClientFilters initialFilters={filters} />
+            </FilterToggle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RoutesTableWithBulk routes={routesData.routes} />
 
-          <PagePagination pathname="/admin/routes" page={routesData.page} totalPages={routesData.totalPages} total={routesData.total} limit={routesData.limit} noun="routes" query={params} />
-        </div>
+            <PagePagination pathname="/admin/routes" page={routesData.page} totalPages={routesData.totalPages} total={routesData.total} limit={routesData.limit} noun="routes" query={params} />
+          </CardContent>
+        </Card>
       </AnimatedPage>
   )
 }

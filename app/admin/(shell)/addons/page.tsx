@@ -9,6 +9,7 @@ import { getAddons, getAddonCategories, AddonFilters } from "./actions"
 import { AddonsTable } from "./components/addons-table"
 import { AddonFilters as AddonFiltersComponent } from "./components/addon-filters"
 import { CustomPagination } from "@/components/ui/custom-pagination"
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 import {
   Card,
   CardContent,
@@ -42,6 +43,13 @@ export default async function AddonsPage({ searchParams }: PageProps) {
     page: resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1,
     limit: 10,
   }
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    resolvedSearchParams.search,
+    resolvedSearchParams.category && resolvedSearchParams.category !== 'all',
+    resolvedSearchParams.isActive && resolvedSearchParams.isActive !== 'all',
+  ].filter(Boolean).length
 
   const { addons, total, page, totalPages } = await getAddons(filters)
 
@@ -140,13 +148,21 @@ export default async function AddonsPage({ searchParams }: PageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>All Addons</CardTitle>
-            <CardDescription>
-              Configure addons for both customer and business bookings
-            </CardDescription>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Addons</CardTitle>
+                  <CardDescription>
+                    Configure addons for both customer and business bookings
+                  </CardDescription>
+                </div>
+              }
+            >
+              <AddonFiltersComponent categories={categories} />
+            </FilterToggle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <AddonFiltersComponent categories={categories} />
             <AddonsTable addons={addons} />
             {totalPages > 1 && (
               <div className="flex justify-center">

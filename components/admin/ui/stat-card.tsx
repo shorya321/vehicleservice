@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Card, CardContent } from '@/components/ui/card'
 
-interface PageStatCardProps {
+interface StatCardProps {
   label: string
   value: number
   hint: string
@@ -12,8 +12,8 @@ interface PageStatCardProps {
   delay: number
 }
 
-/** Same stat tile as /admin/blog/posts. */
-export function PageStatCard({ label, value, hint, icon: Icon, tone, delay }: PageStatCardProps) {
+/** Stat tile used across the admin list pages (icon disc, figure, hint). */
+export function StatCard({ label, value, hint, icon: Icon, tone, delay }: StatCardProps) {
   return (
     <AnimatedCard delay={delay}>
       <Card className="admin-card-hover">

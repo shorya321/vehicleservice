@@ -158,6 +158,30 @@ export async function setPageStatus(pageId: string, status: PageStatus): Promise
 }
 
 /**
+ * Bulk Publish / Unpublish through setPageStatus, one page at a time, so every
+ * rule above still applies. Pages already in the target status count as no
+ * change; core pages are reported once as skipped.
+ */
+export async function bulkSetPageStatus(
+  pageIds: string[],
+  status: PageStatus
+): Promise<{ success: boolean; count: number; failed: string[] }> {
+  let count = 0
+  let locked = 0
+  const failed: string[] = []
+  for (const id of pageIds) {
+    const result = await setPageStatus(id, status)
+    if (result.success) count++
+    else if (result.error === 'This page is always live') locked++
+    else if (!result.error?.startsWith('This page is already')) failed.push(result.error ?? 'Could not update the page')
+  }
+  if (locked > 0) {
+    failed.unshift(`${locked} core ${locked === 1 ? 'page is' : 'pages are'} always live and ${locked === 1 ? 'was' : 'were'} skipped`)
+  }
+  return { success: failed.length === 0, count, failed }
+}
+
+/**
  * Signs a one-time upload for a page image. The server picks the path, so the
  * browser can only write a fresh file under the CMS folder.
  */

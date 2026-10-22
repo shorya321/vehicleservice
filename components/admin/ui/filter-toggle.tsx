@@ -31,10 +31,7 @@ export function FilterToggle({ activeCount = 0, header, children, className }: F
           type="button"
           variant="ghost"
           size="sm"
-          className={cn(
-            'h-9 gap-2 border border-border bg-card px-3 font-medium normal-case tracking-normal hover:border-primary hover:bg-card',
-            open && 'border-primary text-primary'
-          )}
+          className="filter-toggle h-9 gap-2 border border-border bg-card px-3 font-medium normal-case tracking-normal hover:border-primary hover:bg-card"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((v) => !v)}
@@ -42,7 +39,7 @@ export function FilterToggle({ activeCount = 0, header, children, className }: F
           <SlidersHorizontal className="h-4 w-4" />
           {open ? 'Hide Filters' : 'Show Filters'}
           {activeCount > 0 && (
-            <span className="rounded-full bg-primary px-1.5 text-[11px] font-bold leading-[18px] text-primary-foreground">
+            <span className="filter-toggle__count rounded-full px-1.5 text-[11px] font-bold leading-[18px]">
               {activeCount}
             </span>
           )}

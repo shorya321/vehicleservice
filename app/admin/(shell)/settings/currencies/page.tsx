@@ -28,6 +28,7 @@ import { CurrencyFilters } from './components/currency-filters'
 import { CurrencyPagination } from './components/currency-pagination'
 import { RefreshRatesButton } from './components/refresh-rates-button'
 import { formatDistanceToNow } from 'date-fns'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 
 export const metadata: Metadata = {
   title: 'Currency Settings | Admin Portal',
@@ -66,6 +67,9 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
   const page = parseInt(params.page || '1', 10)
   const search = params.search || ''
   const filter = (params.filter || 'all') as 'all' | 'enabled' | 'featured' | 'disabled'
+
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [params.search, params.filter && params.filter !== 'all'].filter(Boolean).length
 
   // Fetch counts for stats cards
   const adminClient = createAdminClient()
@@ -209,20 +213,26 @@ export default async function CurrencySettingsPage({ searchParams }: PageProps) 
             </AlertDescription>
           </Alert>
 
-          {/* Filters */}
-          <CurrencyFilters />
-
           {/* Currency Table */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div className="space-y-1.5">
-                <CardTitle>Currencies</CardTitle>
-                <CardDescription>
-                  Enable currencies to make them available in the currency selector.
-                  Feature currencies to show them in the quick dropdown.
-                </CardDescription>
-              </div>
-              <RefreshRatesButton />
+            <CardHeader className="pb-4">
+              <FilterToggle
+                activeCount={activeFilterCount}
+                header={
+                  <div className="flex flex-1 flex-wrap items-start justify-between gap-4 md:flex-nowrap">
+                    <div className="min-w-0 space-y-1.5">
+                      <CardTitle>Currencies</CardTitle>
+                      <CardDescription>
+                        Enable currencies to make them available in the currency selector.
+                        Feature currencies to show them in the quick dropdown.
+                      </CardDescription>
+                    </div>
+                    <RefreshRatesButton />
+                  </div>
+                }
+              >
+                <CurrencyFilters />
+              </FilterToggle>
             </CardHeader>
             <CardContent className="p-0">
               <CurrencyTable

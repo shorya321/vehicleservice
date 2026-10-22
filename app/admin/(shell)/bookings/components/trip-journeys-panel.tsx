@@ -61,7 +61,11 @@ export function TripJourneysPanel({
           inert={!expanded}
           aria-hidden={!expanded}
         >
-          <div className="overflow-hidden">
+          {/* contain:paint stops the collapsed list's height leaking into the
+              table's scroll area (a stray vertical scrollbar). overflow-hidden
+              stays so the list's width does not stretch the table; overflow-clip
+              would. */}
+          <div className="overflow-hidden [contain:paint]">
             <ol className="mb-4 ml-[62px] mr-4 divide-y rounded-md border bg-muted/30">
               {legs.map((leg) => {
                 const assignment = activeAssignmentOf(leg)

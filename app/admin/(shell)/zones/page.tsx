@@ -2,13 +2,15 @@ import { Metadata } from 'next'
 import { Plus, Map } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { ZonesTable } from './components/zones-table'
 import { getZones } from './actions'
 import { PagePagination } from '@/components/admin/ui/page-pagination'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
+import { SearchStatusFilters } from '@/components/admin/ui/search-status-filters'
 
 export const metadata: Metadata = {
   title: 'Zones | Admin',
@@ -25,6 +27,12 @@ interface ZonesPageProps {
 
 export default async function ZonesPage({ searchParams }: ZonesPageProps) {
   const params = await searchParams
+  // Filters the URL sets on top of the defaults; opens the filter panel when above 0.
+  const activeFilterCount = [
+    params.search,
+    params.status && params.status !== 'all',
+  ].filter(Boolean).length
+
   const filters = {
     search: params.search,
     status: params.status,
@@ -77,9 +85,26 @@ export default async function ZonesPage({ searchParams }: ZonesPageProps) {
           </AnimatedCard>
         </div>
 
-        <ZonesTable zones={zonesData.zones} />
+        <Card>
+          <CardHeader>
+            <FilterToggle
+              activeCount={activeFilterCount}
+              header={
+                <div className="space-y-1.5">
+                  <CardTitle>All Zones</CardTitle>
+                  <CardDescription>View and manage pricing zones</CardDescription>
+                </div>
+              }
+            >
+              <SearchStatusFilters searchPlaceholder="Search by name or slug" searchLabel="Search zones" />
+            </FilterToggle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ZonesTable zones={zonesData.zones} />
 
-        <PagePagination pathname="/admin/zones" page={zonesData.page} totalPages={zonesData.totalPages} total={zonesData.total} limit={zonesData.limit} noun="zones" query={params} />
+            <PagePagination pathname="/admin/zones" page={zonesData.page} totalPages={zonesData.totalPages} total={zonesData.total} limit={zonesData.limit} noun="zones" query={params} />
+          </CardContent>
+        </Card>
       </AnimatedPage>
   )
 }

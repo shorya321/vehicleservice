@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Plus, Users, UserCheck, UserX, UserMinus } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { DriversTableWithBulk } from './components/drivers-table-with-bulk'
 import { getDrivers, getDriverStats } from './actions'
 import { requireVendor } from '@/lib/auth/user-actions'
@@ -136,14 +136,18 @@ export default async function DriversPage() {
 
       {/* Drivers Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>All Drivers</CardTitle>
-          <CardDescription>
-            View and manage all your registered drivers
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DriversTableWithBulk drivers={drivers} />
+        <CardContent className="pt-6">
+          <DriversTableWithBulk
+            drivers={drivers}
+            header={
+              <div className="space-y-1.5">
+                <CardTitle>All Drivers</CardTitle>
+                <CardDescription>
+                  View and manage all your registered drivers
+                </CardDescription>
+              </div>
+            }
+          />
         </CardContent>
       </Card>
     </div>

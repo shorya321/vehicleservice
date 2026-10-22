@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
@@ -55,6 +55,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 import { VendorDriver, deleteDriver, toggleDriverAvailability, updateDriverStatus } from '../actions'
 
 interface DriversTableProps {
@@ -63,9 +64,13 @@ interface DriversTableProps {
   selectedIds?: string[]
   onSelectDriver?: (id: string, checked: boolean) => void
   onSelectAll?: (checked: boolean) => void
+  /** Title block shown left of the Show / Hide Filters button. */
+  header?: ReactNode
+  /** Rendered between the filters and the table, e.g. a bulk actions bar. */
+  toolbar?: ReactNode
 }
 
-export function DriversTable({ drivers: initialDrivers, selectable, selectedIds = [], onSelectDriver, onSelectAll }: DriversTableProps) {
+export function DriversTable({ drivers: initialDrivers, selectable, selectedIds = [], onSelectDriver, onSelectAll, header, toolbar }: DriversTableProps) {
   const router = useRouter()
   const [drivers, setDrivers] = useState(initialDrivers)
   const [searchTerm, setSearchTerm] = useState('')
@@ -88,6 +93,13 @@ export function DriversTable({ drivers: initialDrivers, selectable, selectedIds 
     
     return matchesSearch && matchesStatus && matchesAvailability && driver.is_active
   })
+
+  // Filters set away from their defaults; shown as a count on the filter toggle.
+  const activeFilterCount = [
+    searchTerm.trim(),
+    statusFilter !== 'all',
+    availabilityFilter !== 'all',
+  ].filter(Boolean).length
 
   const handleDelete = async (driverId: string) => {
     const result = await deleteDriver(driverId)
@@ -168,36 +180,40 @@ export function DriversTable({ drivers: initialDrivers, selectable, selectedIds 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder="Search by name, phone, or license..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="sm:max-w-xs"
-        />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="sm:max-w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="on_leave">On Leave</SelectItem>
-            <SelectItem value="terminated">Terminated</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-          <SelectTrigger className="sm:max-w-[180px]">
-            <SelectValue placeholder="Filter by availability" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Drivers</SelectItem>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="unavailable">Unavailable</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterToggle activeCount={activeFilterCount} header={header}>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input
+            placeholder="Search by name, phone, or license..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="sm:max-w-xs"
+          />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="sm:max-w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="on_leave">On Leave</SelectItem>
+              <SelectItem value="terminated">Terminated</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+            <SelectTrigger className="sm:max-w-[180px]">
+              <SelectValue placeholder="Filter by availability" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Drivers</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="unavailable">Unavailable</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FilterToggle>
+
+      {toolbar}
 
       {/* Table */}
       <div className="rounded-md border">
