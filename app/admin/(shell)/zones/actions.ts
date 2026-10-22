@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireAdminAction } from '@/lib/auth/admin-action'
 import type { Database } from '@/lib/supabase/types'
 
 export interface Zone {
@@ -65,7 +66,21 @@ export type ZonePricingCell = Pick<
 
 const PAGE_SIZE = 10
 
+/**
+ * Admin check for every export below. RLS already limits writes to admins, but
+ * a blocked write reports success with zero rows, and the proxy's /admin gate
+ * should not be the only check. Returns the message to show, or null for an
+ * admin. Not exported, so it is not itself callable as a Server Action.
+ */
+async function adminDenial(): Promise<string | null> {
+  const auth = await requireAdminAction()
+  return 'error' in auth ? auth.error : null
+}
+
 export async function getZones(filters: ZoneFilters = {}): Promise<PaginatedZones> {
+  const denied = await adminDenial()
+  if (denied) return { zones: [], total: 0, page: filters.page || 1, limit: filters.limit || PAGE_SIZE, totalPages: 0 }
+
   const supabase = await createClient()
   const page = filters.page || 1
   const limit = filters.limit || PAGE_SIZE
@@ -115,6 +130,9 @@ export async function getZones(filters: ZoneFilters = {}): Promise<PaginatedZone
 }
 
 export async function getZone(id: string): Promise<Zone | null> {
+  const denied = await adminDenial()
+  if (denied) return null
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -132,6 +150,9 @@ export async function getZone(id: string): Promise<Zone | null> {
 }
 
 export async function createZone(formData: FormData) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const name = formData.get('name') as string
@@ -160,6 +181,9 @@ export async function createZone(formData: FormData) {
 }
 
 export async function updateZone(id: string, formData: FormData) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const name = formData.get('name') as string
@@ -191,6 +215,9 @@ export async function updateZone(id: string, formData: FormData) {
 }
 
 export async function deleteZone(id: string) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   // Check if zone has locations assigned
@@ -230,6 +257,9 @@ export async function deleteZone(id: string) {
 }
 
 export async function getZonePricing(): Promise<ZonePricingCell[]> {
+  const denied = await adminDenial()
+  if (denied) return []
+
   const supabase = await createClient()
 
   // The caller builds a `from|to -> price` Map, so order is irrelevant and the
@@ -253,6 +283,9 @@ export async function updateZonePricing(
   toZoneId: string,
   price: number
 ) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   try {
@@ -341,6 +374,9 @@ export async function updateZonePricing(
 }
 
 export async function toggleZoneStatus(id: string, is_active: boolean) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -361,6 +397,9 @@ export async function toggleZoneStatus(id: string, is_active: boolean) {
 }
 
 export async function bulkDeleteZones(ids: string[]) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -377,6 +416,9 @@ export async function bulkDeleteZones(ids: string[]) {
 }
 
 export async function bulkToggleZoneStatus(ids: string[], is_active: boolean) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const { error } = await supabase

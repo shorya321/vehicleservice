@@ -13,6 +13,7 @@ import {
   approveBusinessAccount,
   rejectBusinessAccount,
 } from '@/lib/business/admin/account-status';
+import { requireAdminAction } from '@/lib/auth/admin-action';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,12 +27,26 @@ const supabaseAdmin = createClient(
 );
 
 /**
+ * Every action here runs on the service-role client, which ignores RLS, so each
+ * one checks the caller itself instead of relying only on the proxy's /admin
+ * gate. Returns the message to show, or null for an admin. Not exported, so it
+ * is not itself callable as a Server Action.
+ */
+async function adminDenial(): Promise<string | null> {
+  const auth = await requireAdminAction();
+  return 'error' in auth ? auth.error : null;
+}
+
+/**
  * Approve and reject delegate to lib/business/admin/account-status, which owns the
  * guarded status change *and* the notification to the owner. They used to do a bare
  * UPDATE here and email nobody, while the detail-page API route did email - so which
  * button an admin clicked decided whether the business ever heard back.
  */
 export async function quickApproveBusinessAction(businessId: string) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     const result = await approveBusinessAccount(businessId);
 
@@ -47,6 +62,9 @@ export async function quickApproveBusinessAction(businessId: string) {
 }
 
 export async function quickRejectBusinessAction(businessId: string) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     const result = await rejectBusinessAccount(businessId);
 
@@ -62,6 +80,9 @@ export async function quickRejectBusinessAction(businessId: string) {
 }
 
 export async function quickSuspendBusinessAction(businessId: string) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     const { error } = await supabaseAdmin
       .from('business_accounts')
@@ -81,6 +102,9 @@ export async function quickSuspendBusinessAction(businessId: string) {
 }
 
 export async function quickReactivateBusinessAction(businessId: string) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     const { error } = await supabaseAdmin
       .from('business_accounts')
@@ -106,6 +130,9 @@ export async function quickReactivateBusinessAction(businessId: string) {
  * make a provider rate-limit harder to read.
  */
 export async function bulkApproveBusinessesAction(businessIds: string[]) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     let approved = 0;
     let emailFailures = 0;
@@ -134,6 +161,9 @@ export async function bulkApproveBusinessesAction(businessIds: string[]) {
 }
 
 export async function bulkSuspendBusinessesAction(businessIds: string[]) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     const { error } = await supabaseAdmin
       .from('business_accounts')
@@ -153,6 +183,9 @@ export async function bulkSuspendBusinessesAction(businessIds: string[]) {
 }
 
 export async function bulkReactivateBusinessesAction(businessIds: string[]) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     const { error } = await supabaseAdmin
       .from('business_accounts')
@@ -172,6 +205,14 @@ export async function bulkReactivateBusinessesAction(businessIds: string[]) {
 }
 
 export async function deleteBusinessAction(businessId: string) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
+  return deleteBusiness(businessId);
+}
+
+/** The delete itself, unguarded: callers check the admin first (once, for a bulk run). */
+async function deleteBusiness(businessId: string) {
   try {
     const { data: business, error: fetchError } = await supabaseAdmin
       .from('business_accounts')
@@ -272,12 +313,15 @@ export async function deleteBusinessAction(businessId: string) {
 }
 
 export async function bulkDeleteBusinessesAction(businessIds: string[]) {
+  const denied = await adminDenial();
+  if (denied) return { success: false, error: denied };
+
   try {
     let successCount = 0;
     let failCount = 0;
 
     for (const id of businessIds) {
-      const result = await deleteBusinessAction(id);
+      const result = await deleteBusiness(id);
       if (result.success) {
         successCount++;
       } else {

@@ -2,8 +2,20 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireAdminAction } from '@/lib/auth/admin-action'
 
 const PAGE_SIZE = 10
+
+/**
+ * Admin check for every export below. RLS already limits writes to admins, but
+ * a blocked write reports success with zero rows, and the proxy's /admin gate
+ * should not be the only check. Returns the message to show, or null for an
+ * admin. Not exported, so it is not itself callable as a Server Action.
+ */
+async function adminDenial(): Promise<string | null> {
+  const auth = await requireAdminAction()
+  return 'error' in auth ? auth.error : null
+}
 
 export interface LocationWithZone {
   id: string
@@ -33,6 +45,9 @@ export interface LocationZoneFilters {
 export async function getLocationsWithZones(
   filters: LocationZoneFilters = {}
 ): Promise<PaginatedLocationsWithZones> {
+  const denied = await adminDenial()
+  if (denied) return { locations: [], total: 0, page: filters.page || 1, limit: filters.limit || PAGE_SIZE, totalPages: 0 }
+
   const supabase = await createClient()
   const page = filters.page || 1
   const limit = filters.limit || PAGE_SIZE
@@ -94,6 +109,9 @@ export async function getLocationsWithZones(
 }
 
 export async function assignLocationToZone(locationId: string, zoneId: string | null) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -114,6 +132,9 @@ export async function assignLocationToZone(locationId: string, zoneId: string | 
 }
 
 export async function bulkAssignLocationsToZone(locationIds: string[], zoneId: string | null) {
+  const denied = await adminDenial()
+  if (denied) return { error: denied }
+
   const supabase = await createClient()
 
   const { error } = await supabase
