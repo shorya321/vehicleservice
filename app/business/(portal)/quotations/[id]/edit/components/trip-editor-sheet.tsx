@@ -60,6 +60,7 @@ import {
   toggleVehicleOption,
   withoutMainVehicle,
 } from '@/lib/business/quotations/vehicle-options';
+import { MAX_VEHICLE_OPTIONS } from '@/lib/business/quotations/schema';
 import { MarkupInput } from './markup-input';
 import { VehicleOptionToggle } from './vehicle-option-toggle';
 import { AddonPicker, addonsReadyToSave, toPersistableAddons, type DraftAddon } from './addon-picker';
@@ -602,7 +603,16 @@ export function TripEditorSheet({
             </FieldGroup>
 
             {/* Vehicle. Disclosed only once the route is valid */}
-            <FieldGroup title="Vehicle" icon={Car} tone="bg-primary/10 text-primary">
+            <FieldGroup
+              title="Vehicle"
+              icon={Car}
+              tone="bg-primary/10 text-primary"
+              description={
+                routeReady && !loadingVehicles && vehicles.length > 0
+                  ? `Pick the vehicle to quote. Tick others to let the customer choose one instead (up to ${MAX_VEHICLE_OPTIONS}).`
+                  : undefined
+              }
+            >
               {!routeReady ? (
                 <p className="text-sm text-muted-foreground">
                   {tripType === 'one_way'
@@ -624,16 +634,26 @@ export function TripEditorSheet({
                 <div className="space-y-2">
                   {vehicles.map((vehicle) => {
                     const selected = draft.vehicle_type_id === vehicle.id;
+                    const offered = offeredIds.has(vehicle.id);
+                    // One card per vehicle, so its "also offer" checkbox reads as part of it.
                     return (
-                      <div key={vehicle.id} className="space-y-1">
+                      <div
+                        key={vehicle.id}
+                        className={cn(
+                          'overflow-hidden rounded-lg border transition-colors',
+                          selected
+                            ? 'border-primary bg-primary/5'
+                            : offered
+                              ? 'border-primary/40 bg-card'
+                              : 'border-border bg-card'
+                        )}
+                      >
                         <button
                           type="button"
                           onClick={() => selectVehicle(vehicle)}
                           className={cn(
-                            'flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors',
-                            selected
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border bg-card hover:bg-muted/50'
+                            'flex w-full items-center justify-between p-3 text-left transition-colors',
+                            !selected && 'hover:bg-muted/50'
                           )}
                         >
                           <div className="flex items-center gap-3">
@@ -651,7 +671,14 @@ export function TripEditorSheet({
                               </div>
                             )}
                             <div className="min-w-0">
-                              <div className="font-medium text-foreground">{vehicle.name}</div>
+                              <div className="flex items-center gap-2 font-medium text-foreground">
+                                {vehicle.name}
+                                {selected && (
+                                  <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                                    Quoted vehicle
+                                  </span>
+                                )}
+                              </div>
                               <div className="text-xs text-muted-foreground">
                                 {vehicle.category} · up to {vehicle.capacity} guests
                               </div>
@@ -668,7 +695,7 @@ export function TripEditorSheet({
                           <VehicleOptionToggle
                             vehicleId={vehicle.id}
                             vehicleName={vehicle.name}
-                            checked={offeredIds.has(vehicle.id)}
+                            checked={offered}
                             canAdd={canAddOption}
                             sellAed={
                               optionPricing(

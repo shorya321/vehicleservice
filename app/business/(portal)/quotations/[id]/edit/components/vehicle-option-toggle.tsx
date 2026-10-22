@@ -37,7 +37,7 @@ export function VehicleOptionToggle({
   const disabled = !checked && !canAdd;
 
   return (
-    <div className="flex items-center justify-between gap-3 px-3 pb-1 text-xs">
+    <div className="flex items-center justify-between gap-3 border-t border-border/60 px-3 py-2 text-xs">
       <label
         htmlFor={id}
         className={
@@ -53,7 +53,8 @@ export function VehicleOptionToggle({
           onCheckedChange={onToggle}
           aria-label={`Also offer ${vehicleName} to the customer`}
         />
-        Also offer to the customer
+        Also offer as an alternative
+        {disabled && ' (limit reached)'}
       </label>
       {checked && (
         <span className="tabular-nums text-foreground">
