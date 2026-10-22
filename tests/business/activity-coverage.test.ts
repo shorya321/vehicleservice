@@ -26,6 +26,8 @@ const MUTATING_METHODS = ['POST', 'PATCH', 'PUT', 'DELETE'] as const;
  * Adding a route here is a decision, not an escape hatch: it shows up in review.
  */
 const NO_ACTIVITY_LOG: Record<string, string> = {
+  'bookings/trash/[id]/restore/route.ts':
+    'Restores through restore_trashed_trip, which logs booking.restored with the owner as actor inside the same transaction.',
   'auth/logout/route.ts':
     'Logs security.logout via logBusinessActivity, matched by the import scan.',
   'wallet/webhook/route.ts':

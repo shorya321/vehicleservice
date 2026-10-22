@@ -132,6 +132,8 @@ interface BookingsPageContentProps {
    * quotation are shown together as one group.
    */
   quotationLinks?: QuotationBookingLink[];
+  /** Owners see a link to the trash, where deleted trips can be restored for 30 days. */
+  showTrashLink?: boolean;
 }
 
 // Map booking status to UI status
@@ -159,6 +161,7 @@ export function BookingsPageContent({
   totalCount,
   pendingCount,
   quotationBookingIds = [],
+  showTrashLink = false,
   quotationLinks = [],
 }: BookingsPageContentProps) {
   const router = useRouter();
@@ -733,8 +736,17 @@ export function BookingsPageContent({
           </Button>
         )}
 
+        {showTrashLink && (
+          <Button asChild variant="outline" size="sm" className="ml-auto gap-2">
+            <Link href="/business/bookings/trash">
+              <Trash2 className="h-4 w-4" />
+              Trash
+            </Link>
+          </Button>
+        )}
+
         {/* New Booking Button */}
-        <Button asChild className="ml-auto gap-2 hover:bg-primary/90">
+        <Button asChild className={cn('gap-2 hover:bg-primary/90', !showTrashLink && 'ml-auto')}>
           <Link href="/business/bookings/new">
             <Plus className="h-4 w-4" />
             New Booking

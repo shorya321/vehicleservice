@@ -160,6 +160,7 @@ export default async function BusinessBookingsPage() {
       pendingCount={pendingCount || 0}
       quotationBookingIds={quotationLinks.map((l) => l.bookingId)}
       quotationLinks={quotationLinks}
+      showTrashLink={member.role === 'owner'}
     />
   );
 }

@@ -3,7 +3,9 @@ import { BookingsTable } from './components/bookings-table'
 import { ClientFilters } from './components/client-filters'
 import { getBookings, getBookingStats, BookingFilters } from './actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Car, CheckCircle, XCircle, DollarSign, TrendingUp } from 'lucide-react'
+import { Calendar, Car, CheckCircle, XCircle, DollarSign, TrendingUp, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { FilterToggle } from '@/components/admin/ui/filter-toggle'
@@ -88,6 +90,12 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
               View and manage all customer bookings
             </p>
           </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/bookings/trash">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Trash
+            </Link>
+          </Button>
         </div>
 
         {/* Stats Cards */}
