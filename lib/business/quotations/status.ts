@@ -83,21 +83,6 @@ export function canEditHeader(status: QuotationStatus): boolean {
   return status !== 'converting' && status !== 'converted';
 }
 
-/**
- * Line editing.
- *
- * A converted line is immutable regardless of the header's status: the wallet has been
- * charged and a real booking exists. This is what lets a `partially_converted` quotation keep
- * 2 trips booked while 3 are still under negotiation.
- */
-export function canEditLine(
-  status: QuotationStatus,
-  convertedBookingId: string | null
-): boolean {
-  if (convertedBookingId) return false;
-  return status !== 'converting' && status !== 'converted';
-}
-
 export interface LineConversionStamp {
   converted_booking_id?: string | null;
   converted_booking_removed_at?: string | null;
@@ -111,6 +96,18 @@ export interface LineConversionStamp {
  */
 export function isLineConverted(line: LineConversionStamp): boolean {
   return Boolean(line.converted_booking_id || line.converted_booking_removed_at);
+}
+
+/**
+ * Line editing.
+ *
+ * A converted line is immutable regardless of the header's status: the wallet has been
+ * charged and a real booking exists. This is what lets a `partially_converted` quotation keep
+ * 2 trips booked while 3 are still under negotiation.
+ */
+export function canEditLine(status: QuotationStatus, line: LineConversionStamp): boolean {
+  if (isLineConverted(line)) return false;
+  return status !== 'converting' && status !== 'converted';
 }
 
 /** Adding or removing trips follows the same rule as editing the header. */

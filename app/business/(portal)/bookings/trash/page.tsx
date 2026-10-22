@@ -43,7 +43,7 @@ export default async function BusinessBookingsTrashPage() {
 
   const { data, error } = await admin
     .from('deleted_bookings')
-    .select('id, trip_type, trip_label, pickup_datetime, summary, deleted_by_name, deleted_at, expires_at')
+    .select('id, trip_type, trip_label, pickup_datetime, summary, deleted_by_name, deleted_by_role, deleted_at, expires_at')
     .eq('business_account_id', member.businessAccountId)
     .order('deleted_at', { ascending: false })
     .limit(200);
@@ -61,7 +61,9 @@ export default async function BusinessBookingsTrashPage() {
       bookingStatus: summary.booking_status ?? null,
       pickupAt: row.pickup_datetime ? formatBookingDateTime(row.pickup_datetime) : '',
       deletedAt: formatBookingDateTime(row.deleted_at),
-      deletedBy: row.deleted_by_name ?? 'Platform team',
+      deletedBy: row.deleted_by_role === 'admin' ? 'the platform team' : row.deleted_by_name ?? 'a team member',
+      // A platform removal is the platform's to undo; the owner is pointed at support instead.
+      removedByPlatform: row.deleted_by_role === 'admin',
       expiresAt: formatBookingDateTime(row.expires_at),
     };
   });

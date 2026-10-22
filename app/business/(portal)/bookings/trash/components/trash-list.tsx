@@ -20,6 +20,7 @@ export interface BusinessTrashRow {
   deletedAt: string;
   deletedBy: string;
   expiresAt: string;
+  removedByPlatform: boolean;
 }
 
 interface TrashListProps {
@@ -78,16 +79,22 @@ export function TrashList({ rows }: TrashListProps) {
                 Deleted {row.deletedAt} by {row.deletedBy}. Removed for good on {row.expiresAt}.
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0 gap-2"
-              disabled={restoringId !== null}
-              onClick={() => restore(row)}
-            >
-              {restoringId === row.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              Restore
-            </Button>
+            {row.removedByPlatform ? (
+              <p className="shrink-0 text-sm text-muted-foreground sm:max-w-[14rem] sm:text-right">
+                Removed by the platform team. Contact support to restore it.
+              </p>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-2"
+                disabled={restoringId !== null}
+                onClick={() => restore(row)}
+              >
+                {restoringId === row.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                Restore
+              </Button>
+            )}
           </CardContent>
         </Card>
       ))}

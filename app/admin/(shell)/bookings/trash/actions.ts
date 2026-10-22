@@ -86,6 +86,10 @@ export async function restoreTrashedBooking(trashId: string): Promise<{ success?
     // P0001/P0002 are RAISEs from the restore function, written for people. Anything else
     // (a vehicle type or location deleted since) is reported plainly rather than leaked.
     if (error.code === 'P0001' || error.code === 'P0002') return { error: error.message }
+    // 23502: a NOT NULL column added since the snapshot was taken has no value in it.
+    if (error.code === '23502') {
+      return { error: 'This booking was deleted before a schema change and cannot be restored automatically.' }
+    }
     if (error.code === '23503') {
       return { error: 'Something this booking points to (a location, vehicle type or addon) no longer exists.' }
     }

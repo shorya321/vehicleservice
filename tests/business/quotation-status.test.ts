@@ -76,16 +76,22 @@ describe('canEditHeader', () => {
 
 describe('canEditLine', () => {
   it('locks a line the moment it becomes a booking, whatever the header says', () => {
-    expect(canEditLine('accepted', 'booking-uuid')).toBe(false);
-    expect(canEditLine('partially_converted', 'booking-uuid')).toBe(false);
+    expect(canEditLine('accepted', { converted_booking_id: 'booking-uuid' })).toBe(false);
+    expect(canEditLine('partially_converted', { converted_booking_id: 'booking-uuid' })).toBe(false);
   });
 
   it('leaves unconverted lines of a partially converted quotation editable', () => {
-    expect(canEditLine('partially_converted', null)).toBe(true);
+    expect(canEditLine('partially_converted', {})).toBe(true);
+  });
+
+  it('keeps a line locked after its booking was moved to the trash', () => {
+    expect(
+      canEditLine('partially_converted', { converted_booking_id: null, converted_booking_removed_at: '2026-10-22T10:00:00Z' })
+    ).toBe(false);
   });
 
   it('blocks every line while a conversion is in flight', () => {
-    expect(canEditLine('converting', null)).toBe(false);
+    expect(canEditLine('converting', {})).toBe(false);
   });
 });
 

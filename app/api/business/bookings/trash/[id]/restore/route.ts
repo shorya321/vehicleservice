@@ -37,6 +37,10 @@ export const POST = requireBusinessOwner(
       // P0002: not found or another tenant's entry. P0001: a refusal written for people.
       if (error.code === 'P0002') return apiError('Deleted booking not found', 404);
       if (error.code === 'P0001') return apiError(error.message, 409);
+      // 23502: a column added since the snapshot was taken has no value for it.
+      if (error.code === '23502') {
+        return apiError('This booking was deleted before a system update and cannot be restored here. Contact support.', 409);
+      }
       if (error.code === '23503') {
         return apiError('Something this booking points to no longer exists, so it cannot be restored. Contact support.', 409);
       }
