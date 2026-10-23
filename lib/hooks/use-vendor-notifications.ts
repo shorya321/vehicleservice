@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
@@ -28,10 +28,16 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
+  const hasLoaded = useRef(false);
+
   // Fetch initial notifications and unread count
   const fetchNotifications = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show the loading state on the first fetch. Delete refetches, and a
+      // loading flip there swaps the open panel's list for a skeleton.
+      if (!hasLoaded.current) {
+        setLoading(true);
+      }
       const [notificationsResult, countResult] = await Promise.all([
         getRecentNotificationsAction(limit),
         getUnreadCountAction(),
@@ -47,6 +53,7 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
+      hasLoaded.current = true;
       setLoading(false);
     }
   }, [limit]);
